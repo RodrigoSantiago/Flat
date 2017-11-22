@@ -7,6 +7,4 @@ public class ModelInstance {
 
     int animIndex;
     float animPos;
-
-    ModelMaterial[] materials;
 }
