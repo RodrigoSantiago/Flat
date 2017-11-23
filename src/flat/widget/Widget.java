@@ -1,6 +1,6 @@
 package flat.widget;
 
-import flat.screen.Context;
+import flat.context.Context;
 
 public class Widget {
     public void onDraw(Context context) {

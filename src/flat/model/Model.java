@@ -1,9 +1,9 @@
 package flat.model;
 
 public class Model {
-    VertexData vertexData;
+    public Mesh mesh;
+    public Material[] materials;
 
-    Bone[] bones;
-    ModelAnim[] anims;
-    ModelMaterial[] materials;
+    public Skeleton skeleton;
+    public ModelAnim[] anims;
 }

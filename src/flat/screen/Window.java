@@ -1,6 +1,6 @@
 package flat.screen;
 
-import flat.image.Image;
+import flat.context.Context;
 
 public class Window {
     private long _windowPointer;

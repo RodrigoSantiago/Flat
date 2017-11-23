@@ -1,9 +1,12 @@
 package flat.model;
 
 import flat.math.Matrix4;
-import javafx.animation.KeyFrame;
 
 public class ModelAnim {
+
+    String name;
+    Matrix4 scale;
+    Skeleton skeleton;
     KeyFrame[] keyFrames;
 
     public Matrix4 getBonePosition(float time, int boneIndex) {
