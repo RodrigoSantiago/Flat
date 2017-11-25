@@ -169,7 +169,10 @@ public abstract class Application {
         super.finalize();
     }
 
-    public interface RefreshHandler {
-        void handle(Context frame);
+    public interface InputListener {
+        void mouseEvent();
+        void touchEvent();
+        void keyEvent();
+        void joyEvent();
     }
 }

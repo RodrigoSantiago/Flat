@@ -1,6 +1,4 @@
-package flat.objects;
-
-import flat.screen.Context;
+package flat.screen;
 
 public abstract class ContextObject {
     public final Context context;

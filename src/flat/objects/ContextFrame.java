@@ -2,6 +2,7 @@ package flat.objects;
 
 import flat.objects.texture.Texture;
 import flat.screen.Context;
+import flat.screen.ContextObject;
 
 public class ContextFrame extends ContextObject {
 

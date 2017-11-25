@@ -1,6 +1,6 @@
 package flat.objects.shader;
 
-import flat.objects.ContextObject;
+import flat.screen.ContextObject;
 import flat.screen.Context;
 
 public class ShaderProgram extends ContextObject {

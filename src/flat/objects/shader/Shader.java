@@ -1,7 +1,7 @@
 package flat.objects.shader;
 
 import flat.math.*;
-import flat.objects.ContextObject;
+import flat.screen.ContextObject;
 import flat.screen.Context;
 
 public class Shader extends ContextObject {

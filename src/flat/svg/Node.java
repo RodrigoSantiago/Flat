@@ -1,6 +1,6 @@
 package flat.svg;
 
 public class Node {
-    boolean hole;
+    boolean negative;
     Curve[] curves;
 }

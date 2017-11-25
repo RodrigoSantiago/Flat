@@ -2,8 +2,8 @@ package flat.objects.texture;
 
 import flat.screen.Context;
 
-public class Texture2D extends Texture {
-    public Texture2D(Context context) {
+public class ImageTexture extends Texture {
+    public ImageTexture(Context context) {
         super(context);
     }
 }

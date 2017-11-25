@@ -1,7 +1,10 @@
 package flat.screen;
 
-import flat.objects.ContextObject;
 import flat.objects.ContextFrame;
+import flat.screen.enums.Face;
+import flat.screen.enums.MathFunction;
+import flat.screen.enums.MathOperation;
+import flat.screen.enums.PolygonMode;
 import flat.svg.*;
 
 import java.lang.ref.WeakReference;
@@ -9,10 +12,6 @@ import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class Context {
-    public enum MathFunction {ALWAYS, NEVER, LESS, EQUAL, LEQUAL, GREATER, NOTEQUAL, GEQUAL}
-    public enum MathOperation {KEEP, ZERO, REPLACE, INCR, INCR_WRAP, DECR, DECR_WRAP, INVERT}
-    public enum Face {BACK, FRONT, ALL}
-    public enum PolygonMode {POINT, LINE, FILL}
 
     private final Thread graphicThread;
     private final AtomicBoolean current = new AtomicBoolean();
@@ -90,6 +89,10 @@ public final class Context {
 
     public void clear(int color, boolean depth, boolean stencil) {
         assertIfIsCurrent();
+    }
+
+    public void setBlendFunction() {
+
     }
 
     public MathFunction getDepthFunction() {

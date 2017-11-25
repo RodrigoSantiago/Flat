@@ -2,9 +2,9 @@ package flat.objects.buffer;
 
 import flat.screen.Context;
 
-public class BufferedArray extends Buffer {
+public class ArrayBuffer extends Buffer {
 
-    public BufferedArray(Context context) {
+    public ArrayBuffer(Context context) {
         super(context);
     }
 

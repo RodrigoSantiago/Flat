@@ -1,7 +1,7 @@
 package flat.objects.texture;
 
 import flat.image.ImageFormat;
-import flat.objects.ContextObject;
+import flat.screen.ContextObject;
 import flat.screen.Context;
 
 public class Texture extends ContextObject {
