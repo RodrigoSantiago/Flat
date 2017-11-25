@@ -3,16 +3,6 @@ package flat.screen;
 import java.util.List;
 
 public class Monitor {
-    private static ConnectionCallback callback;
-
-    public static ConnectionCallback getCallback() {
-        return callback;
-    }
-
-    public static void setCallback(ConnectionCallback callback) {
-        Monitor.callback = callback;
-    }
-
     public static List<Monitor> getMonitors() {
         return null;
     }
@@ -64,9 +54,5 @@ public class Monitor {
             this.blue = blue;
             this.refreshRate = refreshRate;
         }
-    }
-
-    public interface ConnectionCallback {
-        void handle (Monitor monitor, boolean connected);
     }
 }

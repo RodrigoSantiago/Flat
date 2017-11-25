@@ -1,8 +1,7 @@
-package flat.context;
+package flat.screen;
 
-import flat.math.Matrix4;
-import flat.image.*;
-import flat.model.*;
+import flat.objects.ContextObject;
+import flat.objects.ContextFrame;
 import flat.svg.*;
 
 public class Context {
@@ -11,7 +10,8 @@ public class Context {
     public enum Face {BACK, FRONT, ALL}
     public enum PolygonMode {POINT, LINE, FILL}
 
-    private boolean current;
+    protected volatile boolean current;
+    private ContextFrame contextFrame;
 
     Context() {
     }
@@ -20,20 +20,40 @@ public class Context {
 
     }
 
+    public void disposeObject(ContextObject contextObject) {
+
+    }
+
+    public void setContextFrame(ContextFrame contextFrame) {
+        this.contextFrame = contextFrame;
+    }
+
+    public ContextFrame getContextFrame() {
+        return contextFrame;
+    }
+
     public boolean isCurrent() {
         return current;
     }
 
-    public void setProjection(Matrix4 projection) {
-
-    }
-
-    public Matrix4 getProjection() {
-        return null;
-    }
-
     public void setViewport(int x, int y, int width, int height) {
 
+    }
+
+    public int getViewportX() {
+        return 0;
+    }
+
+    public int getViewportY() {
+        return 0;
+    }
+
+    public int getViewportWidth() {
+        return 0;
+    }
+
+    public int getViewportHeight() {
+        return 0;
     }
 
     public void clear(int color) {
@@ -100,44 +120,39 @@ public class Context {
 
     }
 
-    public void drawImage(Image image, double x, double y) {
+    public void setVertexIndices(int[] indices, int offset, int stride) {
 
     }
 
-    public void drawImage(Image image, double x, double y, double width, double height) {
+    public void setVertexAttributes(byte[] data, int offset, int stride, boolean instance) {
 
     }
 
-    public void drawImage(Image image, double srcX, double srcY, double srcWidth, double srcHeight,
-                          double desX, double desY, double desWidth, double desHeight) {
+    public void setVertexAttributes(short[] data, int offset, int stride, boolean instance) {
 
     }
 
-    public void drawImages(Image image, int count, ImageInstance... instances) {
+    public void setVertexAttributes(int[] data, int offset, int stride, boolean instance) {
 
     }
 
-    public void drawSvg(Svg svg, boolean fill, Paint paint, double x, double y) {
+    public void setVertexAttributes(float[] data, int offset, int stride, boolean instance) {
 
     }
 
-    public void drawSvgs(Svg svg, int count, SvgInstance... instances) {
+    public void drawArrays(int vertices, int instances) {
 
     }
 
-    public void drawSvg(Svg svg, boolean fill, Paint paint, double x, double y, double width, double height) {
+    public void drawElements(int indices, int instances) {
 
     }
 
-    public void drawModel(Model model, Matrix4 transform, int animIndex, float animPos) {
+    public void drawSvg(Svg svg, boolean fill, Paint paint, double x, double y, double scaleX, double scaleY, double rot) {
 
     }
 
-    public void drawModels(Model model, int count, ModelInstance... instances) {
-
-    }
-
-    public void drawModelsInstanced(Model model, int count, Matrix4... instances) {
+    public void drawSvg(Svg svg, int count, SvgInstance... instances) {
 
     }
 

@@ -1,6 +1,6 @@
-package flat.screen;
+package flat.widget;
 
-import flat.context.Context;
+import flat.screen.Context;
 
 public class Scene {
     public void onDraw(Context context) {
