@@ -11,6 +11,7 @@ public class GL {
     //         Context
     //---------------------------
     public static native void gl_Flush();
+    public static native void gl_Finish();
 
     public static native void gl_Clear(boolean color, boolean depth, boolean stencil);
     public static native void gl_SetClearColor(int rgba);
@@ -88,7 +89,7 @@ public class GL {
     public static native String gl_GetError();
 
     //---------------------------
-    //         Objects
+    //        Frame Buffer
     //---------------------------
     public static native int gl_FrameBufferCreate();
     public static native void gl_FrameBufferBind(int id);
@@ -98,14 +99,20 @@ public class GL {
     public static native void gl_FrameBufferRenderBuffer(int _targetType, int renderbufferId);
     public static native boolean gl_FrameBufferIsComplete();
 
+    //---------------------------
+    //        Render Buffer
+    //---------------------------
     public static native int gl_RenderBufferCreate();
     public static native void gl_RenderBufferBind(int id);
     public static native void gl_RenderBufferUnbind(int id);
     public static native void gl_RenderBufferDestroy(int id);
     public static native void gl_RenderBufferStorage(int _type, int width, int height);
 
-    public static native void gl_SetActiveTexture(int pos);
 
+    //---------------------------
+    //         Textures
+    //---------------------------
+    public static native void gl_SetActiveTexture(int pos);
     public static native int gl_TextureCreate();
     public static native void gl_TextureBind(int id, int _textureType);
     public static native void gl_TextureUnbind(int id);
@@ -117,6 +124,9 @@ public class GL {
     public static native void gl_TextureSubData(int _textureTarget, int level, int x, int y, int width, int height, int _dataFormat, byte[] data);
     public static native void gl_TextureSubData(int _textureTarget, int level, int x, int y, int width, int height, int _dataFormat, int[] data);
     public static native void gl_TextureSubData(int _textureTarget, int level, int x, int y, int width, int height, int _dataFormat, long offset);
+    public static native void gl_TextureReadData(int _textureTarget, int level, int _dataFormat, byte[] offset);
+    public static native void gl_TextureReadData(int _textureTarget, int level, int _dataFormat, int[] offset);
+    public static native void gl_TextureReadData(int _textureTarget, int level, int _dataFormat, long offset);
     public static native void gl_TextureSetDepthStencilMode(int id, int _textureTarget, boolean depthMode);
     public static native void gl_TextureSetLevel(int _textureTarget, int base, int max);
     public static native void gl_TextureSetLOD(int _textureTarget, float bias, float max, float min);
@@ -130,27 +140,32 @@ public class GL {
     public static native void gl_TextureSetCompareFunction(int _textureTarget, int _mathFunction);
     public static native void gl_TextureSetCompareMode(int _textureTarget, boolean toTextureRef);
 
+    //---------------------------
+    //         Buffers
+    //---------------------------
     public static native int gl_BufferCreate();
     public static native void gl_BufferBind(int id, int _bufferType);
     public static native void gl_BufferUnbind(int id);
     public static native void gl_BufferDestroy(int id);
-    public static native void gl_BufferData(byte[] data, int size, int _dataType);
-    public static native void gl_BufferData(short[] data, int size, int _dataType);
-    public static native void gl_BufferData(int[] data, int size, int _dataType);
-    public static native void gl_BufferData(float[] data, int size, int _dataType);
-    public static native void gl_BufferSubData(byte[] data, int size, int offset, int _dataType);
-    public static native void gl_BufferSubData(short[] data, int size, int offset, int _dataType);
-    public static native void gl_BufferSubData(int[] data, int size, int offset, int _dataType);
-    public static native void gl_BufferSubData(float[] data, int size, int offset, int _dataType);
+    public static native void gl_BufferData(byte[] data, int size, int _usageType);
+    public static native void gl_BufferData(short[] data, int size, int _usageType);
+    public static native void gl_BufferData(int[] data, int size, int _usageType);
+    public static native void gl_BufferData(float[] data, int size, int _usageType);
+    public static native void gl_BufferSubData(byte[] data, int size, int offset, int _usageType);
+    public static native void gl_BufferSubData(short[] data, int size, int offset, int _usageType);
+    public static native void gl_BufferSubData(int[] data, int size, int offset, int _usageType);
+    public static native void gl_BufferSubData(float[] data, int size, int offset, int _usageType);
     public static native void gl_BufferCopy(int read_buffferType, int write_buffferType, int readOffset, int writeOffset, byte[] data);
     public static native void gl_BufferCopy(int read_buffferType, int write_buffferType, int readOffset, int writeOffset, short[] data);
     public static native void gl_BufferCopy(int read_buffferType, int write_buffferType, int readOffset, int writeOffset, int[] data);
     public static native void gl_BufferCopy(int read_buffferType, int write_buffferType, int readOffset, int writeOffset, float[] data);
     public static native Pointer gl_BufferMap(int id);
     public static native void gl_BufferUnmap(int id);
+    public static native int gl_BufferGetSize(int id);
+    public static native int gl_BufferGetUsage(int id);
 
     //---------------------------
-    //           GLSL
+    //           Program
     //---------------------------
     public static native int gl_ProgramCreate();
     public static native void gl_ProgramDelete(int id);
@@ -207,6 +222,9 @@ public class GL {
     public static native int gl_ProgramSetUniform(int id, int uniformId, float[] value);
     public static native int gl_ProgramSetUniform(int id, int uniformId, double[] value);
 
+    //---------------------------
+    //           Shader
+    //---------------------------
     public static native int gl_ShaderCreate(int _shaderType);
     public static native void gl_ShaderDelete(int id);
     public static native void gl_ShaderCompile(int id);
