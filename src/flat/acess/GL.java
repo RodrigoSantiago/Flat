@@ -1,244 +1,274 @@
 package flat.acess;
 
-import com.sun.jna.Pointer;
+import com.sun.jna.*;
 
 public class GL {
     static {
-        // ligação nativa
+        Native.register("gl.dll");
+    }
+
+    public static void load() {
+        System.out.println("Graphic Layer Library loaded");
     }
 
     //---------------------------
-    //         Context
+    //         Rendering
     //---------------------------
-    public static native void gl_Flush();
-    public static native void gl_Finish();
+    public static native void Flush();
+    public static native void Finish();
 
-    public static native void gl_Clear(boolean color, boolean depth, boolean stencil);
-    public static native void gl_SetClearColor(int rgba);
-    public static native void gl_SetClearDepth(int mask);
-    public static native void gl_SetClearStencil(int mask);
-    public static native int gl_GetClearColor();
-    public static native int gl_GetClearDepth();
-    public static native int gl_GetClearStencil();
+    public static native void Clear(int bitmask);
+    public static native void SetClearColor(int rgba);
+    public static native void SetClearDepth(int mask);
+    public static native void SetClearStencil(int mask);
+    public static native int GetClearColor();
+    public static native int GetClearDepth();
+    public static native int GetClearStencil();
 
-    public static native void gl_EnableRasterizer(boolean enabled);
-    public static native boolean gl_IsRasterizerEnabled();
-    public static native void gl_EnableAlphaTest(boolean enable);
-    public static native boolean gl_IsAlphaTestEnabled();
+    public static native void ReadPixelsB(int x, int y, int width, int height, int _format, byte[] data, int len);
+    public static native void ReadPixelsS(int x, int y, int width, int height, int _format, short[] data, int len);
+    public static native void ReadPixelsI(int x, int y, int width, int height, int _format, int[] data, int len);
+    public static native void ReadPixelsF(int x, int y, int width, int height, int _format, float[] data, int len);
+    public static native void ReadPixels(int x, int y, int width, int height, int _format, long offset, int len);
 
-    public static native void gl_EnableScissorTest(boolean enable);
-    public static native boolean gl_IsScissorTestEnabled();
-    public static native void gl_SetScissor(int x, int y, int width, int height);
-    public static native int gl_GetScissorX();
-    public static native int gl_GetScissorY();
-    public static native int gl_GetScissorWidth();
-    public static native int gl_GetScissorHeight();
+    //---------------------------
+    //         State
+    //---------------------------
+    public static native String GetError();
 
-    public static native void gl_SetPolygonMode(int _face, int _polygonMode);
-    public static native int gl_GetPolygonMode(int _face);
-    public static native void gl_SetLineWidth(float width);
-    public static native float gl_GetLineWidth();
-    public static native void gl_SetPointSize(float size);
-    public static native float gl_GetPointSize();
+    public static native void SetHint(int target, int mode);
+    public static native int GetHint(int target);
 
-    public static native void gl_EnableDepthTest(boolean enable);
-    public static native boolean gl_IsDepthTestEnabled();
-    public static native void gl_SetDepthMask(int mask);
-    public static native int gl_GetDepthMask();
-    public static native void gl_SetDepthFunction(int _mathFunction);
-    public static native int gl_GetDepthFunction();
+    public static native void SetViewport(int x, int y, int width, int height);
+    public static native void GetViewport(int[] data4);
 
-    public static native void gl_EnableStencilTest(boolean enable);
-    public static native boolean gl_IsStencilTestEnabled();
-    public static native void gl_SetStencilMask(int mask);
-    public static native int gl_GetStencilMask();
-    public static native void gl_SetStencilFunction(int _mathFunction);
-    public static native int gl_GetStencilFunction();
-    public static native void gl_SetStencilOperation(int stencil_mathOperation, int depth_mathOperation, int both_mathOperation);
-    public static native int gl_GetStencilFailOperation();
-    public static native int gl_GetDepthFailOperation();
-    public static native int gl_GetStencilDepthFailOperation();
+    public static native void EnableScissorTest(boolean enable);
+    public static native boolean IsScissorTestEnabled();
+    public static native void SetScissor(int x, int y, int width, int height);
+    public static native void GetScissor(int[] data4);
 
-    public static native void gl_EnableBlend(boolean enable);
-    public static native boolean gl_IsBlendEnabled();
-    public static native void gl_SetBlendFunction(int srcRGB_blend, int dstRGB_blend, int srcA_blend, int dstA_blend);
-    public static native int gl_GetSrcAlphaBlendFunction();
-    public static native int gl_GetDstAlphaBlendFunction();
-    public static native int gl_GetSrcRGBBlendFunction();
-    public static native int gl_GetDstRGBBlendFunction();
-    public static native void gl_SetBlendEquation(int RGB_blendEquation, int A_blendEquation);
-    public static native int gl_GetRGBBlendEquation();
-    public static native int gl_GetAlphaBlendEquation();
+    public static native void EnableRasterizer(boolean enable);
+    public static native boolean IsRasterizerEnabled();
+    public static native void SetPixelStore(int target, int value);
+    public static native int GetPixelStore(int target);
+    public static native void SetColorMask(boolean r, boolean g, boolean b, boolean a);
+    public static native void GetColorMask(boolean[] data4);
 
-    public static native void gl_SetBlendColor(int rgba);
-    public static native int gl_GetBlendColor();
+    public static native void EnableDepthTest(boolean enable);
+    public static native boolean IsDepthTestEnabled();
+    public static native void SetDepthMask(boolean mask);
+    public static native boolean GetDepthMask();
+    public static native void SetDepthFunction(int _mathFunction);
+    public static native int GetDepthFunction();
+    public static native void SetDepthRange(double near, double far);
+    public static native void GetDepthRange(double[] data2);
 
-    public static native void gl_EnableCullface(boolean enable);
-    public static native boolean gl_IsCullfaceEnabled();
-    public static native void gl_SetCullface(int _face);
-    public static native int gl_GetCullface();
+    public static native void EnableStencilTest(boolean enable);
+    public static native boolean IsStencilTestEnabled();
+    public static native void SetStencilMask(int _face, int mask);
+    public static native int GetStencilMask(int _face);
+    public static native void SetStencilFunction(int _face, int _mathFunction, int ref, int mask);
+    public static native void GetStencilFunction(int _face, int[] data3);
+    public static native void SetStencilOperation(int _face, int stencil_mathOperation, int depth_mathOperation, int both_mathOperation);
+    public static native void GetStencilOperation(int _face, int[] data3);
 
-    public static native void gl_DrawArrays(int _drawMode, int first, int count);
-    public static native void gl_DrawArraysInstanced(int _drawMode, int first, int count, int instances);
-    public static native void gl_DrawElements(int _drawMode, int first, int count, long offset);
-    public static native void gl_DrawElementsInstanced(int _drawMode, int first, int count, long offset, int instances);
-    public static native void gl_ReadPixels(int x, int y, int width, int height, byte[] data);
-    public static native void gl_ReadPixels(int x, int y, int width, int height, short[] data);
-    public static native void gl_ReadPixels(int x, int y, int width, int height, int[] data);
-    public static native void gl_ReadPixels(int x, int y, int width, int height, float[] data);
-    public static native String gl_GetError();
+    public static native void EnableBlend(boolean enable);
+    public static native boolean IsBlendEnabled();
+    public static native void SetBlendFunction(int srcRGB_blend, int dstRGB_blend, int srcA_blend, int dstA_blend);
+    public static native void GetBlendFunction(int[] data4);
+    public static native void SetBlendEquation(int RGB_blendEquation, int Alpha_blendEquation);
+    public static native void GetBlendEquation(int[] data2);
+    public static native void SetBlendColor(int rgba);
+    public static native int GetBlendColor();
+
+    public static native void EnableCullface(boolean enable);
+    public static native boolean IsCullfaceEnabled();
+    public static native void SetCullface(boolean front, boolean back);
+    public static native void GetCullface(boolean[] data2);
+    public static native void SetFrontFace(boolean clockwise);
+    public static native boolean GetFrontFace();
+
+    public static native void EnableSamplemask(boolean enable);
+    public static native boolean IsSamplemaskEnabled();
+    public static native void SetSamplemask(int mask);
+    public static native int GetSamplemask();
+
+    public static native void SetLineWidth(float width);
+    public static native float GetLineWidth();
+
+    public static native void DrawArrays(int _drawMode, int first, int count, int instances);
+
+    public static native void DrawElements(int _drawMode, int count, int instances, int _bufferFormat, long start, long offset);
+    public static native void DrawElementsB(int _drawMode, int count, int instances, byte[] indices, int start, int offset);
+    public static native void DrawElementsS(int _drawMode, int count, int instances, short[] indices, int start, int offset);
+    public static native void DrawElementsI(int _drawMode, int count, int instances, int[] indices, int start, int offset);
 
     //---------------------------
     //        Frame Buffer
     //---------------------------
-    public static native int gl_FrameBufferCreate();
-    public static native void gl_FrameBufferBind(int id);
-    public static native void gl_FrameBufferUnbind(int id);
-    public static native void gl_FrameBufferDestroy(int id);
-    public static native void gl_FrameBufferTexture(int _targetType, int _textureType, int textureId, int mipMap);
-    public static native void gl_FrameBufferRenderBuffer(int _targetType, int renderbufferId);
-    public static native boolean gl_FrameBufferIsComplete();
+    public static native int FrameBufferCreate();
+    public static native void FrameBufferDestroy(int id);
+    public static native void FrameBufferBind(int _target, int id);
+    public static native void FrameBufferBlit(int srcX, int srcY, int srcW, int srcH, int dstX, int dstY, int dstW, int dstH, int bitmask, int _filter);
+    public static native void FrameBufferTexture2D(int _target, int _attachment, int _textureTarget, int textureId, int level);
+    public static native void FrameBufferRenderBuffer(int _target, int _attachment, int renderBufferId);
+    public static native int FrameBufferGetStatus(int _target);
+    public static native int FrameBufferGetObjectType(int _target, int _attachment);
+    public static native int FrameBufferGetObjectId(int _target, int _attachment);
 
     //---------------------------
     //        Render Buffer
     //---------------------------
-    public static native int gl_RenderBufferCreate();
-    public static native void gl_RenderBufferBind(int id);
-    public static native void gl_RenderBufferUnbind(int id);
-    public static native void gl_RenderBufferDestroy(int id);
-    public static native void gl_RenderBufferStorage(int _type, int width, int height);
-
+    public static native int RenderBufferCreate();
+    public static native void RenderBufferDestroy(int id);
+    public static native void RenderBufferBind(int id);
+    public static native void RenderBufferStorage(int _imageFormat, int width, int height);
+    public static native void RenderBufferStorageMultsample(int _imageFormat, int width, int height, int samples);
+    public static native int RenderBufferGetImageFormat();
+    public static native int RenderBufferGetWidth();
+    public static native int RenderBufferGetHeight();
 
     //---------------------------
     //         Textures
     //---------------------------
-    public static native void gl_SetActiveTexture(int pos);
-    public static native int gl_TextureCreate();
-    public static native void gl_TextureBind(int id, int _textureType);
-    public static native void gl_TextureUnbind(int id);
-    public static native void gl_TextureGenerateMipmap(int id);
-    public static native void gl_TextureDestroy(int id);
-    public static native void gl_TextureData(int _textureTarget, int level, int _format, int width, int height, int border, int _dataFormat, byte[] data);
-    public static native void gl_TextureData(int _textureTarget, int level, int _format, int width, int height, int border, int _dataFormat, int[] data);
-    public static native void gl_TextureData(int _textureTarget, int level, int _format, int width, int height, int border, int _dataFormat, long offset);
-    public static native void gl_TextureSubData(int _textureTarget, int level, int x, int y, int width, int height, int _dataFormat, byte[] data);
-    public static native void gl_TextureSubData(int _textureTarget, int level, int x, int y, int width, int height, int _dataFormat, int[] data);
-    public static native void gl_TextureSubData(int _textureTarget, int level, int x, int y, int width, int height, int _dataFormat, long offset);
-    public static native void gl_TextureReadData(int _textureTarget, int level, int _dataFormat, byte[] offset);
-    public static native void gl_TextureReadData(int _textureTarget, int level, int _dataFormat, int[] offset);
-    public static native void gl_TextureReadData(int _textureTarget, int level, int _dataFormat, long offset);
-    public static native void gl_TextureSetDepthStencilMode(int id, int _textureTarget, boolean depthMode);
-    public static native void gl_TextureSetLevel(int _textureTarget, int base, int max);
-    public static native void gl_TextureSetLOD(int _textureTarget, float bias, float max, float min);
-    public static native void gl_TextureSetMinFilter(int _textureTarget, int _textureFilter);
-    public static native void gl_TextureSetMagFilter(int _textureTarget, int _textureFilter);
-    public static native void gl_TextureSetSwizzle(int _textureTarget, int r_Chanel, int g_Chanel, int b_Chanel, int a_Chanel);
-    public static native void gl_TextureSetBorderColor(int _textureTarget, int rgba);
-    public static native void gl_TextureSetWrapHorizontal(int _textureTarget, int _wrapMode);
-    public static native void gl_TextureSetWrapVertical(int _textureTarget, int _wrapMode);
-    public static native void gl_TextureSetWrapDepth(int _textureTarget, int _wrapMode);
-    public static native void gl_TextureSetCompareFunction(int _textureTarget, int _mathFunction);
-    public static native void gl_TextureSetCompareMode(int _textureTarget, boolean toTextureRef);
+    public static native void SetActiveTexture(int pos);
+
+    public static native int TextureCreate();
+    public static native void TextureDestroy(int id);
+    public static native void TextureBind(int _texType, int id);
+    public static native void TextureGenerateMipmap(int id);
+
+    public static native void TextureStorage(int _texTarget, int levels, int _format, int width, int height);
+
+    public static native void TextureCopy(int _texTarget, int _format, int level, int xoffset, int yoffset, int x, int y, int width, int height, int border);
+    public static native void TextureSubCopy(int _texTarget, int level, int xoffset, int yoffset, int x, int y, int width, int height);
+
+    public static native void TextureData(int _texTarget, int level, int _format, int width, int height, int border, int _dataFormat, long offset);
+    public static native void TextureDataB(int _texTarget, int level, int _format, int width, int height, int border, int _dataFormat, byte[] data);
+    public static native void TextureDataI(int _texTarget, int level, int _format, int width, int height, int border, int _dataFormat, int[] data);
+    public static native void TextureSubData(int _texTarget, int level, int x, int y, int width, int height, int _dataFormat, long offset);
+    public static native void TextureSubDataB(int _texTarget, int level, int x, int y, int width, int height, int _dataFormat, byte[] data);
+    public static native void TextureSubDataI(int _texTarget, int level, int x, int y, int width, int height, int _dataFormat, int[] data);
+    public static native void TextureReadData(int _texTarget, int level, int _dataFormat, long offset);
+    public static native void TextureReadDataB(int _texTarget, int level, int _dataFormat, byte[] data);
+    public static native void TextureReadDataI(int _texTarget, int level, int _dataFormat, int[] data);
+
+    public static native void TextureSetLevels(int _texTarget, int levels);
+    public static native int TextureGetLevels(int _texTarget);
+
+    public static native int TextureGetWidth(int _texTarget, int level);
+    public static native int TextureGetHeight(int _texTarget, int level);
+    public static native int TextureGetFormat(int _texTarget, int level);
+
+    public static native void TextureSetDepthStencilMode(int _texTarget, int depthStencilMode);
+    public static native int TextureGetDepthStencilMode(int _texTarget);
+    public static native void TextureSetLOD(int _texTarget, float bias, float max, float min);
+    public static native void TextureGetLOD(int _texTarget, float[] data3);
+    public static native void TextureSetFilter(int _texTarget, int mag_textureFilter, int min_textureFilter);
+    public static native void TextureGetFilter(int _texTarget, int[] data2);
+    public static native void TextureSetSwizzle(int _texTarget, int r_Chanel, int g_Chanel, int b_Chanel, int a_Chanel);
+    public static native void TextureGetSwizzle(int _texTarget, int[] data4);
+    public static native void TextureSetBorderColor(int _texTarget, int rgba);
+    public static native int TextureGetBorderColor(int _texTarget);
+    public static native void TextureSetWrap(int _texTarget, int _wrapModeS, int _wrapModeT, int _wrapModeR);
+    public static native void TextureGetWrap(int _texTarget, int[] data3);
+    public static native void TextureSetCompareFunction(int _texTarget, int _mathFunction);
+    public static native int TextureGetCompareFunction(int _texTarget);
+    public static native void TextureSetCompareMode(int _texTarget, boolean toTextureRef);
+    public static native boolean TextureGetCompareMode(int _texTarget);
 
     //---------------------------
     //         Buffers
     //---------------------------
-    public static native int gl_BufferCreate();
-    public static native void gl_BufferBind(int id, int _bufferType);
-    public static native void gl_BufferUnbind(int id);
-    public static native void gl_BufferDestroy(int id);
-    public static native void gl_BufferData(byte[] data, int size, int _usageType);
-    public static native void gl_BufferData(short[] data, int size, int _usageType);
-    public static native void gl_BufferData(int[] data, int size, int _usageType);
-    public static native void gl_BufferData(float[] data, int size, int _usageType);
-    public static native void gl_BufferSubData(byte[] data, int size, int offset, int _usageType);
-    public static native void gl_BufferSubData(short[] data, int size, int offset, int _usageType);
-    public static native void gl_BufferSubData(int[] data, int size, int offset, int _usageType);
-    public static native void gl_BufferSubData(float[] data, int size, int offset, int _usageType);
-    public static native void gl_BufferCopy(int read_buffferType, int write_buffferType, int readOffset, int writeOffset, byte[] data);
-    public static native void gl_BufferCopy(int read_buffferType, int write_buffferType, int readOffset, int writeOffset, short[] data);
-    public static native void gl_BufferCopy(int read_buffferType, int write_buffferType, int readOffset, int writeOffset, int[] data);
-    public static native void gl_BufferCopy(int read_buffferType, int write_buffferType, int readOffset, int writeOffset, float[] data);
-    public static native Pointer gl_BufferMap(int id);
-    public static native void gl_BufferUnmap(int id);
-    public static native int gl_BufferGetSize(int id);
-    public static native int gl_BufferGetUsage(int id);
+    public static native int BufferCreate();
+    public static native void BufferDestroy(int id);
+    public static native void BufferBind(int _bufferType, int id);
+    public static native void BufferDataB(int _bufferType, byte[] data, int size, int _usageType);
+    public static native void BufferDataS(int _bufferType, short[] data, int size, int _usageType);
+    public static native void BufferDataI(int _bufferType, int[] data, int size, int _usageType);
+    public static native void BufferDataF(int _bufferType, float[] data, int size, int _usageType);
+    public static native void BufferSubDataB(int _bufferType, byte[] data, int size, long offset, int _usageType);
+    public static native void BufferSubDataS(int _bufferType, short[] data, int size, long offset, int _usageType);
+    public static native void BufferSubDataI(int _bufferType, int[] data, int size, long offset, int _usageType);
+    public static native void BufferSubDataF(int _bufferType, float[] data, int size, long offset, int _usageType);
+    public static native void BufferCopy(int read_buffferType, int write_buffferType, long readOffset, long writeOffset, long length);
+    public static native Pointer BufferMap(int _bufferType, long offset, long length, int acessBimask);
+    public static native void BufferUnmap(int _bufferType);
+    public static native void BufferFlush(int _bufferType, long offset, long length);
+    public static native int BufferGetSize(int _bufferType);
+    public static native int BufferGetUsage(int _bufferType);
 
     //---------------------------
     //           Program
     //---------------------------
-    public static native int gl_ProgramCreate();
-    public static native void gl_ProgramDelete(int id);
-    public static native void gl_ProgramLink(int id);
-    public static native void gl_ProgramUse(int id);
-    public static native void gl_ProgramSetTFVars(int id, String[] names, int _tfBufferMode);
+    public static native int ProgramCreate();
+    public static native void ProgramDelete(int id);
+    public static native void ProgramLink(int id);
+    public static native void ProgramUse(int id);
+    public static native boolean ProgramIsDeleted();
+    public static native boolean ProgramIsLinked();
+    public static native boolean ProgramisValidated();
+    public static native String ProgramGetLog();
 
-    public static native void gl_ProgramAttachShader(int id, int shaderId);
-    public static native void gl_ProgramDetachShader(int id, int shaderId);
-    public static native int gl_ProgramGetAttachedShadersCount();
-    public static native void gl_ProgramGetAttachedShaders(int[] data);
+    public static native void ProgramAttachShader(int id, int shaderId);
+    public static native void ProgramDetachShader(int id, int shaderId);
+    public static native int ProgramGetAttachedShadersCount();
+    public static native void ProgramGetAttachedShaders(int[] data);
 
-    public static native boolean gl_ProgramIsDeleted();
-    public static native boolean gl_ProgramIsLinked();
-    public static native boolean gl_ProgramisValidated();
-    public static native String gl_ProgramGetLog();
-    public static native int gl_ProgramGetBinaryLength();
+    public static native int ProgramGetAttributesCount();
+    public static native String ProgramGetAttributeName(int id, int attributeId);
+    public static native int ProgramGetAttributeType(int id, int attributeId);
+    public static native int ProgramGetAttributeSize(int id, int attributeId);
+    public static native int ProgramGetAttributeId(int id, String name);
 
-    public static native int gl_ProgramGetActiveAtomicCountersBuff();
+    public static native int ProgramGetUniformsCount();
+    public static native String ProgramGetUniformName(int id, int uniformId);
+    public static native int ProgramGetUniformType(int id, int uniformId);
+    public static native int ProgramGetUniformSize(int id, int uniformId);
+    public static native int ProgramGetUniformId(int id, String name);
 
-    public static native int gl_ProgramGetAttributesCount();
-    public static native String gl_ProgramGetAttributeName(int id, int attributeId);
-    public static native int gl_ProgramGetAttributeType(int id, int attributeId);
-    public static native int gl_ProgramGetAttributeSize(int id, int attributeId);
-    public static native int gl_ProgramGetAttributeId(int id, String name);
+    public static native void ProgramSetTFVars(int id, Pointer names, int len, int _tfBufferMode);
+    public static native int ProgramGetTFVarsCount();
+    public static native int ProgramTFVarsBufferMode();
+    public static native String ProgramGetTFVarName(int id, int uniformId);
+    public static native int ProgramGetTFVarType(int id, int uniformId);
+    public static native int ProgramGetTFVarSize(int id, int uniformId);
+    public static native int ProgramGetTFVarId(int id, String name);
 
-    public static native int gl_ProgramGetUniformsCount();
-    public static native String gl_ProgramGetUniformName(int id, int uniformId);
-    public static native int gl_ProgramGetUniformType(int id, int uniformId);
-    public static native int gl_ProgramGetUniformSize(int id, int uniformId);
-    public static native int gl_ProgramGetUniformId(int id, String name);
+    //public static native int ProgramGetGeometryVerticesOut();
+    //public static native int ProgramGetGeometryInputType();
+   // public static native int ProgramGetGeometryOutputType();
 
-    public static native int gl_ProgramGetTFVarsCount();
-    public static native int gl_ProgramTFVarsBufferMode();
-    public static native String gl_ProgramGetTFVarName(int id, int uniformId);
-    public static native int gl_ProgramGetTFVarType(int id, int uniformId);
-    public static native int gl_ProgramGetTFVarSize(int id, int uniformId);
-    public static native int gl_ProgramGetTFVarId(int id, String name);
-
-    //public static native int gl_ProgramGetGeometryVerticesOut();
-    //public static native int gl_ProgramGetGeometryInputType();
-   // public static native int gl_ProgramGetGeometryOutputType();
-
-    public static native int gl_ProgramSetUniform(int id, int uniformId, byte value);
-    public static native int gl_ProgramSetUniform(int id, int uniformId, short value);
-    public static native int gl_ProgramSetUniform(int id, int uniformId, int value);
-    public static native int gl_ProgramSetUniform(int id, int uniformId, long value);
-    public static native int gl_ProgramSetUniform(int id, int uniformId, float value);
-    public static native int gl_ProgramSetUniform(int id, int uniformId, double value);
-    public static native int gl_ProgramSetUniform(int id, int uniformId, byte[] value);
-    public static native int gl_ProgramSetUniform(int id, int uniformId, short[] value);
-    public static native int gl_ProgramSetUniform(int id, int uniformId, int[] value);
-    public static native int gl_ProgramSetUniform(int id, int uniformId, long[] value);
-    public static native int gl_ProgramSetUniform(int id, int uniformId, float[] value);
-    public static native int gl_ProgramSetUniform(int id, int uniformId, double[] value);
+    public static native int ProgramSetUniformB(int id, int uniformId, byte value);
+    public static native int ProgramSetUniformS(int id, int uniformId, short value);
+    public static native int ProgramSetUniformI(int id, int uniformId, int value);
+    public static native int ProgramSetUniformL(int id, int uniformId, long value);
+    public static native int ProgramSetUniformF(int id, int uniformId, float value);
+    public static native int ProgramSetUniformD(int id, int uniformId, double value);
+    public static native int ProgramSetUniformBv(int id, int uniformId, byte[] value, int len);
+    public static native int ProgramSetUniformSv(int id, int uniformId, short[] value, int len);
+    public static native int ProgramSetUniformIv(int id, int uniformId, int[] value, int len);
+    public static native int ProgramSetUniformLv(int id, int uniformId, long[] value, int len);
+    public static native int ProgramSetUniformFv(int id, int uniformId, float[] value, int len);
+    public static native int ProgramSetUniformDv(int id, int uniformId, double[] value, int len);
 
     //---------------------------
     //           Shader
     //---------------------------
-    public static native int gl_ShaderCreate(int _shaderType);
-    public static native void gl_ShaderDelete(int id);
-    public static native void gl_ShaderCompile(int id);
+    public static native int ShaderCreate(int _shaderType);
+    public static native void ShaderDelete(int id);
+    public static native void ShaderCompile(int id);
 
-    public static native boolean gl_ShaderIsDeleted(int id);
-    public static native boolean gl_ShaderIsCompiled(int id);
-    public static native String gl_ShaderGetLog(int id);
-    public static native int gl_ShaderGetType(int id);
-    public static native String gl_ShaderGetSource(int id);
-    public static native void gl_ShaderSetSource(int id, String content);
+    public static native boolean ShaderIsDeleted(int id);
+    public static native boolean ShaderIsCompiled(int id);
+    public static native String ShaderGetLog(int id);
+    public static native int ShaderGetType(int id);
+    public static native void ShaderSetSource(int id, String content);
+    public static native String ShaderGetSource(int id);
 
     //---------------------------
-    //     TransformFeedback
+    //    Transform Feedback
     //---------------------------
-    public static native void gl_TransformFeedbackBegin(int _polygonType);
-    public static native void gl_TransformFeedbackEnd();
+    public static native void TransformFeedbackBegin(int _polygonType);
+    public static native void TransformFeedbackEnd();
 }

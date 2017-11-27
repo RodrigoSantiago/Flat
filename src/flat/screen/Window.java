@@ -5,12 +5,12 @@ import flat.widget.Scene;
 
 import java.util.ArrayList;
 
-public abstract class Application {
+public abstract class Window {
 
     private final Scene scene;
     private ArrayList<InputListener> inputListeners = new ArrayList<>();
 
-    public Application() {
+    public Window() {
         scene = new Scene();
     }
 
