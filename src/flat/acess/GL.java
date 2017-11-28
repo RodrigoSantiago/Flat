@@ -1,10 +1,8 @@
 package flat.acess;
 
-import com.sun.jna.*;
-
 public class GL {
     static {
-        Native.register("gl.dll");
+        System.loadLibrary("flat");
     }
 
     public static void load() {
@@ -25,11 +23,11 @@ public class GL {
     public static native int GetClearDepth();
     public static native int GetClearStencil();
 
-    public static native void ReadPixelsB(int x, int y, int width, int height, int _format, byte[] data, int len);
-    public static native void ReadPixelsS(int x, int y, int width, int height, int _format, short[] data, int len);
-    public static native void ReadPixelsI(int x, int y, int width, int height, int _format, int[] data, int len);
-    public static native void ReadPixelsF(int x, int y, int width, int height, int _format, float[] data, int len);
-    public static native void ReadPixels(int x, int y, int width, int height, int _format, long offset, int len);
+    public static native void ReadPixelsB(int x, int y, int width, int height, int _format, byte[] data, int offset);
+    public static native void ReadPixelsS(int x, int y, int width, int height, int _format, short[] data, int offset);
+    public static native void ReadPixelsI(int x, int y, int width, int height, int _format, int[] data, int offset);
+    public static native void ReadPixelsF(int x, int y, int width, int height, int _format, float[] data, int offset);
+    public static native void ReadPixels(int x, int y, int width, int height, int _format, long offset);
 
     //---------------------------
     //         State
@@ -40,19 +38,28 @@ public class GL {
     public static native int GetHint(int target);
 
     public static native void SetViewport(int x, int y, int width, int height);
-    public static native void GetViewport(int[] data4);
+    public static native int GetViewportX();
+    public static native int GetViewportY();
+    public static native int GetViewportWidth();
+    public static native int GetViewportHeight();
 
     public static native void EnableScissorTest(boolean enable);
     public static native boolean IsScissorTestEnabled();
     public static native void SetScissor(int x, int y, int width, int height);
-    public static native void GetScissor(int[] data4);
+    public static native int GetScissorX();
+    public static native int GetScissorY();
+    public static native int GetScissorWidth();
+    public static native int GetScissorHeight();
 
     public static native void EnableRasterizer(boolean enable);
     public static native boolean IsRasterizerEnabled();
     public static native void SetPixelStore(int target, int value);
     public static native int GetPixelStore(int target);
     public static native void SetColorMask(boolean r, boolean g, boolean b, boolean a);
-    public static native void GetColorMask(boolean[] data4);
+    public static native boolean GetColorMaskR();
+    public static native boolean GetColorMaskG();
+    public static native boolean GetColorMaskB();
+    public static native boolean GetColorMaskA();
 
     public static native void EnableDepthTest(boolean enable);
     public static native boolean IsDepthTestEnabled();
@@ -60,33 +67,43 @@ public class GL {
     public static native boolean GetDepthMask();
     public static native void SetDepthFunction(int _mathFunction);
     public static native int GetDepthFunction();
-    public static native void SetDepthRange(double near, double far);
-    public static native void GetDepthRange(double[] data2);
+    public static native void SetDepthRange(double nearValue, double farValue);
+    public static native int GetDepthRangeNear();
+    public static native int GetDepthRangeFar();
 
     public static native void EnableStencilTest(boolean enable);
     public static native boolean IsStencilTestEnabled();
     public static native void SetStencilMask(int _face, int mask);
     public static native int GetStencilMask(int _face);
     public static native void SetStencilFunction(int _face, int _mathFunction, int ref, int mask);
-    public static native void GetStencilFunction(int _face, int[] data3);
+    public static native int GetStencilFunction(int _face);
+    public static native int GetStencilFunctionRef(int _face);
+    public static native int GetStencilFunctionMask(int _face);
     public static native void SetStencilOperation(int _face, int stencil_mathOperation, int depth_mathOperation, int both_mathOperation);
-    public static native void GetStencilOperation(int _face, int[] data3);
+    public static native int GetStencilOperationStencil(int _face);
+    public static native int GetStencilOperationDepth(int _face);
+    public static native int GetStencilOperationBoth(int _face);
 
     public static native void EnableBlend(boolean enable);
     public static native boolean IsBlendEnabled();
     public static native void SetBlendFunction(int srcRGB_blend, int dstRGB_blend, int srcA_blend, int dstA_blend);
-    public static native void GetBlendFunction(int[] data4);
+    public static native int GetBlendFunctionSrcRGB();
+    public static native int GetBlendFunctionDstRGB();
+    public static native int GetBlendFunctionSrcAlpha();
+    public static native int GetBlendFunctionDstAlpha();
     public static native void SetBlendEquation(int RGB_blendEquation, int Alpha_blendEquation);
-    public static native void GetBlendEquation(int[] data2);
+    public static native int GetBlendEquationRGB();
+    public static native int GetBlendEquationAlpha();
     public static native void SetBlendColor(int rgba);
     public static native int GetBlendColor();
 
     public static native void EnableCullface(boolean enable);
     public static native boolean IsCullfaceEnabled();
     public static native void SetCullface(boolean front, boolean back);
-    public static native void GetCullface(boolean[] data2);
-    public static native void SetFrontFace(boolean clockwise);
-    public static native boolean GetFrontFace();
+    public static native boolean GetCullfaceFront();
+    public static native boolean GetCullfaceBack();
+    public static native void SetFrontFace(int _clockwise);
+    public static native int GetFrontFace();
 
     public static native void EnableSamplemask(boolean enable);
     public static native boolean IsSamplemaskEnabled();
@@ -98,10 +115,10 @@ public class GL {
 
     public static native void DrawArrays(int _drawMode, int first, int count, int instances);
 
-    public static native void DrawElements(int _drawMode, int count, int instances, int _bufferFormat, long start, long offset);
-    public static native void DrawElementsB(int _drawMode, int count, int instances, byte[] indices, int start, int offset);
-    public static native void DrawElementsS(int _drawMode, int count, int instances, short[] indices, int start, int offset);
-    public static native void DrawElementsI(int _drawMode, int count, int instances, int[] indices, int start, int offset);
+    public static native void DrawElements(int _drawMode, int count, int instances, int _bufferFormat, long offset, long length);
+    public static native void DrawElementsB(int _drawMode, int count, int instances, byte[] indices, int offset, int length);
+    public static native void DrawElementsS(int _drawMode, int count, int instances, short[] indices, int offset, int length);
+    public static native void DrawElementsI(int _drawMode, int count, int instances, int[] indices, int offset, int length);
 
     //---------------------------
     //        Frame Buffer
@@ -140,18 +157,20 @@ public class GL {
 
     public static native void TextureStorage(int _texTarget, int levels, int _format, int width, int height);
 
-    public static native void TextureCopy(int _texTarget, int _format, int level, int xoffset, int yoffset, int x, int y, int width, int height, int border);
+    public static native void TextureCopy(int _texTarget, int level, int _format, int xoffset, int yoffset, int x, int y, int width, int height, int border);
     public static native void TextureSubCopy(int _texTarget, int level, int xoffset, int yoffset, int x, int y, int width, int height);
 
     public static native void TextureData(int _texTarget, int level, int _format, int width, int height, int border, int _dataFormat, long offset);
-    public static native void TextureDataB(int _texTarget, int level, int _format, int width, int height, int border, int _dataFormat, byte[] data);
-    public static native void TextureDataI(int _texTarget, int level, int _format, int width, int height, int border, int _dataFormat, int[] data);
+    public static native void TextureDataB(int _texTarget, int level, int _format, int width, int height, int border, int _dataFormat, byte[] data, int offset);
+    public static native void TextureDataI(int _texTarget, int level, int _format, int width, int height, int border, int _dataFormat, int[] data, int offset);
+
     public static native void TextureSubData(int _texTarget, int level, int x, int y, int width, int height, int _dataFormat, long offset);
-    public static native void TextureSubDataB(int _texTarget, int level, int x, int y, int width, int height, int _dataFormat, byte[] data);
-    public static native void TextureSubDataI(int _texTarget, int level, int x, int y, int width, int height, int _dataFormat, int[] data);
+    public static native void TextureSubDataB(int _texTarget, int level, int x, int y, int width, int height, int _dataFormat, byte[] data, int offset);
+    public static native void TextureSubDataI(int _texTarget, int level, int x, int y, int width, int height, int _dataFormat, int[] data, int offset);
+
     public static native void TextureReadData(int _texTarget, int level, int _dataFormat, long offset);
-    public static native void TextureReadDataB(int _texTarget, int level, int _dataFormat, byte[] data);
-    public static native void TextureReadDataI(int _texTarget, int level, int _dataFormat, int[] data);
+    public static native void TextureReadDataB(int _texTarget, int level, int _dataFormat, byte[] data, int offset);
+    public static native void TextureReadDataI(int _texTarget, int level, int _dataFormat, int[] data, int offset);
 
     public static native void TextureSetLevels(int _texTarget, int levels);
     public static native int TextureGetLevels(int _texTarget);
@@ -163,19 +182,27 @@ public class GL {
     public static native void TextureSetDepthStencilMode(int _texTarget, int depthStencilMode);
     public static native int TextureGetDepthStencilMode(int _texTarget);
     public static native void TextureSetLOD(int _texTarget, float bias, float max, float min);
-    public static native void TextureGetLOD(int _texTarget, float[] data3);
+    public static native void TextureGetLODBias(int _texTarget);
+    public static native void TextureGetLODMax(int _texTarget);
+    public static native void TextureGetLODMin(int _texTarget);
     public static native void TextureSetFilter(int _texTarget, int mag_textureFilter, int min_textureFilter);
-    public static native void TextureGetFilter(int _texTarget, int[] data2);
+    public static native void TextureGetFilterMag(int _texTarget);
+    public static native void TextureGetFilterMin(int _texTarget);
     public static native void TextureSetSwizzle(int _texTarget, int r_Chanel, int g_Chanel, int b_Chanel, int a_Chanel);
-    public static native void TextureGetSwizzle(int _texTarget, int[] data4);
+    public static native void TextureGetSwizzleR(int _texTarget);
+    public static native void TextureGetSwizzleG(int _texTarget);
+    public static native void TextureGetSwizzleB(int _texTarget);
+    public static native void TextureGetSwizzleA(int _texTarget);
     public static native void TextureSetBorderColor(int _texTarget, int rgba);
     public static native int TextureGetBorderColor(int _texTarget);
     public static native void TextureSetWrap(int _texTarget, int _wrapModeS, int _wrapModeT, int _wrapModeR);
-    public static native void TextureGetWrap(int _texTarget, int[] data3);
+    public static native void TextureGetWrapS(int _texTarget);
+    public static native void TextureGetWrapT(int _texTarget);
+    public static native void TextureGetWrapR(int _texTarget);
     public static native void TextureSetCompareFunction(int _texTarget, int _mathFunction);
     public static native int TextureGetCompareFunction(int _texTarget);
-    public static native void TextureSetCompareMode(int _texTarget, boolean toTextureRef);
-    public static native boolean TextureGetCompareMode(int _texTarget);
+    public static native void TextureSetCompareMode(int _texTarget, int _compareMode);
+    public static native int TextureGetCompareMode(int _texTarget);
 
     //---------------------------
     //         Buffers
@@ -183,16 +210,16 @@ public class GL {
     public static native int BufferCreate();
     public static native void BufferDestroy(int id);
     public static native void BufferBind(int _bufferType, int id);
-    public static native void BufferDataB(int _bufferType, byte[] data, int size, int _usageType);
-    public static native void BufferDataS(int _bufferType, short[] data, int size, int _usageType);
-    public static native void BufferDataI(int _bufferType, int[] data, int size, int _usageType);
-    public static native void BufferDataF(int _bufferType, float[] data, int size, int _usageType);
-    public static native void BufferSubDataB(int _bufferType, byte[] data, int size, long offset, int _usageType);
-    public static native void BufferSubDataS(int _bufferType, short[] data, int size, long offset, int _usageType);
-    public static native void BufferSubDataI(int _bufferType, int[] data, int size, long offset, int _usageType);
-    public static native void BufferSubDataF(int _bufferType, float[] data, int size, long offset, int _usageType);
+    public static native void BufferDataB(int _bufferType, byte[] data, int offset, int _usageType);
+    public static native void BufferDataS(int _bufferType, short[] data, int offset, int _usageType);
+    public static native void BufferDataI(int _bufferType, int[] data, int offset, int _usageType);
+    public static native void BufferDataF(int _bufferType, float[] data, int offset, int _usageType);
+    public static native void BufferSubDataB(int _bufferType, byte[] data, int offset, long buffOffset, int _usageType);
+    public static native void BufferSubDataS(int _bufferType, short[] data, int offset, long buffOffset, int _usageType);
+    public static native void BufferSubDataI(int _bufferType, int[] data, int offset, long buffOffset, int _usageType);
+    public static native void BufferSubDataF(int _bufferType, float[] data, int offset, long buffOffset, int _usageType);
     public static native void BufferCopy(int read_buffferType, int write_buffferType, long readOffset, long writeOffset, long length);
-    public static native Pointer BufferMap(int _bufferType, long offset, long length, int acessBimask);
+    public static native long BufferMap(int _bufferType, long offset, long length, int acessBimask);
     public static native void BufferUnmap(int _bufferType);
     public static native void BufferFlush(int _bufferType, long offset, long length);
     public static native int BufferGetSize(int _bufferType);
@@ -227,7 +254,7 @@ public class GL {
     public static native int ProgramGetUniformSize(int id, int uniformId);
     public static native int ProgramGetUniformId(int id, String name);
 
-    public static native void ProgramSetTFVars(int id, Pointer names, int len, int _tfBufferMode);
+    public static native void ProgramSetTFVars(int id, String[] names, int _tfBufferMode);
     public static native int ProgramGetTFVarsCount();
     public static native int ProgramTFVarsBufferMode();
     public static native String ProgramGetTFVarName(int id, int uniformId);
@@ -245,12 +272,12 @@ public class GL {
     public static native int ProgramSetUniformL(int id, int uniformId, long value);
     public static native int ProgramSetUniformF(int id, int uniformId, float value);
     public static native int ProgramSetUniformD(int id, int uniformId, double value);
-    public static native int ProgramSetUniformBv(int id, int uniformId, byte[] value, int len);
-    public static native int ProgramSetUniformSv(int id, int uniformId, short[] value, int len);
-    public static native int ProgramSetUniformIv(int id, int uniformId, int[] value, int len);
-    public static native int ProgramSetUniformLv(int id, int uniformId, long[] value, int len);
-    public static native int ProgramSetUniformFv(int id, int uniformId, float[] value, int len);
-    public static native int ProgramSetUniformDv(int id, int uniformId, double[] value, int len);
+    public static native int ProgramSetUniformBv(int id, int uniformId, byte[] value, int offset);
+    public static native int ProgramSetUniformSv(int id, int uniformId, short[] value, int offset);
+    public static native int ProgramSetUniformIv(int id, int uniformId, int[] value, int offset);
+    public static native int ProgramSetUniformLv(int id, int uniformId, long[] value, int offset);
+    public static native int ProgramSetUniformFv(int id, int uniformId, float[] value, int offset);
+    public static native int ProgramSetUniformDv(int id, int uniformId, double[] value, int offset);
 
     //---------------------------
     //           Shader
