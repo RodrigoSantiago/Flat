@@ -46,7 +46,7 @@ public final class Context {
     }
 
     public void assertIfIsCurrent() {
-        if (!isCurrent()) throw new RuntimeException("Invalid context acess");
+        if (!isCurrent()) throw new RuntimeException("Invalid context backend");
     }
 
     public void setContextFrame(ContextFrame contextFrame) {

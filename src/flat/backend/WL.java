@@ -1,4 +1,4 @@
-package flat.acess;
+package flat.backend;
 
 public class WL {
     static {
@@ -10,7 +10,8 @@ public class WL {
     }
 
     public static native boolean Init(int x, int y, int width, int height, boolean resizable, boolean decorated);
-    public static native void Loop();
+    public static native boolean SwapBuffers();
+    public static native boolean HandleEvents();
     public static native void Terminate();
 
     public static native void SetVsync(int vsync);
@@ -36,12 +37,14 @@ public class WL {
 
     public static native void Show();
     public static native void Hide();
+    public static native void Close();
     public static native void Maximize();
     public static native void Minimize();
     public static native void Restore();
     public static native void Focus();
 
     public static native boolean IsShown();
+    public static native boolean IsClosed();
     public static native boolean IsMaximized();
     public static native boolean IsMinimized();
 
@@ -68,9 +71,6 @@ public class WL {
     public static native void GetJoystickButtons(int joy, int[] buttons);
     public static native String GetJoystickName(int joy);
 
-    public static native void SetWindowBeforeEventsCallback(WindowCallback callback);
-    public static native void SetWindowAfterEventsCallback(WindowCallback callback);
-
     public static native void SetWindowPosCallback(WindowPosCallback callback);
     public static native void SetWindowSizeCallback(WindowSizeCallback callback);
     public static native void SetWindowCloseCallback(WindowCloseCallback callback);
@@ -90,9 +90,6 @@ public class WL {
 
     public static native void SetJoystickCallback(JoyCallback callback);
 
-    public interface WindowCallback {
-        void handle();
-    }
     public interface WindowPosCallback {
         void handle(int x, int y);
     }
