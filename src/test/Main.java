@@ -1,11 +1,13 @@
 package test;
 
 import flat.backend.GL;
+import flat.backend.SVG;
 import flat.backend.WL;
 import flat.screen.Window;
 import flat.widget.Scene;
 
 import static flat.backend.GLEnuns.*;
+import static flat.backend.SVGEnuns.*;
 
 public class Main extends Window {
 
@@ -38,9 +40,14 @@ public class Main extends Window {
     public static void main(String[] args) {
         WL.load();
         GL.load();
+        SVG.load();
 
-        if (!WL.Init(50, 50, 600, 400, true, true)) {
+        if (!WL.Init(50, 50, 600, 400, 0, true, true)) {
             System.out.println("Não foi possível iniciar um contexto gráfico");
+            System.exit(0);
+        }
+        if (!SVG.Init(SVG_ANTIALIAS | SVG_STENCIL_STROKES | SVG_DEBUG)) {
+            System.out.println("Não foi possível iniciar um contexto para svg");
             System.exit(0);
         }
 
@@ -85,19 +92,26 @@ public class Main extends Window {
         GL.VertexArrayBind(0);
 
         WL.SetFramebufferSizeCallback((int width, int height) -> {
-            System.out.println("ha !");
             GL.SetViewport(0, 0, width, height);
         });
 
         WL.Show();
 
         while (!WL.IsClosed()) {
-            GL.SetClearColor(0xFF0000FF);
+
+            GL.SetClearColor(0xFFFFFFFF);
             GL.Clear(CB_COLOR_BUFFER_BIT);
 
-            GL.ProgramUse(shaderProgram);
+            SVG.BeginFrame(WL.GetWidth(), WL.GetHeight(), 1);
+            SVG.Circle(100, 100, 100);
+            SVG.SetStrokeColor(0xFF8000FF);
+            SVG.SetStrokeWidth(8.75f);
+            SVG.Stroke();
+            SVG.EndFrame();
+
+            /*GL.ProgramUse(shaderProgram);
             GL.VertexArrayBind(VAO);
-            GL.DrawArrays(VM_TRIANGLES, 0, 3, 1);
+            GL.DrawArrays(VM_TRIANGLES, 0, 3, 1);*/
 
             WL.SwapBuffers();
             WL.HandleEvents();
@@ -106,6 +120,7 @@ public class Main extends Window {
         GL.VertexArrayDestroy(VAO);
         GL.BufferDestroy(VBO);
 
-        WL.Terminate();
+        SVG.Finish();
+        WL.Finish();
     }
 }

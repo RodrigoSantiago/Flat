@@ -12,7 +12,7 @@ public class WL {
     public static native boolean Init(int x, int y, int width, int height, int samples, boolean resizable, boolean decorated);
     public static native boolean SwapBuffers();
     public static native boolean HandleEvents();
-    public static native void Terminate();
+    public static native void Finish();
 
     public static native void SetVsync(int vsync);
     public static native void SetMultsample(int samples);
