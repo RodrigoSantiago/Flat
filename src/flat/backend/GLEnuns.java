@@ -6,21 +6,6 @@ public class GLEnuns {
     public static final int CB_DEPTH_BUFFER_BIT = 0x00000100;
     public static final int CB_STENCIL_BUFFER_BIT = 0x00000400;
 
-    //----READ IMAGE FORMATS
-    public static final int RI_RGBA = 0x1908;
-    /*GL*/
-    public static final int RI_BGRA = 0x80E1;
-    public static final int RI_STENCIL_INDEX = 0x1901;
-    public static final int RI_DEPTH_COMPONENT = 0x1902;
-    public static final int RI_DEPTH_STENCIL = 0x84F9;
-    public static final int RI_RED = 0x1903;
-    public static final int RI_GREEN = 0x1904;
-    public static final int RI_BLUE = 0x1905;
-    public static final int RI_RGB = 0x1907;
-    public static final int RI_BGR = 0x80E0;
-    /*ES*/
-    public static final int RI_RGBA_INTEGER = 0x8D99;
-
     //----DATA TYPES
     public static final int DT_BYTE = 0x1400;
     public static final int DT_SHORT = 0x1402;
@@ -165,13 +150,9 @@ public class GLEnuns {
     //----TEXTURE BIND TARGET
     public static final int TB_TEXTURE_2D = 0x0DE1;
     public static final int TB_TEXTURE_CUBE_MAP = 0x8513;
-    public static final int _TB_TEXTURE_2D_MULTISAMPLE = 0x9100;
-    public static final int _TB_TEXTURE_2D_ARRAY = 0x8C1A;
+    public static final int TB_TEXTURE_2D_MULTISAMPLE = 0x9100;
     public static final int _TB_TEXTURE_3D = 0x806F;
-    /*GL*/
-    public static final int _TB_TEXTURE_RECTANGLE = 0x84F5;
-    public static final int _TB_TEXTURE_BUFFER = 0x8C2A;
-    public static final int _TB_TEXTURE_2D_MULTISAMPLE_ARRAY = 0x9102;
+    public static final int _TB_TEXTURE_2D_ARRAY = 0x8C1A;
 
     //----TEXTURE TARGET TYPE
     public static final int TT_TEXTURE_2D = 0x0DE1;
@@ -185,8 +166,8 @@ public class GLEnuns {
     public static final int _TT_TEXTURE_2D_ARRAY = 0x8C1A;
 
     //----TEXTURE FORMAT
-    public static final int TF_RGB = 0;                         //form = rgb,  type = GL_UNSIGNED_BYTE
-    public static final int TF_RGBA = 0;                        //form = rgba, type = GL_UNSIGNED_BYTE
+    public static final int TF_RGB = 0x1907;                    //form = rgb,  type = GL_UNSIGNED_BYTE
+    public static final int TF_RGBA = 0x1908;                   //form = rgba, type = GL_UNSIGNED_BYTE
     public static final int TF_DEPTH_COMPONENT32F = 0x8CAC;     //form = dc,   type = GL_FLOAT
     public static final int TF_DEPTH_COMPONENT24 = 0x81A6;      //form = dc,   type = GL_UNSIGNED_INT
     public static final int TF_DEPTH_COMPONENT16 = 0x81A5;      //form = dc,   type = GL_UNSIGNED_SHORT
@@ -216,8 +197,8 @@ public class GLEnuns {
     public static final int CC_GREEN = 0x1904;
     public static final int CC_BLUE = 0x1905;
     public static final int CC_ALPHA = 0x1906;
-    public static final int CC_ZERO = 0;
-    public static final int CC_ONE = 1;
+    public static final int CC_ZERO = 0x0;
+    public static final int CC_ONE = 0x1;
 
     //----BUFFER BIND TYPE
     public static final int BB_ARRAY_BUFFER = 0x8892;

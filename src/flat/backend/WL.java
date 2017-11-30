@@ -9,12 +9,13 @@ public class WL {
         System.out.println("Window Layer Library loaded");
     }
 
-    public static native boolean Init(int x, int y, int width, int height, boolean resizable, boolean decorated);
+    public static native boolean Init(int x, int y, int width, int height, int samples, boolean resizable, boolean decorated);
     public static native boolean SwapBuffers();
     public static native boolean HandleEvents();
     public static native void Terminate();
 
     public static native void SetVsync(int vsync);
+    public static native void SetMultsample(int samples);
     public static native void SetFullscreen(boolean fullscreen);
     public static native boolean IsFullscreen();
     public static native boolean IsResizable();

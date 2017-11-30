@@ -25,12 +25,12 @@ public class GL {
     public static native int GetClearDepth();
     public static native int GetClearStencil();
 
-    public static native void ReadPixels(int x, int y, int width, int height, int _format, int type, long offset);
-    public static native void ReadPixelsB(int x, int y, int width, int height, int _format, byte[] data, int offset);
-    public static native void ReadPixelsS(int x, int y, int width, int height, int _format, short[] data, int offset);
-    public static native void ReadPixelsI(int x, int y, int width, int height, int _format, int[] data, int offset);
-    public static native void ReadPixelsF(int x, int y, int width, int height, int _format, float[] data, int offset);
-    public static native void ReadPixelsBuffer(int x, int y, int width, int height, int _format, int _type, Buffer buffer, int offset);
+    public static native void ReadPixels(int x, int y, int width, int height, int typeDT, long offset);
+    public static native void ReadPixelsB(int x, int y, int width, int height, byte[] data, int offset);
+    public static native void ReadPixelsS(int x, int y, int width, int height, short[] data, int offset);
+    public static native void ReadPixelsI(int x, int y, int width, int height, int[] data, int offset);
+    public static native void ReadPixelsF(int x, int y, int width, int height, float[] data, int offset);
+    public static native void ReadPixelsBuffer(int x, int y, int width, int height, int typeDT, Buffer buffer, int offset);
 
     //---------------------------
     //         State
@@ -115,11 +115,11 @@ public class GL {
 
     public static native void DrawArrays(int vertexModeVM, int first, int count, int instances);
 
-    public static native void DrawElements(int vertexModeVM, int count, int instances, int _type, long offset);
+    public static native void DrawElements(int vertexModeVM, int count, int instances, int typeDT, long offset);
     public static native void DrawElementsB(int vertexModeVM, int count, int instances, byte[] indices, int offset);
     public static native void DrawElementsS(int vertexModeVM, int count, int instances, short[] indices, int offset);
     public static native void DrawElementsI(int vertexModeVM, int count, int instances, int[] indices, int offset);
-    public static native void DrawElementsBuffer(int vertexModeVM, int count, int instances, int _type, Buffer buffer, int offset);
+    public static native void DrawElementsBuffer(int vertexModeVM, int count, int instances, int typeDT, Buffer buffer, int offset);
 
     //---------------------------
     //        Frame Buffer
@@ -129,6 +129,7 @@ public class GL {
     public static native void FrameBufferBind(int trgFB, int id);
     public static native void FrameBufferBlit(int srcX, int srcY, int srcW, int srcH, int dstX, int dstY, int dstW, int dstH, int bitmaskBM, int filterBF);
     public static native void FrameBufferTexture2D(int trgFB, int attFA, int texTypeTT, int textureId, int level);
+    public static native void FrameBufferTextureMultisample(int trgFB, int attFA, int textureId);
     public static native void FrameBufferRenderBuffer(int trgFB, int attFA, int renderBufferId);
     public static native int FrameBufferGetStatus(int trgFB);
     public static native int FrameBufferGetObjectType(int trgFB, int attFA);
@@ -156,6 +157,8 @@ public class GL {
     public static native void TextureDestroy(int id);
     public static native void TextureBind(int trgTB, int id);
     public static native void TextureGenerateMipmap(int id);
+
+    public static native void TextureMultisample(int samples, int formatTF, int width, int height, boolean fixedLocations);
 
     public static native void TextureCopy(int trgTT, int level, int formatTF, int x, int y, int width, int height, int border);
     public static native void TextureSubCopy(int trgTT, int level, int xoffset, int yoffset, int x, int y, int width, int height);
@@ -275,14 +278,13 @@ public class GL {
     //public static native int ProgramGetGeometryInputType(int id);
     //public static native int ProgramGetGeometryOutputType(int id);
 
-    public static native void ProgramSetUniformI(int uniformId, int value);
-    public static native void ProgramSetUniformF(int uniformId, float value);
-    public static native void ProgramSetUniformIv(int uniformId, int count, int[] value, int offset);
-    public static native void ProgramSetUniformFv(int uniformId, int count, float[] value, int offset);
-    public static native void ProgramSetUniformBuffer(int uniformId, int count, int type, Buffer buffer, int offset);
+    public static native void ProgramSetUniformI(int uniformId, int attSize, int arrSize, int[] value, int offset);
+    public static native void ProgramSetUniformF(int uniformId, int attSize, int arrSize, float[] value, int offset);
+    public static native void ProgramSetUniformBuffer(int uniformId, int attSize, int arrSize, int typeDT, Buffer buffer, int offset);
 
-    public static native int ProgramGetUniformI(int id, int uniformId);
-    public static native float ProgramGetUniformF(int id, int uniformId);
+    public static native void ProgramGetUniformI(int id, int uniformId, int[] value, int offset);
+    public static native void ProgramGetUniformF(int id, int uniformId, float[] value, int offset);
+    public static native void ProgramGetUniformBuffer(int id, int uniformId, int typeDT, Buffer buffer, int offset);
 
     //---------------------------
     //         Vertex
@@ -296,13 +298,13 @@ public class GL {
     public static native void VertexArrayAttribSetDivisor(int attrId, int divisor);
     public static native int VertexArrayAttribGetDivisor(int attrId);
 
-    public static native void VertexArrayAttribPointer(int attrId, int count, boolean normalized, long stride, int _type, long offset);
-    public static native void VertexArrayAttribPointerB(int attrId, int count, boolean normalized, int stride, byte[] data, int offset);
-    public static native void VertexArrayAttribPointerS(int attrId, int count, boolean normalized, int stride, short[] data, int offset);
-    public static native void VertexArrayAttribPointerI(int attrId, int count, boolean normalized, int stride, int[] data, int offset);
-    public static native void VertexArrayAttribPointerF(int attrId, int count, boolean normalized, int stride, float[] data, int offset);
-    public static native void VertexArrayAttribPointerD(int attrId, int count, boolean normalized, int stride, double[] data, int offset);
-    public static native void VertexArrayAttribPointerBuffer(int attrId, int count, boolean normalized, int stride, int _type, Buffer buffer, int offset);
+    public static native void VertexArrayAttribPointer(int attrId, int attSize, boolean normalized, long stride, int typeDT, long offset);
+    public static native void VertexArrayAttribPointerB(int attrId, int attSize, boolean normalized, int stride, byte[] data, int offset);
+    public static native void VertexArrayAttribPointerS(int attrId, int attSize, boolean normalized, int stride, short[] data, int offset);
+    public static native void VertexArrayAttribPointerI(int attrId, int attSize, boolean normalized, int stride, int[] data, int offset);
+    public static native void VertexArrayAttribPointerF(int attrId, int attSize, boolean normalized, int stride, float[] data, int offset);
+    public static native void VertexArrayAttribPointerD(int attrId, int attSize, boolean normalized, int stride, double[] data, int offset);
+    public static native void VertexArrayAttribPointerBuffer(int attrId, int attSize, boolean normalized, int stride, int typeDT, Buffer buffer, int offset);
 
     //---------------------------
     //           Shader
