@@ -33,10 +33,10 @@ JNIEXPORT jboolean JNICALL Java_flat_backend_WL_HandleEvents
 
 /*
  * Class:     flat_backend_WL
- * Method:    Terminate
+ * Method:    Finish
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_flat_backend_WL_Terminate
+JNIEXPORT void JNICALL Java_flat_backend_WL_Finish
   (JNIEnv *, jclass);
 
 /*

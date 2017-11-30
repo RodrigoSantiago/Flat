@@ -1,5 +1,5 @@
 //
-// Created by Rodrigo on 27/11/2017
+// Created by Rodrigo Santiago on 27/11/2017
 //
 
 #include "flat_backend_WL.h"
@@ -256,7 +256,7 @@ JNIEXPORT jboolean JNICALL Java_flat_backend_WL_HandleEvents(JNIEnv *jEnv, jclas
     glfwPollEvents();
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_Terminate(JNIEnv *jEnv, jclass jClass) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_Finish(JNIEnv *jEnv, jclass jClass) {
     sjEnv = jEnv;
 
     loop = nullptr;
@@ -392,7 +392,7 @@ JNIEXPORT jint JNICALL Java_flat_backend_WL_GetWidth(JNIEnv *jEnv, jclass jClass
     sjEnv = jEnv;
 
     int w, h;
-    glfwGetWindowPos(window, &w, &h);
+    glfwGetWindowSize(window, &w, &h);
     return w;
 }
 
@@ -400,7 +400,7 @@ JNIEXPORT jint JNICALL Java_flat_backend_WL_GetHeight(JNIEnv *jEnv, jclass jClas
     sjEnv = jEnv;
 
     int w, h;
-    glfwGetWindowPos(window, &w, &h);
+    glfwGetWindowSize(window, &w, &h);
     return h;
 }
 

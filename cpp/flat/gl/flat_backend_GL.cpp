@@ -1,9 +1,41 @@
+//
+// Created by Rodrigo Santiago on 27/11/2017
+//
+
 #include "flat_backend_GL.h"
 #include <glad/glad.h>
 #include <iostream>
-//
-// Created by Rodrigo on 27/11/2017
-//
+
+void convertImageType(GLenum _format, GLenum &dafaFormat, GLenum &dataType) {
+    if (_format == GL_RGB) {
+        dafaFormat = GL_RGB;
+        dataType = GL_UNSIGNED_BYTE;
+    } else if (_format == GL_RGBA) {
+        dafaFormat = GL_RGBA;
+        dataType = GL_UNSIGNED_BYTE;
+    } else if (_format == GL_DEPTH_COMPONENT32F) {
+        dafaFormat = GL_DEPTH_COMPONENT;
+        dataType = GL_FLOAT;
+    } else if (_format == GL_DEPTH_COMPONENT24) {
+        dafaFormat = GL_DEPTH_COMPONENT;
+        dataType = GL_UNSIGNED_INT;
+    } else if (_format == GL_DEPTH_COMPONENT16) {
+        dafaFormat = GL_DEPTH_COMPONENT;
+        dataType = GL_UNSIGNED_SHORT;
+    } else if (_format == GL_DEPTH32F_STENCIL8) {
+        dafaFormat = GL_DEPTH_STENCIL;
+        dataType = GL_FLOAT_32_UNSIGNED_INT_24_8_REV;
+    } else if (_format == GL_DEPTH24_STENCIL8) {
+        dafaFormat = GL_DEPTH_STENCIL;
+        dataType = GL_UNSIGNED_INT_24_8;
+    }
+}
+void convertElementsType(jint& type) {
+    if (type == GL_BYTE) type = GL_UNSIGNED_BYTE;
+    else if (type == GL_INT) type = GL_UNSIGNED_INT;
+    else if (type == GL_SHORT) type = GL_UNSIGNED_SHORT;
+}
+
 JNIEXPORT void JNICALL Java_flat_backend_GL_Flush(JNIEnv * jEnv, jclass jClass) {
     glFlush();
 }
@@ -381,11 +413,6 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_DrawArrays(JNIEnv * jEnv, jclass jCl
         glDrawArrays(vertexModeVM, first, count);
     }
 }
-void convertElementsType(jint& type) {
-    if (type == GL_BYTE) type = GL_UNSIGNED_BYTE;
-    else if (type == GL_INT) type = GL_UNSIGNED_INT;
-    else if (type == GL_SHORT) type = GL_UNSIGNED_SHORT;
-}
 JNIEXPORT void JNICALL Java_flat_backend_GL_DrawElements(JNIEnv * jEnv, jclass jClass, jint vertexModeVM, jint count, jint instances, jint typeDT, jlong offset) {
     convertElementsType(typeDT);
     if (instances > 1) {
@@ -565,39 +592,14 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSubCopy(JNIEnv * jEnv, jclass
     glCopyTexSubImage2D(trgTT, level, xoffset, yoffset, x, y, width, height);
 }
 
-void convertType(GLenum _format, GLenum& dafaFormat, GLenum& dataType) {
-    if (_format == GL_RGB) {
-        dafaFormat = GL_RGB;
-        dataType = GL_UNSIGNED_BYTE;
-    } else if (_format == GL_RGBA) {
-        dafaFormat = GL_RGBA;
-        dataType = GL_UNSIGNED_BYTE;
-    } else if (_format == GL_DEPTH_COMPONENT32F) {
-        dafaFormat = GL_DEPTH_COMPONENT;
-        dataType = GL_FLOAT;
-    } else if (_format == GL_DEPTH_COMPONENT24) {
-        dafaFormat = GL_DEPTH_COMPONENT;
-        dataType = GL_UNSIGNED_INT;
-    } else if (_format == GL_DEPTH_COMPONENT16) {
-        dafaFormat = GL_DEPTH_COMPONENT;
-        dataType = GL_UNSIGNED_SHORT;
-    } else if (_format == GL_DEPTH32F_STENCIL8) {
-        dafaFormat = GL_DEPTH_STENCIL;
-        dataType = GL_FLOAT_32_UNSIGNED_INT_24_8_REV;
-    } else if (_format == GL_DEPTH24_STENCIL8) {
-        dafaFormat = GL_DEPTH_STENCIL;
-        dataType = GL_UNSIGNED_INT_24_8;
-    }
-}
-
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureData(JNIEnv * jEnv, jclass jClass, jint trgTT, jint level, jint formatTF, jint width, jint height, jint border, jlong offset) {
     GLenum dafaFormat, dataType;
-    convertType(formatTF, dafaFormat, dataType);
+    convertImageType(formatTF, dafaFormat, dataType);
     glTexImage2D(trgTT, level, formatTF, width, height, border, dafaFormat, dataType, (void *) offset);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureDataB(JNIEnv * jEnv, jclass jClass, jint trgTT, jint level, jint formatTF, jint width, jint height, jint border, jbyteArray data, jint offset) {
     GLenum dafaFormat, dataType;
-    convertType(formatTF, dafaFormat, dataType);
+    convertImageType(formatTF, dafaFormat, dataType);
 
     void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
     glTexImage2D(trgTT, level, formatTF, width, height, border, dafaFormat, dataType, pointer + (offset * sizeof(jbyte)));
@@ -605,7 +607,7 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_TextureDataB(JNIEnv * jEnv, jclass j
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureDataS(JNIEnv * jEnv, jclass jClass, jint trgTT, jint level, jint formatTF, jint width, jint height, jint border, jshortArray data, jint offset) {
     GLenum dafaFormat, dataType;
-    convertType(formatTF, dafaFormat, dataType);
+    convertImageType(formatTF, dafaFormat, dataType);
 
     void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
     glTexImage2D(trgTT, level, formatTF, width, height, border, dafaFormat, dataType, pointer + (offset * sizeof(jshort)));
@@ -613,7 +615,7 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_TextureDataS(JNIEnv * jEnv, jclass j
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureDataI(JNIEnv * jEnv, jclass jClass, jint trgTT, jint level, jint formatTF, jint width, jint height, jint border, jintArray data, jint offset) {
     GLenum dafaFormat, dataType;
-    convertType(formatTF, dafaFormat, dataType);
+    convertImageType(formatTF, dafaFormat, dataType);
 
     void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
     glTexImage2D(trgTT, level, formatTF, width, height, border, dafaFormat, dataType, pointer + (offset * sizeof(jint)));
@@ -621,7 +623,7 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_TextureDataI(JNIEnv * jEnv, jclass j
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureDataBuffer(JNIEnv * jEnv, jclass jClass, jint trgTT, jint level, jint formatTF, jint width, jint height, jint border, jobject buffer, jint offset) {
     GLenum dafaFormat, dataType;
-    convertType(formatTF, dafaFormat, dataType);
+    convertImageType(formatTF, dafaFormat, dataType);
 
     if (buffer == nullptr) {
         glTexImage2D(trgTT, level, formatTF, width, height, border, dafaFormat, dataType, nullptr);
@@ -633,13 +635,13 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_TextureDataBuffer(JNIEnv * jEnv, jcl
 
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSubData(JNIEnv * jEnv, jclass jClass, jint trgTT, jint level, jint x, jint y, jint width, jint height, jint dataFormatTF, jlong offset) {
     GLenum dafaFormat, dataType;
-    convertType(dataFormatTF, dafaFormat, dataType);
+    convertImageType(dataFormatTF, dafaFormat, dataType);
 
     glTexSubImage2D(trgTT, level, x, y, width, height, dafaFormat, dataType, (void *) offset);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSubDataB(JNIEnv * jEnv, jclass jClass, jint trgTT, jint level, jint x, jint y, jint width, jint height, jint dataFormatTF, jbyteArray data, jint offset) {
     GLenum dafaFormat, dataType;
-    convertType(dataFormatTF, dafaFormat, dataType);
+    convertImageType(dataFormatTF, dafaFormat, dataType);
 
     void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
     glTexImage2D(trgTT, level, x, y, width, height, dafaFormat, dataType, pointer + (offset * sizeof(jbyte)));
@@ -647,7 +649,7 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSubDataB(JNIEnv * jEnv, jclas
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSubDataS(JNIEnv * jEnv, jclass jClass, jint trgTT, jint level, jint x, jint y, jint width, jint height, jint dataFormatTF, jshortArray data, jint offset) {
     GLenum dafaFormat, dataType;
-    convertType(dataFormatTF, dafaFormat, dataType);
+    convertImageType(dataFormatTF, dafaFormat, dataType);
 
     void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
     glTexImage2D(trgTT, level, x, y, width, height, dafaFormat, dataType, pointer + (offset * sizeof(jshort)));
@@ -655,7 +657,7 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSubDataS(JNIEnv * jEnv, jclas
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSubDataI(JNIEnv * jEnv, jclass jClass, jint trgTT, jint level, jint x, jint y, jint width, jint height, jint dataFormatTF, jintArray data, jint offset) {
     GLenum dafaFormat, dataType;
-    convertType(dataFormatTF, dafaFormat, dataType);
+    convertImageType(dataFormatTF, dafaFormat, dataType);
 
     void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
     glTexImage2D(trgTT, level, x, y, width, height, dafaFormat, dataType, pointer + (offset * sizeof(jint)));
@@ -663,7 +665,7 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSubDataI(JNIEnv * jEnv, jclas
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSubDataBuffer(JNIEnv * jEnv, jclass jClass, jint trgTT, jint level, jint x, jint y, jint width, jint height, jint dataFormatTF, jobject buffer, jint offset) {
     GLenum dafaFormat, dataType;
-    convertType(dataFormatTF, dafaFormat, dataType);
+    convertImageType(dataFormatTF, dafaFormat, dataType);
 
     void * pointer = jEnv->GetDirectBufferAddress(buffer);
     glTexImage2D(trgTT, level, x, y, width, height, dafaFormat, dataType, pointer + offset);
