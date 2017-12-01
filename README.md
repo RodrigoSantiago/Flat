@@ -4,7 +4,7 @@
 ![Opengl ES : 3.1](https://img.shields.io/badge/opengl%20ES-3.1-red.svg)
 
 ## Overview
-NetronFlat *is going to be* a library for material design UI development. It also provides simple and indispensable set of tools for working with xml, themes and iamges 
+NetronFlat *is going to be* a library for material design UI development. It also provides simple and indispensable set of tools for working with xml, themes and images 
 
 ## Todo - List
  - [x] Window support (glfw)
