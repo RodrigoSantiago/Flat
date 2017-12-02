@@ -9,11 +9,21 @@ public class WL {
         System.out.println("Window Layer Library loaded");
     }
 
+    //---------------------------
+    //         Context
+    //---------------------------
     public static native boolean Init(int x, int y, int width, int height, int samples, boolean resizable, boolean decorated);
-    public static native boolean SwapBuffers();
-    public static native boolean HandleEvents();
     public static native void Finish();
 
+    //---------------------------
+    //         Events
+    //---------------------------
+    public static native boolean SwapBuffers();
+    public static native boolean HandleEvents();
+
+    //---------------------------
+    //       Properties
+    //---------------------------
     public static native void SetVsync(int vsync);
     public static native void SetMultsample(int samples);
     public static native void SetFullscreen(boolean fullscreen);
@@ -29,6 +39,8 @@ public class WL {
     public static native void SetSize(int width, int height);
     public static native int GetWidth();
     public static native int GetHeight();
+    public static native int GetClientWidth();
+    public static native int GetClientHeight();
 
     public static native void SetSizeLimits(int minWidth, int minHeight, int maxWidth, int maxHeight);
     public static native int GetMinWidth();
@@ -49,6 +61,9 @@ public class WL {
     public static native boolean IsMaximized();
     public static native boolean IsMinimized();
 
+    //---------------------------
+    //          Input
+    //---------------------------
     public static native int GetInputMode(int mode);
     public static native void SetInputMode(int mode, int value);
 
@@ -72,6 +87,9 @@ public class WL {
     public static native void GetJoystickButtons(int joy, int[] buttons);
     public static native String GetJoystickName(int joy);
 
+    //---------------------------
+    //       Callbacks
+    //---------------------------
     public static native void SetWindowPosCallback(WindowPosCallback callback);
     public static native void SetWindowSizeCallback(WindowSizeCallback callback);
     public static native void SetWindowCloseCallback(WindowCloseCallback callback);
@@ -95,7 +113,7 @@ public class WL {
         void handle(int x, int y);
     }
     public interface WindowSizeCallback {
-        void handle(int x, int y);
+        void handle(int width, int height);
     }
     public interface WindowCloseCallback {
         boolean handle();

@@ -1,6 +1,5 @@
 package flat.screen;
 
-import flat.objects.ContextFrame;
 import flat.screen.enums.Face;
 import flat.screen.enums.MathFunction;
 import flat.screen.enums.MathOperation;
@@ -9,17 +8,13 @@ import flat.svg.*;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class Context {
 
     private final Thread graphicThread;
-    private final AtomicBoolean current = new AtomicBoolean();
 
     private ArrayList<WeakReference<ContextObject>> contextObjects = new ArrayList<>();
     private ArrayList<ContextObject> disposeList = new ArrayList<>();
-
-    private ContextFrame contextFrame;
 
     protected Context(Thread graphicThread) {
         this.graphicThread = graphicThread;
@@ -37,26 +32,12 @@ public final class Context {
 
     }
 
-    protected void setCurrent(boolean current) {
-        this.current.set(current);
-    }
-
     public boolean isCurrent() {
-        return Thread.currentThread() == graphicThread && current.get();
+        return Thread.currentThread() == graphicThread;
     }
 
     public void assertIfIsCurrent() {
         if (!isCurrent()) throw new RuntimeException("Invalid context backend");
-    }
-
-    public void setContextFrame(ContextFrame contextFrame) {
-        assertIfIsCurrent();
-        this.contextFrame = contextFrame;
-    }
-
-    public ContextFrame getContextFrame() {
-        assertIfIsCurrent();
-        return contextFrame;
     }
 
     public void setViewport(int x, int y, int width, int height) {

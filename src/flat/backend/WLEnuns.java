@@ -2,6 +2,14 @@ package flat.backend;
 
 public class WLEnuns {
 
+    public static final int CURSOR = 0x00033001;
+    public static final int STICKY_KEYS = 0x00033002;
+    public static final int STICKY_MOUSE_BUTTONS = 0x00033003;
+
+    public static final int CURSOR_NORMAL = 0x00034001;
+    public static final int CURSOR_HIDDEN = 0x00034002;
+    public static final int CURSOR_DISABLED = 0x00034003;
+
     public static final int RELEASE = 0;
     public static final int PRESS = 1;
     public static final int REPEAT = 2;
