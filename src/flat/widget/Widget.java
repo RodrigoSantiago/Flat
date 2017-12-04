@@ -1,31 +1,46 @@
 package flat.widget;
 
 import flat.events.*;
-import flat.screen.Context;
-import flat.screen.Window;
+import flat.graphics.RoundRect;
+import flat.graphics.Context;
+import flat.math.Affine;
+import flat.math.Vector2;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
 public class Widget {
-    public static final double WRAP_CONTENT = Double.NEGATIVE_INFINITY;
-    public static final double MATH_PARENT = Double.POSITIVE_INFINITY;
+    public static final float WRAP_CONTENT = Float.NEGATIVE_INFINITY;
+    public static final float MATH_PARENT = Float.POSITIVE_INFINITY;
+
+    public static final int GONE = 0;
+    public static final int VISIBLE = 1;
+    public static final int HIDDEN = 2;
 
     Widget parent;
 
     private String id;
-    private boolean focus, focusable;
+    private boolean focus;
     private String nextFocusId, prevFocusId;
-    private double x, y, width, height;
-    private double marginTop, marginRight, marginBottom, marginLeft;
-    private double paddingTop, paddingRight, paddingBottom, paddingLeft;
-    private double minWidth, minHeight, maxWidth, maxHeight, prefWidth, prefHeight;
-    private double offsetX, offsetY, translateX, translateY, elevation, scaleX, scaleY, rotate;
-    private double opacity;
+    private float width, height;
+    private float marginTop, marginRight, marginBottom, marginLeft;
+    private float paddingTop, paddingRight, paddingBottom, paddingLeft;
+    private float minWidth, minHeight, maxWidth, maxHeight, prefWidth, prefHeight;
     private int visibility;
 
-    private double mWidth, mHeight;
+    private final Affine transform = new Affine(), tmpTransform = new Affine(), inverseTransform = new Affine();
+    private boolean invTransform;
+
+    private float centerX, centerY, translateX, translateY, elevation, scaleX = 1, scaleY = 1, rotate;
+
+    private final RoundRect background = new RoundRect();
+    private float backgroundRadius;
+    private int backgroundColor;
+
+    private float opacity;
+
+    private float mWidth, mHeight;
     private boolean clickable;
 
     private PointerListener pointerListener;
@@ -36,7 +51,7 @@ public class Widget {
     ArrayList<Widget> children;
     ArrayList<Widget> childrenDraw;
 
-    Comparator<Widget> comparator = (o1, o2) -> Double.compare(o1.elevation, o2.elevation);
+    private static Comparator<Widget> comparator = (o1, o2) -> Float.compare(o1.elevation, o2.elevation);
     boolean childSorted;
 
     public void onDraw(Context context) {
@@ -53,21 +68,21 @@ public class Widget {
         }
     }
 
-    public void onLayout(double width, double height) {
-        double mMinWidth, mMinHeight, mMaxWidth, mMaxHeight, mPrefWidth, mPrefHeight;
+    public void onLayout(float width, float height) {
+        float mMinWidth, mMinHeight, mMaxWidth, mMaxHeight, mPrefWidth, mPrefHeight;
 
         // MAX
         if (maxWidth == MATH_PARENT) {
             mMaxWidth = width;
         } else if (maxWidth == WRAP_CONTENT) {
-            mMaxWidth = Double.MAX_VALUE;
+            mMaxWidth = Float.MAX_VALUE;
         } else {
             mMaxWidth = maxWidth;
         }
         if (maxHeight == MATH_PARENT) {
             mMaxHeight = height;
         } else if (maxHeight == WRAP_CONTENT) {
-            mMaxHeight = Double.MAX_VALUE;
+            mMaxHeight = Float.MAX_VALUE;
         } else {
             mMaxHeight = maxHeight;
         }
@@ -116,11 +131,11 @@ public class Widget {
         if (prefWidth == WRAP_CONTENT) mPrefWidth = mWidth;
         if (prefHeight == WRAP_CONTENT) mPrefHeight = mHeight;
 
-        this.width = Math.max(mMinWidth, Math.min(mMaxWidth, mPrefWidth));
-        this.height = Math.max(mMinHeight, Math.min(mMaxHeight, mPrefHeight));
+        setWidth(Math.max(mMinWidth, Math.min(mMaxWidth, mPrefWidth)));
+        setHeight(Math.max(mMinHeight, Math.min(mMaxHeight, mPrefHeight)));
     }
 
-    public void onMeasure(double width, double height) {
+    public void onMeasure(float width, float height) {
         if (children != null) {
             for (Widget child : children) {
                 child.onLayout(width, height);
@@ -129,7 +144,7 @@ public class Widget {
         setMeasure(width, height);
     }
 
-    public void setMeasure(double width, double height) {
+    public void setMeasure(float width, float height) {
         mWidth = width;
         mHeight = height;
     }
@@ -137,6 +152,15 @@ public class Widget {
     public void invalidate(boolean layout) {
         if (parent != null)
             parent.invalidate(layout);
+    }
+
+    public void invalidateTransform() {
+        if (children != null) {
+            for (Widget child : children) {
+                child.invalidateTransform();
+            }
+            invTransform = true;
+        }
     }
 
     public void invalidadeOrder() {
@@ -160,8 +184,15 @@ public class Widget {
         return null;
     }
 
-    public Widget findByPosition(double x, double y) {
-        return this;
+    public Widget findByPosition(float x, float y) {
+        if (children != null) {
+            for (int i = children.size() - 1; i >= 0; i--) {
+                Widget child = children.get(i);
+                Widget found = child.findByPosition(x, y);
+                if (found != null) return found;
+            }
+        }
+        return visibility != GONE && clickable && contains(x, y) ? this : null;
     }
 
     public Widget findFocused() {
@@ -194,14 +225,6 @@ public class Widget {
         this.focus = focus;
     }
 
-    public boolean isFocusable() {
-        return focusable;
-    }
-
-    public void setFocusable(boolean focusable) {
-        this.focusable = focusable;
-    }
-
     public String getNextFocusId() {
         return nextFocusId;
     }
@@ -218,89 +241,96 @@ public class Widget {
         this.prevFocusId = prevFocusId;
     }
 
-    public double getX() {
-        return x;
+    public void localToScreen(Vector2 point) {
+        transform();
+        float x = transform.getPointX(point.x, point.y);
+        float y = transform.getPointY(point.x, point.y);
+        point.x = x;
+        point.y = y;
     }
 
-    public void setX(double x) {
-        if (this.x != x) {
-            this.x = x;
-            invalidate(true);
-        }
+    public void screenToLocal(Vector2 point) {
+        transform();
+        float x = inverseTransform.getPointX(point.x, point.y);
+        float y = inverseTransform.getPointY(point.x, point.y);
+        point.x = x;
+        point.y = y;
     }
 
-    public double getY() {
-        return y;
+    public boolean contains(Vector2 point) {
+        return contains(point.x, point.y);
     }
 
-    public void setY(double y) {
-        if (this.y != y) {
-            this.y = y;
-            invalidate(true);
-        }
+    public boolean contains(float x, float y) {
+        transform();
+        float px = -(centerX * width) + inverseTransform.getPointX(x, y);
+        float py = -(centerY * height) + inverseTransform.getPointY(x, y);
+        return background.contains(px, py);
     }
 
-    public double getScreenX() {
-        return parent == null ? x : parent.getScreenX() + x;
-    }
-
-    public double getScreenY() {
-        return parent == null ? y : parent.getScreenY() + y;
-    }
-
-    public double getWidth() {
+    public float getWidth() {
         return width;
     }
 
-    public double getHeight() {
+    void setWidth(float width) {
+        this.width = width;
+        background.setWidth(width);
+    }
+
+    public float getHeight() {
         return height;
     }
 
-    public double getMarginTop() {
+    void setHeight(float height) {
+        this.height = height;
+        background.setHeight(height);
+    }
+
+    public float getMarginTop() {
         return marginTop;
     }
 
-    public void setMarginTop(double marginTop) {
+    public void setMarginTop(float marginTop) {
         if (this.marginTop != marginTop) {
             this.marginTop = marginTop;
             invalidate(true);
         }
     }
 
-    public double getMarginRight() {
+    public float getMarginRight() {
         return marginRight;
     }
 
-    public void setMarginRight(double marginRight) {
+    public void setMarginRight(float marginRight) {
         if (this.marginRight != marginRight) {
             this.marginRight = marginRight;
             invalidate(true);
         }
     }
 
-    public double getMarginBottom() {
+    public float getMarginBottom() {
         return marginBottom;
     }
 
-    public void setMarginBottom(double marginBottom) {
+    public void setMarginBottom(float marginBottom) {
         if (this.marginBottom != marginBottom) {
             this.marginBottom = marginBottom;
             invalidate(true);
         }
     }
 
-    public double getMarginLeft() {
+    public float getMarginLeft() {
         return marginLeft;
     }
 
-    public void setMarginLeft(double marginLeft) {
+    public void setMarginLeft(float marginLeft) {
         if (this.marginLeft != marginLeft) {
             this.marginLeft = marginLeft;
             invalidate(true);
         }
     }
 
-    public void setMargins(double top, double right, double bottom , double left) {
+    public void setMargins(float top, float right, float bottom , float left) {
         if (marginTop != top || marginRight != right || marginBottom != bottom || marginLeft != left) {
             marginTop = top;
             marginRight = right;
@@ -310,51 +340,51 @@ public class Widget {
         }
     }
 
-    public double getPaddingTop() {
+    public float getPaddingTop() {
         return paddingTop;
     }
 
-    public void setPaddingTop(double paddingTop) {
+    public void setPaddingTop(float paddingTop) {
         if (this.paddingTop != paddingTop) {
             this.paddingTop = paddingTop;
             invalidate(true);
         }
     }
 
-    public double getPaddingRight() {
+    public float getPaddingRight() {
         return paddingRight;
     }
 
-    public void setPaddingRight(double paddingRight) {
+    public void setPaddingRight(float paddingRight) {
         if (this.paddingRight != paddingRight) {
             this.paddingRight = paddingRight;
             invalidate(true);
         }
     }
 
-    public double getPaddingBottom() {
+    public float getPaddingBottom() {
         return paddingBottom;
     }
 
-    public void setPaddingBottom(double paddingBottom) {
+    public void setPaddingBottom(float paddingBottom) {
         if (this.paddingBottom != paddingBottom) {
             this.paddingBottom = paddingBottom;
             invalidate(true);
         }
     }
 
-    public double getPaddingLeft() {
+    public float getPaddingLeft() {
         return paddingLeft;
     }
 
-    public void setPaddingLeft(double paddingLeft) {
+    public void setPaddingLeft(float paddingLeft) {
         if (this.paddingLeft != paddingLeft) {
             this.paddingLeft = paddingLeft;
             invalidate(true);
         }
     }
 
-    public void setPadding(double top, double right, double bottom , double left) {
+    public void setPadding(float top, float right, float bottom , float left) {
         if (paddingTop != top || paddingRight != right || paddingBottom != bottom || paddingLeft != left) {
             paddingTop = top;
             paddingRight = right;
@@ -364,158 +394,163 @@ public class Widget {
         }
     }
 
-    public double getMinWidth() {
+    public float getMinWidth() {
         return minWidth;
     }
 
-    public void setMinWidth(double minWidth) {
+    public void setMinWidth(float minWidth) {
         if (this.minWidth != minWidth) {
             this.minWidth = minWidth;
             invalidate(true);
         }
     }
 
-    public double getMinHeight() {
+    public float getMinHeight() {
         return minHeight;
     }
 
-    public void setMinHeight(double minHeight) {
+    public void setMinHeight(float minHeight) {
         if (this.minHeight != minHeight) {
             this.minHeight = minHeight;
             invalidate(true);
         }
     }
 
-    public double getMaxWidth() {
+    public float getMaxWidth() {
         return maxWidth;
     }
 
-    public void setMaxWidth(double maxWidth) {
+    public void setMaxWidth(float maxWidth) {
         if (this.maxWidth != maxWidth) {
             this.maxWidth = maxWidth;
             invalidate(true);
         }
     }
 
-    public double getMaxHeight() {
+    public float getMaxHeight() {
         return maxHeight;
     }
 
-    public void setMaxHeight(double maxHeight) {
+    public void setMaxHeight(float maxHeight) {
         if (this.maxHeight != maxHeight) {
             this.maxHeight = maxHeight;
             invalidate(true);
         }
     }
 
-    public double getPrefWidth() {
+    public float getPrefWidth() {
         return prefWidth;
     }
 
-    public void setPrefWidth(double prefWidth) {
+    public void setPrefWidth(float prefWidth) {
         if (this.prefWidth != prefWidth) {
             this.prefWidth = prefWidth;
             invalidate(true);
         }
     }
 
-    public double getPrefHeight() {
+    public float getPrefHeight() {
         return prefHeight;
     }
 
-    public void setPrefHeight(double prefHeight) {
+    public void setPrefHeight(float prefHeight) {
         if (this.prefHeight != prefHeight) {
             this.prefHeight = prefHeight;
             invalidate(true);
         }
     }
 
-    public double getOffsetX() {
-        return offsetX;
+    public float getCenterX() {
+        return centerX;
     }
 
-    public void setOffsetX(double offsetX) {
-        if (this.translateX != translateX) {
-            this.offsetX = offsetX;
-            invalidate(true);
+    public void setCenterX(float centerX) {
+        if (this.centerX != centerX) {
+            this.centerX = centerX;
+            invalidate(false);
         }
     }
 
-    public double getOffsetY() {
-        return offsetY;
+    public float getCenterY() {
+        return centerY;
     }
 
-    public void setOffsetY(double offsetY) {
-        if (this.translateX != translateX) {
-            this.offsetY = offsetY;
-            invalidate(true);
+    public void setCenterY(float centerY) {
+        if (this.centerY != centerY) {
+            this.centerY = centerY;
+            invalidate(false);
         }
     }
 
-    public double getTranslateX() {
+    public float getTranslateX() {
         return translateX;
     }
 
-    public void setTranslateX(double translateX) {
+    public void setTranslateX(float translateX) {
         if (this.translateX != translateX) {
             this.translateX = translateX;
-            invalidate(true);
+            invalidate(false);
+            invalidateTransform();
         }
     }
 
-    public double getTranslateY() {
+    public float getTranslateY() {
         return translateY;
     }
 
-    public void setTranslateY(double translateY) {
+    public void setTranslateY(float translateY) {
         if (this.translateY != translateY) {
             this.translateY = translateY;
-            invalidate(true);
+            invalidate(false);
+            invalidateTransform();
         }
     }
 
-    public double getElevation() {
+    public float getScaleX() {
+        return scaleX;
+    }
+
+    public void setScaleX(float scaleX) {
+        if (this.scaleX != scaleX) {
+            this.scaleX = scaleX;
+            invalidate(false);
+            invalidateTransform();
+        }
+    }
+
+    public float getScaleY() {
+        return scaleY;
+    }
+
+    public void setScaleY(float scaleY) {
+        if (this.scaleY != scaleY) {
+            this.scaleY = scaleY;
+            invalidate(false);
+            invalidateTransform();
+        }
+    }
+
+    public float getRotate() {
+        return rotate;
+    }
+
+    public void setRotate(float rotate) {
+        if (this.rotate != rotate) {
+            this.rotate = rotate;
+            invalidate(false);
+            invalidateTransform();
+        }
+    }
+
+    public float getElevation() {
         return elevation;
     }
 
-    public void setElevation(double elevation) {
+    public void setElevation(float elevation) {
         if (this.elevation != elevation) {
             this.elevation = elevation;
             invalidate(true);
             invalidadeOrder();
-        }
-    }
-
-    public double getScaleX() {
-        return scaleX;
-    }
-
-    public void setScaleX(double scaleX) {
-        if (this.scaleX != scaleX) {
-            this.scaleX = scaleX;
-            invalidate(true);
-        }
-    }
-
-    public double getScaleY() {
-        return scaleY;
-    }
-
-    public void setScaleY(double scaleY) {
-        if (this.scaleY != scaleY) {
-            this.scaleY = scaleY;
-            invalidate(true);
-        }
-    }
-
-    public double getRotate() {
-        return rotate;
-    }
-
-    public void setRotate(double rotate) {
-        if (this.rotate != rotate) {
-            this.rotate = rotate;
-            invalidate(true);
         }
     }
 
@@ -530,13 +565,57 @@ public class Widget {
         }
     }
 
-    public double getOpacity() {
+    public float getOpacity() {
         return opacity;
     }
 
-    public void setOpacity(double opacity) {
+    public void setOpacity(float opacity) {
         if (this.opacity != opacity) {
             this.opacity = opacity;
+            invalidate(false);
+        }
+    }
+
+    private void transform() {
+        if (invTransform) {
+            invTransform = false;
+            transform.setAll(translateX, translateY, scaleX, scaleY, rotate);
+            if (parent != null) {
+                transform.preMultiply(parent.getTransformView());
+            }
+            inverseTransform.set(transform).invert();
+        }
+    }
+
+    public Affine getTransformView() {
+        transform();
+        return tmpTransform.set(transform);
+    }
+
+    public Affine getInverseTransformView() {
+        transform();
+        return tmpTransform.set(inverseTransform);
+    }
+
+    public float getBackgroundRadius() {
+        return backgroundRadius;
+    }
+
+    public void setBackgroundRadius(float radius) {
+        if (backgroundRadius != radius) {
+            this.backgroundRadius = radius;
+            background.setRadius(radius);
+            invalidate(false);
+        }
+    }
+
+    public int getBackgroundColor() {
+        return backgroundColor;
+    }
+
+    public void setBackgroundColor(int rgba) {
+        if (this.backgroundColor != rgba) {
+            this.backgroundColor = rgba;
             invalidate(false);
         }
     }

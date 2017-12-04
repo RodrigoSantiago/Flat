@@ -3,14 +3,6 @@ package flat.backend;
 import java.nio.Buffer;
 
 public class GL {
-    static {
-        System.loadLibrary("flat");
-    }
-
-    public static void load() {
-        System.out.println("Graphic Layer Library loaded");
-    }
-
     //---------------------------
     //         Rendering
     //---------------------------
@@ -156,7 +148,7 @@ public class GL {
     public static native int TextureCreate();
     public static native void TextureDestroy(int id);
     public static native void TextureBind(int trgTB, int id);
-    public static native void TextureGenerateMipmap(int id);
+    public static native void TextureGenerateMipmap(int trgTB);
 
     public static native void TextureMultisample(int samples, int formatTF, int width, int height, boolean fixedLocations);
 
@@ -186,7 +178,7 @@ public class GL {
     public static native float TextureGetLODBias(int trgTB);
     public static native float TextureGetLODMax(int trgTB);
     public static native float TextureGetLODMin(int trgTB);
-    public static native void TextureSetFilter(int trgTB, int magFilterTF, int minFilterTF);
+    public static native void TextureSetFilter(int trgTB, int magFilterIF, int minFilterIF);
     public static native int TextureGetFilterMag(int trgTB);
     public static native int TextureGetFilterMin(int trgTB);
     public static native void TextureSetSwizzle(int trgTB, int rChanelCC, int gChanelCC, int bChanelCC, int aChanelCC);

@@ -1,16 +1,9 @@
 package flat.backend;
 
 public class WL {
-    static {
-        System.loadLibrary("flat");
-    }
-
-    public static void load() {
-        System.out.println("Window Layer Library loaded");
-    }
 
     //---------------------------
-    //         Context
+    //         Context2D
     //---------------------------
     public static native boolean Init(int x, int y, int width, int height, int samples, boolean resizable, boolean decorated);
     public static native void Finish();

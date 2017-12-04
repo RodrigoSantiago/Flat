@@ -1,16 +1,9 @@
 package flat.backend;
 
 public class SVG {
-    static {
-        System.loadLibrary("flat");
-    }
-
-    public static void load() {
-        System.out.println("SVG Library loaded");
-    }
 
     //---------------------------
-    //         Context
+    //         Context2D
     //---------------------------
     public static native boolean Init(int flags);
     public static native void Finish();
@@ -79,7 +72,7 @@ public class SVG {
     public static native void PathWinding(int dir);
     public static native void Arc(float cx, float cy, float radius, float a0, float a1, int dir);
     public static native void Rect(float x, float y, float width, float height);
-    public static native void RoundedRect(float x, float y, float width, float height, float radTopLeft, float radTopRight, float radBottomRight, float radBottomLeft);
+    public static native void RoundedRect(float x, float y, float width, float height, float radius);
     public static native void Ellipse(float cx, float cy, float rx, float ry);
     public static native void Circle(float cx, float cy, float radius);
     public static native void Fill();

@@ -1,4 +1,4 @@
-package flat.svg;
+package flat.graphics.svg;
 
 public class Node {
     boolean negative;

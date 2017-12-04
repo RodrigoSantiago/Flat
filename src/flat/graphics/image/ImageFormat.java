@@ -1,4 +1,4 @@
-package flat.image;
+package flat.graphics.image;
 
 public enum ImageFormat {
     RGBA;

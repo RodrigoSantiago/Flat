@@ -5,7 +5,8 @@ import flat.backend.*;
 import flat.events.DragEvent;
 import flat.events.KeyEvent;
 import flat.events.PointerEvent;
-import flat.image.Image;
+import flat.graphics.Context;
+import flat.graphics.image.Image;
 import flat.widget.Widget;
 
 import java.util.ArrayList;
@@ -14,6 +15,7 @@ import java.util.List;
 public final class Window {
 
     private final Application app;
+    private final Thread thread;
     private Activity activity;
 
     private static ArrayList<Runnable> runSync = new ArrayList<>();
@@ -25,7 +27,7 @@ public final class Window {
     private ArrayList<EventData> events = new ArrayList<>();
     private ArrayList<EventData> eventsCp = new ArrayList<>();
 
-    private Context glContext;
+    private Context context;
     private long loopTime;
 
     protected Window(Application app) {
@@ -37,28 +39,37 @@ public final class Window {
             throw new RuntimeException("Cannot create a graphic context window");
         }
 
-        mouseX = WL.GetCursorX();
-        mouseY = WL.GetCursorY();
-        WL.SetVsync(app.vsync);
+        this.thread = Thread.currentThread();
+        this.context = Context.getContext();
+
+        mouseX = (float) WL.GetCursorX();
+        mouseY = (float) WL.GetCursorY();
         WL.SetInputMode(WLEnuns.STICKY_KEYS, 1);
         WL.SetInputMode(WLEnuns.STICKY_MOUSE_BUTTONS, 1);
         WL.SetMouseButtonCallback((button, action, mods) -> events.add(MouseBtnData.get(button, action, mods)));
-        WL.SetCursorPosCallback((x, y) -> events.add(MouseMoveData.get(x, y)));
+        WL.SetCursorPosCallback((x, y) -> events.add(MouseMoveData.get(outMouseX = (float) x, outMouseY = (float) y)));
         WL.SetScrollCallback((x, y) -> events.add(MouseScrollData.get(x, y)));
         WL.SetDropCallback(names -> events.add(MouseDropData.get(names)));
         WL.SetKeyCallback((key, scancode, action, mods) -> events.add(KeyData.get(key, scancode, action, mods)));
         WL.SetCharModsCallback((codepoint, mods) -> events.add(CharModsData.get(codepoint, mods)));
-
         WL.SetWindowSizeCallback((width, height) -> {
+            context.resize(width, height);
             if (activity != null) activity.invalidate(true);
         });
-        this.glContext = new Context(Thread.currentThread());
+    }
+
+    public Context getContext() {
+        return context;
+    }
+
+    public Thread getThread() {
+        return thread;
     }
 
     protected void launch() {
         app.start(this);
         while (!WL.IsClosed()) {
-            loopTime = System.nanoTime();
+            loopTime = System.currentTimeMillis();
 
             // Events
             processEvents();
@@ -75,6 +86,8 @@ public final class Window {
             // Sync Calls
             processSyncCalls();
         }
+        SVG.Finish();
+        WL.Finish();
     }
 
     protected void processEvents() {
@@ -83,8 +96,11 @@ public final class Window {
         eventsCp = events;
         events = swap;
 
-        for (EventData eData : eventsCp) {
+        if  (outMouseX != WL.GetCursorX() || outMouseY != WL.GetCursorY()) {
+            eventsCp.add(MouseMoveData.get(outMouseX = (float) WL.GetCursorX(), outMouseY = (float) WL.GetCursorY()));
+        }
 
+        for (EventData eData : eventsCp) {
             // Mouse Button
             if (eData.type == 1) {
                 MouseBtnData event = (MouseBtnData) eData;
@@ -233,14 +249,15 @@ public final class Window {
 
     protected void processDraws() {
         if (activity.draw()) {
-            activity.onDraw(glContext);
+            activity.onDraw(context);
 
+            context.setModeClear();
             WL.SwapBuffers();
         } else {
-            long time = System.nanoTime() - loopTime;
-            if (time < 16666666) {
+            long time = System.currentTimeMillis() - loopTime;
+            if (time < 15) {
                 try {
-                    Thread.sleep(time / 1000000 , (int) (time % 1000000));
+                    Thread.sleep(15 - time);
                 } catch (InterruptedException ignored) {
                 }
             }
@@ -455,7 +472,7 @@ public final class Window {
             MouseMoveData data;
             if (list.size() > 0) data = list.remove(list.size() - 1);
             else data = new MouseMoveData();
-            data.set(x, y);
+            data.set((float) x, (float) y);
             return data;
         }
 
@@ -463,9 +480,9 @@ public final class Window {
             list.add(data);
         }
 
-        public double x, y;
+        public float x, y;
 
-        public void set(double x, double y) {
+        public void set(float x, float y) {
             this.type = 2;
             this.x = x;
             this.y = y;
@@ -479,7 +496,7 @@ public final class Window {
             MouseScrollData data;
             if (list.size() > 0) data = list.remove(list.size() - 1);
             else data = new MouseScrollData();
-            data.set(x, y);
+            data.set((float) x, (float) y);
             return data;
         }
 
@@ -487,9 +504,9 @@ public final class Window {
             list.add(data);
         }
 
-        public double x, y;
+        public float x, y;
 
-        public void set(double x, double y) {
+        public void set(float x, float y) {
             this.type = 3;
             this.x = x;
             this.y = y;
@@ -590,7 +607,7 @@ public final class Window {
     }
 
     private PointerData mouse;
-    private double mouseX, mouseY;
+    private float mouseX, mouseY, outMouseX, outMouseY;
     private ArrayList<PointerData> pointersData = new ArrayList<>();
 
     private PointerData getPointer(int mb, int pid, List<PointerData> points) {

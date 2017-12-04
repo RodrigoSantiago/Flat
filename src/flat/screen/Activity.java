@@ -1,13 +1,14 @@
 package flat.screen;
 
+import flat.graphics.Context;
 import flat.widget.*;
 
 public class Activity {
-    Scene scene;
+    private Scene scene;
     private boolean invalided, layoutInvalidaded;
 
     public Activity() {
-        scene = new Scene();
+        scene = new Scene(this);
     }
 
     public void onSave() {
@@ -18,12 +19,16 @@ public class Activity {
 
     }
 
-    public void onLayout(double width, double height) {
+    public void onLayout(float width, float height) {
         scene.onLayout(width, height);
     }
 
-    public void onDraw(Context glContext) {
-        scene.onDraw(glContext);
+    public void onDraw(Context context) {
+        scene.onDraw(context);
+    }
+
+    public Scene getScene() {
+        return scene;
     }
 
     final boolean draw() {
@@ -44,7 +49,7 @@ public class Activity {
         }
     }
 
-    public void invalidate(boolean layout) {
+    public final void invalidate(boolean layout) {
         invalided = true;
         if (layout) {
             layoutInvalidaded = true;
@@ -55,7 +60,7 @@ public class Activity {
         return scene.findById(id);
     }
 
-    public Widget findByPosition(double x, double y) {
+    public Widget findByPosition(float x, float y) {
         Widget child = scene.findByPosition(x , y);
         return child == null ? scene : child;
     }

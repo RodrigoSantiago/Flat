@@ -1,19 +1,13 @@
 package flat.screen;
 
-import flat.backend.GL;
-import flat.backend.SVG;
-import flat.backend.WL;
-
 public abstract class Application {
 
     static {
-        WL.load();
-        GL.load();
-        SVG.load();
+        System.loadLibrary("flat");
     }
 
     Window window;
-    int vsync = 1, samples = 0;
+    int samples = 0;
     boolean decorated = true, resizable = true, fullscreen = false;
 
     private static Application application;
@@ -21,8 +15,7 @@ public abstract class Application {
     public abstract void start(Window window);
 
     @Deprecated
-    public void setParams(int vsync, int samples, boolean decorated, boolean resizable, boolean fullscreen) {
-        this.vsync = vsync;
+    public void setParams(int samples, boolean decorated, boolean resizable, boolean fullscreen) {
         this.samples = samples;
         this.decorated = decorated;
         this.resizable = resizable;
