@@ -6,6 +6,8 @@ import flat.widget.*;
 public class Activity {
     private Scene scene;
     private boolean invalided, layoutInvalidaded;
+    private float width;
+    private float height;
 
     public Activity() {
         scene = new Scene(this);
@@ -20,6 +22,9 @@ public class Activity {
     }
 
     public void onLayout(float width, float height) {
+        this.width = width;
+        this.height = height;
+        scene.onMeasure();
         scene.onLayout(width, height);
     }
 
@@ -68,5 +73,13 @@ public class Activity {
     public Widget findFocused() {
         Widget child = scene.findFocused();
         return child == null ? scene : child;
+    }
+
+    public float getWidth() {
+        return width;
+    }
+
+    public float getHeight() {
+        return height;
     }
 }

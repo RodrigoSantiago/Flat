@@ -1,4 +1,4 @@
-package flat.graphics;
+package flat.math;
 
 public class RoundRect {
     private float width, height, radius;

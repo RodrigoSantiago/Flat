@@ -1,12 +1,41 @@
 package flat.graphics.image;
 
+import flat.graphics.Texture;
+
 public class Image {
-    private int width, height;
+    Texture atlas;
+    int srcx, srcy, width, height;
 
-    private int texId;
+    public Image(Texture atlas, int srcx, int srcy, int width, int height) {
+        this.atlas = atlas;
+        this.srcx = srcx;
+        this.srcy = srcy;
+        this.width = width;
+        this.height = height;
+    }
 
-    public Image(int width, int height) {
+    public Texture getAtlas() {
+        return atlas;
+    }
 
+    public void setAtlas(Texture atlas) {
+        this.atlas = atlas;
+    }
+
+    public int getSrcx() {
+        return srcx;
+    }
+
+    public void setSrcx(int srcx) {
+        this.srcx = srcx;
+    }
+
+    public int getSrcy() {
+        return srcy;
+    }
+
+    public void setSrcy(int srcy) {
+        this.srcy = srcy;
     }
 
     public int getWidth() {
@@ -17,18 +46,11 @@ public class Image {
         return height;
     }
 
-    public void setSize(int width, int height) {
+    public void resize(Texture atlas, int srcx, int srcy, int width, int height) {
+        this.atlas = atlas;
+        this.srcx = srcx;
+        this.srcy = srcy;
         this.width = width;
         this.height = height;
-
-        // todo - GL-TEXIMAGE
-    }
-
-    public void setPixels() {
-
-    }
-
-    public void getPixels() {
-
     }
 }

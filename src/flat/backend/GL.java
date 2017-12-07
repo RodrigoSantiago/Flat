@@ -105,6 +105,9 @@ public class GL {
     public static native void SetLineWidth(float width);
     public static native float GetLineWidth();
 
+    //---------------------------
+    //        Draw
+    //---------------------------
     public static native void DrawArrays(int vertexModeVM, int first, int count, int instances);
 
     public static native void DrawElements(int vertexModeVM, int count, int instances, int typeDT, long offset);
@@ -119,6 +122,7 @@ public class GL {
     public static native int FrameBufferCreate();
     public static native void FrameBufferDestroy(int id);
     public static native void FrameBufferBind(int trgFB, int id);
+    public static native int FrameBufferGetBound(int trgFB);
     public static native void FrameBufferBlit(int srcX, int srcY, int srcW, int srcH, int dstX, int dstY, int dstW, int dstH, int bitmaskBM, int filterBF);
     public static native void FrameBufferTexture2D(int trgFB, int attFA, int texTypeTT, int textureId, int level);
     public static native void FrameBufferTextureMultisample(int trgFB, int attFA, int textureId);
@@ -128,12 +132,15 @@ public class GL {
     public static native int FrameBufferGetObjectId(int trgFB, int attaFA);
     public static native void FrameBufferGetPixelDataSize(int trgFB, int attFA, int[] data6);
 
+    public static native void FrameBufferSetTargets(int c0FA, int c1FA, int c2FA, int c3FA, int c4FA, int c5FA, int c6FA, int c7FA);
+    public static native void FrameBufferGetTargets(int[] data8);
     //---------------------------
     //        Render Buffer
     //---------------------------
     public static native int RenderBufferCreate();
     public static native void RenderBufferDestroy(int id);
     public static native void RenderBufferBind(int id);
+    public static native int RenderBufferGetBound();
     public static native void RenderBufferStorage(int frormatTF, int width, int height);
     public static native void RenderBufferStorageMultsample(int frormatTF, int samples, int width, int height);
     public static native int RenderBufferGetFormat();
@@ -144,10 +151,12 @@ public class GL {
     //         Textures
     //---------------------------
     public static native void SetActiveTexture(int pos);
+    public static native int GetActiveTexture();
 
     public static native int TextureCreate();
     public static native void TextureDestroy(int id);
     public static native void TextureBind(int trgTB, int id);
+    public static native int TextureGetBound(int trgTB);
     public static native void TextureGenerateMipmap(int trgTB);
 
     public static native void TextureMultisample(int samples, int formatTF, int width, int height, boolean fixedLocations);
@@ -202,6 +211,7 @@ public class GL {
     public static native int BufferCreate();
     public static native void BufferDestroy(int id);
     public static native void BufferBind(int trgBB, int id);
+    public static native int BufferGetBound(int trgBB);
     public static native void BufferDataB(int trgBB, byte[] data, int offset, int length, int usageTypeUT);
     public static native void BufferDataS(int trgBB, short[] data, int offset, int length, int usageTypeUT);
     public static native void BufferDataI(int trgBB, int[] data, int offset, int length, int usageTypeUT);
@@ -236,6 +246,7 @@ public class GL {
     public static native void ProgramDestroy(int id);
     public static native void ProgramLink(int id);
     public static native void ProgramUse(int id);
+    public static native int ProgramGetUsed();
     public static native boolean ProgramIsDeleted(int id);
     public static native boolean ProgramIsLinked(int id);
     public static native boolean ProgramisValidated(int id);
@@ -284,6 +295,7 @@ public class GL {
     public static native int VertexArrayCreate();
     public static native void VertexArrayDestroy(int id);
     public static native void VertexArrayBind(int id);
+    public static native int VertexArrayGetBound();
 
     public static native void VertexArrayAttribEnable(int attrId, boolean enable);
     public static native boolean VertexArrayAttribIsEnabled(int attrId);

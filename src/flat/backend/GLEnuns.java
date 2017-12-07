@@ -133,6 +133,17 @@ public class GLEnuns {
     public static final int FA_STENCIL_ATTACHMENT = 0x8D20;
     public static final int FA_DEPTH_STENCIL_ATTACHMENT = 0x821A;
 
+    //----FRAMEBUFFER STATUS
+    public static final int FS_FRAMEBUFFER_COMPLETE = 0x8CD5;
+    public static final int FS_FRAMEBUFFER_INCOMPLETE_ATTACHMENT = 0x8CD6;
+    public static final int FS_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT = 0x8CD7;
+    public static final int FS_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER = 0x8CDB;
+    public static final int FS_FRAMEBUFFER_INCOMPLETE_READ_BUFFER = 0x8CDC;
+    public static final int FS_FRAMEBUFFER_UNSUPPORTED = 0x8CDD;
+    public static final int FS_FRAMEBUFFER_UNDEFINED = 0x8219;
+    public static final int FS_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE = 0x8D56;
+    public static final int FS_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS = 0x8DA8;
+
     //----FRAMEBUFFER ATTACHMENT OBJECT TYPE
     public static final int FO_RENDERBUFFER = 0x8D41;
     public static final int FO_TEXTURE = 0x1702;

@@ -30,6 +30,7 @@ public abstract class Application {
         }
         application = app;
         application.window = new Window(application);
+        application.window.init();
         application.window.launch();
     }
 

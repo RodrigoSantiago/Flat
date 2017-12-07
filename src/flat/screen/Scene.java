@@ -1,54 +1,72 @@
 package flat.screen;
 
-import flat.backend.WL;
 import flat.events.PointerEvent;
-import flat.graphics.Context;
-import flat.widget.Widget;
+import flat.graphics.*;
+import flat.graphics.image.Image;
+import flat.widget.containers.Box;
 
-public class Scene extends Widget {
+public class Scene extends Box {
 
     Activity activity;
 
-    private float xx, yy;
-
-    Scene(Activity activity) {
+    float corners;
+    public Scene(Activity activity) {
         this.activity = activity;
-        setPointerListener(event -> {
-            if (event.getType() == PointerEvent.MOVED) {
-                xx = (float) event.getScreenX();
-                yy = (float) event.getScreenY();
-                return true;
-            }
 
+        setBackgroundColor(0xFFFFFFFF);
+
+        Box box = new Box();
+        box.setBackgroundColor(0xFF0000FF);
+        box.setPrefSize(100, 100);
+        add(box);
+
+        Shader shader = new Shader();
+        shader.setFragmentSorce(Context.getContext().fragment);
+        shader.setVertexSorce(Context.getContext().vertex);
+        shader.compile();
+
+        VertexArray vertexArray = new VertexArray();
+        vertexArray.setData(new float[] {
+                -0.5f, -0.5f, 0.0f,
+                0.5f, -0.5f, 0.0f,
+                0.0f,  0.5f, 0.0f
+        });
+        vertexArray.setAttributes(0, 3, 3, 0);
+
+        setPointerListener(event -> {
+            if (event.getType() == PointerEvent.DRAGGED) {
+                corners += 1;
+                invalidate(true);
+            }
             return false;
         });
-        WL.SetVsync(1);
-        setBackgroundRadius(5000);
     }
 
     @Override
     public void onLayout(float width, float height) {
-        setPrefWidth(MATH_PARENT);
-        setPrefHeight(MATH_PARENT);
-        setMinWidth(MATH_PARENT);
-        setMinHeight(MATH_PARENT);
-        setMaxWidth(MATH_PARENT);
-        setMaxHeight(MATH_PARENT);
+        super.onLayout(activity.getWidth(), activity.getHeight());
+    }
 
-        super.onLayout(width, height);
+    @Override
+    public void onMeasure() {
+        setPrefHeight(activity.getHeight());
+        setPrefWidth(activity.getWidth());
+        setMinHeight(activity.getHeight());
+        setMinWidth(activity.getWidth());
+        setMaxHeight(activity.getHeight());
+        setMaxWidth(activity.getWidth());
+        super.onMeasure();
     }
 
     @Override
     public void onDraw(Context context) {
-        boolean inside = contains(xx, yy);
-
         context.clear();
-        context.setColor(inside ? 0xFFFFFFFF : 0xFF0000FF);
-        context.setTransform2D(getTransformView());
-        context.drawRoundRect((-getCenterX() * getWidth()), (-getCenterY() * getHeight()), getWidth(), getHeight(), getBackgroundRadius(), true);
-        context.setTransform2D(null);
+        context.setView(0, 0, (int) activity.getWidth(), (int) activity.getHeight());
 
-        invalidate(false);
+        context.setColor(0xDDDDDDFF);
+        context.drawRect(0, 0, (int) activity.getWidth(), (int) activity.getHeight(), true);
+
+        context.drawRoundRectShadow(10, 12, 50, 100, corners, 10.0f, 1f);
     }
 
     @Override

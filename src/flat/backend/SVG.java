@@ -45,12 +45,12 @@ public class SVG {
     //---------------------------
     public static native void TransformIdentity();
     public static native void TransformSet(float m00, float m01, float m02, float m10, float m11, float m12);
+    public static native void TransformGet(float[] data6);
     public static native void TransformTranslate(float x, float y);
     public static native void TransformRotate(float angle);
     public static native void TransformSkewX(float angle);
     public static native void TransformSkewY(float angle);
     public static native void TransformScale(float x, float y);
-    public static native void TransformGetCurrent(float[] data6);
 
     //---------------------------
     //          Scissoring

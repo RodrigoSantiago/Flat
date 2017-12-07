@@ -21,8 +21,8 @@ public final class Window {
     private static ArrayList<Runnable> runSync = new ArrayList<>();
     private static ArrayList<Runnable> runSyncCp = new ArrayList<>();
 
-    private ArrayList<Animation> animSync = new ArrayList<>();
-    private ArrayList<Animation> animSyncCp = new ArrayList<>();
+    private ArrayList<Animation> anims = new ArrayList<>();
+    private ArrayList<Animation> animsCp = new ArrayList<>();
 
     private ArrayList<EventData> events = new ArrayList<>();
     private ArrayList<EventData> eventsCp = new ArrayList<>();
@@ -40,7 +40,6 @@ public final class Window {
         }
 
         this.thread = Thread.currentThread();
-        this.context = Context.getContext();
 
         mouseX = (float) WL.GetCursorX();
         mouseY = (float) WL.GetCursorY();
@@ -52,10 +51,16 @@ public final class Window {
         WL.SetDropCallback(names -> events.add(MouseDropData.get(names)));
         WL.SetKeyCallback((key, scancode, action, mods) -> events.add(KeyData.get(key, scancode, action, mods)));
         WL.SetCharModsCallback((codepoint, mods) -> events.add(CharModsData.get(codepoint, mods)));
-        WL.SetWindowSizeCallback((width, height) -> {
-            context.resize(width, height);
-            if (activity != null) activity.invalidate(true);
-        });
+        WL.SetWindowSizeCallback((width, height) -> events.add(SizeData.get(width, height)));
+    }
+
+    public static Window getWindow() {
+        return Application.getApplication() == null ? null : Application.getApplication().getWindow();
+    }
+
+    public void init() {
+        Context.initContext();
+        this.context = Context.getContext();
     }
 
     public Context getContext() {
@@ -86,6 +91,7 @@ public final class Window {
             // Sync Calls
             processSyncCalls();
         }
+        context.dispose();
         SVG.Finish();
         WL.Finish();
     }
@@ -223,6 +229,14 @@ public final class Window {
                 widget.fireKey(new KeyEvent(widget, KeyEvent.TYPED, shift, control, alt, meta, value, -1));
 
                 CharModsData.release(event);
+            } else if (eData.type == 8) {
+                SizeData event = (SizeData) eData;
+                context.resize(event.width, event.height);
+                if (activity != null) {
+                    activity.invalidate(true);
+                }
+
+                SizeData.release(event);
             }
         }
         eventsCp.clear();
@@ -231,14 +245,14 @@ public final class Window {
     protected void processAnimations() {
         long time = System.currentTimeMillis();
 
-        ArrayList<Animation> animSwap = animSyncCp;
-        animSyncCp = animSync;
-        animSync = animSwap;
+        ArrayList<Animation> animSwap = animsCp;
+        animsCp = anims;
+        anims = animSwap;
 
-        for (Animation anim : animSyncCp) {
+        for (Animation anim : animsCp) {
             anim.handle(time);
         }
-        animSyncCp.clear();
+        animsCp.clear();
     }
 
     protected void processLayout() {
@@ -251,7 +265,7 @@ public final class Window {
         if (activity.draw()) {
             activity.onDraw(context);
 
-            context.setModeClear();
+            context.softFlush();
             WL.SwapBuffers();
         } else {
             long time = System.currentTimeMillis() - loopTime;
@@ -583,6 +597,30 @@ public final class Window {
             this.type = 7;
             this.codepoint = codepoint;
             this.mods = mods;
+        }
+    }
+
+    private static class SizeData extends EventData {
+        static ArrayList<SizeData> list = new ArrayList<>();
+
+        static SizeData get(int width, int height) {
+            SizeData data;
+            if (list.size() > 0) data = list.remove(list.size() - 1);
+            else data = new SizeData();
+            data.set(width, height);
+            return data;
+        }
+
+        static void release(SizeData data) {
+            list.add(data);
+        }
+
+        public int width, height;
+
+        public void set(int width, int height) {
+            this.type = 8;
+            this.width = width;
+            this.height = height;
         }
     }
 

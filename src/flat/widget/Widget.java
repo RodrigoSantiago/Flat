@@ -1,7 +1,7 @@
 package flat.widget;
 
 import flat.events.*;
-import flat.graphics.RoundRect;
+import flat.math.RoundRect;
 import flat.graphics.Context;
 import flat.math.Affine;
 import flat.math.Vector2;
@@ -11,147 +11,136 @@ import java.util.Comparator;
 import java.util.List;
 
 public class Widget {
-    public static final float WRAP_CONTENT = Float.NEGATIVE_INFINITY;
-    public static final float MATH_PARENT = Float.POSITIVE_INFINITY;
 
-    public static final int GONE = 0;
+    //---------------------
+    //    Constants
+    //---------------------
+    public static final float WRAP_CONTENT  = 0;
+    public static final float MATH_PARENT   = Float.POSITIVE_INFINITY;
+
+    public static final int GONE    = 0;
     public static final int VISIBLE = 1;
-    public static final int HIDDEN = 2;
+    public static final int HIDDEN  = 2;
 
-    Widget parent;
+    static final Comparator<Widget> childComparator = (o1, o2) -> Float.compare(o1.elevation, o2.elevation);
 
+    //---------------------
+    //    Properties
+    //---------------------
     private String id;
-    private boolean focus;
+    private boolean focus, focusTarget;
     private String nextFocusId, prevFocusId;
     private float width, height;
     private float marginTop, marginRight, marginBottom, marginLeft;
     private float paddingTop, paddingRight, paddingBottom, paddingLeft;
-    private float minWidth, minHeight, maxWidth, maxHeight, prefWidth, prefHeight;
-    private int visibility;
+    private float minWidth = WRAP_CONTENT, minHeight = WRAP_CONTENT, maxWidth = MATH_PARENT, maxHeight = MATH_PARENT, prefWidth = 0, prefHeight = 0;
+    private int visibility = VISIBLE;
+    private float mWidth, mHeight;
 
-    private final Affine transform = new Affine(), tmpTransform = new Affine(), inverseTransform = new Affine();
-    private boolean invTransform;
+    //---------------------
+    //    Family
+    //---------------------
+    Parent parent;
+    ArrayList<Widget> children;
+    List<Widget> unmodifiableChildren;
+    boolean invalidChildrenOrder;
 
-    private float centerX, centerY, translateX, translateY, elevation, scaleX = 1, scaleY = 1, rotate;
+    //---------------------
+    //    Transform
+    //---------------------
+    private float x, y, centerX, centerY, translateX, translateY, elevation, scaleX = 1, scaleY = 1, rotate;
 
+    private final Affine transform = new Affine();
+    private final Affine inverseTransform = new Affine();
+    private final Affine tmpTransform = new Affine();
+    boolean invalidTransform;
+
+    //---------------------
+    //    Drawing
+    //---------------------
     private final RoundRect background = new RoundRect();
     private float backgroundRadius;
     private int backgroundColor;
-
     private float opacity;
 
-    private float mWidth, mHeight;
+    //---------------------
+    //    Events
+    //---------------------
     private boolean clickable;
-
     private PointerListener pointerListener;
     private KeyListener keyListener;
     private DragListener dragListener;
     private FocusListener focusListener;
 
-    ArrayList<Widget> children;
-    ArrayList<Widget> childrenDraw;
-
-    private static Comparator<Widget> comparator = (o1, o2) -> Float.compare(o1.elevation, o2.elevation);
-    boolean childSorted;
-
     public void onDraw(Context context) {
-        // DRAW BACK GROUND
-
-        if  (children != null) {
-            if (!childSorted) {
-                childSorted = true;
-                childrenDraw.sort(comparator);
+        if (visibility == VISIBLE) {
+            if (backgroundColor != 0) {
+                context.setSVGTransform(getTransformView());
+                context.setColor(backgroundColor);
+                context.drawRoundRect(0, 0, getWidth(), getHeight(), getBackgroundRadius(), true);
+                context.setSVGTransform(null);
             }
-            for (Widget child : childrenDraw) {
-                child.onDraw(context);
+
+            if (children != null) {
+                childSort();
+                for (Widget child : children) {
+                    child.onDraw(context);
+                }
             }
         }
     }
 
     public void onLayout(float width, float height) {
-        float mMinWidth, mMinHeight, mMaxWidth, mMaxHeight, mPrefWidth, mPrefHeight;
-
-        // MAX
-        if (maxWidth == MATH_PARENT) {
-            mMaxWidth = width;
-        } else if (maxWidth == WRAP_CONTENT) {
-            mMaxWidth = Float.MAX_VALUE;
-        } else {
-            mMaxWidth = maxWidth;
-        }
-        if (maxHeight == MATH_PARENT) {
-            mMaxHeight = height;
-        } else if (maxHeight == WRAP_CONTENT) {
-            mMaxHeight = Float.MAX_VALUE;
-        } else {
-            mMaxHeight = maxHeight;
-        }
-
-        // MIN
-        if (minWidth == MATH_PARENT) {
-            mMinWidth = width;
-        } else if (minWidth == WRAP_CONTENT) {
-            mMinWidth = 0;
-        } else {
-            mMinWidth = minWidth;
-        }
-        if (minHeight == MATH_PARENT) {
-            mMinHeight = height;
-        } else if (minHeight == WRAP_CONTENT) {
-            mMinHeight = 0;
-        } else {
-            mMinHeight = minHeight;
-        }
-
-        // PREF
-        if (prefWidth == MATH_PARENT) {
-            mPrefWidth = width;
-        } else if (prefWidth == WRAP_CONTENT) {
-            mPrefWidth = width;
-        } else {
-            mPrefWidth = prefWidth;
-        }
-        if (prefHeight == MATH_PARENT) {
-            mPrefHeight = height;
-        } else if (prefHeight == WRAP_CONTENT) {
-            mPrefHeight = height;
-        } else {
-            mPrefHeight = prefHeight;
-        }
-
-        mPrefWidth = Math.max(mMinWidth, Math.min(mMaxWidth, mPrefWidth));
-        mPrefHeight = Math.max(mMinHeight, Math.min(mMaxHeight, mPrefHeight));
-
-        onMeasure(mPrefWidth, mPrefHeight);
-
-        if (maxWidth == WRAP_CONTENT) mMaxWidth = mWidth;
-        if (maxHeight == WRAP_CONTENT) mMaxHeight = mHeight;
-        if (minWidth == WRAP_CONTENT) mMinWidth = mWidth;
-        if (minHeight == WRAP_CONTENT) mMinHeight = mHeight;
-        if (prefWidth == WRAP_CONTENT) mPrefWidth = mWidth;
-        if (prefHeight == WRAP_CONTENT) mPrefHeight = mHeight;
-
-        setWidth(Math.max(mMinWidth, Math.min(mMaxWidth, mPrefWidth)));
-        setHeight(Math.max(mMinHeight, Math.min(mMaxHeight, mPrefHeight)));
+        setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
     }
 
-    public void onMeasure(float width, float height) {
-        if (children != null) {
-            for (Widget child : children) {
-                child.onLayout(width, height);
+    public final void setLayout(float width, float height) {
+        if (parent != null) {
+            if (width == MATH_PARENT && (maxWidth == MATH_PARENT || maxWidth == WRAP_CONTENT)) {
+                setWidth(parent.getWidth());
+            } else {
+                setWidth(Math.min(width, maxWidth));
+            }
+            if (height == MATH_PARENT && (maxHeight == MATH_PARENT || maxHeight == WRAP_CONTENT)) {
+                setHeight(parent.getHeight());
+            } else {
+                setHeight(Math.min(height, maxHeight));
+            }
+        } else {
+            if (maxWidth != MATH_PARENT && maxWidth != WRAP_CONTENT) {
+                setWidth(Math.min(width, maxWidth));
+            } else {
+                setWidth(width);
+            }
+            if (maxHeight != MATH_PARENT && maxHeight != WRAP_CONTENT) {
+                setHeight(Math.min(height, maxHeight));
+            } else {
+                setHeight(height);
             }
         }
-        setMeasure(width, height);
     }
 
-    public void setMeasure(float width, float height) {
-        mWidth = width;
-        mHeight = height;
+    public void onMeasure() {
+        setMeasure(prefWidth, prefHeight);
+    }
+
+    public final void setMeasure(float width, float height) {
+        mWidth = Math.max(width, minWidth);
+        mHeight = Math.max(height, minHeight);
+    }
+
+    public float getMeasureWidth()  {
+        return mWidth;
+    }
+
+    public float getMeasureHeight()  {
+        return mHeight;
     }
 
     public void invalidate(boolean layout) {
-        if (parent != null)
+        if (parent != null) {
             parent.invalidate(layout);
+        }
     }
 
     public void invalidateTransform() {
@@ -159,13 +148,12 @@ public class Widget {
             for (Widget child : children) {
                 child.invalidateTransform();
             }
-            invTransform = true;
         }
+        invalidTransform = true;
     }
 
-    public void invalidadeOrder() {
-        if (parent != null)
-            parent.childSorted = false;
+    public void invalidateChildrenOrder() {
+        invalidChildrenOrder = true;
     }
 
     public String getId() {
@@ -176,8 +164,23 @@ public class Widget {
         this.id = id;
     }
 
-    public List<Widget> getChildren() {
-        return null;
+    public Parent getParent() {
+        return parent;
+    }
+
+    void setParent(Parent parent) {
+        if (this.parent != null && parent != null) {
+            this.parent.childRemove(this);
+        }
+        this.parent = parent;
+    }
+
+    public List<Widget> getUnmodifiableChildren() {
+        return unmodifiableChildren;
+    }
+
+    protected ArrayList<Widget> getChildren() {
+        return children;
     }
 
     public Widget findById(String id) {
@@ -186,6 +189,7 @@ public class Widget {
 
     public Widget findByPosition(float x, float y) {
         if (children != null) {
+            childSort();
             for (int i = children.size() - 1; i >= 0; i--) {
                 Widget child = children.get(i);
                 Widget found = child.findByPosition(x, y);
@@ -225,6 +229,14 @@ public class Widget {
         this.focus = focus;
     }
 
+    public boolean isFocusTarget() {
+        return focusTarget;
+    }
+
+    public void setFocusTarget(boolean focusTarget) {
+        this.focusTarget = focusTarget;
+    }
+
     public String getNextFocusId() {
         return nextFocusId;
     }
@@ -257,10 +269,6 @@ public class Widget {
         point.y = y;
     }
 
-    public boolean contains(Vector2 point) {
-        return contains(point.x, point.y);
-    }
-
     public boolean contains(float x, float y) {
         transform();
         float px = -(centerX * width) + inverseTransform.getPointX(x, y);
@@ -268,13 +276,45 @@ public class Widget {
         return background.contains(px, py);
     }
 
+    public float getX() {
+        return x;
+    }
+
+    public void setX(float x) {
+        if (this.x != x) {
+            this.x = x;
+            invalidateTransform();
+        }
+    }
+
+    public float getY() {
+        return y;
+    }
+
+    public void setY(float y) {
+        if (this.y != y) {
+            this.y = y;
+            invalidateTransform();
+        }
+    }
+
+    public void setPosition(float x, float y) {
+        if (this.x != x || this.y != y) {
+            this.x = x;
+            this.y = y;
+            invalidateTransform();
+        }
+    }
+
     public float getWidth() {
         return width;
     }
 
     void setWidth(float width) {
-        this.width = width;
-        background.setWidth(width);
+        if (this.width != width) {
+            this.width = width;
+            background.setWidth(width);
+        }
     }
 
     public float getHeight() {
@@ -282,8 +322,10 @@ public class Widget {
     }
 
     void setHeight(float height) {
-        this.height = height;
-        background.setHeight(height);
+        if (this.height != height) {
+            this.height = height;
+            background.setHeight(height);
+        }
     }
 
     public float getMarginTop() {
@@ -416,6 +458,14 @@ public class Widget {
         }
     }
 
+    public void setMinSize(float width, float height) {
+        if (this.minWidth != width ||  this.minHeight != height) {
+            this.minWidth = width;
+            this.minHeight = height;
+            invalidate(true);
+        }
+    }
+
     public float getMaxWidth() {
         return maxWidth;
     }
@@ -434,6 +484,14 @@ public class Widget {
     public void setMaxHeight(float maxHeight) {
         if (this.maxHeight != maxHeight) {
             this.maxHeight = maxHeight;
+            invalidate(true);
+        }
+    }
+
+    public void setMaxSize(float width, float height) {
+        if (this.maxWidth != width ||  this.maxHeight != height) {
+            this.maxWidth = width;
+            this.maxHeight = height;
             invalidate(true);
         }
     }
@@ -460,6 +518,14 @@ public class Widget {
         }
     }
 
+    public void setPrefSize(float width, float height) {
+        if (this.prefWidth != width ||  this.prefHeight != height) {
+            this.prefWidth = width;
+            this.prefHeight = height;
+            invalidate(true);
+        }
+    }
+
     public float getCenterX() {
         return centerX;
     }
@@ -468,6 +534,7 @@ public class Widget {
         if (this.centerX != centerX) {
             this.centerX = centerX;
             invalidate(false);
+            invalidateTransform();
         }
     }
 
@@ -479,6 +546,7 @@ public class Widget {
         if (this.centerY != centerY) {
             this.centerY = centerY;
             invalidate(false);
+            invalidateTransform();
         }
     }
 
@@ -550,7 +618,9 @@ public class Widget {
         if (this.elevation != elevation) {
             this.elevation = elevation;
             invalidate(true);
-            invalidadeOrder();
+            if (parent != null) {
+                parent.invalidateChildrenOrder();
+            }
         }
     }
 
@@ -576,10 +646,23 @@ public class Widget {
         }
     }
 
+    private void childSort() {
+        if (invalidChildrenOrder) {
+            invalidChildrenOrder = false;
+            if (children != null) {
+                children.sort(childComparator);
+            }
+        }
+    }
+
     private void transform() {
-        if (invTransform) {
-            invTransform = false;
-            transform.setAll(translateX, translateY, scaleX, scaleY, rotate);
+        if (invalidTransform) {
+            invalidTransform = false;
+            transform.toTranslation(-centerX, -centerY)
+                    .scale(scaleX, scaleY)
+                    .rotate(rotate)
+                    .translate(centerX + translateX + x, centerY + translateY + y);
+
             if (parent != null) {
                 transform.preMultiply(parent.getTransformView());
             }
@@ -680,5 +763,10 @@ public class Widget {
         if (!done && parent != null) {
             parent.fireKey(keyEvent.recycle(parent));
         }
+    }
+
+    @Override
+    public String toString() {
+        return "[" + id + "]" + getClass().getSimpleName();
     }
 }

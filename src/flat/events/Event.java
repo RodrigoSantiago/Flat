@@ -12,7 +12,7 @@ public abstract class Event {
         this.type = type;
     }
 
-    public Widget getSource() {
+    protected Widget getSource() {
         return source;
     }
 
