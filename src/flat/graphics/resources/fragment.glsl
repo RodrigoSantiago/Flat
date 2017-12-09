@@ -3,34 +3,26 @@ out vec4 FragColor;
 
 in vec2 uv;
 
-uniform int effectType = 0;
+uniform vec4 view;
+uniform int effectId = 0;
+uniform int[20] intData;
+uniform float[20] floatData;
 uniform sampler2D srcImg;
 
-uniform int data1 = 1;
-
-vec4 hblur() {
-    int size = data1;
-    int hsize = data1 / 2;
-    float col = 0.0;
-    for (int i = 0; i < size; i++) {
-        col += texelFetch(srcImg, ivec2(uv.x + i - hsize, uv.y), 0).a;
-    }
-    return vec4(0,0,0, col / size);
-}
-vec4 vblur() {
-    int size = data1;
-    int hsize = data1 / 2;
-    float col = 0.0;
-    for (int i = 0; i < size; i++) {
-        col += texelFetch(srcImg, ivec2(uv.x, uv.y + i - hsize), 0).a;
-    }
-    return vec4(0,0,0, col / size);
+vec4 RoundRectShadow(in float blur, in float alpha, in vec2 pos, in vec2 size, in vec4 corners, in mat3x2 trn) {
+    vec2 coord = vec2(gl_FragCoord.x, view[3] - gl_FragCoord.y);
+    vec2 center = (pos + size) / 2.0f;
+    float dist = distance(vec2(coord.x, coord.y), center) / length(size);
+    return vec4(dist,dist,dist,1.0f);
 }
 
 void main() {
-    switch (effectType) {
+    switch (effectId) {
         case 0: FragColor = texelFetch(srcImg, ivec2(uv), 0); break;
-        case 1: FragColor = hblur(); break;
-        case 2: FragColor = vblur(); break;
+        case 1: FragColor = RoundRectShadow(floatData[0], floatData[1],
+            vec2(floatData[2], floatData[3]),
+            vec2(floatData[4], floatData[5]),
+            vec4(floatData[6], floatData[7], floatData[8], floatData[9]),
+            mat3x2(floatData[10], floatData[11], floatData[12], floatData[13], floatData[14], floatData[15])); break;
     }
 }
