@@ -50,6 +50,14 @@ public class Texture extends ContextObject {
         setMipMaps(levels);
     }
 
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
     @Override
     protected void onDispose() {
         GL.TextureDestroy(textureId);

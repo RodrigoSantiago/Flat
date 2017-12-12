@@ -25,7 +25,7 @@ public class Activity {
         this.width = width;
         this.height = height;
         scene.onMeasure();
-        scene.onLayout(width, height);
+        scene.onLayout(0, 0, width, height);
     }
 
     public void onDraw(Context context) {

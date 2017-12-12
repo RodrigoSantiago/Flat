@@ -5,8 +5,10 @@ import static flat.backend.GLEnuns.*;
 
 public class Shader extends ContextObject {
 
-    private String vtxCode, frgCode, vtxLog, frgLog, log;
+    private String vtxCode, frgCode, vtxLog, frgLog, linkLog;
     private boolean compiled;
+    private final int[] passInt = new int[16];
+    private final float[] passFloat = new float[16];
 
     int shaderProgramId;
 
@@ -19,9 +21,68 @@ public class Shader extends ContextObject {
     }
 
     public void setInt(String name, int value) {
-        compile();
         int id = GL.ProgramGetUniformId(shaderProgramId, name);
-        GL.ProgramSetUniformI(id, 1, 1, new int[] {value}, 0);
+        passInt[0] = value;
+        GL.ProgramSetUniformI(id, 1, 1, passInt, 0);
+    }
+
+    public void setFloat(String name, float value) {
+        int id = GL.ProgramGetUniformId(shaderProgramId, name);
+        passFloat[0] = value;
+        GL.ProgramSetUniformF(id, 1, 1, passFloat, 0);
+    }
+
+    public void setVec2(String name, float v1, float v2) {
+        int id = GL.ProgramGetUniformId(shaderProgramId, name);
+        passFloat[0] = v1;
+        passFloat[1] = v2;
+        GL.ProgramSetUniformF(id, 2, 1, passFloat, 0);
+    }
+
+    public void setVec3(String name, float v1, float v2, float v3) {
+        int id = GL.ProgramGetUniformId(shaderProgramId, name);
+        passFloat[0] = v1;
+        passFloat[1] = v2;
+        passFloat[2] = v3;
+        GL.ProgramSetUniformF(id, 3, 1, passFloat, 0);
+    }
+
+    public void setVec4(String name, float v1, float v2, float v3, float v4) {
+        int id = GL.ProgramGetUniformId(shaderProgramId, name);
+        passFloat[0] = v1;
+        passFloat[1] = v2;
+        passFloat[2] = v3;
+        passFloat[3] = v4;
+        GL.ProgramSetUniformF(id, 4, 1, passFloat, 0);
+    }
+
+    public void setColor4F(String name, int rgba) {
+        int id = GL.ProgramGetUniformId(shaderProgramId, name);
+        passFloat[0] = ((rgba >> 24) & 0xFF) / 255f;
+        passFloat[1] = ((rgba >> 16) & 0xFF) / 255f;
+        passFloat[2] = ((rgba >> 8) & 0xFF) / 255f;
+        passFloat[3] = (rgba & 0xFF) / 255f;
+        GL.ProgramSetUniformF(id, 4, 1, passFloat, 0);
+    }
+
+    public void setMatrix(String name, float[] data, int w, int h) {
+        int id = GL.ProgramGetUniformId(shaderProgramId, name);
+        GL.ProgramSetUniformMatrix(id, w, h, 1, true, data, 0);
+    }
+
+    public void setIntArray(String name, int[] value, int size) {
+        int id = GL.ProgramGetUniformId(shaderProgramId, name);
+        GL.ProgramSetUniformI(id, 1, size, value, 0);
+    }
+
+    public void setFloatArray(String name, float[] value, int size) {
+        int id = GL.ProgramGetUniformId(shaderProgramId, name);
+        GL.ProgramSetUniformF(id, 1, size, value, 0);
+    }
+
+    public void setFloatArray(String name, float... values) {
+        int id = GL.ProgramGetUniformId(shaderProgramId, name);
+        GL.ProgramSetUniformF(id, 1, values.length, values, 0);
     }
 
     @Override
@@ -59,6 +120,7 @@ public class Shader extends ContextObject {
             shaderProgramId = 0;
             frgLog = null;
             vtxLog = null;
+            linkLog = null;
         }
         compiled = false;
     }
@@ -89,7 +151,7 @@ public class Shader extends ContextObject {
             if (GL.ProgramIsLinked(shaderProgramId)) {
                 compiled = true;
             } else {
-                log = GL.ProgramGetLog(shaderProgramId);
+                linkLog = GL.ProgramGetLog(shaderProgramId);
             }
         }
 
@@ -105,7 +167,21 @@ public class Shader extends ContextObject {
         return frgLog;
     }
 
+    public String getLinkLog() {
+        return linkLog;
+    }
+
     public String getLog() {
-        return log;
+        StringBuilder log = new StringBuilder();
+        if (vtxLog != null) {
+            log.append("Vertex Shader Log: \n").append(vtxLog).append("\n");
+        }
+        if (frgLog != null) {
+            log.append("Fragment Shader Log : \n").append(frgLog).append("\n");
+        }
+        if (linkLog != null) {
+            log.append("Link Log : \n").append(linkLog).append("\n");
+        }
+        return log.toString();
     }
 }

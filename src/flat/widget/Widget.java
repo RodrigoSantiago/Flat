@@ -15,14 +15,14 @@ public class Widget {
     //---------------------
     //    Constants
     //---------------------
-    public static final float WRAP_CONTENT  = 0;
-    public static final float MATH_PARENT   = Float.POSITIVE_INFINITY;
+    public static final float WRAP_CONTENT = 0;
+    public static final float MATH_PARENT = Float.POSITIVE_INFINITY;
 
-    public static final int GONE    = 0;
+    public static final int GONE = 0;
     public static final int VISIBLE = 1;
-    public static final int HIDDEN  = 2;
+    public static final int HIDDEN = 2;
 
-    static final Comparator<Widget> childComparator = (o1, o2) -> Float.compare(o1.elevation, o2.elevation);
+    private static final Comparator<Widget> childComparator = (o1, o2) -> Float.compare(o1.elevation, o2.elevation);
 
     //---------------------
     //    Properties
@@ -35,7 +35,7 @@ public class Widget {
     private float paddingTop, paddingRight, paddingBottom, paddingLeft;
     private float minWidth = WRAP_CONTENT, minHeight = WRAP_CONTENT, maxWidth = MATH_PARENT, maxHeight = MATH_PARENT, prefWidth = 0, prefHeight = 0;
     private int visibility = VISIBLE;
-    private float mWidth, mHeight;
+    private float measureWidth, measureHeight;
 
     //---------------------
     //    Family
@@ -48,7 +48,7 @@ public class Widget {
     //---------------------
     //    Transform
     //---------------------
-    private float x, y, centerX, centerY, translateX, translateY, elevation, scaleX = 1, scaleY = 1, rotate;
+    private float x, y, centerX, centerY, translateX, translateY, scaleX = 1, scaleY = 1, rotate, elevation;
 
     private final Affine transform = new Affine();
     private final Affine inverseTransform = new Affine();
@@ -58,16 +58,19 @@ public class Widget {
     //---------------------
     //    Drawing
     //---------------------
-    private final RoundRect background = new RoundRect();
-    private float backgroundRadius;
+    private final RoundRect bg = new RoundRect();
     private int backgroundColor;
     private float opacity;
+
+    private boolean shadowEffect;
+    private boolean rippleEffect;
 
     //---------------------
     //    Events
     //---------------------
-    private boolean clickable;
+    private boolean clickable = true;
     private PointerListener pointerListener;
+    private ScrollListener scrollListener;
     private KeyListener keyListener;
     private DragListener dragListener;
     private FocusListener focusListener;
@@ -75,10 +78,37 @@ public class Widget {
     public void onDraw(Context context) {
         if (visibility == VISIBLE) {
             if (backgroundColor != 0) {
-                context.setSVGTransform(getTransformView());
+                float x = bg.getX();
+                float y = bg.getY();
+                float width = bg.getWidth();
+                float height = bg.getHeight();
+                float c1 = bg.getCornerTop();
+                float c2 = bg.getCornerRight();
+                float c3 = bg.getCornerBottom();
+                float c4 = bg.getCornerLeft();
+                float bgAlpha = (backgroundColor & 0x000000FF) / 255f;
+                if (shadowEffect && bgAlpha > 0) {
+                    context.setTransform(getTransformView().translate(0, Math.max(0, elevation)));
+                    if (elevation <= 2f) {
+                        context.setColor(0x000000FF);
+                        context.setGlobalAlpha(0.28f);
+                        context.drawRoundRect(x, y, width, height, c1, c2, c3, c4, true);
+                        context.setGlobalAlpha(1);
+                    } else if (elevation < 24) {
+                        context.drawRoundRectShadow(x, y, width, height, c1, c2, c3, c4,
+                                elevation * 2, 0.28f * bgAlpha);
+                    } else if (elevation < 48) {
+                        context.drawRoundRectShadow(x, y, width, height, c1, c2, c3, c4,
+                                48, (0.28f - ((elevation - 24) / 100f)) * bgAlpha);
+                    } else {
+                        context.drawRoundRectShadow(x, y, width, height, c1, c2, c3, c4,
+                                48, 0.04f * bgAlpha);
+                    }
+                }
+                context.setTransform(getTransformView());
                 context.setColor(backgroundColor);
-                context.drawRoundRect(0, 0, getWidth(), getHeight(), getBackgroundRadius(), true);
-                context.setSVGTransform(null);
+                context.drawRoundRect(x, y, width, height, c1, c2, c3, c4, true);
+                context.setTransform(null);
             }
 
             if (children != null) {
@@ -90,11 +120,11 @@ public class Widget {
         }
     }
 
-    public void onLayout(float width, float height) {
-        setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
+    public void onLayout(float x, float y, float width, float height) {
+        setLayout(x, y, Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
     }
 
-    public final void setLayout(float width, float height) {
+    public final void setLayout(float x, float y, float width, float height) {
         if (parent != null) {
             if (width == MATH_PARENT && (maxWidth == MATH_PARENT || maxWidth == WRAP_CONTENT)) {
                 setWidth(parent.getWidth());
@@ -118,6 +148,8 @@ public class Widget {
                 setHeight(height);
             }
         }
+        setX(x);
+        setY(y);
     }
 
     public void onMeasure() {
@@ -125,25 +157,25 @@ public class Widget {
     }
 
     public final void setMeasure(float width, float height) {
-        mWidth = Math.max(width, minWidth);
-        mHeight = Math.max(height, minHeight);
+        measureWidth = Math.max(width, minWidth);
+        measureHeight = Math.max(height, minHeight);
     }
 
     public float getMeasureWidth()  {
-        return mWidth;
+        return measureWidth;
     }
 
     public float getMeasureHeight()  {
-        return mHeight;
+        return measureHeight;
     }
 
-    public void invalidate(boolean layout) {
+    protected void invalidate(boolean layout) {
         if (parent != null) {
             parent.invalidate(layout);
         }
     }
 
-    public void invalidateTransform() {
+    protected void invalidateTransform() {
         if (children != null) {
             for (Widget child : children) {
                 child.invalidateTransform();
@@ -152,7 +184,7 @@ public class Widget {
         invalidTransform = true;
     }
 
-    public void invalidateChildrenOrder() {
+    protected void invalidateChildrenOrder() {
         invalidChildrenOrder = true;
     }
 
@@ -196,7 +228,7 @@ public class Widget {
                 if (found != null) return found;
             }
         }
-        return visibility != GONE && clickable && contains(x, y) ? this : null;
+        return (visibility == VISIBLE || visibility == HIDDEN) && clickable && contains(x, y) ? this : null;
     }
 
     public Widget findFocused() {
@@ -271,18 +303,19 @@ public class Widget {
 
     public boolean contains(float x, float y) {
         transform();
-        float px = -(centerX * width) + inverseTransform.getPointX(x, y);
-        float py = -(centerY * height) + inverseTransform.getPointY(x, y);
-        return background.contains(px, py);
+        float px = inverseTransform.getPointX(x, y);
+        float py = inverseTransform.getPointY(x, y);
+        return bg.contains(px, py);
     }
 
     public float getX() {
         return x;
     }
 
-    public void setX(float x) {
+    void setX(float x) {
         if (this.x != x) {
             this.x = x;
+            bg.setX(x + marginLeft);
             invalidateTransform();
         }
     }
@@ -291,17 +324,10 @@ public class Widget {
         return y;
     }
 
-    public void setY(float y) {
+    void setY(float y) {
         if (this.y != y) {
             this.y = y;
-            invalidateTransform();
-        }
-    }
-
-    public void setPosition(float x, float y) {
-        if (this.x != x || this.y != y) {
-            this.x = x;
-            this.y = y;
+            bg.setY(y + marginTop);
             invalidateTransform();
         }
     }
@@ -313,7 +339,7 @@ public class Widget {
     void setWidth(float width) {
         if (this.width != width) {
             this.width = width;
-            background.setWidth(width);
+            bg.setWidth(width - marginLeft - marginRight);
         }
     }
 
@@ -324,7 +350,7 @@ public class Widget {
     void setHeight(float height) {
         if (this.height != height) {
             this.height = height;
-            background.setHeight(height);
+            bg.setHeight(height - marginTop - marginBottom);
         }
     }
 
@@ -680,14 +706,28 @@ public class Widget {
         return tmpTransform.set(inverseTransform);
     }
 
-    public float getBackgroundRadius() {
-        return backgroundRadius;
+    public float getBackgroundCornerTop() {
+        return bg.getCornerTop();
     }
 
-    public void setBackgroundRadius(float radius) {
-        if (backgroundRadius != radius) {
-            this.backgroundRadius = radius;
-            background.setRadius(radius);
+    public float getBackgroundCornerRight() {
+        return bg.getCornerRight();
+    }
+
+    public float getBackgroundCornerBottom() {
+        return bg.getCornerBottom();
+    }
+
+    public float getBackgroundCornerLeft() {
+        return bg.getCornerLeft();
+    }
+
+    public void setBackgroundCorners(float cTop, float cRight, float cBottom, float cLeft) {
+        if (bg.getCornerTop() != cTop ||
+                bg.getCornerRight() != cRight ||
+                bg.getCornerBottom() != cBottom ||
+                bg.getCornerLeft() != cLeft) {
+            bg.setCorners(cTop, cRight, cBottom, cLeft);
             invalidate(false);
         }
     }
@@ -703,12 +743,42 @@ public class Widget {
         }
     }
 
+    public boolean isShadowEffectEnabled() {
+        return shadowEffect;
+    }
+
+    public void setShadowEffectEnabled(boolean enable) {
+        if (this.shadowEffect != enable) {
+            this.shadowEffect = enable;
+            invalidate(false);
+        }
+    }
+
+    public boolean isRippleEffectEnabled() {
+        return rippleEffect;
+    }
+
+    public void setRippleEffectEnabled(boolean enable) {
+        if (this.rippleEffect != enable) {
+            this.rippleEffect = enable;
+            invalidate(false);
+        }
+    }
+
     public void setPointerListener(PointerListener pointerListener) {
         this.pointerListener = pointerListener;
     }
 
     public PointerListener getPointerListener() {
         return pointerListener;
+    }
+
+    public void setScrollListener(ScrollListener scrollListener) {
+        this.scrollListener = scrollListener;
+    }
+
+    public ScrollListener getScrollListener() {
+        return scrollListener;
     }
 
     public void setKeyListener(KeyListener keyListener) {
@@ -742,6 +812,16 @@ public class Widget {
         }
         if (!done && parent != null) {
             parent.firePointer(pointerEvent.recycle(parent));
+        }
+    }
+
+    public void fireScroll(ScrollEvent scrollEvent) {
+        boolean done = false;
+        if (scrollListener != null) {
+            done = scrollListener.handle(scrollEvent);
+        }
+        if (!done && parent != null) {
+            parent.fireScroll(scrollEvent.recycle(parent));
         }
     }
 

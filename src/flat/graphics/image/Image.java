@@ -3,8 +3,9 @@ package flat.graphics.image;
 import flat.graphics.Texture;
 
 public class Image {
-    Texture atlas;
-    int srcx, srcy, width, height;
+
+    private Texture atlas;
+    private int srcx, srcy, width, height;
 
     public Image(Texture atlas, int srcx, int srcy, int width, int height) {
         this.atlas = atlas;

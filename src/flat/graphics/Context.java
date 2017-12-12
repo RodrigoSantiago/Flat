@@ -3,8 +3,7 @@ package flat.graphics;
 import flat.backend.GL;
 import flat.backend.SVG;
 import flat.graphics.effects.Effect;
-import flat.graphics.effects.HBlur;
-import flat.graphics.effects.VBlur;
+import flat.graphics.effects.RoundRectShadow;
 import flat.graphics.image.Image;
 import flat.graphics.paint.*;
 import flat.graphics.svg.*;
@@ -24,6 +23,7 @@ public final class Context {
 
     private static Context context;
     private final Thread thread;
+    private float[] transform;
 
     private Context(Thread thread) {
         this.thread = thread;
@@ -52,8 +52,6 @@ public final class Context {
     private int mode;
     private int width;
     private int height;
-    private int svgViewWidth;
-    private int svgViewHeight;
     private Surface applicationSurface;
     private Texture applicationTexture;
     private Texture applicationTextureBack;
@@ -64,31 +62,44 @@ public final class Context {
     //-----------------
     //    SVG
     //-----------------
-    private int color;
-    private Paint paint;
-    private float strokeWidth = 1.0f;
-    private LineCap strokeCap;
-    private LineJoin strokeJoin;
+    private int color = 0xFFFFFFFF;
+    private float alpha = 1f;
+    private Paint paint = null;
+    private float strokeWidth = 1f;
+    private LineCap strokeCap = LineCap.BUTT;
+    private LineJoin strokeJoin = LineJoin.ROUND;
 
-    private final Affine idt = new Affine();
+    private Font font = Font.DEFAULT;
+    private float fontSize = 16f;
+    private VAlign textVAlign = VAlign.TOP;
+    private HAlign textHAlign = HAlign.LEFT;
+
     private Affine tr2 = new Affine();
+    private Affine trView = new Affine();
 
     //-----------------
     //    2D
     //-----------------
     private Shader imageShader;
+    private Shader shadowShader;
     private VertexArray imageBatch;
-    private int imageBatchCount;
     private Texture imageBatchAtlas;
+    private int imageBatchLimit = 100;
+    private int imageBatchCount;
     private float[] parser = new float[24];
-    private HBlur shadowPassH;
-    private VBlur shadowPassV;
 
-    public String vertex, fragment;
+    private Effect imageEffect;
+    private RoundRectShadow shadowEffect;
+
+    public String vertex, fragment, shadowVtx, shadowFrg;
+
     {
         try {
-            vertex = new String(Files.readAllBytes(Paths.get(getClass().getResource("resources/vertex.glsl").toURI())));
-            fragment = new String(Files.readAllBytes(Paths.get(getClass().getResource("resources/fragment.glsl").toURI())));
+            vertex = new String(Files.readAllBytes(Paths.get(getClass().getResource("/resources/vertex.glsl").toURI())));
+            fragment = new String(Files.readAllBytes(Paths.get(getClass().getResource("/resources/fragment.glsl").toURI())));
+
+            shadowVtx = new String(Files.readAllBytes(Paths.get(getClass().getResource("/resources/shadow.vtx.glsl").toURI())));
+            shadowFrg = new String(Files.readAllBytes(Paths.get(getClass().getResource("/resources/shadow.frg.glsl").toURI())));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -117,20 +128,29 @@ public final class Context {
             System.out.println(imageShader.getVertexLog());
             System.out.println(imageShader.getLog());
         }
+        shadowShader = new Shader(shadowVtx, shadowFrg);
+        shadowShader.compile();
+        if (!shadowShader.isCompiled()) {
+            System.out.println("erro ao compilar shader");
+            System.out.println(shadowShader.getFragmentLog());
+            System.out.println(shadowShader.getVertexLog());
+            System.out.println(shadowShader.getLog());
+        }
 
         imageBatch = new VertexArray();
-        imageBatch.setData(1000 * 24);
+        imageBatch.setData(imageBatchLimit * 24);
         imageBatch.setAttributes(0, 2, 4, 0);
         imageBatch.setAttributes(1, 2, 4, 2);
-
 
         applicationSurface = new Surface(64, 64);
         applicationTexture = new Texture(64, 64);
         applicationTextureBack = new Texture(64, 64);
         applicationSurface.attachTexture(applicationTexture);
 
-        shadowPassH = new HBlur();
-        shadowPassV = new VBlur();
+        shadowEffect = new RoundRectShadow();
+
+        GL.EnableBlend(true);
+        GL.SetBlendFunction(BF_SRC_ALPHA, BF_ONE_MINUS_SRC_ALPHA, BF_ONE, BF_ZERO);
     }
 
     public void dispose() {
@@ -142,6 +162,14 @@ public final class Context {
                 obj.dispose();
             }
         }
+    }
+
+    public void resize(int width, int height) {
+        this.width = width;
+        this.height = height;
+        getApplicationSurface().resize(width, height);
+        getApplicationTexture().resize(width, height);
+        applicationTextureBack.resize(width, height);
     }
 
     //--------------------
@@ -157,10 +185,15 @@ public final class Context {
     }
 
     public void clear() {
-        clear(true, true, true);
+        clear(0);
     }
 
-    public void clear(boolean color, boolean depth, boolean stencil) {
+    public void clear(int rgba) {
+        clear(rgba, true, true, true);
+    }
+
+    public void clear(int rgba, boolean color, boolean depth, boolean stencil) {
+        GL.SetClearColor(rgba);
         GL.Clear((color ? CB_COLOR_BUFFER_BIT : 0) | (depth ? CB_DEPTH_BUFFER_BIT : 0) | (stencil ? CB_STENCIL_BUFFER_BIT : 0));
     }
 
@@ -174,15 +207,17 @@ public final class Context {
     }
 
     public void setView(int x, int y, int width, int height) {
-        GL.SetViewport(x, y, svgViewWidth = width, svgViewHeight = height);
+        softFlush();
+
+        GL.SetViewport(x, y, this.width = width, this.height = height);
     }
 
-    public void resize(int width, int height) {
-        this.width = width;
-        this.height = height;
-        getApplicationSurface().resize(width, height);
-        getApplicationTexture().resize(width, height);
-        applicationTextureBack.resize(width, height);
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
     }
 
     public void setSurface(Surface surface) {
@@ -212,13 +247,23 @@ public final class Context {
             if (mode == 3) CoreFinalize();
             mode = 1;
 
-            SVG.BeginFrame(svgViewWidth, svgViewHeight, 1);
+            SVG.BeginFrame(GL.GetViewportWidth(), GL.GetViewportHeight(), 1);
             SVG.SetLineCap(strokeCap == LineCap.BUTT ? SVG_BUTT : strokeCap == LineCap.SQUARE ? SVG_SQUARE : SVG_ROUND);
             SVG.SetLineJoin(strokeJoin == LineJoin.BEVEL ? SVG_BEVEL : strokeJoin == LineJoin.MITER ? SVG_MITER : SVG_ROUND);
             SVG.SetStrokeWidth(strokeWidth);
             SVG.SetStrokeColor(color);
             SVG.SetFillColor(color);
+            SVG.SetGlobalAlpha(alpha);
             SVG.TransformSet(tr2.m00, tr2.m10, tr2.m01, tr2.m11, tr2.m02, tr2.m12);
+
+            SVG.TextSetFont(font.getInternalId());
+            SVG.TextSetSize(fontSize);
+            int h = textHAlign == HAlign.LEFT ? SVG_ALIGN_LEFT :
+                    textHAlign == HAlign.RIGHT ? SVG_ALIGN_RIGHT : SVG_ALIGN_CENTER;
+            int v = textVAlign == VAlign.MIDDLE ? SVG_ALIGN_MIDDLE :
+                    textVAlign == VAlign.TOP ? SVG_ALIGN_TOP :
+                            textVAlign == VAlign.BOTTOM ? SVG_ALIGN_BOTTOM : SVG_ALIGN_BASELINE;
+            SVG.TextSetAlign(h | v);
         }
     }
 
@@ -227,15 +272,19 @@ public final class Context {
 
     }
 
-    public void setSVGTransform(Affine transform2D) {
+    public void setTransform(Affine transform2D) {
         if (transform2D == null) {
-            this.tr2 = idt;
+            this.tr2.identity();
         } else {
-            this.tr2 = transform2D;
+            this.tr2.set(transform2D);
         }
         if (mode == 1) {
             SVG.TransformSet(tr2.m00, tr2.m10, tr2.m01, tr2.m11, tr2.m02, tr2.m12);
         }
+    }
+
+    public Affine getTransformView() {
+        return trView.set(tr2);
     }
 
     public void setComposite() {
@@ -248,19 +297,25 @@ public final class Context {
 
     public void setPaint(Paint paint) {
         this.paint = paint;
-}
+    }
 
     public void setColor(int rgba) {
         this.color = rgba;
-        this.paint = null;
         if (mode == 1) {
             SVG.SetFillColor(color);
             SVG.SetStrokeColor(color);
         }
     }
 
+    public void setGlobalAlpha(float alpha) {
+        this.alpha = alpha;
+        if (mode == 1) {
+            SVG.SetGlobalAlpha(alpha);
+        }
+    }
+
     public void setStrokeWidth(float size) {
-        strokeWidth = Math.max(0.0001f, size);
+        strokeWidth = Math.max(Float.MIN_VALUE, size);
         if (mode == 1) {
             SVG.SetStrokeWidth(strokeWidth);
         }
@@ -315,6 +370,17 @@ public final class Context {
         }
     }
 
+    public void drawArc(float x, float y, float radius, float startAngle, float endAngle, boolean fill) {
+        SVGMode();
+        SVG.BeginPath();
+        SVG.Arc(x, y, radius, startAngle, endAngle, SVG_CCW);
+        if (fill) {
+            SVG.Fill();
+        } else {
+            SVG.Stroke();
+        }
+    }
+
     public void drawEllipse(float x, float y, float width, float height, boolean fill) {
         SVGMode();
         SVG.BeginPath();
@@ -338,9 +404,17 @@ public final class Context {
     }
 
     public void drawRoundRect(float x, float y, float width, float height, float corners, boolean fill) {
+        drawRoundRect(x, y, width, height, corners, corners, corners, corners, fill);
+    }
+
+    public void drawRoundRect(float x, float y, float width, float height, float c1, float c2, float c3, float c4, boolean fill) {
         SVGMode();
         SVG.BeginPath();
-        SVG.RoundedRect(x, y, width, height, corners / 2f);
+        c1 = Math.max(0, Math.min(height / 2f, Math.min(width / 2f, c1)));
+        c2 = Math.max(0, Math.min(height / 2f, Math.min(width / 2f, c2)));
+        c3 = Math.max(0, Math.min(height / 2f, Math.min(width / 2f, c3)));
+        c4 = Math.max(0, Math.min(height / 2f, Math.min(width / 2f, c4)));
+        SVG.RoundedRect(x, y, width, height, c1, c2, c3, c4);
         if (fill) {
             SVG.Fill();
         } else {
@@ -348,28 +422,87 @@ public final class Context {
         }
     }
 
+    public void drawRoundRectShadow(float x, float y, float width, float height, float corners, float blur, float alpha) {
+        drawRoundRectShadow(x, y, width, height, corners, corners, corners, corners, blur, alpha);
+    }
+
+    public void drawRoundRectShadow(float x, float y, float width, float height, float c1, float c2, float c3, float c4,
+                                    float blur, float alpha) {
+        shadowEffect.setBlur(blur);
+        shadowEffect.setAlpha(alpha);
+        shadowEffect.setCorners(c1, c2, c3, c4);
+        shadowEffect.setBox(x, y, width, height);
+        setImageEffect(shadowEffect);
+        drawImage(null, 0, 0, 1, 0, 1, 1, 0, 1, x, y, x + width, y, x + width, y + height, x, y + height);
+    }
+
     public void drawSvg(Svg svg, float x, float y, boolean fill) {
 
     }
 
     public void setTextFont(Font font) {
-
+        this.font = font;
+        if (mode == 1) {
+            SVG.TextSetFont(font.getInternalId());
+        }
     }
 
     public void setTextSize(float size) {
-
+        this.fontSize = size;
+        if (mode == 1) {
+            SVG.TextSetSize(size);
+        }
     }
 
-    public void setTextAlign(TextAligment align) {
+    public void setTextVerticalAlign(VAlign align) {
+        this.textVAlign = align;
+        if (mode == 1) {
+            int h = textHAlign == HAlign.LEFT ? SVG_ALIGN_LEFT :
+                    textHAlign == HAlign.RIGHT ? SVG_ALIGN_RIGHT : SVG_ALIGN_CENTER;
+            int v = textVAlign == VAlign.MIDDLE ? SVG_ALIGN_MIDDLE :
+                    textVAlign == VAlign.TOP ? SVG_ALIGN_TOP :
+                            textVAlign == VAlign.BOTTOM ? SVG_ALIGN_BOTTOM : SVG_ALIGN_BASELINE;
+            SVG.TextSetAlign(h | v);
+        }
+    }
 
+    public float getTextWidth(String text) {
+        SVGMode();
+        return SVG.TextGetWidth(text);
+    }
+
+    public void setTextHorizontalAlign(HAlign align) {
+        this.textHAlign = align;
+        if (mode == 1) {
+            int h = textHAlign == HAlign.LEFT ? SVG_ALIGN_LEFT :
+                    textHAlign == HAlign.RIGHT ? SVG_ALIGN_RIGHT : SVG_ALIGN_CENTER;
+            int v = textVAlign == VAlign.MIDDLE ? SVG_ALIGN_MIDDLE :
+                    textVAlign == VAlign.TOP ? SVG_ALIGN_TOP :
+                            textVAlign == VAlign.BOTTOM ? SVG_ALIGN_BOTTOM : SVG_ALIGN_BASELINE;
+            SVG.TextSetAlign(h | v);
+        }
     }
 
     public void drawText(String text, float x, float y) {
-
+        SVGMode();
+        SVG.BeginPath();
+        SVG.DrawText(x, y, text);
     }
 
-    public void drawText(String text, float x, float y, float maxWidth) {
+    public void drawTextBox(String text, float x, float y, float maxWidth) {
+        SVGMode();
+        SVG.BeginPath();
+        SVG.DrawTextBox(x, y, maxWidth, text);
+    }
 
+    public void drawTextSlice(String text, float x, float y, float maxWidth) {
+        SVGMode();
+        SVG.BeginPath();
+
+        int glyphs = SVG.TextGetLastGlyph(text, maxWidth);
+        if (glyphs > 0) {
+            SVG.DrawTextBox(x, y, maxWidth, text.substring(0, glyphs));
+        }
     }
 
     //--------------------
@@ -381,51 +514,49 @@ public final class Context {
             if (mode == 3) CoreFinalize();
             mode = 2;
 
-            int programId = imageShader.shaderProgramId;
-            if (programId != GL.ProgramGetUsed()) {
-                GL.ProgramUse(programId);
-            }
         }
     }
 
     private void ImageFinalize() {
-        drawImages(null);
+        flushImages();
 
     }
 
-    private void drawImages(Effect effect) {
+    private void flushImages() {
         if (imageBatchCount > 0) {
-            int vao = imageBatch.vertexArrayId;
-            int bVao = GL.VertexArrayGetBound();
 
-            if  (vao != bVao) {
-                GL.VertexArrayBind(vao);
+            int vao = GL.VertexArrayGetBound();
+            if (vao != imageBatch.vertexArrayId) {
+                GL.VertexArrayBind(imageBatch.vertexArrayId);
             }
 
-            if (effect == null) {
-                imageShader.setInt("effectType", 0);
-            } else {
-                effect.applyAttributes(imageShader);
+            int tex = GL.TextureGetBound(TB_TEXTURE_2D);
+            if (imageBatchAtlas != null && tex != imageBatchAtlas.textureId) {
+                GL.TextureBind(TB_TEXTURE_2D, imageBatchAtlas.textureId);
             }
 
-            GL.TextureBind(TB_TEXTURE_2D, imageBatchAtlas.textureId);
             GL.DrawArrays(VM_TRIANGLES, 0, imageBatchCount * 6, 1);
-
-            if (vao != bVao) {
-                GL.VertexArrayBind(bVao);
-            }
 
             imageBatchCount = 0;
             imageBatchAtlas = null;
         }
     }
 
-    public void drawImage(Image image, Affine affine) {
-        drawImage(image, 0, 0, image.getWidth(), image.getHeight(),
-                affine.getPointX(0, 0),
-                affine.getPointY(0, 0),
-                affine.getPointX(image.getWidth(), image.getHeight()),
-                affine.getPointY(image.getWidth(), image.getHeight()));
+    public void setImageEffect(Effect effect) {
+        ImageMode();
+        flushImages();
+
+        effect.applyEffect(this);
+    }
+
+    public void setImageShader(Shader shader) {
+        ImageMode();
+        flushImages();
+
+        int programId = shader == null ? 0 : shader.shaderProgramId;
+        if  (programId != GL.ProgramGetUsed()) {
+            GL.ProgramUse(programId);
+        }
     }
 
     public void drawImage(Image image, float x, float y) {
@@ -433,121 +564,85 @@ public final class Context {
     }
 
     public void drawImage(Image image, float x, float y, float width, float height) {
-        drawImage(image, 0, 0, image.getWidth(), image.getHeight(), x, y, width, height);
+        drawImage(image.getAtlas(),
+                image.getSrcx(), image.getSrcy(),
+                image.getSrcx() + image.getWidth(), image.getSrcy(),
+                image.getSrcx() + image.getWidth(), image.getSrcy() + image.getHeight(),
+                image.getSrcx(), image.getSrcy() + image.getHeight(),
+                x, y, x + width, y, x + width, y + height, x, y + height);
     }
 
-    public void drawImage(Image image, float srcX1, float srcY1, float srcX2, float srcY2, float dstX1, float dstY1, float dstX2, float dstY2) {
-        drawImage(image.getAtlas(), srcX1, srcY1, srcX2, srcY2, dstX1, dstY1, dstX2, dstY2);
+    public void drawImage(Image image, Affine affine) {
+        float x1 = affine.getPointX(0, 0);
+        float y1 = affine.getPointY(0, 0);
+        float x2 = affine.getPointX(image.getWidth(), 0);
+        float y2 = affine.getPointY(image.getWidth(), 0);
+        float x3 = affine.getPointX(image.getWidth(), image.getHeight());
+        float y3 = affine.getPointY(image.getWidth(), image.getHeight());
+        float x4 = affine.getPointX(0, image.getHeight());
+        float y4 = affine.getPointY(0, image.getHeight());
+        drawImage(image.getAtlas(),
+                image.getSrcx(), image.getSrcy(),
+                image.getSrcx() + image.getWidth(), image.getSrcy(),
+                image.getSrcx() + image.getWidth(), image.getSrcy() + image.getHeight(),
+                image.getSrcx(), image.getSrcy() + image.getHeight(),
+                x1, y1, x2, y2, x3, y3, x4, y4);
     }
 
-    public void drawImage(Texture texture, float srcX1, float srcY1, float srcX2, float srcY2, float dstX1, float dstY1, float dstX2, float dstY2) {
-        drawImage(null, texture, srcX1, srcY1, srcX2, srcY2, dstX1, dstY1, dstX2, dstY2);
+    public void drawImage(Texture image, Affine affine) {
+        float x1 = affine.getPointX(0, 0);
+        float y1 = affine.getPointY(0, 0);
+        float x2 = affine.getPointX(image.getWidth(), 0);
+        float y2 = affine.getPointY(image.getWidth(), 0);
+        float x3 = affine.getPointX(image.getWidth(), image.getHeight());
+        float y3 = affine.getPointY(image.getWidth(), image.getHeight());
+        float x4 = affine.getPointX(0, image.getHeight());
+        float y4 = affine.getPointY(0, image.getHeight());
+        drawImage(image, 0, 0,  image.getWidth(), 0,  image.getWidth(), image.getHeight(),  0, image.getHeight(),
+                x1, y1, x2, y2, x3, y3, x4, y4);
     }
 
-    public void drawImage(Effect effect, Texture texture, float srcX1, float srcY1, float srcX2, float srcY2, float dstX1, float dstY1, float dstX2, float dstY2) {
+    public void drawImage(Texture texture,
+                          float srcX1, float srcY1, float srcX2, float srcY2, float srcX3, float srcY3, float srcX4, float srcY4,
+                          float dstX1, float dstY1, float dstX2, float dstY2, float dstX3, float dstY3, float dstX4, float dstY4) {
         ImageMode();
 
-        if (imageBatchCount > 1000 || texture != imageBatchAtlas) {
-            drawImages(null);
+        if (imageBatchCount >= imageBatchLimit || texture != imageBatchAtlas) {
+            flushImages();
         }
 
         imageBatchAtlas = texture;
 
-        srcY1 = texture.height - srcY1;
-        srcY2 = texture.height - srcY2;
+        if (texture != null) {
+            srcY1 = texture.height - srcY1;
+            srcY2 = texture.height - srcY2;
+            srcY3 = texture.height - srcY3;
+            srcY4 = texture.height - srcY4;
+        } else {
+            srcY1 = 1 - srcY1;
+            srcY2 = 1 - srcY2;
+            srcY3 = 1 - srcY3;
+            srcY4 = 1 - srcY4;
+        }
 
         dstX1 = dstX1 * 2 / width - 1f;
         dstX2 = dstX2 * 2 / width - 1f;
+        dstX3 = dstX3 * 2 / width - 1f;
+        dstX4 = dstX4 * 2 / width - 1f;
         dstY1 = -((dstY1 * 2 / height) - 1f);
         dstY2 = -((dstY2 * 2 / height) - 1f);
+        dstY3 = -((dstY3 * 2 / height) - 1f);
+        dstY4 = -((dstY4 * 2 / height) - 1f);
 
         parser[ 0] = dstX1; parser[ 1] = dstY1; parser[ 2] = srcX1; parser[ 3] = srcY1;
-        parser[ 4] = dstX2; parser[ 5] = dstY1; parser[ 6] = srcX2; parser[ 7] = srcY1;
-        parser[ 8] = dstX2; parser[ 9] = dstY2; parser[10] = srcX2; parser[11] = srcY2;
+        parser[ 4] = dstX2; parser[ 5] = dstY2; parser[ 6] = srcX2; parser[ 7] = srcY2;
+        parser[ 8] = dstX3; parser[ 9] = dstY3; parser[10] = srcX3; parser[11] = srcY3;
 
-        parser[12] = dstX2; parser[13] = dstY2; parser[14] = srcX2; parser[15] = srcY2;
-        parser[16] = dstX1; parser[17] = dstY2; parser[18] = srcX1; parser[19] = srcY2;
+        parser[12] = dstX3; parser[13] = dstY3; parser[14] = srcX3; parser[15] = srcY3;
+        parser[16] = dstX4; parser[17] = dstY4; parser[18] = srcX4; parser[19] = srcY4;
         parser[20] = dstX1; parser[21] = dstY1; parser[22] = srcX1; parser[23] = srcY1;
 
         imageBatch.setSubData(parser, imageBatchCount++ * 24);
-        if (effect != null) {
-            drawImages(effect);
-        }
-    }
-
-    public void drawRoundRectShadow(float x, float y, float width, float height, float corners, float blur, float alpha) {
-
-        // Draw the round rect
-        setSurface(getApplicationSurface());
-        clear();
-        SVGMode();
-        SVG.SetGlobalAlpha(alpha);
-        SVG.SetFillColor(0x000000FF);
-        drawRoundRect(x, y, width, height, corners, true);
-        SVG.SetFillColor(color);
-        SVG.SetGlobalAlpha(1);
-        setSurface(null);
-
-        // Calculate the internal blur limits
-        boolean use;
-        float ix1, ix2, iy1, iy2;
-        {
-            float aw = Math.min(width, corners) / 2.0f;
-            float ah = Math.min(height, corners) / 2.0f;
-
-            float tix1 = -0.7071f * aw + aw + blur / 2f;
-            float tiy1 = -0.7071f * ah + ah + blur / 2f;
-            float tix2 = width - tix1;
-            float tiy2 = height - tiy1;
-            tix1 += x;
-            tiy1 += y;
-            tix2 += x;
-            tiy2 += y;
-            ix1 = tr2.getPointX(tix1, tiy1);
-            iy1 = tr2.getPointY(tix1, tiy1);
-            ix2 = tr2.getPointX(tix2, tiy2);
-            iy2 = tr2.getPointY(tix2, tiy2);
-            use = tix2 > tix1 && tiy2 > tiy1;
-        }
-        // Calculate the external blur limits
-        float ox1, ox2, oy1, oy2;
-        {
-            ox1 = tr2.getPointX(x - blur, y - blur);
-            oy1 = tr2.getPointY(x - blur, y - blur);
-            ox2 = tr2.getPointX(x + width + blur, y + height + blur);
-            oy2 = tr2.getPointY(x + width + blur, y + height + blur);
-        }
-        shadowPassH.setBlur((int) blur);
-        shadowPassV.setBlur((int) blur);
-
-        //Desenha blur horizontal
-        applicationSurface.detachTexture(applicationTexture);
-        applicationSurface.attachTexture(applicationTextureBack);
-        setSurface(applicationSurface);
-        clear();
-        if (use) {
-            drawImage(shadowPassH, applicationTexture, ix1, oy1, ox2, iy1, ix1, oy1, ox2, iy1);
-            drawImage(shadowPassH, applicationTexture, ix2, iy1, ox2, oy2, ix2, iy1, ox2, oy2);
-            drawImage(shadowPassH, applicationTexture, ox1, iy2, ix2, oy2, ox1, iy2, ix2, oy2);
-            drawImage(shadowPassH, applicationTexture, ox1, oy1, ix1, iy2, ox1, oy1, ix1, iy2);
-            drawImage(applicationTexture, ix1, iy1, ix2, iy2, ix1, iy1, ix2, iy2);
-        } else {
-            drawImage(shadowPassH, applicationTexture, ox1, oy1, ox2, oy2, ox1, oy1, ox2, oy2);
-        }
-        setSurface(null);
-        applicationSurface.detachTexture(applicationTextureBack);
-        applicationSurface.attachTexture(applicationTexture);
-
-        //Desenha blur vertical, finalizando a operação
-        if (use) {
-            drawImage(shadowPassV, applicationTextureBack, ix1, oy1, ox2, iy1, ix1, oy1, ox2, iy1);
-            drawImage(shadowPassV, applicationTextureBack, ix2, iy1, ox2, oy2, ix2, iy1, ox2, oy2);
-            drawImage(shadowPassV, applicationTextureBack, ox1, iy2, ix2, oy2, ox1, iy2, ix2, oy2);
-            drawImage(shadowPassV, applicationTextureBack, ox1, oy1, ix1, iy2, ox1, oy1, ix1, iy2);
-            drawImage(applicationTextureBack, ix1, iy1, ix2, iy2, ix1, iy1, ix2, iy2);
-        } else {
-            drawImage(shadowPassV, applicationTextureBack, ox1, oy1, ox2, oy2, ox1, oy1, ox2, oy2);
-        }
     }
 
     //--------------------
@@ -574,25 +669,18 @@ public final class Context {
         }
     }
 
-    public void drawVertexTriangles(VertexArray vertexArray, int offset, int length) {
+    public void drawVertexTriangles(VertexArray vertexArray, int first, int count) {
         CoreMode();
 
         int vao = GL.VertexArrayGetBound();
+        if (vao != vertexArray.vertexArrayId) {
+            GL.VertexArrayBind(vertexArray.vertexArrayId);
+        }
 
-        GL.VertexArrayBind(vertexArray.vertexArrayId);
-        GL.DrawArrays(VM_TRIANGLES, offset, length, 1);
-
-        GL.VertexArrayBind(vao);
-    }
-
-    public void drawVertexLines(VertexArray vertexArray, int offset, int length) {
-        CoreMode();
-
-        int vao = GL.VertexArrayGetBound();
-
-        GL.VertexArrayBind(vertexArray.vertexArrayId);
-        GL.DrawArrays(VM_LINES, offset, length, 1);
-
-        GL.VertexArrayBind(vao);
+        if (vertexArray.isElementMode()) {
+            GL.DrawElements(VM_TRIANGLES, count, 1, DT_INT, (first * 4));
+        } else {
+            GL.DrawArrays(VM_TRIANGLES, first, count, 1);
+        }
     }
 }

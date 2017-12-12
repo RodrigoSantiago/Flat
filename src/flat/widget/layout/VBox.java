@@ -1,4 +1,4 @@
-package flat.widget.containers;
+package flat.widget.layout;
 
 import flat.widget.Widget;
 
@@ -14,8 +14,8 @@ public class VBox extends Box {
     }
 
     @Override
-    public void onLayout(float width, float height) {
-        setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
+    public void onLayout(float x, float y, float width, float height) {
+        setLayout(x, y, Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
         ArrayList<Widget> children = getChildren();
 
         float yoff = 0, sum = 0;
@@ -46,18 +46,11 @@ public class VBox extends Box {
             if (child.getVisibility() == GONE) continue;
 
             if (Math.min(child.getMeasureHeight(), getHeight()) * mul < Math.min(child.getMinHeight(), getHeight())) {
-                child.onLayout(getWidth(), Math.min(child.getMinHeight(), getHeight()));
+                child.onLayout(0, yoff, getWidth(), Math.min(child.getMinHeight(), getHeight()));
             } else {
-                child.onLayout(getWidth(), Math.min(child.getMeasureHeight(), getHeight()) * mul2);
+                child.onLayout(0, yoff, getWidth(), Math.min(child.getMeasureHeight(), getHeight()) * mul2);
             }
-            child.setPosition(0, yoff);
             yoff += child.getHeight();
-        }
-        for (Widget child : children) {
-            if (child.getVisibility() == GONE) {
-                child.onLayout(0, 0);
-                child.setPosition(0, 0);
-            }
         }
     }
 

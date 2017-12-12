@@ -1,18 +1,11 @@
 package flat.graphics.effects;
 
-import flat.Internal;
-import flat.graphics.Shader;
+import flat.graphics.Context;
 
 public abstract class Effect {
 
-    private final int id;
-
-    Effect(int id) {
-        this.id = id;
+    public Effect() {
     }
 
-    @Internal
-    public void applyAttributes(Shader shader) {
-        shader.setInt("effectType", id);
-    }
+    public abstract void applyEffect(Context context);
 }

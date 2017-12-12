@@ -1,24 +1,46 @@
 package flat.math;
 
 public class RoundRect {
-    private float width, height, radius;
+    private float x, y, width, height, cTop, cRight, cBottom, cLeft;
 
     public RoundRect() {
-        set(0, 0, 0);
+        set(0, 0, 0, 0, 0, 0, 0, 0);
     }
 
-    public RoundRect(float width, float height) {
-        set(width, height, 0);
+    public RoundRect(float x, float y, float width, float height) {
+        set(x, y, width, height, 0, 0, 0, 0);
     }
 
-    public RoundRect(float width, float height, float radius) {
-        set(width, height, radius);
+    public RoundRect(float x, float y, float width, float height, float radius) {
+        set(x, y, width, height, radius, radius, radius, radius);
     }
 
-    public void set(float width, float height, float radius) {
-        this.width = width;
-        this.height = height;
-        this.radius = radius;
+    public RoundRect(float x, float y, float width, float height, float cTop, float cRight, float cBottom, float cLeft) {
+        set(x, y, width, height, cTop, cRight, cBottom, cLeft);
+    }
+
+    public void set(float x, float y, float width, float height, float cTop, float cRight, float cBottom, float cLeft) {
+        setX(x);
+        setY(y);
+        setWidth(width);
+        setHeight(height);
+        setCorners(cTop, cRight, cBottom, cLeft);
+    }
+
+    public float getX() {
+        return x;
+    }
+
+    public void setX(float x) {
+        this.x = x;
+    }
+
+    public float getY() {
+        return y;
+    }
+
+    public void setY(float y) {
+        this.y = y;
     }
 
     public float getWidth() {
@@ -37,30 +59,49 @@ public class RoundRect {
         this.height = height;
     }
 
-    public float getRadius() {
-        return radius;
+    public float getCornerTop() {
+        return cTop;
     }
 
-    public void setRadius(float radius) {
-        this.radius = radius;
+    public float getCornerRight() {
+        return cRight;
+    }
+
+    public float getCornerBottom() {
+        return cBottom;
+    }
+
+    public float getCornerLeft() {
+        return cLeft;
+    }
+
+    public void setCorners(float cTop, float cRight, float cBottom, float cLeft) {
+        this.cTop = cTop;
+        this.cRight = cRight;
+        this.cBottom = cBottom;
+        this.cLeft = cLeft;
     }
 
     public boolean contains(float px, float py) {
-        if (width <= 0 && height <= 0) return false;
-
-        if (px < 0 || py < 0 || px >= width || py >= height) {
+        float x1 = x, y1 = y;
+        float x2 = x + width, y2 = y + height;
+        if (width <= 0 || height <= 0 || px < x1 || py < y1 || px >= x2 || py >= y2) {
             return false;
         } else {
-            float x1, y1;
-            float aw = Math.min(width, radius) / 2.0f;
-            float ah = Math.min(height, radius) / 2.0f;
+            float crn;
+            if (px < width / 2f) {
+                crn = py < height / 2f ? cTop : cLeft;
+            } else {
+                crn = py < height / 2f ? cRight : cBottom;
+            }
+            crn = Math.max(0, Math.min(height / 2f, Math.min(width / 2f, crn)));
 
-            if ((px >= (x1 = aw) && px < (x1 = width - aw)) || (py >= (y1 = ah) && py < (y1 = height - ah))) {
+            if ((x >= (x1 += crn) && x < (x1 = x2 - crn)) || (y >= (y1 += crn) && y < (y1 = y2 - crn))) {
                 return true;
             } else {
-                px = (px - x1) / aw;
-                py = (py - y1) / ah;
-                return (px * px + py * py <= 1.0);
+                x = (x - x1) / crn;
+                y = (y - y1) / crn;
+                return (x * x + y * y <= 1.0);
             }
         }
     }

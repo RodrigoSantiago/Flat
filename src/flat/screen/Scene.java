@@ -1,50 +1,22 @@
 package flat.screen;
 
-import flat.events.PointerEvent;
 import flat.graphics.*;
-import flat.graphics.image.Image;
-import flat.widget.containers.Box;
+import flat.widget.layout.Box;
+import flat.widget.text.Label;
 
 public class Scene extends Box {
 
     Activity activity;
-
-    float corners;
     public Scene(Activity activity) {
         this.activity = activity;
-
-        setBackgroundColor(0xFFFFFFFF);
-
-        Box box = new Box();
-        box.setBackgroundColor(0xFF0000FF);
-        box.setPrefSize(100, 100);
-        add(box);
-
-        Shader shader = new Shader();
-        shader.setFragmentSorce(Context.getContext().fragment);
-        shader.setVertexSorce(Context.getContext().vertex);
-        shader.compile();
-
-        VertexArray vertexArray = new VertexArray();
-        vertexArray.setData(new float[] {
-                -0.5f, -0.5f, 0.0f,
-                0.5f, -0.5f, 0.0f,
-                0.0f,  0.5f, 0.0f
-        });
-        vertexArray.setAttributes(0, 3, 3, 0);
-
-        setPointerListener(event -> {
-            if (event.getType() == PointerEvent.DRAGGED) {
-                corners += 1;
-                invalidate(true);
-            }
-            return false;
-        });
+        Label label = new Label();
+        label.setText("Eaaeee !!!!!");
+        add(label);
     }
 
     @Override
-    public void onLayout(float width, float height) {
-        super.onLayout(activity.getWidth(), activity.getHeight());
+    public void onLayout(float x, float y, float width, float height) {
+        super.onLayout(0, 0, activity.getWidth(), activity.getHeight());
     }
 
     @Override
@@ -60,13 +32,9 @@ public class Scene extends Box {
 
     @Override
     public void onDraw(Context context) {
-        context.clear();
         context.setView(0, 0, (int) activity.getWidth(), (int) activity.getHeight());
-
-        context.setColor(0xDDDDDDFF);
-        context.drawRect(0, 0, (int) activity.getWidth(), (int) activity.getHeight(), true);
-
-        context.drawRoundRectShadow(10, 12, 50, 100, corners, 10.0f, 1f);
+        context.clear(0xDDDDDDFF);
+        super.onDraw(context);
     }
 
     @Override

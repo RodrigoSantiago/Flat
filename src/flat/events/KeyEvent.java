@@ -3,10 +3,10 @@ package flat.events;
 import flat.widget.Widget;
 
 public class KeyEvent extends Event {
-    public static final int PRESSED = 1;
-    public static final int REPEATED = 2;
-    public static final int RELEASED = 3;
-    public static final int TYPED = 4;
+    public static final int PRESSED = 10;
+    public static final int REPEATED = 11;
+    public static final int RELEASED = 12;
+    public static final int TYPED = 13;
 
     private boolean shift, ctrl, alt, meta ;
     private String chr;
@@ -54,12 +54,18 @@ public class KeyEvent extends Event {
 
     @Override
     public String toString() {
-        return (getType() == PRESSED ? "PRESSED" : getType() == RELEASED ? "RELEASED" : "TYPED") +
-                "[Alt:" + alt +
-                ", Ctrl:" + ctrl +
-                ", Meta:" + meta +
-                ", Shift:" + shift +
-                ", Char:" + chr +
-                ", KeyCode:" + keycode + "]";
+        StringBuilder s = new StringBuilder("KeyEvent ");
+        if (getType() == PRESSED) s.append("[PRESSED]");
+        else if (getType() == REPEATED) s.append("[REPEATED]");
+        else if (getType() == RELEASED) s.append("[RELEASED]");
+        else if (getType() == TYPED) s.append("[TYPED]");
+        s.append(" [").append(keycode).append("], [CHAR:").append("\n".equals(chr) ? "\n" : chr).append("]");
+
+        if (shift) s.append(", [").append("SHIFT").append("]");
+        if (ctrl) s.append(", [").append("CTRL").append("]");
+        if (alt) s.append(", [").append("ALT").append("]");
+        if (meta) s.append(", [").append("META").append("]");
+
+        return s.toString();
     }
 }

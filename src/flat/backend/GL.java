@@ -283,6 +283,7 @@ public class GL {
 
     public static native void ProgramSetUniformI(int uniformId, int attSize, int arrSize, int[] value, int offset);
     public static native void ProgramSetUniformF(int uniformId, int attSize, int arrSize, float[] value, int offset);
+    public static native void ProgramSetUniformMatrix(int uniformId, int w, int h, int arrSize, boolean transpose, float[] value, int offset);
     public static native void ProgramSetUniformBuffer(int uniformId, int attSize, int arrSize, int typeDT, Buffer buffer, int offset);
 
     public static native void ProgramGetUniformI(int id, int uniformId, int[] value, int offset);

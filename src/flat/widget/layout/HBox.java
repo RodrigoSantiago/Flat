@@ -1,4 +1,4 @@
-package flat.widget.containers;
+package flat.widget.layout;
 
 import flat.widget.Widget;
 
@@ -14,8 +14,8 @@ public class HBox extends Box {
     }
 
     @Override
-    public void onLayout(float width, float height) {
-        setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
+    public void onLayout(float x, float y, float width, float height) {
+        setLayout(x, y, Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
         ArrayList<Widget> children = getChildren();
 
         float xoff = 0, sum = 0;
@@ -46,18 +46,11 @@ public class HBox extends Box {
             if (child.getVisibility() == GONE) continue;
 
             if (Math.min(child.getMeasureWidth(), getWidth()) * mul < Math.min(child.getMinWidth(), getWidth())) {
-                child.onLayout(Math.min(child.getMinWidth(), getWidth()), getHeight());
+                child.onLayout(xoff, 0, Math.min(child.getMinWidth(), getWidth()), getHeight());
             } else {
-                child.onLayout(Math.min(child.getMeasureWidth(), getWidth()) * mul2, getHeight());
+                child.onLayout(xoff, 0, Math.min(child.getMeasureWidth(), getWidth()) * mul2, getHeight());
             }
-            child.setPosition(xoff, 0);
             xoff += child.getWidth();
-        }
-        for (Widget child : children) {
-            if (child.getVisibility() == GONE) {
-                child.onLayout(0, 0);
-                child.setPosition(0, 0);
-            }
         }
     }
 

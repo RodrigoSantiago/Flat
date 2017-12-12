@@ -3,24 +3,24 @@ package flat.events;
 import flat.widget.Widget;
 
 public class DragEvent extends Event {
-    public static final int STARTED = 1;
-    public static final int DONE    = 2;
-    public static final int DROPPED = 3;
-    public static final int ENTERED = 4;
-    public static final int EXITED  = 5;
-    public static final int OVER    = 6;
+    public static final int STARTED = 2;
+    public static final int DONE    = 3;
+    public static final int DROPPED = 4;
+    public static final int ENTERED = 5;
+    public static final int EXITED  = 6;
+    public static final int OVER    = 7;
 
     private Object data;
-    private double screenX, screenY, x, y;
+    private float x, y;
     private boolean dragAccpet;
     private int dragSucess;
     private boolean started;
 
-    public DragEvent(Widget source, int type, Object data, double screenX, double screenY) {
+    public DragEvent(Widget source, int type, Object data, float x, float y) {
         super(source, type);
         this.data = data;
-        this.screenX = screenX;
-        this.screenY = screenY;
+        this.x = x;
+        this.y = y;
     }
 
     @Override
@@ -37,19 +37,11 @@ public class DragEvent extends Event {
         this.data = data;
     }
 
-    public double getScreenX() {
-        return screenX;
-    }
-
-    public double getScreenY() {
-        return screenY;
-    }
-
-    public double getX() {
+    public float getX() {
         return x;
     }
 
-    public double getY() {
+    public float getY() {
         return y;
     }
 
@@ -73,25 +65,24 @@ public class DragEvent extends Event {
         return dragSucess != 0;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder s = new StringBuilder();
-        if (getType() == STARTED) s.append("STARTED");
-        if (getType() == DONE) s.append("DONE");
-        if (getType() == DROPPED) s.append("DROPPED");
-        if (getType() == ENTERED) s.append("ENTERED");
-        if (getType() == EXITED) s.append("EXITED");
-        if (getType() == OVER) s.append("OVER");
-        s.append("[").append(x).append(", ").append(y).append("]");
-        return s.toString();
-    }
-
-
     public boolean getDragSucess() {
         return dragSucess == 1;
     }
 
     public boolean isStarted() {
         return started;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder s = new StringBuilder("DragEvent ");
+        if (getType() == STARTED) s.append("[STARTED]");
+        else if (getType() == DONE) s.append("[DONE]");
+        else if (getType() == DROPPED) s.append("[DROPPED]");
+        else if (getType() == ENTERED) s.append("[ENTERED]");
+        else if (getType() == EXITED) s.append("[EXITED]");
+        else if (getType() == OVER) s.append("[OVER]");
+        s.append(", [").append(x).append(", ").append(y).append("]");
+        return s.toString();
     }
 }

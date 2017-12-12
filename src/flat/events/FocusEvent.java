@@ -3,11 +3,18 @@ package flat.events;
 import flat.widget.Widget;
 
 public class FocusEvent extends Event {
-    public static final int FOCUS_OWNED     = 1;
-    public static final int FOCUS_LOST      = 2;
+    public static final int OWNED = 8;
+    public static final int LOST = 9;
 
-    public FocusEvent(Widget source, int type) {
-        super(source, type);
+    private Widget target;
+
+    public FocusEvent(Widget source, Widget target) {
+        super(source, source == target ? OWNED : LOST);
+        this.target = target;
+    }
+
+    public Widget getTarget() {
+        return target;
     }
 
     @Override
@@ -18,6 +25,6 @@ public class FocusEvent extends Event {
 
     @Override
     public String toString() {
-        return getType() == FOCUS_OWNED ? "FOCUS_OWNED" : "FOCUS_LOST";
+        return "FocusEvent " + (getType() == OWNED ? "[OWNED]" : "[LOST]") + ", [" + target + "]";
     }
 }

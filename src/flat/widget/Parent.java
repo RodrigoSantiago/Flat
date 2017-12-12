@@ -17,11 +17,13 @@ public abstract class Parent extends Widget {
 
     protected final void childAttach(Widget child) {
         child.setParent(this);
+        invalidateChildrenOrder();
     }
 
     protected final void childDetach(Widget child) {
         if (child.parent == this) {
             child.setParent(null);
+            invalidateChildrenOrder();
         }
     }
 

@@ -5,6 +5,7 @@ import flat.backend.*;
 import flat.events.DragEvent;
 import flat.events.KeyEvent;
 import flat.events.PointerEvent;
+import flat.events.ScrollEvent;
 import flat.graphics.Context;
 import flat.graphics.image.Image;
 import flat.widget.Widget;
@@ -32,14 +33,20 @@ public final class Window {
 
     protected Window(Application app) {
         this.app = app;
+        this.thread = Thread.currentThread();
+    }
+
+    public static Window getWindow() {
+        return Application.getApplication() == null ? null : Application.getApplication().getWindow();
+    }
+
+    protected void init() {
         if (!WL.Init(80, 80, 800, 600, app.samples, app.resizable, app.decorated)) {
             throw new RuntimeException("Cannot create a window");
         }
         if (!SVG.Init(SVGEnuns.SVG_ANTIALIAS | SVGEnuns.SVG_STENCIL_STROKES)) {
             throw new RuntimeException("Cannot create a graphic context window");
         }
-
-        this.thread = Thread.currentThread();
 
         mouseX = (float) WL.GetCursorX();
         mouseY = (float) WL.GetCursorY();
@@ -52,15 +59,15 @@ public final class Window {
         WL.SetKeyCallback((key, scancode, action, mods) -> events.add(KeyData.get(key, scancode, action, mods)));
         WL.SetCharModsCallback((codepoint, mods) -> events.add(CharModsData.get(codepoint, mods)));
         WL.SetWindowSizeCallback((width, height) -> events.add(SizeData.get(width, height)));
-    }
 
-    public static Window getWindow() {
-        return Application.getApplication() == null ? null : Application.getApplication().getWindow();
-    }
-
-    public void init() {
         Context.initContext();
         this.context = Context.getContext();
+    }
+
+    protected void finish() {
+        this.context.dispose();
+        SVG.Finish();
+        WL.Finish();
     }
 
     public Context getContext() {
@@ -91,9 +98,6 @@ public final class Window {
             // Sync Calls
             processSyncCalls();
         }
-        context.dispose();
-        SVG.Finish();
-        WL.Finish();
     }
 
     protected void processEvents() {
@@ -188,7 +192,7 @@ public final class Window {
             else if (eData.type == 3) {
                 MouseScrollData event = (MouseScrollData) eData;
                 Widget widget = activity.findByPosition(mouseX, mouseY);
-                widget.firePointer(new PointerEvent(widget, PointerEvent.SCROLL, 0, event.x, event.y));
+                widget.fireScroll(new ScrollEvent(widget, ScrollEvent.SCROLL, event.x, event.y));
                 MouseScrollData.release(event);
 
             }

@@ -1,5 +1,7 @@
 package flat.backend;
 
+import java.nio.Buffer;
+
 public class SVG {
 
     //---------------------------
@@ -72,7 +74,7 @@ public class SVG {
     public static native void PathWinding(int dir);
     public static native void Arc(float cx, float cy, float radius, float a0, float a1, int dir);
     public static native void Rect(float x, float y, float width, float height);
-    public static native void RoundedRect(float x, float y, float width, float height, float radius);
+    public static native void RoundedRect(float x, float y, float width, float height, float c1, float c2, float c3, float c4);
     public static native void Ellipse(float cx, float cy, float rx, float ry);
     public static native void Circle(float cx, float cy, float radius);
     public static native void Fill();
@@ -97,6 +99,17 @@ public class SVG {
     public static native void DrawTextBox(float x, float y, float breakRowWidth, String string);
     public static native float DrawTextBounds(float x, float y, String string, float[] bounds4);
     public static native void DrawTextBoxBounds(float x, float y, float breakRowWidth, String string, float[] bounds4);
+
+    public static native float DrawTextBuffer(float x, float y, Buffer string, int offset, int length);
+    public static native void DrawTextBoxBuffer(float x, float y, float breakRowWidth, Buffer string, int offset, int length);
+    public static native float DrawTextBoundsBuffer(float x, float y, Buffer string, int offset, int length, float[] bounds4);
+    public static native void DrawTextBoxBoundsBuffer(float x, float y, float breakRowWidth, Buffer string, int offset, int length, float[] bounds4);
+
+    public static native float TextGetWidth(String string);
+    public static native float TextGetWidthBuffer(Buffer string, int offset, int length);
+    public static native int TextGetLastGlyph(String string, float breakRowWidth);
+    public static native int TextGetLastGlyphBuffer(Buffer string, int offset, int length, float breakRowWidth);
+
     public static native float TextMetricsGetAscender();
     public static native float TextMetricsGetDescender();
     public static native float TextMetricsGetLineHeight();

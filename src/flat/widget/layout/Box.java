@@ -1,4 +1,4 @@
-package flat.widget.containers;
+package flat.widget.layout;
 
 import flat.widget.Parent;
 import flat.widget.Widget;
@@ -12,14 +12,12 @@ public class Box extends Parent {
     }
 
     @Override
-    public void onLayout(float width, float height) {
-        setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
+    public void onLayout(float x, float y, float width, float height) {
+        setLayout(x, y, Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
         for (Widget child : getChildren()) {
-            if (child.getVisibility() != GONE) {
-                child.onLayout(getWidth(), getHeight());
-            } else {
-                child.onLayout(0, 0);
-            }
+            if (child.getVisibility() == GONE) continue;
+
+            child.onLayout(child.getX(), child.getY(), getWidth(), getHeight());
         }
     }
 
@@ -54,7 +52,6 @@ public class Box extends Parent {
     public void add(Widget child) {
         childAttach(child);
         getChildren().add(child);
-        invalidateChildrenOrder();
     }
 
     public void add(Widget... children) {
@@ -62,6 +59,5 @@ public class Box extends Parent {
             childAttach(child);
         }
         Collections.addAll(getChildren(), children);
-        invalidateChildrenOrder();
     }
 }
