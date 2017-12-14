@@ -1,6 +1,6 @@
 package flat.screen;
 
-import flat.graphics.Context;
+import flat.graphics.context.Context;
 import flat.widget.*;
 
 public class Activity {

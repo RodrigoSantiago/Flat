@@ -134,6 +134,7 @@ public class GL {
 
     public static native void FrameBufferSetTargets(int c0FA, int c1FA, int c2FA, int c3FA, int c4FA, int c5FA, int c6FA, int c7FA);
     public static native void FrameBufferGetTargets(int[] data8);
+
     //---------------------------
     //        Render Buffer
     //---------------------------
@@ -211,7 +212,9 @@ public class GL {
     public static native int BufferCreate();
     public static native void BufferDestroy(int id);
     public static native void BufferBind(int trgBB, int id);
+    public static native void BufferBindRange(int trgBB, int id, int buffer, int offset, int length);
     public static native int BufferGetBound(int trgBB);
+
     public static native void BufferDataB(int trgBB, byte[] data, int offset, int length, int usageTypeUT);
     public static native void BufferDataS(int trgBB, short[] data, int offset, int length, int usageTypeUT);
     public static native void BufferDataI(int trgBB, int[] data, int offset, int length, int usageTypeUT);
@@ -268,6 +271,15 @@ public class GL {
     public static native int ProgramGetUniformType(int id, int uniformId);
     public static native int ProgramGetUniformSize(int id, int uniformId);
     public static native int ProgramGetUniformId(int id, String name);
+
+    public static native int ProgramGetUniformBlocksCount(int id);
+    public static native String ProgramGetUniformBlockName(int id, int blockId);
+    public static native int ProgramGetUniformBlockBinding(int id, int blockId);
+    public static native int ProgramGetUniformBlockSize(int id, int blockId);
+    public static native int ProgramGetUniformBlockId(int id, String name);
+    public static native void ProgramUniformBlockBinding(int id, int blockId, int blockBind);
+    public static native int ProgramGetUniformBlockChildrenCount(int id, int blockId);
+    public static native void ProgramGetUniformBlockChildren(int id, int blockId, int[] data);
 
     public static native void ProgramSetTFVars(int id, String[] names, int bufferModeFM);
     public static native int ProgramGetTFVarsCount(int id);

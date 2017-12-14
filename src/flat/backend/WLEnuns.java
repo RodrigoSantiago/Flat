@@ -213,4 +213,56 @@ public class WLEnuns {
     public static final int GAMEPAD_AXIS_LEFT_TRIGGER = 4;
     public static final int GAMEPAD_AXIS_RIGHT_TRIGGER = 5;
     public static final int GAMEPAD_AXIS_LAST = GAMEPAD_AXIS_RIGHT_TRIGGER;
+
+
+    public interface WindowPosCallback {
+        void handle(int x, int y);
+    }
+    public interface WindowSizeCallback {
+        void handle(int width, int height);
+    }
+    public interface WindowCloseCallback {
+        boolean handle();
+    }
+    public interface WindowRefreshCallback {
+        void handle();
+    }
+    public interface WindowFocusCallback {
+        void handle(boolean focus);
+    }
+    public interface WindowIconifyCallback {
+        void handle(boolean minimized);
+    }
+    public interface WindowBufferSizeCallback {
+        void handle(int width, int height);
+    }
+
+    public interface MouseButtonCallback {
+        void handle(int button, int action, int mods);
+    }
+    public interface CursorPosCallback {
+        void handle(double x, double y);
+    }
+    public interface CursorEnterCallback {
+        void handle(boolean entered);
+    }
+    public interface KeyCallback {
+        void handle(int key, int scancode, int action, int mods);
+    }
+    public interface CharCallback {
+        void handle(int codepoint);
+    }
+    public interface CharModsCallback {
+        void handle(int codepoint, int mods);
+    }
+    public interface DropCallback {
+        void handle(String[] names);
+    }
+    public interface ScrollCallback {
+        void handle(double x, double y);
+    }
+
+    public interface JoyCallback {
+        void handle(int joy, boolean connected);
+    }
 }

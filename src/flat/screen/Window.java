@@ -6,7 +6,7 @@ import flat.events.DragEvent;
 import flat.events.KeyEvent;
 import flat.events.PointerEvent;
 import flat.events.ScrollEvent;
-import flat.graphics.Context;
+import flat.graphics.context.Context;
 import flat.graphics.image.Image;
 import flat.widget.Widget;
 
@@ -52,7 +52,7 @@ public final class Window {
         mouseY = (float) WL.GetCursorY();
         WL.SetInputMode(WLEnuns.STICKY_KEYS, 1);
         WL.SetInputMode(WLEnuns.STICKY_MOUSE_BUTTONS, 1);
-        WL.SetMouseButtonCallback((button, action, mods) -> events.add(MouseBtnData.get(button, action, mods)));
+        WL.SetMouseButtonCallback((button, action, mods) -> events.add(MouseBtnData.get(button + 1, action, mods)));
         WL.SetCursorPosCallback((x, y) -> events.add(MouseMoveData.get(outMouseX = (float) x, outMouseY = (float) y)));
         WL.SetScrollCallback((x, y) -> events.add(MouseScrollData.get(x, y)));
         WL.SetDropCallback(names -> events.add(MouseDropData.get(names)));

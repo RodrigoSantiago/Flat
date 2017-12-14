@@ -1,5 +1,5 @@
 package flat.graphics.svg;
 
-public class Svg {
+public class Path {
     Node[] nodes;
 }

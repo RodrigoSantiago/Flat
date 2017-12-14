@@ -245,6 +245,33 @@ public class GLEnuns {
     public static final int ST_VERTEX_SHADER = 0x8B31;
     public static final int _ST_GEOMETRY_SHADER = 0x8DD9;
 
+    //----Attribute Type
+    public static final int AT_FLOAT_VEC2 = 0x8B50;
+    public static final int AT_FLOAT_VEC3 = 0x8B51;
+    public static final int AT_FLOAT_VEC4 = 0x8B52;
+    public static final int AT_INT_VEC2 = 0x8B53;
+    public static final int AT_INT_VEC3 = 0x8B54;
+    public static final int AT_INT_VEC4 = 0x8B55;
+    public static final int AT_BOOL = 0x8B56;;
+    public static final int AT_BOOL_VEC2 = 0x8B57;
+    public static final int AT_BOOL_VEC3 = 0x8B58;
+    public static final int AT_BOOL_VEC4 = 0x8B59;
+    public static final int AT_FLOAT_MAT2 = 0x8B5A;
+    public static final int AT_FLOAT_MAT3 = 0x8B5B;
+    public static final int AT_FLOAT_MAT4 = 0x8B5C;
+    public static final int AT_FLOAT_MAT2x3 = 0x8B65;
+    public static final int AT_FLOAT_MAT2x4 = 0x8B66;
+    public static final int AT_FLOAT_MAT3x2 = 0x8B67;
+    public static final int AT_FLOAT_MAT3x4 = 0x8B68;
+    public static final int AT_FLOAT_MAT4x2 = 0x8B69;
+    public static final int AT_FLOAT_MAT4x3 = 0x8B6A;
+    public static final int AT_SAMPLER_1D = 0x8B5D;
+    public static final int AT_SAMPLER_2D = 0x8B5E;
+    //public static final int AT_SAMPLER_3D = 0x8B5F;
+    public static final int AT_SAMPLER_CUBE = 0x8B60;
+    //public static final int AT_SAMPLER_1D_SHADOW = 0x8B61;
+    //public static final int AT_SAMPLER_2D_SHADOW = 0x8B62;
+
     //----TRANSFORM FEEDBACK POLYGON TYPE
     public static final int FP_POINTS = 0x0000;
     public static final int FP_LINES = 0x0001;

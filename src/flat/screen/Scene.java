@@ -1,17 +1,33 @@
 package flat.screen;
 
-import flat.graphics.*;
+import flat.events.PointerEvent;
+import flat.graphics.context.Context;
 import flat.widget.layout.Box;
-import flat.widget.text.Label;
 
 public class Scene extends Box {
 
     Activity activity;
+    Box b;
     public Scene(Activity activity) {
         this.activity = activity;
-        Label label = new Label();
-        label.setText("Eaaeee !!!!!");
-        add(label);
+        b  = new Box();
+        b.setBackgroundColor(-1);
+        b.setPrefSize(100, 100);
+        b.setShadowEffectEnabled(true);
+        b.setBackgroundCorners(10, 10, 10, 10);
+        setPointerListener(event -> {
+            if (event.getType() == PointerEvent.DRAGGED) {
+                if (event.getMouseButton() == 1) {
+                    b.setElevation(b.getElevation() + 1);
+                } else {
+                    b.setElevation(b.getElevation() - 1);
+                }
+            }
+            b.setTranslateX(event.getX());
+            b.setTranslateY(event.getY());
+            return false;
+        });
+        add(b);
     }
 
     @Override
@@ -35,6 +51,8 @@ public class Scene extends Box {
         context.setView(0, 0, (int) activity.getWidth(), (int) activity.getHeight());
         context.clear(0xDDDDDDFF);
         super.onDraw(context);
+        context.setTransform(b.getTransformView().translate(0, b.getElevation()));
+        context.drawRoundRectShadow(-1, -1, 100, 100, 15, 15, 0.5F);
     }
 
     @Override

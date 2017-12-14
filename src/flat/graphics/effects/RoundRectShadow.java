@@ -1,9 +1,7 @@
 package flat.graphics.effects;
 
-import flat.graphics.Context;
-import flat.graphics.Shader;
-import flat.math.Affine;
-import flat.math.Matrix3;
+import flat.graphics.context.Context;
+import flat.graphics.context.objects.ShaderProgram;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -11,14 +9,14 @@ import java.nio.file.Paths;
 public final class RoundRectShadow extends Effect {
 
     private float blur, alpha, x, y, width, height, cTop, cRight, cBottom, cLeft;
-    private static Shader shader;
+    private static ShaderProgram shader;
 
     public RoundRectShadow() {
         if (shader == null) {
             try {
                 String shadowVtx = new String(Files.readAllBytes(Paths.get(getClass().getResource("/resources/shadow.vtx.glsl").toURI())));
                 String shadowFrg = new String(Files.readAllBytes(Paths.get(getClass().getResource("/resources/shadow.frg.glsl").toURI())));
-                shader = new Shader(shadowVtx, shadowFrg);
+                shader = new ShaderProgram(shadowVtx, shadowFrg);
                 shader.compile();
                 if (!shader.isCompiled()) {
                     throw new Exception(shader.getLog());
@@ -33,9 +31,6 @@ public final class RoundRectShadow extends Effect {
     public void applyEffect(Context context) {
         // Shader
         context.setImageShader(shader);
-        shader.setVec2("view", context.getWidth(), context.getHeight());
-        Affine aff = context.getTransformView();
-        shader.setMatrix("transform", new Matrix3().set(aff.m00, aff.m01, aff.m02, aff.m10, aff.m11, aff.m12, 0, 0, 1).val, 3, 3);
 
         // Clamp values
         float width = Math.max(1, this.width);

@@ -1,7 +1,7 @@
 package flat.widget.text;
 
-import flat.graphics.Context;
-import flat.graphics.Font;
+import flat.graphics.context.Context;
+import flat.graphics.text.Font;
 import flat.graphics.text.VAlign;
 import flat.widget.Widget;
 

@@ -2,7 +2,7 @@ package flat.widget;
 
 import flat.events.*;
 import flat.math.RoundRect;
-import flat.graphics.Context;
+import flat.graphics.context.Context;
 import flat.math.Affine;
 import flat.math.Vector2;
 
@@ -87,6 +87,7 @@ public class Widget {
                 float c3 = bg.getCornerBottom();
                 float c4 = bg.getCornerLeft();
                 float bgAlpha = (backgroundColor & 0x000000FF) / 255f;
+
                 if (shadowEffect && bgAlpha > 0) {
                     context.setTransform(getTransformView().translate(0, Math.max(0, elevation)));
                     if (elevation <= 2f) {

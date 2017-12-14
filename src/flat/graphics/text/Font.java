@@ -1,6 +1,7 @@
-package flat.graphics;
+package flat.graphics.text;
 
 import flat.backend.SVG;
+import flat.graphics.context.Context;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -8,6 +9,12 @@ import java.io.InputStream;
 import java.util.ArrayList;
 
 public final class Font {
+    private int internalID;
+
+    public int getInternalID() {
+        return internalID;
+    }
+
     public enum FontWeight {
         BLACK(900),
         EXTRA_BOLD(800),

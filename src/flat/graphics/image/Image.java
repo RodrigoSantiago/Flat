@@ -1,13 +1,13 @@
 package flat.graphics.image;
 
-import flat.graphics.Texture;
+import flat.graphics.context.objects.textures.Texture2D;
 
 public class Image {
 
-    private Texture atlas;
+    private Texture2D atlas;
     private int srcx, srcy, width, height;
 
-    public Image(Texture atlas, int srcx, int srcy, int width, int height) {
+    public Image(Texture2D atlas, int srcx, int srcy, int width, int height) {
         this.atlas = atlas;
         this.srcx = srcx;
         this.srcy = srcy;
@@ -15,11 +15,11 @@ public class Image {
         this.height = height;
     }
 
-    public Texture getAtlas() {
+    public Texture2D getAtlas() {
         return atlas;
     }
 
-    public void setAtlas(Texture atlas) {
+    public void setAtlas(Texture2D atlas) {
         this.atlas = atlas;
     }
 
@@ -47,7 +47,7 @@ public class Image {
         return height;
     }
 
-    public void resize(Texture atlas, int srcx, int srcy, int width, int height) {
+    public void resize(Texture2D atlas, int srcx, int srcy, int width, int height) {
         this.atlas = atlas;
         this.srcx = srcx;
         this.srcy = srcy;

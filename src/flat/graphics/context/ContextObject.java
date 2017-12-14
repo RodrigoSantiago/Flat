@@ -1,6 +1,7 @@
-package flat.graphics;
+package flat.graphics.context;
 
 import flat.Internal;
+import flat.graphics.context.Context;
 
 @Internal
 public abstract class ContextObject {
@@ -11,13 +12,17 @@ public abstract class ContextObject {
         Context.getContext().assignObject(this);
     }
 
-    public final boolean isDisposed() {
+    public void bind() {
+
+    }
+
+    public boolean isDisposed() {
         return disposed;
     }
 
     protected abstract void onDispose();
 
-    public void dispose() {
+    public final void dispose() {
         if (!disposed) {
             disposed = true;
             Context.getContext().releaseObject(this);
@@ -25,8 +30,7 @@ public abstract class ContextObject {
         }
     }
 
-    @Override
-    protected void finalize() throws Throwable {
+    public final void finalize() throws Throwable {
         dispose();
         super.finalize();
     }

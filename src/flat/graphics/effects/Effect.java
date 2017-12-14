@@ -1,6 +1,6 @@
 package flat.graphics.effects;
 
-import flat.graphics.Context;
+import flat.graphics.context.Context;
 
 public abstract class Effect {
 
