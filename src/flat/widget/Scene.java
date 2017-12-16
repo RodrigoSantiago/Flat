@@ -1,7 +1,8 @@
-package flat.screen;
+package flat.widget;
 
 import flat.events.PointerEvent;
 import flat.graphics.context.Context;
+import flat.screen.Activity;
 import flat.widget.layout.Box;
 
 public class Scene extends Box {
@@ -48,11 +49,10 @@ public class Scene extends Box {
 
     @Override
     public void onDraw(Context context) {
-        context.setView(0, 0, (int) activity.getWidth(), (int) activity.getHeight());
-        context.clear(0xDDDDDDFF);
+        context.setViewPort(0, 0, (int) activity.getWidth(), (int) activity.getHeight());
+        context.setClearColor(0xDDDDDDFF);
+        context.clear(true, true, true);
         super.onDraw(context);
-        context.setTransform(b.getTransformView().translate(0, b.getElevation()));
-        context.drawRoundRectShadow(-1, -1, 100, 100, 15, 15, 0.5F);
     }
 
     @Override

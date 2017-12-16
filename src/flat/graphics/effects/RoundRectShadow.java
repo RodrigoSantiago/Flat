@@ -1,7 +1,7 @@
 package flat.graphics.effects;
 
 import flat.graphics.context.Context;
-import flat.graphics.context.objects.ShaderProgram;
+import flat.graphics.context.ShaderProgram;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;

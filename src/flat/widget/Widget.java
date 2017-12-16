@@ -1,7 +1,7 @@
 package flat.widget;
 
 import flat.events.*;
-import flat.math.RoundRect;
+import flat.graphics.svg.RoundRect;
 import flat.graphics.context.Context;
 import flat.math.Affine;
 import flat.math.Vector2;

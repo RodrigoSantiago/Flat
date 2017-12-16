@@ -841,20 +841,20 @@ public class Matrix4 {
      * @param affine the affine matrix
      * @return This matrix for chaining */
     public Matrix4 set (Affine affine) {
-        val[M00] = affine.m00;
-        val[M10] = affine.m10;
+        val[M00] = affine.val[Affine.M00];
+        val[M10] = affine.val[Affine.M10];
         val[M20] = 0;
         val[M30] = 0;
-        val[M01] = affine.m01;
-        val[M11] = affine.m11;
+        val[M01] = affine.val[Affine.M01];
+        val[M11] = affine.val[Affine.M11];
         val[M21] = 0;
         val[M31] = 0;
         val[M02] = 0;
         val[M12] = 0;
         val[M22] = 1;
         val[M32] = 0;
-        val[M03] = affine.m02;
-        val[M13] = affine.m12;
+        val[M03] = affine.val[Affine.M02];
+        val[M13] = affine.val[Affine.M12];
         val[M23] = 0;
         val[M33] = 1;
         return this;
@@ -872,12 +872,12 @@ public class Matrix4 {
      * @param affine the source matrix
      * @return This matrix for chaining */
     public Matrix4 setAsAffine (Affine affine) {
-        val[M00] = affine.m00;
-        val[M10] = affine.m10;
-        val[M01] = affine.m01;
-        val[M11] = affine.m11;
-        val[M03] = affine.m02;
-        val[M13] = affine.m12;
+        val[M00] = affine.val[Affine.M00];
+        val[M10] = affine.val[Affine.M10];
+        val[M01] = affine.val[Affine.M01];
+        val[M11] = affine.val[Affine.M11];
+        val[M03] = affine.val[Affine.M02];
+        val[M13] = affine.val[Affine.M12];
         return this;
     }
 

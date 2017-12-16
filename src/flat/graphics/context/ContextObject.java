@@ -1,37 +1,42 @@
 package flat.graphics.context;
 
-import flat.Internal;
-import flat.graphics.context.Context;
+import java.util.concurrent.atomic.AtomicLong;
 
-@Internal
 public abstract class ContextObject {
 
-    private boolean disposed;
+    private static AtomicLong id = new AtomicLong();
+    private final long unicID = id.getAndIncrement();
+
+    private boolean initialized;
+    private Runnable dispose;
 
     protected ContextObject() {
-        Context.getContext().assignObject(this);
+        Context.assign(this);
     }
 
-    public void bind() {
+    protected abstract void onInitialize();
 
-    }
-
-    public boolean isDisposed() {
-        return disposed;
-    }
-
-    protected abstract void onDispose();
-
-    public final void dispose() {
-        if (!disposed) {
-            disposed = true;
-            Context.getContext().releaseObject(this);
-            onDispose();
+    public void init() {
+        if (!initialized) {
+            initialized = true;
+            onInitialize();
         }
     }
 
+    public long getUnicID() {
+        return unicID;
+    }
+
+    protected void setDispose(Runnable dispose) {
+        this.dispose = dispose;
+    }
+
+    public Runnable getDispose() {
+        return dispose;
+    }
+
+    @Override
     public final void finalize() throws Throwable {
-        dispose();
-        super.finalize();
+        Context.deassign(this);
     }
 }

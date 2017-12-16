@@ -1,7 +1,8 @@
 package flat.screen;
 
 import flat.graphics.context.Context;
-import flat.widget.*;
+import flat.widget.Scene;
+import flat.widget.Widget;
 
 public class Activity {
     private Scene scene;

@@ -11,7 +11,7 @@ public class GL {
 
     public static native void Clear(int maskCB);
     public static native void SetClearColor(int rgba);
-    public static native void SetClearDepth(int mask);
+    public static native void SetClearDepth(double mask);
     public static native void SetClearStencil(int mask);
     public static native int GetClearColor();
     public static native int GetClearDepth();

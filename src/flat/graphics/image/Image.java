@@ -1,6 +1,6 @@
 package flat.graphics.image;
 
-import flat.graphics.context.objects.textures.Texture2D;
+import flat.graphics.context.Texture2D;
 
 public class Image {
 

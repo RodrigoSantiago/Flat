@@ -1,4 +1,4 @@
-package flat.math;
+package flat.graphics.svg;
 
 public class RoundRect {
     private float x, y, width, height, cTop, cRight, cBottom, cLeft;

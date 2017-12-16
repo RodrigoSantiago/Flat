@@ -15,28 +15,6 @@ public final class Font {
         return internalID;
     }
 
-    public enum FontWeight {
-        BLACK(900),
-        EXTRA_BOLD(800),
-        BOLD(700),
-        SEMI_BOLD(600),
-        MEDIUM(500),
-        NORMAL(400),
-        LIGHT(300),
-        EXTRA_LIGHT(200),
-        THIN(100);
-
-        private final int weight;
-
-        FontWeight(int weight) {
-            this.weight = weight;
-        }
-    }
-
-    public enum FontPosture {
-        ITALIC, REGULAR;
-    }
-
     private final String family;
     private final FontPosture posture;
     private final FontWeight weight;
@@ -79,8 +57,8 @@ public final class Font {
                 } else if (closer.posture != posture && font.posture == posture) {
                     closer = font;
                 } else if (closer.posture != posture) {
-                    if (Math.abs(font.weight.weight - weight.weight) <
-                            Math.abs(closer.weight.weight - weight.weight)) {
+                    if (Math.abs(font.weight.getWeight() - weight.getWeight()) <
+                            Math.abs(closer.weight.getWeight() - weight.getWeight())) {
                         closer = font;
                     }
                 }
@@ -150,7 +128,7 @@ public final class Font {
     }
 
     public boolean isBold() {
-        return weight.weight >= FontWeight.BOLD.weight;
+        return weight.getWeight() >= FontWeight.BOLD.getWeight();
     }
 
     public boolean isItalic() {
@@ -159,7 +137,7 @@ public final class Font {
 
     @Override
     public int hashCode() {
-        return family.hashCode() + weight.weight;
+        return family.hashCode();
     }
 
     @Override

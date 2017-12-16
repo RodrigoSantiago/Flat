@@ -2,14 +2,10 @@ package flat.graphics.context;
 
 import flat.backend.GL;
 import flat.backend.SVG;
+import flat.backend.WL;
 import flat.graphics.context.enuns.*;
-import flat.graphics.context.objects.DataBuffer;
-import flat.graphics.context.objects.VertexArray;
-import flat.graphics.context.objects.ShaderProgram;
-import flat.graphics.context.objects.Frame;
-import flat.graphics.context.objects.textures.Texture;
 import flat.graphics.paint.*;
-import flat.graphics.svg.Path;
+import flat.graphics.svg.*;
 import flat.graphics.text.*;
 import flat.math.*;
 import flat.screen.*;
@@ -17,45 +13,41 @@ import flat.screen.*;
 import java.lang.ref.WeakReference;
 import java.nio.Buffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static flat.backend.GLEnuns.*;
+import static flat.backend.SVGEnuns.*;
 
 public final class Context {
 
     private static Context context;
-    private Thread thread;
+    private final Thread thread;
 
-    private Context(Thread thread) {
-        this.thread = thread;
+    public Context() {
+        this.thread = Thread.currentThread();
+        if (Application.getApplication() == null) {
+            throw new RuntimeException("The window is not initialized yet");
+        } else if (Application.getApplication().getThread() != thread) {
+            throw new RuntimeException("Invalid context creation");
+        } else if (Application.getApplication().getContext() != null) {
+            throw new RuntimeException("The context is already defined");
+        } else {
+            context = this;
+        }
     }
 
     public static Context getContext() {
         if (context == null) {
-            throw new RuntimeException("The context is not initialized yet");
+            throw new RuntimeException("The context has not initialized");
         } else if (Thread.currentThread() != context.thread) {
-            throw new RuntimeException("The context could not be acessed by others threads");
+            throw new RuntimeException("The context is not current");
         }
         return context;
     }
 
-    public static void initContext() {
-        if (context != null) {
-            throw new RuntimeException("The context is already initialized");
-        } else if (Application.getApplication() == null) {
-            throw new RuntimeException("The context could not be initialized before the application");
-        } else if (Window.getWindow() == null) {
-            throw new RuntimeException("The context could not be initialized before the window");
-        } else {
-            context = new Context(Thread.currentThread());
-            context.init();
-        }
-    }
-
-    //-----------------
-    //    Core
-    //-----------------
-    private int clearColor, clearDepth, clearStencil;
-
+    // ---- Core ---- //
+    private int clearColor, clearStencil;
+    private double clearDepth;
     private int viewX, viewY, viewWidth, viewHeight;
 
     private boolean scizorEnabled;
@@ -91,13 +83,12 @@ public final class Context {
     private Frame drawFrame, readFrame;
     private ShaderProgram shaderProgram;
     private VertexArray vertexArray;
+    private Render render;
     private int activeTexture;
-    private final DataBuffer[] buffers = new DataBuffer[8];
+    private final BufferObejct[] buffers = new BufferObejct[8];
     private final Texture[] textures = new Texture[32];
 
-    //-----------------
-    //    SVG
-    //-----------------
+    // ---- SVG ---- //
     private boolean svgMode;
     private int svgColor;
     private float svgAlpha;
@@ -114,20 +105,40 @@ public final class Context {
     private Affine svgTransform;
     private Affine svgTransformView;
 
-    private ArrayList<WeakReference<ContextObject>> objects = new ArrayList<>();
+    // ---- Objects ---- //
+    private static ArrayList<Runnable> disposeOperation = new ArrayList<>();
+    private static HashMap<Long, WeakReference<ContextObject>> objects = new HashMap<>();
 
-    public void assignObject(ContextObject object) {
-        objects.add(new WeakReference<>(object));
+    public static void assign(ContextObject object) {
+        synchronized (Context.class) {
+            objects.put(object.getUnicID(), new WeakReference<>(object));
+        }
     }
 
-    public void releaseObject(ContextObject object) {
-        for (int i = 0; i < objects.size(); i++) {
-            WeakReference<ContextObject> wr = objects.get(i);
+    public static void deassign(ContextObject object) {
+        synchronized (Context.class) {
+            disposeOperation.add(object.getDispose());
+            objects.remove(object.getUnicID());
+        }
+    }
+
+    public void disposeObjects() {
+        synchronized (Context.class) {
+            for (Runnable run : disposeOperation) {
+                run.run();
+            }
+            disposeOperation.clear();
+        }
+    }
+
+    public synchronized void dispose() {
+        for (WeakReference<ContextObject> wr : objects.values()) {
             ContextObject obj = wr.get();
-            if (obj == object || obj == null) {
-                objects.remove(i);
+            if (obj != null) {
+                obj.getDispose().run();
             }
         }
+        objects.clear();
     }
 
     private void init() {
@@ -146,7 +157,7 @@ public final class Context {
         scissorX = 0;
         scissorY = 0;
         scissorWidth = GL.GetScissorWidth();
-        scissorHeight =  GL.GetScissorHeight();
+        scissorHeight = GL.GetScissorHeight();
 
         rasterizeEnabled = true;
         rMask = true;
@@ -225,20 +236,13 @@ public final class Context {
         svgTransformView = new Affine();
     }
 
-    public void dispose() {
-        ArrayList<WeakReference<ContextObject>> dis = objects;
-        objects = new ArrayList<>();
-        for (WeakReference<ContextObject> wr : dis) {
-            ContextObject obj = wr.get();
-            if (obj != null) {
-                obj.dispose();
-            }
-        }
-    }
-
     // ---- CORE ---- //
 
-    public void flush() {
+    public void softFlush() {
+        svgEnd();
+    }
+
+    public void hardFlush() {
         svgEnd();
         GL.Flush();
     }
@@ -264,14 +268,14 @@ public final class Context {
         return clearColor;
     }
 
-    public void setClearDepth(int depth) {
+    public void setClearDepth(double depth) {
         if (clearDepth != depth) {
             svgEnd();
             GL.SetClearDepth(clearDepth = depth);
         }
     }
 
-    public int getClearDepth() {
+    public double getClearDepth() {
         return clearDepth;
     }
 
@@ -307,6 +311,14 @@ public final class Context {
 
     public int getViewHeight() {
         return viewHeight;
+    }
+
+    public int getWidth() {
+        return WL.GetClientWidth();
+    }
+
+    public int getHeight() {
+        return WL.GetClientHeight();
     }
 
     public void setScizorEnabled(boolean enable) {
@@ -382,19 +394,22 @@ public final class Context {
     }
 
     public void setPixelPack(int aligment, int rowLength, int skipPixels, int skipRows, int imageHeight, int skipImages) {
-        svgEnd();
-        if (pixelPackAligment != aligment)
-            GL.SetPixelStore(PS_PACK_ALIGNMENT, this.pixelPackAligment = aligment);
-        if (pixelPackRowLength != rowLength)
-            GL.SetPixelStore(PS_PACK_ROW_LENGTH, this.pixelPackRowLength = rowLength);
-        if (pixelPackSkipPixels != skipPixels)
-            GL.SetPixelStore(PS_PACK_SKIP_PIXELS, this.pixelPackSkipPixels = skipPixels);
-        if (pixelPackSkipRows != skipRows)
-            GL.SetPixelStore(PS_PACK_SKIP_ROWS, this.pixelPackSkipRows = skipRows);
-        if (pixelPackImageHeight != imageHeight)
-            GL.SetPixelStore(PS_PACK_IMAGE_HEIGHT, this.pixelPackImageHeight = imageHeight);
-        if (pixelPackSkipImages != skipImages)
-            GL.SetPixelStore(PS_PACK_SKIP_IMAGES, this.pixelPackSkipImages = skipImages);
+        if (pixelPackAligment != aligment || pixelPackRowLength != rowLength || pixelPackSkipPixels != skipPixels
+                || pixelPackSkipRows != skipRows || pixelPackImageHeight != imageHeight || pixelPackSkipImages != skipImages) {
+            svgEnd();
+            if (pixelPackAligment != aligment)
+                GL.SetPixelStore(PS_PACK_ALIGNMENT, this.pixelPackAligment = aligment);
+            if (pixelPackRowLength != rowLength)
+                GL.SetPixelStore(PS_PACK_ROW_LENGTH, this.pixelPackRowLength = rowLength);
+            if (pixelPackSkipPixels != skipPixels)
+                GL.SetPixelStore(PS_PACK_SKIP_PIXELS, this.pixelPackSkipPixels = skipPixels);
+            if (pixelPackSkipRows != skipRows)
+                GL.SetPixelStore(PS_PACK_SKIP_ROWS, this.pixelPackSkipRows = skipRows);
+            if (pixelPackImageHeight != imageHeight)
+                GL.SetPixelStore(PS_PACK_IMAGE_HEIGHT, this.pixelPackImageHeight = imageHeight);
+            if (pixelPackSkipImages != skipImages)
+                GL.SetPixelStore(PS_PACK_SKIP_IMAGES, this.pixelPackSkipImages = skipImages);
+        }
     }
 
     public int getPixelPackAligment() {
@@ -426,19 +441,22 @@ public final class Context {
     }
 
     public void setPixelUnpack(int aligment, int rowLength, int skipPixels, int skipRows, int imageHeight, int skipImages) {
-        svgEnd();
-        if (pixelUnpackAligment != aligment)
-            GL.SetPixelStore(PS_UNPACK_ALIGNMENT, this.pixelUnpackAligment = aligment);
-        if (pixelUnpackRowLength != rowLength)
-            GL.SetPixelStore(PS_UNPACK_ROW_LENGTH, this.pixelUnpackRowLength = rowLength);
-        if (pixelUnpackSkipPixels != skipPixels)
-            GL.SetPixelStore(PS_UNPACK_SKIP_PIXELS, this.pixelUnpackSkipPixels = skipPixels);
-        if (pixelUnpackSkipRows != skipRows)
-            GL.SetPixelStore(PS_UNPACK_SKIP_ROWS, this.pixelUnpackSkipRows = skipRows);
-        if (pixelUnpackImageHeight != imageHeight)
-            GL.SetPixelStore(PS_UNPACK_IMAGE_HEIGHT, this.pixelUnpackImageHeight = imageHeight);
-        if (pixelUnpackSkipImages != skipImages)
-            GL.SetPixelStore(PS_UNPACK_SKIP_IMAGES, this.pixelUnpackSkipImages = skipImages);
+        if (pixelUnpackAligment != aligment || pixelUnpackRowLength != rowLength || pixelUnpackSkipPixels != skipPixels
+                || pixelUnpackSkipRows != skipRows || pixelUnpackImageHeight != imageHeight || pixelUnpackSkipImages != skipImages) {
+            svgEnd();
+            if (pixelUnpackAligment != aligment)
+                GL.SetPixelStore(PS_UNPACK_ALIGNMENT, this.pixelUnpackAligment = aligment);
+            if (pixelUnpackRowLength != rowLength)
+                GL.SetPixelStore(PS_UNPACK_ROW_LENGTH, this.pixelUnpackRowLength = rowLength);
+            if (pixelUnpackSkipPixels != skipPixels)
+                GL.SetPixelStore(PS_UNPACK_SKIP_PIXELS, this.pixelUnpackSkipPixels = skipPixels);
+            if (pixelUnpackSkipRows != skipRows)
+                GL.SetPixelStore(PS_UNPACK_SKIP_ROWS, this.pixelUnpackSkipRows = skipRows);
+            if (pixelUnpackImageHeight != imageHeight)
+                GL.SetPixelStore(PS_UNPACK_IMAGE_HEIGHT, this.pixelUnpackImageHeight = imageHeight);
+            if (pixelUnpackSkipImages != skipImages)
+                GL.SetPixelStore(PS_UNPACK_SKIP_IMAGES, this.pixelUnpackSkipImages = skipImages);
+        }
     }
 
     public int getPixelUnpackAligment() {
@@ -778,17 +796,21 @@ public final class Context {
         GL.DrawElements(vertexMode.getInternalEnum(), count, DT_INT, instances, first);
     }
 
-    public void bindFrame(Frame frame, boolean draw, boolean read) {
+    void bindFrame(Frame frame, boolean draw, boolean read) {
         int id = frame == null ? 0 : frame.getInternalID();
         if (draw && !read) {
             if (drawFrame != frame) {
                 svgEnd();
+                if (drawFrame != null) drawFrame.setBindType(false, false);
+                if (frame != null) frame.setBindType(true, false);
                 drawFrame = frame;
                 GL.FrameBufferBind(id, FB_DRAW_FRAMEBUFFER);
             }
         } else if (read && !draw) {
             if (readFrame != frame) {
                 svgEnd();
+                if (readFrame != null) drawFrame.setBindType(false, false);
+                if (frame != null) frame.setBindType(false, true);
                 readFrame = frame;
                 GL.FrameBufferBind(id, FB_READ_FRAMEBUFFER);
             }
@@ -796,9 +818,16 @@ public final class Context {
             if (drawFrame != frame || readFrame != frame) {
                 svgEnd();
                 drawFrame = readFrame = frame;
+                if (drawFrame != null) drawFrame.setBindType(false, false);
+                if (readFrame != null) drawFrame.setBindType(false, false);
+                if (frame != null) frame.setBindType(true, true);
                 GL.FrameBufferBind(id, FB_FRAMEBUFFER);
             }
         }
+    }
+
+    public void clearBindFrame(boolean draw, boolean read) {
+        bindFrame(null, draw, read);
     }
 
     public Frame getBoundDrawFrame() {
@@ -820,7 +849,7 @@ public final class Context {
         return activeTexture;
     }
 
-    public void bindTexture(Texture texture, int index) {
+    void bindTexture(Texture texture, int index) {
         setActiveTexture(index);
         if (textures[index] != texture) {
             svgEnd();
@@ -828,34 +857,43 @@ public final class Context {
                 GL.TextureBind(textures[index].getInternalType(), 0);
             } else {
                 GL.TextureBind(texture.getInternalType(), texture.getInternalID());
+                texture.setActivePos(index);
             }
             textures[index] = texture;
         }
+    }
+
+    public void clearBindTexture(int index) {
+        bindTexture(null, index);
     }
 
     public Texture getBoundTexture(int index) {
         return textures[index];
     }
 
-    public void bindBuffer(DataBuffer buffer, BufferType type) {
-        int index = type.getInternalIndex();
+    void bindBuffer(BufferObejct buffer, BufferType type) {
+        int index = type.ordinal();
         if (buffers[index] != buffer) {
             svgEnd();
             if (buffer == null) {
                 GL.BufferBind(type.getInternalEnum(), 0);
             } else {
                 GL.TextureBind(type.getInternalEnum(), buffer.getInternalID());
-                buffer.setInternalType(type);
+                buffer.setBindType(type);
             }
             buffers[index] = buffer;
         }
     }
 
-    public DataBuffer getBoundBuffer(BufferType type) {
-        return buffers[type.getInternalIndex()];
+    public void clearBindBuffer(BufferType type) {
+        bindBuffer(null, type);
     }
 
-    public void bindVertexArray(VertexArray vertexArray) {
+    public BufferObejct getBoundBuffer(BufferType type) {
+        return buffers[type.ordinal()];
+    }
+
+    void bindVertexArray(VertexArray vertexArray) {
         if (this.vertexArray != vertexArray) {
             svgEnd();
             if (vertexArray == null) {
@@ -867,11 +905,15 @@ public final class Context {
         }
     }
 
+    public void clearBindVertexArray() {
+        bindVertexArray(null);
+    }
+
     public VertexArray getBoundVertexArray() {
         return vertexArray;
     }
 
-    public void bindShaderProgram(ShaderProgram shaderProgram) {
+    void bindShaderProgram(ShaderProgram shaderProgram) {
         if (this.shaderProgram != shaderProgram) {
             svgEnd();
             if (shaderProgram == null) {
@@ -883,8 +925,32 @@ public final class Context {
         }
     }
 
+    public void clearBindShaderProgramm() {
+        bindShaderProgram(null);
+    }
+
     public ShaderProgram getBoundShaderProgram() {
         return shaderProgram;
+    }
+
+    void bindRender(Render render) {
+        if (this.render != render) {
+            svgEnd();
+            if (render == null) {
+                GL.RenderBufferBind(0);
+            } else {
+                GL.RenderBufferBind(render.getInternalID());
+            }
+            this.render = render;
+        }
+    }
+
+    public void clearBindRender() {
+        bindRender(null);
+    }
+
+    public Render getBoundRender() {
+        return render;
     }
 
     // ---- SVG ---- //
@@ -908,9 +974,9 @@ public final class Context {
             SVG.TextSetAlign(svgTextHorizontalAlign.getInternalEnum() | svgTextVerticalAlign.getInternalEnum());
 
             SVG.TransformSet(
-                    svgTransform.m00, svgTransform.m10,
-                    svgTransform.m01, svgTransform.m11,
-                    svgTransform.m02, svgTransform.m12);
+                    svgTransform.val[Affine.M00], svgTransform.val[Affine.M10],
+                    svgTransform.val[Affine.M01], svgTransform.val[Affine.M11],
+                    svgTransform.val[Affine.M02], svgTransform.val[Affine.M12]);
         }
     }
 
@@ -922,7 +988,7 @@ public final class Context {
         }
     }
 
-    protected void svgRestore()  {
+    protected void svgRestore() {
         GL.EnableDepthTest(depthEnabled);
         GL.EnableScissorTest(scizorEnabled);
 
@@ -944,10 +1010,10 @@ public final class Context {
         GL.SetColorMask(rMask, gMask, bMask, aMask);
 
         //TODO - Nanovg doesn't unbind !?
-        DataBuffer uniformBuffer = buffers[BufferType.Uniform.getInternalIndex()];
+        BufferObejct uniformBuffer = buffers[BufferType.Uniform.ordinal()];
         GL.BufferBind(BufferType.Uniform.getInternalEnum(), uniformBuffer == null ? 0 : uniformBuffer.getInternalID());
 
-        DataBuffer arrayBuffer = buffers[BufferType.Array.getInternalIndex()];
+        BufferObejct arrayBuffer = buffers[BufferType.Array.ordinal()];
         if (arrayBuffer != null)
             GL.BufferBind(BufferType.Array.getInternalEnum(), arrayBuffer.getInternalID());
 
@@ -1059,9 +1125,9 @@ public final class Context {
             this.svgTransform.set(transform);
             if (svgMode) {
                 SVG.TransformSet(
-                        svgTransform.m00, svgTransform.m10,
-                        svgTransform.m01, svgTransform.m11,
-                        svgTransform.m02, svgTransform.m12);
+                        svgTransform.val[Affine.M00], svgTransform.val[Affine.M10],
+                        svgTransform.val[Affine.M01], svgTransform.val[Affine.M11],
+                        svgTransform.val[Affine.M02], svgTransform.val[Affine.M12]);
             }
         }
     }
@@ -1070,49 +1136,123 @@ public final class Context {
         return svgTransformView.set(svgTransform);
     }
 
-    public void svgDrawPath(Path path) {
+    public void svgDrawPath(SVGPath SVGPath, boolean fill) {
         svgBegin();
         SVG.BeginPath();
+        for (Path path : SVGPath.getPaths()) {
+            SVG.PathWinding(path.isHole() ? SVG_HOLE : SVG_SOLID);
+            for (Path.Curve curve : path.getCurvers()) {
+                SVG.BezierTo(curve.cx1, curve.cy1, curve.cx2, curve.cy2, curve.x, curve.y);
+            }
+        }
+        if (fill) {
+            SVG.Fill();
+        } else {
+            SVG.Stroke();
+        }
     }
 
-    public void svgDrawRect() {
-        svgBegin();
-        SVG.BeginPath();
+    public void svgDrawRect(Rect rect, boolean fill) {
+        svgDrawRect(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight(), fill);
     }
 
-    public void svgDrawEllipse() {
+    public void svgDrawRect(float x, float y, float with, float height, boolean fill) {
         svgBegin();
         SVG.BeginPath();
+        SVG.Rect(x, y, with, height);
+        if (fill) {
+            SVG.Fill();
+        } else {
+            SVG.Stroke();
+        }
     }
 
-    public void svgDrawRoundRect() {
-        svgBegin();
-        SVG.BeginPath();
+    public void svgDrawEllipse(Ellipse ellipse, boolean fill) {
+        svgDrawEllipse(ellipse.getX(), ellipse.getY(), ellipse.getWidth(), ellipse.getHeight(), fill);
     }
 
-    public void svgDrawArch() {
+    public void svgDrawEllipse(float x, float y, float width, float height, boolean fill) {
         svgBegin();
         SVG.BeginPath();
+        SVG.Ellipse(x + width / 2f, y + height / 2f, width, height);
+        if (fill) {
+            SVG.Fill();
+        } else {
+            SVG.Stroke();
+        }
     }
 
-    public void svgDrawLine() {
-        svgBegin();
-        SVG.BeginPath();
+    public void svgDrawRoundRect(RoundRect roundRect, boolean fill) {
+        svgDrawRoundRect(roundRect.getX(), roundRect.getY(), roundRect.getWidth(), roundRect.getHeight(),
+                roundRect.getCornerTop(), roundRect.getCornerRight(), roundRect.getCornerBottom(), roundRect.getCornerLeft(), fill);
     }
 
-    public void svgDrawQuadCurve() {
+    public void svgDrawRoundRect(float x, float y, float width, float height, float cTop, float cRight, float cBottom, float cLeft, boolean fill) {
         svgBegin();
         SVG.BeginPath();
+        SVG.RoundedRect(x, y, width, height, cTop, cRight, cBottom, cLeft);
+        if (fill) {
+            SVG.Fill();
+        } else {
+            SVG.Stroke();
+        }
     }
 
-    public void svgDrawBezierCurve() {
+    public void svgDrawArc(Arc arc, boolean fill) {
+        svgDrawArc(arc.getX(), arc.getY(), arc.getRadius(), arc.getAngleA(), arc.getAngleB(), fill);
+    }
+
+    public void svgDrawArc(float x, float y, float radius, float angleA, float angleB, boolean fill) {
         svgBegin();
         SVG.BeginPath();
+        SVG.Arc(x, y, radius, angleA, angleB, SVG_CCW);
+        if (fill) {
+            SVG.Fill();
+        } else {
+            SVG.Stroke();
+        }
+    }
+
+    public void svgDrawLine(Line line) {
+        svgDrawLine(line.getX1(), line.getY1(), line.getX2(), line.getY2());
+    }
+
+    public void svgDrawLine(float x1, float y1, float x2, float y2) {
+        svgBegin();
+        SVG.BeginPath();
+        SVG.MoveTo(x1, y1);
+        SVG.LineTo(x2, y2);
+        SVG.Stroke();
+    }
+
+    public void svgDrawQuadCurve(QuadCurve curve) {
+        svgDrawQuadCurve(curve.getX1(), curve.getY1(), curve.getX2(), curve.getY2(), curve.getCx(), curve.getCy());
+    }
+
+    public void svgDrawQuadCurve(float x1, float y1, float x2, float y2, float cx, float cy) {
+        svgBegin();
+        SVG.BeginPath();
+        SVG.MoveTo(x1, y1);
+        SVG.QuadTo(cx, cy, x2, y2);
+        SVG.Stroke();
+    }
+
+    public void svgDrawBezierCurve(BezierCurve curve) {
+        svgDrawBezierCurve(curve.getX1(), curve.getY1(), curve.getX2(), curve.getY2(),
+                curve.getCx1(), curve.getCy1(), curve.getCx2(), curve.getCy2());
+    }
+
+    public void svgDrawBezierCurve(float x1, float y1, float x2, float y2, float cx1, float cy1, float cx2, float cy2) {
+        svgBegin();
+        SVG.BeginPath();
+        SVG.MoveTo(x1, y1);
+        SVG.BezierTo(cx1, cy1, cx2, cy2, x2, y2);
+        SVG.Stroke();
     }
 
     // ---- SVG/TEXT ----
     public void svgTextFont(Font font) {
-        if  (svgTextFont != font) {
+        if (svgTextFont != font) {
             this.svgTextFont = font;
             if (svgMode) {
                 SVG.TextSetFont(font.getInternalID());
@@ -1185,19 +1325,51 @@ public final class Context {
         return svgTextHorizontalAlign;
     }
 
-    public float svgTextGetWidth() {
-        return 0f;
+    public float svgTextGetWidth(String text) {
+        svgBegin();
+        return SVG.TextGetWidth(text);
     }
 
-    public void svgDrawText() {
-
+    public float svgTextGetWidth(Buffer text, int offset, int length) {
+        svgBegin();
+        return SVG.TextGetWidthBuffer(text, offset, length);
     }
 
-    public void svgDrawTextBox() {
-
+    public void svgDrawText(float x, float y, String text) {
+        svgBegin();
+        SVG.BeginPath();
+        SVG.DrawText(x, y, text);
     }
 
-    public void svgDrawTextSlice() {
+    public void svgDrawText(float x, float y, Buffer text, int offset, int length) {
+        svgBegin();
+        SVG.BeginPath();
+        SVG.DrawTextBuffer(x, y, text, offset, length);
+    }
 
+    public void svgDrawTextBox(float x, float y, float maxWidth, String text) {
+        svgBegin();
+        SVG.BeginPath();
+        SVG.DrawTextBox(x, y, maxWidth, text);
+    }
+
+    public void svgDrawTextBox(float x, float y, float maxWidth, Buffer text, int offset, int length) {
+        svgBegin();
+        SVG.BeginPath();
+        SVG.DrawTextBoxBuffer(x, y, maxWidth, text, offset, length);
+    }
+
+    public void svgDrawTextSlice(float x, float y, float maxWidth, String text) {
+        svgBegin();
+        SVG.BeginPath();
+        int last = SVG.TextGetLastGlyph(text, maxWidth);
+        SVG.DrawText(x, y, text.substring(0, last));
+    }
+
+    public void svgDrawTextSlice(float x, float y, float maxWidth, Buffer text, int offset, int length) {
+        svgBegin();
+        SVG.BeginPath();
+        int last = SVG.TextGetLastGlyphBuffer(text, offset, length, maxWidth);
+        SVG.DrawTextBuffer(x, y, text, offset, last);
     }
 }

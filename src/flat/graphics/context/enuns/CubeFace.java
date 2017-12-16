@@ -1,3 +1,23 @@
 package flat.graphics.context.enuns;
 
-public enum CubeFace {X1, Y1, Z1, X2, Y2, Z2}
+import static flat.backend.GLEnuns.*;
+
+public enum CubeFace {
+    X1(TT_TEXTURE_CUBE_MAP_POSITIVE_X),
+    X2(TT_TEXTURE_CUBE_MAP_NEGATIVE_X),
+    Y1(TT_TEXTURE_CUBE_MAP_POSITIVE_Y),
+    Y2(TT_TEXTURE_CUBE_MAP_NEGATIVE_Y),
+    Z1(TT_TEXTURE_CUBE_MAP_POSITIVE_Z),
+    Z2(TT_TEXTURE_CUBE_MAP_NEGATIVE_Z);
+
+    private final int glEnum;
+
+    CubeFace(int glEnum) {
+        this.glEnum = glEnum;
+    }
+
+    public int getInternalEnum() {
+        return glEnum;
+    }
+
+}
