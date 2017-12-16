@@ -1,16 +1,24 @@
 package flat.graphics.context.enuns;
 
+import static flat.backend.GLEnuns.*;
+
 public enum TextureFormat {
-    RGB, RGBA, DEPTH32, DEPTH16, DEPTH8, STENCIL, DEPTHS_TENCIL;
+    RGB(TF_RGB),
+    RGBA(TF_RGBA),
+    DEPTH16(TF_DEPTH_COMPONENT16),
+    DEPTH24(TF_DEPTH_COMPONENT24),
+    DEPTH32(TF_DEPTH_COMPONENT32F),
+    DEPTH24_STENCIL8(TF_DEPTH24_STENCIL8),
+    DEPTH32_STENCIL8(TF_DEPTH32F_STENCIL8);
 
-    private int internalEnum;
-    private int internalTypeEnum;
+    private final int glEnum;
 
-    public int getInternalEnum() {
-        return internalEnum;
+    TextureFormat(int glEnum) {
+        this.glEnum = glEnum;
     }
 
-    public int getInternalTypeEnum() {
-        return internalTypeEnum;
+
+    public int getInternalEnum() {
+        return glEnum;
     }
 }

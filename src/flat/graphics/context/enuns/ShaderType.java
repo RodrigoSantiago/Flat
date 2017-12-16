@@ -1,19 +1,19 @@
 package flat.graphics.context.enuns;
 
-import flat.Internal;
-import flat.backend.GLEnuns;
+import static flat.backend.GLEnuns.*;
 
 public enum ShaderType {
-    Vertex(GLEnuns.ST_FRAGMENT_SHADER),
-    Fragment(GLEnuns.ST_FRAGMENT_SHADER) /*, GeometricFragment(GLEnuns.ST_GEOMETRIC_SHADER)*/;
+    Vertex(ST_FRAGMENT_SHADER),
+    Fragment(ST_FRAGMENT_SHADER)/*,
+    GeometricFragment(ST_GEOMETRIC_SHADER)*/;
 
-    private int internalEnum;
-    ShaderType(int internalEnum) {
-        this.internalEnum = internalEnum;
+    private int glEnum;
+
+    ShaderType(int glEnum) {
+        this.glEnum = glEnum;
     }
 
-    @Internal
     public int getInternalEnum() {
-        return internalEnum;
+        return glEnum;
     }
 }
