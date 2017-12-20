@@ -1,8 +1,8 @@
 package flat.widget;
 
 import flat.events.*;
+import flat.graphics.smart.SmartContext;
 import flat.graphics.svg.RoundRect;
-import flat.graphics.context.Context;
 import flat.math.Affine;
 import flat.math.Vector2;
 
@@ -75,41 +75,26 @@ public class Widget {
     private DragListener dragListener;
     private FocusListener focusListener;
 
-    public void onDraw(Context context) {
+    public void onDraw(SmartContext context) {
         if (visibility == VISIBLE) {
             if (backgroundColor != 0) {
-                float x = bg.getX();
-                float y = bg.getY();
-                float width = bg.getWidth();
-                float height = bg.getHeight();
-                float c1 = bg.getCornerTop();
-                float c2 = bg.getCornerRight();
-                float c3 = bg.getCornerBottom();
-                float c4 = bg.getCornerLeft();
                 float bgAlpha = (backgroundColor & 0x000000FF) / 255f;
 
                 if (shadowEffect && bgAlpha > 0) {
-                    context.setTransform(getTransformView().translate(0, Math.max(0, elevation)));
+                    context.setTransform2D(getTransformView().translate(0, Math.max(0, elevation)));
                     if (elevation <= 2f) {
-                        context.setColor(0x000000FF);
-                        context.setGlobalAlpha(0.28f);
-                        context.drawRoundRect(x, y, width, height, c1, c2, c3, c4, true);
-                        context.setGlobalAlpha(1);
+                        context.setColor((int)((0.2f * bgAlpha) * 255));
+                        context.drawRoundRect(bg, true);
                     } else if (elevation < 24) {
-                        context.drawRoundRectShadow(x, y, width, height, c1, c2, c3, c4,
-                                elevation * 2, 0.28f * bgAlpha);
-                    } else if (elevation < 48) {
-                        context.drawRoundRectShadow(x, y, width, height, c1, c2, c3, c4,
-                                48, (0.28f - ((elevation - 24) / 100f)) * bgAlpha);
-                    } else {
-                        context.drawRoundRectShadow(x, y, width, height, c1, c2, c3, c4,
-                                48, 0.04f * bgAlpha);
+                        context.drawRoundRectShadow(bg, elevation * 2, 0.28f * bgAlpha);
+                    } else if (elevation < 56) {
+                        context.drawRoundRectShadow(bg, 48, (0.28f - ((elevation - 24) / 100f)) * bgAlpha);
                     }
                 }
-                context.setTransform(getTransformView());
+                context.setTransform2D(getTransformView());
                 context.setColor(backgroundColor);
-                context.drawRoundRect(x, y, width, height, c1, c2, c3, c4, true);
-                context.setTransform(null);
+                context.drawRoundRect(bg, true);
+                context.setTransform2D(null);
             }
 
             if (children != null) {

@@ -1,8 +1,10 @@
 package flat.widget.text;
 
+import flat.graphics.smart.SmartContext;
 import flat.graphics.context.Context;
-import flat.graphics.text.Font;
-import flat.graphics.text.VAlign;
+import flat.graphics.text.Align;
+import flat.graphics.context.Font;
+import flat.screen.Application;
 import flat.widget.Widget;
 
 public class Label extends Widget {
@@ -73,24 +75,25 @@ public class Label extends Widget {
     }
 
     @Override
-    public void onDraw(Context context) {
+    public void onDraw(SmartContext context) {
         super.onDraw(context);
-        context.setTransform(getTransformView());
+        context.setTransform2D(getTransformView());
         if (showText != null) {
             context.setColor(fontColor);
             context.setTextFont(font);
             context.setTextSize(fontSize);
-            context.setTextVerticalAlign(VAlign.TOP);
-            context.drawTextSlice(showText, 0, 0, getWidth());
+            context.setTextVerticalAlign(Align.Vertical.TOP);
+            context.drawTextSlice(0, 0, getWidth(), showText);
         }
     }
 
     @Override
     public void onMeasure() {
         if (invalidTextSize) {
-            Context.getContext().setTextFont(font);
-            Context.getContext().setTextSize(fontSize);
-            textWidth = Context.getContext().getTextWidth(showText);
+            Context context = Application.getContext();
+            context.svgTextFont(font);
+            context.svgTextSize(fontSize);
+            textWidth = context.svgTextGetWidth(showText);
         }
         setMeasure(getPrefWidth() == WRAP_CONTENT ? textWidth : getPrefWidth(), getPrefHeight() == WRAP_CONTENT ? fontSize : getPrefHeight());
     }

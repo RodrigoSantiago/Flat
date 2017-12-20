@@ -12,23 +12,26 @@ public class Shader extends ContextObject {
     private String log;
 
     public Shader(ShaderType type) {
-        super();
+        this(type, null);
+    }
+
+    public Shader(ShaderType type, String source) {
+        this.source = source;
         this.type = type;
+        init();
     }
 
     @Override
     protected void onInitialize() {
-        Context.getContext();
+        this.shaderId = GL.ShaderCreate(type.getInternalEnum());
+    }
 
-        final int shaderId = GL.ShaderCreate(type.getInternalEnum());
-
-        setDispose(() -> GL.ShaderDestroy(shaderId));
-
-        this.shaderId = shaderId;
+    @Override
+    protected void onDispose() {
+        GL.ShaderDestroy(shaderId);
     }
 
     int getInternalID() {
-        init();
         return shaderId;
     }
 
@@ -45,7 +48,6 @@ public class Shader extends ContextObject {
 
     public boolean compile() {
         if (!compiled) {
-            init();
             GL.ShaderSetSource(shaderId, source);
             GL.ShaderCompile(shaderId);
             compiled = GL.ShaderIsCompiled(shaderId);

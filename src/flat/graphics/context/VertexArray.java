@@ -5,43 +5,48 @@ import flat.backend.GL;
 public class VertexArray extends ContextObject {
 
     private int vertexArrayId;
+    private Context context;
 
-    public VertexArray() {
-        super();
+    @Deprecated
+    public VertexArray(Context context) {
+        this.context = context;
+        init();
     }
 
     @Override
     protected void onInitialize() {
-        final int vertexArrayId = GL.VertexArrayCreate();
+        this.vertexArrayId = GL.VertexArrayCreate();
+    }
 
-        setDispose(() -> GL.VertexArrayDestroy(vertexArrayId));
-
-        this.vertexArrayId = vertexArrayId;
+    @Override
+    protected void onDispose() {
+        GL.VertexArrayDestroy(vertexArrayId);
     }
 
     int getInternalID() {
-        init();
         return vertexArrayId;
     }
 
     public void begin() {
-        init();
-        Context.getContext().bindVertexArray(this);
+        context.bindVertexArray(this);
     }
 
     public void end() {
-        Context.getContext().bindVertexArray(null);
+        context.unbindVertexArray();
     }
 
     public void setAttributeEnabled(int att, boolean enabled) {
+        context.refreshBufferBinds();
         GL.VertexArrayAttribEnable(att, enabled);
     }
 
     public void setAttributePointer(int att, boolean normalized, int size, int stride, int type, int offset) {
+        context.refreshBufferBinds();
         GL.VertexArrayAttribPointer(att, size, normalized, stride, type, offset);
     }
 
     public void setAttributeDivisor(int att, int instanceCount) {
+        context.refreshBufferBinds();
         GL.VertexArrayAttribSetDivisor(att, instanceCount);
     }
 }

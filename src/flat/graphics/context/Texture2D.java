@@ -2,48 +2,47 @@ package flat.graphics.context;
 
 import flat.backend.GL;
 import static flat.backend.GLEnuns.*;
-import flat.graphics.context.enuns.ImageMagFilter;
-import flat.graphics.context.enuns.ImageMinFilter;
-import flat.graphics.context.enuns.ImageWrapMode;
-import flat.graphics.context.enuns.TextureFormat;
+import flat.graphics.context.enuns.MagFilter;
+import flat.graphics.context.enuns.MinFilter;
+import flat.graphics.context.enuns.WrapMode;
+import flat.graphics.context.enuns.PixelFormat;
+import flat.screen.Application;
 
 import java.nio.Buffer;
 
 public class Texture2D extends Texture {
 
     private int textureId;
-    private TextureFormat format;
+    private PixelFormat format;
 
     private int width, height, levels;
-    private ImageMinFilter minFilter;
-    private ImageMagFilter magFilter;
-    private ImageWrapMode wrapModeX, wrapModeY;
+    private MinFilter minFilter;
+    private MagFilter magFilter;
+    private WrapMode wrapModeX, wrapModeY;
 
     public Texture2D() {
-        super();
+        init();
     }
 
     @Override
     protected void onInitialize() {
-        Context.getContext();
-        final int textureId =  GL.TextureCreate();
+        this.textureId = GL.TextureCreate();
+    }
 
-        setDispose(() -> GL.TextureDestroy(textureId));
-
-        this.textureId = textureId;
+    @Override
+    protected void onDispose() {
+        GL.TextureDestroy(textureId);
     }
 
     int getInternalID() {
-        init();
         return textureId;
     }
 
     int getInternalType() {
-        init();
         return TB_TEXTURE_2D;
     }
 
-    public void setSize(int width, int height, TextureFormat format) {
+    public void setSize(int width, int height, PixelFormat format) {
         this.format = format;
         this.width = width;
         this.height = height;
@@ -68,14 +67,17 @@ public class Texture2D extends Texture {
     }
 
     public void setData(int level, Buffer buffer, int offset, int x, int y, int width, int height) {
+        Application.getCurrentContext().refreshBufferBinds();
         GL.TextureSubDataBuffer(TT_TEXTURE_2D, level, x, y, width, height, format.getInternalEnum(), buffer, offset);
     }
 
     public void setData(int level, int[] data, int offset, int x, int y, int width, int height) {
+        Application.getCurrentContext().refreshBufferBinds();
         GL.TextureSubDataI(TT_TEXTURE_2D, level, x, y, width, height, format.getInternalEnum(), data, offset);
     }
 
     public void setData(int level, byte[] data, int offset, int x, int y, int width, int height) {
+        Application.getCurrentContext().refreshBufferBinds();
         GL.TextureSubDataB(TT_TEXTURE_2D, level, x, y, width, height, format.getInternalEnum(), data, offset);
     }
 
@@ -92,31 +94,31 @@ public class Texture2D extends Texture {
         GL.TextureGenerateMipmap(TB_TEXTURE_CUBE_MAP);
     }
 
-    public void setScaleFilters(ImageMagFilter magFilter, ImageMinFilter minFilter) {
+    public void setScaleFilters(MagFilter magFilter, MinFilter minFilter) {
         this.magFilter = magFilter;
         this.minFilter = minFilter;
         GL.TextureSetFilter(TB_TEXTURE_CUBE_MAP, magFilter.getInternalEnum(), minFilter.getInternalEnum());
     }
 
-    public ImageMagFilter getMagFilter() {
+    public MagFilter getMagFilter() {
         return magFilter;
     }
 
-    public ImageMinFilter getMinFilter() {
+    public MinFilter getMinFilter() {
         return minFilter;
     }
 
-    public void setWrapModes(ImageWrapMode wrapModeX, ImageWrapMode wrapModeY) {
+    public void setWrapModes(WrapMode wrapModeX, WrapMode wrapModeY) {
         this.wrapModeX = wrapModeX;
         this.wrapModeY = wrapModeY;
         GL.TextureSetWrap(TB_TEXTURE_CUBE_MAP, wrapModeX.getInternalEnum(), wrapModeY.getInternalEnum());
     }
 
-    public ImageWrapMode getWrapModeX() {
+    public WrapMode getWrapModeX() {
         return wrapModeX;
     }
 
-    public ImageWrapMode getWrapModeY() {
+    public WrapMode getWrapModeY() {
         return wrapModeY;
     }
 }

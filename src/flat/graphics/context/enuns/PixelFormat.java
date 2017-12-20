@@ -2,7 +2,7 @@ package flat.graphics.context.enuns;
 
 import static flat.backend.GLEnuns.*;
 
-public enum TextureFormat {
+public enum PixelFormat {
     RGB(TF_RGB),
     RGBA(TF_RGBA),
     DEPTH16(TF_DEPTH_COMPONENT16),
@@ -13,7 +13,7 @@ public enum TextureFormat {
 
     private final int glEnum;
 
-    TextureFormat(int glEnum) {
+    PixelFormat(int glEnum) {
         this.glEnum = glEnum;
     }
 

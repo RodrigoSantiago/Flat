@@ -1,43 +1,43 @@
 package flat.graphics.context;
 
 import flat.backend.GL;
-import flat.graphics.context.enuns.TextureFormat;
+import flat.graphics.context.enuns.PixelFormat;
+import flat.screen.Application;
 
 public class Render extends ContextObject {
 
-    private int width, height;
-    TextureFormat format;
     private int renderBufferId;
+    private PixelFormat format;
+
+    private int width, height;
 
     public Render() {
-        super();
+        init();
     }
 
     @Override
     protected void onInitialize() {
-        Context.getContext();
-        final int renderBufferId = GL.RenderBufferCreate();
+        this.renderBufferId = GL.RenderBufferCreate();
+    }
 
-        setDispose(() -> GL.RenderBufferDestroy(renderBufferId));
-
-        this.renderBufferId = renderBufferId;
+    @Override
+    protected void onDispose() {
+        GL.RenderBufferDestroy(renderBufferId);
     }
 
     int getInternalID() {
-        init();
         return renderBufferId;
     }
 
     public void begin() {
-        init();
-        Context.getContext().bindRender(this);
+        Application.getCurrentContext().bindRender(this);
     }
 
     public void end() {
-        Context.getContext().bindRender(null);
+        Application.getCurrentContext().unbindRender();
     }
 
-    public void setData(TextureFormat format, int width, int height) {
+    public void setData(PixelFormat format, int width, int height) {
         this.format = format;
         this.width = width;
         this.height = height;
@@ -52,7 +52,7 @@ public class Render extends ContextObject {
         return height;
     }
 
-    public TextureFormat getFormat() {
+    public PixelFormat getFormat() {
         return format;
     }
 }

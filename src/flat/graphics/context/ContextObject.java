@@ -8,35 +8,40 @@ public abstract class ContextObject {
     private final long unicID = id.getAndIncrement();
 
     private boolean initialized;
-    private Runnable dispose;
 
     protected ContextObject() {
-        Context.assign(this);
-    }
-
-    protected abstract void onInitialize();
-
-    public void init() {
-        if (!initialized) {
-            initialized = true;
-            onInitialize();
-        }
     }
 
     public long getUnicID() {
         return unicID;
     }
 
-    protected void setDispose(Runnable dispose) {
-        this.dispose = dispose;
+    public final void init() {
+        if (!initialized) {
+            initialized = true;
+            Context.assign(this);
+            onInitialize();
+        }
     }
 
-    public Runnable getDispose() {
-        return dispose;
+    public final void dispose() {
+        if (initialized) {
+            initialized = false;
+            Context.deassign(this);
+            onDispose();
+        }
     }
+
+    public final boolean isInitialized() {
+        return this.initialized;
+    }
+
+    protected abstract void onInitialize();
+
+    protected abstract void onDispose();
 
     @Override
-    public final void finalize() throws Throwable {
-        Context.deassign(this);
+    protected void finalize() throws Throwable {
+        dispose();
     }
 }

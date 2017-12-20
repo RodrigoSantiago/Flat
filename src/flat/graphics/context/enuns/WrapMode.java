@@ -2,7 +2,7 @@ package flat.graphics.context.enuns;
 
 import static flat.backend.GLEnuns.*;
 
-public enum ImageWrapMode {
+public enum WrapMode {
     CLAMP_TO_EDGE(IW_CLAMP_TO_EDGE),
     CLAMP_TO_BORDER(IW_CLAMP_TO_BORDER),
     MIRRORED_REPEAT(IW_MIRRORED_REPEAT),
@@ -10,7 +10,7 @@ public enum ImageWrapMode {
 
     private final int glEnum;
 
-    ImageWrapMode(int glEnum) {
+    WrapMode(int glEnum) {
         this.glEnum = glEnum;
     }
 

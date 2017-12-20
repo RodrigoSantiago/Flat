@@ -2,7 +2,7 @@ package flat.graphics.context.enuns;
 
 import static flat.backend.GLEnuns.*;
 
-public enum DrawVertexMode {
+public enum VertexMode {
     POINTS(VM_POINTS),
     LINE_STRIP(VM_LINE_STRIP),
     LINE_LOOP(VM_LINE_LOOP),
@@ -13,7 +13,7 @@ public enum DrawVertexMode {
 
     private final int glEnum;
 
-    DrawVertexMode(int glEnum) {
+    VertexMode(int glEnum) {
         this.glEnum = glEnum;
     }
 

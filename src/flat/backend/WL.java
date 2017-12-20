@@ -5,17 +5,20 @@ import flat.backend.WLEnuns.*;
 public class WL {
 
     //---------------------------
-    //         Context2D
+    //         Context
     //---------------------------
-    public static native boolean Init(int x, int y, int width, int height, int samples, boolean resizable, boolean decorated);
+    public static native long Init(int width, int height, int samples, boolean resizable, boolean decorated);
     public static native void Finish();
+
+    public static native long ContextCreate(int samples);
+    public static native void ContextAssign(long context);
+    public static native void ContextDestroy(long context);
 
     //---------------------------
     //         Events
     //---------------------------
     public static native void SwapBuffers();
     public static native void HandleEvents();
-    public static native void AssignContext(boolean assign);
 
     //---------------------------
     //       Properties

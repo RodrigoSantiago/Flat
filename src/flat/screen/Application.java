@@ -7,11 +7,17 @@ import flat.events.KeyEvent;
 import flat.events.PointerEvent;
 import flat.events.ScrollEvent;
 import flat.graphics.context.Context;
-import flat.graphics.image.Image;
+import flat.graphics.smart.SmartContext;
+import flat.graphics.smart.image.Image;
 import flat.widget.Widget;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.*;
+
+import static flat.backend.SVGEnuns.SVG_ANTIALIAS;
+import static flat.backend.SVGEnuns.SVG_STENCIL_STROKES;
 
 public final class Application {
 
@@ -19,101 +25,130 @@ public final class Application {
         System.loadLibrary("flat");
     }
 
-    private static Application application;
+    private static Thread thread;
+    private static Context context;
+    private static Activity activity;
+    private static boolean initialized;
 
-    private static ArrayList<Runnable> runSync = new ArrayList<>();
-    private static ArrayList<Runnable> runSyncCp = new ArrayList<>();
+    private static HashMap<Thread, Context> contexts = new HashMap<>();
+
+    private static ArrayList<FutureTask<?>> runSync = new ArrayList<>();
+    private static ArrayList<FutureTask<?>> runSyncCp = new ArrayList<>();
 
     private static ArrayList<Animation> anims = new ArrayList<>();
     private static ArrayList<Animation> animsCp = new ArrayList<>();
 
-    private ArrayList<EventData> events = new ArrayList<>();
-    private ArrayList<EventData> eventsCp = new ArrayList<>();
+    private static ArrayList<EventData> events = new ArrayList<>();
+    private static ArrayList<EventData> eventsCp = new ArrayList<>();
 
-    private Thread thread;
-    private Context context;
-    private Settings settings;
-    private Activity activity;
-
-    private PointerData mouse;
-    private float mouseX, mouseY, outMouseX, outMouseY;
-    private ArrayList<PointerData> pointersData = new ArrayList<>();
-    private long loopTime;
+    private static PointerData mouse;
+    private static float mouseX, mouseY, outMouseX, outMouseY;
+    private static ArrayList<PointerData> pointersData = new ArrayList<>();
+    private static long loopTime;
 
     public static void init(Settings settings) {
-        if (application != null) {
-            throw new RuntimeException("The application is already defined");
-        }
-        if (!WL.Init(80, 80, settings.width, settings.height, settings.multsamples, settings.resizable, settings.decorated)) {
-            throw new RuntimeException("Cannot create a window");
-        }
-        if (!SVG.Init(SVGEnuns.SVG_ANTIALIAS | SVGEnuns.SVG_STENCIL_STROKES)) {
-            throw new RuntimeException("Cannot create a graphic context window");
-        }
+        if (initialized) return;
+        initialized = true;
 
+        long id = WL.Init(settings.width, settings.height, settings.multsamples, settings.resizable, settings.decorated);
+        if (id == 0) {
+            throw new RuntimeException("Invalide context creation");
+        }
+        long svgId = SVG.Create(SVG_ANTIALIAS | SVG_STENCIL_STROKES);
+        if (svgId == 0) {
+            WL.Finish();
+            throw new RuntimeException("Invalide context creation");
+        }
         try {
-            new Application(settings);
+            thread = Thread.currentThread();
+            context = new Context(id, svgId);
+            context.init();
+
+            mouseX = (float) WL.GetCursorX();
+            mouseY = (float) WL.GetCursorY();
+            WL.SetInputMode(WLEnuns.STICKY_KEYS, 1);
+            WL.SetInputMode(WLEnuns.STICKY_MOUSE_BUTTONS, 1);
+            WL.SetMouseButtonCallback((button, action, mods) -> events.add(MouseBtnData.get(button + 1, action, mods)));
+            WL.SetCursorPosCallback((x, y) -> events.add(MouseMoveData.get(outMouseX = (float) x, outMouseY = (float) y)));
+            WL.SetScrollCallback((x, y) -> events.add(MouseScrollData.get(x, y)));
+            WL.SetDropCallback(names -> events.add(MouseDropData.get(names)));
+            WL.SetKeyCallback((key, scancode, action, mods) -> events.add(KeyData.get(key, scancode, action, mods)));
+            WL.SetCharModsCallback((codepoint, mods) -> events.add(CharModsData.get(codepoint, mods)));
+            WL.SetWindowSizeCallback((width, height) -> events.add(SizeData.get(width, height)));
+
+            activity = (Activity) settings.getActivityClass().getConstructor().newInstance();
+            activity.invalidate(true);
+
+            if (settings.start != null) {
+                settings.start.run();
+            } else {
+                show();
+            }
+            launch();
         } catch (Exception e) {
             throw new RuntimeException(e);
+        } finally {
+            cancelSyncCalls();
+            cancelMultipleContexts();
+            Context.deassignAll();
+
+            SVG.Destroy(svgId);
+            WL.Finish();
         }
     }
 
-    private Application(Settings settings) throws Exception {
-        application = this;
-        this.thread = Thread.currentThread();
-        this.context = new Context();
-        this.settings = settings;
-        this.activity = (Activity) settings.getActivityClass().getConstructor().newInstance();
-        this.activity.invalidate(true);
-
-        mouseX = (float) WL.GetCursorX();
-        mouseY = (float) WL.GetCursorY();
-        WL.SetInputMode(WLEnuns.STICKY_KEYS, 1);
-        WL.SetInputMode(WLEnuns.STICKY_MOUSE_BUTTONS, 1);
-        WL.SetMouseButtonCallback((button, action, mods) -> events.add(MouseBtnData.get(button + 1, action, mods)));
-        WL.SetCursorPosCallback((x, y) -> events.add(MouseMoveData.get(outMouseX = (float) x, outMouseY = (float) y)));
-        WL.SetScrollCallback((x, y) -> events.add(MouseScrollData.get(x, y)));
-        WL.SetDropCallback(names -> events.add(MouseDropData.get(names)));
-        WL.SetKeyCallback((key, scancode, action, mods) -> events.add(KeyData.get(key, scancode, action, mods)));
-        WL.SetCharModsCallback((codepoint, mods) -> events.add(CharModsData.get(codepoint, mods)));
-        WL.SetWindowSizeCallback((width, height) -> events.add(SizeData.get(width, height)));
-    }
-
-    public static Application getApplication() {
-        return application;
-    }
-
-    public Context getContext() {
+    public static Context getContext() {
+        if (context == null || Thread.currentThread() != thread) {
+            throw new RuntimeException("The context is not current");
+        }
         return context;
     }
 
-    public Thread getThread() {
-        return thread;
+    public static Context getCurrentContext() {
+        if  (Thread.currentThread() == thread) {
+            return context;
+        }
+        synchronized (Application.class) {
+            return contexts.get(Thread.currentThread());
+        }
     }
 
-    private PointerData getPointer(int mb, int pid, List<PointerData> points) {
-        int touchId = points != null ? points.get(pid).touchId : -1;
-        for (PointerData entity : pointersData) {
-            if (entity.touchId == touchId && entity.mouseButton == mb) {
-                return entity;
+    public static Context createContextInstance() {
+        Thread thread = Thread.currentThread();
+        Context context;
+        synchronized (Application.class) {
+            context = contexts.get(thread);
+        }
+        if (context == null) {
+            FutureTask<long[]> task = new FutureTask<>(() -> {
+                long id = WL.ContextCreate(1);
+                if (id == 0) {
+                    throw new RuntimeException("Invalid context creation");
+                }
+                long svgId = SVG.Create(SVG_ANTIALIAS | SVG_STENCIL_STROKES);
+                if (svgId == 0) {
+                    WL.ContextDestroy(id);
+                    throw new RuntimeException("Invalid context creation");
+                }
+                return new long[]{id, svgId};
+            });
+            runSync(task);
+            try {
+                long[] ids = task.get();
+                WL.ContextAssign(ids[0]);
+                context = new Context(ids[0], ids[1]);
+                context.init();
+                synchronized (Application.class) {
+                    contexts.put(thread, context);
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
         }
-        PointerData entity = new PointerData(mb, touchId);
-        pointersData.add(entity);
-        return entity;
+        return context;
     }
 
-    protected void finish() {
-        context.dispose();
-        SVG.Finish();
-        WL.Finish();
-    }
-
-    protected void launch() {
-
-        if (settings != null && settings.start != null) {
-            settings.start.start(this);
-        }
+    static void launch() {
 
         while (!WL.IsClosed()) {
             loopTime = System.currentTimeMillis();
@@ -133,12 +168,12 @@ public final class Application {
             // Sync Calls
             processSyncCalls();
 
-            // Dispose destroyed objects
-            context.disposeObjects();
+            // Destroy old contexts
+            processMultipleContexts();
         }
     }
 
-    protected void processEvents() {
+    static void processEvents() {
         WL.HandleEvents();
         ArrayList<EventData> swap = eventsCp;
         eventsCp = events;
@@ -284,7 +319,7 @@ public final class Application {
         eventsCp.clear();
     }
 
-    protected void processAnimations() {
+    static void processAnimations() {
         long time = System.currentTimeMillis();
 
         ArrayList<Animation> animSwap = animsCp;
@@ -297,16 +332,18 @@ public final class Application {
         animsCp.clear();
     }
 
-    protected void processLayout() {
+    static void processLayout() {
         if (activity.layout()) {
             activity.onLayout(getClientWidth(), getClientHeight());
         }
     }
 
-    protected void processDraws() {
+    static void processDraws() {
         if (activity.draw()) {
-            activity.onDraw(context);
-            context.softFlush();
+            SmartContext smartContext = context.getSmartContext();
+            activity.onDraw(smartContext);
+
+            smartContext.softFlush();
             WL.SwapBuffers();
         } else {
             long time = System.currentTimeMillis() - loopTime;
@@ -319,176 +356,230 @@ public final class Application {
         }
     }
 
-    protected void processSyncCalls() {
+    static void processSyncCalls() {
         synchronized (Application.class) {
-            ArrayList<Runnable> swap = runSyncCp;
+            ArrayList<FutureTask<?>> swap = runSyncCp;
             runSyncCp = runSync;
             runSync = swap;
         }
-        for (Runnable run : runSyncCp) {
+        for (FutureTask<?> run : runSyncCp) {
             run.run();
         }
         runSyncCp.clear();
     }
 
-    public static void runSync(Runnable task) {
+    static void cancelSyncCalls() {
+        synchronized (Application.class) {
+            ArrayList<FutureTask<?>> swap = runSyncCp;
+            runSyncCp = runSync;
+            runSync = swap;
+        }
+        for (FutureTask<?> run : runSyncCp) {
+            run.cancel(true);
+        }
+        runSyncCp.clear();
+    }
+
+    static void processMultipleContexts() {
+        synchronized (Application.class) {
+            contexts.keySet().removeIf(thread -> {
+                if (!thread.isAlive()) {
+                    Context context = contexts.get(thread);
+                    if (context != null) {
+                        context.dispose();
+                        SVG.Destroy(context.svgId);
+                        WL.ContextDestroy(context.id);
+                    }
+                    return true;
+                } else {
+                    return false;
+                }
+            });
+        }
+    }
+
+    static void cancelMultipleContexts() {
+        synchronized (Application.class) {
+            for (Context context : contexts.values()) {
+                if (context != null) {
+                    SVG.Destroy(context.svgId);
+                    WL.ContextDestroy(context.id);
+                }
+            }
+        }
+    }
+
+    public static void runSync(FutureTask<?> task) {
         synchronized (Application.class) {
             runSync.add(task);
         }
     }
 
-    public Activity getActivity() {
+    public static void runSync(Runnable task) {
+        synchronized (Application.class) {
+            runSync(new FutureTask<>(task, null));
+        }
+    }
+
+    public static Activity getActivity() {
         return activity;
     }
 
-    public void setActivity(Activity activity) {
-        this.activity = activity;
-        this.activity.invalidate(true);
+    public static void setActivity(Activity activity) {
+        Application.activity = activity;
+        Application.activity.invalidate(true);
     }
 
-    public void setFullscreen(boolean fullscreen) {
+    public static void setFullscreen(boolean fullscreen) {
         WL.SetFullscreen(fullscreen);
     }
 
-    public boolean isFullscreen() {
+    public static boolean isFullscreen() {
         return WL.IsFullscreen();
     }
 
-    public boolean isResisable() {
+    public static boolean isResisable() {
         return WL.IsResizable();
     }
 
-    public boolean isDecorated() {
+    public static boolean isDecorated() {
         return WL.IsDecorated();
     }
 
-    public String getTitle() {
+    public static String getTitle() {
         return WL.GetTitle();
     }
 
-    public void setTitle(String title) {
+    public static void setTitle(String title) {
         WL.SetTitle(title);
     }
 
-    public void setIcon(Image icons) {
+    public static void setIcon(Image icons) {
 
     }
 
-    public int getX() {
+    public static int getX() {
         return WL.GetX();
     }
 
-    public void setX(int x) {
+    public static void setX(int x) {
         WL.SetPosition(x, WL.GetY());
     }
 
-    public int getY() {
+    public static int getY() {
         return WL.GetY();
     }
 
-    public void setY(int y) {
+    public static void setY(int y) {
         WL.SetPosition(WL.GetX(), y);
     }
 
-    public void setPosition(int x, int y) {
+    public static void setPosition(int x, int y) {
         WL.SetPosition(x, y);
     }
 
-    public int getClientWidth() {
+    public static int getClientWidth() {
         return WL.GetClientWidth();
     }
 
-    public int getClientHeight() {
+    public static int getClientHeight() {
         return WL.GetClientHeight();
     }
 
-    public int getWidth() {
+    public static int getWidth() {
         return WL.GetWidth();
     }
 
-    public void setWidth(int width) {
+    public static void setWidth(int width) {
         WL.SetSize(width, WL.GetHeight());
     }
 
-    public int getHeight() {
+    public static int getHeight() {
         return WL.GetHeight();
     }
 
-    public void setHeight(int height) {
+    public static void setHeight(int height) {
         WL.SetSize(WL.GetWidth(), height);
     }
 
-    public void setSize(int width, int height) {
+    public static void setSize(int width, int height) {
         WL.SetSize(width, height);
     }
 
-    public int getMinWidth() {
+    public static int getMinWidth() {
         return WL.GetMinWidth();
     }
 
-    public void setMinWidth(int minWidth) {
+    public static void setMinWidth(int minWidth) {
         WL.SetSizeLimits(minWidth, WL.GetMinHeight(), WL.GetMaxWidth(), WL.GetMaxHeight());
     }
 
-    public int getMinHeight() {
+    public static int getMinHeight() {
         return WL.GetMinHeight();
     }
 
-    public void setMinHeight(int minHeight) {
+    public static void setMinHeight(int minHeight) {
         WL.SetSizeLimits(WL.GetMinWidth(), minHeight, WL.GetMaxWidth(), WL.GetMaxHeight());
     }
 
-    public int getMaxWidth() {
+    public static int getMaxWidth() {
         return WL.GetMaxWidth();
     }
 
-    public void setMaxWidth(int maxWidth) {
+    public static void setMaxWidth(int maxWidth) {
         WL.SetSizeLimits(WL.GetMinWidth(), WL.GetMinHeight(), maxWidth, WL.GetMaxHeight());
     }
 
-    public int getMaxHeight() {
+    public static int getMaxHeight() {
         return WL.GetMaxHeight();
     }
 
-    public void setMaxHeight(int maxHeight) {
+    public static void setMaxHeight(int maxHeight) {
         WL.SetSizeLimits(WL.GetMinWidth(), WL.GetMinHeight(), WL.GetMaxWidth(), maxHeight);
     }
 
-    public void setSizeLimits(int minWidth, int minHeight, int maxWidth, int maxHeight) {
+    public static void setSizeLimits(int minWidth, int minHeight, int maxWidth, int maxHeight) {
         WL.SetSizeLimits(minWidth, minHeight, maxWidth, maxHeight);
     }
 
-    public void show() {
+    public static void show() {
         WL.Show();
     }
 
-    public void hide() {
+    public static void hide() {
         WL.Hide();
     }
 
-    public void maximize() {
+    public static void maximize() {
         WL.Maximize();
     }
 
-    public void minimize() {
+    public static void minimize() {
         WL.Minimize();
     }
 
-    public void restore() {
+    public static void restore() {
         WL.Restore();
     }
 
-    public void focus() {
+    public static void focus() {
         WL.Focus();
     }
 
-    public void invalidate() {
+    public static void invalidate() {
 
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
+    private static PointerData getPointer(int mb, int pid, List<PointerData> points) {
+        int touchId = points != null ? points.get(pid).touchId : -1;
+        for (PointerData entity : pointersData) {
+            if (entity.touchId == touchId && entity.mouseButton == mb) {
+                return entity;
+            }
+        }
+        PointerData entity = new PointerData(mb, touchId);
+        pointersData.add(entity);
+        return entity;
     }
 
     private static class EventData {
@@ -665,7 +756,7 @@ public final class Application {
         }
     }
 
-    public class PointerData {
+    public static class PointerData {
         final int mouseButton, touchId;
 
         Widget pressed, dragged, hover;

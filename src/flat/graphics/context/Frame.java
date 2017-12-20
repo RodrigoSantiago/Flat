@@ -11,49 +11,48 @@ public class Frame extends ContextObject {
     public static final int STENCIL = -2;
     public static final int DEPTH_STENCIL = -3;
 
+    private Context context;
     private final Layer[] layers = new Layer[10];
     private int frameBufferId;
     private boolean draw, read;
 
-    public Frame() {
-        super();
+    public Frame(Context context) {
+        this.context = context;
+
         for (int i = 0; i < 10; i++) {
             layers[i] = new Layer();
         }
+        init();
     }
 
     @Override
     protected void onInitialize() {
-        Context.getContext();
-        final int frameBufferId = GL.FrameBufferCreate();
+        this.frameBufferId = GL.FrameBufferCreate();
+    }
 
-        setDispose(() -> GL.FrameBufferDestroy(frameBufferId));
-
-        this.frameBufferId = frameBufferId;
+    @Override
+    protected void onDispose() {
+        GL.FrameBufferDestroy(frameBufferId);
     }
 
     int getInternalID() {
-        init();
         return frameBufferId;
     }
 
     public void beginDraw() {
-        init();
-        Context.getContext().bindFrame(this, true, false);
+        context.bindFrame(this, true, false);
     }
 
     public void beginRead() {
-        init();
-        Context.getContext().bindFrame(this, false, true);
+        context.bindFrame(this, false, true);
     }
 
     public void begin() {
-        init();
-        Context.getContext().bindFrame(this, true, true);
+        context.bindFrame(this, true, true);
     }
 
     public void end() {
-        Context.getContext().bindFrame(null, draw, read);
+        context.bindFrame(null, draw, read);
     }
 
     void setBindType(boolean draw, boolean read) {
@@ -134,7 +133,7 @@ public class Frame extends ContextObject {
         private int internalEnum;
         private int internalLevel;
 
-        // Reset
+        // Null
         void set() {
             render = false;
             internalID = 0;

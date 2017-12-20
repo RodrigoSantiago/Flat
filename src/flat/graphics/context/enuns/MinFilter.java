@@ -2,7 +2,7 @@ package flat.graphics.context.enuns;
 
 import static flat.backend.GLEnuns.*;
 
-public enum ImageMinFilter {
+public enum MinFilter {
     NEAREST(IF_NEAREST),
     LINEAR(IF_LINEAR),
     NEAREST_MIPMAP_NEAREST(IF_NEAREST_MIPMAP_NEAREST),
@@ -12,7 +12,7 @@ public enum ImageMinFilter {
 
     private final int glEnum;
 
-    ImageMinFilter(int glEnum) {
+    MinFilter(int glEnum) {
         this.glEnum = glEnum;
     }
 

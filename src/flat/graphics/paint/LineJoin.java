@@ -1,9 +1,18 @@
 package flat.graphics.paint;
 
+import static flat.backend.SVGEnuns.*;
+
 public enum LineJoin {
-    MITER, ROUND, BEVEL;
+    MITER(SVG_MITER),
+    ROUND(SVG_ROUND),
+    BEVEL(SVG_BEVEL);
+
+    private final int svgEnum;
+    LineJoin(int svgEnum) {
+        this.svgEnum = svgEnum;
+    }
 
     public int getInternalEnum() {
-        return 0;
+        return svgEnum;
     }
 }

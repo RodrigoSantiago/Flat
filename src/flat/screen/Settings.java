@@ -4,7 +4,7 @@ public class Settings {
 
     private Class activityClass;
 
-    public Start start;
+    public Runnable start;
     public int multsamples;
     public int width;
     public int height;
@@ -15,19 +15,19 @@ public class Settings {
         this(activityClass, null);
     }
 
-    public <T extends Activity> Settings(Class<T> activityClass, Start start) {
+    public <T extends Activity> Settings(Class<T> activityClass, Runnable start) {
         this(activityClass, start, 1);
     }
 
-    public <T extends Activity> Settings(Class<T> activityClass, Start start, int multsamples) {
+    public <T extends Activity> Settings(Class<T> activityClass, Runnable start, int multsamples) {
         this(activityClass, start, multsamples, 800, 600);
     }
 
-    public <T extends Activity> Settings(Class<T> activityClass, Start start, int multsamples, int width, int height) {
+    public <T extends Activity> Settings(Class<T> activityClass, Runnable start, int multsamples, int width, int height) {
         this(activityClass, start, multsamples, width, height, true, true);
     }
 
-    public <T extends Activity> Settings(Class<T> activityClass, Start start, int multsamples, int width, int height, boolean decorated, boolean resizable) {
+    public <T extends Activity> Settings(Class<T> activityClass, Runnable start, int multsamples, int width, int height, boolean decorated, boolean resizable) {
         this.activityClass = activityClass;
         this.start = start;
         this.multsamples = multsamples;
@@ -41,11 +41,7 @@ public class Settings {
         this.activityClass = activityClass;
     }
 
-    public Class getActivityClass() {
+    public Class<?> getActivityClass() {
         return activityClass;
-    }
-
-    public interface Start {
-        void start(Application application);
     }
 }

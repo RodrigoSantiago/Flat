@@ -4,44 +4,43 @@ import flat.backend.GL;
 import static flat.backend.GLEnuns.*;
 
 import flat.graphics.context.enuns.*;
+import flat.screen.Application;
 
 import java.nio.Buffer;
 
 public class Cubemap extends Texture {
 
     private int cubemapId;
-    private TextureFormat format;
+    private PixelFormat format;
 
     private int width, height, levels;
-    private ImageMinFilter minFilter;
-    private ImageMagFilter magFilter;
-    private ImageWrapMode wrapModeX, wrapModeY;
+    private MinFilter minFilter;
+    private MagFilter magFilter;
+    private WrapMode wrapModeX, wrapModeY;
 
     public Cubemap() {
-        super();
+        init();
     }
 
     @Override
     protected void onInitialize() {
-        Context.getContext();
-        final int cubmapId =  GL.TextureCreate();
+        this.cubemapId = GL.TextureCreate();
+    }
 
-        setDispose(() -> GL.TextureDestroy(cubmapId));
-
-        this.cubemapId = cubmapId;
+    @Override
+    protected void onDispose() {
+        GL.TextureDestroy(cubemapId);
     }
 
     int getInternalID() {
-        init();
         return cubemapId;
     }
 
     int getInternalType() {
-        init();
         return TB_TEXTURE_CUBE_MAP;
     }
 
-    public void setSize(int width, int height, TextureFormat format) {
+    public void setSize(int width, int height, PixelFormat format) {
         this.format = format;
         this.width = width;
         this.height = height;
@@ -71,14 +70,17 @@ public class Cubemap extends Texture {
     }
 
     public void setData(CubeFace face, int level, Buffer buffer, int offset, int x, int y, int width, int height) {
+        Application.getCurrentContext().refreshBufferBinds();
         GL.TextureSubDataBuffer(face.getInternalEnum(), level, x, y, width, height, format.getInternalEnum(), buffer, offset);
     }
 
     public void setData(CubeFace face, int level, int[] data, int offset, int x, int y, int width, int height) {
+        Application.getCurrentContext().refreshBufferBinds();
         GL.TextureSubDataI(face.getInternalEnum(), level, x, y, width, height, format.getInternalEnum(), data, offset);
     }
 
     public void setData(CubeFace face, int level, byte[] data, int offset, int x, int y, int width, int height) {
+        Application.getCurrentContext().refreshBufferBinds();
         GL.TextureSubDataB(face.getInternalEnum(), level, x, y, width, height, format.getInternalEnum(), data, offset);
     }
 
@@ -95,31 +97,31 @@ public class Cubemap extends Texture {
         GL.TextureGenerateMipmap(TB_TEXTURE_CUBE_MAP);
     }
 
-    public void setScaleFilters(ImageMagFilter magFilter, ImageMinFilter minFilter) {
+    public void setScaleFilters(MagFilter magFilter, MinFilter minFilter) {
         this.magFilter = magFilter;
         this.minFilter = minFilter;
         GL.TextureSetFilter(TB_TEXTURE_CUBE_MAP, magFilter.getInternalEnum(), minFilter.getInternalEnum());
     }
 
-    public ImageMagFilter getMagFilter() {
+    public MagFilter getMagFilter() {
         return magFilter;
     }
 
-    public ImageMinFilter getMinFilter() {
+    public MinFilter getMinFilter() {
         return minFilter;
     }
 
-    public void setWrapModes(ImageWrapMode wrapModeX, ImageWrapMode wrapModeY) {
+    public void setWrapModes(WrapMode wrapModeX, WrapMode wrapModeY) {
         this.wrapModeX = wrapModeX;
         this.wrapModeY = wrapModeY;
         GL.TextureSetWrap(TB_TEXTURE_CUBE_MAP, wrapModeX.getInternalEnum(), wrapModeY.getInternalEnum());
     }
 
-    public ImageWrapMode getWrapModeX() {
+    public WrapMode getWrapModeX() {
         return wrapModeX;
     }
 
-    public ImageWrapMode getWrapModeY() {
+    public WrapMode getWrapModeY() {
         return wrapModeY;
     }
 }

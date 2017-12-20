@@ -3,7 +3,7 @@ package flat.graphics.context.enuns;
 import static flat.backend.GLEnuns.*;
 
 public enum ShaderType {
-    Vertex(ST_FRAGMENT_SHADER),
+    Vertex(ST_VERTEX_SHADER),
     Fragment(ST_FRAGMENT_SHADER)/*,
     GeometricFragment(ST_GEOMETRIC_SHADER)*/;
 

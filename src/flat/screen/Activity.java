@@ -1,6 +1,6 @@
 package flat.screen;
 
-import flat.graphics.context.Context;
+import flat.graphics.smart.SmartContext;
 import flat.widget.Scene;
 import flat.widget.Widget;
 
@@ -29,7 +29,7 @@ public class Activity {
         scene.onLayout(0, 0, width, height);
     }
 
-    public void onDraw(Context context) {
+    public void onDraw(SmartContext context) {
         scene.onDraw(context);
     }
 

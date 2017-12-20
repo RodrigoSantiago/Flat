@@ -1,8 +1,9 @@
 package flat.graphics.context;
 
 import flat.backend.GL;
-import static flat.backend.GLEnuns.*;
 import flat.graphics.context.enuns.BufferType;
+import flat.graphics.context.enuns.UsageType;
+import flat.screen.Application;
 
 import java.nio.Buffer;
 
@@ -10,47 +11,52 @@ public class BufferObejct extends ContextObject {
 
     private int bufferId;
 
-    private BufferType type;
     private int size;
+    private BufferType type;
+    private UsageType usageType;
 
     public BufferObejct() {
-        super();
+        init();
     }
 
     @Override
     protected void onInitialize() {
-        Context.getContext();
-        final int bufferId = GL.BufferCreate();
+        this.bufferId = GL.BufferCreate();
+    }
 
-        setDispose(() -> GL.BufferDestroy(bufferId));
-
-        this.bufferId = bufferId;
+    @Override
+    protected void onDispose() {
+        GL.BufferDestroy(bufferId);
     }
 
     int getInternalID() {
-        init();
         return bufferId;
     }
 
     public void begin(BufferType bufferType) {
-        init();
-        Context.getContext().bindBuffer(this, bufferType);
+        Application.getCurrentContext().bindBuffer(this, bufferType);
     }
 
     public void end() {
-        Context.getContext().bindBuffer(null, type);
+        Application.getCurrentContext().unbindBuffer(type);
     }
 
     void setBindType(BufferType type) {
         this.type = type;
     }
 
-    public void setSize(int size) {
-        GL.BufferDataBuffer(type.getInternalEnum(), null, 0, this.size = size, UT_STATIC_DRAW);
+    public void setSize(int size, UsageType usageType) {
+        this.usageType = usageType;
+        this.size = size;
+        GL.BufferDataBuffer(type.getInternalEnum(), null, 0, size, usageType.getGlEnum());
     }
 
     public int getSize() {
         return this.size;
+    }
+
+    public UsageType getUsageType() {
+        return usageType;
     }
 
     public void setData(int internalOffset, byte[] data, int offset, int length) {

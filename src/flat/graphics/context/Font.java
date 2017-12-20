@@ -1,25 +1,22 @@
-package flat.graphics.text;
+package flat.graphics.context;
 
 import flat.backend.SVG;
-import flat.graphics.context.Context;
+import flat.graphics.text.FontPosture;
+import flat.graphics.text.FontWeight;
+import flat.screen.Application;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public final class Font {
-    private int internalID;
-
-    public int getInternalID() {
-        return internalID;
-    }
-
     private final String family;
     private final FontPosture posture;
     private final FontWeight weight;
 
-    private int fontId = -1;
+    private HashMap<Thread, Integer> fontIds = new HashMap<>();
     private byte[] data;
 
     private static final ArrayList<Font> fonts = new ArrayList<>();
@@ -92,7 +89,9 @@ public final class Font {
         Font found = findFont(family, weight, posture);
         if (found == null || found.weight != weight || found.posture != posture) {
             Font font = new Font(family, weight, posture, data);
-            fonts.add(font);
+            synchronized (Font.class) {
+                fonts.add(font);
+            }
             return font;
         } else  {
             return found;
@@ -106,13 +105,28 @@ public final class Font {
         this.data = data.clone();
     }
 
-    protected int getInternalId() {
-        if (fontId == -1) {
-            Context.getContext();
-            this.fontId = SVG.FontCreate(family + "-" + posture + "-" + weight, data);
-            this.data = null;
+
+    public int getInternalID() {
+        Integer index;
+        synchronized (Font.class) {
+            index = fontIds.get(Thread.currentThread());
         }
-        return fontId;
+        if (index == null) {
+            long svgId = Application.getCurrentContext().svgId;
+            index = SVG.FontCreate(svgId, family + "-" + posture + "-" + weight, data);
+            synchronized (Font.class) {
+                fontIds.put(Thread.currentThread(), index);
+            }
+        }
+        return index;
+    }
+
+    static void dispose(Thread thread) {
+        synchronized (Font.class) {
+            for (Font font : fonts) {
+                font.fontIds.remove(thread);
+            }
+        }
     }
 
     public String getFamily() {
