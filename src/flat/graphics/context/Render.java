@@ -37,10 +37,10 @@ public class Render extends ContextObject {
         Application.getCurrentContext().unbindRender();
     }
 
-    public void setData(PixelFormat format, int width, int height) {
-        this.format = format;
+    public void setSize(int width, int height, PixelFormat format) {
         this.width = width;
         this.height = height;
+        this.format = format;
         GL.RenderBufferStorage(format.getInternalEnum(), width, height);
     }
 

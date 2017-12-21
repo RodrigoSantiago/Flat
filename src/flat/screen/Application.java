@@ -16,8 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.*;
 
-import static flat.backend.SVGEnuns.SVG_ANTIALIAS;
-import static flat.backend.SVGEnuns.SVG_STENCIL_STROKES;
+import static flat.backend.SVGEnuns.*;
 
 public final class Application {
 
@@ -28,9 +27,11 @@ public final class Application {
     private static Thread thread;
     private static Context context;
     private static Activity activity;
-    private static boolean initialized;
 
     private static HashMap<Thread, Context> contexts = new HashMap<>();
+
+    private static int gThreadCount;
+    private static final Object key = new Object();
 
     private static ArrayList<FutureTask<?>> runSync = new ArrayList<>();
     private static ArrayList<FutureTask<?>> runSyncCp = new ArrayList<>();
@@ -44,12 +45,10 @@ public final class Application {
     private static PointerData mouse;
     private static float mouseX, mouseY, outMouseX, outMouseY;
     private static ArrayList<PointerData> pointersData = new ArrayList<>();
+
     private static long loopTime;
 
     public static void init(Settings settings) {
-        if (initialized) return;
-        initialized = true;
-
         long id = WL.Init(settings.width, settings.height, settings.multsamples, settings.resizable, settings.decorated);
         if (id == 0) {
             throw new RuntimeException("Invalide context creation");
@@ -59,11 +58,16 @@ public final class Application {
             WL.Finish();
             throw new RuntimeException("Invalide context creation");
         }
-        try {
-            thread = Thread.currentThread();
-            context = new Context(id, svgId);
-            context.init();
 
+        thread = Thread.currentThread();
+        context = new Context(id, svgId);
+        context.init();
+
+        synchronized (Application.class) {
+            contexts.put(thread, context);
+        }
+
+        try {
             mouseX = (float) WL.GetCursorX();
             mouseY = (float) WL.GetCursorY();
             WL.SetInputMode(WLEnuns.STICKY_KEYS, 1);
@@ -84,21 +88,36 @@ public final class Application {
             } else {
                 show();
             }
+
             launch();
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
-            cancelSyncCalls();
-            cancelMultipleContexts();
-            Context.deassignAll();
+            synchronized (Application.class) {
+                contexts.remove(thread);
+            }
+            context.dispose();
+            context = null;
+
+            synchronized (key) {
+                while (gThreadCount > 0) {
+                    try {
+                        processSyncCalls();
+                        key.wait();
+                    } catch (InterruptedException e) {
+                        break;
+                    }
+                }
+            }
 
             SVG.Destroy(svgId);
             WL.Finish();
         }
+
     }
 
     public static Context getContext() {
-        if (context == null || Thread.currentThread() != thread) {
+        if (Thread.currentThread() != thread) {
             throw new RuntimeException("The context is not current");
         }
         return context;
@@ -113,43 +132,52 @@ public final class Application {
         }
     }
 
-    public static Context createContextInstance() {
-        Thread thread = Thread.currentThread();
-        Context context;
-        synchronized (Application.class) {
-            context = contexts.get(thread);
+    public static Thread createGraphicalThread(GraphicTask task) {
+        long id = WL.ContextCreate(0);
+        if (id == 0) {
+            throw new RuntimeException("Invalide context creation");
         }
-        if (context == null) {
-            FutureTask<long[]> task = new FutureTask<>(() -> {
-                long id = WL.ContextCreate(1);
-                if (id == 0) {
-                    throw new RuntimeException("Invalid context creation");
-                }
-                long svgId = SVG.Create(SVG_ANTIALIAS | SVG_STENCIL_STROKES);
-                if (svgId == 0) {
-                    WL.ContextDestroy(id);
-                    throw new RuntimeException("Invalid context creation");
-                }
-                return new long[]{id, svgId};
-            });
-            runSync(task);
+        return new Thread(() -> {
+            synchronized (key) {
+                gThreadCount++;
+            }
+
+            WL.ContextAssign(id);
+
+            long svgId = SVG.Create(SVG_ANTIALIAS | SVG_STENCIL_STROKES);
+            if (svgId == 0) {
+                runSync(() -> WL.ContextDestroy(id));
+                throw new RuntimeException("Invalide context creation");
+            }
+
+            Thread thread = Thread.currentThread();
+            Context context = new Context(id, svgId);
+            context.init();
+
+            synchronized (Application.class) {
+                contexts.put(thread, context);
+            }
+
             try {
-                long[] ids = task.get();
-                WL.ContextAssign(ids[0]);
-                context = new Context(ids[0], ids[1]);
-                context.init();
-                synchronized (Application.class) {
-                    contexts.put(thread, context);
-                }
+                task.run(context);
             } catch (Exception e) {
                 throw new RuntimeException(e);
+            } finally {
+                synchronized (Application.class) {
+                    contexts.remove(thread);
+                }
+                context.dispose();
+                SVG.Destroy(svgId);
+
+                synchronized (key) {
+                    gThreadCount--;
+                    runSync(() -> WL.ContextDestroy(id));
+                }
             }
-        }
-        return context;
+        });
     }
 
     static void launch() {
-
         while (!WL.IsClosed()) {
             loopTime = System.currentTimeMillis();
 
@@ -167,9 +195,6 @@ public final class Application {
 
             // Sync Calls
             processSyncCalls();
-
-            // Destroy old contexts
-            processMultipleContexts();
         }
     }
 
@@ -357,7 +382,7 @@ public final class Application {
     }
 
     static void processSyncCalls() {
-        synchronized (Application.class) {
+        synchronized (key) {
             ArrayList<FutureTask<?>> swap = runSyncCp;
             runSyncCp = runSync;
             runSync = swap;
@@ -368,57 +393,23 @@ public final class Application {
         runSyncCp.clear();
     }
 
-    static void cancelSyncCalls() {
-        synchronized (Application.class) {
-            ArrayList<FutureTask<?>> swap = runSyncCp;
-            runSyncCp = runSync;
-            runSync = swap;
-        }
-        for (FutureTask<?> run : runSyncCp) {
-            run.cancel(true);
-        }
-        runSyncCp.clear();
-    }
-
-    static void processMultipleContexts() {
-        synchronized (Application.class) {
-            contexts.keySet().removeIf(thread -> {
-                if (!thread.isAlive()) {
-                    Context context = contexts.get(thread);
-                    if (context != null) {
-                        context.dispose();
-                        SVG.Destroy(context.svgId);
-                        WL.ContextDestroy(context.id);
-                    }
-                    return true;
-                } else {
-                    return false;
-                }
-            });
-        }
-    }
-
-    static void cancelMultipleContexts() {
-        synchronized (Application.class) {
-            for (Context context : contexts.values()) {
-                if (context != null) {
-                    SVG.Destroy(context.svgId);
-                    WL.ContextDestroy(context.id);
-                }
-            }
-        }
-    }
-
     public static void runSync(FutureTask<?> task) {
-        synchronized (Application.class) {
+        synchronized (key) {
             runSync.add(task);
+            key.notifyAll();
         }
     }
 
-    public static void runSync(Runnable task) {
-        synchronized (Application.class) {
-            runSync(new FutureTask<>(task, null));
-        }
+    public static <T> Future<T> runSync(Callable<T> task) {
+        FutureTask<T> fTask = new FutureTask<>(task);
+        runSync(fTask);
+        return fTask;
+    }
+
+    public static <T> Future<T> runSync(Runnable task) {
+        FutureTask<T> fTask = new FutureTask<>(task, null);
+        runSync(fTask);
+        return fTask;
     }
 
     public static Activity getActivity() {
@@ -566,11 +557,7 @@ public final class Application {
         WL.Focus();
     }
 
-    public static void invalidate() {
-
-    }
-
-    private static PointerData getPointer(int mb, int pid, List<PointerData> points) {
+    static PointerData getPointer(int mb, int pid, List<PointerData> points) {
         int touchId = points != null ? points.get(pid).touchId : -1;
         for (PointerData entity : pointersData) {
             if (entity.touchId == touchId && entity.mouseButton == mb) {
@@ -582,11 +569,11 @@ public final class Application {
         return entity;
     }
 
-    private static class EventData {
+    static class EventData {
         int type;
     }
 
-    private static class MouseBtnData extends EventData {
+    static class MouseBtnData extends EventData {
         static ArrayList<MouseBtnData> list = new ArrayList<>();
 
         static MouseBtnData get(int btn, int action, int mods) {
@@ -601,9 +588,9 @@ public final class Application {
             list.add(data);
         }
 
-        public int btn, action, mods;
+        int btn, action, mods;
 
-        public void set(int btn, int action, int mods) {
+        void set(int btn, int action, int mods) {
             this.type = 1;
             this.btn = btn;
             this.action = action;
@@ -611,7 +598,7 @@ public final class Application {
         }
     }
 
-    private static class MouseMoveData extends EventData {
+    static class MouseMoveData extends EventData {
         static ArrayList<MouseMoveData> list = new ArrayList<>();
 
         static MouseMoveData get(double x, double y) {
@@ -626,16 +613,16 @@ public final class Application {
             list.add(data);
         }
 
-        public float x, y;
+        float x, y;
 
-        public void set(float x, float y) {
+        void set(float x, float y) {
             this.type = 2;
             this.x = x;
             this.y = y;
         }
     }
 
-    private static class MouseScrollData extends EventData {
+    static class MouseScrollData extends EventData {
         static ArrayList<MouseScrollData> list = new ArrayList<>();
 
         static MouseScrollData get(double x, double y) {
@@ -650,16 +637,16 @@ public final class Application {
             list.add(data);
         }
 
-        public float x, y;
+        float x, y;
 
-        public void set(float x, float y) {
+        void set(float x, float y) {
             this.type = 3;
             this.x = x;
             this.y = y;
         }
     }
 
-    private static class MouseDropData extends EventData {
+    static class MouseDropData extends EventData {
         static ArrayList<MouseDropData> list = new ArrayList<>();
 
         static MouseDropData get(String[] paths) {
@@ -674,15 +661,15 @@ public final class Application {
             list.add(data);
         }
 
-        public String[] paths;
+        String[] paths;
 
-        public void set(String[] paths) {
+        void set(String[] paths) {
             this.type = 4;
             this.paths = paths;
         }
     }
 
-    private static class KeyData extends EventData {
+    static class KeyData extends EventData {
         static ArrayList<KeyData> list = new ArrayList<>();
 
         static KeyData get(int key, int scancode, int action, int mods) {
@@ -697,9 +684,9 @@ public final class Application {
             list.add(data);
         }
 
-        public int key, scancode, action, mods;
+        int key, scancode, action, mods;
 
-        public void set(int key, int scancode, int action, int mods) {
+        void set(int key, int scancode, int action, int mods) {
             this.type = 5;
             this.key = key;
             this.scancode = scancode;
@@ -708,7 +695,7 @@ public final class Application {
         }
     }
 
-    private static class CharModsData extends EventData {
+    static class CharModsData extends EventData {
         static ArrayList<CharModsData> list = new ArrayList<>();
 
         static CharModsData get(int codepoint, int mods) {
@@ -723,16 +710,16 @@ public final class Application {
             list.add(data);
         }
 
-        public int codepoint, mods;
+        int codepoint, mods;
 
-        public void set(int codepoint, int mods) {
+        void set(int codepoint, int mods) {
             this.type = 7;
             this.codepoint = codepoint;
             this.mods = mods;
         }
     }
 
-    private static class SizeData extends EventData {
+    static class SizeData extends EventData {
         static ArrayList<SizeData> list = new ArrayList<>();
 
         static SizeData get(int width, int height) {
@@ -747,16 +734,16 @@ public final class Application {
             list.add(data);
         }
 
-        public int width, height;
+        int width, height;
 
-        public void set(int width, int height) {
+        void set(int width, int height) {
             this.type = 8;
             this.width = width;
             this.height = height;
         }
     }
 
-    public static class PointerData {
+    static class PointerData {
         final int mouseButton, touchId;
 
         Widget pressed, dragged, hover;
@@ -764,12 +751,12 @@ public final class Application {
         boolean dragStarted;
         Object dragData;
 
-        private PointerData(int mouseButton, int touchId) {
+        PointerData(int mouseButton, int touchId) {
             this.mouseButton = mouseButton;
             this.touchId = touchId;
         }
 
-        private void reset() {
+        void reset() {
             pressed = dragged = hover = null;
             dragStarted = false;
             dragData = null;

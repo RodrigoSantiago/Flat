@@ -233,11 +233,11 @@ public class SmartContext {
     }
 
     private void imageFlush() {
-        imageMode();
         if (imageBatchCount > 0) {
 
             shader2D.begin();
             shader2D.set("view", projection2D);
+            shader2D.set("src", 0);
             for (MaterialValue value : matValues2D) {
                 shader2D.set(value.name, value.value);
             }
@@ -296,6 +296,9 @@ public class SmartContext {
         }
 
         imageBatchAtlas = texture;
+        if (tr2 == null) {
+            tr2 = transform2D;
+        }
 
         parser[ 0] = tr2.getPointX(dstX1, dstY1); parser[ 1] = tr2.getPointY(dstX1, dstY1); parser[ 2] = srcX1; parser[ 3] = srcY1;
         parser[ 4] = tr2.getPointX(dstX2, dstY1); parser[ 5] = tr2.getPointY(dstX2, dstY1); parser[ 6] = srcX2; parser[ 7] = srcY1;

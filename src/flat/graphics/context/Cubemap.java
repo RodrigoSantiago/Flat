@@ -41,9 +41,9 @@ public class Cubemap extends Texture {
     }
 
     public void setSize(int width, int height, PixelFormat format) {
-        this.format = format;
         this.width = width;
         this.height = height;
+        this.format = format;
         GL.TextureDataBuffer(TT_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, format.getInternalEnum(), width, height, 0, null, 0);
         GL.TextureDataBuffer(TT_TEXTURE_CUBE_MAP_POSITIVE_X, 0, format.getInternalEnum(), width, height, 0, null, 0);
         GL.TextureDataBuffer(TT_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, format.getInternalEnum(), width, height, 0, null, 0);

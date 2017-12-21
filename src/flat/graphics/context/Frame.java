@@ -60,8 +60,16 @@ public class Frame extends ContextObject {
         this.read = read;
     }
 
+    void setDrawBindType(boolean draw) {
+        this.draw = draw;
+    }
+
+    void setReadBindType(boolean read) {
+        this.read = read;
+    }
+
     public boolean isReady() {
-        return GL.FrameBufferGetStatus(frameBufferId) == FS_FRAMEBUFFER_COMPLETE;
+        return GL.FrameBufferGetStatus(getBindEnum()) == FS_FRAMEBUFFER_COMPLETE;
     }
 
     public void attach(int index, Render render) {
@@ -70,8 +78,12 @@ public class Frame extends ContextObject {
             attach(STENCIL, render);
         } else {
             Layer layer = layers[index + 2].set(render);
-            GL.FrameBufferRenderBuffer(getBindEnum(), getAttacEnum(index), layers[index + 2].getInternalID());
+            GL.FrameBufferRenderBuffer(getBindEnum(), getAttacEnum(index), layer.getInternalID());
         }
+    }
+
+    public void attach(int index, Texture2D texture) {
+        attach(index, texture, 0);
     }
 
     public void attach(int index, Texture2D texture, int level) {
@@ -82,6 +94,10 @@ public class Frame extends ContextObject {
             Layer layer = layers[index + 2].set(texture, level);
             GL.FrameBufferTexture2D(getBindEnum(), getAttacEnum(index), layer.getInternalEnum(), layer.getInternalID(), layer.getInternalLevel());
         }
+    }
+
+    public void attach(int index, Cubemap cubemap, CubeFace face) {
+        attach(index, cubemap, face, 0);
     }
 
     public void attach(int index, Cubemap cubemap, CubeFace face, int level) {

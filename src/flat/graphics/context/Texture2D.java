@@ -43,9 +43,9 @@ public class Texture2D extends Texture {
     }
 
     public void setSize(int width, int height, PixelFormat format) {
-        this.format = format;
         this.width = width;
         this.height = height;
+        this.format = format;
         GL.TextureDataBuffer(TT_TEXTURE_2D, 0, format.getInternalEnum(), width, height, 0, null, 0);
         generatMipmapLevels();
     }
@@ -83,7 +83,7 @@ public class Texture2D extends Texture {
 
     public void setLevels(int levels) {
         this.levels = levels;
-        GL.TextureSetLevels(TB_TEXTURE_CUBE_MAP, levels);
+        GL.TextureSetLevels(TT_TEXTURE_2D, levels);
     }
 
     public int getLevels() {
@@ -91,13 +91,13 @@ public class Texture2D extends Texture {
     }
 
     public void generatMipmapLevels() {
-        GL.TextureGenerateMipmap(TB_TEXTURE_CUBE_MAP);
+        GL.TextureGenerateMipmap(TT_TEXTURE_2D);
     }
 
     public void setScaleFilters(MagFilter magFilter, MinFilter minFilter) {
         this.magFilter = magFilter;
         this.minFilter = minFilter;
-        GL.TextureSetFilter(TB_TEXTURE_CUBE_MAP, magFilter.getInternalEnum(), minFilter.getInternalEnum());
+        GL.TextureSetFilter(TT_TEXTURE_2D, magFilter.getInternalEnum(), minFilter.getInternalEnum());
     }
 
     public MagFilter getMagFilter() {
@@ -111,7 +111,7 @@ public class Texture2D extends Texture {
     public void setWrapModes(WrapMode wrapModeX, WrapMode wrapModeY) {
         this.wrapModeX = wrapModeX;
         this.wrapModeY = wrapModeY;
-        GL.TextureSetWrap(TB_TEXTURE_CUBE_MAP, wrapModeX.getInternalEnum(), wrapModeY.getInternalEnum());
+        GL.TextureSetWrap(TT_TEXTURE_2D, wrapModeX.getInternalEnum(), wrapModeY.getInternalEnum());
     }
 
     public WrapMode getWrapModeX() {

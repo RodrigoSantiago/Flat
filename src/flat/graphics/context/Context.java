@@ -12,7 +12,9 @@ import flat.math.*;
 
 import java.lang.ref.WeakReference;
 import java.nio.Buffer;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 
 import static flat.backend.GLEnuns.*;
 import static flat.backend.SVGEnuns.*;
@@ -68,8 +70,8 @@ public final class Context {
     private VertexArray vertexArray;
     private Render render;
     private int activeTexture;
-    private final BufferObejct[] buffers = new BufferObejct[8];
-    private final Texture[] textures = new Texture[32];
+    private BufferObejct[] buffers = new BufferObejct[8];
+    private Texture[] textures = new Texture[32];
 
     private boolean unbindShaderProgram, unbindVertexArray, unbindRender;
     private boolean[] unbindBuffer = new boolean[8];
@@ -113,21 +115,15 @@ public final class Context {
     }
 
     public static void assign(ContextObject object) {
-        objects.put(object.getUnicID(), new WeakReference<>(object));
+        synchronized (Context.class) {
+            objects.put(object.getUnicID(), new WeakReference<>(object));
+        }
     }
 
     public static void deassign(ContextObject object) {
-        objects.remove(object.getUnicID());
-    }
-
-    public static void deassignAll() {
-        for (WeakReference<ContextObject> wr : objects.values()) {
-            ContextObject obj = wr.get();
-            if (obj != null) {
-                obj.onDispose();
-            }
+        synchronized (Context.class) {
+            objects.remove(object.getUnicID());
         }
-        objects.clear();
     }
 
     private boolean initialized;
@@ -230,6 +226,13 @@ public final class Context {
     }
 
     public void dispose() {
+        smartContext = null;
+        drawFrame = readFrame = null;
+        shaderProgram = null;
+        vertexArray = null;
+        render = null;
+        buffers = null;
+        textures = null;
         Font.dispose(thread);
     }
 
@@ -799,27 +802,27 @@ public final class Context {
         if (draw && !read) {
             if (drawFrame != frame) {
                 svgEnd();
-                if (drawFrame != null) drawFrame.setBindType(false, false);
-                if (frame != null) frame.setBindType(true, false);
+                if (drawFrame != null) drawFrame.setDrawBindType(false);
+                if (frame != null) frame.setDrawBindType(true);
                 drawFrame = frame;
-                GL.FrameBufferBind(id, FB_DRAW_FRAMEBUFFER);
+                GL.FrameBufferBind(FB_DRAW_FRAMEBUFFER, id);
             }
         } else if (read && !draw) {
             if (readFrame != frame) {
                 svgEnd();
-                if (readFrame != null) drawFrame.setBindType(false, false);
-                if (frame != null) frame.setBindType(false, true);
+                if (readFrame != null) drawFrame.setReadBindType(false);
+                if (frame != null) frame.setReadBindType(true);
                 readFrame = frame;
-                GL.FrameBufferBind(id, FB_READ_FRAMEBUFFER);
+                GL.FrameBufferBind(FB_READ_FRAMEBUFFER, id);
             }
         } else {
             if (drawFrame != frame || readFrame != frame) {
                 svgEnd();
                 drawFrame = readFrame = frame;
-                if (drawFrame != null) drawFrame.setBindType(false, false);
-                if (readFrame != null) drawFrame.setBindType(false, false);
+                if (drawFrame != null) drawFrame.setDrawBindType(false);
+                if (readFrame != null) readFrame.setReadBindType(false);
                 if (frame != null) frame.setBindType(true, true);
-                GL.FrameBufferBind(id, FB_FRAMEBUFFER);
+                GL.FrameBufferBind(FB_FRAMEBUFFER, id);
             }
         }
     }
@@ -935,7 +938,7 @@ public final class Context {
         unbindShaderProgram = false;
         if (shaderProgram != program) {
             svgEnd();
-            if (shaderProgram == null) {
+            if (program == null) {
                 GL.ProgramUse(0);
             } else {
                 GL.ProgramUse(program.getInternalID());
