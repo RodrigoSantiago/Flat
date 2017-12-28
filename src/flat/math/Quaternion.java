@@ -1,36 +1,75 @@
 package flat.math;
 
-public class Quaternion {
+import java.io.Serializable;
+import java.util.Random;
 
-    private static Quaternion tmp1 = new Quaternion(0, 0, 0, 0);
-    private static Quaternion tmp2 = new Quaternion(0, 0, 0, 0);
+import flat.math.util.Platform;
 
-    public float x;
-    public float y;
-    public float z;
-    public float w;
+/**
+ * A unit quaternion. Many of the formulas come from the
+ * <a href="http://www.j3d.org/matrix_faq/matrfaq_latest.html">Matrix and Quaternion FAQ</a>.
+ */
+public class Quaternion implements IQuaternion, Serializable {
 
-    public Quaternion () {
-        idtentity();
-    }
+    private static final long serialVersionUID = 6152317379736947895L;
 
+    /** The identity quaternion. */
+    public static final IQuaternion IDENTITY = new Quaternion(0f, 0f, 0f, 1f);
+
+    /** The components of the quaternion. */
+    public float x, y, z, w;
+
+    /**
+     * Creates a quaternion from four components.
+     */
     public Quaternion (float x, float y, float z, float w) {
-        this.set(x, y, z, w);
+        set(x, y, z, w);
     }
 
-    public Quaternion (Quaternion quaternion) {
-        this.set(quaternion);
+    /**
+     * Creates a quaternion from an array of values.
+     */
+    public Quaternion (float[] values) {
+        set(values);
     }
 
-    public Quaternion (Vector3 axis, float angle) {
-        this.set(axis, angle);
+    /**
+     * Copy constructor.
+     */
+    public Quaternion (IQuaternion other) {
+        set(other);
     }
 
-    @Override
-    public Quaternion clone () {
-        return new Quaternion(this);
+    /**
+     * Creates an identity quaternion.
+     */
+    public Quaternion () {
+        set(0f, 0f, 0f, 1f);
     }
 
+    /**
+     * Copies the elements of another quaternion.
+     *
+     * @return a reference to this quaternion, for chaining.
+     */
+    public Quaternion set (IQuaternion other) {
+        return set(other.x(), other.y(), other.z(), other.w());
+    }
+
+    /**
+     * Copies the elements of an array.
+     *
+     * @return a reference to this quaternion, for chaining.
+     */
+    public Quaternion set (float[] values) {
+        return set(values[0], values[1], values[2], values[3]);
+    }
+
+    /**
+     * Sets all of the elements of the quaternion.
+     *
+     * @return a reference to this quaternion, for chaining.
+     */
     public Quaternion set (float x, float y, float z, float w) {
         this.x = x;
         this.y = y;
@@ -39,444 +78,436 @@ public class Quaternion {
         return this;
     }
 
-    public Quaternion set (Quaternion quaternion) {
-        return this.set(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
-    }
-
-    public Quaternion set (Vector3 axis, float angle) {
-        return setFromAxis(axis.x, axis.y, axis.z, angle);
-    }
-
-    public Quaternion setEulerAngles (float yaw, float pitch, float roll) {
-        yaw *= Mathf.degRad;
-        pitch *= Mathf.degRad;
-        roll *= Mathf.degRad;
-
-        final float hr = roll * 0.5f;
-        final float shr = (float) Math.sin(hr);
-        final float chr = (float) Math.cos(hr);
-        final float hp = pitch * 0.5f;
-        final float shp = (float) Math.sin(hp);
-        final float chp = (float) Math.cos(hp);
-        final float hy = yaw * 0.5f;
-        final float shy = (float) Math.sin(hy);
-        final float chy = (float) Math.cos(hy);
-        final float chy_shp = chy * shp;
-        final float shy_chp = shy * chp;
-        final float chy_chp = chy * chp;
-        final float shy_shp = shy * shp;
-
-        x = (chy_shp * chr) + (shy_chp * shr); // cos(yaw/2) * sin(pitch/2) * cos(roll/2) + sin(yaw/2) * cos(pitch/2) * sin(roll/2)
-        y = (shy_chp * chr) - (chy_shp * shr); // sin(yaw/2) * cos(pitch/2) * cos(roll/2) - cos(yaw/2) * sin(pitch/2) * sin(roll/2)
-        z = (chy_chp * shr) - (shy_shp * chr); // cos(yaw/2) * cos(pitch/2) * sin(roll/2) - sin(yaw/2) * sin(pitch/2) * cos(roll/2)
-        w = (chy_chp * chr) + (shy_shp * shr); // cos(yaw/2) * cos(pitch/2) * cos(roll/2) + sin(yaw/2) * sin(pitch/2) * sin(roll/2)
-        return this;
-    }
-
-    public int getGimbalPole () {
-        final float t = y * x + z * w;
-        return t > 0.499f ? 1 : (t < -0.499f ? -1 : 0);
-    }
-
-    public float getRoll () {
-        final int pole = getGimbalPole();
-        return (pole == 0 ?
-                Mathf.atan2(2f * (w * z + y * x), 1f - 2f * (x * x + z * z)) :
-                (float)pole * 2f * Mathf.atan2(y, w)) * Mathf.radDeg;
-    }
-
-    public float getPitch () {
-        final int pole = getGimbalPole();
-        return (pole == 0 ?
-                (float) Math.asin(Mathf.clamp(2f * (w * x - z * y), -1f, 1f)) :
-                (float) pole * Mathf.PI * 0.5f) * Mathf.radDeg;
-    }
-
-    public float getYaw () {
-        return (getGimbalPole() == 0 ? Mathf.atan2(2f * (y * w + x * z), 1f - 2f * (y * y + x * x)) : 0f) * Mathf.radDeg;
-    }
-
-    public Quaternion add (Quaternion quaternion) {
-        this.x += quaternion.x;
-        this.y += quaternion.y;
-        this.z += quaternion.z;
-        this.w += quaternion.w;
-        return this;
-    }
-
-    public Quaternion add (float x, float y, float z, float w) {
-        this.x += x;
-        this.y += y;
-        this.z += z;
-        this.w += w;
-        return this;
-    }
-
-    public Quaternion mul (float x, float y, float z, float w) {
-        final float newX = this.w * x + this.x * w + this.y * z - this.z * y;
-        final float newY = this.w * y + this.y * w + this.z * x - this.x * z;
-        final float newZ = this.w * z + this.z * w + this.x * y - this.y * x;
-        final float newW = this.w * w - this.x * x - this.y * y - this.z * z;
-        this.x = newX;
-        this.y = newY;
-        this.z = newZ;
-        this.w = newW;
-        return this;
-    }
-
-    public Quaternion mul (final Quaternion other) {
-        final float newX = this.w * other.x + this.x * other.w + this.y * other.z - this.z * other.y;
-        final float newY = this.w * other.y + this.y * other.w + this.z * other.x - this.x * other.z;
-        final float newZ = this.w * other.z + this.z * other.w + this.x * other.y - this.y * other.x;
-        final float newW = this.w * other.w - this.x * other.x - this.y * other.y - this.z * other.z;
-        this.x = newX;
-        this.y = newY;
-        this.z = newZ;
-        this.w = newW;
-        return this;
-    }
-
-    public Quaternion mulLeft (Quaternion other) {
-        final float newX = other.w * this.x + other.x * this.w + other.y * this.z - other.z * this.y;
-        final float newY = other.w * this.y + other.y * this.w + other.z * this.x - other.x * this.z;
-        final float newZ = other.w * this.z + other.z * this.w + other.x * this.y - other.y * this.x;
-        final float newW = other.w * this.w - other.x * this.x - other.y * this.y - other.z * this.z;
-        this.x = newX;
-        this.y = newY;
-        this.z = newZ;
-        this.w = newW;
-        return this;
-    }
-
-    public Quaternion mulLeft (float x, float y, float z, float w) {
-        final float newX = w * this.x + x * this.w + y * this.z - z * this.y;
-        final float newY = w * this.y + y * this.w + z * this.x - x * this.z;
-        final float newZ = w * this.z + z * this.w + x * this.y - y * this.x;
-        final float newW = w * this.w - x * this.x - y * this.y - z * this.z;
-        this.x = newX;
-        this.y = newY;
-        this.z = newZ;
-        this.w = newW;
-        return this;
-    }
-
-    public Quaternion scale(float value) {
-        this.x *= value;
-        this.y *= value;
-        this.z *= value;
-        this.w *= value;
-        return this;
-    }
-
-    public Quaternion idtentity() {
-        return this.set(0, 0, 0, 1);
-    }
-
-    public boolean isIdentity () {
-        return Mathf.isZero(x) && Mathf.isZero(y) && Mathf.isZero(z) && Mathf.isEqual(w, 1f);
-    }
-
-    public float length() {
-        return (float) Math.sqrt(x * x + y * y + z * z + w * w);
-    }
-
-    public float lengthSqr() {
-        return x * x + y * y + z * z + w * w;
-    }
-
-    public Quaternion normalize() {
-        float len = lengthSqr();
-        if (len != 0.f && !Mathf.isEqual(len, 1f)) {
-            len = (float)Math.sqrt(len);
-            w /= len;
-            x /= len;
-            y /= len;
-            z /= len;
+    /**
+     * Sets this quaternion to the rotation of the first normalized vector onto the second.
+     *
+     * @return a reference to this quaternion, for chaining.
+     */
+    public Quaternion fromVectors (IVector3 from, IVector3 to) {
+        float angle = from.angle(to);
+        if (angle < MathUtil.EPSILON) {
+            return set(IDENTITY);
         }
-        return this;
-    }
-
-    public Quaternion conjugate () {
-        x = -x;
-        y = -y;
-        z = -z;
-        return this;
-    }
-
-    public Vector3 transform (Vector3 vector) {
-        tmp2.set(this);
-        tmp2.conjugate();
-        tmp2.mulLeft(tmp1.set(vector.x, vector.y, vector.z, 0)).mulLeft(this);
-
-        vector.x = tmp2.x;
-        vector.y = tmp2.y;
-        vector.z = tmp2.z;
-        return vector;
-    }
-
-    public void toMatrix (float[] mat) {
-        final float xx = x * x;
-        final float xy = x * y;
-        final float xz = x * z;
-        final float xw = x * w;
-        final float yy = y * y;
-        final float yz = y * z;
-        final float yw = y * w;
-        final float zz = z * z;
-        final float zw = z * w;
-
-        mat[Matrix4.M00] = 1 - 2 * (yy + zz);
-        mat[Matrix4.M01] = 2 * (xy - zw);
-        mat[Matrix4.M02] = 2 * (xz + yw);
-        mat[Matrix4.M03] = 0;
-        mat[Matrix4.M10] = 2 * (xy + zw);
-        mat[Matrix4.M11] = 1 - 2 * (xx + zz);
-        mat[Matrix4.M12] = 2 * (yz - xw);
-        mat[Matrix4.M13] = 0;
-        mat[Matrix4.M20] = 2 * (xz - yw);
-        mat[Matrix4.M21] = 2 * (yz + xw);
-        mat[Matrix4.M22] = 1 - 2 * (xx + yy);
-        mat[Matrix4.M23] = 0;
-        mat[Matrix4.M30] = 0;
-        mat[Matrix4.M31] = 0;
-        mat[Matrix4.M32] = 0;
-        mat[Matrix4.M33] = 1;
-    }
-
-    public Quaternion setFromAxis (float x, float y, float z, float angle) {
-        angle *= Mathf.degRad;
-
-        float d = Vector3.length(x, y, z);
-        if (d == 0f) return idtentity();
-        d = 1f / d;
-        float l_ang = angle < 0 ? Mathf.PI2 - (-angle % Mathf.PI2) : angle % Mathf.PI2;
-        float l_sin = (float)Math.sin(l_ang / 2);
-        float l_cos = (float)Math.cos(l_ang / 2);
-        return this.set(d * x * l_sin, d * y * l_sin, d * z * l_sin, l_cos).normalize();
-    }
-
-    public Quaternion setFromAxis (Vector3 axis, final float degrees) {
-        return setFromAxis(axis.x, axis.y, axis.z, degrees);
-    }
-
-    public Quaternion setFromMatrix (boolean normalizeAxes, Matrix4 matrix) {
-        return setFromAxes(normalizeAxes,
-                matrix.val[Matrix4.M00], matrix.val[Matrix4.M01], matrix.val[Matrix4.M02],
-                matrix.val[Matrix4.M10], matrix.val[Matrix4.M11], matrix.val[Matrix4.M12],
-                matrix.val[Matrix4.M20], matrix.val[Matrix4.M21], matrix.val[Matrix4.M22]);
-    }
-
-    public Quaternion setFromMatrix (Matrix4 matrix) {
-        return setFromMatrix(false, matrix);
-    }
-
-    public Quaternion setFromMatrix (boolean normalizeAxes, Matrix3 matrix) {
-        return setFromAxes(normalizeAxes,
-                matrix.val[Matrix3.M00], matrix.val[Matrix3.M01], matrix.val[Matrix3.M02],
-                matrix.val[Matrix3.M10], matrix.val[Matrix3.M11], matrix.val[Matrix3.M12],
-                matrix.val[Matrix3.M20], matrix.val[Matrix3.M21], matrix.val[Matrix3.M22]);
-    }
-
-    public Quaternion setFromMatrix (Matrix3 matrix) {
-        return setFromMatrix(false, matrix);
-    }
-
-    public Quaternion setFromAxes (float xx, float xy, float xz, float yx, float yy, float yz, float zx, float zy, float zz) {
-        return setFromAxes(false, xx, xy, xz, yx, yy, yz, zx, zy, zz);
-    }
-
-    public Quaternion setFromAxes (boolean normalizeAxes, float xx, float xy, float xz, float yx, float yy, float yz, float zx,
-                                   float zy, float zz) {
-        if (normalizeAxes) {
-            final float lx = 1f / Vector3.length(xx, xy, xz);
-            final float ly = 1f / Vector3.length(yx, yy, yz);
-            final float lz = 1f / Vector3.length(zx, zy, zz);
-            xx *= lx;
-            xy *= lx;
-            xz *= lx;
-            yx *= ly;
-            yy *= ly;
-            yz *= ly;
-            zx *= lz;
-            zy *= lz;
-            zz *= lz;
+        if (angle <= FloatMath.PI - MathUtil.EPSILON) {
+            return fromAngleAxis(angle, from.cross(to).normalizeLocal());
         }
-        // the trace is the sum of the diagonal elements; see
-        // http://mathworld.wolfram.com/MatrixTrace.html
-        final float t = xx + yy + zz;
+        // it's a 180 degree rotation; any axis orthogonal to the from vector will do
+        Vector3 axis = new Vector3(0f, from.z(), -from.y());
+        float length = axis.length();
+        return fromAngleAxis(FloatMath.PI, length < MathUtil.EPSILON ?
+                             axis.set(-from.z(), 0f, from.x()).normalizeLocal() :
+                             axis.multLocal(1f / length));
+    }
 
-        // we protect the division by s by ensuring that s>=1
-        if (t >= 0) { // |w| >= .5
-            float s = (float)Math.sqrt(t + 1); // |s|>=1 ...
-            w = 0.5f * s;
-            s = 0.5f / s; // so this division isn't bad
-            x = (zy - yz) * s;
-            y = (xz - zx) * s;
-            z = (yx - xy) * s;
-        } else if ((xx > yy) && (xx > zz)) {
-            float s = (float)Math.sqrt(1.0 + xx - yy - zz); // |s|>=1
-            x = s * 0.5f; // |x| >= .5
-            s = 0.5f / s;
-            y = (yx + xy) * s;
-            z = (xz + zx) * s;
-            w = (zy - yz) * s;
-        } else if (yy > zz) {
-            float s = (float)Math.sqrt(1.0 + yy - xx - zz); // |s|>=1
-            y = s * 0.5f; // |y| >= .5
-            s = 0.5f / s;
-            x = (yx + xy) * s;
-            z = (zy + yz) * s;
-            w = (xz - zx) * s;
+    /**
+     * Sets this quaternion to the rotation of (0, 0, -1) onto the supplied normalized vector.
+     *
+     * @return a reference to the quaternion, for chaining.
+     */
+    public Quaternion fromVectorFromNegativeZ (IVector3 to) {
+        return fromVectorFromNegativeZ(to.x(), to.y(), to.z());
+    }
+
+    /**
+     * Sets this quaternion to the rotation of (0, 0, -1) onto the supplied normalized vector.
+     *
+     * @return a reference to the quaternion, for chaining.
+     */
+    public Quaternion fromVectorFromNegativeZ (float tx, float ty, float tz) {
+        float angle = FloatMath.acos(-tz);
+        if (angle < MathUtil.EPSILON) {
+            return set(IDENTITY);
+        }
+        if (angle > FloatMath.PI - MathUtil.EPSILON) {
+            return set(0f, 1f, 0f, 0f); // 180 degrees about y
+        }
+        float len = FloatMath.hypot(tx, ty);
+        return fromAngleAxis(angle, ty/len, -tx/len, 0f);
+    }
+
+    /**
+     * Sets this quaternion to one that rotates onto the given unit axes.
+     *
+     * @return a reference to this quaternion, for chaining.
+     */
+    public Quaternion fromAxes (IVector3 nx, IVector3 ny, IVector3 nz) {
+        float nxx = nx.x(), nyy = ny.y(), nzz = nz.z();
+        float x2 = (1f + nxx - nyy - nzz)/4f;
+        float y2 = (1f - nxx + nyy - nzz)/4f;
+        float z2 = (1f - nxx - nyy + nzz)/4f;
+        float w2 = (1f - x2 - y2 - z2);
+        return set(FloatMath.sqrt(x2) * (ny.z() >= nz.y() ? +1f : -1f),
+                   FloatMath.sqrt(y2) * (nz.x() >= nx.z() ? +1f : -1f),
+                   FloatMath.sqrt(z2) * (nx.y() >= ny.x() ? +1f : -1f),
+                   FloatMath.sqrt(w2));
+    }
+
+    /**
+     * Sets this quaternion to the rotation described by the given angle and normalized
+     * axis.
+     *
+     * @return a reference to this quaternion, for chaining.
+     */
+    public Quaternion fromAngleAxis (float angle, IVector3 axis) {
+        return fromAngleAxis(angle, axis.x(), axis.y(), axis.z());
+    }
+
+    /**
+     * Sets this quaternion to the rotation described by the given angle and normalized
+     * axis.
+     *
+     * @return a reference to this quaternion, for chaining.
+     */
+    public Quaternion fromAngleAxis (float angle, float x, float y, float z) {
+        float sina = FloatMath.sin(angle / 2f);
+        return set(x*sina, y*sina, z*sina, FloatMath.cos(angle / 2f));
+    }
+
+    /**
+     * Sets this to a random rotation obtained from a completely uniform distribution.
+     */
+    public Quaternion randomize (Random rand) {
+        // pick angles according to the surface area distribution
+        return fromAngles(MathUtil.lerp(-FloatMath.PI, +FloatMath.PI, rand.nextFloat()),
+                          FloatMath.asin(MathUtil.lerp(-1f, +1f, rand.nextFloat())),
+                          MathUtil.lerp(-FloatMath.PI, +FloatMath.PI, rand.nextFloat()));
+    }
+
+    /**
+     * Sets this quaternion to one that first rotates about x by the specified number of radians,
+     * then rotates about z by the specified number of radians.
+     */
+    public Quaternion fromAnglesXZ (float x, float z) {
+        float hx = x * 0.5f, hz = z * 0.5f;
+        float sx = FloatMath.sin(hx), cx = FloatMath.cos(hx);
+        float sz = FloatMath.sin(hz), cz = FloatMath.cos(hz);
+        return set(cz*sx, sz*sx, sz*cx, cz*cx);
+    }
+
+    /**
+     * Sets this quaternion to one that first rotates about x by the specified number of radians,
+     * then rotates about y by the specified number of radians.
+     */
+    public Quaternion fromAnglesXY (float x, float y) {
+        float hx = x * 0.5f, hy = y * 0.5f;
+        float sx = FloatMath.sin(hx), cx = FloatMath.cos(hx);
+        float sy = FloatMath.sin(hy), cy = FloatMath.cos(hy);
+        return set(cy*sx, sy*cx, -sy*sx, cy*cx);
+    }
+
+    /**
+     * Sets this quaternion to one that first rotates about x by the specified number of radians,
+     * then rotates about y, then about z.
+     */
+    public Quaternion fromAngles (Vector3 angles) {
+        return fromAngles(angles.x, angles.y, angles.z);
+    }
+
+    /**
+     * Sets this quaternion to one that first rotates about x by the specified number of radians,
+     * then rotates about y, then about z.
+     */
+    public Quaternion fromAngles (float x, float y, float z) {
+        // TODO: it may be more convenient to define the angles in the opposite order (first z,
+        // then y, then x)
+        float hx = x * 0.5f, hy = y * 0.5f, hz = z * 0.5f;
+        float sz = FloatMath.sin(hz), cz = FloatMath.cos(hz);
+        float sy = FloatMath.sin(hy), cy = FloatMath.cos(hy);
+        float sx = FloatMath.sin(hx), cx = FloatMath.cos(hx);
+        float szsy = sz*sy, czsy = cz*sy, szcy = sz*cy, czcy = cz*cy;
+        return set(
+            czcy*sx - szsy*cx,
+            czsy*cx + szcy*sx,
+            szcy*cx - czsy*sx,
+            czcy*cx + szsy*sx);
+    }
+
+    /**
+     * Normalizes this quaternion in-place.
+     *
+     * @return a reference to this quaternion, for chaining.
+     */
+    public Quaternion normalizeLocal () {
+        return normalize(this);
+    }
+
+    /**
+     * Inverts this quaternion in-place.
+     *
+     * @return a reference to this quaternion, for chaining.
+     */
+    public Quaternion invertLocal () {
+        return invert(this);
+    }
+
+    /**
+     * Multiplies this quaternion in-place by another.
+     *
+     * @return a reference to this quaternion, for chaining.
+     */
+    public Quaternion multLocal (IQuaternion other) {
+        return mult(other, this);
+    }
+
+    /**
+     * Interpolates in-place between this and the specified other quaternion.
+     *
+     * @return a reference to this quaternion, for chaining.
+     */
+    public Quaternion slerpLocal (IQuaternion other, float t) {
+        return slerp(other, t, this);
+    }
+
+    /**
+     * Transforms a vector in-place by this quaternion.
+     *
+     * @return a reference to the vector, for chaining.
+     */
+    public Vector3 transformLocal (Vector3 vector) {
+        return transform(vector, vector);
+    }
+
+    /**
+     * Integrates in-place the provided angular velocity over the specified timestep.
+     *
+     * @return a reference to this quaternion, for chaining.
+     */
+    public Quaternion integrateLocal (IVector3 velocity, float t) {
+        return integrate(velocity, t, this);
+    }
+
+    @Override // from IQuaternion
+    public float x () {
+        return x;
+    }
+
+    @Override // from IQuaternion
+    public float y () {
+        return y;
+    }
+
+    @Override // from IQuaternion
+    public float z () {
+        return z;
+    }
+
+    @Override // from IQuaternion
+    public float w () {
+        return w;
+    }
+
+    @Override // from IQuaternion
+    public void get (float[] values) {
+        values[0] = x;
+        values[1] = y;
+        values[2] = z;
+        values[3] = w;
+    }
+
+    @Override // from IQuaternion
+    public boolean hasNaN () {
+        return Float.isNaN(x) || Float.isNaN(y) || Float.isNaN(z) || Float.isNaN(w);
+    }
+
+    @Override // from IQuaternion
+    public Vector3 toAngles (Vector3 result) {
+        float sy = 2f*(y*w - x*z);
+        if (sy < 1f - MathUtil.EPSILON) {
+            if (sy > -1 + MathUtil.EPSILON) {
+                return result.set(FloatMath.atan2(y*z + x*w, 0.5f - (x*x + y*y)),
+                                  FloatMath.asin(sy),
+                                  FloatMath.atan2(x*y + z*w, 0.5f - (y*y + z*z)));
+            } else {
+                // not a unique solution; x + z = atan2(-m21, m11)
+                return result.set(0f,
+                                  -MathUtil.HALF_PI,
+                                  FloatMath.atan2(x*w - y*z, 0.5f - (x*x + z*z)));
+            }
         } else {
-            float s = (float)Math.sqrt(1.0 + zz - xx - yy); // |s|>=1
-            z = s * 0.5f; // |z| >= .5
-            s = 0.5f / s;
-            x = (xz + zx) * s;
-            y = (zy + yz) * s;
-            w = (yx - xy) * s;
+            // not a unique solution; x - z = atan2(-m21, m11)
+            return result.set(0f,
+                              MathUtil.HALF_PI,
+                              -FloatMath.atan2(x*w - y*z, 0.5f - (x*x + z*z)));
+        }
+    }
+
+    @Override // from IQuaternion
+    public Vector3 toAngles () {
+        return toAngles(new Vector3());
+    }
+
+    @Override // from IQuaternion
+    public Quaternion normalize () {
+        return normalize(new Quaternion());
+    }
+
+    @Override // from IQuaternion
+    public Quaternion normalize (Quaternion result) {
+        float rlen = 1f / FloatMath.sqrt(x*x + y*y + z*z + w*w);
+        return result.set(x*rlen, y*rlen, z*rlen, w*rlen);
+    }
+
+    @Override // from IQuaternion
+    public Quaternion invert () {
+        return invert(new Quaternion());
+    }
+
+    @Override // from IQuaternion
+    public Quaternion invert (Quaternion result) {
+        return result.set(-x, -y, -z, w);
+    }
+
+    @Override // from IQuaternion
+    public Quaternion mult (IQuaternion other) {
+        return mult(other, new Quaternion());
+    }
+
+    @Override // from IQuaternion
+    public Quaternion mult (IQuaternion other, Quaternion result) {
+        float ox = other.x(), oy = other.y(), oz = other.z(), ow = other.w();
+        return result.set(w*ox + x*ow + y*oz - z*oy,
+                          w*oy + y*ow + z*ox - x*oz,
+                          w*oz + z*ow + x*oy - y*ox,
+                          w*ow - x*ox - y*oy - z*oz);
+    }
+
+    @Override // from IQuaternion
+    public Quaternion slerp (IQuaternion other, float t) {
+        return slerp(other, t, new Quaternion());
+    }
+
+    @Override // from IQuaternion
+    public Quaternion slerp (IQuaternion other, float t, Quaternion result) {
+        float ox = other.x(), oy = other.y(), oz = other.z(), ow = other.w();
+        float cosa = x*ox + y*oy + z*oz + w*ow, s0, s1;
+
+        // adjust signs if necessary
+        if (cosa < 0f) {
+            cosa = -cosa;
+            ox = -ox;
+            oy = -oy;
+            oz = -oz;
+            ow = -ow;
         }
 
-        return this;
-    }
-
-    public Quaternion setFromCross (Vector3 v1, Vector3 v2) {
-        return setFromCross(v1.x, v1.y,v1.z, v2.x,v2.y,v2.z);
-    }
-
-    public Quaternion setFromCross (float x1, float y1, float z1, float x2, float y2, float z2) {
-        final float dot = Mathf.clamp(Vector3.dot(x1, y1, z1, x2, y2, z2), -1f, 1f);
-        final float angle = (float)Math.acos(dot);
-        return setFromAxis(y1 * z2 - z1 * y2, z1 * x2 - x1 * z2, x1 * y2 - y1 * x2, angle * Mathf.radDeg);
-    }
-
-    public Quaternion slerp (Quaternion end, float alpha) {
-        final float d = this.x * end.x + this.y * end.y + this.z * end.z + this.w * end.w;
-        float absDot = d < 0.f ? -d : d;
-
-        float scale0 = 1f - alpha;
-        float scale1 = alpha;
-
-        if ((1 - absDot) > 0.1) {
-            final float angle = (float)Math.acos(absDot);
-            final float invSinTheta = 1f / (float)Math.sin(angle);
-
-            scale0 = ((float)Math.sin((1f - alpha) * angle) * invSinTheta);
-            scale1 = ((float)Math.sin((alpha * angle)) * invSinTheta);
-        }
-
-        if (d < 0.f) scale1 = -scale1;
-
-        x = (scale0 * x) + (scale1 * end.x);
-        y = (scale0 * y) + (scale1 * end.y);
-        z = (scale0 * z) + (scale1 * end.z);
-        w = (scale0 * w) + (scale1 * end.w);
-        return this;
-    }
-
-    public Quaternion slerp (Quaternion[] q) {
-        final float w = 1.0f / q.length;
-        set(q[0]).exp(w);
-        for (int i = 1; i < q.length; i++)
-            mul(tmp1.set(q[i]).exp(w));
-        normalize();
-        return this;
-    }
-
-    public Quaternion slerp (Quaternion[] q, float[] w) {
-        set(q[0]).exp(w[0]);
-        for (int i = 1; i < q.length; i++)
-            mul(tmp1.set(q[i]).exp(w[i]));
-        normalize();
-        return this;
-    }
-
-    public Quaternion exp (float alpha) {
-        float norm = length();
-        float normExp = (float)Math.pow(norm, alpha);
-
-        float theta = (float)Math.acos(w / norm);
-
-        float coeff = 0;
-        if (Math.abs(theta) < 0.001)
-            coeff = normExp * alpha / norm;
-        else
-            coeff = (float)(normExp * Math.sin(alpha * theta) / (norm * Math.sin(theta)));
-
-        w = (float)(normExp * Math.cos(alpha * theta));
-        x *= coeff;
-        y *= coeff;
-        z *= coeff;
-
-        normalize();
-
-        return this;
-    }
-
-    public float dot (final float x, final float y, final float z, final float w) {
-        return this.x * x + this.y * y + this.z * z + this.w * w;
-    }
-
-    public float dot (Quaternion other) {
-        return this.dot(other.x, other.y, other.z, other.w);
-    }
-
-    public float getAxisAngle (Vector3 axis) {
-        if (this.w > 1) this.normalize();
-        float angle = (float)(2.0 * Math.acos(this.w));
-        double s = Math.sqrt(1 - this.w * this.w);
-        if (s < Mathf.epsilon) {
-            axis.x = this.x;
-            axis.y = this.y;
-            axis.z = this.z;
+        // calculate coefficients; if the angle is too close to zero, we must fall back
+        // to linear interpolation
+        if ((1f - cosa) > MathUtil.EPSILON) {
+            float angle = FloatMath.acos(cosa), sina = FloatMath.sin(angle);
+            s0 = FloatMath.sin((1f - t) * angle) / sina;
+            s1 = FloatMath.sin(t * angle) / sina;
         } else {
-            axis.x = (float)(this.x / s);
-            axis.y = (float)(this.y / s);
-            axis.z = (float)(this.z / s);
+            s0 = 1f - t;
+            s1 = t;
         }
 
-        return angle * Mathf.radDeg;
+        return result.set(s0*x + s1*ox, s0*y + s1*oy, s0*z + s1*oz, s0*w + s1*ow);
     }
 
-    public float getAngle () {
-        return (float)(2.0 * Math.acos((this.w > 1) ? (this.w / length()) : this.w) * Mathf.radDeg);
+    @Override // from IQuaternion
+    public Vector3 transform (IVector3 vector) {
+        return transform(vector, new Vector3());
     }
 
-    public void getSwingTwist (float axisX, float axisY, float axisZ, Quaternion swing, Quaternion twist) {
-        final float d = Vector3.dot(this.x, this.y, this.z, axisX, axisY, axisZ);
-        twist.set(axisX * d, axisY * d, axisZ * d, this.w).normalize();
-        if (d < 0) twist.scale(-1f);
-        swing.set(twist).conjugate().mulLeft(this);
+    @Override // from IQuaternion
+    public Vector3 transform (IVector3 vector, Vector3 result) {
+        float xx = x*x, yy = y*y, zz = z*z;
+        float xy = x*y, xz = x*z, xw = x*w;
+        float yz = y*z, yw = y*w, zw = z*w;
+        float vx = vector.x(), vy = vector.y(), vz = vector.z();
+        float vx2 = vx*2f, vy2 = vy*2f, vz2 = vz*2f;
+        return result.set(vx + vy2*(xy - zw) + vz2*(xz + yw) - vx2*(yy + zz),
+                          vy + vx2*(xy + zw) + vz2*(yz - xw) - vy2*(xx + zz),
+                          vz + vx2*(xz - yw) + vy2*(yz + xw) - vz2*(xx + yy));
     }
 
-    public void getSwingTwist (Vector3 axis, Quaternion swing, Quaternion twist) {
-        getSwingTwist(axis.x, axis.y, axis.z, swing, twist);
+    @Override // from IQuaternion
+    public Vector3 transformUnitX (Vector3 result) {
+        return result.set(1f - 2f*(y*y + z*z), 2f*(x*y + z*w), 2f*(x*z - y*w));
     }
 
-    public float getAngleAround (final float axisX, final float axisY, final float axisZ) {
-        final float d = Vector3.dot(this.x, this.y, this.z, axisX, axisY, axisZ);
-        final float l2 = Quaternion.lengthSqr(axisX * d, axisY * d, axisZ * d, this.w);
-        return Mathf.isZero(l2) ? 0f : (float)(2.0 * Math.acos(Mathf.clamp(
-                (float)((d < 0 ? -this.w : this.w) / Math.sqrt(l2)), -1f, 1f))) * Mathf.radDeg;
+    @Override // from IQuaternion
+    public Vector3 transformUnitY (Vector3 result) {
+        return result.set(2f*(x*y - z*w), 1f - 2f*(x*x + z*z), 2f*(y*z + x*w));
     }
 
-    public float getAngleAround (final Vector3 axis) {
-        return getAngleAround(axis.x, axis.y, axis.z);
+    @Override // from IQuaternion
+    public Vector3 transformUnitZ (Vector3 result) {
+        return result.set(2f*(x*z + y*w), 2f*(y*z - x*w), 1f - 2f*(x*x + y*y));
     }
 
-    @Override
+    @Override // from IQuaternion
+    public Vector3 transformAndAdd (IVector3 vector, IVector3 add, Vector3 result) {
+        float xx = x*x, yy = y*y, zz = z*z;
+        float xy = x*y, xz = x*z, xw = x*w;
+        float yz = y*z, yw = y*w, zw = z*w;
+        float vx = vector.x(), vy = vector.y(), vz = vector.z();
+        float vx2 = vx*2f, vy2 = vy*2f, vz2 = vz*2f;
+        return result.set(vx + vy2*(xy - zw) + vz2*(xz + yw) - vx2*(yy + zz) + add.x(),
+                          vy + vx2*(xy + zw) + vz2*(yz - xw) - vy2*(xx + zz) + add.y(),
+                          vz + vx2*(xz - yw) + vy2*(yz + xw) - vz2*(xx + yy) + add.z());
+    }
+
+    @Override // from IQuaternion
+    public Vector3 transformScaleAndAdd (IVector3 vector, float scale, IVector3 add,
+                                         Vector3 result) {
+        float xx = x*x, yy = y*y, zz = z*z;
+        float xy = x*y, xz = x*z, xw = x*w;
+        float yz = y*z, yw = y*w, zw = z*w;
+        float vx = vector.x(), vy = vector.y(), vz = vector.z();
+        float vx2 = vx*2f, vy2 = vy*2f, vz2 = vz*2f;
+        return result.set(
+            (vx + vy2*(xy - zw) + vz2*(xz + yw) - vx2*(yy + zz)) * scale + add.x(),
+            (vy + vx2*(xy + zw) + vz2*(yz - xw) - vy2*(xx + zz)) * scale + add.y(),
+            (vz + vx2*(xz - yw) + vy2*(yz + xw) - vz2*(xx + yy)) * scale + add.z());
+    }
+
+    @Override // from IQuaternion
+    public float transformZ (IVector3 vector) {
+        return vector.z() + vector.x()*2f*(x*z - y*w) +
+            vector.y()*2f*(y*z + x*w) - vector.z()*2f*(x*x + y*y);
+    }
+
+    @Override // from IQuaternion
+    public float getRotationZ () {
+        return FloatMath.atan2(2f*(x*y + z*w), 1f - 2f*(y*y + z*z));
+    }
+
+    @Override // from IQuaternion
+    public Quaternion integrate (IVector3 velocity, float t) {
+        return integrate(velocity, t, new Quaternion());
+    }
+
+    @Override // from IQuaternion
+    public Quaternion integrate (IVector3 velocity, float t, Quaternion result) {
+        // TODO: use Runge-Kutta integration?
+        float qx = 0.5f * velocity.x();
+        float qy = 0.5f * velocity.y();
+        float qz = 0.5f * velocity.z();
+        return result.set(x + t*(qx*w + qy*z - qz*y),
+                          y + t*(qy*w + qz*x - qx*z),
+                          z + t*(qz*w + qx*y - qy*x),
+                          w + t*(-qx*x - qy*y - qz*z)).normalizeLocal();
+    }
+
+    @Override // documentation inherited
     public String toString () {
-        return "[" + x + "|" + y + "|" + z + "|" + w + "]";
+        return "[" + x + ", " + y + ", " + z + ", " + w + "]";
     }
 
-    public static float length(final float x, final float y, final float z, final float w) {
-        return (float) Math.sqrt(x * x + y * y + z * z + w * w);
+    @Override // documentation inherited
+    public int hashCode () {
+        return Platform.hashCode(x) ^ Platform.hashCode(y) ^ Platform.hashCode(z) ^
+            Platform.hashCode(w);
     }
 
-    public static float lengthSqr(final float x, final float y, final float z, final float w) {
-        return x * x + y * y + z * z + w * w;
-    }
-
-    public static float dot (float x1, float y1, float z1, float w1, float x2, float y2, float z2, float w2) {
-        return x1 * x2 + y1 * y2 + z1 * z2 + w1 * w2;
+    @Override // documentation inherited
+    public boolean equals (Object other) {
+        if (!(other instanceof Quaternion)) {
+            return false;
+        }
+        Quaternion oquat = (Quaternion)other;
+        return (x == oquat.x && y == oquat.y && z == oquat.z && w == oquat.w) ||
+            (x == -oquat.x && y == -oquat.y && z == -oquat.z && w == -oquat.x);
     }
 }
