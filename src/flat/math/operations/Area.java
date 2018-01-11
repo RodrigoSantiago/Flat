@@ -1,22 +1,24 @@
 package flat.math.operations;
 
-import java.util.Vector;
-import java.util.Enumeration;
-import java.util.NoSuchElementException;
-
-import flat.math.*;
+import flat.math.Affine;
+import flat.math.Vector2;
 import flat.math.shapes.PathIterator;
 import flat.math.shapes.Rectangle;
 import flat.math.shapes.Shape;
 import flat.math.util.FlatteningPathIterator;
 
-public class Area implements Shape, Cloneable {
-    private static Vector<Curve> EmptyCurves = new Vector<>();
+import java.util.Vector;
+import java.util.Enumeration;
+import java.util.NoSuchElementException;
 
-    private Vector<Curve> curves;
+public class Area implements Shape, Cloneable {
+    private static Vector EmptyCurves = new Vector();
+
+    private Vector curves;
 
     /**
-     * Default constructor which creates an empty area
+     * Default constructor which creates an empty area.
+     * @since 1.2
      */
     public Area() {
         curves = EmptyCurves;
@@ -30,6 +32,7 @@ public class Area implements Shape, Cloneable {
      * <code>Shape</code> is used to determine the resulting enclosed area.
      * @param s  the <code>Shape</code> from which the area is constructed
      * @throws NullPointerException if <code>s</code> is null
+     * @since 1.2
      */
     public Area(Shape s) {
         if (s instanceof Area) {
@@ -39,18 +42,32 @@ public class Area implements Shape, Cloneable {
         }
     }
 
-    private static Vector<Curve> pathToCurves(PathIterator pi) {
-        Vector<Curve> curves = new Vector<>();
+    private static Vector pathToCurves(PathIterator pi) {
+        Vector curves = new Vector();
         int windingRule = pi.windingRule();
+        // coords array is big enough for holding:
+        //     coordinates returned from currentSegment (6)
+        //     OR
+        //         two subdivided quadratic curves (2+4+4=10)
+        //         AND
+        //             0-1 horizontal splitting parameters
+        //             OR
+        //             2 parametric equation derivative coefficients
+        //     OR
+        //         three subdivided cubic curves (2+6+6+6=20)
+        //         AND
+        //             0-2 horizontal splitting parameters
+        //             OR
+        //             3 parametric equation derivative coefficients
         double coords[] = new double[23];
-        float fcoords[] = new float[6];
+        float tcoords[] = new float[6];
         double movx = 0, movy = 0;
         double curx = 0, cury = 0;
         double newx, newy;
         while (!pi.isDone()) {
-            int type = pi.currentSegment(fcoords);
+            int  type = pi.currentSegment(tcoords);
             for (int i = 0; i < 6; i++) {
-                coords[i] = fcoords[i];
+                coords[i] = tcoords[i];
             }
             switch (type) {
             case PathIterator.SEG_MOVETO:
@@ -237,7 +254,7 @@ public class Area implements Shape, Cloneable {
      * @since 1.2
      */
     public void reset() {
-        curves = new Vector<>();
+        curves = new Vector();
         invalidateBounds();
     }
 
@@ -260,9 +277,9 @@ public class Area implements Shape, Cloneable {
      * @since 1.2
      */
     public boolean isPolygonal() {
-        Enumeration<Curve> elements = curves.elements();
-        while (elements.hasMoreElements()) {
-            if (elements.nextElement().getOrder() > 1) {
+        Enumeration enum_ = curves.elements();
+        while (enum_.hasMoreElements()) {
+            if (((Curve) enum_.nextElement()).getOrder() > 1) {
                 return false;
             }
         }
@@ -284,8 +301,8 @@ public class Area implements Shape, Cloneable {
         if (size > 3) {
             return false;
         }
-        Curve c1 = curves.get(1);
-        Curve c2 = curves.get(2);
+        Curve c1 = (Curve) curves.get(1);
+        Curve c2 = (Curve) curves.get(2);
         if (c1.getOrder() != 1 || c2.getOrder() != 1) {
             return false;
         }
@@ -314,10 +331,10 @@ public class Area implements Shape, Cloneable {
         if (curves.size() < 3) {
             return true;
         }
-        Enumeration<Curve> elements = curves.elements();
-        elements.nextElement(); // First Order0 "moveto"
-        while (elements.hasMoreElements()) {
-            if (elements.nextElement().getOrder() == 0) {
+        Enumeration enum_ = curves.elements();
+        enum_.nextElement(); // First Order0 "moveto"
+        while (enum_.hasMoreElements()) {
+            if (((Curve) enum_.nextElement()).getOrder() == 0) {
                 return false;
             }
         }
@@ -334,11 +351,11 @@ public class Area implements Shape, Cloneable {
         }
         Rectangle r = new Rectangle();
         if (curves.size() > 0) {
-            Curve c = curves.get(0);
+            Curve c = (Curve) curves.get(0);
             // First point is always an order 0 curve (moveto)
             r.set((float)c.getX0(), (float)c.getY0(), 0, 0);
             for (int i = 1; i < curves.size(); i++) {
-                curves.get(i).enlarge(r);
+                ((Curve) curves.get(i)).enlarge(r);
             }
         }
         return (cachedBounds = r);
@@ -353,17 +370,36 @@ public class Area implements Shape, Cloneable {
      * padded to include the control points of curves in the outline
      * of the Shape, but should tightly fit the actual geometry of
      * the outline itself.
-     * @return    the bounding <code>Rectangle2D</code> for the
+     * @return    the bounding <code>Rectangle</code> for the
      * <code>Area</code>.
      * @since 1.2
      */
-    public Rectangle bounds() {
-        return bounds(new Rectangle());
+    public Rectangle getBounds2D() {
+        return getCachedBounds().bounds();
     }
 
-    public Rectangle bounds(Rectangle target) {
-        target.set(getCachedBounds());
-        return target;
+    /**
+     * Returns a bounding {@link Rectangle} that completely encloses
+     * this <code>Area</code>.
+     * <p>
+     * The Area class will attempt to return the tightest bounding
+     * box possible for the Shape.  The bounding box will not be
+     * padded to include the control points of curves in the outline
+     * of the Shape, but should tightly fit the actual geometry of
+     * the outline itself.  Since the returned object represents
+     * the bounding box with integers, the bounding box can only be
+     * as tight as the nearest integer coordinates that encompass
+     * the geometry of the Shape.
+     * @return    the bounding <code>Rectangle</code> for the
+     * <code>Area</code>.
+     * @since 1.2
+     */
+    public Rectangle getBounds() {
+        return getCachedBounds().bounds();
+    }
+
+    public Rectangle bounds() {
+        return getCachedBounds().bounds();
     }
 
     /**
@@ -371,7 +407,7 @@ public class Area implements Shape, Cloneable {
      * @return    Created clone object
      * @since 1.2
      */
-    public Area clone() {
+    public Object clone() {
         return new Area(this);
     }
 
@@ -400,7 +436,7 @@ public class Area implements Shape, Cloneable {
     }
 
     /**
-     * Transformes the geometry of this <code>Area</code> using the specified
+     * Transforms the geometry of this <code>Area</code> using the specified
      * {@link Affine}.  The geometry is transformed in place, which
      * permanently changes the enclosed area defined by this object.
      * @param t  the transformation used to transform the area
@@ -422,7 +458,7 @@ public class Area implements Shape, Cloneable {
      * geometry as this <code>Area</code> transformed by the specified
      * <code>Affine</code>.  This <code>Area</code> object
      * is unchanged.
-     * @param t  the specified <code>AffineAffine</code> used to transform
+     * @param t  the specified <code>Affine</code> used to transform
      *           the new <code>Area</code>
      * @throws NullPointerException if <code>t</code> is null
      * @return   a new <code>Area</code> object representing the transformed
@@ -549,7 +585,7 @@ public class Area implements Shape, Cloneable {
         private int index;
         private Curve prevcurve;
         private Curve thiscurve;
-        private double[] dcoords = new double[6];
+        private double[] tcoords = new double[6];
 
         public AreaIterator(Vector curves, Affine at) {
             this.curves = curves;
@@ -579,8 +615,8 @@ public class Area implements Shape, Cloneable {
                 if (index < curves.size()) {
                     thiscurve = (Curve) curves.get(index);
                     if (thiscurve.getOrder() != 0 &&
-                            prevcurve.getX1() == thiscurve.getX0() &&
-                            prevcurve.getY1() == thiscurve.getY0())
+                        prevcurve.getX1() == thiscurve.getX0() &&
+                        prevcurve.getY1() == thiscurve.getY0())
                     {
                         prevcurve = null;
                     }
@@ -605,9 +641,9 @@ public class Area implements Shape, Cloneable {
             } else if (thiscurve == null) {
                 throw new NoSuchElementException("area iterator out of bounds");
             } else {
-                segtype = thiscurve.getSegment(dcoords);
+                segtype = thiscurve.getSegment(tcoords);
                 for (int i = 0; i < 6; i++) {
-                    coords[i] = (float) dcoords[i];
+                    coords[i] = (float) tcoords[i];
                 }
                 numpoints = thiscurve.getOrder();
                 if (numpoints == 0) {

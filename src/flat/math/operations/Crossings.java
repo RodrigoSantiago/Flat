@@ -1,6 +1,7 @@
 package flat.math.operations;
 
-import java.awt.geom.PathIterator;
+import flat.math.shapes.PathIterator;
+
 import java.util.Vector;
 import java.util.Enumeration;
 
@@ -39,9 +40,9 @@ public abstract class Crossings {
 
     public void print() {
         System.out.println("Crossings [");
-        System.out.println("  bounds = [" + ylo + ", " + yhi + "]");
+        System.out.println("  bounds = ["+ylo+", "+yhi+"]");
         for (int i = 0; i < limit; i += 2) {
-            System.out.println("  [" + yranges[i] + ", " + yranges[i + 1] + "]");
+            System.out.println("  ["+yranges[i]+", "+yranges[i+1]+"]");
         }
         System.out.println("]");
     }
@@ -52,9 +53,10 @@ public abstract class Crossings {
 
     public abstract boolean covers(double ystart, double yend);
 
-    public static Crossings findCrossings(Vector<Curve> curves,
+    public static Crossings findCrossings(Vector curves,
                                           double xlo, double ylo,
-                                          double xhi, double yhi) {
+                                          double xhi, double yhi)
+    {
         Crossings cross = new EvenOdd(xlo, ylo, xhi, yhi);
         Enumeration enum_ = curves.elements();
         while (enum_.hasMoreElements()) {
@@ -69,9 +71,12 @@ public abstract class Crossings {
         return cross;
     }
 
-    public static Crossings findCrossings(PathIterator pi, double xlo, double ylo, double xhi, double yhi) {
+    public static Crossings findCrossings(PathIterator pi,
+                                          double xlo, double ylo,
+                                          double xhi, double yhi)
+    {
         Crossings cross;
-        if (pi.getWindingRule() == pi.WIND_EVEN_ODD) {
+        if (pi.windingRule() == pi.WIND_EVEN_ODD) {
             cross = new EvenOdd(xlo, ylo, xhi, yhi);
         } else {
             cross = new NonZero(xlo, ylo, xhi, yhi);
@@ -91,16 +96,22 @@ public abstract class Crossings {
         //             OR
         //             3 parametric equation derivative coefficients
         double coords[] = new double[23];
+        float[] tcoords = new float[6];
         double movx = 0;
         double movy = 0;
         double curx = 0;
         double cury = 0;
         double newx, newy;
         while (!pi.isDone()) {
-            int type = pi.currentSegment(coords);
+            int type = pi.currentSegment(tcoords);
+            for (int i = 0; i < 6; i++) {
+                coords[i] = tcoords[i];
+            }
             switch (type) {
             case PathIterator.SEG_MOVETO:
-                if (movy != cury && cross.accumulateLine(curx, cury, movx, movy)) {
+                if (movy != cury &&
+                    cross.accumulateLine(curx, cury, movx, movy))
+                {
                     return null;
                 }
                 movx = curx = coords[0];
@@ -134,7 +145,9 @@ public abstract class Crossings {
                 cury = newy;
                 break;
             case PathIterator.SEG_CLOSE:
-                if (movy != cury && cross.accumulateLine(curx, cury, movx, movy)) {
+                if (movy != cury &&
+                    cross.accumulateLine(curx, cury, movx, movy))
+                {
                     return null;
                 }
                 curx = movx;
@@ -154,7 +167,9 @@ public abstract class Crossings {
         return cross;
     }
 
-    public boolean accumulateLine(double x0, double y0, double x1, double y1) {
+    public boolean accumulateLine(double x0, double y0,
+                                  double x1, double y1)
+    {
         if (y0 <= y1) {
             return accumulateLine(x0, y0, x1, y1, 1);
         } else {
@@ -162,7 +177,10 @@ public abstract class Crossings {
         }
     }
 
-    public boolean accumulateLine(double x0, double y0, double x1, double y1, int direction) {
+    public boolean accumulateLine(double x0, double y0,
+                                  double x1, double y1,
+                                  int direction)
+    {
         if (yhi <= y0 || ylo >= y1) {
             return false;
         }
@@ -199,7 +217,7 @@ public abstract class Crossings {
         return false;
     }
 
-    private Vector<Curve> tmp = new Vector<>();
+    private Vector tmp = new Vector();
 
     public boolean accumulateQuad(double x0, double y0, double coords[]) {
         if (y0 < ylo && coords[1] < ylo && coords[3] < ylo) {
@@ -232,16 +250,24 @@ public abstract class Crossings {
     }
 
     public boolean accumulateCubic(double x0, double y0, double coords[]) {
-        if (y0 < ylo && coords[1] < ylo && coords[3] < ylo && coords[5] < ylo) {
+        if (y0 < ylo && coords[1] < ylo &&
+            coords[3] < ylo && coords[5] < ylo)
+        {
             return false;
         }
-        if (y0 > yhi && coords[1] > yhi && coords[3] > yhi && coords[5] > yhi) {
+        if (y0 > yhi && coords[1] > yhi &&
+            coords[3] > yhi && coords[5] > yhi)
+        {
             return false;
         }
-        if (x0 > xhi && coords[0] > xhi && coords[2] > xhi && coords[4] > xhi) {
+        if (x0 > xhi && coords[0] > xhi &&
+            coords[2] > xhi && coords[4] > xhi)
+        {
             return false;
         }
-        if (x0 < xlo && coords[0] < xlo && coords[2] < xlo && coords[4] < xlo) {
+        if (x0 < xlo && coords[0] < xlo &&
+            coords[2] < xlo && coords[4] < xlo)
+        {
             if (y0 <= coords[5]) {
                 record(Math.max(y0, ylo), Math.min(coords[5], yhi), 1);
             } else {
@@ -250,9 +276,9 @@ public abstract class Crossings {
             return false;
         }
         Curve.insertCubic(tmp, x0, y0, coords);
-        Enumeration<Curve> elements = tmp.elements();
-        while (elements.hasMoreElements()) {
-            Curve c = elements.nextElement();
+        Enumeration enum_ = tmp.elements();
+        while (enum_.hasMoreElements()) {
+            Curve c = (Curve) enum_.nextElement();
             if (c.accumulateCrossings(this)) {
                 return true;
             }
@@ -375,8 +401,10 @@ public abstract class Crossings {
             limit -= 2;
             int rem = limit - cur;
             if (rem > 0) {
-                System.arraycopy(yranges, cur + 2, yranges, cur, rem);
-                System.arraycopy(crosscounts, cur / 2 + 1, crosscounts, cur / 2, rem / 2);
+                System.arraycopy(yranges, cur+2, yranges, cur, rem);
+                System.arraycopy(crosscounts, cur/2+1,
+                                 crosscounts, cur/2,
+                                 rem/2);
             }
         }
 
@@ -385,18 +413,20 @@ public abstract class Crossings {
             double oldranges[] = yranges;
             int oldcounts[] = crosscounts;
             if (limit >= yranges.length) {
-                yranges = new double[limit + 10];
+                yranges = new double[limit+10];
                 System.arraycopy(oldranges, 0, yranges, 0, cur);
-                crosscounts = new int[(limit + 10) / 2];
-                System.arraycopy(oldcounts, 0, crosscounts, 0, cur / 2);
+                crosscounts = new int[(limit+10)/2];
+                System.arraycopy(oldcounts, 0, crosscounts, 0, cur/2);
             }
             if (rem > 0) {
-                System.arraycopy(oldranges, cur, yranges, cur + 2, rem);
-                System.arraycopy(oldcounts, cur / 2, crosscounts, cur / 2 + 1, rem / 2);
+                System.arraycopy(oldranges, cur, yranges, cur+2, rem);
+                System.arraycopy(oldcounts, cur/2,
+                                 crosscounts, cur/2+1,
+                                 rem/2);
             }
-            yranges[cur + 0] = lo;
-            yranges[cur + 1] = hi;
-            crosscounts[cur / 2] = dir;
+            yranges[cur+0] = lo;
+            yranges[cur+1] = hi;
+            crosscounts[cur/2] = dir;
             limit += 2;
         }
 
@@ -406,28 +436,28 @@ public abstract class Crossings {
             }
             int cur = 0;
             // Quickly jump over all pairs that are completely "above"
-            while (cur < limit && ystart > yranges[cur + 1]) {
+            while (cur < limit && ystart > yranges[cur+1]) {
                 cur += 2;
             }
             if (cur < limit) {
-                int rdir = crosscounts[cur / 2];
-                double yrlo = yranges[cur + 0];
-                double yrhi = yranges[cur + 1];
+                int rdir = crosscounts[cur/2];
+                double yrlo = yranges[cur+0];
+                double yrhi = yranges[cur+1];
                 if (yrhi == ystart && rdir == direction) {
                     // Remove the range from the list and collapse it
                     // into the range being inserted.  Note that the
                     // new combined range may overlap the following range
                     // so we must not simply combine the ranges in place
                     // unless we are at the last range.
-                    if (cur + 2 == limit) {
-                        yranges[cur + 1] = yend;
+                    if (cur+2 == limit) {
+                        yranges[cur+1] = yend;
                         return;
                     }
                     remove(cur);
                     ystart = yrlo;
-                    rdir = crosscounts[cur / 2];
-                    yrlo = yranges[cur + 0];
-                    yrhi = yranges[cur + 1];
+                    rdir = crosscounts[cur/2];
+                    yrlo = yranges[cur+0];
+                    yrhi = yranges[cur+1];
                 }
                 if (yend < yrlo) {
                     // Just insert the new range at the current location
@@ -455,7 +485,7 @@ public abstract class Crossings {
                 if (newdir == 0) {
                     remove(cur);
                 } else {
-                    crosscounts[cur / 2] = newdir;
+                    crosscounts[cur/2] = newdir;
                     yranges[cur++] = ystart;
                     yranges[cur++] = newend;
                 }

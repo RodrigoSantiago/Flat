@@ -4,14 +4,17 @@ import flat.math.shapes.PathIterator;
 import flat.math.shapes.Rectangle;
 
 final class Order1 extends Curve {
-    private final double x0;
-    private final double y0;
-    private final double x1;
-    private final double y1;
-    private final double xmin;
-    private final double xmax;
+    private double x0;
+    private double y0;
+    private double x1;
+    private double y1;
+    private double xmin;
+    private double xmax;
 
-    public Order1(double x0, double y0, double x1, double y1, int direction) {
+    public Order1(double x0, double y0,
+                  double x1, double y1,
+                  int direction)
+    {
         super(direction);
         this.x0 = x0;
         this.y0 = y0;
@@ -165,8 +168,8 @@ final class Order1 extends Curve {
     }
 
     public void enlarge(Rectangle r) {
-        r.add((float) x0, (float) y0);
-        r.add((float) x1, (float) y1);
+        r.add((float)x0, (float)y0);
+        r.add((float)x1, (float)y1);
     }
 
     public Curve getSubCurve(double ystart, double yend, int dir) {

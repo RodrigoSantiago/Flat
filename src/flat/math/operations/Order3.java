@@ -1,8 +1,9 @@
 package flat.math.operations;
 
+import flat.math.shapes.Crossing;
 import flat.math.shapes.PathIterator;
-import flat.math.shapes.QuadCurves;
 import flat.math.shapes.Rectangle;
+
 import java.util.Vector;
 
 final class Order3 extends Curve {
@@ -145,14 +146,7 @@ final class Order3 extends Curve {
         ret[0] = cp0;
         ret[1] = (cp1 - cp0) * 2;
         ret[2] = (c1 - cp1 - cp1 + cp0);
-        parser[0] = (float) ret[0];
-        parser[1] = (float) ret[1];
-        parser[2] = (float) ret[2];
-        int numroots = QuadCurves.solveQuadratic(parser, parser);
-        ret[0] = parser[0];
-        ret[1] = parser[1];
-        ret[2] = parser[2];
-
+        int numroots = Crossing.solveQuad(ret, ret);
         int j = 0;
         for (int i = 0; i < numroots; i++) {
             double t = ret[i];
@@ -166,7 +160,6 @@ final class Order3 extends Curve {
         }
         return j;
     }
-    private static float[] parser  = new float[3];
 
     /*
      * Split the cubic Bezier stored at coords[pos...pos+7] representing
@@ -512,8 +505,8 @@ final class Order3 extends Curve {
     }
 
     public double nextVertical(double t0, double t1) {
-        float eqn[] = {(float)xcoeff1, 2 * (float)xcoeff2, 3 * (float)xcoeff3};
-        int numroots = QuadCurves.solveQuadratic(eqn, eqn);
+        double eqn[] = {xcoeff1, 2 * xcoeff2, 3 * xcoeff3};
+        int numroots = Crossing.solveQuad(eqn, eqn);
         for (int i = 0; i < numroots; i++) {
             if (eqn[i] > t0 && eqn[i] < t1) {
                 t1 = eqn[i];
@@ -523,16 +516,16 @@ final class Order3 extends Curve {
     }
 
     public void enlarge(Rectangle r) {
-        r.add((float)x0,(float)y0);
-        float eqn[] = {(float)xcoeff1, 2 * (float)xcoeff2, 3 * (float)xcoeff3};
-        int numroots = QuadCurves.solveQuadratic(eqn, eqn);
+        r.add((float)x0, (float)y0);
+        double eqn[] = {xcoeff1, 2 * xcoeff2, 3 * xcoeff3};
+        int numroots = Crossing.solveQuad(eqn, eqn);
         for (int i = 0; i < numroots; i++) {
             double t = eqn[i];
             if (t > 0 && t < 1) {
-                r.add((float)XforT(t),(float) YforT(t));
+                r.add((float)XforT(t), (float)YforT(t));
             }
         }
-        r.add((float)x1,(float) y1);
+        r.add((float)x1, (float)y1);
     }
 
     public Curve getSubCurve(double ystart, double yend, int dir) {

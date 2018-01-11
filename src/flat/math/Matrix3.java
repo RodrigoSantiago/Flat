@@ -1,868 +1,604 @@
 package flat.math;
 
-import java.io.Serializable;
-import java.nio.FloatBuffer;
-
+import flat.math.util.NoninvertibleTransformException;
 import flat.math.util.Platform;
-import flat.math.util.SingularMatrixException;
+
+import java.io.Serializable;
 
 /**
- * A 3x3 column-major matrix.
+ * A 3x3 matrix; useful for 2D transforms.
  */
-public class Matrix3 implements IMatrix3, Serializable {
+public final class Matrix3 implements Serializable {
 
-    private static final long serialVersionUID = 2090355290484132872L;
+    private static final long serialVersionUID = 7907569533774959788L;
 
-    /** the identity matrix. */
-    public static final Matrix3 IDENTITY = new Matrix3();
+    public static final int M00 = 0;
+    public static final int M01 = 3;
+    public static final int M02 = 6;
+    public static final int M10 = 1;
+    public static final int M11 = 4;
+    public static final int M12 = 7;
+    public static final int M20 = 2;
+    public static final int M21 = 5;
+    public static final int M22 = 8;
 
-    /** The values of the matrix. The names take the form {@code mCOLROW}. */
-    public float m00, m10, m20;
-    public float m01, m11, m21;
-    public float m02, m12, m22;
+    public float[] val = new float[9];
 
     /**
-     * Creates a matrix from its components.
+     * Constructs a identity matrix
      */
-    public Matrix3 (float m00, float m10, float m20,
-                    float m01, float m11, float m21,
-                    float m02, float m12, float m22) {
-        set(m00, m10, m20,
-            m01, m11, m21,
-            m02, m12, m22);
+    public Matrix3() {
+        identity();
     }
 
     /**
-     * Creates a matrix from an array of values.
-     */
-    public Matrix3 (float[] values) {
-        set(values);
-    }
-
-    /**
-     * Copy constructor.
-     */
-    public Matrix3 (Matrix3 other) {
-        set(other);
-    }
-
-    /**
-     * Creates an identity matrix.
-     */
-    public Matrix3 () {
-        setToIdentity();
-    }
-
-    /**
-     * Sets the matrix element at the specified row and column.
-     */
-    public void setElement (int row, int col, float value) {
-        switch (col) {
-        case 0:
-            switch (row) {
-            case 0: m00 = value; return;
-            case 1: m01 = value; return;
-            case 2: m02 = value; return;
-            }
-            break;
-        case 1:
-            switch (row) {
-            case 0: m10 = value; return;
-            case 1: m11 = value; return;
-            case 2: m12 = value; return;
-            }
-            break;
-        case 2:
-            switch (row) {
-            case 0: m20 = value; return;
-            case 1: m21 = value; return;
-            case 2: m22 = value; return;
-            }
-            break;
-        }
-        throw new ArrayIndexOutOfBoundsException();
-    }
-
-    /**
-     * Sets the specified row (0, 1, 2) to the supplied values.
-     */
-    public void setRow (int row, float x, float y, float z) {
-        switch (row) {
-        case 0: m00 = x; m10 = y; m20 = z; break;
-        case 1: m01 = x; m11 = y; m21 = z; break;
-        case 2: m02 = x; m12 = y; m22 = z; break;
-        default: throw new ArrayIndexOutOfBoundsException();
-        }
-    }
-
-    /**
-     * Sets the specified row (0, 1, 2) to the supplied vector.
-     */
-    public void setRow (int row, Vector3 v) {
-        setRow(row, v.x(), v.y(), v.z());
-    }
-
-    /**
-     * Sets the specified column (0, 1, 2) to the supplied values.
-     */
-    public void setColumn (int col, float x, float y, float z) {
-        switch (col) {
-        case 0: m00 = x; m01 = y; m02 = z; break;
-        case 1: m10 = x; m11 = y; m12 = z; break;
-        case 2: m20 = x; m21 = y; m22 = z; break;
-        default: throw new ArrayIndexOutOfBoundsException();
-        }
-    }
-
-    /**
-     * Sets the specified column (0, 1, 2) to the supplied vector.
-     */
-    public void setColumn (int col, Vector3 v) {
-        setColumn(col, v.x(), v.y(), v.z());
-    }
-
-    /**
-     * Sets this matrix to the identity matrix.
+     * Constructs a matrix from the given matrix
      *
-     * @return a reference to this matrix, for chaining.
+     * @param matrix The matrix
      */
-    public Matrix3 setToIdentity () {
-        return set(1f, 0f, 0f,
-                   0f, 1f, 0f,
-                   0f, 0f, 1f);
+    public Matrix3(Matrix3 matrix) {
+        set(matrix);
     }
 
     /**
-     * Sets this matrix to all zeroes.
+     * Constructs a matrix from the given float array with offset
      *
-     * @return a reference to this matrix, for chaining.
+     * @param values The float array to copy
      */
-    public Matrix3 setToZero () {
-        return set(0f, 0f, 0f,
-                   0f, 0f, 0f,
-                   0f, 0f, 0f);
+    public Matrix3(float[] values, int offset) {
+        this.set(values, offset);
     }
 
     /**
-     * Sets this to a rotation matrix that rotates one vector onto another.
+     * Sets this matrix to the identity matrix
      *
-     * @return a reference to this matrix, for chaining.
+     * @return This matrix for chaining
      */
-    public Matrix3 setToRotation (IVector3 from, IVector3 to) {
-        float angle = from.angle(to);
-        return (angle < 0.0001f) ?
-            setToIdentity() : setToRotation(angle, from.cross(to).normalizeLocal());
-    }
-
-    /**
-     * Sets this to a rotation matrix.
-     *
-     * @return a reference to this matrix, for chaining.
-     */
-    public Matrix3 setToRotation (float angle, IVector3 axis) {
-        return setToRotation(angle, axis.x(), axis.y(), axis.z());
-    }
-
-    /**
-     * Sets this to a rotation matrix. The formula comes from the OpenGL documentation for the
-     * glRotatef function.
-     *
-     * @return a reference to this matrix, for chaining.
-     */
-    public Matrix3 setToRotation (float angle, float x, float y, float z) {
-        float c = FloatMath.cos(angle), s = FloatMath.sin(angle), omc = 1f - c;
-        float xs = x*s, ys = y*s, zs = z*s, xy = x*y, xz = x*z, yz = y*z;
-        return set(x*x*omc + c, xy*omc - zs, xz*omc + ys,
-                   xy*omc + zs, y*y*omc + c, yz*omc - xs,
-                   xz*omc - ys, yz*omc + xs, z*z*omc + c);
-    }
-
-    /**
-     * Sets this to a rotation matrix. The formula comes from the
-     * <a href="http://www.j3d.org/matrix_faq/matrfaq_latest.html">Matrix and Quaternion FAQ</a>.
-     *
-     * @return a reference to this matrix, for chaining.
-     */
-    public Matrix3 setToRotation (IQuaternion quat) {
-        float qx = quat.x(), qy = quat.y(), qz = quat.z(), qw = quat.w();
-        float xx = qx*qx, yy = qy*qy, zz = qz*qz;
-        float xy = qx*qy, xz = qx*qz, xw = qx*qw;
-        float yz = qy*qz, yw = qy*qw, zw = qz*qw;
-        return set(1f - 2f*(yy + zz), 2f*(xy - zw), 2f*(xz + yw),
-                   2f*(xy + zw), 1f - 2f*(xx + zz), 2f*(yz - xw),
-                   2f*(xz - yw), 2f*(yz + xw), 1f - 2f*(xx + yy));
-    }
-
-    /**
-     * Sets this to a scale matrix.
-     *
-     * @return a reference to this matrix, for chaining.
-     */
-    public Matrix3 setToScale (IVector3 scale) {
-        return setToScale(scale.x(), scale.y(), scale.z());
-    }
-
-    /**
-     * Sets this to a uniform scale matrix.
-     *
-     * @return a reference to this matrix, for chaining.
-     */
-    public Matrix3 setToScale (float s) {
-        return setToScale(s, s, s);
-    }
-
-    /**
-     * Sets this to a scale matrix.
-     *
-     * @return a reference to this matrix, for chaining.
-     */
-    public Matrix3 setToScale (float x, float y, float z) {
-        return set(x,  0f, 0f,
-                   0f, y,  0f,
-                   0f, 0f, z);
-    }
-
-    /**
-     * Sets this to a reflection across a plane intersecting the origin with the supplied normal.
-     *
-     * @return a reference to this matrix, for chaining.
-     */
-    public Matrix3 setToReflection (IVector3 normal) {
-        return setToReflection(normal.x(), normal.y(), normal.z());
-    }
-
-    /**
-     * Sets this to a reflection across a plane intersecting the origin with the supplied normal.
-     *
-     * @return a reference to this matrix, for chaining.
-     */
-    public Matrix3 setToReflection (float x, float y, float z) {
-        float x2 = -2f*x, y2 = -2f*y, z2 = -2f*z;
-        float xy2 = x2*y, xz2 = x2*z, yz2 = y2*z;
-        return set(1f + x2*x, xy2, xz2,
-                   xy2, 1f + y2*y, yz2,
-                   xz2, yz2, 1f + z2*z);
-    }
-
-    /**
-     * Sets this to a matrix that first rotates, then translates.
-     *
-     * @return a reference to this matrix, for chaining.
-     */
-    public Matrix3 setToTransform (IVector translation, float rotation) {
-        return setToRotation(rotation).setTranslation(translation);
-    }
-
-    /**
-     * Sets this to a matrix that first scales, then rotates, then translates.
-     *
-     * @return a reference to this matrix, for chaining.
-     */
-    public Matrix3 setToTransform (IVector translation, float rotation, float scale) {
-        return setToRotation(rotation).set(m00 * scale, m10 * scale, translation.x(),
-                                           m01 * scale, m11 * scale, translation.y(),
-                                           0f, 0f, 1f);
-    }
-
-    /**
-     * Sets this to a matrix that first scales, then rotates, then translates.
-     *
-     * @return a reference to this matrix, for chaining.
-     */
-    public Matrix3 setToTransform (IVector translation, float rotation, IVector scale) {
-        float sx = scale.x(), sy = scale.y();
-        return setToRotation(rotation).set(m00 * sx, m10 * sy, translation.x(),
-                                           m01 * sx, m11 * sy, translation.y(),
-                                           0f, 0f, 1f);
-    }
-
-    /**
-     * Sets this to a translation matrix.
-     *
-     * @return a reference to this matrix, for chaining.
-     */
-    public Matrix3 setToTranslation (IVector translation) {
-        return setToTranslation(translation.x(), translation.y());
-    }
-
-    /**
-     * Sets this to a translation matrix.
-     *
-     * @return a reference to this matrix, for chaining.
-     */
-    public Matrix3 setToTranslation (float x, float y) {
-        return set(1f, 0f, x,
-                   0f, 1f, y,
-                   0f, 0f, 1f);
-    }
-
-    /**
-     * Sets the translation component of this matrix.
-     *
-     * @return a reference to this matrix, for chaining.
-     */
-    public Matrix3 setTranslation (IVector translation) {
-        return setTranslation(translation.x(), translation.y());
-    }
-
-    /**
-     * Sets the translation component of this matrix.
-     *
-     * @return a reference to this matrix, for chaining.
-     */
-    public Matrix3 setTranslation (float x, float y) {
-        m20 = x;
-        m21 = y;
+    public Matrix3 identity() {
+        val[M00] = 1;
+        val[M10] = 0;
+        val[M20] = 0;
+        val[M01] = 0;
+        val[M11] = 1;
+        val[M21] = 0;
+        val[M02] = 0;
+        val[M12] = 0;
+        val[M22] = 1;
         return this;
     }
 
     /**
-     * Sets this to a rotation matrix.
+     * Copies the values from the provided matrix to this matrix.
      *
-     * @return a reference to this matrix, for chaining.
+     * @param mat The matrix to copy.
+     * @return This matrix for the purposes of chaining.
      */
-    public Matrix3 setToRotation (float angle) {
-        float sina = FloatMath.sin(angle), cosa = FloatMath.cos(angle);
-        return set(cosa, -sina, 0f,
-                   sina, cosa, 0f,
-                   0f, 0f, 1f);
-    }
-
-    /**
-     * Transposes this matrix in-place.
-     *
-     * @return a reference to this matrix, for chaining.
-     */
-    public Matrix3 transposeLocal () {
-        return transpose(this);
-    }
-
-    /**
-     * Multiplies this matrix in-place by another.
-     *
-     * @return a reference to this matrix, for chaining.
-     */
-    public Matrix3 multLocal (IMatrix3 other) {
-        return mult(other, this);
-    }
-
-    /**
-     * Adds {@code other} to this matrix, in place.
-     *
-     * @return a reference to this matrix, for chaining.
-     */
-    public Matrix3 addLocal (IMatrix3 other) {
-        return add(other, this);
-    }
-
-    /**
-     * Multiplies this matrix in-place by another, treating the matricees as affine.
-     *
-     * @return a reference to this matrix, for chaining.
-     */
-    public Matrix3 multAffineLocal (IMatrix3 other) {
-        return multAffine(other, this);
-    }
-
-    /**
-     * Inverts this matrix in-place.
-     *
-     * @return a reference to this matrix, for chaining.
-     */
-    public Matrix3 invertLocal () {
-        return invert(this);
-    }
-
-    /**
-     * Inverts this matrix in-place as an affine matrix.
-     *
-     * @return a reference to this matrix, for chaining.
-     */
-    public Matrix3 invertAffineLocal () {
-        return invertAffine(this);
-    }
-
-    /**
-     * Linearly interpolates between the this and the specified other matrix, placing the result in
-     * this matrix.
-     *
-     * @return a reference to this matrix, for chaining.
-     */
-    public Matrix3 lerpLocal (IMatrix3 other, float t) {
-        return lerp(other, t, this);
-    }
-
-    /**
-     * Linearly interpolates between this and the specified other matrix (treating the matrices as
-     * affine), placing the result in this matrix.
-     *
-     * @return a reference to this matrix, for chaining.
-     */
-    public Matrix3 lerpAffineLocal (IMatrix3 other, float t) {
-        return lerpAffine(other, t, this);
-    }
-
-    /**
-     * Copies the contents of another matrix.
-     *
-     * @return a reference to this matrix, for chaining.
-     */
-    public Matrix3 set (IMatrix3 other) {
-        return set(other.m00(), other.m10(), other.m20(),
-                   other.m01(), other.m11(), other.m21(),
-                   other.m02(), other.m12(), other.m22());
-    }
-
-    /**
-     * Copies the elements of an array.
-     *
-     * @return a reference to this matrix, for chaining.
-     */
-    public Matrix3 set (float[] values) {
-        return set(values[0], values[1], values[2],
-                   values[3], values[4], values[5],
-                   values[6], values[7], values[8]);
-    }
-
-    /**
-     * Sets all of the matrix's components at once.
-     *
-     * @return a reference to this matrix, for chaining.
-     */
-    public Matrix3 set (
-        float m00, float m10, float m20,
-        float m01, float m11, float m21,
-        float m02, float m12, float m22) {
-        this.m00 = m00; this.m01 = m01; this.m02 = m02;
-        this.m10 = m10; this.m11 = m11; this.m12 = m12;
-        this.m20 = m20; this.m21 = m21; this.m22 = m22;
+    public Matrix3 set(Matrix3 mat) {
+        System.arraycopy(mat.val, 0, val, 0, val.length);
         return this;
     }
 
-    @Override // from IMatrix3
-    public float m00 () {
-        return m00;
-    }
+    /**
+     * Copies the values from the provided affine matrix to this matrix. The last row is set to (0, 0, 1).
+     *
+     * @param affine The affine matrix to copy.
+     * @return This matrix for the purposes of chaining.
+     */
+    public Matrix3 set(Affine affine) {
+        val[M00] = affine.m00;
+        val[M10] = affine.m10;
+        val[M20] = 0;
+        val[M01] = affine.m01;
+        val[M11] = affine.m11;
+        val[M21] = 0;
+        val[M02] = affine.m02;
+        val[M12] = affine.m12;
+        val[M22] = 1;
 
-    @Override // from IMatrix3
-    public float m10 () {
-        return m10;
-    }
-
-    @Override // from IMatrix3
-    public float m20 () {
-        return m20;
-    }
-
-    @Override // from IMatrix3
-    public float m01 () {
-        return m01;
-    }
-
-    @Override // from IMatrix3
-    public float m11 () {
-        return m11;
-    }
-
-    @Override // from IMatrix3
-    public float m21 () {
-        return m21;
-    }
-
-    @Override // from IMatrix3
-    public float m02 () {
-        return m02;
-    }
-
-    @Override // from IMatrix3
-    public float m12 () {
-        return m12;
-    }
-
-    @Override // from IMatrix3
-    public float m22 () {
-        return m22;
-    }
-
-    @Override // from IMatrix3
-    public float element (int row, int col) {
-        switch (col) {
-        case 0:
-            switch (row) {
-            case 0: return m00;
-            case 1: return m01;
-            case 2: return m02;
-            }
-            break;
-        case 1:
-            switch (row) {
-            case 0: return m10;
-            case 1: return m11;
-            case 2: return m12;
-            }
-            break;
-        case 2:
-            switch (row) {
-            case 0: return m20;
-            case 1: return m21;
-            case 2: return m22;
-            }
-            break;
-        }
-        throw new ArrayIndexOutOfBoundsException();
-    }
-
-    @Override // from IMatrix3
-    public void getRow (int row, Vector3 result) {
-        switch (row) {
-        case 0: result.x = m00; result.y = m10; result.z = m20; break;
-        case 1: result.x = m01; result.y = m11; result.z = m21; break;
-        case 2: result.x = m02; result.y = m12; result.z = m22; break;
-        default: throw new ArrayIndexOutOfBoundsException();
-        }
-    }
-
-    @Override // from IMatrix3
-    public void getColumn (int col, Vector3 result) {
-        switch (col) {
-        case 0: result.x = m00; result.y = m01; result.z = m02; break;
-        case 1: result.x = m10; result.y = m11; result.z = m12; break;
-        case 2: result.x = m20; result.y = m21; result.z = m22; break;
-        default: throw new ArrayIndexOutOfBoundsException();
-        }
-    }
-
-    @Override // from IMatrix3
-    public Matrix3 transpose () {
-        return transpose(new Matrix3());
-    }
-
-    @Override // from IMatrix3
-    public Matrix3 transpose (Matrix3 result) {
-        return result.set(m00, m01, m02,
-                          m10, m11, m12,
-                          m20, m21, m22);
-    }
-
-    @Override // from IMatrix3
-    public Matrix3 mult (IMatrix3 other) {
-        return mult(other, new Matrix3());
-    }
-
-    @Override // from IMatrix3
-    public Matrix3 mult (IMatrix3 other, Matrix3 result) {
-        float m00 = this.m00, m01 = this.m01, m02 = this.m02;
-        float m10 = this.m10, m11 = this.m11, m12 = this.m12;
-        float m20 = this.m20, m21 = this.m21, m22 = this.m22;
-        float om00 = other.m00(), om01 = other.m01(), om02 = other.m02();
-        float om10 = other.m10(), om11 = other.m11(), om12 = other.m12();
-        float om20 = other.m20(), om21 = other.m21(), om22 = other.m22();
-        return result.set(m00*om00 + m10*om01 + m20*om02,
-                          m00*om10 + m10*om11 + m20*om12,
-                          m00*om20 + m10*om21 + m20*om22,
-
-                          m01*om00 + m11*om01 + m21*om02,
-                          m01*om10 + m11*om11 + m21*om12,
-                          m01*om20 + m11*om21 + m21*om22,
-
-                          m02*om00 + m12*om01 + m22*om02,
-                          m02*om10 + m12*om11 + m22*om12,
-                          m02*om20 + m12*om21 + m22*om22);
-    }
-
-    @Override // from IMatrix3
-    public Matrix3 add (IMatrix3 other) {
-        return add(other, new Matrix3());
-    }
-
-    @Override // from IMatrix3
-    public Matrix3 add (IMatrix3 other, Matrix3 result) {
-        return result.set(m00 + other.m00(), m01 + other.m01(), m02 + other.m02(),
-                          m10 + other.m10(), m11 + other.m11(), m12 + other.m12(),
-                          m20 + other.m20(), m21 + other.m21(), m22 + other.m22());
-    }
-
-    @Override // from IMatrix3
-    public boolean isAffine () {
-        return (m02 == 0f && m12 == 0f && m22 == 1f);
-    }
-
-    @Override // from IMatrix3
-    public Matrix3 multAffine (IMatrix3 other) {
-        return multAffine(other, new Matrix3());
-    }
-
-    @Override // from IMatrix3
-    public Matrix3 multAffine (IMatrix3 other, Matrix3 result) {
-        float m00 = this.m00, m01 = this.m01;
-        float m10 = this.m10, m11 = this.m11;
-        float m20 = this.m20, m21 = this.m21;
-        float om00 = other.m00(), om01 = other.m01();
-        float om10 = other.m10(), om11 = other.m11();
-        float om20 = other.m20(), om21 = other.m21();
-        return result.set(m00*om00 + m10*om01,
-                          m00*om10 + m10*om11,
-                          m00*om20 + m10*om21 + m20,
-
-                          m01*om00 + m11*om01,
-                          m01*om10 + m11*om11,
-                          m01*om20 + m11*om21 + m21,
-
-                          0f, 0f, 1f);
-    }
-
-    @Override // from IMatrix3
-    public Matrix3 invert () {
-        return invert(new Matrix3());
+        return this;
     }
 
     /**
-     * {@inheritDoc} This code is based on the examples in the
-     * <a href="http://www.j3d.org/matrix_faq/matrfaq_latest.html">Matrix and Quaternion FAQ</a>.
+     * Sets this 3x3 matrix to the top left 3x3 corner of the provided 4x4 matrix.
+     *
+     * @param mat The matrix whose top left corner will be copied. This matrix will not be modified.
+     * @return This matrix for the purpose of chaining operations.
      */
-    @Override // from IMatrix3
-    public Matrix3 invert (Matrix3 result) throws SingularMatrixException {
-        float m00 = this.m00, m01 = this.m01, m02 = this.m02;
-        float m10 = this.m10, m11 = this.m11, m12 = this.m12;
-        float m20 = this.m20, m21 = this.m21, m22 = this.m22;
-        // compute the determinant, storing the subdeterminants for later use
-        float sd00 = m11*m22 - m21*m12;
-        float sd10 = m01*m22 - m21*m02;
-        float sd20 = m01*m12 - m11*m02;
-        float det = m00*sd00 + m20*sd20 - m10*sd10;
-        if (Math.abs(det) == 0f) {
-            // determinant is zero; matrix is not invertible
-            throw new SingularMatrixException(this.toString());
-        }
-        float rdet = 1f / det;
-        return result.set(+sd00 * rdet,
-                          -(m10*m22 - m20*m12) * rdet,
-                          +(m10*m21 - m20*m11) * rdet,
-
-                          -sd10 * rdet,
-                          +(m00*m22 - m20*m02) * rdet,
-                          -(m00*m21 - m20*m01) * rdet,
-
-                          +sd20 * rdet,
-                          -(m00*m12 - m10*m02) * rdet,
-                          +(m00*m11 - m10*m01) * rdet);
-    }
-
-    @Override // from IMatrix3
-    public Matrix3 invertAffine () {
-        return invertAffine(new Matrix3());
-    }
-
-    @Override // from IMatrix3
-    public Matrix3 invertAffine (Matrix3 result) throws SingularMatrixException {
-        float m00 = this.m00, m01 = this.m01;
-        float m10 = this.m10, m11 = this.m11;
-        float m20 = this.m20, m21 = this.m21;
-        // compute the determinant, storing the subdeterminants for later use
-        float det = m00*m11 - m10*m01;
-        if (Math.abs(det) == 0f) {
-            // determinant is zero; matrix is not invertible
-            throw new SingularMatrixException(this.toString());
-        }
-        float rdet = 1f / det;
-        return result.set(+m11 * rdet,
-                          -m10 * rdet,
-                          +(m10*m21 - m20*m11) * rdet,
-
-                          -m01 * rdet,
-                          +m00 * rdet,
-                          -(m00*m21 - m20*m01) * rdet,
-
-                          0f, 0f, 1f);
-    }
-
-    @Override // from IMatrix3
-    public Matrix3 lerp (IMatrix3 other, float t) {
-        return lerp(other, t, new Matrix3());
-    }
-
-    @Override // from IMatrix3
-    public Matrix3 lerp (IMatrix3 other, float t, Matrix3 result) {
-        float m00 = this.m00, m01 = this.m01, m02 = this.m02;
-        float m10 = this.m10, m11 = this.m11, m12 = this.m12;
-        float m20 = this.m20, m21 = this.m21, m22 = this.m22;
-        float om00 = other.m00(), om01 = other.m01(), om02 = other.m02();
-        float om10 = other.m10(), om11 = other.m11(), om12 = other.m12();
-        float om20 = other.m20(), om21 = other.m21(), om22 = other.m22();
-        return result.set(m00 + t*(om00 - m00),
-                          m10 + t*(om10 - m10),
-                          m20 + t*(om20 - m20),
-
-                          m01 + t*(om01 - m01),
-                          m11 + t*(om11 - m11),
-                          m21 + t*(om21 - m21),
-
-                          m02 + t*(om02 - m02),
-                          m12 + t*(om12 - m12),
-                          m22 + t*(om22 - m22));
-    }
-
-    @Override // from IMatrix3
-    public Matrix3 lerpAffine (IMatrix3 other, float t) {
-        return lerpAffine(other, t, new Matrix3());
-    }
-
-    @Override // from IMatrix3
-    public Matrix3 lerpAffine (IMatrix3 other, float t, Matrix3 result) {
-        float m00 = this.m00, m01 = this.m01;
-        float m10 = this.m10, m11 = this.m11;
-        float m20 = this.m20, m21 = this.m21;
-        float om00 = other.m00(), om01 = other.m01();
-        float om10 = other.m10(), om11 = other.m11();
-        float om20 = other.m20(), om21 = other.m21();
-        return result.set(m00 + t*(om00 - m00),
-                          m10 + t*(om10 - m10),
-                          m20 + t*(om20 - m20),
-
-                          m01 + t*(om01 - m01),
-                          m11 + t*(om11 - m11),
-                          m21 + t*(om21 - m21),
-
-                          0f, 0f, 1f);
-    }
-
-    @Override // from IMatrix3
-    public FloatBuffer get (FloatBuffer buf) {
-        buf.put(m00).put(m01).put(m02);
-        buf.put(m10).put(m11).put(m12);
-        buf.put(m20).put(m21).put(m22);
-        return buf;
-    }
-
-    @Override // from IMatrix3
-    public Vector3 transformLocal (Vector3 vector) {
-        return transform(vector, vector);
-    }
-
-    @Override // from IMatrix3
-    public Vector3 transform (IVector3 vector) {
-        return transform(vector, new Vector3());
-    }
-
-    @Override // from IMatrix3
-    public Vector3 transform (IVector3 vector, Vector3 result) {
-        float vx = vector.x(), vy = vector.y(), vz = vector.z();
-        return result.set(m00*vx + m10*vy + m20*vz,
-                          m01*vx + m11*vy + m21*vz,
-                          m02*vx + m12*vy + m22*vz);
-    }
-
-    @Override // from IMatrix3
-    public Vector transformPointLocal (Vector point) {
-        return transformPoint(point, point);
-    }
-
-    @Override // from IMatrix3
-    public Vector transformPoint (IVector point) {
-        return transformPoint(point, new Vector());
-    }
-
-    @Override // from IMatrix3
-    public Vector transformPoint (IVector point, Vector result) {
-        float px = point.x(), py = point.y();
-        return result.set(m00*px + m10*py + m20, m01*px + m11*py + m21);
-    }
-
-    @Override // from IMatrix3
-    public Vector transformVectorLocal (Vector vector) {
-        return transformVector(vector, vector);
-    }
-
-    @Override // from IMatrix3
-    public Vector transformVector (IVector vector) {
-        return transformVector(vector, new Vector());
-    }
-
-    @Override // from IMatrix3
-    public Vector transformVector (IVector vector, Vector result) {
-        float vx = vector.x(), vy = vector.y();
-        return result.set(m00*vx + m10*vy, m01*vx + m11*vy);
+    public Matrix3 set(Matrix4 mat) {
+        val[M00] = mat.val[Matrix4.M00];
+        val[M10] = mat.val[Matrix4.M10];
+        val[M20] = mat.val[Matrix4.M20];
+        val[M01] = mat.val[Matrix4.M01];
+        val[M11] = mat.val[Matrix4.M11];
+        val[M21] = mat.val[Matrix4.M21];
+        val[M02] = mat.val[Matrix4.M02];
+        val[M12] = mat.val[Matrix4.M12];
+        val[M22] = mat.val[Matrix4.M22];
+        return this;
     }
 
     /**
-     * {@inheritDoc} This uses the iterative polar decomposition algorithm described by
-     * <a href="http://www.cs.wisc.edu/graphics/Courses/838-s2002/Papers/polar-decomp.pdf">Ken
-     * Shoemake</a>.
+     * Sets the matrix to the given matrix as a float array. The float array must have at least 9 elements; the first 9 will be
+     * copied.
+     *
+     * @param values The matrix, in float form, that is to be copied.
+     * @return This matrix for the purpose of chaining methods together.
      */
-    @Override // from IMatrix3
-    public float extractRotation () {
-        // start with the contents of the upper 2x2 portion of the matrix
-        float n00 = m00, n10 = m10;
-        float n01 = m01, n11 = m11;
-        for (int ii = 0; ii < 10; ii++) {
-            // store the results of the previous iteration
-            float o00 = n00, o10 = n10;
-            float o01 = n01, o11 = n11;
+    public Matrix3 set(float[] values, int offset) {
+        System.arraycopy(values, 0, val, offset, val.length);
+        return this;
+    }
 
-            // compute average of the matrix with its inverse transpose
-            float det = o00*o11 - o10*o01;
-            if (Math.abs(det) == 0f) {
-                // determinant is zero; matrix is not invertible
-                throw new SingularMatrixException(this.toString());
-            }
-            float hrdet = 0.5f / det;
-            n00 = +o11 * hrdet + o00*0.5f;
-            n10 = -o01 * hrdet + o10*0.5f;
+    /**
+     * Get the values in this matrix.
+     */
+    public void get(float[] data, int offset) {
+        System.arraycopy(val, 0, data, offset, 9);
+    }
 
-            n01 = -o10 * hrdet + o01*0.5f;
-            n11 = +o00 * hrdet + o11*0.5f;
+    /**
+     * Postmultiplies this matrix with the provided matrix and stores the result in this matrix. For example:
+     * <p>
+     * <pre>
+     * A.mul(B) results in A := AB
+     * </pre>
+     *
+     * @param m Matrix to multiply by.
+     * @return This matrix for the purpose of chaining operations together.
+     */
+    public Matrix3 mul(Matrix3 m) {
+        float v00 = val[M00] * m.val[M00] + val[M01] * m.val[M10] + val[M02] * m.val[M20];
+        float v01 = val[M00] * m.val[M01] + val[M01] * m.val[M11] + val[M02] * m.val[M21];
+        float v02 = val[M00] * m.val[M02] + val[M01] * m.val[M12] + val[M02] * m.val[M22];
 
-            // compute the difference; if it's small enough, we're done
-            float d00 = n00 - o00, d10 = n10 - o10;
-            float d01 = n01 - o01, d11 = n11 - o11;
-            if (d00*d00 + d10*d10 + d01*d01 + d11*d11 < MathUtil.EPSILON) {
-                break;
-            }
+        float v10 = val[M10] * m.val[M00] + val[M11] * m.val[M10] + val[M12] * m.val[M20];
+        float v11 = val[M10] * m.val[M01] + val[M11] * m.val[M11] + val[M12] * m.val[M21];
+        float v12 = val[M10] * m.val[M02] + val[M11] * m.val[M12] + val[M12] * m.val[M22];
+
+        float v20 = val[M20] * m.val[M00] + val[M21] * m.val[M10] + val[M22] * m.val[M20];
+        float v21 = val[M20] * m.val[M01] + val[M21] * m.val[M11] + val[M22] * m.val[M21];
+        float v22 = val[M20] * m.val[M02] + val[M21] * m.val[M12] + val[M22] * m.val[M22];
+
+        val[M00] = v00;
+        val[M10] = v10;
+        val[M20] = v20;
+        val[M01] = v01;
+        val[M11] = v11;
+        val[M21] = v21;
+        val[M02] = v02;
+        val[M12] = v12;
+        val[M22] = v22;
+        return this;
+    }
+
+    /**
+     * Premultiplies this matrix with the provided matrix and stores the result in this matrix. For example:
+     * <p>
+     * <pre>
+     * A.mulLeft(B) results in A := BA
+     * </pre>
+     *
+     * @param m The other Matrix to multiply by
+     * @return This matrix for the purpose of chaining operations.
+     */
+    public Matrix3 mulLeft(Matrix3 m) {
+        float v00 = m.val[M00] * val[M00] + m.val[M01] * val[M10] + m.val[M02] * val[M20];
+        float v01 = m.val[M00] * val[M01] + m.val[M01] * val[M11] + m.val[M02] * val[M21];
+        float v02 = m.val[M00] * val[M02] + m.val[M01] * val[M12] + m.val[M02] * val[M22];
+
+        float v10 = m.val[M10] * val[M00] + m.val[M11] * val[M10] + m.val[M12] * val[M20];
+        float v11 = m.val[M10] * val[M01] + m.val[M11] * val[M11] + m.val[M12] * val[M21];
+        float v12 = m.val[M10] * val[M02] + m.val[M11] * val[M12] + m.val[M12] * val[M22];
+
+        float v20 = m.val[M20] * val[M00] + m.val[M21] * val[M10] + m.val[M22] * val[M20];
+        float v21 = m.val[M20] * val[M01] + m.val[M21] * val[M11] + m.val[M22] * val[M21];
+        float v22 = m.val[M20] * val[M02] + m.val[M21] * val[M12] + m.val[M22] * val[M22];
+
+        val[M00] = v00;
+        val[M10] = v10;
+        val[M20] = v20;
+        val[M01] = v01;
+        val[M11] = v11;
+        val[M21] = v21;
+        val[M02] = v02;
+        val[M12] = v12;
+        val[M22] = v22;
+
+        return this;
+    }
+
+    /**
+     * Returns the x-coordinate of the translation component.
+     */
+    public float translateX() {
+        return val[M02];
+    }
+
+    /**
+     * Returns the y-coordinate of the translation component.
+     */
+    public float translateY() {
+        return val[M12];
+    }
+
+    /**
+     * Returns the x-component of the scale applied by this transform.
+     */
+    public float scaleX() {
+        return Mathf.sqrt(val[M00] * val[M00] + val[M01] * val[M01]);
+    }
+
+    /**
+     * Returns the y-component of the scale applied by this transform.
+     */
+    public float scaleY() {
+        return Mathf.sqrt(val[M10] * val[M10] + val[M11] * val[M11]);
+    }
+
+    /**
+     * Returns the rotation applied by this transform.
+     */
+    public float rotate() {
+        return Mathf.toDegrees(Mathf.atan2(val[M10], val[M00]));
+    }
+
+    /**
+     * Postmultiplies this matrix by a translation matrix. Postmultiplication is also used by OpenGL ES' 1.x
+     * glTranslate/glRotate/glScale.
+     *
+     * @param x The x-component of the translation vector.
+     * @param y The y-component of the translation vector.
+     * @return This matrix for chaining
+     */
+    public Matrix3 translate(float x, float y) {
+        final float t_00 = 1;
+        final float t_10 = 0;
+        final float t_20 = 0;
+
+        final float t_01 = 0;
+        final float t_11 = 1;
+        final float t_21 = 0;
+
+        final float t_02 = x;
+        final float t_12 = y;
+        final float t_22 = 1;
+
+        //mul(val, tmp);
+
+        float v00 = val[M00] * t_00 + val[M01] * t_10 + val[M02] * t_20;
+        float v01 = val[M00] * t_01 + val[M01] * t_11 + val[M02] * t_21;
+        float v02 = val[M00] * t_02 + val[M01] * t_12 + val[M02] * t_22;
+
+        float v10 = val[M10] * 1 + val[M11] * t_10 + val[M12] * t_20;
+        float v11 = val[M10] * t_01 + val[M11] * t_11 + val[M12] * t_21;
+        float v12 = val[M10] * t_02 + val[M11] * t_12 + val[M12] * t_22;
+
+        float v20 = val[M20] * 1 + val[M21] * t_10 + val[M22] * t_20;
+        float v21 = val[M20] * t_01 + val[M21] * t_11 + val[M22] * t_21;
+        float v22 = val[M20] * t_02 + val[M21] * t_12 + val[M22] * t_22;
+        val[M00] = v00;
+        val[M10] = v10;
+        val[M20] = v20;
+        val[M01] = v01;
+        val[M11] = v11;
+        val[M21] = v21;
+        val[M02] = v02;
+        val[M12] = v12;
+        val[M22] = v22;
+
+        return this;
+    }
+
+    /**
+     * Postmultiplies this matrix with a scale matrix. Postmultiplication is also used by OpenGL ES' 1.x
+     * glTranslate/glRotate/glScale.
+     *
+     * @param scaleX The scale in the x-axis.
+     * @param scaleY The scale in the y-axis.
+     * @return This matrix for chaining
+     */
+    public Matrix3 scale(float scaleX, float scaleY) {
+        final float t_00 = scaleX;
+        final float t_10 = 0;
+        final float t_20 = 0;
+        final float t_01 = 0;
+        final float t_11 = scaleY;
+        final float t_21 = 0;
+        final float t_02 = 0;
+        final float t_12 = 0;
+        final float t_22 = 1;
+
+        //mul(val, tmp);
+
+        float v00 = val[M00] * t_00 + val[M01] * t_10 + val[M02] * t_20;
+        float v01 = val[M00] * t_01 + val[M01] * t_11 + val[M02] * t_21;
+        float v02 = val[M00] * t_02 + val[M01] * t_12 + val[M02] * t_22;
+
+        float v10 = val[M10] * t_00 + val[M11] * t_10 + val[M12] * t_20;
+        float v11 = val[M10] * t_01 + val[M11] * t_11 + val[M12] * t_21;
+        float v12 = val[M10] * t_02 + val[M11] * t_12 + val[M12] * t_22;
+
+        float v20 = val[M20] * t_00 + val[M21] * t_10 + val[M22] * t_20;
+        float v21 = val[M20] * t_01 + val[M21] * t_11 + val[M22] * t_21;
+        float v22 = val[M20] * t_02 + val[M21] * t_12 + val[M22] * t_22;
+        val[M00] = v00;
+        val[M10] = v10;
+        val[M20] = v20;
+        val[M01] = v01;
+        val[M11] = v11;
+        val[M21] = v21;
+        val[M02] = v02;
+        val[M12] = v12;
+        val[M22] = v22;
+        return this;
+    }
+
+    /**
+     * Postmultiplies this matrix with a (counter-clockwise) rotation matrix. Postmultiplication is also used by OpenGL ES' 1.x
+     * glTranslate/glRotate/glScale.
+     *
+     * @param angle The angle in degrees
+     * @return This matrix for chaining
+     */
+    public Matrix3 rotate(float angle) {
+        if (angle == 0) return this;
+
+        angle = Mathf.toRadians(angle);
+
+        float cos = Mathf.cos(angle);
+        float sin = Mathf.sin(angle);
+
+        final float t_00 = cos;
+        final float t_10 = sin;
+        final float t_20 = 0;
+
+        final float t_01 = -sin;
+        final float t_11 = cos;
+        final float t_21 = 0;
+
+        final float t_02 = 0;
+        final float t_12 = 0;
+        final float t_22 = 1;
+
+        //mul(val, tmp);
+
+        float v00 = val[M00] * t_00 + val[M01] * t_10 + val[M02] * t_20;
+        float v01 = val[M00] * t_01 + val[M01] * t_11 + val[M02] * t_21;
+        float v02 = val[M00] * t_02 + val[M01] * t_12 + val[M02] * t_22;
+
+        float v10 = val[M10] * t_00 + val[M11] * t_10 + val[M12] * t_20;
+        float v11 = val[M10] * t_01 + val[M11] * t_11 + val[M12] * t_21;
+        float v12 = val[M10] * t_02 + val[M11] * t_12 + val[M12] * t_22;
+
+        float v20 = val[M20] * t_00 + val[M21] * t_10 + val[M22] * t_20;
+        float v21 = val[M20] * t_01 + val[M21] * t_11 + val[M22] * t_21;
+        float v22 = val[M20] * t_02 + val[M21] * t_12 + val[M22] * t_22;
+        val[M00] = v00;
+        val[M10] = v10;
+        val[M20] = v20;
+        val[M01] = v01;
+        val[M11] = v11;
+        val[M21] = v21;
+        val[M02] = v02;
+        val[M12] = v12;
+        val[M22] = v22;
+        return this;
+    }
+
+    /**
+     * Sets this matrix to a rotation matrix (z-axis)
+     *
+     * @param angle the angle in degrees.
+     * @return This matrix for chaining
+     */
+    public Matrix3 setToRotation(float angle) {
+        angle = Mathf.toRadians(angle);
+
+        float cos =  Mathf.cos(angle);
+        float sin =  Mathf.sin(angle);
+        val[M00] = cos;
+        val[M10] = sin;
+        val[M20] = 0;
+
+        val[M01] = -sin;
+        val[M11] = cos;
+        val[M21] = 0;
+
+        val[M02] = 0;
+        val[M12] = 0;
+        val[M22] = 1;
+        return this;
+    }
+
+    /**
+     * Sets this matrix to a translation matrix.
+     *
+     * @param x the translation in x
+     * @param y the translation in y
+     * @return This matrix for chaining
+     */
+    public Matrix3 setToTranslation(float x, float y) {
+        val[M00] = 1;
+        val[M10] = 0;
+        val[M20] = 0;
+
+        val[M01] = 0;
+        val[M11] = 1;
+        val[M21] = 0;
+
+        val[M02] = x;
+        val[M12] = y;
+        val[M22] = 1;
+        return this;
+    }
+
+    /**
+     * Sets this matrix to a scaling matrix.
+     *
+     * @param scaleX the scale in x
+     * @param scaleY the scale in y
+     * @return This matrix for chaining
+     */
+    public Matrix3 setToScaling(float scaleX, float scaleY) {
+        val[M00] = scaleX;
+        val[M10] = 0;
+        val[M20] = 0;
+        val[M01] = 0;
+        val[M11] = scaleY;
+        val[M21] = 0;
+        val[M02] = 0;
+        val[M12] = 0;
+        val[M22] = 1;
+        return this;
+    }
+
+    /**
+     * @return The determinant of this matrix
+     */
+    public float determinant() {
+        return val[M00] * val[M11] * val[M22] + val[M01] * val[M12] * val[M20] + val[M02] * val[M10] * val[M21]
+                - val[M00] * val[M12] * val[M21] - val[M01] * val[M10] * val[M22] - val[M02] * val[M11] * val[M20];
+    }
+
+    /**
+     * Inverts this matrix given that the determinant is != 0.
+     *
+     * @return This matrix for chaining
+     * @throws flat.math.util.NoninvertibleTransformException if the matrix is singular (not invertible)
+     */
+    public Matrix3 invert() {
+        float det = determinant();
+        if (det == 0) throw new NoninvertibleTransformException(this.toString());
+
+        float inv_det = 1.0f / det;
+
+        final float t_00 = val[M11] * val[M22] - val[M21] * val[M12];
+        final float t_10 = val[M20] * val[M12] - val[M10] * val[M22];
+        final float t_20 = val[M10] * val[M21] - val[M20] * val[M11];
+        final float t_01 = val[M21] * val[M02] - val[M01] * val[M22];
+        final float t_11 = val[M00] * val[M22] - val[M20] * val[M02];
+        final float t_21 = val[M20] * val[M01] - val[M00] * val[M21];
+        final float t_02 = val[M01] * val[M12] - val[M11] * val[M02];
+        final float t_12 = val[M10] * val[M02] - val[M00] * val[M12];
+        final float t_22 = val[M00] * val[M11] - val[M10] * val[M01];
+
+        val[M00] = inv_det * t_00;
+        val[M10] = inv_det * t_10;
+        val[M20] = inv_det * t_20;
+        val[M01] = inv_det * t_01;
+        val[M11] = inv_det * t_11;
+        val[M21] = inv_det * t_21;
+        val[M02] = inv_det * t_02;
+        val[M12] = inv_det * t_12;
+        val[M22] = inv_det * t_22;
+
+        return this;
+    }
+
+    /**
+     * Transposes the current matrix.
+     *
+     * @return This matrix for chaining
+     */
+    public Matrix3 transpose() {
+        float v01 = val[M10];
+        float v02 = val[M20];
+        float v10 = val[M01];
+        float v12 = val[M21];
+        float v20 = val[M02];
+        float v21 = val[M12];
+        val[M01] = v01;
+        val[M02] = v02;
+        val[M10] = v10;
+        val[M12] = v12;
+        val[M20] = v20;
+        val[M21] = v21;
+        return this;
+    }
+
+    /**
+     * Transforms the supplied point.
+     *
+     * @return The point supplied
+     */
+    public Vector2 transform(Vector2 point) {
+        float x = point.x, y = point.y;
+        point.x = val[M00] * x + val[M10] * y + val[M02];
+        point.y = val[M01] * x + val[M11] * y + val[M12];
+        return point;
+    }
+
+    /**
+     * Transforms the supplied points.
+     *
+     * @param src    the points to be transformed (as {@code [x, y, x, y, ...]}).
+     * @param srcOff the offset into the {@code src} array at which to start.
+     * @param dst    the points into which to store the transformed points. May be {@code src}.
+     * @param dstOff the offset into the {@code dst} array at which to start.
+     * @param count  the number of points to transform.
+     */
+    public void transform(float[] src, int srcOff, float[] dst, int dstOff, int count) {
+        for (int i = 0; i < count; i++) {
+            float x = src[srcOff++], y = src[srcOff++];
+            dst[dstOff++] = val[M00] * x + val[M10] * y + val[M02];
+            dst[dstOff++] = val[M01] * x + val[M11] * y + val[M12];
         }
-        // now that we have a nice orthogonal matrix, we can extract the rotation
-        return FloatMath.atan2(n01, n00);
-    }
-
-    @Override // from IMatrix3
-    public Vector extractScale () {
-        return extractScale(new Vector());
-    }
-
-    @Override // from IMatrix3
-    public Vector extractScale (Vector result) {
-        float m00 = this.m00, m01 = this.m01, m10 = this.m10, m11 = this.m11;
-        return result.set(FloatMath.sqrt(m00*m00 + m01*m01),
-                          FloatMath.sqrt(m10*m10 + m11*m11));
-    }
-
-    @Override // from IMatrix3
-    public float approximateUniformScale () {
-        float cp = m00*m11 - m01*m10;
-        return (cp < 0f) ? -FloatMath.sqrt(-cp) : FloatMath.sqrt(cp);
     }
 
     @Override
-    public String toString () {
-        return ("[[" + m00 + ", " + m10 + ", " + m20 + "], " +
-                "["  + m01 + ", " + m11 + ", " + m21 + "], " +
-                "["  + m02 + ", " + m12 + ", " + m22 + "]]");
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (obj == null) return false;
+        if (obj.getClass() != getClass()) return false;
+        Matrix3 other = (Matrix3) obj;
+        return val[M00] == other.val[M00] && val[M01] == other.val[M01] && val[M02] == other.val[M02] &&
+                val[M10] == other.val[M10] && val[M11] == other.val[M11] && val[M12] == other.val[M12] &&
+                val[M20] == other.val[M20] && val[M21] == other.val[M12] && val[M22] == other.val[M22];
     }
 
     @Override
-    public int hashCode () {
-        return Platform.hashCode(m00) ^ Platform.hashCode(m10) ^ Platform.hashCode(m20) ^
-            Platform.hashCode(m01) ^ Platform.hashCode(m11) ^ Platform.hashCode(m21) ^
-            Platform.hashCode(m02) ^ Platform.hashCode(m12) ^ Platform.hashCode(m22);
+    public String toString() {
+        return "[" + val[M00] + "|" + val[M01] + "|" + val[M02] + "]\n" +
+                "[" + val[M10] + "|" + val[M11] + "|" + val[M12] + "]\n" +
+                "[" + val[M20] + "|" + val[M21] + "|" + val[M22] + "]";
     }
 
     @Override
-    public boolean equals (Object other) {
-        if (!(other instanceof Matrix3)) {
-            return false;
-        }
-        Matrix3 omat = (Matrix3)other;
-        return (m00 == omat.m00 && m10 == omat.m10 && m20 == omat.m20 &&
-                m01 == omat.m01 && m11 == omat.m11 && m21 == omat.m21 &&
-                m02 == omat.m02 && m12 == omat.m12 && m22 == omat.m22);
+    public int hashCode() {
+        return Platform.hashCode(val[M00] + val[M01] + val[M02] + val[M10] + val[M11] + val[M12] + val[M20] + val[M21] + val[M22]);
+    }
+
+    /**
+     * Multiplies matrix a with matrix b in the following manner:
+     * <p>
+     * <pre>
+     * mul(A, B) => A := AB
+     * </pre>
+     *
+     * @param mata The float array representing the first matrix. Must have at least 9 elements.
+     * @param matb The float array representing the second matrix. Must have at least 9 elements.
+     */
+    public static void mul(float[] mata, float[] matb) {
+        float v00 = mata[M00] * matb[M00] + mata[M01] * matb[M10] + mata[M02] * matb[M20];
+        float v01 = mata[M00] * matb[M01] + mata[M01] * matb[M11] + mata[M02] * matb[M21];
+        float v02 = mata[M00] * matb[M02] + mata[M01] * matb[M12] + mata[M02] * matb[M22];
+
+        float v10 = mata[M10] * matb[M00] + mata[M11] * matb[M10] + mata[M12] * matb[M20];
+        float v11 = mata[M10] * matb[M01] + mata[M11] * matb[M11] + mata[M12] * matb[M21];
+        float v12 = mata[M10] * matb[M02] + mata[M11] * matb[M12] + mata[M12] * matb[M22];
+
+        float v20 = mata[M20] * matb[M00] + mata[M21] * matb[M10] + mata[M22] * matb[M20];
+        float v21 = mata[M20] * matb[M01] + mata[M21] * matb[M11] + mata[M22] * matb[M21];
+        float v22 = mata[M20] * matb[M02] + mata[M21] * matb[M12] + mata[M22] * matb[M22];
+
+        mata[M00] = v00;
+        mata[M10] = v10;
+        mata[M20] = v20;
+        mata[M01] = v01;
+        mata[M11] = v11;
+        mata[M21] = v21;
+        mata[M02] = v02;
+        mata[M12] = v12;
+        mata[M22] = v22;
     }
 }

@@ -1,88 +1,65 @@
 package flat.math;
 
 import java.io.Serializable;
-import java.nio.FloatBuffer;
 
 import flat.math.util.Platform;
 
 /**
- * A four element vector.
+ * A 4D point class; useful for Matrices and 3D transforms
  */
-public class Vector4 implements IVector4, Serializable {
+public final class Vector4 implements Serializable {
 
     private static final long serialVersionUID = -775706366125314150L;
 
-    /** The components of the vector. */
     public float x, y, z, w;
 
     /**
-     * Creates a vector from four components.
+     * Constructs a vector at (0,0,0,0)
      */
-    public Vector4 (float x, float y, float z, float w)
-    {
+    public Vector4() {
+    }
+
+    /**
+     * Creates a vector with the given components
+     *
+     * @param x The x-component
+     * @param y The y-component
+     * @param z The z-component
+     * @param w The w-component
+     */
+    public Vector4(float x, float y, float z, float w) {
         set(x, y, z, w);
     }
 
     /**
-     * Creates a vector from four components.
-     */
-    public Vector4 (float[] values) {
-        set(values);
-    }
-
-    /**
-     * Creates a vector from a float buffer.
-     */
-    public Vector4 (FloatBuffer buf) {
-        set(buf);
-    }
-
-    /**
-     * Copy constructor.
-     */
-    public Vector4 (IVector4 other) {
-        set(other);
-    }
-
-    /**
-     * Creates a zero vector.
-     */
-    public Vector4 () {
-    }
-
-    /**
-     * Copies the elements of another vector.
+     * Creates a vector from the given vector
      *
-     * @return a reference to this vector, for chaining.
+     * @param vector The vector
      */
-    public Vector4 set (IVector4 other) {
-        return set(other.x(), other.y(), other.z(), other.w());
+    public Vector4(Vector4 vector) {
+        set(vector);
     }
 
     /**
-     * Sets all of the elements of the vector.
+     * Creates a vector with the given components
      *
-     * @return a reference to this vector, for chaining.
+     * @param values The data to read
+     * @param offset The start index
      */
-    public Vector4 set (float[] values) {
-        return set(values[0], values[1], values[2], values[3]);
+    public Vector4(float[] values, int offset) {
+        set(values, offset);
     }
 
     /**
-     * Sets all of the elements of the vector.
+     * Sets the vector to the given components
      *
-     * @return a reference to this vector, for chaining.
+     * @param x The x-component
+     * @param y The y-component
+     * @param z The z-component
+     * @param w The w-component
+     * @return this vector for chaining
      */
-    public Vector4 set (FloatBuffer buf) {
-        return set(buf.get(), buf.get(), buf.get(), buf.get());
-    }
-
-    /**
-     * Sets all of the elements of the vector.
-     *
-     * @return a reference to this vector, for chaining.
-     */
-    public Vector4 set (float x, float y, float z, float w) {
+    public Vector4 set(float x, float y, float z, float w) {
         this.x = x;
         this.y = y;
         this.z = z;
@@ -91,139 +68,214 @@ public class Vector4 implements IVector4, Serializable {
     }
 
     /**
-     * Negates this vector in-place.
+     * Sets all components of the vector to the given value
      *
-     * @return a reference to this vector, for chaining.
+     * @param value The value
+     * @return This vector for chaining
      */
-    public Vector4 negateLocal () {
-        return negate(this);
+    public Vector4 set(float value) {
+        return set(value, value, value, value);
     }
 
     /**
-     * Absolute-values this vector in-place.
+     * Sets the vector to the given vector
      *
-     * @return a reference to this vector, for chaining.
+     * @param vector This vector for chaining
      */
-    public Vector4 absLocal () {
-        return abs(this);
+    public Vector4 set(Vector4 vector) {
+        return set(vector.x, vector.y, vector.z, vector.w);
+    }
+
+
+    /**
+     * Sets the vectors components
+     *
+     * @param values The data to read
+     * @param offset The start index
+     */
+    public void set(float[] values, int offset) {
+        x = values[offset];
+        y = values[offset + 1];
+        z = values[offset + 2];
+        w = values[offset + 3];
     }
 
     /**
-     * Multiplies this vector by a scalar and stores the result back in this vector.
+     * Gets the vectors components
      *
-     * @return a reference to this vector, for chaining.
+     * @param values The data to store
+     * @param offset The start index
      */
-    public Vector4 multLocal (float v) {
-        return mult(v, this);
+    public void get(float[] values, int offset) {
+        values[offset] = x;
+        values[offset + 1] = y;
+        values[offset + 2] = z;
+        values[offset + 3] = w;
     }
 
     /**
-     * Multiplies this vector by a matrix (V * M) and stores the result back in this vector.
+     * Adds the given values to this component
      *
-     * @return a reference to this vector, for chaining.
+     * @param x The x-component of the other vector
+     * @param y The y-component of the other vector
+     * @param z The z-component of the other vector
+     * @param w The w-component of the other vector
+     * @return This vector for chaining
      */
-    public Vector4 multLocal (IMatrix4 matrix) {
-        return mult(matrix, this);
+    public Vector4 add(float x, float y, float z, float w) {
+        return this.set(this.x + x, this.y + y, this.z + z, this.w + w);
     }
 
-    @Override // from IVector4
-    public float x () {
-        return x;
+    /**
+     * Adds the given value to all components of the vector.
+     *
+     * @param value The value
+     * @return This vector for chaining
+     */
+    public Vector4 add(float value) {
+        return this.add(value, value, value, value);
     }
 
-    @Override // from IVector4
-    public float y () {
-        return y;
+    /**
+     * Adds the given vector to this component
+     *
+     * @param vector The vector
+     * @return This vector for chaining
+     */
+    public Vector4 add(Vector4 vector) {
+        return this.add(vector.x, vector.y, vector.z, vector.w);
     }
 
-    @Override // from IVector4
-    public float z () {
-        return z;
+
+    /**
+     * Subtracts the given x,y,z values to this component
+     *
+     * @param x The x-component of the other vector
+     * @param y The y-component of the other vector
+     * @param z The z-component of the other vector
+     * @param w The w-component of the other vector
+     * @return This vector for chaining
+     */
+    public Vector4 sub(float x, float y, float z, float w) {
+        return this.set(this.x - x, this.y - y, this.z - z, this.w - w);
     }
 
-    @Override // from IVector4
-    public float w () {
-        return w;
+    /**
+     * Subtracts the given value from all components of this vector
+     *
+     * @param value The value
+     * @return This vector for chaining
+     */
+    public Vector4 sub(float value) {
+        return this.sub(value, value, value, value);
     }
 
-    @Override // from IVector4
-    public FloatBuffer get (FloatBuffer buf) {
-        return buf.put(x).put(y).put(z).put(w);
+    /**
+     * Subtracts the other vector from this vector.
+     *
+     * @param vector The vector
+     * @return This vector for chaining
+     */
+    public Vector4 sub(Vector4 vector) {
+        return this.sub(vector.x, vector.y, vector.z, vector.w);
     }
 
-    @Override // from IVector4
-    public boolean epsilonEquals (IVector4 other, float epsilon) {
-        return (Math.abs(x - other.x()) < epsilon &&
-                Math.abs(y - other.y()) < epsilon &&
-                Math.abs(z - other.z()) < epsilon &&
-                Math.abs(w - other.w()) < epsilon);
+    /**
+     * Scales this vector by the given x,y,z values
+     *
+     * @param x X value
+     * @param y Y value
+     * @param z Z value
+     * @return This vector for chaining
+     */
+    public Vector4 mul(float x, float y, float z, float w) {
+        return this.set(this.x * x, this.y * y, this.z * z, this.w * w);
     }
 
-    @Override // from interface IVector4
-    public Vector4 negate () {
-        return negate(new Vector4());
+    /**
+     * Scales this vector by the the given value to all components of this vector
+     *
+     * @param value The value
+     * @return This vector for chaining
+     */
+    public Vector4 mul(float value) {
+        return this.mul(value, value, value, value);
     }
 
-    @Override // from interface IVector4
-    public Vector4 negate (Vector4 result) {
-        return result.set(-x, -y, -z, -w);
+    /**
+     * Scales this vector by the given vector.
+     *
+     * @param vector The vector
+     * @return This vector for chaining
+     */
+    public Vector4 mul(Vector4 vector) {
+        return this.mul(vector.x, vector.y, vector.z, vector.w);
     }
 
-    @Override // from interface IVector4
-    public Vector4 abs () {
-        return abs(new Vector4());
+    /**
+     * The euclidean length
+     */
+    public float length() {
+        return Mathf.sqrt(x * x + y * y + z * z + w * w);
     }
 
-    @Override // from interface IVector4
-    public Vector4 abs (Vector4 result) {
-        return result.set(Math.abs(x), Math.abs(y), Math.abs(z), Math.abs(w));
+    /**
+     * Set the components to fit the euclidean length
+     *
+     * @param len Length
+     * @return This vector for chaining
+     */
+    public Vector4 length(float len) {
+        return lengthSqr(len * len);
     }
 
-    @Override // from interface IVector4
-    public Vector4 mult (float v) {
-        return mult(v, new Vector4());
+    /**
+     * The squared euclidean length
+     */
+    public float lengthSqr() {
+        return x * x + y * y + z * z + w * w;
     }
 
-    @Override // from interface IVector4
-    public Vector4 mult (float v, Vector4 result) {
-        return result.set(x*v, y*v, z*v, w*v);
+    /**
+     * Set the components to fit the squared euclidean length
+     *
+     * @param len Squared Length
+     * @return This vector for chaining
+     */
+    public Vector4 lengthSqr(float len) {
+        float oldLen2 = lengthSqr();
+        return (oldLen2 == 0 || oldLen2 == len) ? this : mul(Mathf.sqrt(len / oldLen2));
     }
 
-    @Override // from IVector4
-    public Vector4 mult (IMatrix4 matrix) {
-        return mult(matrix, new Vector4());
-    }
-
-    @Override // from IVector4
-    public Vector4 mult (IMatrix4 matrix, Vector4 result) {
-        float m00 = matrix.m00(), m10 = matrix.m10(), m20 = matrix.m20(), m30 = matrix.m30();
-        float m01 = matrix.m01(), m11 = matrix.m11(), m21 = matrix.m21(), m31 = matrix.m31();
-        float m02 = matrix.m02(), m12 = matrix.m12(), m22 = matrix.m22(), m32 = matrix.m32();
-        float m03 = matrix.m03(), m13 = matrix.m13(), m23 = matrix.m23(), m33 = matrix.m33();
-        float vx = x, vy = y, vz = z, vw = w;
-        return result.set(m00*vx + m01*vy + m02*vz + m03*vw,
-                          m10*vx + m11*vy + m12*vz + m13*vw,
-                          m20*vx + m21*vy + m22*vz + m23*vw,
-                          m30*vx + m31*vy + m32*vz + m33*vw);
+    /**
+     * Multiplies this vector by a matrix (V * M) and stores the result in the object provided.
+     *
+     * @return This vector for chaining
+     */
+    public Vector4 mul(Matrix4 mat) {
+        return set(
+                mat.val[Matrix4.M00] * x + mat.val[Matrix4.M01] * y + mat.val[Matrix4.M02] * z + mat.val[Matrix4.M03] * w,
+                mat.val[Matrix4.M10] * x + mat.val[Matrix4.M11] * y + mat.val[Matrix4.M12] * z + mat.val[Matrix4.M13] * w,
+                mat.val[Matrix4.M20] * x + mat.val[Matrix4.M21] * y + mat.val[Matrix4.M22] * z + mat.val[Matrix4.M23] * w,
+                mat.val[Matrix4.M30] * x + mat.val[Matrix4.M31] * y + mat.val[Matrix4.M32] * z + mat.val[Matrix4.M33] * w);
     }
 
     @Override
-    public String toString () {
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (obj == null) return false;
+        if (obj.getClass() != getClass()) return false;
+        Vector4 other = (Vector4) obj;
+        return (x == other.x && y == other.y && z == other.z && w == other.w);
+    }
+
+    @Override
+    public String toString() {
         return "[" + x + ", " + y + ", " + z + ", " + w + "]";
     }
 
     @Override
-    public int hashCode () {
-        return Platform.hashCode(x) ^ Platform.hashCode(y) ^ Platform.hashCode(z) ^
-            Platform.hashCode(w);
-    }
-
-    @Override
-    public boolean equals (Object other) {
-        if (!(other instanceof Vector4)) {
-            return false;
-        }
-        Vector4 ovec = (Vector4)other;
-        return (x == ovec.x && y == ovec.y && z == ovec.z && w == ovec.w);
+    public int hashCode() {
+        return Platform.hashCode(x) ^ Platform.hashCode(y) ^ Platform.hashCode(z) ^ Platform.hashCode(w);
     }
 }

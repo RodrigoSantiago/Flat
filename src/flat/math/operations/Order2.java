@@ -2,6 +2,7 @@ package flat.math.operations;
 
 import flat.math.shapes.PathIterator;
 import flat.math.shapes.Rectangle;
+
 import java.util.Vector;
 
 final class Order2 extends Curve {
@@ -361,9 +362,9 @@ final class Order2 extends Curve {
         r.add((float)x0, (float)y0);
         double t = -xcoeff1 / (2 * xcoeff2);
         if (t > 0 && t < 1) {
-            r.add((float)XforT(t),(float) YforT(t));
+            r.add((float)XforT(t), (float)YforT(t));
         }
-        r.add((float)x1,(float) y1);
+        r.add((float)x1, (float)y1);
     }
 
     public Curve getSubCurve(double ystart, double yend, int dir) {

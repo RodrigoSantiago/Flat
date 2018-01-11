@@ -1,7 +1,7 @@
 package flat.math.util;
 
 /**
- * An exception thrown by {@code Transform} when a request for an inverse transform cannot be
+ * An exception thrown by {@code Affine} when a request for an inverse transform cannot be
  * satisfied.
  */
 public class NoninvertibleTransformException extends RuntimeException
