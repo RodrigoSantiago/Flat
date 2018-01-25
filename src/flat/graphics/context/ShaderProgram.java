@@ -1,5 +1,6 @@
 package flat.graphics.context;
 
+import flat.math.Vector2;
 import flat.backend.GL;
 import flat.graphics.context.enuns.AttributeType;
 import flat.math.*;
@@ -238,12 +239,24 @@ public class ShaderProgram extends ContextObject {
                 Matrix3[] data = (Matrix3[]) value;
                 float[] tmp = new float[data.length * 9];
                 for (int i = 0; i < data.length; i++) {
-                    System.arraycopy(data[i].val, 0, tmp, i * 9, 9);
+                    tmp[i * 9] = data[i].val[0];
+                    tmp[i * 9 + 1] = data[i].val[3];
+                    tmp[i * 9 + 2] = data[i].val[6];
+                    tmp[i * 9 + 3] = data[i].val[1];
+                    tmp[i * 9 + 4] = data[i].val[4];
+                    tmp[i * 9 + 5] = data[i].val[7];
+                    tmp[i * 9 + 6] = data[i].val[2];
+                    tmp[i * 9 + 7] = data[i].val[5];
+                    tmp[i * 9 + 8] = data[i].val[8];
                 }
                 setMatrix(att, 3, 3, data.length, false, tmp);
             } else if  (value instanceof Matrix3) {
                 Matrix3 data = (Matrix3) value;
-                setMatrix(att, 3, 3, 1, false, data.val);
+                float[] tmp = new float[]{
+                        data.val[0], data.val[3], data.val[6],
+                        data.val[1], data.val[4], data.val[7],
+                        data.val[2], data.val[5], data.val[8]};
+                setMatrix(att, 3, 3, 1, false, tmp);
             } else {
                 float[] data = (float[]) value;
                 setMatrix(att, 3, 3, 1, false, data);
@@ -253,12 +266,32 @@ public class ShaderProgram extends ContextObject {
                 Matrix4[] data = (Matrix4[]) value;
                 float[] tmp = new float[data.length * 16];
                 for (int i = 0; i < data.length; i++) {
-                    System.arraycopy(data[i].val, 0, tmp, i * 16, 16);
+                    tmp[i * 9] = data[i].val[0];
+                    tmp[i * 9 + 1] = data[i].val[4];
+                    tmp[i * 9 + 2] = data[i].val[8];
+                    tmp[i * 9 + 3] = data[i].val[12];
+                    tmp[i * 9 + 4] = data[i].val[1];
+                    tmp[i * 9 + 5] = data[i].val[5];
+                    tmp[i * 9 + 6] = data[i].val[9];
+                    tmp[i * 9 + 7] = data[i].val[13];
+                    tmp[i * 9 + 8] = data[i].val[2];
+                    tmp[i * 9 + 9] = data[i].val[6];
+                    tmp[i * 9 + 10] = data[i].val[10];
+                    tmp[i * 9 + 11] = data[i].val[13];
+                    tmp[i * 9 + 12] = data[i].val[3];
+                    tmp[i * 9 + 13] = data[i].val[7];
+                    tmp[i * 9 + 14] = data[i].val[11];
+                    tmp[i * 9 + 15] = data[i].val[15];
                 }
                 setMatrix(att, 4, 4, data.length, false, tmp);
             } else if  (value instanceof Matrix4) {
                 Matrix4 data = (Matrix4) value;
-                setMatrix(att, 4, 4, 1, false, data.val);
+                float[] tmp = new float[]{
+                        data.val[0], data.val[4], data.val[8], data.val[12],
+                        data.val[1], data.val[5], data.val[9], data.val[13],
+                        data.val[2], data.val[6], data.val[10], data.val[14],
+                        data.val[3], data.val[7], data.val[11], data.val[15]};
+                setMatrix(att, 4, 4, 1, false, tmp);
             } else {
                 float[] data = (float[]) value;
                 setMatrix(att, 4, 4, 1, false, data);
@@ -268,12 +301,21 @@ public class ShaderProgram extends ContextObject {
                 Affine[] data = (Affine[]) value;
                 float[] tmp = new float[data.length * 6];
                 for (int i = 0; i < data.length; i++) {
-                    System.arraycopy(data[i].val, 0, tmp, i * 6, 6);
+                    tmp[i * 9] = data[i].m00;
+                    tmp[i * 9 + 1] = data[i].m01;
+                    tmp[i * 9 + 2] = data[i].m10;
+                    tmp[i * 9 + 3] = data[i].m11;
+                    tmp[i * 9 + 4] = data[i].m02;
+                    tmp[i * 9 + 5] = data[i].m12;
                 }
                 setMatrix(att, 2, 3, data.length, false, tmp);
             } else if  (value instanceof Affine) {
                 Affine data = (Affine) value;
-                setMatrix(att, 2, 3, 1, false, data.val);
+                float[] tmp = new float[]{
+                        data.m00, data.m01,
+                        data.m10, data.m11,
+                        data.m02, data.m12};
+                setMatrix(att, 2, 3, 1, false, tmp);
             } else {
                 float[] data = (float[]) value;
                 setMatrix(att, 2, 3, 1, false, data);

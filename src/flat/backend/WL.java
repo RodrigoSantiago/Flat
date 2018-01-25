@@ -7,7 +7,7 @@ public class WL {
     //---------------------------
     //         Context
     //---------------------------
-    public static native long Init(int width, int height, int samples, boolean resizable, boolean decorated);
+    public static native long Init(int width, int height, int samples, boolean transparent);
     public static native void Finish();
 
     public static native long ContextCreate(int samples);
@@ -24,10 +24,12 @@ public class WL {
     //       Properties
     //---------------------------
     public static native void SetVsync(int vsync);
-    public static native void SetMultsample(int samples);
+    public static native boolean IsTransparent();
     public static native void SetFullscreen(boolean fullscreen);
     public static native boolean IsFullscreen();
+    public static native void SetResizable(boolean resizable);
     public static native boolean IsResizable();
+    public static native void SetDecorated(boolean decorated);
     public static native boolean IsDecorated();
     public static native void SetTitle(String title);
     public static native String GetTitle();

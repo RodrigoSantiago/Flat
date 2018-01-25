@@ -1,4 +1,4 @@
-package flat.graphics.smart.mesh;
+package flat.graphics.mesh;
 
 import flat.graphics.context.BufferObejct;
 import flat.graphics.context.VertexArray;

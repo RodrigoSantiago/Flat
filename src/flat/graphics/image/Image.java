@@ -1,4 +1,4 @@
-package flat.graphics.smart.image;
+package flat.graphics.image;
 
 import flat.graphics.context.Texture2D;
 

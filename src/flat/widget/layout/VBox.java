@@ -62,18 +62,18 @@ public class VBox extends Box {
             child.onMeasure();
             if (child.getVisibility() == GONE) continue;
 
-            if (mWidth != MATH_PARENT) {
-                if (child.getMeasureWidth() == MATH_PARENT) {
+            if (mWidth != MATCH_PARENT) {
+                if (child.getMeasureWidth() == MATCH_PARENT) {
                     if (getPrefWidth() == WRAP_CONTENT)
-                        mWidth = MATH_PARENT;
+                        mWidth = MATCH_PARENT;
                 } else if (child.getMeasureWidth() > mWidth) {
                     mWidth = child.getMeasureWidth();
                 }
             }
-            if (mHeight != MATH_PARENT) {
-                if (child.getMeasureHeight() == MATH_PARENT) {
+            if (mHeight != MATCH_PARENT) {
+                if (child.getMeasureHeight() == MATCH_PARENT) {
                     if (getPrefHeight() == WRAP_CONTENT)
-                        mHeight = MATH_PARENT;
+                        mHeight = MATCH_PARENT;
                 } else {
                     mHeight += child.getMeasureHeight();
                 }

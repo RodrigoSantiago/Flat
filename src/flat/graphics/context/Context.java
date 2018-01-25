@@ -5,16 +5,15 @@ import flat.backend.SVG;
 import flat.backend.WL;
 import flat.graphics.context.enuns.*;
 import flat.graphics.paint.*;
-import flat.graphics.smart.SmartContext;
-import flat.graphics.svg.*;
+import flat.graphics.SmartContext;
 import flat.graphics.text.*;
 import flat.math.*;
+import flat.math.shapes.PathIterator;
+import flat.math.shapes.Shape;
 
 import java.lang.ref.WeakReference;
 import java.nio.Buffer;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 
 import static flat.backend.GLEnuns.*;
 import static flat.backend.SVGEnuns.*;
@@ -85,6 +84,8 @@ public final class Context {
     private float svgStrokeWidth;
     private LineCap svgLineCap;
     private LineJoin svgLineJoin;
+    private boolean svgClip;
+    private float svgClipX, svgClipY, svgClipWidth, svgClipHeight;
 
     private Font svgTextFont;
     private float svgTextSize, svgTextLetterSpacing, svgTextLineHeight;
@@ -102,16 +103,9 @@ public final class Context {
 
     public SmartContext getSmartContext() {
         if (smartContext == null) {
-            new SmartContext(this);
+            this.smartContext = new SmartContext(this);
         }
         return smartContext;
-    }
-
-    public void setSmartContext(SmartContext smartContext) {
-        if (this.smartContext != null) {
-            throw new RuntimeException("The smartcontext is alredy defined");
-        }
-        this.smartContext = smartContext;
     }
 
     public static void assign(ContextObject object) {
@@ -213,6 +207,11 @@ public final class Context {
         svgStrokeWidth = 1f;
         svgLineCap = LineCap.BUTT;
         svgLineJoin = LineJoin.ROUND;
+        svgClip = false;
+        svgClipX = 0;
+        svgClipY = 0;
+        svgClipWidth = 0;
+        svgClipHeight = 0;
 
         svgTextFont = Font.DEFAULT;
         svgTextSize = 16f;
@@ -1019,8 +1018,9 @@ public final class Context {
 
     protected void svgBegin() {
         if (!svgMode) {
-            svgMode = true;
             refreshBinds();
+
+            svgMode = true;
             SVG.BeginFrame(svgId, viewWidth, viewHeight, 1.0f);
 
             SVG.SetStrokeColor(svgId, svgColor);
@@ -1037,9 +1037,13 @@ public final class Context {
             SVG.TextSetAlign(svgId, svgTextHorizontalAlign.getInternalEnum() | svgTextVerticalAlign.getInternalEnum());
 
             SVG.TransformSet(svgId,
-                    svgTransform.val[Affine.M00], svgTransform.val[Affine.M10],
-                    svgTransform.val[Affine.M01], svgTransform.val[Affine.M11],
-                    svgTransform.val[Affine.M02], svgTransform.val[Affine.M12]);
+                    svgTransform.m00, svgTransform.m10,
+                    svgTransform.m01, svgTransform.m11,
+                    svgTransform.m02, svgTransform.m12);
+
+            if (svgClip) {
+                SVG.SetScissor(svgId, svgClipX, svgClipY, svgClipWidth, svgClipHeight);
+            }
         }
     }
 
@@ -1187,9 +1191,9 @@ public final class Context {
             svgTransform.set(transform);
             if (svgMode) {
                 SVG.TransformSet(svgId,
-                        svgTransform.val[Affine.M00], svgTransform.val[Affine.M10],
-                        svgTransform.val[Affine.M01], svgTransform.val[Affine.M11],
-                        svgTransform.val[Affine.M02], svgTransform.val[Affine.M12]);
+                        svgTransform.m00, svgTransform.m10,
+                        svgTransform.m01, svgTransform.m11,
+                        svgTransform.m02, svgTransform.m12);
             }
         }
     }
@@ -1198,13 +1202,109 @@ public final class Context {
         return svgTransformView.set(svgTransform);
     }
 
-    public void svgDrawPath(SVGPath SVGPath, boolean fill) {
+    public boolean svgClip() {
+        return svgClip;
+    }
+
+    public void svgClip(boolean clip) {
+        if (this.svgClip != clip) {
+            this.svgClip = clip;
+            if (svgMode) {
+                if (clip) {
+                    SVG.SetScissor(svgId, svgClipX, svgClipY, svgClipWidth, svgClipHeight);
+                } else {
+                    SVG.ResetScissor(svgId);
+                }
+            }
+        }
+    }
+
+    public void svgClipBox(float x, float y, float width, float height) {
+        if (svgClipX != x || svgClipY != y || svgClipWidth != width || svgClipHeight != height) {
+            svgClipX = x;
+            svgClipY = y;
+            svgClipWidth = width;
+            svgClipHeight = height;
+            if (svgMode) {
+                if (svgClip) {
+                    SVG.SetScissor(svgId, svgClipX, svgClipY, svgClipWidth, svgClipHeight);
+                }
+            }
+        }
+    }
+
+    public float svgClipX() {
+        return svgClipX;
+    }
+
+    public float svgClipY() {
+        return svgClipY;
+    }
+
+    public float svgClipWidth() {
+        return svgClipWidth;
+    }
+
+    public float svgClipHeight() {
+        return svgClipHeight;
+    }
+
+    public void svgDrawShape(Shape shape, boolean fill) {
         svgBegin();
         SVG.BeginPath(svgId);
-        for (Path path : SVGPath.getPaths()) {
-            SVG.PathWinding(svgId, path.isHole() ? SVG_HOLE : SVG_SOLID);
-            for (Path.Curve curve : path.getCurvers()) {
-                SVG.BezierTo(svgId, curve.cx1, curve.cy1, curve.cx2, curve.cy2, curve.x, curve.y);
+        float[] data = new float[6];
+        for (PathIterator pi = shape.pathIterator(null); !pi.isDone(); pi.next()) {
+            switch (pi.currentSegment(data)) {
+                case PathIterator.SEG_MOVETO:
+                    SVG.PathWinding(svgId, SVG_CW);
+                    SVG.MoveTo(svgId, data[0], data[1]);
+                    break;
+                case PathIterator.SEG_LINETO:
+                    SVG.LineTo(svgId, data[0], data[1]);
+                    break;
+                case PathIterator.SEG_QUADTO:
+                    SVG.QuadTo(svgId, data[0], data[1], data[2], data[3]);
+                    break;
+                case PathIterator.SEG_CUBICTO:
+                    SVG.BezierTo(svgId, data[0], data[1], data[2], data[3], data[4], data[5]);
+                    break;
+                default:
+                    SVG.ClosePath(svgId);
+                    break;
+            }
+        }
+        if (fill) {
+            SVG.Fill(svgId);
+        } else {
+            SVG.Stroke(svgId);
+        }
+    }
+
+    public void svgDrawShape(int[] types, float[] data, boolean fill) {
+        svgBegin();
+        SVG.BeginPath(svgId);
+        int id = 0;
+        for (int i = 0; i < types.length; i++) {
+            switch (types[i]) {
+                case 0:
+                    SVG.MoveTo(svgId, data[id], data[id + 1]);
+                    id += 2;
+                    break;
+                case 1:
+                    SVG.LineTo(svgId, data[id], data[id + 1]);
+                    id += 2;
+                    break;
+                case 2:
+                    SVG.QuadTo(svgId, data[id], data[id + 1], data[id + 2], data[id + 3]);
+                    id += 4;
+                    break;
+                case 3:
+                    SVG.BezierTo(svgId, data[id], data[id + 1], data[id + 2], data[id + 3], data[id + 4], data[id + 5]);
+                    id += 6;
+                    break;
+                default:
+                    SVG.ClosePath(svgId);
+                    break;
             }
         }
         if (fill) {
@@ -1228,7 +1328,7 @@ public final class Context {
     public void svgDrawEllipse(float x, float y, float width, float height, boolean fill) {
         svgBegin();
         SVG.BeginPath(svgId);
-        SVG.Ellipse(svgId, x + width / 2f, y + height / 2f, width, height);
+        SVG.Ellipse(svgId, x + width / 2f, y + height / 2f, width / 2f, height / 2f);
         if (fill) {
             SVG.Fill(svgId);
         } else {
@@ -1363,50 +1463,62 @@ public final class Context {
     }
 
     public float svgTextGetWidth(String text) {
+        if (text == null) throw new NullPointerException();
         svgBegin();
         return SVG.TextGetWidth(svgId, text);
     }
 
     public float svgTextGetWidth(Buffer text, int offset, int length) {
+        if (text == null) throw new NullPointerException();
         svgBegin();
         return SVG.TextGetWidthBuffer(svgId, text, offset, length);
     }
 
     public void svgDrawText(float x, float y, String text) {
+        if (text == null) throw new NullPointerException();
         svgBegin();
         SVG.BeginPath(svgId);
         SVG.DrawText(svgId, x, y, text);
     }
 
     public void svgDrawText(float x, float y, Buffer text, int offset, int length) {
+        if (text == null) throw new NullPointerException();
         svgBegin();
         SVG.BeginPath(svgId);
         SVG.DrawTextBuffer(svgId, x, y, text, offset, length);
     }
 
     public void svgDrawTextBox(float x, float y, float maxWidth, String text) {
+        if (text == null) throw new NullPointerException();
         svgBegin();
         SVG.BeginPath(svgId);
         SVG.DrawTextBox(svgId, x, y, maxWidth, text);
     }
 
     public void svgDrawTextBox(float x, float y, float maxWidth, Buffer text, int offset, int length) {
+        if (text == null) throw new NullPointerException();
         svgBegin();
         SVG.BeginPath(svgId);
         SVG.DrawTextBoxBuffer(svgId, x, y, maxWidth, text, offset, length);
     }
 
     public void svgDrawTextSlice(float x, float y, float maxWidth, String text) {
+        if (text == null) throw new NullPointerException();
         svgBegin();
         SVG.BeginPath(svgId);
         int last = SVG.TextGetLastGlyph(svgId, text, maxWidth);
-        SVG.DrawText(svgId, x, y, text.substring(0, last));
+        if (last > -1) {
+            SVG.DrawText(svgId, x, y, text.substring(0, last + 1));
+        }
     }
 
     public void svgDrawTextSlice(float x, float y, float maxWidth, Buffer text, int offset, int length) {
+        if (text == null) throw new NullPointerException();
         svgBegin();
         SVG.BeginPath(svgId);
         int last = SVG.TextGetLastGlyphBuffer(svgId, text, offset, length, maxWidth);
-        SVG.DrawTextBuffer(svgId, x, y, text, offset, last);
+        if (last > -1) {
+            SVG.DrawTextBuffer(svgId, x, y, text, offset, last + 1);
+        }
     }
 }

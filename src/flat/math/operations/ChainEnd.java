@@ -1,10 +1,11 @@
 package flat.math.operations;
 
 final class ChainEnd {
-    CurveLink head;
-    CurveLink tail;
-    ChainEnd partner;
-    int etag;
+
+    private CurveLink head;
+    private CurveLink tail;
+    private ChainEnd partner;
+    private int etag;
 
     public ChainEnd(CurveLink first, ChainEnd partner) {
         this.head = first;
@@ -13,16 +14,8 @@ final class ChainEnd {
         this.etag = first.getEdgeTag();
     }
 
-    public CurveLink getChain() {
-        return head;
-    }
-
     public void setOtherEnd(ChainEnd partner) {
         this.partner = partner;
-    }
-
-    public ChainEnd getPartner() {
-        return partner;
     }
 
     /*

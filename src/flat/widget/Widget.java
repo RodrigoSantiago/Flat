@@ -1,11 +1,17 @@
 package flat.widget;
 
+import flat.Flat;
 import flat.events.*;
-import flat.graphics.smart.SmartContext;
-import flat.graphics.svg.RoundRect;
-import flat.math.Affine;
-import flat.math.Vector2;
+import flat.graphics.SmartContext;
+import flat.math.*;
+import flat.math.shapes.RoundRectangle;
+import flat.math.shapes.Shape;
+import flat.uxml.UXAttributes;
+import flat.uxml.UXAttributesEmpty;
+import flat.uxml.UXChildren;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -16,24 +22,24 @@ public class Widget {
     //    Constants
     //---------------------
     public static final float WRAP_CONTENT = 0;
-    public static final float MATH_PARENT = Float.POSITIVE_INFINITY;
+    public static final float MATCH_PARENT = Float.POSITIVE_INFINITY;
 
     public static final int GONE = 0;
     public static final int VISIBLE = 1;
-    public static final int HIDDEN = 2;
+    public static final int INVISIBLE = 2;
 
     private static final Comparator<Widget> childComparator = (o1, o2) -> Float.compare(o1.elevation, o2.elevation);
-
+    private static final UXAttributes empty = new UXAttributesEmpty();
     //---------------------
     //    Properties
     //---------------------
     private String id;
-    private boolean focus, focusTarget;
+    private boolean enabled, focus, focusTarget;
     private String nextFocusId, prevFocusId;
     private float width, height;
     private float marginTop, marginRight, marginBottom, marginLeft;
     private float paddingTop, paddingRight, paddingBottom, paddingLeft;
-    private float minWidth = WRAP_CONTENT, minHeight = WRAP_CONTENT, maxWidth = MATH_PARENT, maxHeight = MATH_PARENT, prefWidth = 0, prefHeight = 0;
+    private float minWidth, minHeight, maxWidth, maxHeight, prefWidth = 0, prefHeight = 0;
     private int visibility = VISIBLE;
     private float measureWidth, measureHeight;
 
@@ -58,9 +64,11 @@ public class Widget {
     //---------------------
     //    Drawing
     //---------------------
-    private final RoundRect bg = new RoundRect();
+    private final RoundRectangle bg = new RoundRectangle();
     private int backgroundColor;
     private float opacity;
+
+    private Shape clip;
 
     private boolean shadowEffect;
     private boolean rippleEffect;
@@ -75,24 +83,173 @@ public class Widget {
     private DragListener dragListener;
     private FocusListener focusListener;
 
+    public Widget() {
+        this(null, empty);
+    }
+
+    public Widget(UXAttributes attributes) {
+        this(null, attributes);
+    }
+
+    public Widget(Object controller, UXAttributes attributes) {
+        applyAttributes(controller, attributes);
+    }
+
+    public void applyAttributes(Object controller, UXAttributes attributes) {
+        setId(attributes.asString("id", null));
+        setNextFocusId(attributes.asString("nextFocusId", null));
+        setPrefWidth(attributes.asSize("width", WRAP_CONTENT));
+        setPrefHeight(attributes.asSize("height", WRAP_CONTENT));
+        setMaxWidth(attributes.asSize("maxWidth", MATCH_PARENT));
+        setMaxHeight(attributes.asSize("maxHeight", MATCH_PARENT));
+        setMinWidth(attributes.asSize("minWidth", WRAP_CONTENT));
+        setMinHeight(attributes.asSize("minHeight", WRAP_CONTENT));
+
+        setMargins(attributes.asSize("marginTop", 0), attributes.asSize("marginRight", 0),
+                attributes.asSize("marginBottom", 0), attributes.asSize("marginLeft", 0));
+
+        setPadding(attributes.asSize("paddingTop", 0), attributes.asSize("paddingRight", 0),
+                attributes.asSize("paddingBottom", 0), attributes.asSize("paddingLeft", 0));
+
+        setTranslateX(attributes.asSize("translateX", 0));
+        setTranslateY(attributes.asSize("translateY", 0));
+        setElevation(attributes.asSize("elevation", 0));
+        setShadowEffectEnabled(attributes.asBoolean("shadowEffect", false));
+        setRippleEffectEnabled(attributes.asBoolean("rippleEffect", false));
+        setScaleX(attributes.asNumber("scaleX", 1));
+        setScaleY(attributes.asNumber("scaleY", 1));
+        setRotate(attributes.asNumber("rotate", 0));
+        setOpacity(attributes.asNumber("opacity", 1));
+        setFocusTarget(attributes.asBoolean("focusTarget", true));
+        setEnabled(attributes.asBoolean("enabled", true));
+        setClickable(attributes.asBoolean("clickable", true));
+
+        String visibility = attributes.asString("visibility");
+        if (visibility != null) {
+            if ("VISIBLE".equalsIgnoreCase(visibility)) {
+                setVisibility(VISIBLE);
+            } else if ("INVISIBLE".equalsIgnoreCase(visibility)) {
+                setVisibility(INVISIBLE);
+            } else if ("GONE".equalsIgnoreCase(visibility)) {
+                setVisibility(GONE);
+            } else {
+                attributes.getLoader().log("Invalid visibility constant : [visibility = " + visibility + "]");
+            }
+        }
+
+        String onPointerListener = attributes.asString("onPointer");
+        if (onPointerListener != null) {
+            Method method = findMethod(controller, onPointerListener, PointerEvent.class);
+            if (method != null) {
+                setPointerListener(event -> {
+                    try {
+                        return (boolean) method.invoke(controller, event);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            } else {
+                attributes.getLoader().log("Method not found : " + onPointerListener);
+            }
+        }
+        String onScrollListener = attributes.asString("onScroll");
+        if (onScrollListener != null) {
+            Method method = findMethod(controller, onScrollListener, ScrollEvent.class);
+            if (method != null) {
+                setScrollListener(event -> {
+                    try {
+                        return (boolean) method.invoke(controller, event);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            } else {
+                attributes.getLoader().log("Method not found : " + onScrollListener);
+            }
+        }
+        String onKeyListener = attributes.asString("onKey");
+        if (onKeyListener != null) {
+            Method method = findMethod(controller, onKeyListener, KeyEvent.class);
+            if (method != null) {
+                setKeyListener(event -> {
+                    try {
+                        return (boolean) method.invoke(controller, event);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            } else {
+                attributes.getLoader().log("Method not found : " + onKeyListener);
+            }
+        }
+        String onDragListener = attributes.asString("onDrag");
+        if (onDragListener != null) {
+            Method method = findMethod(controller, onDragListener, DragEvent.class);
+            if (method != null) {
+                setDragListener(event -> {
+                    try {
+                        return (boolean) method.invoke(controller, event);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            } else {
+                attributes.getLoader().log("Method not found : " + onDragListener);
+            }
+        }
+        String onFocusListener = attributes.asString("onFocus");
+        if (onFocusListener != null) {
+            Method method = findMethod(controller, onFocusListener, FocusEvent.class);
+            if (method != null) {
+                setFocusListener(event -> {
+                    try {
+                        return (boolean) method.invoke(controller, event);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            } else {
+                attributes.getLoader().log("Method not found : " + onFocusListener);
+            }
+        }
+    }
+
+    public void applyChildren(UXChildren children) {
+
+    }
+
+    private Method findMethod(Object obj, String name, Class<?> argument) {
+        try {
+            Method method = obj.getClass().getMethod(name, argument);
+            method.setAccessible(true);
+            if (method.isAnnotationPresent(Flat.class) && Modifier.isPublic(method.getModifiers())) {
+                return method;
+            }
+        } catch (NoSuchMethodException ignored) {
+        }
+        return null;
+    }
+
     public void onDraw(SmartContext context) {
         if (visibility == VISIBLE) {
+            context.setClip(clip);
             if (backgroundColor != 0) {
-                float bgAlpha = (backgroundColor & 0x000000FF) / 255f;
+                float bgAlpha = (backgroundColor & 0x000000FF) / 255f * getDisplayOpacity();
 
                 if (shadowEffect && bgAlpha > 0) {
                     context.setTransform2D(getTransformView().translate(0, Math.max(0, elevation)));
                     if (elevation <= 2f) {
                         context.setColor((int)((0.2f * bgAlpha) * 255));
-                        context.drawRoundRect(bg, true);
+                        //context.drawRoundRect(bg, true);
                     } else if (elevation < 24) {
-                        context.drawRoundRectShadow(bg, elevation * 2, 0.28f * bgAlpha);
+                        //context.drawRoundRectShadow(bg, elevation * 2, 0.28f * bgAlpha);
                     } else if (elevation < 56) {
-                        context.drawRoundRectShadow(bg, 48, (0.28f - ((elevation - 24) / 100f)) * bgAlpha);
+                        //context.drawRoundRectShadow(bg, 48, (0.28f - ((elevation - 24) / 100f)) * bgAlpha);
                     }
                 }
                 context.setTransform2D(getTransformView());
                 context.setColor(backgroundColor);
+                context.setAlpha(getDisplayOpacity());
                 context.drawRoundRect(bg, true);
                 context.setTransform2D(null);
             }
@@ -111,24 +268,25 @@ public class Widget {
     }
 
     public final void setLayout(float x, float y, float width, float height) {
+        float oldWidth = this.width, oldHeight = this.height;
         if (parent != null) {
-            if (width == MATH_PARENT && (maxWidth == MATH_PARENT || maxWidth == WRAP_CONTENT)) {
+            if (width == MATCH_PARENT && (maxWidth == MATCH_PARENT || maxWidth == WRAP_CONTENT)) {
                 setWidth(parent.getWidth());
             } else {
                 setWidth(Math.min(width, maxWidth));
             }
-            if (height == MATH_PARENT && (maxHeight == MATH_PARENT || maxHeight == WRAP_CONTENT)) {
+            if (height == MATCH_PARENT && (maxHeight == MATCH_PARENT || maxHeight == WRAP_CONTENT)) {
                 setHeight(parent.getHeight());
             } else {
                 setHeight(Math.min(height, maxHeight));
             }
         } else {
-            if (maxWidth != MATH_PARENT && maxWidth != WRAP_CONTENT) {
+            if (maxWidth != MATCH_PARENT && maxWidth != WRAP_CONTENT) {
                 setWidth(Math.min(width, maxWidth));
             } else {
                 setWidth(width);
             }
-            if (maxHeight != MATH_PARENT && maxHeight != WRAP_CONTENT) {
+            if (maxHeight != MATCH_PARENT && maxHeight != WRAP_CONTENT) {
                 setHeight(Math.min(height, maxHeight));
             } else {
                 setHeight(height);
@@ -214,7 +372,7 @@ public class Widget {
                 if (found != null) return found;
             }
         }
-        return (visibility == VISIBLE || visibility == HIDDEN) && clickable && contains(x, y) ? this : null;
+        return (visibility == VISIBLE || visibility == INVISIBLE) && clickable && contains(x, y) ? this : null;
     }
 
     public Widget findFocused() {
@@ -237,6 +395,18 @@ public class Widget {
 
     public void setClickable(boolean clickable) {
         this.clickable = clickable;
+    }
+
+    public boolean isDisabled() {
+        return parent == null ? !enabled : parent.isDisabled() || !enabled;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     public boolean isFocused() {
@@ -273,24 +443,24 @@ public class Widget {
 
     public void localToScreen(Vector2 point) {
         transform();
-        float x = transform.getPointX(point.x, point.y);
-        float y = transform.getPointY(point.x, point.y);
+        float x = transform.pointX(point.x, point.y);
+        float y = transform.pointY(point.x, point.y);
         point.x = x;
         point.y = y;
     }
 
     public void screenToLocal(Vector2 point) {
         transform();
-        float x = inverseTransform.getPointX(point.x, point.y);
-        float y = inverseTransform.getPointY(point.x, point.y);
+        float x = inverseTransform.pointX(point.x, point.y);
+        float y = inverseTransform.pointY(point.x, point.y);
         point.x = x;
         point.y = y;
     }
 
     public boolean contains(float x, float y) {
         transform();
-        float px = inverseTransform.getPointX(x, y);
-        float py = inverseTransform.getPointY(x, y);
+        float px = inverseTransform.pointX(x, y);
+        float py = inverseTransform.pointY(x, y);
         return bg.contains(px, py);
     }
 
@@ -301,7 +471,7 @@ public class Widget {
     void setX(float x) {
         if (this.x != x) {
             this.x = x;
-            bg.setX(x + marginLeft);
+            bg.x = x + marginLeft;
             invalidateTransform();
         }
     }
@@ -313,7 +483,7 @@ public class Widget {
     void setY(float y) {
         if (this.y != y) {
             this.y = y;
-            bg.setY(y + marginTop);
+            bg.y = y + marginTop;
             invalidateTransform();
         }
     }
@@ -325,7 +495,7 @@ public class Widget {
     void setWidth(float width) {
         if (this.width != width) {
             this.width = width;
-            bg.setWidth(width - marginLeft - marginRight);
+            bg.width = width - marginLeft - marginRight;
         }
     }
 
@@ -336,7 +506,7 @@ public class Widget {
     void setHeight(float height) {
         if (this.height != height) {
             this.height = height;
-            bg.setHeight(height - marginTop - marginBottom);
+            bg.height = height - marginTop - marginBottom;
         }
     }
 
@@ -647,11 +817,16 @@ public class Widget {
         }
     }
 
+    public float getDisplayOpacity() {
+        return parent == null ? opacity : parent.getDisplayOpacity() * opacity;
+    }
+
     public float getOpacity() {
         return opacity;
     }
 
     public void setOpacity(float opacity) {
+        opacity = Math.max(0, Math.min(1, opacity));
         if (this.opacity != opacity) {
             this.opacity = opacity;
             invalidate(false);
@@ -670,13 +845,14 @@ public class Widget {
     private void transform() {
         if (invalidTransform) {
             invalidTransform = false;
-            transform.toTranslation(-centerX, -centerY)
+            transform.identity()
+                    .translate(-centerX, -centerY)
                     .scale(scaleX, scaleY)
                     .rotate(rotate)
                     .translate(centerX + translateX + x, centerY + translateY + y);
 
             if (parent != null) {
-                transform.preMultiply(parent.getTransformView());
+                transform.preMul(parent.getTransformView()); // multiply
             }
             inverseTransform.set(transform).invert();
         }
@@ -693,27 +869,30 @@ public class Widget {
     }
 
     public float getBackgroundCornerTop() {
-        return bg.getCornerTop();
+        return bg.arcTop;
     }
 
     public float getBackgroundCornerRight() {
-        return bg.getCornerRight();
+        return bg.arcRight;
     }
 
     public float getBackgroundCornerBottom() {
-        return bg.getCornerBottom();
+        return bg.arcBottom;
     }
 
     public float getBackgroundCornerLeft() {
-        return bg.getCornerLeft();
+        return bg.arcLeft;
     }
 
     public void setBackgroundCorners(float cTop, float cRight, float cBottom, float cLeft) {
-        if (bg.getCornerTop() != cTop ||
-                bg.getCornerRight() != cRight ||
-                bg.getCornerBottom() != cBottom ||
-                bg.getCornerLeft() != cLeft) {
-            bg.setCorners(cTop, cRight, cBottom, cLeft);
+        if (bg.arcTop != cTop ||
+                bg.arcRight != cRight ||
+                bg.arcBottom != cBottom ||
+                bg.arcLeft != cLeft) {
+            bg.arcTop = cTop;
+            bg.arcRight = cRight;
+            bg.arcBottom = cBottom;
+            bg.arcLeft = cLeft;
             invalidate(false);
         }
     }
@@ -748,6 +927,13 @@ public class Widget {
         if (this.rippleEffect != enable) {
             this.rippleEffect = enable;
             invalidate(false);
+        }
+    }
+
+    public void setClip(Shape clip) {
+        if (this.clip != clip) {
+            this.clip = clip;
+            invalidate(true);
         }
     }
 

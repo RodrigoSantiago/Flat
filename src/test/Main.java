@@ -1,11 +1,10 @@
 package test;
 
-import flat.screen.Activity;
-import flat.screen.Settings;
 import flat.screen.Application;
+import flat.screen.Settings;
 
 public class Main {
     public static void main(String[] args) {
-        Application.init(new Settings(Activity.class, Application::show));
+        Application.init(new Settings(MainActivity.class));
     }
 }

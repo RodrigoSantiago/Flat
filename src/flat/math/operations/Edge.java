@@ -1,23 +1,22 @@
 package flat.math.operations;
 
 final class Edge {
-    static final int INIT_PARTS = 4;
-    static final int GROW_PARTS = 10;
 
-    Curve curve;
-    int ctag;
-    int etag;
-    double activey;
-    int equivalence;
+    private final Curve curve;
+
+    private int ctag;
+    private int etag;
+    private double activey;
+    private int equivalence;
+
+    private Edge lastEdge;
+    private int lastResult;
+    private double lastLimit;
 
     public Edge(Curve c, int ctag) {
-        this(c, ctag, AreaOp.ETAG_IGNORE);
-    }
-
-    public Edge(Curve c, int ctag, int etag) {
         this.curve = c;
         this.ctag = ctag;
-        this.etag = etag;
+        this.etag = AreaOp.ETAG_IGNORE;
     }
 
     public Curve getCurve() {
@@ -28,14 +27,6 @@ final class Edge {
         return ctag;
     }
 
-    public int getEdgeTag() {
-        return etag;
-    }
-
-    public void setEdgeTag(int etag) {
-        this.etag = etag;
-    }
-
     public int getEquivalence() {
         return equivalence;
     }
@@ -43,10 +34,6 @@ final class Edge {
     public void setEquivalence(int eq) {
         equivalence = eq;
     }
-
-    private Edge lastEdge;
-    private int lastResult;
-    private double lastLimit;
 
     public int compareTo(Edge other, double yrange[]) {
         if (other == lastEdge && yrange[0] < lastLimit) {
@@ -59,20 +46,9 @@ final class Edge {
             if (yrange[1] > other.lastLimit) {
                 yrange[1] = other.lastLimit;
             }
-            return 0-other.lastResult;
+            return 0 - other.lastResult;
         }
-        //long start = System.currentTimeMillis();
         int ret = curve.compareTo(other.curve, yrange);
-        //long end = System.currentTimeMillis();
-        /*
-        System.out.println("compare: "+
-                           ((System.identityHashCode(this) <
-                             System.identityHashCode(other))
-                            ? this+" to "+other
-                            : other+" to "+this)+
-                           " == "+ret+" at "+yrange[1]+
-                           " in "+(end-start)+"ms");
-         */
         lastEdge = other;
         lastLimit = yrange[1];
         lastResult = ret;
@@ -86,15 +62,5 @@ final class Edge {
 
     public boolean isActiveFor(double y, int etag) {
         return (this.etag == etag && this.activey >= y);
-    }
-
-    public String toString() {
-        return ("Edge["+curve+
-                ", "+
-                (ctag == AreaOp.CTAG_LEFT ? "L" : "R")+
-                ", "+
-                (etag == AreaOp.ETAG_ENTER ? "I" :
-                 (etag == AreaOp.ETAG_EXIT ? "O" : "N"))+
-                "]");
     }
 }

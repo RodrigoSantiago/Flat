@@ -1,16 +1,13 @@
-package flat.graphics.smart.effects;
+package flat.graphics.material;
 
 import flat.graphics.context.ShaderProgram;
 
-import java.io.Serializable;
 import java.util.List;
 
-public abstract class ImageMaterial {
-
-    public ImageMaterial() {
-    }
+public abstract class Material {
 
     public abstract ShaderProgram getShader();
 
     public abstract List<MaterialValue> getValues();
+
 }

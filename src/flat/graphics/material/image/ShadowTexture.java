@@ -1,21 +1,22 @@
-package flat.graphics.smart.effects;
+package flat.graphics.material.image;
 
 import flat.graphics.context.Shader;
 import flat.graphics.context.ShaderProgram;
 import flat.graphics.context.enuns.ShaderType;
+import flat.graphics.material.MaterialValue;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
-public final class RoundRectShadow extends ImageMaterial {
+public final class ShadowTexture extends ImageMaterial {
 
     private static ShaderProgram shader;
     private ArrayList<MaterialValue> values = new ArrayList<>();
 
     private float blur, alpha, x, y, width, height, cTop, cRight, cBottom, cLeft;
 
-    public RoundRectShadow() {
+    public ShadowTexture() {
         if (shader == null) {
             try {
                 String shadowVtx = new String(Files.readAllBytes(Paths.get(getClass().getResource("/resources/shadow.vtx.glsl").toURI())));

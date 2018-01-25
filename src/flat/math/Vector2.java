@@ -218,7 +218,7 @@ public final class Vector2 {
      * @return This vector for chaining
      */
     public Vector2 length(float len) {
-        return lengthSqr(len * len);
+        return lengthSqr(len < 0 ? -len * len : len * len);
     }
 
     /**
@@ -236,6 +236,10 @@ public final class Vector2 {
      */
     public Vector2 lengthSqr(float len) {
         float oldLenSqr = lengthSqr();
+        if (len < 0) {
+            len = -len;
+            mul(-1);
+        }
         return (oldLenSqr == 0 || oldLenSqr == len) ? this : mul((float) Math.sqrt(len / oldLenSqr));
     }
 

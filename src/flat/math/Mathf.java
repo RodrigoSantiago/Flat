@@ -1,5 +1,7 @@
 package flat.math;
 
+import java.util.Arrays;
+
 /**
  * Math utility methods.
  */
@@ -19,6 +21,8 @@ public final class Mathf {
      * Twice Pi
      */
     public static final float TWO_PI = TAU;
+
+    public static final float FOUR_PI = TWO_PI  * 2;
 
     /**
      * Pi times one half.
@@ -417,5 +421,57 @@ public final class Mathf {
     public static boolean isEqual(float valueA, float valueB) {
         float dif = valueA - valueB;
         return dif < EPSILON && dif > -EPSILON;
+    }
+
+    public static int solve(double[] result, double a, double b, double c, double d) {
+        int count = 0;
+        if (a == 0.0) {
+            if (b == 0.0) {
+                if (c == 0.0) {
+                    result[count++] = d;
+                    return count;
+                } else {
+                    result[count++] = d / c;
+                    return count;
+                }
+            } else {
+                double delta = Math.sqrt(c * c - 4 * b * d);
+                result[count++] = (-c + delta) / (2 * b);
+                result[count++] = (-c - delta) / (2 * b);
+                Arrays.sort(result, 0, count);
+                return count;
+            }
+        } else {
+            double denom = a;
+            a = b / denom;
+            b = c / denom;
+            c = d / denom;
+
+            double a_over_3 = a / 3.0;
+            double Q = (3 * b - a * a) / 9.0;
+            double Q_CUBE = Q * Q * Q;
+            double R = (9 * a * b - 27 * c - 2 * a * a * a) / 54.0;
+            double R_SQR = R * R;
+            double D = Q_CUBE + R_SQR;
+
+            if (D < 0.0) {
+                double theta = Math.acos(R / Math.sqrt(-Q_CUBE));
+                double SQRT_Q = Math.sqrt(-Q);
+                result[count++] = 2.0 * SQRT_Q * Math.cos(theta / 3.0) - a_over_3;
+                result[count++] = 2.0 * SQRT_Q * Math.cos((theta + TWO_PI) / 3.0) - a_over_3;
+                result[count++] = 2.0 * SQRT_Q * Math.cos((theta + FOUR_PI) / 3.0) - a_over_3;
+            } else if (D > 0.0) {
+                double SQRT_D = Math.sqrt(D);
+                double S = Math.cbrt(R + SQRT_D);
+                double T = Math.cbrt(R - SQRT_D);
+                result[count++] = (S + T) - a_over_3;
+            } else {
+                double CBRT_R = Math.cbrt(R);
+                result[count++] = 2 * CBRT_R - a_over_3;
+                result[count++] = CBRT_R - a_over_3;
+            }
+            Arrays.sort(result, 0, count);
+            return count;
+        }
     }
 }

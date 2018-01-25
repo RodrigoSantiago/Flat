@@ -7,8 +7,8 @@ import flat.events.KeyEvent;
 import flat.events.PointerEvent;
 import flat.events.ScrollEvent;
 import flat.graphics.context.Context;
-import flat.graphics.smart.SmartContext;
-import flat.graphics.smart.image.Image;
+import flat.graphics.SmartContext;
+import flat.graphics.image.Image;
 import flat.widget.Widget;
 
 import java.util.ArrayList;
@@ -49,7 +49,7 @@ public final class Application {
     private static long loopTime;
 
     public static void init(Settings settings) {
-        long id = WL.Init(settings.width, settings.height, settings.multsamples, settings.resizable, settings.decorated);
+        long id = WL.Init(settings.width, settings.height, settings.multsamples, settings.transparent);
         if (id == 0) {
             throw new RuntimeException("Invalide context creation");
         }
@@ -98,19 +98,20 @@ public final class Application {
             }
             context.dispose();
             context = null;
+            SVG.Destroy(svgId);
+            WL.ContextAssign(0);
 
             synchronized (key) {
                 while (gThreadCount > 0) {
                     try {
                         processSyncCalls();
                         key.wait();
-                    } catch (InterruptedException e) {
+                    } catch (Exception e) {
                         break;
                     }
                 }
             }
 
-            SVG.Destroy(svgId);
             WL.Finish();
         }
 
@@ -345,14 +346,12 @@ public final class Application {
     }
 
     static void processAnimations() {
-        long time = System.currentTimeMillis();
-
         ArrayList<Animation> animSwap = animsCp;
         animsCp = anims;
         anims = animSwap;
 
         for (Animation anim : animsCp) {
-            anim.handle(time);
+            anim.handle(loopTime);
         }
         animsCp.clear();
     }
@@ -421,6 +420,14 @@ public final class Application {
         Application.activity.invalidate(true);
     }
 
+    public static void setVsync(int vsync) {
+        WL.SetVsync(vsync);
+    }
+
+    public static boolean isTransparent() {
+        return WL.IsTransparent();
+    }
+
     public static void setFullscreen(boolean fullscreen) {
         WL.SetFullscreen(fullscreen);
     }
@@ -429,8 +436,16 @@ public final class Application {
         return WL.IsFullscreen();
     }
 
+    public static void setResizable(boolean resizable) {
+        WL.SetResizable(resizable);
+    }
+
     public static boolean isResisable() {
         return WL.IsResizable();
+    }
+
+    public static void setDecorated(boolean decorated) {
+        WL.SetDecorated(decorated);
     }
 
     public static boolean isDecorated() {

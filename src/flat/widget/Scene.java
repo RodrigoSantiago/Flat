@@ -1,58 +1,26 @@
 package flat.widget;
 
-import flat.backend.GL;
-import flat.events.PointerEvent;
-import flat.graphics.context.Context;
-import flat.graphics.context.Shader;
-import flat.graphics.context.ShaderProgram;
-import flat.graphics.context.enuns.AttributeType;
-import flat.graphics.context.enuns.BlendFunction;
-import flat.graphics.context.enuns.ShaderType;
-import flat.graphics.context.enuns.VertexMode;
-import flat.graphics.smart.SmartContext;
-import flat.graphics.smart.effects.RoundRectShadow;
-import flat.graphics.smart.mesh.VertexData;
-import flat.math.Affine;
 import flat.screen.Activity;
+import flat.uxml.UXAttributes;
 import flat.widget.layout.Box;
-import flat.widget.text.Label;
-
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 public class Scene extends Box {
 
-    Activity activity;
-    Box b;
-
-    ShaderProgram shader;
+    private Activity activity;
 
     public Scene(Activity activity) {
         this.activity = activity;
-        Label label = new Label();
-        label.setPrefWidth(200);
-        label.setBackgroundColor(0xFF0000FF);
-        label.setText("Ola mundo !");
+    }
 
-        b  = new Box();
-        b.add(label);
-        b.setBackgroundColor(-1);
-        b.setPrefSize(100, 100);
-        b.setShadowEffectEnabled(true);
-        b.setBackgroundCorners(10, 10, 10, 10);
-        setPointerListener(event -> {
-            if (event.getType() == PointerEvent.DRAGGED) {
-                if (event.getMouseButton() == 1) {
-                    b.setElevation(b.getElevation() + 1);
-                } else {
-                    b.setElevation(b.getElevation() - 1);
-                }
-            }
-            b.setTranslateX(event.getX());
-            b.setTranslateY(event.getY());
-            return false;
-        });
-        add(b);
+    @Override
+    public void applyAttributes(Object controller, UXAttributes attributes) {
+        super.applyAttributes(controller, attributes);
+        setPrefWidth(attributes.asSize("width", MATCH_PARENT));
+        setPrefHeight(attributes.asSize("height", MATCH_PARENT));
+        setMaxWidth(attributes.asSize("maxWidth", MATCH_PARENT));
+        setMaxHeight(attributes.asSize("maxHeight", MATCH_PARENT));
+        setMinWidth(attributes.asSize("minWidth", MATCH_PARENT));
+        setMinHeight(attributes.asSize("minHeight", MATCH_PARENT));
     }
 
     @Override
@@ -72,14 +40,9 @@ public class Scene extends Box {
     }
 
     @Override
-    public void onDraw(SmartContext context) {
-        context.setView(0, 0, (int) activity.getWidth(), (int) activity.getHeight());
-        context.clear(0xDDDDDDFF);
-        super.onDraw(context);
-    }
-
-    @Override
     public void invalidate(boolean layout) {
-        activity.invalidate(layout);
+        if (activity != null) {
+            activity.invalidate(layout);
+        }
     }
 }

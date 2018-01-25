@@ -1,13 +1,6 @@
 package flat.screen;
 
-import flat.backend.GL;
-import flat.graphics.context.Context;
-import flat.graphics.context.Frame;
-import flat.graphics.context.Render;
-import flat.graphics.context.Texture2D;
-import flat.graphics.context.enuns.PixelFormat;
-import flat.graphics.smart.SmartContext;
-import flat.math.Affine;
+import flat.graphics.SmartContext;
 import flat.widget.Scene;
 import flat.widget.Widget;
 
@@ -16,50 +9,15 @@ public class Activity {
     private boolean invalided, layoutInvalidaded;
     private float width;
     private float height;
-
-    Texture2D back;
-    Render render;
-    volatile boolean finished = false;
+    private int color;
 
     public Activity() {
         scene = new Scene(this);
+        color = 0xDDDDDDFF;
+    }
 
-        Application.createGraphicalThread((context) -> {
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            back = new Texture2D();
-            back.begin(0);
-            back.setSize(100, 100, PixelFormat.RGBA);
-            back.setData(0, new int[]{-1, -1, -1, -1}, 0, 0, 0, 2, 2);
-            back.generatMipmapLevels();
-            back.end();
-
-            render = new Render();
-            render.begin();
-            render.setSize(100, 100, PixelFormat.DEPTH32_STENCIL8);
-            render.end();
-
-            Frame frame = new Frame(context);
-            frame.begin();
-            frame.attach(Frame.DEPTH_STENCIL, render);
-            frame.attach(0, back, 0);
-            context.setViewPort(0, 0, 100, 100);
-            context.setClearColor(0xFFFFFFFF);
-            context.clear(true, true, true);
-            frame.end();
-
-            context.finish();
-            context.hardFlush();
-
-            Application.runSync(() -> {
-                finished = true;
-                Activity.this.invalidate(true);
-            });
-        }).start();
+    public void setBackgroundColor(int color) {
+        this.color = color;
     }
 
     public void onSave() {
@@ -79,11 +37,8 @@ public class Activity {
 
     public void onDraw(SmartContext context) {
         context.setView(0, 0, (int) getWidth(), (int) getHeight());
+        context.clear(color, 1, 0);
         scene.onDraw(context);
-        if (finished) {
-            context.setTransform2D(new Affine());
-            context.drawImage(back, 0, 0, 1, 1, 100, 100, 200, 200, null);
-        }
     }
 
     public Scene getScene() {

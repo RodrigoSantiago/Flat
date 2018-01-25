@@ -7,7 +7,6 @@ public class VertexArray extends ContextObject {
     private int vertexArrayId;
     private Context context;
 
-    @Deprecated
     public VertexArray(Context context) {
         this.context = context;
         init();

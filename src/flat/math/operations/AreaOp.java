@@ -35,8 +35,7 @@ public abstract class AreaOp {
             return (inResult ? RSTAG_INSIDE : RSTAG_OUTSIDE);
         }
 
-        public abstract boolean newClassification(boolean inLeft,
-                                                  boolean inRight);
+        public abstract boolean newClassification(boolean inLeft, boolean inRight);
     }
 
     public static final class AddOp extends CAGOp {
@@ -127,71 +126,53 @@ public abstract class AreaOp {
 
     public abstract int getState();
 
-    public Vector calculate(Vector left, Vector right) {
-        Vector edges = new Vector();
+    public Vector<Curve> calculate(Vector<Curve> left, Vector<Curve> right) {
+        Vector<Edge> edges = new Vector<>();
         addEdges(edges, left, AreaOp.CTAG_LEFT);
         addEdges(edges, right, AreaOp.CTAG_RIGHT);
-        edges = pruneEdges(edges);
-        if (false) {
-            System.out.println("result: ");
-            int numcurves = edges.size();
-            Curve[] curvelist = (Curve[]) edges.toArray(new Curve[numcurves]);
-            for (int i = 0; i < numcurves; i++) {
-                System.out.println("curvelist["+i+"] = "+curvelist[i]);
-            }
-        }
-        return edges;
+        return pruneEdges(edges);
     }
 
-    private static void addEdges(Vector edges, Vector curves, int curvetag) {
-        Enumeration enum_ = curves.elements();
-        while (enum_.hasMoreElements()) {
-            Curve c = (Curve) enum_.nextElement();
+    private static void addEdges(Vector<Edge> edges, Vector<Curve> curves, int curvetag) {
+        Enumeration<Curve> elements = curves.elements();
+        while (elements.hasMoreElements()) {
+            Curve c = elements.nextElement();
             if (c.getOrder() > 0) {
                 edges.add(new Edge(c, curvetag));
             }
         }
     }
 
-    private static Comparator YXTopComparator = new Comparator() {
-        public int compare(Object o1, Object o2) {
-            Curve c1 = ((Edge) o1).getCurve();
-            Curve c2 = ((Edge) o2).getCurve();
-            double v1, v2;
-            if ((v1 = c1.getYTop()) == (v2 = c2.getYTop())) {
-                if ((v1 = c1.getXTop()) == (v2 = c2.getXTop())) {
-                    return 0;
-                }
+    private static Comparator<Edge> YXTopComparator = (o1, o2) -> {
+        Curve c1 = o1.getCurve();
+        Curve c2 = o2.getCurve();
+        double v1, v2;
+        if ((v1 = c1.getYTop()) == (v2 = c2.getYTop())) {
+            if ((v1 = c1.getXTop()) == (v2 = c2.getXTop())) {
+                return 0;
             }
-            if (v1 < v2) {
-                return -1;
-            }
-            return 1;
         }
+        if (v1 < v2) {
+            return -1;
+        }
+        return 1;
     };
 
-    private Vector pruneEdges(Vector edges) {
+    private Vector<Curve> pruneEdges(Vector<Edge> edges) {
         int numedges = edges.size();
         if (numedges < 2) {
-            return edges;
+            return new Vector<>();
         }
-        Edge[] edgelist = (Edge[]) edges.toArray(new Edge[numedges]);
+        Edge[] edgelist = edges.toArray(new Edge[numedges]);
         Arrays.sort(edgelist, YXTopComparator);
-        if (false) {
-            System.out.println("pruning: ");
-            for (int i = 0; i < numedges; i++) {
-                System.out.println("edgelist["+i+"] = "+edgelist[i]);
-            }
-        }
         Edge e;
         int left = 0;
         int right = 0;
-        int cur = 0;
-        int next = 0;
+        int cur, next;
         double yrange[] = new double[2];
-        Vector subcurves = new Vector();
-        Vector chains = new Vector();
-        Vector links = new Vector();
+        Vector<CurveLink> subcurves = new Vector<>();
+        Vector<ChainEnd> chains = new Vector<>();
+        Vector<CurveLink> links = new Vector<>();
         // Active edges are between left (inclusive) and right (exclusive)
         while (left < numedges) {
             double y = yrange[0];
@@ -235,13 +216,6 @@ public abstract class AreaOp {
                     yrange[1] = y;
                 }
             }
-            if (false) {
-                System.out.println("current line: y = ["+
-                                   yrange[0]+", "+yrange[1]+"]");
-                for (cur = left; cur < right; cur++) {
-                    System.out.println("  "+edgelist[cur]);
-                }
-            }
             // Note: We could start at left+1, but we need to make
             // sure that edgelist[left] has its equivalence set to 0.
             int nexteq = 1;
@@ -249,11 +223,10 @@ public abstract class AreaOp {
                 e = edgelist[cur];
                 e.setEquivalence(0);
                 for (next = cur; next > left; next--) {
-                    Edge prevedge = edgelist[next-1];
+                    Edge prevedge = edgelist[next - 1];
                     int ordering = e.compareTo(prevedge, yrange);
                     if (yrange[1] <= yrange[0]) {
-                        throw new InternalError("backstepping to "+yrange[1]+
-                                                " from "+yrange[0]);
+                        throw new InternalError("backstepping to " + yrange[1] + " from " + yrange[0]);
                     }
                     if (ordering >= 0) {
                         if (ordering == 0) {
@@ -273,13 +246,6 @@ public abstract class AreaOp {
                     edgelist[next] = prevedge;
                 }
                 edgelist[next] = e;
-            }
-            if (false) {
-                System.out.println("current sorted line: y = ["+
-                                   yrange[0]+", "+yrange[1]+"]");
-                for (cur = left; cur < right; cur++) {
-                    System.out.println("  "+edgelist[cur]);
-                }
             }
             // Now prune the active edge list.
             // For each edge in the list, determine its classification
@@ -310,9 +276,7 @@ public abstract class AreaOp {
                         // Note: classify() must be called
                         // on every edge we consume here.
                         classify(e);
-                        if (activematch == null &&
-                            e.isActiveFor(ystart, etag))
-                        {
+                        if (activematch == null && e.isActiveFor(ystart, etag)) {
                             activematch = e;
                         }
                         y = e.getCurve().getYBot();
@@ -320,8 +284,7 @@ public abstract class AreaOp {
                             longestmatch = e;
                             furthesty = y;
                         }
-                    } while (++cur < right &&
-                             (e = edgelist[cur]).getEquivalence() == eq);
+                    } while (++cur < right && (e = edgelist[cur]).getEquivalence() == eq);
                     --cur;
                     if (getState() == origstate) {
                         etag = AreaOp.ETAG_IGNORE;
@@ -337,33 +300,6 @@ public abstract class AreaOp {
                 }
             }
             // assert(getState() == AreaOp.RSTAG_OUTSIDE);
-            if (getState() != AreaOp.RSTAG_OUTSIDE) {
-                System.out.println("Still inside at end of active edge list!");
-                System.out.println("num curves = "+(right-left));
-                System.out.println("num links = "+links.size());
-                System.out.println("y top = "+yrange[0]);
-                if (right < numedges) {
-                    System.out.println("y top of next curve = "+
-                                       edgelist[right].getCurve().getYTop());
-                } else {
-                    System.out.println("no more curves");
-                }
-                for (cur = left; cur < right; cur++) {
-                    e = edgelist[cur];
-                    System.out.println(e);
-                    int eq = e.getEquivalence();
-                    if (eq != 0) {
-                        System.out.println("  was equal to "+eq+"...");
-                    }
-                }
-            }
-            if (false) {
-                System.out.println("new links:");
-                for (int i = 0; i < links.size(); i++) {
-                    CurveLink link = (CurveLink) links.elementAt(i);
-                    System.out.println("  "+link.getSubCurve());
-                }
-            }
             resolveLinks(subcurves, chains, links);
             links.clear();
             // Finally capture the bottom of the valid Y range as the top
@@ -371,10 +307,10 @@ public abstract class AreaOp {
             yrange[0] = yend;
         }
         finalizeSubCurves(subcurves, chains);
-        Vector ret = new Vector();
-        Enumeration enum_ = subcurves.elements();
-        while (enum_.hasMoreElements()) {
-            CurveLink link = (CurveLink) enum_.nextElement();
+        Vector<Curve> ret = new Vector<>();
+        Enumeration<CurveLink> elements = subcurves.elements();
+        while (elements.hasMoreElements()) {
+            CurveLink link = elements.nextElement();
             ret.add(link.getMoveto());
             CurveLink nextlink = link;
             while ((nextlink = nextlink.getNext()) != null) {
@@ -388,7 +324,7 @@ public abstract class AreaOp {
         return ret;
     }
 
-    public static void finalizeSubCurves(Vector subcurves, Vector chains) {
+    public static void finalizeSubCurves(Vector<CurveLink> subcurves, Vector<ChainEnd> chains) {
         int numchains = chains.size();
         if (numchains == 0) {
             return;
@@ -412,10 +348,7 @@ public abstract class AreaOp {
     private static CurveLink[] EmptyLinkList = new CurveLink[2];
     private static ChainEnd[] EmptyChainList = new ChainEnd[2];
 
-    public static void resolveLinks(Vector subcurves,
-                                    Vector chains,
-                                    Vector links)
-    {
+    public static void resolveLinks(Vector<CurveLink> subcurves, Vector<ChainEnd> chains, Vector<CurveLink> links) {
         int numlinks = links.size();
         CurveLink[] linklist;
         if (numlinks == 0) {
@@ -424,7 +357,7 @@ public abstract class AreaOp {
             if ((numlinks & 1) != 0) {
                 throw new InternalError("Odd number of new curves!");
             }
-            linklist = new CurveLink[numlinks+2];
+            linklist = new CurveLink[numlinks + 2];
             links.toArray(linklist);
         }
         int numchains = chains.size();
@@ -435,7 +368,7 @@ public abstract class AreaOp {
             if ((numchains & 1) != 0) {
                 throw new InternalError("Odd number of chains!");
             }
-            endlist = new ChainEnd[numchains+2];
+            endlist = new ChainEnd[numchains + 2];
             chains.toArray(endlist);
         }
         int curchain = 0;
@@ -460,9 +393,9 @@ public abstract class AreaOp {
                  * Connect chains or links if they close off an open area...
                  */
                 connectchains = ((curchain & 1) == 0 &&
-                                 chain.getX() == nextchain.getX());
+                        chain.getX() == nextchain.getX());
                 connectlinks = ((curlink & 1) == 0 &&
-                                link.getX() == nextlink.getX());
+                        link.getX() == nextlink.getX());
 
                 if (!connectchains && !connectlinks) {
                     /*
@@ -473,11 +406,11 @@ public abstract class AreaOp {
                     double cx = chain.getX();
                     double lx = link.getX();
                     connectchains =
-                        (nextchain != null && cx < lx &&
-                         obstructs(nextchain.getX(), lx, curchain));
+                            (nextchain != null && cx < lx &&
+                                    obstructs(nextchain.getX(), lx, curchain));
                     connectlinks =
-                        (nextlink != null && lx < cx &&
-                         obstructs(nextlink.getX(), cx, curlink));
+                            (nextlink != null && lx < cx &&
+                                    obstructs(nextlink.getX(), cx, curlink));
                 }
             }
             if (connectchains) {
@@ -487,7 +420,7 @@ public abstract class AreaOp {
                 }
                 curchain += 2;
                 chain = endlist[curchain];
-                nextchain = endlist[curchain+1];
+                nextchain = endlist[curchain + 1];
             }
             if (connectlinks) {
                 ChainEnd openend = new ChainEnd(link, null);
@@ -497,7 +430,7 @@ public abstract class AreaOp {
                 chains.add(closeend);
                 curlink += 2;
                 link = linklist[curlink];
-                nextlink = linklist[curlink+1];
+                nextlink = linklist[curlink + 1];
             }
             if (!connectchains && !connectlinks) {
                 // assert(link != null);
@@ -507,15 +440,13 @@ public abstract class AreaOp {
                 chains.add(chain);
                 curchain++;
                 chain = nextchain;
-                nextchain = endlist[curchain+1];
+                nextchain = endlist[curchain + 1];
                 curlink++;
                 link = nextlink;
-                nextlink = linklist[curlink+1];
+                nextlink = linklist[curlink + 1];
             }
         }
-        if ((chains.size() & 1) != 0) {
-            System.out.println("Odd number of chains!");
-        }
+        // assert ((chains.size() & 1) == 0);
     }
 
     /*

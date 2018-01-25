@@ -18,12 +18,14 @@ public abstract class Parent extends Widget {
     protected final void childAttach(Widget child) {
         child.setParent(this);
         invalidateChildrenOrder();
+        invalidate(true);
     }
 
     protected final void childDetach(Widget child) {
         if (child.parent == this) {
             child.setParent(null);
             invalidateChildrenOrder();
+            invalidate(true);
         }
     }
 
@@ -31,5 +33,6 @@ public abstract class Parent extends Widget {
         children.remove(widget);
         childDetach(widget);
         invalidateChildrenOrder();
+        invalidate(true);
     }
 }

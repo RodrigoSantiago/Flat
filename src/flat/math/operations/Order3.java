@@ -7,29 +7,36 @@ import flat.math.shapes.Rectangle;
 import java.util.Vector;
 
 final class Order3 extends Curve {
-    private double x0;
-    private double y0;
-    private double cx0;
-    private double cy0;
-    private double cx1;
-    private double cy1;
-    private double x1;
-    private double y1;
 
-    private double xmin;
-    private double xmax;
+    private final double x0;
+    private final double y0;
+    private final double cx0;
+    private final double cy0;
+    private final double cx1;
+    private final double cy1;
+    private final double x1;
+    private final double y1;
 
-    private double xcoeff0;
-    private double xcoeff1;
-    private double xcoeff2;
-    private double xcoeff3;
+    private final double xmin;
+    private final double xmax;
 
-    private double ycoeff0;
-    private double ycoeff1;
-    private double ycoeff2;
-    private double ycoeff3;
+    private final double xcoeff0;
+    private final double xcoeff1;
+    private final double xcoeff2;
+    private final double xcoeff3;
+    private final double ycoeff0;
+    private final double ycoeff1;
+    private final double ycoeff2;
+    private final double ycoeff3;
 
-    public static void insert(Vector curves, double tmp[],
+    private double TforY1;
+    private double YforT1;
+    private double TforY2;
+    private double YforT2;
+    private double TforY3;
+    private double YforT3;
+
+    public static void insert(Vector<Curve> curves, double tmp[],
                               double x0, double y0,
                               double cx0, double cy0,
                               double cx1, double cy1,
@@ -81,18 +88,16 @@ final class Order3 extends Curve {
         }
     }
 
-    public static void addInstance(Vector curves,
+    public static void addInstance(Vector<Curve> curves,
                                    double x0, double y0,
                                    double cx0, double cy0,
                                    double cx1, double cy1,
                                    double x1, double y1,
                                    int direction) {
         if (y0 > y1) {
-            curves.add(new Order3(x1, y1, cx1, cy1, cx0, cy0, x0, y0,
-                                  -direction));
+            curves.add(new Order3(x1, y1, cx1, cy1, cx0, cy0, x0, y0, -direction));
         } else if (y1 > y0) {
-            curves.add(new Order3(x0, y0, cx0, cy0, cx1, cy1, x1, y1,
-                                  direction));
+            curves.add(new Order3(x0, y0, cx0, cy0, cx1, cy1, x1, y1, direction));
         }
     }
 
@@ -199,12 +204,7 @@ final class Order3 extends Curve {
         coords[pos+11] = y1;
     }
 
-    public Order3(double x0, double y0,
-                  double cx0, double cy0,
-                  double cx1, double cy1,
-                  double x1, double y1,
-                  int direction)
-    {
+    public Order3(double x0, double y0, double cx0, double cy0, double cx1, double cy1, double x1, double y1, int direction) {
         super(direction);
         // REMIND: Better accuracy in the root finding methods would
         //  ensure that cys are in range.  As it stands, they are never
@@ -292,13 +292,6 @@ final class Order3 extends Curve {
         return (direction == DECREASING) ? y0 : y1;
     }
 
-    private double TforY1;
-    private double YforT1;
-    private double TforY2;
-    private double YforT2;
-    private double TforY3;
-    private double YforT3;
-
     /*
      * Solve the cubic whose coefficients are in the a,b,c,d fields and
      * return the first root in the range [0, 1].
@@ -382,9 +375,7 @@ final class Order3 extends Curve {
         return t;
     }
 
-    public double refine(double a, double b, double c,
-                         double target, double t)
-    {
+    public double refine(double a, double b, double c, double target, double t) {
         if (t < -0.1 || t > 1.1) {
             return -1;
         }
@@ -427,30 +418,6 @@ final class Order3 extends Curve {
                 t1 = t;
             } else {
                 break;
-            }
-        }
-        boolean verbose = false;
-        if (false && t >= 0 && t <= 1) {
-            y = YforT(t);
-            long tdiff = diffbits(t, origt);
-            long ydiff = diffbits(y, origy);
-            long yerr = diffbits(y, target);
-            if (yerr > 0 || (verbose && tdiff > 0)) {
-                System.out.println("target was y = "+target);
-                System.out.println("original was y = "+origy+", t = "+origt);
-                System.out.println("final was y = "+y+", t = "+t);
-                System.out.println("t diff is "+tdiff);
-                System.out.println("y diff is "+ydiff);
-                System.out.println("y error is "+yerr);
-                double tlow = prev(t);
-                double ylow = YforT(tlow);
-                double thi = next(t);
-                double yhi = YforT(thi);
-                if (Math.abs(target - ylow) < Math.abs(target - y) ||
-                    Math.abs(target - yhi) < Math.abs(target - y))
-                {
-                    System.out.println("adjacent y's = ["+ylow+", "+yhi+"]");
-                }
             }
         }
         return (t > 1) ? -1 : t;
@@ -584,27 +551,23 @@ final class Order3 extends Curve {
         return new Order3(x0, y0, cx0, cy0, cx1, cy1, x1, y1, -direction);
     }
 
-    public int getSegment(double coords[]) {
+    public int getSegment(float coords[]) {
         if (direction == INCREASING) {
-            coords[0] = cx0;
-            coords[1] = cy0;
-            coords[2] = cx1;
-            coords[3] = cy1;
-            coords[4] = x1;
-            coords[5] = y1;
+            coords[0] = (float) cx0;
+            coords[1] = (float) cy0;
+            coords[2] = (float) cx1;
+            coords[3] = (float) cy1;
+            coords[4] = (float) x1;
+            coords[5] = (float) y1;
         } else {
-            coords[0] = cx1;
-            coords[1] = cy1;
-            coords[2] = cx0;
-            coords[3] = cy0;
-            coords[4] = x0;
-            coords[5] = y0;
+            coords[0] = (float) cx1;
+            coords[1] = (float) cy1;
+            coords[2] = (float) cx0;
+            coords[3] = (float) cy0;
+            coords[4] = (float) x0;
+            coords[5] = (float) y0;
         }
         return PathIterator.SEG_CUBICTO;
     }
 
-    public String controlPointString() {
-        return (("("+round(getCX0())+", "+round(getCY0())+"), ")+
-                ("("+round(getCX1())+", "+round(getCY1())+"), "));
-    }
 }

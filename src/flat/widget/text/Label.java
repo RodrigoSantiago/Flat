@@ -1,6 +1,6 @@
 package flat.widget.text;
 
-import flat.graphics.smart.SmartContext;
+import flat.graphics.SmartContext;
 import flat.graphics.context.Context;
 import flat.graphics.text.Align;
 import flat.graphics.context.Font;

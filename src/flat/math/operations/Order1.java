@@ -4,17 +4,16 @@ import flat.math.shapes.PathIterator;
 import flat.math.shapes.Rectangle;
 
 final class Order1 extends Curve {
-    private double x0;
-    private double y0;
-    private double x1;
-    private double y1;
-    private double xmin;
-    private double xmax;
 
-    public Order1(double x0, double y0,
-                  double x1, double y1,
-                  int direction)
-    {
+    private final double x0;
+    private final double y0;
+    private final double x1;
+    private final double y1;
+
+    private final double xmin;
+    private final double xmax;
+
+    public Order1(double x0, double y0, double x1, double y1, int direction) {
         super(direction);
         this.x0 = x0;
         this.y0 = y0;
@@ -208,38 +207,6 @@ final class Order1 extends Curve {
         if (xmin >= c1.xmax) {
             return 1;
         }
-        /*
-         * If "this" is curve A and "other" is curve B, then...
-         * xA(y) = x0A + (y - y0A) (x1A - x0A) / (y1A - y0A)
-         * xB(y) = x0B + (y - y0B) (x1B - x0B) / (y1B - y0B)
-         * xA(y) == xB(y)
-         * x0A + (y - y0A) (x1A - x0A) / (y1A - y0A)
-         *    == x0B + (y - y0B) (x1B - x0B) / (y1B - y0B)
-         * 0 == x0A (y1A - y0A) (y1B - y0B) + (y - y0A) (x1A - x0A) (y1B - y0B)
-         *    - x0B (y1A - y0A) (y1B - y0B) - (y - y0B) (x1B - x0B) (y1A - y0A)
-         * 0 == (x0A - x0B) (y1A - y0A) (y1B - y0B)
-         *    + (y - y0A) (x1A - x0A) (y1B - y0B)
-         *    - (y - y0B) (x1B - x0B) (y1A - y0A)
-         * If (dxA == x1A - x0A), etc...
-         * 0 == (x0A - x0B) * dyA * dyB
-         *    + (y - y0A) * dxA * dyB
-         *    - (y - y0B) * dxB * dyA
-         * 0 == (x0A - x0B) * dyA * dyB
-         *    + y * dxA * dyB - y0A * dxA * dyB
-         *    - y * dxB * dyA + y0B * dxB * dyA
-         * 0 == (x0A - x0B) * dyA * dyB
-         *    + y * dxA * dyB - y * dxB * dyA
-         *    - y0A * dxA * dyB + y0B * dxB * dyA
-         * 0 == (x0A - x0B) * dyA * dyB
-         *    + y * (dxA * dyB - dxB * dyA)
-         *    - y0A * dxA * dyB + y0B * dxB * dyA
-         * y == ((x0A - x0B) * dyA * dyB
-         *       - y0A * dxA * dyB + y0B * dxB * dyA)
-         *    / (-(dxA * dyB - dxB * dyA))
-         * y == ((x0A - x0B) * dyA * dyB
-         *       - y0A * dxA * dyB + y0B * dxB * dyA)
-         *    / (dxB * dyA - dxA * dyB)
-         */
         double dxa = x1 - x0;
         double dya = y1 - y0;
         double dxb = c1.x1 - c1.x0;
@@ -273,13 +240,13 @@ final class Order1 extends Curve {
         return orderof(XforY(y), c1.XforY(y));
     }
 
-    public int getSegment(double coords[]) {
+    public int getSegment(float coords[]) {
         if (direction == INCREASING) {
-            coords[0] = x1;
-            coords[1] = y1;
+            coords[0] = (float) x1;
+            coords[1] = (float) y1;
         } else {
-            coords[0] = x0;
-            coords[1] = y0;
+            coords[0] = (float) x0;
+            coords[1] = (float) y0;
         }
         return PathIterator.SEG_LINETO;
     }

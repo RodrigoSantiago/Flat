@@ -4,8 +4,8 @@ import flat.math.shapes.PathIterator;
 import flat.math.shapes.Rectangle;
 
 final class Order0 extends Curve {
-    private double x;
-    private double y;
+    private final double x;
+    private final double y;
 
     public Order0(double x, double y) {
         super(INCREASING);
@@ -90,10 +90,7 @@ final class Order0 extends Curve {
     }
 
     public boolean accumulateCrossings(Crossings c) {
-        return (x > c.getXLo() &&
-                x < c.getXHi() &&
-                y > c.getYLo() &&
-                y < c.getYHi());
+        return (x > c.getXLo() && x < c.getXHi() && y > c.getYLo() && y < c.getYHi());
     }
 
     public void enlarge(Rectangle r) {
@@ -108,9 +105,9 @@ final class Order0 extends Curve {
         return this;
     }
 
-    public int getSegment(double coords[]) {
-        coords[0] = x;
-        coords[1] = y;
+    public int getSegment(float coords[]) {
+        coords[0] = (float) x;
+        coords[1] = (float) y;
         return PathIterator.SEG_MOVETO;
     }
 }

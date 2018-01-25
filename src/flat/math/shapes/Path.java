@@ -165,6 +165,26 @@ public final class Path implements Shape, Cloneable {
         pointSize = 0;
     }
 
+    public void reverse() {
+        for (int i = 0, len = pointSize / 2; i < len; i++) {
+            final int index = i;
+            final float x = points[i];
+            final float y = points[++i];
+            points[index] = points[pointSize - index - 2];
+            points[index + 1] = points[pointSize- index - 1];
+            points[pointSize - index - 2] = x;
+            points[pointSize - index - 1] = y;
+        }
+        for (int i = 0; i < typeSize / 2; i++) {
+            final byte type = types[i];
+            final byte type2 = types[typeSize - i - 1];
+            types[i] = (type2 == PathIterator.SEG_MOVETO ? PathIterator.SEG_CLOSE :
+                    type2 == PathIterator.SEG_CLOSE ? PathIterator.SEG_MOVETO : type2);
+            types[typeSize - i - 1] = (type == PathIterator.SEG_MOVETO ? PathIterator.SEG_CLOSE :
+                    type == PathIterator.SEG_CLOSE ? PathIterator.SEG_MOVETO : type);
+        }
+    }
+
     public void transform(Affine t) {
         t.transform(points, 0, points, 0, pointSize / 2);
     }

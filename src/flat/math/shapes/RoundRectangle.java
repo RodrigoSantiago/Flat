@@ -28,14 +28,20 @@ public final class RoundRectangle implements Shape, Serializable {
     /** The height of the framing rectangle. */
     public float height;
 
-    /** The width of the arc that defines the rounded corners. */
-    public float arcwidth;
+    /** The top/left arc that defines the rounded corners. */
+    public float arcTop;
 
-    /** The height of the arc that defines the rounded corners. */
-    public float archeight;
+    /** The right/top arc that defines the rounded corners. */
+    public float arcRight;
+
+    /** The bottom/right arc that defines the rounded corners. */
+    public float arcBottom;
+
+    /** The left/bottom arc that defines the rounded corners. */
+    public float arcLeft;
 
     /**
-     * Creates a rounded rectangle with frame (0x0+0+0) and corners of size (0x0).
+     * Creates a rounded rectangle with frame (0x0+0+0) and corners of size (0x0x0x0).
      */
     public RoundRectangle () {
     }
@@ -43,26 +49,41 @@ public final class RoundRectangle implements Shape, Serializable {
     /**
      * Creates a rounded rectangle with the specified frame and corner dimensions.
      */
-    public RoundRectangle (float x, float y, float width, float height,
-                           float arcwidth, float archeight) {
-        set(x, y, width, height, arcwidth, archeight);
+    public RoundRectangle (float x, float y, float width, float height, float arc) {
+        set(x, y, width, height, arc, arc, arc, arc);
+    }
+
+    /**
+     * Creates a rounded rectangle with the specified frame and corner dimensions.
+     */
+    public RoundRectangle (float x, float y, float width, float height, float arcTop, float arcRight, float arcBottom, float arcLeft) {
+        set(x, y, width, height, arcTop, arcRight, arcBottom, arcLeft);
+    }
+
+    /**
+     * Creates a rounded rectangle with the specified rounded rectangle.
+     */
+    public RoundRectangle (RoundRectangle roundRect) {
+        set(roundRect);
     }
 
     @Override
     public RoundRectangle clone () {
-        return new RoundRectangle(x, y, width, height, arcwidth, archeight);
+        return new RoundRectangle(this);
     }
 
     /**
      * Sets the frame and corner dimensions of this rectangle to the specified values.
      */
-    public void set(float x, float y, float width, float height, float arcwidth, float archeight) {
+    public void set(float x, float y, float width, float height, float arcTop, float arcRight, float arcBottom, float arcLeft) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
-        this.arcwidth = arcwidth;
-        this.archeight = archeight;
+        this.arcTop = arcTop;
+        this.arcRight = arcRight;
+        this.arcBottom = arcBottom;
+        this.arcLeft = arcLeft;
     }
 
     /**
@@ -70,14 +91,14 @@ public final class RoundRectangle implements Shape, Serializable {
      * rectangle.
      */
     public void set(RoundRectangle rr) {
-        set(rr.x, rr.y, rr.width, rr.height, rr.arcwidth, rr.archeight);
+        set(rr.x, rr.y, rr.width, rr.height, rr.arcTop, rr.arcRight, rr.arcBottom, rr.arcLeft);
     }
 
     /**
      * Sets the frame dimensions of this rectangle
      */
     public void setSize(float x, float y, float width, float height) {
-        set(x, y, width, height, arcwidth, archeight);
+        set(x, y, width, height, arcTop, arcRight, arcBottom, arcLeft);
     }
 
     @Override
@@ -100,7 +121,14 @@ public final class RoundRectangle implements Shape, Serializable {
             return false;
         }
 
-        float aw = arcwidth / 2f, ah = archeight / 2f;
+        float arc;
+        if (px < (rx1 + rx2) / 2f) {
+            arc = py < (ry1 + ry2) / 2f ? arcTop : arcLeft;
+        } else {
+            arc = py < (ry1 + ry2) / 2f ? arcRight : arcBottom;
+        }
+        float aw = Math.max(0, Math.min(width / 2f, arc));
+
         float cx, cy;
         if (px < rx1 + aw) {
             cx = rx1 + aw;
@@ -110,6 +138,7 @@ public final class RoundRectangle implements Shape, Serializable {
             return true;
         }
 
+        float ah = Math.max(0, Math.min(height / 2f, arc));
         if (py < ry1 + ah) {
             cy = ry1 + ah;
         } else if (py > ry2 - ah) {
@@ -194,7 +223,7 @@ public final class RoundRectangle implements Shape, Serializable {
 
     /** Provides an iterator over an {@link RoundRectangle}. */
     protected static class Iterator implements PathIterator {
-        private final float x, y, width, height, aw, ah;
+        private final float x, y, width, height, aTopW, aTopH, aRightW, aRightH, aBottomW, aBottomH, aLeftW, aLeftH;
         private final Affine t;
         private int index;
 
@@ -203,10 +232,18 @@ public final class RoundRectangle implements Shape, Serializable {
             this.y = rr.y;
             this.width = rr.width;
             this.height = rr.height;
-            this.aw = Math.min(width, rr.arcwidth);
-            this.ah = Math.min(height, rr.archeight);
+
+            aRightW = Math.min(width / 2f, rr.arcRight) * 2;
+            aRightH = Math.min(height / 2f, rr.arcRight) * 2;
+            aBottomW = Math.min(width / 2f, rr.arcBottom) * 2;
+            aBottomH = Math.min(height / 2f, rr.arcBottom) * 2;
+            aLeftW = Math.min(width / 2f, rr.arcLeft) * 2;
+            aLeftH = Math.min(height / 2f, rr.arcLeft) * 2;
+            aTopW = Math.min(width / 2f, rr.arcTop) * 2;
+            aTopH = Math.min(height / 2f, rr.arcTop) * 2;
+
             this.t = at;
-            if (width < 0f || height < 0f || aw < 0f || ah < 0f) {
+            if (width < 0f || height < 0f) {
                 index = POINTS.length;
             }
         }
@@ -232,6 +269,21 @@ public final class RoundRectangle implements Shape, Serializable {
             }
             int j = 0;
             float[] p = POINTS[index];
+            float aw;
+            float ah;
+            if (index == 1 || index == 2) {
+                aw = aRightW;
+                ah = aRightH;
+            } else if (index == 3 || index == 4) {
+                aw = aBottomW;
+                ah = aBottomH;
+            } else if (index == 5 || index == 6) {
+                aw = aLeftW;
+                ah = aLeftH;
+            } else {
+                aw = aTopW;
+                ah = aTopH;
+            }
             for (int i = 0; i < p.length; i += 4) {
                 coords[j++] = x + p[i + 0] * width + p[i + 1] * aw;
                 coords[j++] = y + p[i + 2] * height + p[i + 3] * ah;

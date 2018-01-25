@@ -1,27 +1,22 @@
-package flat.graphics.smart;
+package flat.graphics;
 
-import flat.graphics.context.Context;
-import flat.graphics.context.ShaderProgram;
-import flat.graphics.context.Texture;
-import flat.graphics.context.VertexArray;
+import flat.graphics.context.*;
 import flat.graphics.context.enuns.AttributeType;
 import flat.graphics.context.enuns.BlendFunction;
 import flat.graphics.context.enuns.VertexMode;
-import flat.graphics.smart.effects.ImageMaterial;
-import flat.graphics.smart.effects.ImgMatDefault;
-import flat.graphics.smart.effects.MaterialValue;
-import flat.graphics.smart.effects.RoundRectShadow;
-import flat.graphics.smart.image.Image;
-import flat.graphics.smart.mesh.Mesh;
-import flat.graphics.smart.mesh.VertexData;
-import flat.graphics.svg.Ellipse;
-import flat.graphics.svg.Rect;
-import flat.graphics.svg.RoundRect;
+import flat.graphics.material.image.ImageMaterial;
+import flat.graphics.material.image.ImageTexture;
+import flat.graphics.material.MaterialValue;
+import flat.graphics.material.image.ShadowTexture;
+import flat.graphics.image.Image;
+import flat.graphics.mesh.Mesh;
+import flat.graphics.mesh.VertexData;
 import flat.graphics.text.Align;
-import flat.graphics.context.Font;
-import flat.math.Affine;
-import flat.math.Matrix4;
+import flat.math.*;
+import flat.math.operations.Area;
+import flat.math.shapes.*;
 
+import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,9 +29,13 @@ public class SmartContext {
     private Matrix4 projection3D = new Matrix4();
     private Matrix4 projection2D = new Matrix4();
 
+    // ---- SVG ---- //
+    private Area clip = new Area();
+    private boolean clipEnabled;
+
     // ---- IMAGE ---- //
     private Affine transform2D = new Affine();
-    private ImgMatDefault imgMatDefault = new ImgMatDefault();
+    private ImageTexture imageTexture = new ImageTexture();
 
     private ShaderProgram shader2D;
     private List<MaterialValue> matValues2D = new ArrayList<>();
@@ -46,7 +45,7 @@ public class SmartContext {
     private Texture imageBatchAtlas;
     private float[] parser = new float[24];
 
-    RoundRectShadow rectEffect;
+    ShadowTexture rectEffect;
 
     // ---- MODEL ---- //
     private Matrix4 transform3D = new Matrix4();
@@ -55,24 +54,24 @@ public class SmartContext {
 
     public SmartContext(Context context) {
         this.context = context;
-        this.context.setSmartContext(this);
         this.imageBatch = new VertexData();
         imageBatch.setVertexSize(1000 * 24 * 4);
-
         imageBatch.enableAttribute(0, AttributeType.FLOAT_VEC2, (4 * 2) + (4 * 2), 0);
         imageBatch.enableAttribute(1, AttributeType.FLOAT_VEC2, (4 * 2) + (4 * 2), (4 * 2));
 
-        setImageMaterial(null);
-
         context.setBlendEnabled(true);
-        context.setBlendFunction(BlendFunction.SRC_ALPHA, BlendFunction.ONE_MINUS_SRC_ALPHA,
-                BlendFunction.SRC_ALPHA, BlendFunction.ONE_MINUS_SRC_ALPHA);
+        context.setBlendFunction(BlendFunction.SRC_ALPHA, BlendFunction.ONE_MINUS_SRC_ALPHA, BlendFunction.ONE, BlendFunction.ONE);
 
-        rectEffect = new RoundRectShadow();
+        setImageMaterial(null);
+        rectEffect = new ShadowTexture();
+        context.svgStrokeWidth(1);
+    }
+
+    public Context getContext() {
+        return context;
     }
 
     // ---- CLEAR ---- //
-
     private void clearMode() {
         if (mode != 0) {
             if (mode == 1) svgEnd();
@@ -134,6 +133,16 @@ public class SmartContext {
         }
     }
 
+    public void setClip(Shape shape) {
+        if (shape == null) {
+            clip = null;
+            clipEnabled = false;
+        } else {
+            clip = new Area(shape);
+            clipEnabled = true;
+        }
+    }
+
     public void setColor(int color) {
         context.svgColor(color);
     }
@@ -169,12 +178,39 @@ public class SmartContext {
     }
 
     private void svgEnd() {
+        context.softFlush();
+    }
 
+    public void drawPath(Path path, boolean fill) {
+        svgMode();
+        if (clipEnabled) {
+            context.svgDrawShape(new Area(path).intersect(clip), fill);
+        } else {
+            context.svgDrawShape(path, fill);
+        }
+    }
+
+    public void drawShape(Shape path, boolean fill) {
+        svgMode();
+        if (clipEnabled) {
+            context.svgDrawShape(new Area(path).intersect(clip), fill);
+        } else {
+            context.svgDrawShape(path, fill);
+        }
+    }
+
+    public void drawPath(int[] types, float[] data, boolean fill) {
+        svgMode();
+        context.svgDrawShape(types, data, fill);
     }
 
     public void drawEllipse(Ellipse ellipse, boolean fill) {
         svgMode();
-        context.svgDrawEllipse(ellipse.getX(), ellipse.getY(), ellipse.getWidth(), ellipse.getHeight(), fill);
+        if (clipEnabled) {
+            context.svgDrawShape(new Area(ellipse).intersect(clip), fill);
+        } else {
+            context.svgDrawEllipse(ellipse.x, ellipse.y, ellipse.width, ellipse.height, fill);
+        }
     }
 
     public void drawEllipse(float x, float y, float width, float height, boolean fill) {
@@ -182,9 +218,13 @@ public class SmartContext {
         context.svgDrawEllipse(x, y, width, height, fill);
     }
 
-    public void drawRect(Rect rect, boolean fill) {
+    public void drawRect(Rectangle rect, boolean fill) {
         svgMode();
-        context.svgDrawRect(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight(), fill);
+        if (clipEnabled) {
+            context.svgDrawShape(new Area(rect).intersect(clip), fill);
+        } else {
+            context.svgDrawRect(rect.x, rect.y, rect.width, rect.height, fill);
+        }
     }
 
     public void drawRect(float x, float y, float width, float height, boolean fill) {
@@ -192,10 +232,14 @@ public class SmartContext {
         context.svgDrawRect(x, y, width, height, fill);
     }
 
-    public void drawRoundRect(RoundRect rect, boolean fill) {
+    public void drawRoundRect(RoundRectangle rect, boolean fill) {
         svgMode();
-        context.svgDrawRoundRect(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight(),
-                rect.getCornerTop(), rect.getCornerRight(), rect.getCornerBottom(), rect.getCornerLeft(), fill);
+        if (clipEnabled) {
+            context.svgDrawShape(new Area(rect).intersect(clip), fill);
+        } else {
+            context.svgDrawShape(rect, fill);
+            //context.svgDrawRoundRect(rect.x, rect.y, rect.width, rect.height, rect.arcTop, rect.arcRight, rect.arcBottom, rect.arcLeft, fill);
+        }
     }
 
     public void drawRoundRect(float x, float y, float width, float height, float cTop, float cRight, float cBottom, float cLeft, boolean fill) {
@@ -203,9 +247,54 @@ public class SmartContext {
         context.svgDrawRoundRect(x, y, width, height, cTop, cRight, cBottom, cLeft, fill);
     }
 
+    public void drawArc(float x, float y, float radius, float angleA, float angleB, boolean fill) {
+        svgMode();
+        context.svgDrawArc(x, y, radius, angleA, angleB, fill);
+    }
+
+    public void drawArc(Arc arc, boolean fill) {
+        svgMode();
+        context.svgDrawShape(arc, fill);
+    }
+
+    public void drawLine(float x1, float y1, float x2, float y2) {
+        svgMode();
+        context.svgDrawLine(x1, y1, x2, y2);
+    }
+
+    public void drawLine(Line line) {
+        svgMode();
+        context.svgDrawLine(line.x1, line.y1, line.x2, line.y2);
+    }
+
+    public void drawQuadCurve(float x1, float y1, float x2, float y2, float cx, float cy) {
+        svgMode();
+        context.svgDrawQuadCurve(x1, y1, x2, y2, cx, cy);
+    }
+
+    public void drawQuadCurve(QuadCurve curve) {
+        svgMode();
+        context.svgDrawQuadCurve(curve.x1, curve.y1, curve.x2, curve.y2, curve.ctrlx, curve.ctrly);
+    }
+
+    public void drawBezierCurve(float x1, float y1, float x2, float y2, float cx1, float cy1, float cx2, float cy2) {
+        svgMode();
+        context.svgDrawBezierCurve(x1, y1, x2, y2, cx1, cy1, cx2, cy2);
+    }
+
+    public void drawBezierCurve(CubicCurve curve) {
+        svgMode();
+        context.svgDrawBezierCurve(curve.x1, curve.y1, curve.x2, curve.y2, curve.ctrlx1, curve.ctrly1,  curve.ctrlx2, curve.ctrly2);
+    }
+
     public void drawText(float x, float y, String text) {
         svgMode();
         context.svgDrawText(x, y, text);
+    }
+
+    public void drawText(float x, float y, Buffer text, int offset, int length) {
+        svgMode();
+        context.svgDrawText(x, y, text, offset, length);
     }
 
     public void drawTextBox(float x, float y, float maxWidth, String text) {
@@ -213,9 +302,19 @@ public class SmartContext {
         context.svgDrawTextBox(x, y, maxWidth, text);
     }
 
+    public void drawTextBox(float x, float y, float maxWidth, Buffer text, int offset, int length) {
+        svgMode();
+        context.svgDrawTextBox(x, y, maxWidth, text, offset, length);
+    }
+
     public void drawTextSlice(float x, float y, float maxWidth, String text) {
         svgMode();
         context.svgDrawTextSlice(x, y, maxWidth, text);
+    }
+
+    public void drawTextSlice(float x, float y, float maxWidth, Buffer text, int offset, int length) {
+        svgMode();
+        context.svgDrawTextSlice(x, y, maxWidth, text, offset, length);
     }
 
     // ---- IMAGE ---- //
@@ -236,7 +335,8 @@ public class SmartContext {
         if (imageBatchCount > 0) {
 
             shader2D.begin();
-            shader2D.set("view", projection2D);
+            shader2D.set("view", new float[] {context.getViewWidth(), context.getViewHeight()});
+            shader2D.set("prj2D", projection2D);
             shader2D.set("src", 0);
             for (MaterialValue value : matValues2D) {
                 shader2D.set(value.name, value.value);
@@ -261,7 +361,7 @@ public class SmartContext {
         imageFlush();
 
         if (imageMaterial == null) {
-            imageMaterial = imgMatDefault;
+            imageMaterial = imageTexture;
         }
 
         shader2D = imageMaterial.getShader();
@@ -300,13 +400,13 @@ public class SmartContext {
             tr2 = transform2D;
         }
 
-        parser[ 0] = tr2.getPointX(dstX1, dstY1); parser[ 1] = tr2.getPointY(dstX1, dstY1); parser[ 2] = srcX1; parser[ 3] = srcY1;
-        parser[ 4] = tr2.getPointX(dstX2, dstY1); parser[ 5] = tr2.getPointY(dstX2, dstY1); parser[ 6] = srcX2; parser[ 7] = srcY1;
-        parser[ 8] = tr2.getPointX(dstX2, dstY2); parser[ 9] = tr2.getPointY(dstX2, dstY2); parser[10] = srcX2; parser[11] = srcY2;
+        parser[ 0] = tr2.pointX(dstX1, dstY1); parser[ 1] = tr2.pointY(dstX1, dstY1); parser[ 2] = srcX1; parser[ 3] = srcY1;
+        parser[ 4] = tr2.pointX(dstX2, dstY1); parser[ 5] = tr2.pointY(dstX2, dstY1); parser[ 6] = srcX2; parser[ 7] = srcY1;
+        parser[ 8] = tr2.pointX(dstX2, dstY2); parser[ 9] = tr2.pointY(dstX2, dstY2); parser[10] = srcX2; parser[11] = srcY2;
 
-        parser[12] = tr2.getPointX(dstX2, dstY2); parser[13] = tr2.getPointY(dstX2, dstY2); parser[14] = srcX2; parser[15] = srcY2;
-        parser[16] = tr2.getPointX(dstX1, dstY2); parser[17] = tr2.getPointY(dstX1, dstY2); parser[18] = srcX1; parser[19] = srcY2;
-        parser[20] = tr2.getPointX(dstX1, dstY1); parser[21] = tr2.getPointY(dstX1, dstY1); parser[22] = srcX1; parser[23] = srcY1;
+        parser[12] = tr2.pointX(dstX2, dstY2); parser[13] = tr2.pointY(dstX2, dstY2); parser[14] = srcX2; parser[15] = srcY2;
+        parser[16] = tr2.pointX(dstX1, dstY2); parser[17] = tr2.pointY(dstX1, dstY2); parser[18] = srcX1; parser[19] = srcY2;
+        parser[20] = tr2.pointX(dstX1, dstY1); parser[21] = tr2.pointY(dstX1, dstY1); parser[22] = srcX1; parser[23] = srcY1;
 
         imageBatch.setVertices(imageBatchCount * 24 * 4, parser);
 
@@ -319,15 +419,16 @@ public class SmartContext {
         rectEffect.setAlpha(alpha);
         rectEffect.setBlur(blur);
         rectEffect.setCorners(cTop, cRight, cBottom, cLeft);
+
         setImageMaterial(rectEffect);
         drawImage(null, 0, 0, 1, 1, x ,y, width, height, transform2D);
         setImageMaterial(null);
     }
 
-    public void drawRoundRectShadow(RoundRect rect, float blur, float alpha) {
+    public void drawRoundRectShadow(RoundRectangle rect, float blur, float alpha) {
         imageMode();
-        drawRoundRectShadow(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight(),
-                rect.getCornerTop(), rect.getCornerRight(), rect.getCornerBottom(), rect.getCornerLeft(), blur, alpha);
+        // todo - operations
+        drawRoundRectShadow(rect.x, rect.y, rect.width, rect.height, rect.arcTop, rect.arcRight, rect.arcBottom, rect.arcLeft, blur, alpha);
     }
 
     // ---- MESH ---- //

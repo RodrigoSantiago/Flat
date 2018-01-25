@@ -1,18 +1,19 @@
-package flat.graphics.smart.effects;
+package flat.graphics.material.image;
 
 import flat.graphics.context.Shader;
 import flat.graphics.context.ShaderProgram;
 import flat.graphics.context.enuns.ShaderType;
+import flat.graphics.material.MaterialValue;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 
-public class ImgMatDefault extends ImageMaterial {
+public class ImageTexture extends ImageMaterial {
 
     private static ShaderProgram shader;
-    public ImgMatDefault() {
+    public ImageTexture() {
         if (shader == null) {
             try {
                 String shadowVtx = new String(Files.readAllBytes(Paths.get(getClass().getResource("/resources/default.vtx.glsl").toURI())));
