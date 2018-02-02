@@ -2,10 +2,7 @@ package flat.screen;
 
 import flat.animations.Animation;
 import flat.backend.*;
-import flat.events.DragEvent;
-import flat.events.KeyEvent;
-import flat.events.PointerEvent;
-import flat.events.ScrollEvent;
+import flat.events.*;
 import flat.graphics.context.Context;
 import flat.graphics.SmartContext;
 import flat.graphics.image.Image;
@@ -182,19 +179,14 @@ public final class Application {
         while (!WL.IsClosed()) {
             loopTime = System.currentTimeMillis();
 
-            // Events
             processEvents();
 
-            // Animation
             processAnimations();
 
-            // Layout
             processLayout();
 
-            // Draw
             processDraws();
 
-            // Sync Calls
             processSyncCalls();
         }
     }
@@ -232,17 +224,17 @@ public final class Application {
                             widget.fireDrag(dragEvent);
                             mouse.dragData = dragEvent.getData();
                             if (dragEvent.isDragCompleted()) {
-                                mouse.dragged.fireDrag(new DragEvent(mouse.pressed, DragEvent.DONE, mouse.dragData, mouseX, mouseY));
+                                mouse.dragged.fireDrag(new DragEvent(mouse.dragged, DragEvent.DONE, mouse.dragData, mouseX, mouseY));
                             }
                         }
+                        mouse.pressed.firePointer(new PointerEvent(mouse.pressed, PointerEvent.RELEASED, event.btn, mouseX, mouseY));
                         mouse.reset();
+                        mouse = null;
                     } else if (mouse != null) {
                         mouse.pressed.firePointer(new PointerEvent(mouse.pressed, PointerEvent.RELEASED, event.btn, mouseX, mouseY));
                     }
-                    mouse = null;
                 }
                 MouseBtnData.release(event);
-
             }
             // Mouse Move
             else if (eData.type == 2) {
@@ -254,54 +246,63 @@ public final class Application {
                     PointerData pointer = getPointer(-1, -1, null);
                     if (pointer.hover == null) pointer.hover = widget;
                     if (pointer.hover != widget) {
-                        pointer.hover.firePointer(new PointerEvent(pointer.hover, PointerEvent.EXITED, 0, mouseX, mouseY));
-                        widget.firePointer(new PointerEvent(widget, PointerEvent.ENTERED, 0, mouseX, mouseY));
+                        if (!widget.isChildOf(pointer.hover)) {
+                            pointer.hover.fireHover(new HoverEvent(pointer.hover, HoverEvent.EXITED, widget, mouseX, mouseY));
+                        }
+                        if (!pointer.hover.isChildOf(widget)) {
+                            widget.fireHover(new HoverEvent(widget, HoverEvent.ENTERED, pointer.hover, mouseX, mouseY));
+                        }
                     }
-                    widget.firePointer(new PointerEvent(widget, PointerEvent.MOVED, 0, mouseX, mouseY));
+                    widget.fireHover(new HoverEvent(widget, HoverEvent.MOVED, widget, mouseX, mouseY));
                     pointer.hover = widget;
                 }
                 // Drag
                 else {
                     DragEvent dragEvent;
                     if (mouse.dragged == null) {
-                        mouse.dragged = widget;
+                        mouse.dragged = mouse.pressed;
                         mouse.hover = widget;
-                        widget.fireDrag(dragEvent = new DragEvent(widget, DragEvent.STARTED, mouse.dragData, mouseX, mouseY));
+                        mouse.dragged.fireDrag(dragEvent = new DragEvent(mouse.dragged, DragEvent.STARTED, mouse.dragData, mouseX, mouseY));
                         mouse.dragData = dragEvent.getData();
                         mouse.dragStarted = dragEvent.isStarted();
                     }
                     if (mouse.dragStarted) {
                         if (mouse.hover != widget) {
-                            mouse.hover.fireDrag(dragEvent = new DragEvent(mouse.hover, DragEvent.EXITED, mouse.dragData, mouseX, mouseY));
-                            mouse.dragData = dragEvent.getData();
-                            widget.fireDrag(dragEvent = new DragEvent(widget, DragEvent.ENTERED, mouse.dragData, mouseX, mouseY));
-                            mouse.dragData = dragEvent.getData();
+                            if (!widget.isChildOf(mouse.hover)) {
+                                mouse.hover.fireDrag(dragEvent = new DragEvent(mouse.hover, DragEvent.EXITED, widget, mouse.dragData, mouseX, mouseY));
+                                mouse.dragData = dragEvent.getData();
+                            }
+                            if (!mouse.hover.isChildOf(widget)) {
+                                widget.fireDrag(dragEvent = new DragEvent(widget, DragEvent.ENTERED, mouse.hover, mouse.dragData, mouseX, mouseY));
+                                mouse.dragData = dragEvent.getData();
+                            }
                         }
                         widget.fireDrag(dragEvent = new DragEvent(widget, DragEvent.OVER, mouse.dragData, mouseX, mouseY));
                         mouse.dragData = dragEvent.getData();
+
                         mouse.hover = widget;
                     }
 
-                    widget.firePointer(new PointerEvent(mouse.dragged, PointerEvent.DRAGGED, mouse.mouseButton, mouseX, mouseY));
+                    mouse.dragged.firePointer(new PointerEvent(mouse.dragged, PointerEvent.DRAGGED, mouse.mouseButton, mouseX, mouseY));
                 }
-                MouseMoveData.release(event);
 
+                MouseMoveData.release(event);
             }
             // Mouse Scroll
             else if (eData.type == 3) {
                 MouseScrollData event = (MouseScrollData) eData;
                 Widget widget = activity.findByPosition(mouseX, mouseY);
                 widget.fireScroll(new ScrollEvent(widget, ScrollEvent.SCROLL, event.x, event.y));
-                MouseScrollData.release(event);
 
+                MouseScrollData.release(event);
             }
             // Mouse Drop (system)
             else if (eData.type == 4) {
                 MouseDropData event = (MouseDropData) eData;
                 Widget widget = activity.findByPosition(mouseX, mouseY);
                 widget.fireDrag(new DragEvent(widget, DragEvent.DROPPED, event.paths, mouseX, mouseY));
-                MouseDropData.release(event);
 
+                MouseDropData.release(event);
             }
             // Key
             else if (eData.type == 5) {
@@ -311,11 +312,12 @@ public final class Application {
                         (event.action == WLEnuns.RELEASE) ? KeyEvent.RELEASED : KeyEvent.REPEATED;
 
                 boolean shift = (event.mods & (WLEnuns.MOD_SHIFT)) != 0;
-                boolean control = (event.mods & (WLEnuns.MOD_CONTROL)) != 0;
+                boolean ctrl = (event.mods & (WLEnuns.MOD_CONTROL)) != 0;
                 boolean alt = (event.mods & (WLEnuns.MOD_ALT)) != 0;
-                boolean meta = (event.mods & (WLEnuns.MOD_SUPER)) != 0;
+                boolean spr = (event.mods & (WLEnuns.MOD_SUPER)) != 0;
 
-                widget.fireKey(new KeyEvent(widget, eventType, shift, control, alt, meta, "", event.key));
+                widget.fireKey(new KeyEvent(widget, eventType, shift, ctrl, alt, spr, "", event.key));
+
                 KeyData.release(event);
             }
             // Char Typed
@@ -324,15 +326,17 @@ public final class Application {
                 Widget widget = activity.findFocused();
 
                 boolean shift = (event.mods & (WLEnuns.MOD_SHIFT)) != 0;
-                boolean control = (event.mods & (WLEnuns.MOD_CONTROL)) != 0;
+                boolean ctrl = (event.mods & (WLEnuns.MOD_CONTROL)) != 0;
                 boolean alt = (event.mods & (WLEnuns.MOD_ALT)) != 0;
-                boolean meta = (event.mods & (WLEnuns.MOD_SUPER)) != 0;
+                boolean spr = (event.mods & (WLEnuns.MOD_SUPER)) != 0;
 
                 String value = new String(Character.toChars(event.codepoint));
-                widget.fireKey(new KeyEvent(widget, KeyEvent.TYPED, shift, control, alt, meta, value, -1));
+                widget.fireKey(new KeyEvent(widget, KeyEvent.TYPED, shift, ctrl, alt, spr, value, -1));
 
                 CharModsData.release(event);
-            } else if (eData.type == 8) {
+            }
+            // Screen Size
+            else if (eData.type == 8) {
                 SizeData event = (SizeData) eData;
 
                 if (activity != null) {
@@ -571,6 +575,8 @@ public final class Application {
     public static void focus() {
         WL.Focus();
     }
+
+    // Multouch
 
     static PointerData getPointer(int mb, int pid, List<PointerData> points) {
         int touchId = points != null ? points.get(pid).touchId : -1;

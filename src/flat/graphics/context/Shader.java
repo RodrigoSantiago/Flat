@@ -3,7 +3,7 @@ package flat.graphics.context;
 import flat.backend.GL;
 import flat.graphics.context.enuns.ShaderType;
 
-public class Shader extends ContextObject {
+public final class Shader extends ContextObject {
 
     private int shaderId;
     private ShaderType type;

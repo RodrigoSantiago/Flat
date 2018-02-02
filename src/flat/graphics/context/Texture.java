@@ -6,8 +6,7 @@ public abstract class Texture extends ContextObject {
 
     protected int activePos;
 
-    public Texture() {
-
+    Texture() {
     }
 
     public void begin(int index) {

@@ -7,7 +7,7 @@ import flat.screen.Application;
 
 import java.nio.Buffer;
 
-public class BufferObejct extends ContextObject {
+public final class BufferObejct extends ContextObject {
 
     private int bufferId;
 

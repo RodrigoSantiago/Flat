@@ -143,6 +143,15 @@ public class SmartContext {
         }
     }
 
+    public void intersectClip(Shape shape) {
+        if (clip == null) {
+            clip = new Area(shape);
+            clipEnabled = true;
+        } else {
+            clip.intersect(new Area(shape));
+        }
+    }
+
     public void setColor(int color) {
         context.svgColor(color);
     }
@@ -184,7 +193,9 @@ public class SmartContext {
     public void drawPath(Path path, boolean fill) {
         svgMode();
         if (clipEnabled) {
-            context.svgDrawShape(new Area(path).intersect(clip), fill);
+            if (!clip.isEmpty()) {
+                context.svgDrawShape(new Area(path).intersect(clip), fill);
+            }
         } else {
             context.svgDrawShape(path, fill);
         }
@@ -193,21 +204,20 @@ public class SmartContext {
     public void drawShape(Shape path, boolean fill) {
         svgMode();
         if (clipEnabled) {
-            context.svgDrawShape(new Area(path).intersect(clip), fill);
+            if (!clip.isEmpty()) {
+                context.svgDrawShape(new Area(path).intersect(clip), fill);
+            }
         } else {
             context.svgDrawShape(path, fill);
         }
     }
 
-    public void drawPath(int[] types, float[] data, boolean fill) {
-        svgMode();
-        context.svgDrawShape(types, data, fill);
-    }
-
     public void drawEllipse(Ellipse ellipse, boolean fill) {
         svgMode();
         if (clipEnabled) {
-            context.svgDrawShape(new Area(ellipse).intersect(clip), fill);
+            if (!clip.isEmpty()) {
+                context.svgDrawShape(new Area(ellipse).intersect(clip), fill);
+            }
         } else {
             context.svgDrawEllipse(ellipse.x, ellipse.y, ellipse.width, ellipse.height, fill);
         }
@@ -221,7 +231,9 @@ public class SmartContext {
     public void drawRect(Rectangle rect, boolean fill) {
         svgMode();
         if (clipEnabled) {
-            context.svgDrawShape(new Area(rect).intersect(clip), fill);
+            if (!clip.isEmpty()) {
+                context.svgDrawShape(new Area(rect).intersect(clip), fill);
+            }
         } else {
             context.svgDrawRect(rect.x, rect.y, rect.width, rect.height, fill);
         }
@@ -235,10 +247,11 @@ public class SmartContext {
     public void drawRoundRect(RoundRectangle rect, boolean fill) {
         svgMode();
         if (clipEnabled) {
-            context.svgDrawShape(new Area(rect).intersect(clip), fill);
+            if (!clip.isEmpty()) {
+                context.svgDrawShape(new Area(rect).intersect(clip), fill);
+            }
         } else {
-            context.svgDrawShape(rect, fill);
-            //context.svgDrawRoundRect(rect.x, rect.y, rect.width, rect.height, rect.arcTop, rect.arcRight, rect.arcBottom, rect.arcLeft, fill);
+            context.svgDrawRoundRect(rect.x, rect.y, rect.width, rect.height, rect.arcTop, rect.arcRight, rect.arcBottom, rect.arcLeft, fill);
         }
     }
 
@@ -247,19 +260,20 @@ public class SmartContext {
         context.svgDrawRoundRect(x, y, width, height, cTop, cRight, cBottom, cLeft, fill);
     }
 
+    public void drawArc(Arc arc, boolean fill) {
+        svgMode();
+        if (clipEnabled) {
+            if (!clip.isEmpty()) {
+                context.svgDrawShape(new Area(arc).intersect(clip), fill);
+            }
+        } else {
+            context.svgDrawShape(arc, fill);
+        }
+    }
+
     public void drawArc(float x, float y, float radius, float angleA, float angleB, boolean fill) {
         svgMode();
         context.svgDrawArc(x, y, radius, angleA, angleB, fill);
-    }
-
-    public void drawArc(Arc arc, boolean fill) {
-        svgMode();
-        context.svgDrawShape(arc, fill);
-    }
-
-    public void drawLine(float x1, float y1, float x2, float y2) {
-        svgMode();
-        context.svgDrawLine(x1, y1, x2, y2);
     }
 
     public void drawLine(Line line) {
@@ -267,9 +281,9 @@ public class SmartContext {
         context.svgDrawLine(line.x1, line.y1, line.x2, line.y2);
     }
 
-    public void drawQuadCurve(float x1, float y1, float x2, float y2, float cx, float cy) {
+    public void drawLine(float x1, float y1, float x2, float y2) {
         svgMode();
-        context.svgDrawQuadCurve(x1, y1, x2, y2, cx, cy);
+        context.svgDrawLine(x1, y1, x2, y2);
     }
 
     public void drawQuadCurve(QuadCurve curve) {
@@ -277,14 +291,19 @@ public class SmartContext {
         context.svgDrawQuadCurve(curve.x1, curve.y1, curve.x2, curve.y2, curve.ctrlx, curve.ctrly);
     }
 
-    public void drawBezierCurve(float x1, float y1, float x2, float y2, float cx1, float cy1, float cx2, float cy2) {
+    public void drawQuadCurve(float x1, float y1, float x2, float y2, float cx, float cy) {
         svgMode();
-        context.svgDrawBezierCurve(x1, y1, x2, y2, cx1, cy1, cx2, cy2);
+        context.svgDrawQuadCurve(x1, y1, x2, y2, cx, cy);
     }
 
     public void drawBezierCurve(CubicCurve curve) {
         svgMode();
         context.svgDrawBezierCurve(curve.x1, curve.y1, curve.x2, curve.y2, curve.ctrlx1, curve.ctrly1,  curve.ctrlx2, curve.ctrly2);
+    }
+
+    public void drawBezierCurve(float x1, float y1, float x2, float y2, float cx1, float cy1, float cx2, float cy2) {
+        svgMode();
+        context.svgDrawBezierCurve(x1, y1, x2, y2, cx1, cy1, cx2, cy2);
     }
 
     public void drawText(float x, float y, String text) {
@@ -427,7 +446,6 @@ public class SmartContext {
 
     public void drawRoundRectShadow(RoundRectangle rect, float blur, float alpha) {
         imageMode();
-        // todo - operations
         drawRoundRectShadow(rect.x, rect.y, rect.width, rect.height, rect.arcTop, rect.arcRight, rect.arcBottom, rect.arcLeft, blur, alpha);
     }
 

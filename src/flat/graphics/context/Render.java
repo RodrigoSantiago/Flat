@@ -4,7 +4,7 @@ import flat.backend.GL;
 import flat.graphics.context.enuns.PixelFormat;
 import flat.screen.Application;
 
-public class Render extends ContextObject {
+public final class Render extends ContextObject {
 
     private int renderBufferId;
     private PixelFormat format;

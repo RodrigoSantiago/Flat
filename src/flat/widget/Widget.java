@@ -78,6 +78,7 @@ public class Widget {
     //---------------------
     private boolean clickable = true;
     private PointerListener pointerListener;
+    private HoverListener hoverListener;
     private ScrollListener scrollListener;
     private KeyListener keyListener;
     private DragListener dragListener;
@@ -150,6 +151,21 @@ public class Widget {
                 });
             } else {
                 attributes.getLoader().log("Method not found : " + onPointerListener);
+            }
+        }
+        String onHoverListener = attributes.asString("onHover");
+        if (onHoverListener != null) {
+            Method method = findMethod(controller, onHoverListener, HoverEvent.class);
+            if (method != null) {
+                setHoverListener(event -> {
+                    try {
+                        return (boolean) method.invoke(controller, event);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            } else {
+                attributes.getLoader().log("Method not found : " + onHoverListener);
             }
         }
         String onScrollListener = attributes.asString("onScroll");
@@ -240,11 +256,11 @@ public class Widget {
                     context.setTransform2D(getTransformView().translate(0, Math.max(0, elevation)));
                     if (elevation <= 2f) {
                         context.setColor((int)((0.2f * bgAlpha) * 255));
-                        //context.drawRoundRect(bg, true);
+                        context.drawRoundRect(bg, true);
                     } else if (elevation < 24) {
-                        //context.drawRoundRectShadow(bg, elevation * 2, 0.28f * bgAlpha);
+                        context.drawRoundRectShadow(bg, elevation * 2, 0.28f * bgAlpha);
                     } else if (elevation < 56) {
-                        //context.drawRoundRectShadow(bg, 48, (0.28f - ((elevation - 24) / 100f)) * bgAlpha);
+                        context.drawRoundRectShadow(bg, 48, (0.28f - ((elevation - 24) / 100f)) * bgAlpha);
                     }
                 }
                 context.setTransform2D(getTransformView());
@@ -386,6 +402,16 @@ public class Widget {
             return this;
         } else {
             return null;
+        }
+    }
+
+    public boolean isChildOf(Widget widget) {
+        if (parent == widget) {
+            return true;
+        } else if (parent != null) {
+            return parent.isChildOf(widget);
+        } else {
+            return false;
         }
     }
 
@@ -945,6 +971,14 @@ public class Widget {
         return pointerListener;
     }
 
+    public void setHoverListener(HoverListener hoverListener) {
+        this.hoverListener = hoverListener;
+    }
+
+    public HoverListener getHoverListener() {
+        return hoverListener;
+    }
+
     public void setScrollListener(ScrollListener scrollListener) {
         this.scrollListener = scrollListener;
     }
@@ -987,6 +1021,16 @@ public class Widget {
         }
     }
 
+    public void fireHover(HoverEvent hoverEvent) {
+        boolean done = false;
+        if (hoverListener != null) {
+            done = hoverListener.handle(hoverEvent);
+        }
+        if (!done && parent != null && hoverEvent.isRecyclable(parent)) {
+            parent.fireHover(hoverEvent.recycle(parent));
+        }
+    }
+
     public void fireScroll(ScrollEvent scrollEvent) {
         boolean done = false;
         if (scrollListener != null) {
@@ -1002,7 +1046,7 @@ public class Widget {
         if (dragListener != null) {
             done = dragListener.handle(dragEvent);
         }
-        if (!done && parent != null) {
+        if (!done && parent != null && dragEvent.isRecyclable(parent)) {
             parent.fireDrag(dragEvent.recycle(parent));
         }
     }

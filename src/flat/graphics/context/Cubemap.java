@@ -8,7 +8,7 @@ import flat.screen.Application;
 
 import java.nio.Buffer;
 
-public class Cubemap extends Texture {
+public final class Cubemap extends Texture {
 
     private int cubemapId;
     private PixelFormat format;

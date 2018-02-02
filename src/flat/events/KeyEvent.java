@@ -8,16 +8,16 @@ public class KeyEvent extends Event {
     public static final int RELEASED = 12;
     public static final int TYPED = 13;
 
-    private boolean shift, ctrl, alt, meta ;
+    private boolean shift, ctrl, alt, spr;
     private String chr;
     private int keycode;
 
-    public KeyEvent(Widget source, int type, boolean shift, boolean ctrl, boolean alt, boolean meta, String chr, int keycode) {
+    public KeyEvent(Widget source, int type, boolean shift, boolean ctrl, boolean alt, boolean spr, String chr, int keycode) {
         super(source, type);
         this.shift = shift;
         this.ctrl = ctrl;
         this.alt = alt;
-        this.meta = meta;
+        this.spr = spr;
         this.chr = chr;
         this.keycode = keycode;
     }
@@ -40,8 +40,8 @@ public class KeyEvent extends Event {
         return alt;
     }
 
-    public boolean isMetaDown() {
-        return meta;
+    public boolean isSuperDown() {
+        return spr;
     }
 
     public String getChar() {
@@ -64,7 +64,7 @@ public class KeyEvent extends Event {
         if (shift) s.append(", [").append("SHIFT").append("]");
         if (ctrl) s.append(", [").append("CTRL").append("]");
         if (alt) s.append(", [").append("ALT").append("]");
-        if (meta) s.append(", [").append("META").append("]");
+        if (spr) s.append(", [").append("META").append("]");
 
         return s.toString();
     }

@@ -11,7 +11,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-public class ShaderProgram extends ContextObject {
+public final class ShaderProgram extends ContextObject {
 
     private ArrayList<Shader> shaders = new ArrayList<>();
 

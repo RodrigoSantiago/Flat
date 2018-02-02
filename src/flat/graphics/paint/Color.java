@@ -1,4 +1,4 @@
 package flat.graphics.paint;
 
-public class Color {
+public final class Color {
 }

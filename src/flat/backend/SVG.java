@@ -34,8 +34,10 @@ public class SVG {
     //      Render styles
     //---------------------------
     public static native void SetShapeAntiAlias(long context, int enable);
-    public static native void SetStrokeColor(long context, int color);
-    public static native void SetFillColor(long context, int color);
+    public static native void SetPaintColor(long context, int color);
+    public static native void SetPaintLinearGradient(long context, float x1, float y1, float x2, float y2, int count, float[] stops, int[] colors);
+    public static native void SetPaintRadialGradient(long context, float x1, float y1, float radiusIn, float radiusOut, int count, float[] stops, int[] colors);
+    public static native void SetPaintBoxShadow(long context, float x, float y, float width, float height, float corners, float blur, float alpha);
     public static native void SetMiterLimit(long context, float limit);
     public static native void SetStrokeWidth(long context, float size);
     public static native void SetLineCap(long context, int cap);

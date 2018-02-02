@@ -2,7 +2,7 @@ package flat.graphics.context;
 
 import flat.backend.GL;
 
-public class VertexArray extends ContextObject {
+public final class VertexArray extends ContextObject {
 
     private int vertexArrayId;
     private Context context;

@@ -105,7 +105,6 @@ public final class Font {
         this.data = data.clone();
     }
 
-
     public int getInternalID() {
         Integer index;
         synchronized (Font.class) {

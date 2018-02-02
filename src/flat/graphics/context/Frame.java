@@ -5,7 +5,7 @@ import flat.graphics.context.enuns.CubeFace;
 
 import static flat.backend.GLEnuns.*;
 
-public class Frame extends ContextObject {
+public final class Frame extends ContextObject {
 
     public static final int DEPTH = -1;
     public static final int STENCIL = -2;

@@ -9,7 +9,7 @@ public abstract class ContextObject {
 
     private boolean initialized;
 
-    protected ContextObject() {
+    ContextObject() {
     }
 
     public long getUnicID() {

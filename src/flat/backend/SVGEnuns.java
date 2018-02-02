@@ -3,9 +3,9 @@ package flat.backend;
 public class SVGEnuns {
 
     // create flags
-    public static final int SVG_ANTIALIAS 		= 1;
-    public static final int SVG_STENCIL_STROKES	= 1<<1;
-    public static final int SVG_DEBUG 			= 1<<2;
+    public static final int SVG_ANTIALIAS = 1;
+    public static final int SVG_STENCIL_STROKES = 1 << 1;
+    public static final int SVG_DEBUG = 1 << 2;
 
     // winding
     public static final int SVG_CCW = 1;                    // Winding for solid shapes

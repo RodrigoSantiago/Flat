@@ -10,7 +10,7 @@ import flat.screen.Application;
 
 import java.nio.Buffer;
 
-public class Texture2D extends Texture {
+public final class Texture2D extends Texture {
 
     private int textureId;
     private PixelFormat format;

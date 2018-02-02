@@ -78,6 +78,7 @@ public final class Context {
 
     // ---- SVG ---- //
     private boolean svgMode;
+    private boolean svgColorMode;
     private int svgColor;
     private float svgAlpha;
     private Paint svgPaint;
@@ -203,7 +204,8 @@ public final class Context {
         svgMode = false;
         svgColor = 0xFFFFFFFF;
         svgAlpha = 1f;
-        svgPaint = null;
+        svgColorMode = true;
+        svgPaint = new Paint();
         svgStrokeWidth = 1f;
         svgLineCap = LineCap.BUTT;
         svgLineJoin = LineJoin.ROUND;
@@ -1023,8 +1025,15 @@ public final class Context {
             svgMode = true;
             SVG.BeginFrame(svgId, viewWidth, viewHeight, 1.0f);
 
-            SVG.SetStrokeColor(svgId, svgColor);
-            SVG.SetFillColor(svgId, svgColor);
+            if (svgColorMode) {
+                SVG.SetPaintColor(svgId, svgColor);
+            } else {
+                if (svgPaint.isRadial()) {
+                    SVG.SetPaintRadialGradient(svgId, svgPaint.x1, svgPaint.y1, svgPaint.radiusIn,  svgPaint.radiusOut, svgPaint.stopsCount, svgPaint.stops, svgPaint.colors);
+                } else {
+                    SVG.SetPaintLinearGradient(svgId, svgPaint.x1, svgPaint.y1, svgPaint.x2, svgPaint.y2, svgPaint.stopsCount, svgPaint.stops, svgPaint.colors);
+                }
+            }
             SVG.SetGlobalAlpha(svgId, svgAlpha);
             SVG.SetStrokeWidth(svgId, svgStrokeWidth);
             SVG.SetLineCap(svgId, svgLineCap.getInternalEnum());
@@ -1107,9 +1116,9 @@ public final class Context {
     public void svgColor(int color) {
         if (svgColor != color) {
             svgColor = color;
+            svgColorMode = true;
             if (svgMode) {
-                SVG.SetStrokeColor(svgId, color);
-                SVG.SetFillColor(svgId, color);
+                SVG.SetPaintColor(svgId, color);
             }
         }
     }
@@ -1133,8 +1142,21 @@ public final class Context {
 
     public void svgPaint(Paint paint) {
         if (svgPaint != paint) {
-            svgPaint = paint;
-            // todo add gradients
+            if (paint != null) {
+                svgColorMode = false;
+                svgPaint.set(paint);
+            } else {
+                svgColorMode = true;
+            }
+            if (svgMode) {
+                if (svgColorMode) {
+                    SVG.SetPaintColor(svgId, svgColor);
+                } else if (svgPaint.isRadial()) {
+                    SVG.SetPaintRadialGradient(svgId, svgPaint.x1, svgPaint.y1, svgPaint.radiusIn, svgPaint.radiusOut, svgPaint.stopsCount, svgPaint.stops, svgPaint.colors);
+                } else {
+                    SVG.SetPaintLinearGradient(svgId, svgPaint.x1, svgPaint.y1, svgPaint.x2, svgPaint.y2, svgPaint.stopsCount, svgPaint.stops, svgPaint.colors);
+                }
+            }
         }
     }
 
