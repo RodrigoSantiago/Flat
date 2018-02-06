@@ -4,7 +4,6 @@ import flat.backend.GL;
 import flat.backend.SVG;
 import flat.backend.WL;
 import flat.graphics.context.enuns.*;
-import flat.graphics.paint.*;
 import flat.graphics.SmartContext;
 import flat.graphics.text.*;
 import flat.math.*;
@@ -78,6 +77,7 @@ public final class Context {
 
     // ---- SVG ---- //
     private boolean svgMode;
+    private boolean svgAntialias;
     private boolean svgColorMode;
     private int svgColor;
     private float svgAlpha;
@@ -85,6 +85,7 @@ public final class Context {
     private float svgStrokeWidth;
     private LineCap svgLineCap;
     private LineJoin svgLineJoin;
+    private float svgMiterLimit;
     private boolean svgClip;
     private float svgClipX, svgClipY, svgClipWidth, svgClipHeight;
 
@@ -202,6 +203,7 @@ public final class Context {
 
         // ---- SVG ---- //
         svgMode = false;
+        svgAntialias = true;
         svgColor = 0xFFFFFFFF;
         svgAlpha = 1f;
         svgColorMode = true;
@@ -209,6 +211,7 @@ public final class Context {
         svgStrokeWidth = 1f;
         svgLineCap = LineCap.BUTT;
         svgLineJoin = LineJoin.ROUND;
+        svgMiterLimit = 10.0f;
         svgClip = false;
         svgClipX = 0;
         svgClipY = 0;
@@ -1025,30 +1028,21 @@ public final class Context {
             svgMode = true;
             SVG.BeginFrame(svgId, viewWidth, viewHeight, 1.0f);
 
-            if (svgColorMode) {
-                SVG.SetPaintColor(svgId, svgColor);
-            } else {
-                if (svgPaint.isRadial()) {
-                    SVG.SetPaintRadialGradient(svgId, svgPaint.x1, svgPaint.y1, svgPaint.radiusIn,  svgPaint.radiusOut, svgPaint.stopsCount, svgPaint.stops, svgPaint.colors);
-                } else {
-                    SVG.SetPaintLinearGradient(svgId, svgPaint.x1, svgPaint.y1, svgPaint.x2, svgPaint.y2, svgPaint.stopsCount, svgPaint.stops, svgPaint.colors);
-                }
-            }
+            svgApplyTransformGradientes();
+
+            SVG.SetShapeAntiAlias(svgId, svgAntialias);
+
             SVG.SetGlobalAlpha(svgId, svgAlpha);
             SVG.SetStrokeWidth(svgId, svgStrokeWidth);
             SVG.SetLineCap(svgId, svgLineCap.getInternalEnum());
             SVG.SetLineJoin(svgId, svgLineJoin.getInternalEnum());
+            SVG.SetMiterLimit(svgId, svgMiterLimit);
 
             SVG.TextSetFont(svgId, svgTextFont.getInternalID());
             SVG.TextSetSize(svgId, svgTextSize);
             SVG.TextSetLetterSpacing(svgId, svgTextLetterSpacing);
             SVG.TextSetLineHeight(svgId, svgTextLineHeight);
             SVG.TextSetAlign(svgId, svgTextHorizontalAlign.getInternalEnum() | svgTextVerticalAlign.getInternalEnum());
-
-            SVG.TransformSet(svgId,
-                    svgTransform.m00, svgTransform.m10,
-                    svgTransform.m01, svgTransform.m11,
-                    svgTransform.m02, svgTransform.m12);
 
             if (svgClip) {
                 SVG.SetScissor(svgId, svgClipX, svgClipY, svgClipWidth, svgClipHeight);
@@ -1113,18 +1107,21 @@ public final class Context {
         }
     }
 
-    public void svgColor(int color) {
-        if (svgColor != color) {
-            svgColor = color;
-            svgColorMode = true;
-            if (svgMode) {
-                SVG.SetPaintColor(svgId, color);
-            }
-        }
-    }
+    private void svgApplyTransformGradientes() {
+        SVG.TransformSet(svgId,
+                svgTransform.m00, svgTransform.m10,
+                svgTransform.m01, svgTransform.m11,
+                svgTransform.m02, svgTransform.m12);
 
-    public int svgColor() {
-        return svgColor;
+        if (svgColorMode) {
+            SVG.SetPaintColor(svgId, svgColor);
+        } else if (svgPaint.isLinear()) {
+            SVG.SetPaintLinearGradient(svgId, svgPaint.x1, svgPaint.y1, svgPaint.x2, svgPaint.y2, svgPaint.stopsCount, svgPaint.stops, svgPaint.colors, svgPaint.cycleMethod.ordinal(), svgPaint.interpolation.ordinal());
+        } else if (svgPaint.isRadial()) {
+            SVG.SetPaintRadialGradient(svgId, svgPaint.x1, svgPaint.y1, svgPaint.radiusIn, svgPaint.radiusOut, svgPaint.stopsCount, svgPaint.stops, svgPaint.colors, svgPaint.cycleMethod.ordinal(), svgPaint.interpolation.ordinal());
+        } else {
+            SVG.SetPaintBoxShadow(svgId, Math.min(svgPaint.x1, svgPaint.x2), Math.min(svgPaint.y1, svgPaint.y2), Math.abs(svgPaint.x1 - svgPaint.x2), Math.abs(svgPaint.y1 - svgPaint.y2), svgPaint.corners, svgPaint.blur, svgPaint.alpha, svgPaint.interpolation.ordinal());
+        }
     }
 
     public void svgAlpha(float alpha) {
@@ -1140,23 +1137,47 @@ public final class Context {
         return svgAlpha;
     }
 
-    public void svgPaint(Paint paint) {
-        if (svgPaint != paint) {
-            if (paint != null) {
-                svgColorMode = false;
-                svgPaint.set(paint);
-            } else {
-                svgColorMode = true;
-            }
+    public void svgAntialias(boolean enabled) {
+        if (svgAntialias != enabled) {
+            svgAntialias = enabled;
             if (svgMode) {
-                if (svgColorMode) {
-                    SVG.SetPaintColor(svgId, svgColor);
-                } else if (svgPaint.isRadial()) {
-                    SVG.SetPaintRadialGradient(svgId, svgPaint.x1, svgPaint.y1, svgPaint.radiusIn, svgPaint.radiusOut, svgPaint.stopsCount, svgPaint.stops, svgPaint.colors);
-                } else {
-                    SVG.SetPaintLinearGradient(svgId, svgPaint.x1, svgPaint.y1, svgPaint.x2, svgPaint.y2, svgPaint.stopsCount, svgPaint.stops, svgPaint.colors);
-                }
+                SVG.SetShapeAntiAlias(svgId, enabled);
             }
+        }
+    }
+
+    public boolean svgAntialias() {
+        return svgAntialias;
+    }
+
+
+    public void svgColor(int color) {
+        if (svgColor != color || !svgColorMode) {
+            svgColor = color;
+            svgColorMode = true;
+            if (svgMode) {
+                SVG.SetPaintColor(svgId, color);
+            }
+        }
+    }
+
+    public int svgColor() {
+        return svgColor;
+    }
+
+    public boolean svgIsColorMode() {
+        return svgColorMode;
+    }
+
+    public void svgPaint(Paint paint) {
+        if (paint != null) {
+            svgColorMode = false;
+            svgPaint.set(paint);
+        } else {
+            svgColorMode = true;
+        }
+        if (svgMode) {
+            svgApplyTransformGradientes();
         }
     }
 
@@ -1203,19 +1224,29 @@ public final class Context {
         return svgLineJoin;
     }
 
+    public void svgMiterLimit(float miterLimit) {
+        if (svgMiterLimit != miterLimit) {
+            svgMiterLimit = miterLimit;
+            if (svgMode) {
+                SVG.SetMiterLimit(svgId, miterLimit);
+            }
+        }
+    }
+
+    public float svgMiterLimit() {
+        return svgMiterLimit;
+    }
+
     public void svgTransform(Affine transform) {
         if (transform == null) {
             svgTransform.identity();
             if (svgMode) {
-                SVG.TransformIdentity(svgId);
+                svgApplyTransformGradientes();
             }
         } else {
             svgTransform.set(transform);
             if (svgMode) {
-                SVG.TransformSet(svgId,
-                        svgTransform.m00, svgTransform.m10,
-                        svgTransform.m01, svgTransform.m11,
-                        svgTransform.m02, svgTransform.m12);
+                svgApplyTransformGradientes();
             }
         }
     }

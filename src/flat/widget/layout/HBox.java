@@ -1,11 +1,14 @@
 package flat.widget.layout;
 
+import flat.graphics.text.Align;
 import flat.widget.Widget;
 
 import java.util.ArrayList;
 import java.util.Collections;
 
 public class HBox extends Box {
+
+    private Align.Vertical align = Align.Vertical.TOP;
 
     ArrayList<Widget> orderedList = new ArrayList<>();
 
@@ -18,7 +21,7 @@ public class HBox extends Box {
         setLayout(x, y, Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
         ArrayList<Widget> children = getChildren();
 
-        float xoff = 0, sum = 0;
+        float xoff = Math.min(getWidth(), getPaddingLeft() + getMarginLeft()), sum = 0;
         for (Widget child : children) {
             if (child.getVisibility() == GONE) continue;
 
@@ -30,14 +33,16 @@ public class HBox extends Box {
             mul = getWidth() / sum;
         }
 
-        float reaming = getWidth(), sum2 = 0;
+        float w = Math.max(0, getWidth() - getPaddingLeft() - getPaddingRight() - getMarginLeft() - getMarginRight());
+        float h = Math.max(0, getHeight() - getPaddingTop() - getPaddingBottom() - getMarginTop() - getMarginBottom());
+        float reaming = w, sum2 = 0;
         for (Widget child : children) {
             if (child.getVisibility() == GONE) continue;
 
-            if (Math.min(child.getMeasureWidth(), getWidth()) * mul < Math.min(child.getMinWidth(), getWidth())) {
-                reaming -= Math.min(child.getMinWidth(), getWidth());
+            if (Math.min(child.getMeasureWidth(), w) * mul < Math.min(child.getLayoutMinWidth(), w)) {
+                reaming -= Math.min(child.getLayoutMinWidth(), w);
             } else {
-                sum2 += Math.min(child.getMeasureWidth(), getWidth());
+                sum2 += Math.min(child.getMeasureWidth(), w);
             }
         }
 
@@ -45,11 +50,13 @@ public class HBox extends Box {
         for (Widget child : children) {
             if (child.getVisibility() == GONE) continue;
 
-            if (Math.min(child.getMeasureWidth(), getWidth()) * mul < Math.min(child.getMinWidth(), getWidth())) {
-                child.onLayout(xoff, 0, Math.min(child.getMinWidth(), getWidth()), getHeight());
+            float childW;
+            if (Math.min(child.getMeasureWidth(), w) * mul < Math.min(child.getLayoutMinWidth(), w)) {
+                childW = Math.min(child.getLayoutMinWidth(), w);
             } else {
-                child.onLayout(xoff, 0, Math.min(child.getMeasureWidth(), getWidth()) * mul2, getHeight());
+                childW = Math.min(child.getMeasureWidth(), w) * mul2;
             }
+            child.onLayout(xoff, yOff(childW), childW, h);
             xoff += child.getWidth();
         }
     }
@@ -79,6 +86,8 @@ public class HBox extends Box {
                 }
             }
         }
+        mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
+        mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
         setMeasure(mWidth, mHeight);
     }
 
@@ -98,4 +107,20 @@ public class HBox extends Box {
         super.childRemove(widget);
     }
 
+    public Align.Vertical getAlign() {
+        return align;
+    }
+
+    public void setAlign(Align.Vertical align) {
+        this.align = align;
+    }
+
+    private float yOff(float childHeight) {
+        float start = getPaddingTop() + getMarginTop();
+        float end = getHeight() - getPaddingBottom() - getMarginBottom();
+        if (end < start) return (start + end) / 2f;
+        if (align == Align.Vertical.BOTTOM || align == Align.Vertical.BASELINE) return end - childHeight;
+        if (align == Align.Vertical.MIDDLE) return (start + end - childHeight) / 2f;
+        return start;
+    }
 }

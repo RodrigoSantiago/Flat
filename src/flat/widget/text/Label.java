@@ -83,7 +83,17 @@ public class Label extends Widget {
             context.setTextFont(font);
             context.setTextSize(fontSize);
             context.setTextVerticalAlign(Align.Vertical.TOP);
-            context.drawTextSlice(0, 0, getWidth(), showText);
+            float lm = getMarginLeft() + getPaddingLeft();
+            float rm = getMarginRight() + getPaddingRight();
+            float tm = getMarginTop() + getPaddingTop();
+            float bm = getMarginBottom() + getPaddingBottom();
+
+            float x = lm + rm > getWidth() ? (lm + getWidth() - rm) / 2f : lm;
+            float y = tm + bm > getHeight() ? (tm + getHeight() - bm) / 2f : tm;
+            float width = Math.max(0, getWidth() - lm - rm);
+            float height = Math.max(0, getHeight() - tm - bm);
+
+            context.drawTextSlice(x, y, width, showText);
         }
     }
 
@@ -95,6 +105,10 @@ public class Label extends Widget {
             context.svgTextSize(fontSize);
             textWidth = context.svgTextGetWidth(showText);
         }
-        setMeasure(getPrefWidth() == WRAP_CONTENT ? textWidth : getPrefWidth(), getPrefHeight() == WRAP_CONTENT ? fontSize : getPrefHeight());
+        float mWidth = Math.max(textWidth,getPrefWidth());
+        float mHeight = Math.max(getPrefHeight(), fontSize);
+        mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
+        mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
+        setMeasure(mWidth, mHeight);
     }
 }

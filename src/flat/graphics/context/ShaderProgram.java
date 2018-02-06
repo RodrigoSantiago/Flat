@@ -233,7 +233,7 @@ public final class ShaderProgram extends ContextObject {
             setFloat(att, 4, data.length / 4, data);
         } else if (type == AttributeType.FLOAT_MAT2) {
             float[] data = (float[]) value;
-            setMatrix(att, 2, 2, data.length / 4, false, data);
+            setMatrix(att, 2, 2, data.length / 4, true, data);
         } else if (type == AttributeType.FLOAT_MAT3) {
             if (value instanceof Matrix3[]) {
                 Matrix3[] data = (Matrix3[]) value;
@@ -249,17 +249,17 @@ public final class ShaderProgram extends ContextObject {
                     tmp[i * 9 + 7] = data[i].val[5];
                     tmp[i * 9 + 8] = data[i].val[8];
                 }
-                setMatrix(att, 3, 3, data.length, false, tmp);
+                setMatrix(att, 3, 3, data.length, true, tmp);
             } else if  (value instanceof Matrix3) {
                 Matrix3 data = (Matrix3) value;
                 float[] tmp = new float[]{
                         data.val[0], data.val[3], data.val[6],
                         data.val[1], data.val[4], data.val[7],
                         data.val[2], data.val[5], data.val[8]};
-                setMatrix(att, 3, 3, 1, false, tmp);
+                setMatrix(att, 3, 3, 1, true, tmp);
             } else {
                 float[] data = (float[]) value;
-                setMatrix(att, 3, 3, 1, false, data);
+                setMatrix(att, 3, 3, 1, true, data);
             }
         } else if (type == AttributeType.FLOAT_MAT4) {
             if (value instanceof Matrix4[]) {
@@ -283,7 +283,7 @@ public final class ShaderProgram extends ContextObject {
                     tmp[i * 9 + 14] = data[i].val[11];
                     tmp[i * 9 + 15] = data[i].val[15];
                 }
-                setMatrix(att, 4, 4, data.length, false, tmp);
+                setMatrix(att, 4, 4, data.length, true, tmp);
             } else if  (value instanceof Matrix4) {
                 Matrix4 data = (Matrix4) value;
                 float[] tmp = new float[]{
@@ -291,10 +291,10 @@ public final class ShaderProgram extends ContextObject {
                         data.val[1], data.val[5], data.val[9], data.val[13],
                         data.val[2], data.val[6], data.val[10], data.val[14],
                         data.val[3], data.val[7], data.val[11], data.val[15]};
-                setMatrix(att, 4, 4, 1, false, tmp);
+                setMatrix(att, 4, 4, 1, true, tmp);
             } else {
                 float[] data = (float[]) value;
-                setMatrix(att, 4, 4, 1, false, data);
+                setMatrix(att, 4, 4, 1, true, data);
             }
         } else if (type == AttributeType.FLOAT_MAT2x3) {
             if (value instanceof Affine[]) {
@@ -308,33 +308,33 @@ public final class ShaderProgram extends ContextObject {
                     tmp[i * 9 + 4] = data[i].m02;
                     tmp[i * 9 + 5] = data[i].m12;
                 }
-                setMatrix(att, 2, 3, data.length, false, tmp);
+                setMatrix(att, 2, 3, data.length, true, tmp);
             } else if  (value instanceof Affine) {
                 Affine data = (Affine) value;
                 float[] tmp = new float[]{
                         data.m00, data.m01,
                         data.m10, data.m11,
                         data.m02, data.m12};
-                setMatrix(att, 2, 3, 1, false, tmp);
+                setMatrix(att, 2, 3, 1, true, tmp);
             } else {
                 float[] data = (float[]) value;
-                setMatrix(att, 2, 3, 1, false, data);
+                setMatrix(att, 2, 3, 1, true, data);
             }
         } else if (type == AttributeType.FLOAT_MAT2x4) {
             float[] data = (float[]) value;
-            setMatrix(att, 2, 4, data.length / 8, false, data);
+            setMatrix(att, 2, 4, data.length / 8, true, data);
         } else if (type == AttributeType.FLOAT_MAT3x2) {
             float[] data = (float[]) value;
-            setMatrix(att, 3, 2, data.length / 6, false, data);
+            setMatrix(att, 3, 2, data.length / 6, true, data);
         } else if (type == AttributeType.FLOAT_MAT3x4) {
             float[] data = (float[]) value;
-            setMatrix(att, 3, 4, data.length / 12, false, data);
+            setMatrix(att, 3, 4, data.length / 12, true, data);
         } else if (type == AttributeType.FLOAT_MAT4x2) {
             float[] data = (float[]) value;
-            setMatrix(att, 4, 2, data.length / 8, false, data);
+            setMatrix(att, 4, 2, data.length / 8, true, data);
         } else if (type == AttributeType.FLOAT_MAT4x3) {
             float[] data = (float[]) value;
-            setMatrix(att, 4, 3, data.length / 12, false, data);
+            setMatrix(att, 4, 3, data.length / 12, true, data);
         }
         return true;
     }

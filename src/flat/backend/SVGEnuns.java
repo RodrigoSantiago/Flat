@@ -15,7 +15,7 @@ public class SVGEnuns {
     public static final int SVG_SOLID = 1;
     public static final int SVG_HOLE = 2;
 
-    // lineCap
+    // line stroker
     public static final int SVG_BUTT = 0;
     public static final int SVG_ROUND = 1;
     public static final int SVG_SQUARE = 2;

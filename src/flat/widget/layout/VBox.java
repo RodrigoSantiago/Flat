@@ -1,11 +1,14 @@
 package flat.widget.layout;
 
+import flat.graphics.text.Align;
 import flat.widget.Widget;
 
 import java.util.ArrayList;
 import java.util.Collections;
 
 public class VBox extends Box {
+
+    private Align.Horizontal align = Align.Horizontal.LEFT;
 
     ArrayList<Widget> orderedList = new ArrayList<>();
 
@@ -18,7 +21,7 @@ public class VBox extends Box {
         setLayout(x, y, Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
         ArrayList<Widget> children = getChildren();
 
-        float yoff = 0, sum = 0;
+        float yoff = Math.min(getHeight(), getPaddingTop() + getMarginTop()), sum = 0;
         for (Widget child : children) {
             if (child.getVisibility() == GONE) continue;
 
@@ -30,14 +33,16 @@ public class VBox extends Box {
             mul = getHeight() / sum;
         }
 
-        float reaming = getHeight(), sum2 = 0;
+        float w = Math.max(0, getWidth() - getPaddingLeft() - getPaddingRight() - getMarginLeft() - getMarginRight());
+        float h = Math.max(0, getHeight() - getPaddingTop() - getPaddingBottom() - getMarginTop() - getMarginBottom());
+        float reaming = h, sum2 = 0;
         for (Widget child : children) {
             if (child.getVisibility() == GONE) continue;
 
-            if (Math.min(child.getMeasureHeight(), getHeight()) * mul < Math.min(child.getMinHeight(), getHeight())) {
-                reaming -= Math.min(child.getMinHeight(), getHeight());
+            if (Math.min(child.getMeasureHeight(), h) * mul < Math.min(child.getLayoutMinHeight(), h)) {
+                reaming -= Math.min(child.getLayoutMinHeight(), h);
             } else {
-                sum2 += Math.min(child.getMeasureHeight(), getHeight());
+                sum2 += Math.min(child.getMeasureHeight(), h);
             }
         }
 
@@ -45,11 +50,13 @@ public class VBox extends Box {
         for (Widget child : children) {
             if (child.getVisibility() == GONE) continue;
 
-            if (Math.min(child.getMeasureHeight(), getHeight()) * mul < Math.min(child.getMinHeight(), getHeight())) {
-                child.onLayout(0, yoff, getWidth(), Math.min(child.getMinHeight(), getHeight()));
+            float childH;
+            if (Math.min(child.getMeasureHeight(), h) * mul < Math.min(child.getLayoutMinHeight(), h)) {
+                childH = Math.min(child.getLayoutMinHeight(), h);
             } else {
-                child.onLayout(0, yoff, getWidth(), Math.min(child.getMeasureHeight(), getHeight()) * mul2);
+                childH = Math.min(child.getMeasureHeight(), h) * mul2;
             }
+            child.onLayout(xOff(childH), yoff, w, childH);
             yoff += child.getHeight();
         }
     }
@@ -79,6 +86,8 @@ public class VBox extends Box {
                 }
             }
         }
+        mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
+        mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
         setMeasure(mWidth, mHeight);
     }
 
@@ -96,5 +105,22 @@ public class VBox extends Box {
     public void childRemove(Widget widget) {
         orderedList.remove(widget);
         super.childRemove(widget);
+    }
+
+    public Align.Horizontal getAlign() {
+        return align;
+    }
+
+    public void setAlign(Align.Horizontal align) {
+        this.align = align;
+    }
+
+    private float xOff(float childWidth) {
+        float start = getPaddingLeft() + getMarginLeft();
+        float end = getWidth() - getPaddingRight() - getMarginRight();
+        if (end < start) return (start + end) / 2f;
+        if (align == Align.Horizontal.RIGHT) return end - childWidth;
+        if (align == Align.Horizontal.CENTER) return (start + end - childWidth) / 2f;
+        return start;
     }
 }

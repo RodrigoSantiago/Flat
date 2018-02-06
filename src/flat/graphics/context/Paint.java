@@ -1,40 +1,51 @@
 package flat.graphics.context;
 
 public final class Paint {
+    public enum CycleMethod {CLAMP, REPEATE, REFLECT}
+    public enum Interpolation {LINEAR, CIRCLEIN, CIRCLEOUT, FADE}
+
     protected final float[] stops = new float[16];
     protected final int[] colors = new int[16];
     protected int stopsCount;
+    protected CycleMethod cycleMethod = CycleMethod.CLAMP;
+    protected Interpolation interpolation = Interpolation.LINEAR;
     protected float radiusIn, radiusOut;
     protected float x1, y1, x2, y2;
-    protected boolean radial;
+    protected float corners, alpha, blur;
+    protected int type;
 
     public Paint() {
 
     }
 
-    public Paint(float x1, float y1, float x2, float y2, float[] stops, int[] colors) {
-        setLinear(x1, y1, x2, y2, stops, colors);
-    }
-
-    public Paint(float x1, float y1, float radius, float[] stops, int[] colors) {
-        setRadial(x1, y1, 0, radius, stops, colors);
+    public Paint(Paint paint) {
+        set(paint);
     }
 
     public void set(Paint paint) {
-        this.radial = paint.radial;
+        this.type = paint.type;
         this.radiusIn = paint.radiusIn;
         this.radiusOut = paint.radiusOut;
         this.x1 = paint.x1;
         this.x2 = paint.x2;
         this.y1 = paint.y1;
         this.y2 = paint.y2;
+        this.corners = paint.corners;
+        this.alpha = paint.alpha;
+        this.blur = paint.blur;
         this.stopsCount = paint.stopsCount;
+        this.cycleMethod = paint.cycleMethod;
+        this.interpolation = paint.interpolation;
         System.arraycopy(paint.stops, 0, this.stops, 0,16);
         System.arraycopy(paint.colors, 0, this.colors, 0, 16);
     }
 
+    public void setLinear() {
+        type = 0;
+    }
+
     public void setLinear(float x1, float y1, float x2, float y2, float[] stops, int[] colors) {
-        radial = false;
+        type = 0;
         setX1(x1);
         setY1(y1);
         setX2(x2);
@@ -44,8 +55,12 @@ public final class Paint {
         System.arraycopy(colors, 0, this.colors, 0, Math.min(colors.length, this.colors.length));
     }
 
+    public void setRadial() {
+        type = 1;
+    }
+
     public void setRadial(float x1, float y1, float radiusIn, float radiusOut, float[] stops, int[] colors) {
-        radial = true;
+        type = 1;
         setRadiusIn(radiusIn);
         setRadiusOut(radiusOut);
         setX1(x1);
@@ -53,6 +68,37 @@ public final class Paint {
         setStopsCount(stops.length);
         System.arraycopy(stops, 0, this.stops, 0, Math.min(stops.length, this.stops.length));
         System.arraycopy(colors, 0, this.colors, 0, Math.min(colors.length, this.colors.length));
+    }
+
+    public void setBoxShadow() {
+        type = 2;
+    }
+
+    public void setBoxShadow(float x1, float y1, float x2, float y2, float corners, float blur, float alpha) {
+        type = 2;
+        setX1(x1);
+        setY1(y1);
+        setX2(x2);
+        setY2(y2);
+        setCorners(corners);
+        setBlur(blur);
+        setAlpha(alpha);
+    }
+
+    public CycleMethod getCycleMethod() {
+        return cycleMethod;
+    }
+
+    public void setCycleMethod(CycleMethod cycleMethod) {
+        this.cycleMethod = cycleMethod == null ? CycleMethod.CLAMP : cycleMethod;
+    }
+
+    public Interpolation getInterpolation() {
+        return interpolation;
+    }
+
+    public void setInterpolation(Interpolation interpolation) {
+        this.interpolation = interpolation;
     }
 
     public int getStopsCount() {
@@ -79,8 +125,16 @@ public final class Paint {
         colors[id] = value;
     }
 
+    public boolean isLinear() {
+        return type == 0;
+    }
+
     public boolean isRadial() {
-        return radial;
+        return type == 1;
+    }
+
+    public boolean isShadow() {
+        return type == 2;
     }
 
     public float getX1() {
@@ -129,5 +183,29 @@ public final class Paint {
 
     public void setRadiusOut(float radiusOut) {
         this.radiusOut = radiusOut;
+    }
+
+    public float getCorners() {
+        return corners;
+    }
+
+    public void setCorners(float corners) {
+        this.corners = corners;
+    }
+
+    public float getBlur() {
+        return blur;
+    }
+
+    public void setBlur(float blur) {
+        this.blur = blur;
+    }
+
+    public float getAlpha() {
+        return alpha;
+    }
+
+    public void setAlpha(float alpha) {
+        this.alpha = alpha;
     }
 }

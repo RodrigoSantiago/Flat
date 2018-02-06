@@ -1,4 +1,4 @@
-package flat.graphics.paint;
+package flat.graphics.context.enuns;
 
 import static flat.backend.SVGEnuns.*;
 

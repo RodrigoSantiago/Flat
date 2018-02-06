@@ -139,20 +139,20 @@ public final class Rectangle implements Shape, Serializable {
         return target.set(x, y);
     }
 
-    /** Returns the intersection of the specified rectangle and this rectangle (i.e. the largest
+    /** Set as the intersection of the specified rectangle and this rectangle (i.e. the largest
      * rectangle contained in both this and the specified rectangle). */
-    public Rectangle intersection (float rx, float ry, float rw, float rh) {
+    public void intersect (float rx, float ry, float rw, float rh) {
         float x1 = Math.max(x, rx);
         float y1 = Math.max(y, ry);
         float x2 = Math.min(x + width, rx + rw);
         float y2 = Math.min(y + height, ry + rh);
-        return new Rectangle(x1, y1, x2 - x1, y2 - y1);
+        set(x1, y1, x2 - x1, y2 - y1);
     }
 
-    /** Returns the intersection of the supplied rectangle and this rectangle (i.e. the largest
+    /** Set as the intersection of the supplied rectangle and this rectangle (i.e. the largest
      * rectangle contained in both this and the supplied rectangle). */
-    public Rectangle intersection (Rectangle r) {
-        return intersection(r.x, r.y, r.width, r.height);
+    public void intersect (Rectangle r) {
+        intersect(r.x, r.y, r.width, r.height);
     }
 
     /** Returns the union of the supplied rectangle and this rectangle (i.e. the smallest rectangle

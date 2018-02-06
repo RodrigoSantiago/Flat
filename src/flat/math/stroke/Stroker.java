@@ -1,5 +1,7 @@
 package flat.math.stroke;
 
+import flat.graphics.context.enuns.LineCap;
+import flat.graphics.context.enuns.LineJoin;
 import flat.math.Mathf;
 import flat.math.PathList;
 import flat.math.Vector2;
@@ -8,14 +10,6 @@ import flat.math.shapes.PathIterator;
 import flat.math.shapes.Shape;
 
 public class Stroker {
-    public static final int CAP_BUTT = 0;
-    public static final int CAP_SQUARE = 1;
-    public static final int CAP_ROUND = 2;
-
-    public static final int JOIN_BEVEL = 0;
-    public static final int JOIN_MITER = 1;
-    public static final int JOIN_ROUND = 2;
-
     private static int[] pointShift = {
             2,  // MOVETO
             2,  // LINETO
@@ -24,10 +18,10 @@ public class Stroker {
             0   // CLOSE
     };
 
-    private int cap;
-    private int join;
-    private float mitterLimit;
-    private float weight = 20;
+    private LineCap cap;
+    private LineJoin join;
+    private float miterLimit;
+    private float width = 20;
 
     private float innerWeight = 20;
     private float sx, sy;
@@ -39,51 +33,51 @@ public class Stroker {
         this(1);
     }
 
-    public Stroker(float weight) {
-        this(weight, 0, 0, 1.0f);
+    public Stroker(float width) {
+        this(width, LineCap.BUTT, LineJoin.MITER, 1.0f);
     }
 
-    public Stroker(float weight, int cap, int join, float mitterLimit) {
-        setWeight(weight);
+    public Stroker(float width, LineCap cap, LineJoin join, float miterLimit) {
+        setWidth(width);
         setCap(cap);
         setJoin(join);
-        setMitterLimit(mitterLimit);
+        setMiterLimit(miterLimit);
     }
 
-    public int getCap() {
+    public LineCap getCap() {
         return cap;
     }
 
-    public void setCap(int cap) {
+    public void setCap(LineCap cap) {
         this.cap = cap;
     }
 
-    public int getJoin() {
+    public LineJoin getJoin() {
         return join;
     }
 
-    public void setJoin(int join) {
+    public void setJoin(LineJoin join) {
         this.join = join;
     }
 
-    public float getMitterLimit() {
-        return mitterLimit;
+    public float getMiterLimit() {
+        return miterLimit;
     }
 
-    public void setMitterLimit(float mitterLimit) {
-        this.mitterLimit = mitterLimit;
+    public void setMiterLimit(float miterLimit) {
+        this.miterLimit = miterLimit;
     }
 
-    public float getWeight() {
-        return weight;
+    public float getWidth() {
+        return width;
     }
 
-    public void setWeight(float weight) {
-        this.weight = weight;
+    public void setWidth(float width) {
+        this.width = width;
     }
 
     public Path getStrokedShape(Shape shape) {
-        innerWeight = Math.max(Math.abs(weight), 0.00001f);
+        innerWeight = Math.max(Math.abs(width), 0.00001f);
         closed = false;
         pathList.clear();
         Path path = new Path(Path.WIND_NON_ZERO);
@@ -138,9 +132,9 @@ public class Stroker {
                 pathList.remove(iVal);
                 i--;
             } else {
-                if (join == JOIN_BEVEL) {           // Simple link
+                if (join == LineJoin.BEVEL) {           // Simple link
                     if (iVal != 0) pathList.setAsLineTo(iVal, line[0], line[1]);
-                } else if (join == JOIN_MITER) {   // Add mitter point
+                } else if (join == LineJoin.MITER) {   // Add mitter point
                     // line line > collision point
                     // curve - use last or first normal point
                     // set BACK to COLISIOPOINT

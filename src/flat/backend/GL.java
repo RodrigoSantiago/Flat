@@ -169,12 +169,14 @@ public class GL {
     public static native void TextureDataB(int trgTT, int level, int formatTF, int width, int height, int border, byte[] data, int offset);
     public static native void TextureDataS(int trgTT, int level, int formatTF, int width, int height, int border, short[] data, int offset);
     public static native void TextureDataI(int trgTT, int level, int formatTF, int width, int height, int border, int[] data, int offset);
+    public static native void TextureDataF(int trgTT, int level, int formatTF, int width, int height, int border, float[] data, int offset);
     public static native void TextureDataBuffer(int trgTT, int level, int formatTF, int width, int height, int border, Buffer buffer, int offset);
 
     public static native void TextureSubData(int trgTT, int level, int x, int y, int width, int height, int dataFormatTF, long offset);
     public static native void TextureSubDataB(int trgTT, int level, int x, int y, int width, int height, int dataFormatTF, byte[] data, int offset);
     public static native void TextureSubDataS(int trgTT, int level, int x, int y, int width, int height, int dataFormatTF, short[] data, int offset);
     public static native void TextureSubDataI(int trgTT, int level, int x, int y, int width, int height, int dataFormatTF, int[] data, int offset);
+    public static native void TextureSubDataF(int trgTT, int level, int x, int y, int width, int height, int dataFormatTF, float[] data, int offset);
     public static native void TextureSubDataBuffer(int trgTT, int level, int x, int y, int width, int height, int dataFormatTF, Buffer buffer, int offset);
 
     public static native void TextureSetLevels(int trgTB, int levels);

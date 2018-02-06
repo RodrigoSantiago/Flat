@@ -1,4 +1,4 @@
-package flat.graphics.paint;
+package flat.graphics;
 
 public final class Color {
 }

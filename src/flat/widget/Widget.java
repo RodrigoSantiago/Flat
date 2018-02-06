@@ -4,6 +4,7 @@ import flat.Flat;
 import flat.events.*;
 import flat.graphics.SmartContext;
 import flat.math.*;
+import flat.math.operations.Area;
 import flat.math.shapes.RoundRectangle;
 import flat.math.shapes.Shape;
 import flat.uxml.UXAttributes;
@@ -248,7 +249,6 @@ public class Widget {
 
     public void onDraw(SmartContext context) {
         if (visibility == VISIBLE) {
-            context.setClip(clip);
             if (backgroundColor != 0) {
                 float bgAlpha = (backgroundColor & 0x000000FF) / 255f * getDisplayOpacity();
 
@@ -497,7 +497,6 @@ public class Widget {
     void setX(float x) {
         if (this.x != x) {
             this.x = x;
-            bg.x = x + marginLeft;
             invalidateTransform();
         }
     }
@@ -509,7 +508,6 @@ public class Widget {
     void setY(float y) {
         if (this.y != y) {
             this.y = y;
-            bg.y = y + marginTop;
             invalidateTransform();
         }
     }
@@ -521,7 +519,7 @@ public class Widget {
     void setWidth(float width) {
         if (this.width != width) {
             this.width = width;
-            bg.width = width - marginLeft - marginRight;
+            updateRect();
         }
     }
 
@@ -532,7 +530,7 @@ public class Widget {
     void setHeight(float height) {
         if (this.height != height) {
             this.height = height;
-            bg.height = height - marginTop - marginBottom;
+            updateRect();
         }
     }
 
@@ -543,6 +541,7 @@ public class Widget {
     public void setMarginTop(float marginTop) {
         if (this.marginTop != marginTop) {
             this.marginTop = marginTop;
+            updateRect();
             invalidate(true);
         }
     }
@@ -554,6 +553,7 @@ public class Widget {
     public void setMarginRight(float marginRight) {
         if (this.marginRight != marginRight) {
             this.marginRight = marginRight;
+            updateRect();
             invalidate(true);
         }
     }
@@ -565,6 +565,7 @@ public class Widget {
     public void setMarginBottom(float marginBottom) {
         if (this.marginBottom != marginBottom) {
             this.marginBottom = marginBottom;
+            updateRect();
             invalidate(true);
         }
     }
@@ -576,6 +577,7 @@ public class Widget {
     public void setMarginLeft(float marginLeft) {
         if (this.marginLeft != marginLeft) {
             this.marginLeft = marginLeft;
+            updateRect();
             invalidate(true);
         }
     }
@@ -586,6 +588,7 @@ public class Widget {
             marginRight = right;
             marginBottom = bottom;
             marginLeft = left;
+            updateRect();
             invalidate(true);
         }
     }
@@ -732,6 +735,14 @@ public class Widget {
             this.prefHeight = height;
             invalidate(true);
         }
+    }
+
+    public float getLayoutMinWidth() {
+        return minWidth + paddingLeft + paddingRight + marginLeft + marginRight;
+    }
+
+    public float getLayoutMinHeight() {
+        return minHeight + paddingTop + paddingBottom + marginTop + marginBottom;
     }
 
     public float getCenterX() {
@@ -1064,5 +1075,12 @@ public class Widget {
     @Override
     public String toString() {
         return "[" + id + "]" + getClass().getSimpleName();
+    }
+
+    private void updateRect() {
+        bg.x = marginLeft + marginRight > width ? (marginLeft + width - marginRight) / 2f : marginLeft;
+        bg.y = marginTop + marginBottom > height ? (marginTop + height - marginBottom) / 2f : marginTop;
+        bg.width = Math.max(0, width - marginLeft - marginRight);
+        bg.height = Math.max(0, height - marginTop - marginBottom);
     }
 }

@@ -15,7 +15,7 @@ public class Settings {
     }
 
     public <T extends Activity> Settings(Class<T> activityClass, Runnable start) {
-        this(activityClass, start, 1);
+        this(activityClass, start, 0);
     }
 
     public <T extends Activity> Settings(Class<T> activityClass, Runnable start, int multsamples) {

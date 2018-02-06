@@ -46,6 +46,8 @@ public class Box extends Parent {
                 }
             }
         }
+        mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
+        mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
         setMeasure(mWidth, mHeight);
     }
 
