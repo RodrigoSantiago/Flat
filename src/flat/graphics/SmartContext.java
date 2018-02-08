@@ -240,6 +240,14 @@ public class SmartContext {
         return context.svgTextHorizontalAlign();
     }
 
+    public void setTextLineHeight(float height) {
+        context.svgTextLineHeight(height);
+    }
+
+    public float getTextLineHeight() {
+        return context.svgTextLineHeight();
+    }
+
     // ---- SVG ---- //
 
     private void svgMode() {
@@ -382,22 +390,22 @@ public class SmartContext {
             final float xm = x1 + hw;
             final float ym = y1 + hh;
             shadowPaint.setBoxShadow(x, y, x + width, y + height,
-                    Math.min(width / 2f, Math.min(height / 2f, cTop + blur)), blur, alpha);
+                    Math.min(width / 2f, Math.min(height / 2f, cTop + blur)), blur * 2, alpha);
             context.svgPaint(shadowPaint);
             drawRect(x1, y1, hw, hh, true);
 
             shadowPaint.setBoxShadow(x, y, x + width, y + height,
-                    Math.min(width / 2f, Math.min(height / 2f, cRight + blur)), blur, alpha);
+                    Math.min(width / 2f, Math.min(height / 2f, cRight + blur)), blur * 2, alpha);
             context.svgPaint(shadowPaint);
             drawRect(xm, y1, hw, hh, true);
 
             shadowPaint.setBoxShadow(x, y, x + width, y + height,
-                    Math.min(width / 2f, Math.min(height / 2f, cBottom + blur)), blur, alpha);
+                    Math.min(width / 2f, Math.min(height / 2f, cBottom + blur)), blur * 2, alpha);
             context.svgPaint(shadowPaint);
             drawRect(xm, ym, hw, hh, true);
 
             shadowPaint.setBoxShadow(x, y, x + width, y + height,
-                    Math.min(width / 2f, Math.min(height / 2f, cLeft + blur)), blur, alpha);
+                    Math.min(width / 2f, Math.min(height / 2f, cLeft + blur)), blur * 2, alpha);
             context.svgPaint(shadowPaint);
             drawRect(x1, ym, hw, hh, true);
         }

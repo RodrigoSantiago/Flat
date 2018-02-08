@@ -19,7 +19,7 @@ public class HBox extends Box {
     @Override
     public void onLayout(float x, float y, float width, float height) {
         setLayout(x, y, Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
-        ArrayList<Widget> children = getChildren();
+        ArrayList<Widget> children = orderedList;
 
         float xoff = Math.min(getWidth(), getPaddingLeft() + getMarginLeft()), sum = 0;
         for (Widget child : children) {

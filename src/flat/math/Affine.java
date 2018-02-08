@@ -222,6 +222,12 @@ public final class Affine {
         return this;
     }
 
+    public Affine preTranslate (float x, float y) {
+        m02 += x;
+        m12 += y;
+        return this;
+    }
+
     /**
      * Multiplies this matrix with a scale matrix.
      *
@@ -234,6 +240,16 @@ public final class Affine {
         m01 *= y;
         m10 *= x;
         m11 *= y;
+        return this;
+    }
+
+    public Affine preScale (float scaleX, float scaleY) {
+        m00 *= scaleX;
+        m01 *= scaleX;
+        m02 *= scaleX;
+        m10 *= scaleY;
+        m11 *= scaleY;
+        m12 *= scaleY;
         return this;
     }
 
@@ -254,6 +270,23 @@ public final class Affine {
         tmp1 = m11 + x * m10;
         m10 = tmp0;
         m11 = tmp1;
+        return this;
+    }
+
+    public Affine preShear (float shearX, float shearY) {
+        float tmp00 = m00 + shearX * m10;
+        float tmp01 = m01 + shearX * m11;
+        float tmp02 = m02 + shearX * m12;
+        float tmp10 = m10 + shearY * m00;
+        float tmp11 = m11 + shearY * m01;
+        float tmp12 = m12 + shearY * m02;
+
+        m00 = tmp00;
+        m01 = tmp01;
+        m02 = tmp02;
+        m10 = tmp10;
+        m11 = tmp11;
+        m12 = tmp12;
         return this;
     }
 
@@ -280,6 +313,30 @@ public final class Affine {
         m01 = tmp01;
         m10 = tmp10;
         m11 = tmp11;
+        return this;
+    }
+
+    public Affine preRotate (float angle) {
+        if (angle == 0) return this;
+
+        angle = Mathf.toRadians(angle);
+
+        float cos = Mathf.cos(angle);
+        float sin = Mathf.sin(angle);
+
+        float tmp00 = cos * m00 - sin * m10;
+        float tmp01 = cos * m01 - sin * m11;
+        float tmp02 = cos * m02 - sin * m12;
+        float tmp10 = sin * m00 + cos * m10;
+        float tmp11 = sin * m01 + cos * m11;
+        float tmp12 = sin * m02 + cos * m12;
+
+        m00 = tmp00;
+        m01 = tmp01;
+        m02 = tmp02;
+        m10 = tmp10;
+        m11 = tmp11;
+        m12 = tmp12;
         return this;
     }
 
@@ -374,7 +431,7 @@ public final class Affine {
      *
      * @throws NoninvertibleTransformException if the transform is not invertible.
      */
-    public Affine invert() {
+    /*public Affine invert() {
         float det = m00 * m11 - m10 * m01;
         if (Math.abs(det) == 0f) {
             throw new NoninvertibleTransformException(this.toString());
@@ -382,6 +439,28 @@ public final class Affine {
         float rdet = 1f / det;
         return set(m11 * rdet, -m10 * rdet, -m01 * rdet, m00 * rdet,
                 (m10 * m12 - m11 * m02) * rdet, (m01 * m02 - m00 * m12) * rdet);
+    }*/
+
+    public Affine invert () {
+        float det = m00 * m11 - m01 * m10;
+        if (det == 0) throw new NoninvertibleTransformException(this.toString());
+
+        float invDet = 1.0f / det;
+
+        float tmp00 = m11;
+        float tmp01 = -m01;
+        float tmp02 = m01 * m12 - m11 * m02;
+        float tmp10 = -m10;
+        float tmp11 = m00;
+        float tmp12 = m10 * m02 - m00 * m12;
+
+        m00 = invDet * tmp00;
+        m01 = invDet * tmp01;
+        m02 = invDet * tmp02;
+        m10 = invDet * tmp10;
+        m11 = invDet * tmp11;
+        m12 = invDet * tmp12;
+        return this;
     }
 
     /**
@@ -454,7 +533,7 @@ public final class Affine {
      * @return the x-coordinate
      */
     public float pointX(float x, float y) {
-        return m00 * x + m10 * y + m02;
+        return m00 * x + m01 * y + m02;
     }
 
     /**
@@ -463,7 +542,7 @@ public final class Affine {
      * @return the y-coordinate
      */
     public float pointY(float x, float y) {
-        return m01 * x + m11 * y + m12;
+        return m10 * x + m11 * y + m12;
     }
 
     /**
@@ -473,8 +552,8 @@ public final class Affine {
      */
     public Vector2 transform(Vector2 point) {
         float x = point.x, y = point.y;
-        point.x = m00 * x + m10 * y + m02;
-        point.y = m01 * x + m11 * y + m12;
+        point.x = m00 * x + m01 * y + m02;
+        point.y = m10 * x + m11 * y + m12;
         return point;
     }
 
@@ -490,8 +569,8 @@ public final class Affine {
     public void transform(float[] src, int srcOff, float[] dst, int dstOff, int count) {
         for (int i = 0; i < count; i++) {
             float x = src[srcOff++], y = src[srcOff++];
-            dst[dstOff++] = m00 * x + m10 * y + m02;
-            dst[dstOff++] = m01 * x + m11 * y + m12;
+            dst[dstOff++] = m00 * x + m01 * y + m02;
+            dst[dstOff++] = m10 * x + m11 * y + m12;
         }
     }
 
@@ -504,7 +583,7 @@ public final class Affine {
      */
     public Vector2 transformPoint(Vector2 v, Vector2 into) {
         float x = v.x, y = v.y;
-        return into.set(m00 * x + m10 * y + m02, m01 * x + m11 * y + m12);
+        return into.set(m00 * x + m01 * y + m02, m10 * x + m11 * y + m12);
     }
 
     /**
@@ -515,7 +594,7 @@ public final class Affine {
      */
     public Vector2 transformVector(Vector2 v, Vector2 into) {
         float x = v.x, y = v.y;
-        return into.set(m00 * x + m10 * y, m01 * x + m11 * y).normalize();
+        return into.set(m00 * x + m01 * y, m10 * x + m11 * y).normalize();
     }
 
     @Override

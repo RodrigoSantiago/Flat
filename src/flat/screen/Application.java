@@ -34,7 +34,6 @@ public final class Application {
     private static ArrayList<FutureTask<?>> runSyncCp = new ArrayList<>();
 
     private static ArrayList<Animation> anims = new ArrayList<>();
-    private static ArrayList<Animation> animsCp = new ArrayList<>();
 
     private static ArrayList<EventData> events = new ArrayList<>();
     private static ArrayList<EventData> eventsCp = new ArrayList<>();
@@ -56,6 +55,7 @@ public final class Application {
             throw new RuntimeException("Invalide context creation");
         }
 
+        WL.SetVsync(1);
         thread = Thread.currentThread();
         context = new Context(id, svgId);
         context.init();
@@ -230,6 +230,9 @@ public final class Application {
                         mouse.pressed.firePointer(new PointerEvent(mouse.pressed, PointerEvent.RELEASED, event.btn, mouseX, mouseY));
                         mouse.reset();
                         mouse = null;
+
+                        mouseMove(mouseX, mouseY);
+
                     } else if (mouse != null) {
                         mouse.pressed.firePointer(new PointerEvent(mouse.pressed, PointerEvent.RELEASED, event.btn, mouseX, mouseY));
                     }
@@ -239,53 +242,7 @@ public final class Application {
             // Mouse Move
             else if (eData.type == 2) {
                 MouseMoveData event = (MouseMoveData) eData;
-                Widget widget = activity.findByPosition(mouseX = event.x, mouseY = event.y);
-
-                // Move
-                if (mouse == null) {
-                    PointerData pointer = getPointer(-1, -1, null);
-                    if (pointer.hover == null) pointer.hover = widget;
-                    if (pointer.hover != widget) {
-                        if (!widget.isChildOf(pointer.hover)) {
-                            pointer.hover.fireHover(new HoverEvent(pointer.hover, HoverEvent.EXITED, widget, mouseX, mouseY));
-                        }
-                        if (!pointer.hover.isChildOf(widget)) {
-                            widget.fireHover(new HoverEvent(widget, HoverEvent.ENTERED, pointer.hover, mouseX, mouseY));
-                        }
-                    }
-                    widget.fireHover(new HoverEvent(widget, HoverEvent.MOVED, widget, mouseX, mouseY));
-                    pointer.hover = widget;
-                }
-                // Drag
-                else {
-                    DragEvent dragEvent;
-                    if (mouse.dragged == null) {
-                        mouse.dragged = mouse.pressed;
-                        mouse.hover = widget;
-                        mouse.dragged.fireDrag(dragEvent = new DragEvent(mouse.dragged, DragEvent.STARTED, mouse.dragData, mouseX, mouseY));
-                        mouse.dragData = dragEvent.getData();
-                        mouse.dragStarted = dragEvent.isStarted();
-                    }
-                    if (mouse.dragStarted) {
-                        if (mouse.hover != widget) {
-                            if (!widget.isChildOf(mouse.hover)) {
-                                mouse.hover.fireDrag(dragEvent = new DragEvent(mouse.hover, DragEvent.EXITED, widget, mouse.dragData, mouseX, mouseY));
-                                mouse.dragData = dragEvent.getData();
-                            }
-                            if (!mouse.hover.isChildOf(widget)) {
-                                widget.fireDrag(dragEvent = new DragEvent(widget, DragEvent.ENTERED, mouse.hover, mouse.dragData, mouseX, mouseY));
-                                mouse.dragData = dragEvent.getData();
-                            }
-                        }
-                        widget.fireDrag(dragEvent = new DragEvent(widget, DragEvent.OVER, mouse.dragData, mouseX, mouseY));
-                        mouse.dragData = dragEvent.getData();
-
-                        mouse.hover = widget;
-                    }
-
-                    mouse.dragged.firePointer(new PointerEvent(mouse.dragged, PointerEvent.DRAGGED, mouse.mouseButton, mouseX, mouseY));
-                }
-
+                mouseMove(event.x, event.y);
                 MouseMoveData.release(event);
             }
             // Mouse Scroll
@@ -349,15 +306,65 @@ public final class Application {
         eventsCp.clear();
     }
 
-    static void processAnimations() {
-        ArrayList<Animation> animSwap = animsCp;
-        animsCp = anims;
-        anims = animSwap;
+    private static void mouseMove(float x, float y) {
+        Widget widget = activity.findByPosition(mouseX = x, mouseY = y);
 
-        for (Animation anim : animsCp) {
-            anim.handle(loopTime);
+        // Move
+        if (mouse == null) {
+            PointerData pointer = getPointer(-1, -1, null);
+            if (pointer.hover == null) pointer.hover = widget;
+            if (pointer.hover != widget) {
+                if (!widget.isChildOf(pointer.hover)) {
+                    pointer.hover.fireHover(new HoverEvent(pointer.hover, HoverEvent.EXITED, widget, x, y));
+                }
+                if (!pointer.hover.isChildOf(widget)) {
+                    widget.fireHover(new HoverEvent(widget, HoverEvent.ENTERED, pointer.hover, x, y));
+                }
+            }
+            widget.fireHover(new HoverEvent(widget, HoverEvent.MOVED, widget, x, y));
+            pointer.hover = widget;
         }
-        animsCp.clear();
+        // Drag
+        else {
+            DragEvent dragEvent;
+            if (mouse.dragged == null) {
+                mouse.dragged = mouse.pressed;
+                mouse.hover = widget;
+                mouse.dragged.fireDrag(dragEvent = new DragEvent(mouse.dragged, DragEvent.STARTED, mouse.dragData, x, y));
+                mouse.dragData = dragEvent.getData();
+                mouse.dragStarted = dragEvent.isStarted();
+            }
+            if (mouse.dragStarted) {
+                if (mouse.hover != widget) {
+                    if (!widget.isChildOf(mouse.hover)) {
+                        mouse.hover.fireDrag(dragEvent = new DragEvent(mouse.hover, DragEvent.EXITED, widget, mouse.dragData, x, y));
+                        mouse.dragData = dragEvent.getData();
+                    }
+                    if (!mouse.hover.isChildOf(widget)) {
+                        widget.fireDrag(dragEvent = new DragEvent(widget, DragEvent.ENTERED, mouse.hover, mouse.dragData, x, y));
+                        mouse.dragData = dragEvent.getData();
+                    }
+                }
+                widget.fireDrag(dragEvent = new DragEvent(widget, DragEvent.OVER, mouse.dragData, x, y));
+                mouse.dragData = dragEvent.getData();
+
+                mouse.hover = widget;
+            }
+
+            mouse.dragged.firePointer(new PointerEvent(mouse.dragged, PointerEvent.DRAGGED, mouse.mouseButton, x, y));
+        }
+    }
+
+    static void processAnimations() {
+        for (int i = 0; i < anims.size(); i++) {
+            Animation anim = anims.get(i);
+            if (anim.isPlaying()) {
+                anim.handle(loopTime);
+            }
+            if (!anim.isPlaying()) {
+                anims.remove(i--);
+            }
+        }
     }
 
     static void processLayout() {
@@ -413,6 +420,10 @@ public final class Application {
         FutureTask<T> fTask = new FutureTask<>(task, null);
         runSync(fTask);
         return fTask;
+    }
+
+    public static void runAnimation(Animation animation) {
+        anims.add(animation);
     }
 
     public static Activity getActivity() {

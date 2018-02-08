@@ -16,4 +16,8 @@ public class Dimension {
         size = Size.small;
         density = Density.ldpi;
     }
+
+    public static float DP(float px) {
+        return px;
+    }
 }

@@ -33,11 +33,7 @@ public class Area implements Shape, Cloneable {
      * @param shape the <code>Shape</code> from which the area is constructed
      */
     public Area(Shape shape) {
-        if (shape instanceof Area) {
-            curves = ((Area) shape).curves;
-        } else {
-            curves = pathToCurves(shape.pathIterator(null));
-        }
+        set(shape);
     }
 
     private static Vector<Curve> pathToCurves(PathIterator pi) {
@@ -94,6 +90,15 @@ public class Area implements Shape, Cloneable {
         return operator.calculate(curves, EmptyCurves);
     }
 
+    public Area set(Shape shape) {
+        if (shape instanceof Area) {
+            curves = ((Area) shape).curves;
+        } else {
+            curves = pathToCurves(shape.pathIterator(null));
+        }
+        return this;
+    }
+
     /**
      * Adds the shape of the specified <code>Area</code> to the
      * shape of this <code>Area</code>.
@@ -120,8 +125,12 @@ public class Area implements Shape, Cloneable {
      * @param rhs  the <code>Area</code> to be added to the current shape
      */
     public Area add(Area rhs) {
-        curves = new AreaOp.AddOp().calculate(this.curves, rhs.curves);
-        invalidateBounds();
+        if (isEmpty()) {
+            this.curves = rhs.curves;
+        } else {
+            curves = new AreaOp.AddOp().calculate(this.curves, rhs.curves);
+            invalidateBounds();
+        }
         return this;
     }
 

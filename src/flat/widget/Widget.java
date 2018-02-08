@@ -5,6 +5,7 @@ import flat.events.*;
 import flat.graphics.SmartContext;
 import flat.math.*;
 import flat.math.operations.Area;
+import flat.math.shapes.Ellipse;
 import flat.math.shapes.RoundRectangle;
 import flat.math.shapes.Shape;
 import flat.uxml.UXAttributes;
@@ -55,7 +56,7 @@ public class Widget {
     //---------------------
     //    Transform
     //---------------------
-    private float x, y, centerX, centerY, translateX, translateY, scaleX = 1, scaleY = 1, rotate, elevation;
+    private float x, y, centerX = .5f, centerY = .5f, translateX, translateY, scaleX = 1, scaleY = 1, rotate, elevation;
 
     private final Affine transform = new Affine();
     private final Affine inverseTransform = new Affine();
@@ -68,6 +69,9 @@ public class Widget {
     private final RoundRectangle bg = new RoundRectangle();
     private int backgroundColor;
     private float opacity;
+
+    private RippleEffect ripple;
+    private int rippleColor = 0x00000030;
 
     private Shape clip;
 
@@ -250,23 +254,19 @@ public class Widget {
     public void onDraw(SmartContext context) {
         if (visibility == VISIBLE) {
             if (backgroundColor != 0) {
-                float bgAlpha = (backgroundColor & 0x000000FF) / 255f * getDisplayOpacity();
+                float bgAlpha = (backgroundColor & 0xFF) / 255f * getDisplayOpacity();
 
                 if (shadowEffect && bgAlpha > 0) {
-                    context.setTransform2D(getTransformView().translate(0, Math.max(0, elevation)));
-                    if (elevation <= 2f) {
-                        context.setColor((int)((0.2f * bgAlpha) * 255));
-                        context.drawRoundRect(bg, true);
-                    } else if (elevation < 24) {
-                        context.drawRoundRectShadow(bg, elevation * 2, 0.28f * bgAlpha);
-                    } else if (elevation < 56) {
-                        context.drawRoundRectShadow(bg, 48, (0.28f - ((elevation - 24) / 100f)) * bgAlpha);
-                    }
+                    context.setTransform2D(getTransformView().preTranslate(0, Math.max(0, elevation)));
+                    context.drawRoundRectShadow(bg, elevation * 2, 0.28f * bgAlpha);
                 }
                 context.setTransform2D(getTransformView());
                 context.setColor(backgroundColor);
                 context.setAlpha(getDisplayOpacity());
                 context.drawRoundRect(bg, true);
+                if (rippleEffect && ripple.isVisible()) {
+                    ripple.drawRipple(context, bg, rippleColor);
+                }
                 context.setTransform2D(null);
             }
 
@@ -284,7 +284,6 @@ public class Widget {
     }
 
     public final void setLayout(float x, float y, float width, float height) {
-        float oldWidth = this.width, oldHeight = this.height;
         if (parent != null) {
             if (width == MATCH_PARENT && (maxWidth == MATCH_PARENT || maxWidth == WRAP_CONTENT)) {
                 setWidth(parent.getWidth());
@@ -497,7 +496,7 @@ public class Widget {
     void setX(float x) {
         if (this.x != x) {
             this.x = x;
-            invalidateTransform();
+            updateRect();
         }
     }
 
@@ -508,7 +507,7 @@ public class Widget {
     void setY(float y) {
         if (this.y != y) {
             this.y = y;
-            invalidateTransform();
+            updateRect();
         }
     }
 
@@ -823,6 +822,7 @@ public class Widget {
 
     public void setRotate(float rotate) {
         if (this.rotate != rotate) {
+            if (rotate < 0 || rotate > 360) rotate = rotate % 360;
             this.rotate = rotate;
             invalidate(false);
             invalidateTransform();
@@ -882,17 +882,27 @@ public class Widget {
     private void transform() {
         if (invalidTransform) {
             invalidTransform = false;
+            float cx = centerX * bg.width + bg.x + x;
+            float cy = centerY * bg.height + bg.y + y;
             transform.identity()
-                    .translate(-centerX, -centerY)
+                    .translate(cx, cy)
                     .scale(scaleX, scaleY)
                     .rotate(rotate)
-                    .translate(centerX + translateX + x, centerY + translateY + y);
+                    .translate(translateX + x - cx, translateY + y - cy);
 
             if (parent != null) {
                 transform.preMul(parent.getTransformView()); // multiply
             }
             inverseTransform.set(transform).invert();
         }
+    }
+
+    private void updateRect() {
+        bg.x = marginLeft + marginRight > width ? (marginLeft + width - marginRight) / 2f : marginLeft;
+        bg.y = marginTop + marginBottom > height ? (marginTop + height - marginBottom) / 2f : marginTop;
+        bg.width = Math.max(0, width - marginLeft - marginRight);
+        bg.height = Math.max(0, height - marginTop - marginBottom);
+        invalidateTransform();
     }
 
     public Affine getTransformView() {
@@ -963,7 +973,31 @@ public class Widget {
     public void setRippleEffectEnabled(boolean enable) {
         if (this.rippleEffect != enable) {
             this.rippleEffect = enable;
+            ripple = enable ? new RippleEffect(this) : null;
             invalidate(false);
+        }
+    }
+
+    public int getRippleColor() {
+        return rippleColor;
+    }
+
+    public void setRippleColor(int rippleColor) {
+        this.rippleColor = rippleColor;
+    }
+
+    public void fireRipple(float x, float y) {
+        if (rippleEffect) {
+            transform();
+            float ix = inverseTransform.pointX(x, y);
+            float iy = inverseTransform.pointY(x, y);
+            ripple.fire(ix, iy);
+        }
+    }
+
+    public void releaseRipple() {
+        if (rippleEffect) {
+            ripple.release();
         }
     }
 
@@ -1023,6 +1057,10 @@ public class Widget {
     }
 
     public void firePointer(PointerEvent pointerEvent) {
+        if (pointerEvent.getType() == PointerEvent.PRESSED)
+            fireRipple(pointerEvent.getX(), pointerEvent.getY());
+        if (pointerEvent.getType() == PointerEvent.RELEASED)
+            releaseRipple();
         boolean done = false;
         if (pointerListener != null) {
             done = pointerListener.handle(pointerEvent);
@@ -1075,12 +1113,5 @@ public class Widget {
     @Override
     public String toString() {
         return "[" + id + "]" + getClass().getSimpleName();
-    }
-
-    private void updateRect() {
-        bg.x = marginLeft + marginRight > width ? (marginLeft + width - marginRight) / 2f : marginLeft;
-        bg.y = marginTop + marginBottom > height ? (marginTop + height - marginBottom) / 2f : marginTop;
-        bg.width = Math.max(0, width - marginLeft - marginRight);
-        bg.height = Math.max(0, height - marginTop - marginBottom);
     }
 }

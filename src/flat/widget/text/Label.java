@@ -17,7 +17,10 @@ public class Label extends Widget {
 
     Font font = Font.DEFAULT;
     float fontSize = 16;
-    int fontColor = 0x000000FF;
+    int textColor = 0x000000FF;
+
+    private Align.Vertical verticalAlign = Align.Vertical.TOP;
+    private Align.Horizontal horizontalAlign = Align.Horizontal.LEFT;
 
     public String getText() {
         return text;
@@ -61,12 +64,12 @@ public class Label extends Widget {
         invalidateTextSize();
     }
 
-    public int getFontColor() {
-        return fontColor;
+    public int getTextColor() {
+        return textColor;
     }
 
-    public void setFontColor(int fontColor) {
-        this.fontColor = fontColor;
+    public void setTextColor(int textColor) {
+        this.textColor = textColor;
         invalidate(true);
     }
 
@@ -74,15 +77,39 @@ public class Label extends Widget {
         invalidTextSize = true;
     }
 
+    public Align.Vertical getVerticalAlign() {
+        return verticalAlign;
+    }
+
+    public void setVerticalAlign(Align.Vertical verticalAlign) {
+        if (this.verticalAlign != verticalAlign) {
+            this.verticalAlign = verticalAlign;
+            invalidate(true);
+        }
+    }
+
+    public Align.Horizontal getHorizontalAlign() {
+        return horizontalAlign;
+    }
+
+    public void setHorizontalAlign(Align.Horizontal horizontalAlign) {
+        if (this.horizontalAlign != horizontalAlign) {
+            this.horizontalAlign = horizontalAlign;
+            invalidate(true);
+        }
+    }
+
     @Override
     public void onDraw(SmartContext context) {
         super.onDraw(context);
         context.setTransform2D(getTransformView());
         if (showText != null) {
-            context.setColor(fontColor);
+            context.setColor(textColor);
             context.setTextFont(font);
             context.setTextSize(fontSize);
             context.setTextVerticalAlign(Align.Vertical.TOP);
+            context.setTextHorizontalAlign(Align.Horizontal.LEFT);
+
             float lm = getMarginLeft() + getPaddingLeft();
             float rm = getMarginRight() + getPaddingRight();
             float tm = getMarginTop() + getPaddingTop();
@@ -93,7 +120,10 @@ public class Label extends Widget {
             float width = Math.max(0, getWidth() - lm - rm);
             float height = Math.max(0, getHeight() - tm - bm);
 
-            context.drawTextSlice(x, y, width, showText);
+            context.drawTextSlice(
+                    xOff(x, x + width, Math.min(textWidth, width)),
+                    yOff(y, y + height, Math.min(fontSize, height)),
+                    width, showText);
         }
     }
 
@@ -101,14 +131,29 @@ public class Label extends Widget {
     public void onMeasure() {
         if (invalidTextSize) {
             Context context = Application.getContext();
+            context.svgTransform(getTransformView());
             context.svgTextFont(font);
             context.svgTextSize(fontSize);
             textWidth = context.svgTextGetWidth(showText);
         }
-        float mWidth = Math.max(textWidth,getPrefWidth());
-        float mHeight = Math.max(getPrefHeight(), fontSize);
+        float mWidth = Math.max(textWidth, getPrefWidth());
+        float mHeight = Math.max(fontSize, getPrefHeight());
         mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
         mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
         setMeasure(mWidth, mHeight);
+    }
+
+    private float xOff(float start, float end, float textWidth) {
+        if (end < start) return (start + end) / 2f;
+        if (horizontalAlign == Align.Horizontal.RIGHT) return end - textWidth;
+        if (horizontalAlign == Align.Horizontal.CENTER) return (start + end - textWidth) / 2f;
+        return start;
+    }
+
+    private float yOff(float start, float end, float textHeight) {
+        if (end < start) return (start + end) / 2f;
+        if (verticalAlign == Align.Vertical.BOTTOM || verticalAlign == Align.Vertical.BASELINE) return end - textHeight;
+        if (verticalAlign == Align.Vertical.MIDDLE) return (start + end - textHeight) / 2f;
+        return start;
     }
 }

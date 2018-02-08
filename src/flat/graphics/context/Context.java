@@ -1560,7 +1560,7 @@ public final class Context {
         svgBegin();
         SVG.BeginPath(svgId);
         int last = SVG.TextGetLastGlyph(svgId, text, maxWidth);
-        if (last > -1) {
+        if (last > 0) {
             SVG.DrawText(svgId, x, y, text.substring(0, last + 1));
         }
     }
