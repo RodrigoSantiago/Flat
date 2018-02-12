@@ -2,10 +2,12 @@ package flat.math;
 
 import flat.math.util.Platform;
 
+import java.io.Serializable;
+
 /**
  * A 2D point class; useful for 2D translations, scales and geometric operations
  */
-public final class Vector2 {
+public final class Vector2 implements Serializable {
 
     public float x;
     public float y;

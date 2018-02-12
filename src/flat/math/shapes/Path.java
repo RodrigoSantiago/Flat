@@ -10,7 +10,7 @@ import flat.math.util.Platform;
 /**
  * Represents a path constructed from lines and curves and which can contain subpaths.
  */
-public final class Path implements Shape, Cloneable {
+public final class Path implements PathConsumer, Shape, Cloneable {
 
     /**
      * Specifies the even/odd rule for determining the interior of a path.
@@ -103,6 +103,10 @@ public final class Path implements Shape, Cloneable {
             checkBuf(0, true);
             types[typeSize++] = PathIterator.SEG_CLOSE;
         }
+    }
+
+    public void pathDone() {
+
     }
 
     public void append(Shape shape, boolean connect) {

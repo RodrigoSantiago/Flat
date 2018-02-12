@@ -94,7 +94,6 @@ public final class Matrix3 implements Serializable {
         val[M02] = affine.m02;
         val[M12] = affine.m12;
         val[M22] = 1;
-
         return this;
     }
 
