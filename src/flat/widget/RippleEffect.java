@@ -8,10 +8,10 @@ import flat.math.shapes.Circle;
 import flat.math.shapes.RoundRectangle;
 import flat.uxml.data.Dimension;
 
-public class RippleEffect {
+class RippleEffect {
 
     private Widget widget;
-    RippleAnimation animation = new RippleAnimation();
+    private RippleAnimation animation = new RippleAnimation();
 
     private Circle circle = new Circle();
     private RoundRectangle bg = new RoundRectangle();
@@ -40,7 +40,7 @@ public class RippleEffect {
     }
 
     public void fire(float x, float y) {
-        circle.set(x, y, Dimension.DP(8));
+        circle.set(x, y, Dimension.dpPx(8));
         animation.stop();
         animation.setDelta(1);
         animation.play();
@@ -56,7 +56,7 @@ public class RippleEffect {
         public void compute(float t) {
             float w = widget.getWidth() - widget.getMarginLeft() - widget.getMarginRight();
             float h = widget.getHeight() - widget.getMarginTop() - widget.getMarginBottom();
-            circle.radius = mix(Dimension.DP(8), Math.min(Dimension.DP(300), (float) Math.sqrt(w * w + h * h)), t);
+            circle.radius = mix(Dimension.dpPx(8), Math.min(Dimension.dpPx(300), (float) Math.sqrt(w * w + h * h)), t);
             RippleEffect.this.widget.invalidate(false);
         }
     }

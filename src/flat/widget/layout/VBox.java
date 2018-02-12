@@ -1,6 +1,7 @@
 package flat.widget.layout;
 
 import flat.graphics.text.Align;
+import flat.uxml.UXAttributes;
 import flat.widget.Widget;
 
 import java.util.ArrayList;
@@ -12,8 +13,10 @@ public class VBox extends Box {
 
     ArrayList<Widget> orderedList = new ArrayList<>();
 
-    public VBox() {
-
+    @Override
+    public void applyAttributes(Object controller, UXAttributes attributes) {
+        super.applyAttributes(controller, attributes);
+        setAlign(attributes.asConstant("align", Align.Horizontal.class, Align.Horizontal.LEFT));
     }
 
     @Override

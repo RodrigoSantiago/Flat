@@ -1,6 +1,7 @@
 package flat.uxml;
 
 import flat.widget.*;
+import flat.widget.image.ImageView;
 import flat.widget.layout.*;
 import flat.widget.text.*;
 
@@ -31,6 +32,7 @@ public final class UXLoader {
         UXLoader.install("HBox", HBox::new);
         UXLoader.install("Button", Button::new);
         UXLoader.install("Label", Label::new);
+        UXLoader.install("ImageView", ImageView::new);
     }
 
     private DimensionStream dimensionStream;
@@ -191,7 +193,7 @@ public final class UXLoader {
     }
 
     public void printLog() {
-        System.err.println("Imperfect UXML decode : " + dimensionStream.name);
+        System.err.println("Imperfect UXML decode : " + dimensionStream.getName());
         for (String log : logger) System.err.println("    " + log);
     }
 }

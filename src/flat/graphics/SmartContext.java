@@ -8,11 +8,10 @@ import flat.graphics.image.*;
 import flat.graphics.mesh.*;
 import flat.graphics.text.*;
 import flat.math.*;
-import flat.math.operations.*;
 import flat.math.shapes.*;
 import flat.math.shapes.CubicCurve;
 import flat.math.shapes.QuadCurve;
-import flat.math.stroke.*;
+import flat.math.stroke.BasicStroke;
 
 import java.nio.Buffer;
 import java.util.ArrayList;
@@ -197,15 +196,19 @@ public class SmartContext {
         return context.svgAlpha();
     }
 
-    public void setStroker(Stroker stroker) {
-        context.svgStrokeWidth(stroker.getWidth());
-        context.svgLineCap(stroker.getCap());
-        context.svgLineJoin(stroker.getJoin());
+    public void setStroker(BasicStroke stroker) {
+        context.svgStrokeWidth(stroker.getLineWidth());
+        context.svgLineCap(LineCap.values()[stroker.getEndCap()]);
+        context.svgLineJoin(LineJoin.values()[stroker.getLineJoin()]);
         context.svgMiterLimit(stroker.getMiterLimit());
     }
 
-    public Stroker getStroker() {
-        return new Stroker(context.svgStrokeWidth(), context.svgLineCap(), context.svgLineJoin(), context.svgMiterLimit());
+    public BasicStroke getStroker() {
+        return new BasicStroke(
+                context.svgStrokeWidth(),
+                context.svgLineCap().ordinal(),
+                context.svgLineJoin().ordinal(),
+                context.svgMiterLimit());
     }
 
     public void setTextFont(Font font) {
@@ -319,22 +322,22 @@ public class SmartContext {
 
     public void drawQuadCurve(QuadCurve curve) {
         svgMode();
-        context.svgDrawQuadCurve(curve.x1, curve.y1, curve.x2, curve.y2, curve.ctrlx, curve.ctrly);
+        context.svgDrawQuadCurve(curve.x1, curve.y1, curve.ctrlx, curve.ctrly, curve.x2, curve.y2);
     }
 
-    public void drawQuadCurve(float x1, float y1, float x2, float y2, float cx, float cy) {
+    public void drawQuadCurve(float x1, float y1, float cx, float cy, float x2, float y2) {
         svgMode();
-        context.svgDrawQuadCurve(x1, y1, x2, y2, cx, cy);
+        context.svgDrawQuadCurve(x1, y1, cx, cy, x2, y2);
     }
 
     public void drawBezierCurve(CubicCurve curve) {
         svgMode();
-        context.svgDrawBezierCurve(curve.x1, curve.y1, curve.x2, curve.y2, curve.ctrlx1, curve.ctrly1,  curve.ctrlx2, curve.ctrly2);
+        context.svgDrawBezierCurve(curve.x1, curve.y1, curve.ctrlx1, curve.ctrly1,  curve.ctrlx2, curve.ctrly2, curve.x2, curve.y2);
     }
 
-    public void drawBezierCurve(float x1, float y1, float x2, float y2, float cx1, float cy1, float cx2, float cy2) {
+    public void drawBezierCurve(float x1, float y1, float cx1, float cy1, float cx2, float cy2, float x2, float y2) {
         svgMode();
-        context.svgDrawBezierCurve(x1, y1, x2, y2, cx1, cy1, cx2, cy2);
+        context.svgDrawBezierCurve(x1, y1, cx1, cy1, cx2, cy2, x2, y2);
     }
 
     public void drawText(float x, float y, String text) {
@@ -439,6 +442,7 @@ public class SmartContext {
             shader2D.set("view", new float[] {context.getViewWidth(), context.getViewHeight()});
             shader2D.set("prj2D", projection2D);
             shader2D.set("src", 0);
+
             for (MaterialValue value : matValues2D) {
                 shader2D.set(value.name, value.value);
             }

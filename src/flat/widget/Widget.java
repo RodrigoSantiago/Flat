@@ -42,7 +42,7 @@ public class Widget {
     private float marginTop, marginRight, marginBottom, marginLeft;
     private float paddingTop, paddingRight, paddingBottom, paddingLeft;
     private float minWidth, minHeight, maxWidth, maxHeight, prefWidth = 0, prefHeight = 0;
-    private int visibility = VISIBLE;
+    private int visibility;
     private float measureWidth, measureHeight;
 
     //---------------------
@@ -56,7 +56,7 @@ public class Widget {
     //---------------------
     //    Transform
     //---------------------
-    private float x, y, centerX = .5f, centerY = .5f, translateX, translateY, scaleX = 1, scaleY = 1, rotate, elevation;
+    private float x, y, centerX, centerY, translateX, translateY, scaleX, scaleY, rotate, elevation;
 
     private final Affine transform = new Affine();
     private final Affine inverseTransform = new Affine();
@@ -71,7 +71,7 @@ public class Widget {
     private float opacity;
 
     private RippleEffect ripple;
-    private int rippleColor = 0x00000030;
+    private int rippleColor;
 
     private Shape clip;
 
@@ -122,6 +122,8 @@ public class Widget {
         setElevation(attributes.asSize("elevation", 0));
         setShadowEffectEnabled(attributes.asBoolean("shadowEffect", false));
         setRippleEffectEnabled(attributes.asBoolean("rippleEffect", false));
+        setCenterX(attributes.asNumber("centreX", 0.5f));
+        setCenterY(attributes.asNumber("centreY", 0.5f));
         setScaleX(attributes.asNumber("scaleX", 1));
         setScaleY(attributes.asNumber("scaleY", 1));
         setRotate(attributes.asNumber("rotate", 0));
@@ -130,17 +132,21 @@ public class Widget {
         setEnabled(attributes.asBoolean("enabled", true));
         setClickable(attributes.asBoolean("clickable", true));
 
-        String visibility = attributes.asString("visibility");
-        if (visibility != null) {
-            if ("VISIBLE".equalsIgnoreCase(visibility)) {
-                setVisibility(VISIBLE);
-            } else if ("INVISIBLE".equalsIgnoreCase(visibility)) {
-                setVisibility(INVISIBLE);
-            } else if ("GONE".equalsIgnoreCase(visibility)) {
-                setVisibility(GONE);
-            } else {
-                attributes.getLoader().log("Invalid visibility constant : [visibility = " + visibility + "]");
-            }
+        setBackgroundColor(attributes.asColor("backgroundColor", 0));
+        setBackgroundCorners(attributes.asNumber("backgroundCornerTop", 0), attributes.asNumber("backgroundCornerRight", 0),
+                attributes.asNumber("backgroundCornerBottom", 0), attributes.asNumber("backgroundCornerLeft", 0));
+
+        setRippleColor(attributes.asColor("rippleColor", 0x00000030));
+
+        String visibility = attributes.asString("visibility", "VISIBLE");
+        if ("VISIBLE".equalsIgnoreCase(visibility)) {
+            setVisibility(VISIBLE);
+        } else if ("INVISIBLE".equalsIgnoreCase(visibility)) {
+            setVisibility(INVISIBLE);
+        } else if ("GONE".equalsIgnoreCase(visibility)) {
+            setVisibility(GONE);
+        } else {
+            attributes.getLoader().log("Invalid visibility constant : [visibility = " + visibility + "]");
         }
 
         String onPointerListener = attributes.asString("onPointer");

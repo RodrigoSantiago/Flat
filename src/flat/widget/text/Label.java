@@ -5,22 +5,39 @@ import flat.graphics.context.Context;
 import flat.graphics.text.Align;
 import flat.graphics.context.Font;
 import flat.screen.Application;
+import flat.uxml.UXAttributes;
+import flat.uxml.data.Dimension;
 import flat.widget.Widget;
 
 public class Label extends Widget {
 
-    String text;
-    String showText;
-    boolean textAllCaps;
-    boolean invalidTextSize = true;
-    float textWidth;
+    private String text;
+    private boolean textAllCaps;
 
-    Font font = Font.DEFAULT;
-    float fontSize = 16;
-    int textColor = 0x000000FF;
+    private Font font;
+    private float fontSize;
+    private int textColor;
 
-    private Align.Vertical verticalAlign = Align.Vertical.TOP;
-    private Align.Horizontal horizontalAlign = Align.Horizontal.LEFT;
+    private Align.Vertical verticalAlign;
+    private Align.Horizontal horizontalAlign;
+
+    private String showText;
+    private boolean invalidTextSize;
+    private float textWidth;
+
+    @Override
+    public void applyAttributes(Object controller, UXAttributes attributes) {
+        super.applyAttributes(controller, attributes);
+        setFont(attributes.asFont("font", Font.DEFAULT));
+        setFontSize(attributes.asNumber("fontSize", Dimension.ptPx(16)));
+
+        setText(attributes.asString("text", ""));
+        setTextColor(attributes.asColor("textColor", 0x000000FF));
+        setTextAllCaps(attributes.asBoolean("textAllCaps", false));
+
+        setVerticalAlign(attributes.asConstant("verticalAlign", Align.Vertical.class, Align.Vertical.TOP));
+        setHorizontalAlign(attributes.asConstant("horizontalAlign", Align.Horizontal.class, Align.Horizontal.LEFT));
+    }
 
     public String getText() {
         return text;

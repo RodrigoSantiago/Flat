@@ -42,7 +42,7 @@ public final class Font {
     }
 
     public static Font findFont(String family, FontWeight weight) {
-        return findFont(family, FontWeight.NORMAL, FontPosture.REGULAR);
+        return findFont(family,weight, FontPosture.REGULAR);
     }
 
     public static Font findFont(String family, FontWeight weight, FontPosture posture) {

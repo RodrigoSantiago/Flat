@@ -11,21 +11,21 @@ public final class BasicStroke {
     public static final int CAP_ROUND = Stroker.CAP_ROUND;
     public static final int CAP_SQUARE = Stroker.CAP_SQUARE;
 
-    public static final int JOIN_BEVEL = Stroker.JOIN_BEVEL;
     public static final int JOIN_MITER = Stroker.JOIN_MITER;
     public static final int JOIN_ROUND = Stroker.JOIN_ROUND;
+    public static final int JOIN_BEVEL = Stroker.JOIN_BEVEL;
 
     public static final int TYPE_CENTERED = 0;
     public static final int TYPE_INNER = 1;
     public static final int TYPE_OUTER = 2;
 
-    float width;
-    int type;
-    int cap;
-    int join;
-    float miterLimit;
-    float dash[];
-    float dashPhase;
+    private float width;
+    private int type;
+    private int cap;
+    private int join;
+    private float miterLimit;
+    private float dash[];
+    private float dashPhase;
 
     public BasicStroke() {
         set(TYPE_CENTERED, 1.0f, CAP_SQUARE, JOIN_MITER, 10f);
@@ -35,43 +35,31 @@ public final class BasicStroke {
         set(TYPE_CENTERED, width, cap, join, miterLimit);
     }
 
-    public BasicStroke(int type, float width,
-                       int cap, int join, float miterLimit)
-    {
+    public BasicStroke(int type, float width, int cap, int join, float miterLimit) {
         set(type, width, cap, join, miterLimit);
     }
 
-    public BasicStroke(float width, int cap, int join, float miterLimit,
-                       float[] dash, float dashPhase)
-    {
+    public BasicStroke(float width, int cap, int join, float miterLimit, float[] dash, float dashPhase) {
         set(TYPE_CENTERED, width, cap, join, miterLimit);
         set(dash, dashPhase);
     }
 
-    public BasicStroke(float width, int cap, int join, float miterLimit,
-                       double[] dash, float dashPhase)
-    {
+    public BasicStroke(float width, int cap, int join, float miterLimit, double[] dash, float dashPhase) {
         set(TYPE_CENTERED, width, cap, join, miterLimit);
         set(dash, dashPhase);
     }
 
-    public BasicStroke(int type, float width, int cap, int join, float miterLimit,
-                       float[] dash, float dashPhase)
-    {
+    public BasicStroke(int type, float width, int cap, int join, float miterLimit, float[] dash, float dashPhase) {
         set(type, width, cap, join, miterLimit);
         set(dash, dashPhase);
     }
 
-    public BasicStroke(int type, float width, int cap, int join, float miterLimit,
-                       double[] dash, float dashPhase)
-    {
+    public BasicStroke(int type, float width, int cap, int join, float miterLimit, double[] dash, float dashPhase) {
         set(type, width, cap, join, miterLimit);
         set(dash, dashPhase);
     }
 
-    public void set(int type, float width,
-                    int cap, int join, float miterLimit)
-    {
+    public void set(int type, float width, int cap, int join, float miterLimit) {
         if (type != TYPE_CENTERED && type != TYPE_INNER && type != TYPE_OUTER) {
             throw new IllegalArgumentException("illegal type");
         }
@@ -198,6 +186,7 @@ public final class BasicStroke {
     public boolean isDashed() {
         return (dash != null);
     }
+
     /**
      * Returns the array representing the lengths of the dash segments.
      * Alternate entries in the array represent the user space lengths

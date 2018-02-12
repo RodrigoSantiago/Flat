@@ -1,5 +1,7 @@
 package flat.widget.layout;
 
+import flat.uxml.UXAttributes;
+import flat.uxml.UXChildren;
 import flat.widget.Parent;
 import flat.widget.Widget;
 
@@ -9,6 +11,20 @@ public class Box extends Parent {
 
     public Box() {
 
+    }
+
+    @Override
+    public void applyAttributes(Object controller, UXAttributes attributes) {
+        super.applyAttributes(controller, attributes);
+    }
+
+    @Override
+    public void applyChildren(UXChildren children) {
+        super.applyChildren(children);
+        Widget child;
+        while ((child = children.next()) != null ) {
+            add(child);
+        }
     }
 
     @Override

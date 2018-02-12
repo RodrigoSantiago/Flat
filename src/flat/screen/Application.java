@@ -43,6 +43,7 @@ public final class Application {
     private static ArrayList<PointerData> pointersData = new ArrayList<>();
 
     private static long loopTime;
+    private static float dpi;
 
     public static void init(Settings settings) {
         long id = WL.Init(settings.width, settings.height, settings.multsamples, settings.transparent);
@@ -67,6 +68,7 @@ public final class Application {
         try {
             mouseX = (float) WL.GetCursorX();
             mouseY = (float) WL.GetCursorY();
+            dpi = (float) WL.GetDpi();
             WL.SetInputMode(WLEnuns.STICKY_KEYS, 1);
             WL.SetInputMode(WLEnuns.STICKY_MOUSE_BUTTONS, 1);
             WL.SetMouseButtonCallback((button, action, mods) -> events.add(MouseBtnData.get(button + 1, action, mods)));
@@ -196,6 +198,11 @@ public final class Application {
         ArrayList<EventData> swap = eventsCp;
         eventsCp = events;
         events = swap;
+
+        if (dpi != (float) Math.ceil(WL.GetDpi())) {
+            dpi = (float) Math.ceil(WL.GetDpi());
+            eventsCp.add(SizeData.get(Application.getWidth(), Application.getHeight()));
+        }
 
         if  (outMouseX != WL.GetCursorX() || outMouseY != WL.GetCursorY()) {
             eventsCp.add(MouseMoveData.get(outMouseX = (float) WL.GetCursorX(), outMouseY = (float) WL.GetCursorY()));
@@ -369,7 +376,7 @@ public final class Application {
 
     static void processLayout() {
         if (activity.layout()) {
-            activity.onLayout(getClientWidth(), getClientHeight());
+            activity.onLayout(getClientWidth(), getClientHeight(), (float) getDpi());
         }
     }
 
@@ -505,6 +512,18 @@ public final class Application {
 
     public static int getClientHeight() {
         return WL.GetClientHeight();
+    }
+
+    public static float getPhysicalWidth() {
+        return (float) WL.GetPhysicalWidth();
+    }
+
+    public static float getPhysicalHeight() {
+        return (float) WL.GetPhysicalHeight();
+    }
+
+    public static double getDpi() {
+        return dpi;
     }
 
     public static int getWidth() {

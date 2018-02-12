@@ -90,7 +90,7 @@ public final class Context {
     private float svgClipX, svgClipY, svgClipWidth, svgClipHeight;
 
     private Font svgTextFont;
-    private float svgTextSize, svgTextLetterSpacing, svgTextLineHeight;
+    private float svgTextSize, svgTextBlur, svgTextLetterSpacing, svgTextLineHeight;
     private Align.Vertical svgTextVerticalAlign;
     private Align.Horizontal svgTextHorizontalAlign;
 
@@ -220,6 +220,7 @@ public final class Context {
 
         svgTextFont = Font.DEFAULT;
         svgTextSize = 16f;
+        svgTextBlur = 0f;
         svgTextLetterSpacing = 0f;
         svgTextLineHeight = 1f;
         svgTextVerticalAlign = Align.Vertical.TOP;
@@ -1040,6 +1041,7 @@ public final class Context {
 
             SVG.TextSetFont(svgId, svgTextFont.getInternalID());
             SVG.TextSetSize(svgId, svgTextSize);
+            SVG.TextSetBlur(svgId, svgTextBlur);
             SVG.TextSetLetterSpacing(svgId, svgTextLetterSpacing);
             SVG.TextSetLineHeight(svgId, svgTextLineHeight);
             SVG.TextSetAlign(svgId, svgTextHorizontalAlign.getInternalEnum() | svgTextVerticalAlign.getInternalEnum());
@@ -1309,7 +1311,7 @@ public final class Context {
         for (PathIterator pi = shape.pathIterator(null); !pi.isDone(); pi.next()) {
             switch (pi.currentSegment(data)) {
                 case PathIterator.SEG_MOVETO:
-                    SVG.PathWinding(svgId, SVG_CW);
+                    SVG.PathWinding(svgId, SVG_HOLE);
                     SVG.MoveTo(svgId, data[0], data[1]);
                     break;
                 case PathIterator.SEG_LINETO:
@@ -1419,7 +1421,7 @@ public final class Context {
         SVG.Stroke(svgId);
     }
 
-    public void svgDrawQuadCurve(float x1, float y1, float x2, float y2, float cx, float cy) {
+    public void svgDrawQuadCurve(float x1, float y1, float cx, float cy, float x2, float y2) {
         svgBegin();
         SVG.BeginPath(svgId);
         SVG.MoveTo(svgId, x1, y1);
@@ -1427,7 +1429,7 @@ public final class Context {
         SVG.Stroke(svgId);
     }
 
-    public void svgDrawBezierCurve(float x1, float y1, float x2, float y2, float cx1, float cy1, float cx2, float cy2) {
+    public void svgDrawBezierCurve(float x1, float y1, float cx1, float cy1, float cx2, float cy2, float x2, float y2) {
         svgBegin();
         SVG.BeginPath(svgId);
         SVG.MoveTo(svgId, x1, y1);
@@ -1461,6 +1463,19 @@ public final class Context {
 
     public float svgTextSize() {
         return svgTextSize;
+    }
+
+    public void svgTextBlur(float blur) {
+        if (svgTextBlur != blur) {
+            svgTextBlur = blur;
+            if (svgMode) {
+                SVG.TextSetBlur(svgId, blur);
+            }
+        }
+    }
+
+    public float svgTextBlur() {
+        return svgTextBlur;
     }
 
     public void svgTextLetterSpacing(float spacing) {

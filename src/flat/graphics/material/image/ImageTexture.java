@@ -4,9 +4,8 @@ import flat.graphics.context.Shader;
 import flat.graphics.context.ShaderProgram;
 import flat.graphics.context.enuns.ShaderType;
 import flat.graphics.material.MaterialValue;
+import flat.FileUtils;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 
@@ -16,8 +15,8 @@ public class ImageTexture extends ImageMaterial {
     public ImageTexture() {
         if (shader == null) {
             try {
-                String shadowVtx = new String(Files.readAllBytes(Paths.get(getClass().getResource("/resources/default.vtx.glsl").toURI())));
-                String shadowFrg = new String(Files.readAllBytes(Paths.get(getClass().getResource("/resources/default.frg.glsl").toURI())));
+                String shadowVtx = FileUtils.readFromInternal("resources/default.vtx.glsl");
+                String shadowFrg = FileUtils.readFromInternal("resources/default.frg.glsl");
                 Shader vtx = new Shader(ShaderType.Vertex, shadowVtx);
                 if (!vtx.compile()) {
                     throw new Exception(vtx.getLog());

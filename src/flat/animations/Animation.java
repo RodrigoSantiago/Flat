@@ -126,7 +126,7 @@ public abstract class Animation {
                 if (_reaming == 0 || _loops == 0) {
                     compute(_interpolation.apply(1));
                 } else {
-                    _reaming += duration;
+                    _reaming = _reaming % duration;
                     compute(_interpolation.apply(1 - (_reaming / (float) _duration)));
                 }
                 if (_loops == 0) {

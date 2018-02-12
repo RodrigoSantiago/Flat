@@ -229,8 +229,23 @@ public final class ShaderProgram extends ContextObject {
                 setFloat(att, 3, data.length / 3, data);
             }
         } else if (type == AttributeType.FLOAT_VEC4) {
-            float[] data = (float[]) value;
-            setFloat(att, 4, data.length / 4, data);
+            if (value instanceof Vector4[]) {
+                Vector4[] data = (Vector4[]) value;
+                float[] tmp = new float[data.length * 4];
+                for (int i = 0; i < data.length; i++) {
+                    tmp[i * 2] = data[i].x;
+                    tmp[i * 2 + 1] = data[i].y;
+                    tmp[i * 2 + 2] = data[i].z;
+                    tmp[i * 2 + 3] = data[i].w;
+                }
+                setFloat(att, 3, data.length, tmp);
+            } else if  (value instanceof Vector4) {
+                Vector4 data = (Vector4) value;
+                setFloat(att, 4, 1, data.x, data.y, data.z, data.w);
+            } else {
+                float[] data = (float[]) value;
+                setFloat(att, 4, data.length / 4, data);
+            }
         } else if (type == AttributeType.FLOAT_MAT2) {
             float[] data = (float[]) value;
             setMatrix(att, 2, 2, data.length / 4, true, data);

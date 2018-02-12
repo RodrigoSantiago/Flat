@@ -1,15 +1,24 @@
 package flat.screen;
 
 import flat.graphics.SmartContext;
+import flat.uxml.UXLoader;
+import flat.uxml.data.Dimension;
+import flat.uxml.data.DimensionStream;
 import flat.widget.Scene;
 import flat.widget.Widget;
 
 public class Activity {
+
     private Scene scene;
-    private boolean invalided, layoutInvalidaded;
+    private Widget root;
+
     private float width;
     private float height;
     private int color;
+
+    private Dimension dimension;
+    private DimensionStream stream;
+    private boolean invalided, layoutInvalidaded;
 
     public Activity() {
         scene = new Scene(this);
@@ -20,6 +29,14 @@ public class Activity {
         this.color = color;
     }
 
+    public DimensionStream getStream() {
+        return stream;
+    }
+
+    public void setStream(DimensionStream stream) {
+        this.stream = stream;
+    }
+
     public void onSave() {
 
     }
@@ -28,9 +45,35 @@ public class Activity {
 
     }
 
-    public void onLayout(float width, float height) {
-        this.width = width;
-        this.height = height;
+    public void onLayout(float width, float height, float dpi) {
+        if (width != this.width || height != this.height) {
+            Dimension dm;
+            if (stream != null) {
+                dm = stream.getCloserDimension(width, height, dpi);
+                if (dm != null && !dm.equals(dimension) || dpi != dimension.dpi) {
+                    UXLoader loader = new UXLoader(stream, dm);
+                    Widget widget = null;
+                    try {
+                        widget = loader.load();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    if (widget != null) {
+                        onSave();
+                        if (root != null) {
+                            scene.childRemove(root);
+                        }
+                        scene.add(root = widget);
+                        onLoad();
+                    }
+                }
+            } else {
+                dm = new Dimension(width, height, dpi);
+            }
+            this.dimension = dm;
+            this.width = width;
+            this.height = height;
+        }
         scene.onMeasure();
         scene.onLayout(0, 0, width, height);
     }

@@ -42,6 +42,9 @@ public class WL {
     public static native int GetHeight();
     public static native int GetClientWidth();
     public static native int GetClientHeight();
+    public static native double GetPhysicalWidth();
+    public static native double GetPhysicalHeight();
+    public static native double GetDpi();
 
     public static native void SetSizeLimits(int minWidth, int minHeight, int maxWidth, int maxHeight);
     public static native int GetMinWidth();
