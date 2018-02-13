@@ -5,6 +5,7 @@ import flat.graphics.context.Context;
 import flat.graphics.text.Align;
 import flat.graphics.context.Font;
 import flat.screen.Application;
+import flat.uxml.Controller;
 import flat.uxml.UXAttributes;
 import flat.uxml.data.Dimension;
 import flat.widget.Widget;
@@ -23,10 +24,10 @@ public class Label extends Widget {
 
     private String showText;
     private boolean invalidTextSize;
-    private float textWidth;
+    protected float textWidth;
 
     @Override
-    public void applyAttributes(Object controller, UXAttributes attributes) {
+    public void applyAttributes(Controller controller, UXAttributes attributes) {
         super.applyAttributes(controller, attributes);
         setFont(attributes.asFont("font", Font.DEFAULT));
         setFontSize(attributes.asNumber("fontSize", Dimension.ptPx(16)));
@@ -35,8 +36,8 @@ public class Label extends Widget {
         setTextColor(attributes.asColor("textColor", 0x000000FF));
         setTextAllCaps(attributes.asBoolean("textAllCaps", false));
 
-        setVerticalAlign(attributes.asConstant("verticalAlign", Align.Vertical.class, Align.Vertical.TOP));
-        setHorizontalAlign(attributes.asConstant("horizontalAlign", Align.Horizontal.class, Align.Horizontal.LEFT));
+        setVerticalAlign(attributes.asEnum("verticalAlign", Align.Vertical.class, Align.Vertical.TOP));
+        setHorizontalAlign(attributes.asEnum("horizontalAlign", Align.Horizontal.class, Align.Horizontal.LEFT));
     }
 
     public String getText() {
@@ -127,15 +128,10 @@ public class Label extends Widget {
             context.setTextVerticalAlign(Align.Vertical.TOP);
             context.setTextHorizontalAlign(Align.Horizontal.LEFT);
 
-            float lm = getMarginLeft() + getPaddingLeft();
-            float rm = getMarginRight() + getPaddingRight();
-            float tm = getMarginTop() + getPaddingTop();
-            float bm = getMarginBottom() + getPaddingBottom();
-
-            float x = lm + rm > getWidth() ? (lm + getWidth() - rm) / 2f : lm;
-            float y = tm + bm > getHeight() ? (tm + getHeight() - bm) / 2f : tm;
-            float width = Math.max(0, getWidth() - lm - rm);
-            float height = Math.max(0, getHeight() - tm - bm);
+            final float x = getInX();
+            final float y = getInY();
+            final float width = getInWidth();
+            final float height = getInHeight();
 
             context.drawTextSlice(
                     xOff(x, x + width, Math.min(textWidth, width)),
@@ -160,14 +156,14 @@ public class Label extends Widget {
         setMeasure(mWidth, mHeight);
     }
 
-    private float xOff(float start, float end, float textWidth) {
+    protected float xOff(float start, float end, float textWidth) {
         if (end < start) return (start + end) / 2f;
         if (horizontalAlign == Align.Horizontal.RIGHT) return end - textWidth;
         if (horizontalAlign == Align.Horizontal.CENTER) return (start + end - textWidth) / 2f;
         return start;
     }
 
-    private float yOff(float start, float end, float textHeight) {
+    protected float yOff(float start, float end, float textHeight) {
         if (end < start) return (start + end) / 2f;
         if (verticalAlign == Align.Vertical.BOTTOM || verticalAlign == Align.Vertical.BASELINE) return end - textHeight;
         if (verticalAlign == Align.Vertical.MIDDLE) return (start + end - textHeight) / 2f;

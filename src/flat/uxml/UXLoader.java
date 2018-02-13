@@ -40,14 +40,14 @@ public final class UXLoader {
     private StringBundle stringBundle;
 
     private float fontScale = 1f;
-    private Object controller;
+    private Controller controller;
     private ArrayList<String> logger = new ArrayList<>();
 
     public UXLoader(DimensionStream dimensionStream, Dimension dimension) {
         this(dimensionStream, dimension, null, null);
     }
 
-    public UXLoader(DimensionStream dimensionStream, Dimension dimension, StringBundle stringBundle, Object controller) {
+    public UXLoader(DimensionStream dimensionStream, Dimension dimension, StringBundle stringBundle, Controller controller) {
         setDimensionStream(dimensionStream);
         setDimension(dimension);
         setStringBundle(stringBundle);
@@ -85,7 +85,7 @@ public final class UXLoader {
         return controller;
     }
 
-    public UXLoader setController(Object controller) {
+    public UXLoader setController(Controller controller) {
         this.controller = controller;
         return this;
     }
@@ -139,7 +139,7 @@ public final class UXLoader {
         }
     }
 
-    private Widget recursive(Object controller, Node node) {
+    private Widget recursive(Controller controller, Node node) {
         if (node.getNodeType() == Node.ELEMENT_NODE) {
             //Name
             String name = node.getNodeName();

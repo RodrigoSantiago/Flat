@@ -94,6 +94,13 @@ public abstract class Animation {
         }
     }
 
+    public void stop(boolean performEnd) {
+        if (performEnd && (playing || paused)) {
+            compute(_interpolation.apply(1));
+        }
+        stop();
+    }
+
     public boolean isPlaying() {
         return playing && !paused;
     }

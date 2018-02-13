@@ -1,6 +1,8 @@
 package flat.widget;
 
+import flat.graphics.SmartContext;
 import flat.screen.Activity;
+import flat.uxml.Controller;
 import flat.uxml.UXAttributes;
 import flat.widget.layout.Box;
 
@@ -13,7 +15,7 @@ public class Scene extends Box {
     }
 
     @Override
-    public void applyAttributes(Object controller, UXAttributes attributes) {
+    public void applyAttributes(Controller controller, UXAttributes attributes) {
         super.applyAttributes(controller, attributes);
         setPrefWidth(attributes.asSize("width", MATCH_PARENT));
         setPrefHeight(attributes.asSize("height", MATCH_PARENT));
@@ -43,6 +45,13 @@ public class Scene extends Box {
     public void invalidate(boolean layout) {
         if (activity != null) {
             activity.invalidate(layout);
+        }
+    }
+
+    @Override
+    public void onDraw(SmartContext context) {
+        if (getVisibility() == VISIBLE) {
+            super.onDraw(context);
         }
     }
 }

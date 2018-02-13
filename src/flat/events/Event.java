@@ -6,6 +6,7 @@ public abstract class Event {
 
     private Widget source;
     private int type;
+    private boolean consumed;
 
     public Event(Widget source, int type) {
         this.source = source;
@@ -23,5 +24,13 @@ public abstract class Event {
     public Event recycle(Widget source) {
         this.source = source;
         return this;
+    }
+
+    public void consume() {
+        consumed = true;
+    }
+
+    public boolean isConsumed() {
+        return consumed;
     }
 }

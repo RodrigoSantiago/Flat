@@ -1,13 +1,17 @@
 package flat.uxml;
 
+import flat.Flat;
 import flat.graphics.context.Font;
 import flat.uxml.data.Dimension;
 import flat.widget.Widget;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
 public class UXAttributes {
+
     private final HashMap<String, Attribute> attributes = new HashMap<>();
     private final UXLoader loader;
     private boolean readOnly;
@@ -40,7 +44,7 @@ public class UXAttributes {
         return val == null ? null : val.use();
     }
 
-    public <T extends Enum<T>> T asConstant(String name, Class<T> tClass, T def) {
+    public <T extends Enum<T>> T asEnum(String name, Class<T> tClass, T def) {
         T result = def;
         String value = get(name);
         if (value != null) {
@@ -49,6 +53,41 @@ public class UXAttributes {
             } catch (Exception e) {
                 e.printStackTrace();
                 loader.log("Invalid constant : [" + name + " = " + value + "]");
+            }
+        }
+        return result;
+    }
+
+    public <T> T asConstant(String name, HashMap<String, T> map, T def) {
+        T result = def;
+        String value = get(name);
+        if (value != null) {
+            try {
+                result = map.get(value);
+            } catch (Exception e) {
+                e.printStackTrace();
+                loader.log("Invalid constant : [" + name + " = " + value + "]");
+            }
+        }
+        return result == null ? def : result;
+    }
+
+    public Method asListener(String name, Class<?> argument, Object controller) {
+        Method result = null;
+        String value = get(name);
+        if (value != null) {
+            try {
+                Method method = controller.getClass().getMethod(value, argument);
+                method.setAccessible(true);
+                if (method.isAnnotationPresent(Flat.class)
+                        && Modifier.isPublic(method.getModifiers())
+                        && !Modifier.isStatic(method.getModifiers())) {
+                    result = method;
+                }
+            } catch (NoSuchMethodException ignored) {
+            }
+            if (result == null) {
+                getLoader().log("Method not found : " + value);
             }
         }
         return result;
@@ -147,6 +186,10 @@ public class UXAttributes {
         return result;
     }
 
+    public Method asListener(String name, Class<?> argument) {
+        return asListener(name, argument, getLoader().getController());
+    }
+
     public String asString(String name) {
         return asString(name, null);
     }
@@ -206,5 +249,16 @@ public class UXAttributes {
         public int hashCode() {
             return value != null ? value.hashCode() : 0;
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> HashMap<String, T> atts(Object... dataPair) {
+        HashMap hashMap = new HashMap();
+        for (int i = 0; i < dataPair.length / 2; i++) {
+            Object key = dataPair[i * 2];
+            Object value = dataPair[i * 2 + 1];
+            hashMap.put(key, value);
+        }
+        return (HashMap<String, T>)hashMap;
     }
 }

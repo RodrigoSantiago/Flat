@@ -1,13 +1,15 @@
 package flat.screen;
 
 import flat.graphics.SmartContext;
+import flat.uxml.Controller;
+import flat.uxml.UXAttributes;
 import flat.uxml.UXLoader;
 import flat.uxml.data.Dimension;
 import flat.uxml.data.DimensionStream;
 import flat.widget.Scene;
 import flat.widget.Widget;
 
-public class Activity {
+public class Activity extends Controller {
 
     private Scene scene;
     private Widget root;
@@ -18,10 +20,11 @@ public class Activity {
 
     private Dimension dimension;
     private DimensionStream stream;
-    private boolean invalided, layoutInvalidaded;
+    private boolean invalided, layoutInvalided, streamInvalided;
 
     public Activity() {
         scene = new Scene(this);
+        scene.applyAttributes(this, new UXAttributes(null));
         color = 0xDDDDDDFF;
     }
 
@@ -35,6 +38,8 @@ public class Activity {
 
     public void setStream(DimensionStream stream) {
         this.stream = stream;
+        streamInvalided = true;
+        invalidate(true);
     }
 
     public void onSave() {
@@ -50,8 +55,8 @@ public class Activity {
             Dimension dm;
             if (stream != null) {
                 dm = stream.getCloserDimension(width, height, dpi);
-                if (dm != null && !dm.equals(dimension) || dpi != dimension.dpi) {
-                    UXLoader loader = new UXLoader(stream, dm);
+                if (dm != null && !dm.equals(dimension) || dpi != dimension.dpi || streamInvalided) {
+                    UXLoader loader = new UXLoader(stream, dm, null, this);
                     Widget widget = null;
                     try {
                         widget = loader.load();
@@ -98,8 +103,8 @@ public class Activity {
     }
 
     final boolean layout() {
-        if (layoutInvalidaded) {
-            layoutInvalidaded = false;
+        if (layoutInvalided) {
+            layoutInvalided = false;
             return true;
         } else {
             return false;
@@ -109,7 +114,7 @@ public class Activity {
     public final void invalidate(boolean layout) {
         invalided = true;
         if (layout) {
-            layoutInvalidaded = true;
+            layoutInvalided = true;
         }
     }
 
