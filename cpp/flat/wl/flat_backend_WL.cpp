@@ -21,6 +21,7 @@ static long int minw = -1;
 static long int minh = -1;
 static long int maxw = -1;
 static long int maxh = -1;
+static bool transparent = false;
 static std::string title = "";
 
 static JNIEnv* sjEnv;
@@ -96,7 +97,6 @@ public:
     }
 };
 
-static jLambda<void()> loop = nullptr;
 static jLambda<void(jint, jint)> sWindowPosCallback = nullptr;
 static jLambda<void(jint, jint)> sWindowSizeCallback = nullptr;
 static jLambda<bool()> sWindowCloseCallback = nullptr;
@@ -197,7 +197,25 @@ namespace {
     }
 }
 
-JNIEXPORT jboolean JNICALL Java_flat_backend_WL_Init(JNIEnv * jEnv, jclass, jint x, jint y, jint width, jint height, jint samples, jboolean resizable, jboolean decorated) {
+GLFWmonitor * findMonitor() {
+    int count;
+    GLFWmonitor** monitors = glfwGetMonitors(&count);
+    int x, y;
+    glfwGetWindowPos(window, &x, &y);
+    for (int i = 0; i < count; i++) {
+        int x1, y1, x2, y2;
+        glfwGetMonitorPos(monitors[i], &x1, &y1);
+        const GLFWvidmode* mode = glfwGetVideoMode(monitors[i]);
+        x2 = x1 + mode->width;
+        y2 = y1 + mode->height;
+        if (x >= x1 && x <= x2 && y >= y1 && y <= y2) {
+            return monitors[i];
+        }
+    }
+    return glfwGetPrimaryMonitor();
+}
+
+JNIEXPORT jlong JNICALL Java_flat_backend_WL_Init(JNIEnv * jEnv, jclass, jint width, jint height, jint samples, jboolean transparent) {
     sjEnv = jEnv;
 
     if (glfwInit()) {
@@ -205,23 +223,21 @@ JNIEXPORT jboolean JNICALL Java_flat_backend_WL_Init(JNIEnv * jEnv, jclass, jint
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-        glfwWindowHint(GLFW_RESIZABLE, resizable ? GLFW_TRUE : GLFW_FALSE);
-        glfwWindowHint(GLFW_DECORATED, decorated ? GLFW_TRUE : GLFW_FALSE);
         glfwWindowHint(GLFW_SAMPLES, samples);
+        glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, (::transparent = transparent) ? GLFW_TRUE : GLFW_FALSE);
         window = glfwCreateWindow(width, height, "", nullptr, nullptr);
 
         if (window == nullptr) {
             glfwTerminate();
-            return false;
+            return 0;
         }
 
         glfwMakeContextCurrent(window);
         if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
             glfwTerminate();
-            return false;
+            return 0;
         }
 
-        glfwSetWindowPos(window, x, y);
         glfwSetWindowPosCallback(window, WindowPosCallback);
         glfwSetWindowSizeCallback(window, WindowSizeCallback);
         glfwSetWindowCloseCallback(window, WindowCloseCallback);
@@ -238,28 +254,15 @@ JNIEXPORT jboolean JNICALL Java_flat_backend_WL_Init(JNIEnv * jEnv, jclass, jint
         glfwSetScrollCallback(window, ScrollCallback);
         glfwSetDropCallback(window, DropCallback);
         glfwSetJoystickCallback(JoystickCallback);
-        return true;
+        return (jlong)window;
     } else {
-        return false;
+        return 0;
     }
 }
 
-JNIEXPORT jboolean JNICALL Java_flat_backend_WL_SwapBuffers(JNIEnv *jEnv, jclass jClass) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_Finish(JNIEnv * jEnv, jclass jClass) {
     sjEnv = jEnv;
 
-    glfwSwapBuffers(window);
-}
-
-JNIEXPORT jboolean JNICALL Java_flat_backend_WL_HandleEvents(JNIEnv *jEnv, jclass jClass) {
-    sjEnv = jEnv;
-
-    glfwPollEvents();
-}
-
-JNIEXPORT void JNICALL Java_flat_backend_WL_Finish(JNIEnv *jEnv, jclass jClass) {
-    sjEnv = jEnv;
-
-    loop = nullptr;
     sWindowPosCallback = nullptr;
     sWindowSizeCallback = nullptr;
     sWindowCloseCallback = nullptr;
@@ -281,15 +284,49 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_Finish(JNIEnv *jEnv, jclass jClass) 
     glfwTerminate();
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_SetVsync(JNIEnv *jEnv, jclass jClass,
-                                                    jint vsync) {
+JNIEXPORT jlong JNICALL Java_flat_backend_WL_ContextCreate(JNIEnv * jEnv, jclass jClass, jint samples) {
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+    glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+    glfwWindowHint(GLFW_SAMPLES, samples);
+    GLFWwindow* win = glfwCreateWindow(128, 128, "", nullptr, window);
+    return (jlong)win;
+}
+
+JNIEXPORT void JNICALL Java_flat_backend_WL_ContextAssign(JNIEnv * jEnv, jclass jClass, jlong win) {
+    glfwMakeContextCurrent((GLFWwindow*) win);
+}
+
+JNIEXPORT void JNICALL Java_flat_backend_WL_ContextDestroy(JNIEnv * jEnv, jclass jClass, jlong win) {
+    glfwDestroyWindow((GLFWwindow*) win);
+}
+
+JNIEXPORT void JNICALL Java_flat_backend_WL_SwapBuffers(JNIEnv * jEnv, jclass jClass) {
+    sjEnv = jEnv;
+
+    glfwSwapBuffers(window);
+}
+
+JNIEXPORT void JNICALL Java_flat_backend_WL_HandleEvents(JNIEnv * jEnv, jclass jClass) {
+    sjEnv = jEnv;
+
+    glfwPollEvents();
+}
+
+JNIEXPORT void JNICALL Java_flat_backend_WL_SetVsync(JNIEnv * jEnv, jclass jClass, jint vsync) {
     sjEnv = jEnv;
 
     glfwSwapInterval(vsync);
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_SetFullscreen(JNIEnv *jEnv, jclass jClass,
-                                                         jboolean fullscreen) {
+JNIEXPORT jboolean JNICALL Java_flat_backend_WL_IsTransparent(JNIEnv * jEnv, jclass jClass) {
+    return ::transparent;
+}
+
+JNIEXPORT void JNICALL Java_flat_backend_WL_SetFullscreen(JNIEnv * jEnv, jclass jClass, jboolean fullscreen) {
     sjEnv = jEnv;
 
     GLFWmonitor *monitor = glfwGetWindowMonitor(window);
@@ -311,26 +348,33 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetFullscreen(JNIEnv *jEnv, jclass j
     }
 }
 
-JNIEXPORT jboolean JNICALL Java_flat_backend_WL_IsFullscreen(JNIEnv *jEnv, jclass jClass) {
+JNIEXPORT jboolean JNICALL Java_flat_backend_WL_IsFullscreen(JNIEnv * jEnv, jclass jClass) {
     sjEnv = jEnv;
 
     return glfwGetWindowMonitor(window) != nullptr;
 }
 
-JNIEXPORT jboolean JNICALL Java_flat_backend_WL_IsResizable(JNIEnv *jEnv, jclass jClass) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_SetResizable(JNIEnv * jEnv, jclass jClass, jboolean resizable) {
+    glfwSetWindowAttrib(window, GLFW_RESIZABLE, resizable ? GLFW_TRUE : GLFW_FALSE);
+}
+
+JNIEXPORT jboolean JNICALL Java_flat_backend_WL_IsResizable(JNIEnv * jEnv, jclass jClass) {
     sjEnv = jEnv;
 
     return glfwGetWindowAttrib(window, GLFW_RESIZABLE) == GLFW_TRUE;
 }
 
-JNIEXPORT jboolean JNICALL Java_flat_backend_WL_IsDecorated(JNIEnv *jEnv, jclass jClass) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_SetDecorated(JNIEnv * jEnv, jclass jClass, jboolean decorated) {
+    glfwSetWindowAttrib(window, GLFW_DECORATED, decorated ? GLFW_TRUE : GLFW_FALSE);
+}
+
+JNIEXPORT jboolean JNICALL Java_flat_backend_WL_IsDecorated(JNIEnv * jEnv, jclass jClass) {
     sjEnv = jEnv;
 
     return glfwGetWindowAttrib(window, GLFW_DECORATED) == GLFW_TRUE;
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_SetTitle(JNIEnv *jEnv, jclass jClass,
-                                                    jstring title) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_SetTitle(JNIEnv * jEnv, jclass jClass, jstring title) {
     sjEnv = jEnv;
 
     jboolean isCopy;
@@ -340,7 +384,7 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetTitle(JNIEnv *jEnv, jclass jClass
     jEnv->ReleaseStringUTFChars(title, sTitle);
 }
 
-JNIEXPORT jstring JNICALL Java_flat_backend_WL_GetTitle(JNIEnv *jEnv, jclass jClass) {
+JNIEXPORT jstring JNICALL Java_flat_backend_WL_GetTitle(JNIEnv * jEnv, jclass jClass) {
     sjEnv = jEnv;
 
     jstring jstr = jEnv->NewStringUTF(::title.c_str());
@@ -348,8 +392,7 @@ JNIEXPORT jstring JNICALL Java_flat_backend_WL_GetTitle(JNIEnv *jEnv, jclass jCl
     return jstr;
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_SetIcon(JNIEnv *jEnv, jclass jClass,
-                                                   jbyteArray image, jint width, jint height) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_SetIcon(JNIEnv * jEnv, jclass jClass, jbyteArray image, jint width, jint height) {
     sjEnv = jEnv;
 
     void* pointer = jEnv->GetPrimitiveArrayCritical(image, 0);
@@ -358,14 +401,13 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetIcon(JNIEnv *jEnv, jclass jClass,
     jEnv->ReleasePrimitiveArrayCritical(image, pointer, 0);
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_SetPosition(JNIEnv *jEnv, jclass jClass,
-                                                       jint x, jint y) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_SetPosition(JNIEnv * jEnv, jclass jClass, jint x, jint y) {
     sjEnv = jEnv;
 
     glfwSetWindowPos(window, x, y);
 }
 
-JNIEXPORT jint JNICALL Java_flat_backend_WL_GetX(JNIEnv *jEnv, jclass jClass) {
+JNIEXPORT jint JNICALL Java_flat_backend_WL_GetX(JNIEnv * jEnv, jclass jClass) {
     sjEnv = jEnv;
 
     int x, y;
@@ -373,7 +415,7 @@ JNIEXPORT jint JNICALL Java_flat_backend_WL_GetX(JNIEnv *jEnv, jclass jClass) {
     return x;
 }
 
-JNIEXPORT jint JNICALL Java_flat_backend_WL_GetY(JNIEnv *jEnv, jclass jClass) {
+JNIEXPORT jint JNICALL Java_flat_backend_WL_GetY(JNIEnv * jEnv, jclass jClass) {
     sjEnv = jEnv;
 
     int x, y;
@@ -381,14 +423,13 @@ JNIEXPORT jint JNICALL Java_flat_backend_WL_GetY(JNIEnv *jEnv, jclass jClass) {
     return y;
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_SetSize(JNIEnv *jEnv, jclass jClass,
-                                                   jint width, jint height) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_SetSize(JNIEnv * jEnv, jclass jClass, jint width, jint height) {
     sjEnv = jEnv;
 
     glfwSetWindowSize(window, width, height);
 }
 
-JNIEXPORT jint JNICALL Java_flat_backend_WL_GetWidth(JNIEnv *jEnv, jclass jClass) {
+JNIEXPORT jint JNICALL Java_flat_backend_WL_GetWidth(JNIEnv * jEnv, jclass jClass) {
     sjEnv = jEnv;
 
     int w, h;
@@ -396,7 +437,7 @@ JNIEXPORT jint JNICALL Java_flat_backend_WL_GetWidth(JNIEnv *jEnv, jclass jClass
     return w;
 }
 
-JNIEXPORT jint JNICALL Java_flat_backend_WL_GetHeight(JNIEnv *jEnv, jclass jClass) {
+JNIEXPORT jint JNICALL Java_flat_backend_WL_GetHeight(JNIEnv * jEnv, jclass jClass) {
     sjEnv = jEnv;
 
     int w, h;
@@ -404,112 +445,157 @@ JNIEXPORT jint JNICALL Java_flat_backend_WL_GetHeight(JNIEnv *jEnv, jclass jClas
     return h;
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_SetSizeLimits(JNIEnv *jEnv, jclass jClass,
-                                                         jint minWidth, jint minHeight, jint maxWidth,
-                                                        jint maxHeight) {
+JNIEXPORT jint JNICALL Java_flat_backend_WL_GetClientWidth(JNIEnv * jEnv, jclass jClass) {
+    sjEnv = jEnv;
+
+    int w, h;
+    glfwGetFramebufferSize(window, &w, &h);
+    return w;
+}
+
+JNIEXPORT jint JNICALL Java_flat_backend_WL_GetClientHeight(JNIEnv * jEnv, jclass jClass) {
+    sjEnv = jEnv;
+
+    int w, h;
+    glfwGetFramebufferSize(window, &w, &h);
+    return h;
+}
+
+JNIEXPORT jdouble JNICALL Java_flat_backend_WL_GetPhysicalWidth(JNIEnv * jEnv, jclass jClass) {
+    sjEnv = jEnv;
+
+    int pw, ph, ww, wh;
+    GLFWmonitor* monitor = findMonitor();
+    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+    glfwGetMonitorPhysicalSize(monitor, &pw, &ph);
+    glfwGetWindowSize(window, &ww, &wh);
+
+    return (ww / (double) mode->width) * pw;
+}
+
+JNIEXPORT jdouble JNICALL Java_flat_backend_WL_GetPhysicalHeight(JNIEnv * jEnv, jclass jClass) {
+    sjEnv = jEnv;
+
+    int pw, ph, ww, wh;
+    GLFWmonitor* monitor = findMonitor();
+    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+    glfwGetMonitorPhysicalSize(monitor, &pw, &ph);
+    glfwGetWindowSize(window, &ww, &wh);
+
+    return (wh / (double) mode->height) * ph;
+}
+
+JNIEXPORT jdouble JNICALL Java_flat_backend_WL_GetDpi(JNIEnv * jEnv, jclass jClass) {
+    sjEnv = jEnv;
+
+    GLFWmonitor* monitor = findMonitor();
+    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+    int w, h;
+    glfwGetMonitorPhysicalSize(monitor, &w, &h);
+    return mode->width / (w / 25.4);
+}
+
+JNIEXPORT void JNICALL Java_flat_backend_WL_SetSizeLimits(JNIEnv * jEnv, jclass jClass, jint minWidth, jint minHeight, jint maxWidth, jint maxHeight) {
     sjEnv = jEnv;
 
     glfwSetWindowSizeLimits(window, minw = minWidth, minh = minHeight, minw = maxWidth, minh = maxHeight);
 }
 
-JNIEXPORT jint JNICALL Java_flat_backend_WL_GetMinWidth(JNIEnv *jEnv, jclass jClass) {
+JNIEXPORT jint JNICALL Java_flat_backend_WL_GetMinWidth(JNIEnv * jEnv, jclass jClass) {
     return ::minw;
 }
 
-JNIEXPORT jint JNICALL Java_flat_backend_WL_GetMinHeight(JNIEnv *jEnv, jclass jClass) {
+JNIEXPORT jint JNICALL Java_flat_backend_WL_GetMinHeight(JNIEnv * jEnv, jclass jClass) {
     return ::minh;
 }
 
-JNIEXPORT jint JNICALL Java_flat_backend_WL_GetMaxWidth(JNIEnv *jEnv, jclass jClass) {
+JNIEXPORT jint JNICALL Java_flat_backend_WL_GetMaxWidth(JNIEnv * jEnv, jclass jClass) {
     return ::minw;
 }
 
-JNIEXPORT jint JNICALL Java_flat_backend_WL_GetMaxHeight(JNIEnv *jEnv, jclass jClass) {
+JNIEXPORT jint JNICALL Java_flat_backend_WL_GetMaxHeight(JNIEnv * jEnv, jclass jClass) {
     return ::minh;
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_Show(JNIEnv *jEnv, jclass jClass) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_Show(JNIEnv * jEnv, jclass jClass) {
     sjEnv = jEnv;
 
     glfwShowWindow(window);
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_Hide(JNIEnv *jEnv, jclass jClass) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_Hide(JNIEnv * jEnv, jclass jClass) {
     sjEnv = jEnv;
 
     glfwHideWindow(window);
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_Close(JNIEnv *jEnv, jclass jClass) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_Close(JNIEnv * jEnv, jclass jClass) {
     sjEnv = jEnv;
 
     glfwSetWindowShouldClose(window, true);
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_Maximize(JNIEnv *jEnv, jclass jClass) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_Maximize(JNIEnv * jEnv, jclass jClass) {
     sjEnv = jEnv;
 
     glfwMaximizeWindow(window);
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_Minimize(JNIEnv *jEnv, jclass jClass) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_Minimize(JNIEnv * jEnv, jclass jClass) {
     sjEnv = jEnv;
 
     glfwIconifyWindow(window);
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_Restore(JNIEnv *jEnv, jclass jClass) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_Restore(JNIEnv * jEnv, jclass jClass) {
     sjEnv = jEnv;
 
     glfwRestoreWindow(window);
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_Focus(JNIEnv *jEnv, jclass jClass) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_Focus(JNIEnv * jEnv, jclass jClass) {
     sjEnv = jEnv;
 
     glfwFocusWindow(window);
 }
 
-JNIEXPORT jboolean JNICALL Java_flat_backend_WL_IsShown(JNIEnv *jEnv, jclass jClass) {
+JNIEXPORT jboolean JNICALL Java_flat_backend_WL_IsShown(JNIEnv * jEnv, jclass jClass) {
     sjEnv = jEnv;
 
     return glfwGetWindowAttrib(window, GLFW_VISIBLE) == GLFW_TRUE;
 }
 
-JNIEXPORT jboolean JNICALL Java_flat_backend_WL_IsClosed(JNIEnv *jEnv, jclass jClass) {
+JNIEXPORT jboolean JNICALL Java_flat_backend_WL_IsClosed(JNIEnv * jEnv, jclass jClass) {
     sjEnv = jEnv;
 
     return glfwWindowShouldClose(window);
 }
 
-JNIEXPORT jboolean JNICALL Java_flat_backend_WL_IsMaximized(JNIEnv *jEnv, jclass jClass) {
+JNIEXPORT jboolean JNICALL Java_flat_backend_WL_IsMaximized(JNIEnv * jEnv, jclass jClass) {
     sjEnv = jEnv;
 
     return glfwGetWindowAttrib(window, GLFW_MAXIMIZED) == GLFW_TRUE;
 }
 
-JNIEXPORT jboolean JNICALL Java_flat_backend_WL_IsMinimized(JNIEnv *jEnv, jclass jClass) {
+JNIEXPORT jboolean JNICALL Java_flat_backend_WL_IsMinimized(JNIEnv * jEnv, jclass jClass) {
     sjEnv = jEnv;
 
     return glfwGetWindowAttrib(window, GLFW_ICONIFIED) == GLFW_TRUE;
 }
 
-JNIEXPORT jint JNICALL Java_flat_backend_WL_GetInputMode(JNIEnv *jEnv, jclass jClass,
-                                                        jint mode) {
+JNIEXPORT jint JNICALL Java_flat_backend_WL_GetInputMode(JNIEnv * jEnv, jclass jClass, jint mode) {
     sjEnv = jEnv;
 
     return glfwGetInputMode(window, mode);
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_SetInputMode(JNIEnv *jEnv, jclass jClass,
-                                                        jint mode, jint value) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_SetInputMode(JNIEnv * jEnv, jclass jClass, jint mode, jint value) {
     sjEnv = jEnv;
 
     glfwSetInputMode(window, mode, value);
 }
 
-JNIEXPORT jstring JNICALL Java_flat_backend_WL_GetKeyName(JNIEnv *jEnv, jclass jClass,
-                                                        jint key, jint scancode) {
+JNIEXPORT jstring JNICALL Java_flat_backend_WL_GetKeyName(JNIEnv * jEnv, jclass jClass, jint key, jint scancode) {
     sjEnv = jEnv;
 
     jstring jstr = jEnv->NewStringUTF(glfwGetKeyName(key, scancode));
@@ -517,21 +603,19 @@ JNIEXPORT jstring JNICALL Java_flat_backend_WL_GetKeyName(JNIEnv *jEnv, jclass j
     return jstr;
 }
 
-JNIEXPORT jint JNICALL Java_flat_backend_WL_GetKey(JNIEnv *jEnv, jclass jClass,
-                                                  jint key) {
+JNIEXPORT jint JNICALL Java_flat_backend_WL_GetKey(JNIEnv * jEnv, jclass jClass, jint key) {
     sjEnv = jEnv;
 
     return glfwGetKey(window, key);
 }
 
-JNIEXPORT jint JNICALL Java_flat_backend_WL_GetMouseButton(JNIEnv *jEnv, jclass jClass,
-                                                          jint button) {
+JNIEXPORT jint JNICALL Java_flat_backend_WL_GetMouseButton(JNIEnv * jEnv, jclass jClass, jint button) {
     sjEnv = jEnv;
 
     return glfwGetMouseButton(window, button);
 }
 
-JNIEXPORT jdouble JNICALL Java_flat_backend_WL_GetCursorX(JNIEnv *jEnv, jclass jClass) {
+JNIEXPORT jdouble JNICALL Java_flat_backend_WL_GetCursorX(JNIEnv * jEnv, jclass jClass) {
     sjEnv = jEnv;
 
     double x, y;
@@ -539,7 +623,7 @@ JNIEXPORT jdouble JNICALL Java_flat_backend_WL_GetCursorX(JNIEnv *jEnv, jclass j
     return x;
 }
 
-JNIEXPORT jdouble JNICALL Java_flat_backend_WL_GetCursorY(JNIEnv *jEnv, jclass jClass) {
+JNIEXPORT jdouble JNICALL Java_flat_backend_WL_GetCursorY(JNIEnv * jEnv, jclass jClass) {
     sjEnv = jEnv;
 
     double x, y;
@@ -547,16 +631,13 @@ JNIEXPORT jdouble JNICALL Java_flat_backend_WL_GetCursorY(JNIEnv *jEnv, jclass j
     return y;
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_SetCursorPos(JNIEnv *jEnv, jclass jClass,
-                                                        jdouble xpos, jdouble ypos) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_SetCursorPos(JNIEnv * jEnv, jclass jClass, jdouble xpos, jdouble ypos) {
     sjEnv = jEnv;
 
     glfwSetCursorPos(window, xpos, ypos);
 }
 
-JNIEXPORT jlong JNICALL Java_flat_backend_WL_CreateCursor(JNIEnv *jEnv, jclass jClass,
-                                                        jbyteArray image, jint width, jint height, jint xhot,
-                                                        jint yhot) {
+JNIEXPORT jlong JNICALL Java_flat_backend_WL_CreateCursor(JNIEnv * jEnv, jclass jClass, jbyteArray image, jint width, jint height, jint xhot, jint yhot) {
     sjEnv = jEnv;
 
     void* pointer = jEnv->GetPrimitiveArrayCritical(image, 0);
@@ -566,34 +647,31 @@ JNIEXPORT jlong JNICALL Java_flat_backend_WL_CreateCursor(JNIEnv *jEnv, jclass j
     return cursorId;
 }
 
-JNIEXPORT jlong JNICALL Java_flat_backend_WL_CreateStandardCursor(JNIEnv *jEnv, jclass jClass, jint shape) {
+JNIEXPORT jlong JNICALL Java_flat_backend_WL_CreateStandardCursor(JNIEnv * jEnv, jclass jClass, jint shape) {
     sjEnv = jEnv;
 
     return (jlong) glfwCreateStandardCursor(shape);
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_DestroyCursor(JNIEnv *jEnv, jclass jClass, jlong cursor) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_DestroyCursor(JNIEnv * jEnv, jclass jClass, jlong cursor) {
     sjEnv = jEnv;
 
     glfwDestroyCursor((GLFWcursor *) cursor);
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_SetCursor(JNIEnv *jEnv, jclass jClass,
-                                                     jlong cursor) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_SetCursor(JNIEnv * jEnv, jclass jClass, jlong cursor) {
     sjEnv = jEnv;
 
     glfwSetCursor(window, (GLFWcursor *) cursor);
 }
 
-JNIEXPORT jint JNICALL Java_flat_backend_WL_JoystickPresent(JNIEnv *jEnv, jclass jClass,
-                                                          jint joy) {
+JNIEXPORT jint JNICALL Java_flat_backend_WL_JoystickPresent(JNIEnv * jEnv, jclass jClass, jint joy) {
     sjEnv = jEnv;
 
     return glfwJoystickPresent(joy);
 }
 
-JNIEXPORT jint JNICALL Java_flat_backend_WL_GetJoystickAxesCount(JNIEnv *jEnv, jclass jClass,
-                                                               jint joy) {
+JNIEXPORT jint JNICALL Java_flat_backend_WL_GetJoystickAxesCount(JNIEnv * jEnv, jclass jClass, jint joy) {
     sjEnv = jEnv;
 
     int count;
@@ -601,8 +679,7 @@ JNIEXPORT jint JNICALL Java_flat_backend_WL_GetJoystickAxesCount(JNIEnv *jEnv, j
     return count;
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_GetJoystickAxes(JNIEnv *jEnv, jclass jClass,
-                                                          jint joy, jfloatArray axes) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_GetJoystickAxes(JNIEnv * jEnv, jclass jClass, jint joy, jfloatArray axes) {
     sjEnv = jEnv;
 
     int count;
@@ -610,8 +687,7 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_GetJoystickAxes(JNIEnv *jEnv, jclass
     jEnv->SetFloatArrayRegion(axes, 0, count, iaxes);
 }
 
-JNIEXPORT jint JNICALL Java_flat_backend_WL_GetJoystickButtonsCount(JNIEnv *jEnv, jclass jClass,
-                                                                  jint joy) {
+JNIEXPORT jint JNICALL Java_flat_backend_WL_GetJoystickButtonsCount(JNIEnv * jEnv, jclass jClass, jint joy) {
     sjEnv = jEnv;
 
     int count;
@@ -619,8 +695,7 @@ JNIEXPORT jint JNICALL Java_flat_backend_WL_GetJoystickButtonsCount(JNIEnv *jEnv
     return count;
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_GetJoystickButtons(JNIEnv *jEnv, jclass jClass,
-                                                             jint joy, jintArray buttons) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_GetJoystickButtons(JNIEnv * jEnv, jclass jClass, jint joy, jintArray buttons) {
     sjEnv = jEnv;
 
     int count;
@@ -631,8 +706,7 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_GetJoystickButtons(JNIEnv *jEnv, jcl
     }
 }
 
-JNIEXPORT jstring JNICALL Java_flat_backend_WL_GetJoystickName(JNIEnv *jEnv, jclass jClass,
-                                                             jint joy) {
+JNIEXPORT jstring JNICALL Java_flat_backend_WL_GetJoystickName(JNIEnv * jEnv, jclass jClass, jint joy) {
     sjEnv = jEnv;
 
     jstring jstr = jEnv->NewStringUTF(glfwGetJoystickName(joy));
@@ -640,8 +714,7 @@ JNIEXPORT jstring JNICALL Java_flat_backend_WL_GetJoystickName(JNIEnv *jEnv, jcl
     return jstr;
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_SetWindowPosCallback(JNIEnv *jEnv, jclass jClass,
-                                                                jobject callback) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_SetWindowPosCallback(JNIEnv * jEnv, jclass jClass, jobject callback) {
     sjEnv = jEnv;
 
     if (callback == nullptr) {
@@ -653,8 +726,7 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetWindowPosCallback(JNIEnv *jEnv, j
     }
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_SetWindowSizeCallback(JNIEnv *jEnv, jclass jClass,
-                                                                 jobject callback) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_SetWindowSizeCallback(JNIEnv * jEnv, jclass jClass, jobject callback) {
     sjEnv = jEnv;
 
     if (callback == nullptr) {
@@ -666,8 +738,7 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetWindowSizeCallback(JNIEnv *jEnv, 
     }
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_SetWindowCloseCallback(JNIEnv *jEnv, jclass jClass,
-                                                                  jobject callback) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_SetWindowCloseCallback(JNIEnv * jEnv, jclass jClass, jobject callback) {
     sjEnv = jEnv;
 
     if (callback == nullptr) {
@@ -679,8 +750,7 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetWindowCloseCallback(JNIEnv *jEnv,
     }
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_SetWindowRefreshCallback(JNIEnv *jEnv, jclass jClass,
-                                                                    jobject callback) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_SetWindowRefreshCallback(JNIEnv * jEnv, jclass jClass, jobject callback) {
     sjEnv = jEnv;
 
     if (callback == nullptr) {
@@ -692,8 +762,7 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetWindowRefreshCallback(JNIEnv *jEn
     }
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_SetWindowFocusCallback(JNIEnv *jEnv, jclass jClass,
-                                                                  jobject callback) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_SetWindowFocusCallback(JNIEnv * jEnv, jclass jClass, jobject callback) {
     sjEnv = jEnv;
 
     if (callback == nullptr) {
@@ -705,8 +774,7 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetWindowFocusCallback(JNIEnv *jEnv,
     }
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_SetWindowIconifyCallback(JNIEnv *jEnv, jclass jClass,
-                                                                    jobject callback) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_SetWindowIconifyCallback(JNIEnv * jEnv, jclass jClass, jobject callback) {
     sjEnv = jEnv;
 
     if (callback == nullptr) {
@@ -718,8 +786,7 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetWindowIconifyCallback(JNIEnv *jEn
     }
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_SetFramebufferSizeCallback(JNIEnv *jEnv, jclass jClass,
-                                                                      jobject callback) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_SetFramebufferSizeCallback(JNIEnv * jEnv, jclass jClass, jobject callback) {
     sjEnv = jEnv;
 
     if (callback == nullptr) {
@@ -731,8 +798,7 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetFramebufferSizeCallback(JNIEnv *j
     }
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_SetKeyCallback(JNIEnv *jEnv, jclass jClass,
-                                                          jobject callback) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_SetKeyCallback(JNIEnv * jEnv, jclass jClass, jobject callback) {
     sjEnv = jEnv;
 
     if (callback == nullptr) {
@@ -744,8 +810,7 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetKeyCallback(JNIEnv *jEnv, jclass 
     }
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_SetCharCallback(JNIEnv *jEnv, jclass jClass,
-                                                           jobject callback) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_SetCharCallback(JNIEnv * jEnv, jclass jClass, jobject callback) {
     sjEnv = jEnv;
 
     if (callback == nullptr) {
@@ -757,8 +822,7 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetCharCallback(JNIEnv *jEnv, jclass
     }
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_SetCharModsCallback(JNIEnv *jEnv, jclass jClass,
-                                                               jobject callback) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_SetCharModsCallback(JNIEnv * jEnv, jclass jClass, jobject callback) {
     sjEnv = jEnv;
 
     if (callback == nullptr) {
@@ -770,8 +834,7 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetCharModsCallback(JNIEnv *jEnv, jc
     }
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_SetMouseButtonCallback(JNIEnv *jEnv, jclass jClass,
-                                                                  jobject callback) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_SetMouseButtonCallback(JNIEnv * jEnv, jclass jClass, jobject callback) {
     sjEnv = jEnv;
 
     if (callback == nullptr) {
@@ -783,8 +846,7 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetMouseButtonCallback(JNIEnv *jEnv,
     }
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_SetCursorPosCallback(JNIEnv *jEnv, jclass jClass,
-                                                                jobject callback) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_SetCursorPosCallback(JNIEnv * jEnv, jclass jClass, jobject callback) {
     sjEnv = jEnv;
 
     if (callback == nullptr) {
@@ -796,8 +858,7 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetCursorPosCallback(JNIEnv *jEnv, j
     }
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_SetCursorEnterCallback(JNIEnv *jEnv, jclass jClass,
-                                                                  jobject callback) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_SetCursorEnterCallback(JNIEnv * jEnv, jclass jClass, jobject callback) {
     sjEnv = jEnv;
 
     if (callback == nullptr) {
@@ -809,8 +870,7 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetCursorEnterCallback(JNIEnv *jEnv,
     }
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_SetScrollCallback(JNIEnv *jEnv, jclass jClass,
-                                                             jobject callback) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_SetScrollCallback(JNIEnv * jEnv, jclass jClass, jobject callback) {
     sjEnv = jEnv;
 
     if (callback == nullptr) {
@@ -822,21 +882,19 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetScrollCallback(JNIEnv *jEnv, jcla
     }
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_SetDropCallback(JNIEnv *jEnv, jclass jClass,
-                                                           jobject callback) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_SetDropCallback(JNIEnv * jEnv, jclass jClass, jobject callback) {
     sjEnv = jEnv;
 
     if (callback == nullptr) {
         sDropCallback = nullptr;
     } else {
         jclass cls = jEnv->GetObjectClass(callback);
-        jmethodID mid = jEnv->GetMethodID(cls, "handle", "([LJAVA/LANG/STRING;)V");
+        jmethodID mid = jEnv->GetMethodID(cls, "handle", "([Ljava/lang/String;)V");
         sDropCallback = jLambda<void(jobjectArray)>(callback, mid);
     }
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_WL_SetJoystickCallback(JNIEnv *jEnv, jclass jClass,
-                                                              jobject callback) {
+JNIEXPORT void JNICALL Java_flat_backend_WL_SetJoystickCallback(JNIEnv * jEnv, jclass jClass, jobject callback) {
     sjEnv = jEnv;
 
     if (callback == nullptr) {

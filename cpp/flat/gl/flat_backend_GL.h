@@ -42,10 +42,10 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_SetClearColor
 /*
  * Class:     flat_backend_GL
  * Method:    SetClearDepth
- * Signature: (I)V
+ * Signature: (D)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_GL_SetClearDepth
-  (JNIEnv *, jclass, jint);
+  (JNIEnv *, jclass, jdouble);
 
 /*
  * Class:     flat_backend_GL
@@ -737,6 +737,14 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_FrameBufferBind
 
 /*
  * Class:     flat_backend_GL
+ * Method:    FrameBufferGetBound
+ * Signature: (I)I
+ */
+JNIEXPORT jint JNICALL Java_flat_backend_GL_FrameBufferGetBound
+  (JNIEnv *, jclass, jint);
+
+/*
+ * Class:     flat_backend_GL
  * Method:    FrameBufferBlit
  * Signature: (IIIIIIIIII)V
  */
@@ -801,6 +809,22 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_FrameBufferGetPixelDataSize
 
 /*
  * Class:     flat_backend_GL
+ * Method:    FrameBufferSetTargets
+ * Signature: (IIIIIIII)V
+ */
+JNIEXPORT void JNICALL Java_flat_backend_GL_FrameBufferSetTargets
+  (JNIEnv *, jclass, jint, jint, jint, jint, jint, jint, jint, jint);
+
+/*
+ * Class:     flat_backend_GL
+ * Method:    FrameBufferGetTargets
+ * Signature: ([I)V
+ */
+JNIEXPORT void JNICALL Java_flat_backend_GL_FrameBufferGetTargets
+  (JNIEnv *, jclass, jintArray);
+
+/*
+ * Class:     flat_backend_GL
  * Method:    RenderBufferCreate
  * Signature: ()I
  */
@@ -822,6 +846,14 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_RenderBufferDestroy
  */
 JNIEXPORT void JNICALL Java_flat_backend_GL_RenderBufferBind
   (JNIEnv *, jclass, jint);
+
+/*
+ * Class:     flat_backend_GL
+ * Method:    RenderBufferGetBound
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_flat_backend_GL_RenderBufferGetBound
+  (JNIEnv *, jclass);
 
 /*
  * Class:     flat_backend_GL
@@ -873,6 +905,14 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_SetActiveTexture
 
 /*
  * Class:     flat_backend_GL
+ * Method:    GetActiveTexture
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_flat_backend_GL_GetActiveTexture
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     flat_backend_GL
  * Method:    TextureCreate
  * Signature: ()I
  */
@@ -894,6 +934,14 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_TextureDestroy
  */
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureBind
   (JNIEnv *, jclass, jint, jint);
+
+/*
+ * Class:     flat_backend_GL
+ * Method:    TextureGetBound
+ * Signature: (I)I
+ */
+JNIEXPORT jint JNICALL Java_flat_backend_GL_TextureGetBound
+  (JNIEnv *, jclass, jint);
 
 /*
  * Class:     flat_backend_GL
@@ -961,6 +1009,14 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_TextureDataI
 
 /*
  * Class:     flat_backend_GL
+ * Method:    TextureDataF
+ * Signature: (IIIIII[FI)V
+ */
+JNIEXPORT void JNICALL Java_flat_backend_GL_TextureDataF
+  (JNIEnv *, jclass, jint, jint, jint, jint, jint, jint, jfloatArray, jint);
+
+/*
+ * Class:     flat_backend_GL
  * Method:    TextureDataBuffer
  * Signature: (IIIIIILjava/nio/Buffer;I)V
  */
@@ -998,6 +1054,14 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSubDataS
  */
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSubDataI
   (JNIEnv *, jclass, jint, jint, jint, jint, jint, jint, jint, jintArray, jint);
+
+/*
+ * Class:     flat_backend_GL
+ * Method:    TextureSubDataF
+ * Signature: (IIIIIII[FI)V
+ */
+JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSubDataF
+  (JNIEnv *, jclass, jint, jint, jint, jint, jint, jint, jint, jfloatArray, jint);
 
 /*
  * Class:     flat_backend_GL
@@ -1241,6 +1305,22 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_BufferBind
 
 /*
  * Class:     flat_backend_GL
+ * Method:    BufferBindRange
+ * Signature: (IIIII)V
+ */
+JNIEXPORT void JNICALL Java_flat_backend_GL_BufferBindRange
+  (JNIEnv *, jclass, jint, jint, jint, jint, jint);
+
+/*
+ * Class:     flat_backend_GL
+ * Method:    BufferGetBound
+ * Signature: (I)I
+ */
+JNIEXPORT jint JNICALL Java_flat_backend_GL_BufferGetBound
+  (JNIEnv *, jclass, jint);
+
+/*
+ * Class:     flat_backend_GL
  * Method:    BufferDataB
  * Signature: (I[BIII)V
  */
@@ -1457,6 +1537,14 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_ProgramUse
 
 /*
  * Class:     flat_backend_GL
+ * Method:    ProgramGetUsed
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_flat_backend_GL_ProgramGetUsed
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     flat_backend_GL
  * Method:    ProgramIsDeleted
  * Signature: (I)Z
  */
@@ -1601,6 +1689,70 @@ JNIEXPORT jint JNICALL Java_flat_backend_GL_ProgramGetUniformId
 
 /*
  * Class:     flat_backend_GL
+ * Method:    ProgramGetUniformBlocksCount
+ * Signature: (I)I
+ */
+JNIEXPORT jint JNICALL Java_flat_backend_GL_ProgramGetUniformBlocksCount
+  (JNIEnv *, jclass, jint);
+
+/*
+ * Class:     flat_backend_GL
+ * Method:    ProgramGetUniformBlockName
+ * Signature: (II)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_flat_backend_GL_ProgramGetUniformBlockName
+  (JNIEnv *, jclass, jint, jint);
+
+/*
+ * Class:     flat_backend_GL
+ * Method:    ProgramGetUniformBlockBinding
+ * Signature: (II)I
+ */
+JNIEXPORT jint JNICALL Java_flat_backend_GL_ProgramGetUniformBlockBinding
+  (JNIEnv *, jclass, jint, jint);
+
+/*
+ * Class:     flat_backend_GL
+ * Method:    ProgramGetUniformBlockSize
+ * Signature: (II)I
+ */
+JNIEXPORT jint JNICALL Java_flat_backend_GL_ProgramGetUniformBlockSize
+  (JNIEnv *, jclass, jint, jint);
+
+/*
+ * Class:     flat_backend_GL
+ * Method:    ProgramGetUniformBlockId
+ * Signature: (ILjava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_flat_backend_GL_ProgramGetUniformBlockId
+  (JNIEnv *, jclass, jint, jstring);
+
+/*
+ * Class:     flat_backend_GL
+ * Method:    ProgramUniformBlockBinding
+ * Signature: (III)V
+ */
+JNIEXPORT void JNICALL Java_flat_backend_GL_ProgramUniformBlockBinding
+  (JNIEnv *, jclass, jint, jint, jint);
+
+/*
+ * Class:     flat_backend_GL
+ * Method:    ProgramGetUniformBlockChildrenCount
+ * Signature: (II)I
+ */
+JNIEXPORT jint JNICALL Java_flat_backend_GL_ProgramGetUniformBlockChildrenCount
+  (JNIEnv *, jclass, jint, jint);
+
+/*
+ * Class:     flat_backend_GL
+ * Method:    ProgramGetUniformBlockChildren
+ * Signature: (II[I)V
+ */
+JNIEXPORT void JNICALL Java_flat_backend_GL_ProgramGetUniformBlockChildren
+  (JNIEnv *, jclass, jint, jint, jintArray);
+
+/*
+ * Class:     flat_backend_GL
  * Method:    ProgramSetTFVars
  * Signature: (I[Ljava/lang/String;I)V
  */
@@ -1673,6 +1825,14 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_ProgramSetUniformF
 
 /*
  * Class:     flat_backend_GL
+ * Method:    ProgramSetUniformMatrix
+ * Signature: (IIIIZ[FI)V
+ */
+JNIEXPORT void JNICALL Java_flat_backend_GL_ProgramSetUniformMatrix
+  (JNIEnv *, jclass, jint, jint, jint, jint, jboolean, jfloatArray, jint);
+
+/*
+ * Class:     flat_backend_GL
  * Method:    ProgramSetUniformBuffer
  * Signature: (IIIILjava/nio/Buffer;I)V
  */
@@ -1726,6 +1886,14 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_VertexArrayDestroy
  */
 JNIEXPORT void JNICALL Java_flat_backend_GL_VertexArrayBind
   (JNIEnv *, jclass, jint);
+
+/*
+ * Class:     flat_backend_GL
+ * Method:    VertexArrayGetBound
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_flat_backend_GL_VertexArrayGetBound
+  (JNIEnv *, jclass);
 
 /*
  * Class:     flat_backend_GL

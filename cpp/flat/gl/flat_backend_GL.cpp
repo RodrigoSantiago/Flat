@@ -5,8 +5,9 @@
 #include "flat_backend_GL.h"
 #include <glad/glad.h>
 #include <iostream>
+#include <nanovg/stb_image.h>
 
-void convertImageType(GLenum _format, GLenum &dafaFormat, GLenum &dataType) {
+void convertImageType(jint &_format, GLenum &dafaFormat, GLenum &dataType) {
     if (_format == GL_RGB) {
         dafaFormat = GL_RGB;
         dataType = GL_UNSIGNED_BYTE;
@@ -52,7 +53,7 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_SetClearColor(JNIEnv * jEnv, jclass 
                  ((rgba >> 8) & 0xff) / 255.0f,
                  ((rgba) & 0xff) / 255.0f);
 }
-JNIEXPORT void JNICALL Java_flat_backend_GL_SetClearDepth(JNIEnv * jEnv, jclass jClass, jint mask) {
+JNIEXPORT void JNICALL Java_flat_backend_GL_SetClearDepth(JNIEnv * jEnv, jclass jClass, jdouble mask) {
     glClearDepth(mask);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_SetClearStencil(JNIEnv * jEnv, jclass jClass, jint mask) {
@@ -83,22 +84,22 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_ReadPixels(JNIEnv * jEnv, jclass jCl
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_ReadPixelsB(JNIEnv * jEnv, jclass jClass, jint x, jint y, jint width, jint height, jbyteArray data, jint offset) {
     void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glReadPixels(x, y, width, height, GL_RGBA, GL_BYTE, pointer + (offset * sizeof(jbyte)));
+    glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pointer + (offset * sizeof(jbyte)));
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_ReadPixelsS(JNIEnv * jEnv, jclass jClass, jint x, jint y, jint width, jint height, jshortArray data, jint offset) {
     void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glReadPixels(x, y, width, height, GL_RGBA, GL_SHORT, pointer + (offset * sizeof(jshort)));
+    glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pointer + (offset * sizeof(jshort)));
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_ReadPixelsI(JNIEnv * jEnv, jclass jClass, jint x, jint y, jint width, jint height, jintArray data, jint offset) {
     void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glReadPixels(x, y, width, height, GL_RGBA, GL_INT, pointer + (offset * sizeof(jint)));
+    glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pointer + (offset * sizeof(jint)));
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_ReadPixelsF(JNIEnv * jEnv, jclass jClass, jint x, jint y, jint width, jint height, jfloatArray data, jint offset) {
     void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glReadPixels(x, y, width, height, GL_RGBA, GL_FLOAT, pointer + (offset * sizeof(jfloat)));
+    glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pointer + (offset * sizeof(jfloat)));
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 
@@ -405,7 +406,6 @@ JNIEXPORT jfloat JNICALL Java_flat_backend_GL_GetLineWidth(JNIEnv * jEnv, jclass
     glGetFloatv(GL_LINE_WIDTH, &data);
     return data;
 }
-
 JNIEXPORT void JNICALL Java_flat_backend_GL_DrawArrays(JNIEnv * jEnv, jclass jClass, jint vertexModeVM, jint first, jint count, jint instances) {
     if (instances > 1) {
         glDrawArraysInstanced(vertexModeVM, first, count, instances);
@@ -473,6 +473,17 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_FrameBufferDestroy(JNIEnv * jEnv, jc
 JNIEXPORT void JNICALL Java_flat_backend_GL_FrameBufferBind(JNIEnv * jEnv, jclass jClass, jint trgFB, jint id) {
     glBindFramebuffer(trgFB, id);
 }
+JNIEXPORT jint JNICALL Java_flat_backend_GL_FrameBufferGetBound(JNIEnv * jEnv, jclass jClass, jint trgFB) {
+    GLint id = 0;
+    if (trgFB == GL_FRAMEBUFFER) {
+        glGetIntegerv(GL_FRAMEBUFFER_BINDING, &id);
+    } else if (trgFB == GL_DRAW_FRAMEBUFFER) {
+        glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &id);
+    } else if (trgFB == GL_READ_FRAMEBUFFER) {
+        glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &id);
+    }
+    return id;
+}
 JNIEXPORT void JNICALL Java_flat_backend_GL_FrameBufferBlit(JNIEnv * jEnv, jclass jClass, jint srcX, jint srcY, jint srcW, jint srcH, jint dstX, jint dstY, jint dstW, jint dstH, jint bitmaskBM, jint filterBF) {
     glBlitFramebuffer(srcX, srcY, srcX + srcW, srcY + srcH, dstX, dstY, dstX + dstW, dstY + dstH, bitmaskBM, filterBF);
 }
@@ -522,6 +533,29 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_FrameBufferGetPixelDataSize(JNIEnv *
     val = data;
     jEnv->SetIntArrayRegion(data6, 5, 1, &val);
 }
+JNIEXPORT void JNICALL Java_flat_backend_GL_FrameBufferSetTargets(JNIEnv *jEnv, jclass jClass, jint c0FA, jint c1FA, jint c2FA, jint c3FA, jint c4FA, jint c5FA, jint c6FA, jint c7FA) {
+    GLint id;
+    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &id);
+    GLuint arr[8] = {id == 0 && c0FA != 0 ? GL_BACK_LEFT : c0FA, c1FA, c2FA, c3FA, c4FA, c5FA, c6FA, c7FA };
+    glDrawBuffers(8, arr);
+}
+
+JNIEXPORT void JNICALL Java_flat_backend_GL_FrameBufferGetTargets(JNIEnv * jEnv, jclass, jintArray data8) {
+    void * pointer = jEnv->GetPrimitiveArrayCritical(data8, 0);
+    jint * arr = (jint *) pointer;
+    GLint data;
+    for (GLuint i = 0; i < 8; i++) {
+        glGetIntegerv(GL_DRAW_BUFFER0 + i, &data);
+        arr[i] = data;
+    }
+    GLint id;
+    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &id);
+    if (id == 0) {
+        glGetIntegerv(GL_DRAW_BUFFER0, &data);
+        arr[0] = (data == GL_BACK_LEFT || data == GL_BACK) ? GL_COLOR_ATTACHMENT0 : GL_NONE;
+    }
+    jEnv->ReleasePrimitiveArrayCritical(data8, pointer, 0);
+}
 //---------------------------
 //        Render Buffer
 //---------------------------
@@ -536,6 +570,11 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_RenderBufferDestroy(JNIEnv * jEnv, j
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_RenderBufferBind(JNIEnv * jEnv, jclass jClass, jint id) {
     glBindRenderbuffer(GL_RENDERBUFFER, id);
+}
+JNIEXPORT jint JNICALL Java_flat_backend_GL_RenderBufferGetBound(JNIEnv * jEnv, jclass jClass) {
+    GLint id = 0;
+    glGetIntegerv(GL_RENDERBUFFER_BINDING, &id);
+    return id;
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_RenderBufferStorage(JNIEnv * jEnv, jclass jClass, jint frormatTF, jint width, jint height) {
     glRenderbufferStorage(GL_RENDERBUFFER, frormatTF, width, height);
@@ -565,6 +604,11 @@ JNIEXPORT jint JNICALL Java_flat_backend_GL_RenderBufferGetHeight(JNIEnv * jEnv,
 JNIEXPORT void JNICALL Java_flat_backend_GL_SetActiveTexture(JNIEnv * jEnv, jclass jClass, jint pos) {
     glActiveTexture(GL_TEXTURE0 + static_cast<GLuint>(pos));
 }
+JNIEXPORT jint JNICALL Java_flat_backend_GL_GetActiveTexture(JNIEnv * jEnv, jclass jClass) {
+    GLint id;
+    glGetIntegerv(GL_ACTIVE_TEXTURE, &id);
+    return id;
+}
 
 JNIEXPORT jint JNICALL Java_flat_backend_GL_TextureCreate(JNIEnv * jEnv, jclass jClass) {
     GLuint id;
@@ -577,6 +621,22 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_TextureDestroy(JNIEnv * jEnv, jclass
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureBind(JNIEnv * jEnv, jclass jClass, jint trgTB, jint id) {
     glBindTexture(trgTB, id);
+}
+
+JNIEXPORT jint JNICALL Java_flat_backend_GL_TextureGetBound(JNIEnv *jEnv, jclass jClass, jint trgTB) {
+    GLint id = 0;
+    if (trgTB == GL_TEXTURE_2D) {
+        glGetIntegerv(GL_TEXTURE_BINDING_2D, &id);
+    } else if (trgTB == GL_TEXTURE_CUBE_MAP) {
+        glGetIntegerv(GL_TEXTURE_BINDING_CUBE_MAP, &id);
+    } else if (trgTB == GL_TEXTURE_2D_MULTISAMPLE) {
+        glGetIntegerv(GL_TEXTURE_BINDING_2D_MULTISAMPLE, &id);
+    } else if (trgTB == GL_TEXTURE_3D) {
+        glGetIntegerv(GL_TEXTURE_BINDING_3D, &id);
+    } else if (trgTB == GL_TEXTURE_2D_ARRAY) {
+        glGetIntegerv(GL_TEXTURE_BINDING_2D_ARRAY, &id);
+    }
+    return id;
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureGenerateMipmap(JNIEnv * jEnv, jclass jClass, jint id) {
     glGenerateMipmap(id);
@@ -600,9 +660,8 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_TextureData(JNIEnv * jEnv, jclass jC
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureDataB(JNIEnv * jEnv, jclass jClass, jint trgTT, jint level, jint formatTF, jint width, jint height, jint border, jbyteArray data, jint offset) {
     GLenum dafaFormat, dataType;
     convertImageType(formatTF, dafaFormat, dataType);
-
     void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glTexImage2D(trgTT, level, formatTF, width, height, border, dafaFormat, dataType, pointer + (offset * sizeof(jbyte)));
+    glTexImage2D(trgTT, level, formatTF, width, height, border, dafaFormat, dataType, pointer + (offset * sizeof(jbyte)) );
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureDataS(JNIEnv * jEnv, jclass jClass, jint trgTT, jint level, jint formatTF, jint width, jint height, jint border, jshortArray data, jint offset) {
@@ -619,6 +678,14 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_TextureDataI(JNIEnv * jEnv, jclass j
 
     void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
     glTexImage2D(trgTT, level, formatTF, width, height, border, dafaFormat, dataType, pointer + (offset * sizeof(jint)));
+    jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
+}
+JNIEXPORT void JNICALL Java_flat_backend_GL_TextureDataF(JNIEnv * jEnv, jclass jClass, jint trgTT, jint level, jint formatTF, jint width, jint height, jint border, jfloatArray data, jint offset) {
+    GLenum dafaFormat, dataType;
+    convertImageType(formatTF, dafaFormat, dataType);
+
+    void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
+    glTexImage2D(trgTT, level, formatTF, width, height, border, dafaFormat, dataType, pointer + (offset * sizeof(jfloat)));
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureDataBuffer(JNIEnv * jEnv, jclass jClass, jint trgTT, jint level, jint formatTF, jint width, jint height, jint border, jobject buffer, jint offset) {
@@ -644,7 +711,7 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSubDataB(JNIEnv * jEnv, jclas
     convertImageType(dataFormatTF, dafaFormat, dataType);
 
     void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glTexImage2D(trgTT, level, x, y, width, height, dafaFormat, dataType, pointer + (offset * sizeof(jbyte)));
+    glTexSubImage2D(trgTT, level, x, y, width, height, dafaFormat, dataType, pointer + (offset * sizeof(jbyte)));
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSubDataS(JNIEnv * jEnv, jclass jClass, jint trgTT, jint level, jint x, jint y, jint width, jint height, jint dataFormatTF, jshortArray data, jint offset) {
@@ -652,7 +719,7 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSubDataS(JNIEnv * jEnv, jclas
     convertImageType(dataFormatTF, dafaFormat, dataType);
 
     void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glTexImage2D(trgTT, level, x, y, width, height, dafaFormat, dataType, pointer + (offset * sizeof(jshort)));
+    glTexSubImage2D(trgTT, level, x, y, width, height, dafaFormat, dataType, pointer + (offset * sizeof(jshort)));
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSubDataI(JNIEnv * jEnv, jclass jClass, jint trgTT, jint level, jint x, jint y, jint width, jint height, jint dataFormatTF, jintArray data, jint offset) {
@@ -660,7 +727,15 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSubDataI(JNIEnv * jEnv, jclas
     convertImageType(dataFormatTF, dafaFormat, dataType);
 
     void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glTexImage2D(trgTT, level, x, y, width, height, dafaFormat, dataType, pointer + (offset * sizeof(jint)));
+    glTexSubImage2D(trgTT, level, x, y, width, height, dafaFormat, dataType, pointer + (offset * sizeof(jint)));
+    jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
+}
+JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSubDataF(JNIEnv * jEnv, jclass jClass, jint trgTT, jint level, jint x, jint y, jint width, jint height, jint dataFormatTF, jfloatArray data, jint offset) {
+    GLenum dafaFormat, dataType;
+    convertImageType(dataFormatTF, dafaFormat, dataType);
+
+    void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
+    glTexSubImage2D(trgTT, level, x, y, width, height, dafaFormat, dataType, pointer + (offset * sizeof(jfloat)));
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSubDataBuffer(JNIEnv * jEnv, jclass jClass, jint trgTT, jint level, jint x, jint y, jint width, jint height, jint dataFormatTF, jobject buffer, jint offset) {
@@ -668,92 +743,92 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSubDataBuffer(JNIEnv * jEnv, 
     convertImageType(dataFormatTF, dafaFormat, dataType);
 
     void * pointer = jEnv->GetDirectBufferAddress(buffer);
-    glTexImage2D(trgTT, level, x, y, width, height, dafaFormat, dataType, pointer + offset);
+    glTexSubImage2D(trgTT, level, x, y, width, height, dafaFormat, dataType, pointer + offset);
 }
 
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSetLevels(JNIEnv * jEnv, jclass jClass, jint trgTB, jint levels) {
-    glTexParameteri(GL_TEXTURE_MAX_LEVEL, trgTB, levels);
+    glTexParameteri(trgTB, GL_TEXTURE_MAX_LEVEL, levels);
 }
 JNIEXPORT jint JNICALL Java_flat_backend_GL_TextureGetLevels(JNIEnv * jEnv, jclass jClass, jint trgTB) {
     GLint data;
-    glGetTexParameteriv(GL_TEXTURE_MAX_LEVEL, trgTB, &data);
+    glGetTexParameteriv(trgTB, GL_TEXTURE_MAX_LEVEL, &data);
     return data;
 }
 
 JNIEXPORT jint JNICALL Java_flat_backend_GL_TextureGetWidth(JNIEnv * jEnv, jclass jClass, jint trgTB, jint level) {
     GLint data;
-    glGetTexLevelParameteriv(GL_TEXTURE_WIDTH, level, trgTB, &data);
+    glGetTexLevelParameteriv(trgTB, level, GL_TEXTURE_WIDTH, &data);
     return data;
 }
 JNIEXPORT jint JNICALL Java_flat_backend_GL_TextureGetHeight(JNIEnv * jEnv, jclass jClass, jint trgTB, jint level) {
     GLint data;
-    glGetTexLevelParameteriv(GL_TEXTURE_HEIGHT, level, trgTB, &data);
+    glGetTexLevelParameteriv(trgTB, level, GL_TEXTURE_HEIGHT, &data);
     return data;
 }
 JNIEXPORT jint JNICALL Java_flat_backend_GL_TextureGetFormat(JNIEnv * jEnv, jclass jClass, jint trgTB, jint level) {
     GLint data;
-    glGetTexLevelParameteriv(GL_TEXTURE_INTERNAL_FORMAT, level, trgTB, &data);
+    glGetTexLevelParameteriv(trgTB, level, GL_TEXTURE_INTERNAL_FORMAT, &data);
     return data;
 }
 
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSetLOD(JNIEnv * jEnv, jclass jClass, jint trgTB, jfloat bias, jfloat max, jfloat min) {
-    glTexParameterf(GL_TEXTURE_LOD_BIAS, trgTB, bias);
-    glTexParameterf(GL_TEXTURE_MAX_LOD, trgTB, max);
-    glTexParameterf(GL_TEXTURE_MIN_LOD, trgTB, min);
+    glTexParameterf(trgTB, GL_TEXTURE_LOD_BIAS, bias);
+    glTexParameterf(trgTB, GL_TEXTURE_MAX_LOD, max);
+    glTexParameterf(trgTB, GL_TEXTURE_MIN_LOD, min);
 }
 JNIEXPORT jfloat JNICALL Java_flat_backend_GL_TextureGetLODBias(JNIEnv * jEnv, jclass jClass, jint trgTB) {
     GLfloat data;
-    glGetTexParameterfv(GL_TEXTURE_LOD_BIAS, trgTB, &data);
+    glGetTexParameterfv(trgTB, GL_TEXTURE_LOD_BIAS, &data);
     return data;
 }
 JNIEXPORT jfloat JNICALL Java_flat_backend_GL_TextureGetLODMax(JNIEnv * jEnv, jclass jClass, jint trgTB) {
     GLfloat data;
-    glGetTexParameterfv(GL_TEXTURE_MAX_LOD, trgTB, &data);
+    glGetTexParameterfv(trgTB, GL_TEXTURE_MAX_LOD, &data);
     return data;
 }
 JNIEXPORT jfloat JNICALL Java_flat_backend_GL_TextureGetLODMin(JNIEnv * jEnv, jclass jClass, jint trgTB) {
     GLfloat data;
-    glGetTexParameterfv(GL_TEXTURE_MIN_LOD, trgTB, &data);
+    glGetTexParameterfv(trgTB, GL_TEXTURE_MIN_LOD,&data);
     return data;
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSetFilter(JNIEnv * jEnv, jclass jClass, jint trgTB, jint magFilterTF, jint minFilterTF) {
-    glTexParameteri(GL_TEXTURE_MAG_FILTER, trgTB, magFilterTF);
-    glTexParameteri(GL_TEXTURE_MIN_FILTER, trgTB, minFilterTF);
+    glTexParameteri(trgTB, GL_TEXTURE_MAG_FILTER, magFilterTF);
+    glTexParameteri(trgTB, GL_TEXTURE_MIN_FILTER, minFilterTF);
 }
 JNIEXPORT jint JNICALL Java_flat_backend_GL_TextureGetFilterMag(JNIEnv * jEnv, jclass jClass, jint trgTB) {
     GLint data;
-    glGetTexParameteriv(GL_TEXTURE_MAG_FILTER, trgTB, &data);
+    glGetTexParameteriv(trgTB, GL_TEXTURE_MAG_FILTER, &data);
     return data;
 }
 JNIEXPORT jint JNICALL Java_flat_backend_GL_TextureGetFilterMin(JNIEnv * jEnv, jclass jClass, jint trgTB) {
     GLint data;
-    glGetTexParameteriv(GL_TEXTURE_MIN_FILTER, trgTB, &data);
+    glGetTexParameteriv(trgTB, GL_TEXTURE_MIN_FILTER, &data);
     return data;
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSetSwizzle(JNIEnv * jEnv, jclass jClass, jint trgTB, jint rChanelCC, jint gChanelCC, jint bChanelCC, jint aChanelCC) {
-    glTexParameteri(GL_TEXTURE_SWIZZLE_R, trgTB, rChanelCC);
-    glTexParameteri(GL_TEXTURE_SWIZZLE_G, trgTB, gChanelCC);
-    glTexParameteri(GL_TEXTURE_SWIZZLE_B, trgTB, bChanelCC);
-    glTexParameteri(GL_TEXTURE_SWIZZLE_A, trgTB, aChanelCC);
+    glTexParameteri(trgTB, GL_TEXTURE_SWIZZLE_R, rChanelCC);
+    glTexParameteri(trgTB, GL_TEXTURE_SWIZZLE_G, gChanelCC);
+    glTexParameteri(trgTB, GL_TEXTURE_SWIZZLE_B, bChanelCC);
+    glTexParameteri(trgTB, GL_TEXTURE_SWIZZLE_A, aChanelCC);
 }
 JNIEXPORT jint JNICALL Java_flat_backend_GL_TextureGetSwizzleR(JNIEnv * jEnv, jclass jClass, jint trgTB) {
     GLint data;
-    glGetTexParameteriv(GL_TEXTURE_SWIZZLE_R, trgTB, &data);
+    glGetTexParameteriv(trgTB, GL_TEXTURE_SWIZZLE_R, &data);
     return data;
 }
 JNIEXPORT jint JNICALL Java_flat_backend_GL_TextureGetSwizzleG(JNIEnv * jEnv, jclass jClass, jint trgTB) {
     GLint data;
-    glGetTexParameteriv(GL_TEXTURE_SWIZZLE_G, trgTB, &data);
+    glGetTexParameteriv(trgTB, GL_TEXTURE_SWIZZLE_G, &data);
     return data;
 }
 JNIEXPORT jint JNICALL Java_flat_backend_GL_TextureGetSwizzleB(JNIEnv * jEnv, jclass jClass, jint trgTB) {
     GLint data;
-    glGetTexParameteriv(GL_TEXTURE_SWIZZLE_B, trgTB, &data);
+    glGetTexParameteriv(trgTB, GL_TEXTURE_SWIZZLE_B, &data);
     return data;
 }
 JNIEXPORT jint JNICALL Java_flat_backend_GL_TextureGetSwizzleA(JNIEnv * jEnv, jclass jClass, jint trgTB) {
     GLint data;
-    glGetTexParameteriv(GL_TEXTURE_SWIZZLE_A, trgTB, &data);
+    glGetTexParameteriv(trgTB, GL_TEXTURE_SWIZZLE_A, &data);
     return data;
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSetBorderColor(JNIEnv * jEnv, jclass jClass, jint trgTB, jint rgba) {
@@ -761,41 +836,41 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSetBorderColor(JNIEnv * jEnv,
                      ((rgba >> 16) & 0xff),
                      ((rgba >> 8) & 0xff),
                      ((rgba) & 0xff)};
-    glTexParameteriv(GL_TEXTURE_BORDER_COLOR, trgTB, data);
+    glTexParameteriv(trgTB, GL_TEXTURE_BORDER_COLOR, data);
 }
 JNIEXPORT jint JNICALL Java_flat_backend_GL_TextureGetBorderColor(JNIEnv * jEnv, jclass jClass, jint trgTB) {
     GLint data[4];
-    glGetTexParameteriv(GL_TEXTURE_BORDER_COLOR, trgTB, data);
+    glGetTexParameteriv(trgTB, GL_TEXTURE_BORDER_COLOR, data);
     return (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3];
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSetWrap(JNIEnv * jEnv, jclass jClass, jint trgTB, jint horizontalIW, jint verticalIW) {
-    glTexParameteri(GL_TEXTURE_WRAP_S, trgTB, horizontalIW);
-    glTexParameteri(GL_TEXTURE_WRAP_T, trgTB, verticalIW);
+    glTexParameteri(trgTB, GL_TEXTURE_WRAP_S, horizontalIW);
+    glTexParameteri(trgTB, GL_TEXTURE_WRAP_T, verticalIW);
 }
 JNIEXPORT jint JNICALL Java_flat_backend_GL_TextureGetWrapHorizontal(JNIEnv * jEnv, jclass jClass, jint trgTB) {
     GLint data;
-    glGetTexParameteriv(GL_TEXTURE_WRAP_S, trgTB, &data);
+    glGetTexParameteriv(trgTB, GL_TEXTURE_WRAP_S, &data);
     return data;
 }
 JNIEXPORT jint JNICALL Java_flat_backend_GL_TextureGetWrapVertical(JNIEnv * jEnv, jclass jClass, jint trgTB) {
     GLint data;
-    glGetTexParameteriv(GL_TEXTURE_WRAP_T, trgTB, &data);
+    glGetTexParameteriv(trgTB, GL_TEXTURE_WRAP_T, &data);
     return data;
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSetCompareFunction(JNIEnv * jEnv, jclass jClass, jint trgTB, jint functionMF) {
-    glTexParameteri(GL_TEXTURE_COMPARE_FUNC, trgTB, functionMF);
+    glTexParameteri(trgTB, GL_TEXTURE_COMPARE_FUNC, functionMF);
 }
 JNIEXPORT jint JNICALL Java_flat_backend_GL_TextureGetCompareFunction(JNIEnv * jEnv, jclass jClass, jint trgTB) {
     GLint data;
-    glGetTexParameteriv(GL_TEXTURE_COMPARE_FUNC, trgTB, &data);
+    glGetTexParameteriv(trgTB, GL_TEXTURE_COMPARE_FUNC, &data);
     return data;
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSetCompareMode(JNIEnv * jEnv, jclass jClass, jint trgTB, jint compareModeCM) {
-    glTexParameteri(GL_TEXTURE_COMPARE_MODE, trgTB, compareModeCM);
+    glTexParameteri(trgTB, GL_TEXTURE_COMPARE_MODE, compareModeCM);
 }
 JNIEXPORT jint JNICALL Java_flat_backend_GL_TextureGetCompareMode(JNIEnv * jEnv, jclass jClass, jint trgTB) {
     GLint data;
-    glGetTexParameteriv(GL_TEXTURE_COMPARE_MODE, trgTB, &data);
+    glGetTexParameteriv(trgTB, GL_TEXTURE_COMPARE_MODE, &data);
     return data;
 }
 
@@ -813,6 +888,31 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_BufferDestroy(JNIEnv * jEnv, jclass 
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_BufferBind(JNIEnv * jEnv, jclass jClass, jint trgBB, jint id) {
     glBindBuffer(trgBB, id);
+}
+
+JNIEXPORT void JNICALL Java_flat_backend_GL_BufferBindRange(JNIEnv * jEnv, jclass jClass, jint trgBB, jint id, jint buffer, jint offset, jint length) {
+    glBindBufferRange(trgBB, id, buffer, offset, length);
+}
+JNIEXPORT jint JNICALL Java_flat_backend_GL_BufferGetBound(JNIEnv *jEnv, jclass jClass, jint trgBB) {
+    GLint id = 0;
+    if (trgBB == GL_ARRAY_BUFFER) {
+        glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &id);
+    } else if (trgBB == GL_ELEMENT_ARRAY_BUFFER) {
+        glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &id);
+    } else if (trgBB == GL_PIXEL_PACK_BUFFER) {
+        glGetIntegerv(GL_PIXEL_PACK_BUFFER_BINDING, &id);
+    } else if (trgBB == GL_PIXEL_UNPACK_BUFFER) {
+        glGetIntegerv(GL_PIXEL_UNPACK_BUFFER_BINDING, &id);
+    } else if (trgBB == GL_TRANSFORM_FEEDBACK_BUFFER) {
+        glGetIntegerv(GL_TRANSFORM_FEEDBACK_BUFFER_BINDING, &id);
+    } else if (trgBB == GL_UNIFORM_BUFFER) {
+        glGetIntegerv(GL_UNIFORM_BUFFER_BINDING, &id);
+    } else if (trgBB == GL_COPY_READ_BUFFER) {
+        glGetIntegerv(GL_COPY_READ_BUFFER, &id);
+    } else if (trgBB == GL_COPY_WRITE_BUFFER) {
+        glGetIntegerv(GL_COPY_WRITE_BUFFER, &id);
+    }
+    return id;
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_BufferDataB(JNIEnv * jEnv, jclass jClass, jint trgBB, jbyteArray data, jint offset, jint length, jint usageTypeUT) {
     void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
@@ -907,22 +1007,22 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_BufferFlush(JNIEnv * jEnv, jclass jC
 }
 JNIEXPORT jint JNICALL Java_flat_backend_GL_BufferGetSize(JNIEnv * jEnv, jclass jClass, jint trgBB) {
     GLint data;
-    glGetBufferParameteriv(GL_BUFFER_SIZE, trgBB, &data);
+    glGetBufferParameteriv(trgBB, GL_BUFFER_SIZE, &data);
     return data;
 }
 JNIEXPORT jint JNICALL Java_flat_backend_GL_BufferGetUsage(JNIEnv * jEnv, jclass jClass, jint trgBB) {
     GLint data;
-    glGetBufferParameteriv(GL_BUFFER_USAGE, trgBB, &data);
+    glGetBufferParameteriv(trgBB, GL_BUFFER_USAGE, &data);
     return data;
 }
 JNIEXPORT jint JNICALL Java_flat_backend_GL_BufferGetAcess(JNIEnv * jEnv, jclass jClass, jint trgBB) {
     GLint data;
-    glGetBufferParameteriv(GL_BUFFER_ACCESS, trgBB, &data);
+    glGetBufferParameteriv(trgBB, GL_BUFFER_ACCESS,  &data);
     return data;
 }
 JNIEXPORT jboolean JNICALL Java_flat_backend_GL_BufferIsMapped(JNIEnv * jEnv, jclass jClass, jint trgBB) {
     GLint data;
-    glGetBufferParameteriv(GL_BUFFER_MAPPED, trgBB, &data);
+    glGetBufferParameteriv(trgBB, GL_BUFFER_MAPPED, &data);
     return data == GL_TRUE;
 }
 
@@ -940,6 +1040,11 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_ProgramLink(JNIEnv * jEnv, jclass jC
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_ProgramUse(JNIEnv * jEnv, jclass jClass, jint id) {
     glUseProgram(id);
+}
+JNIEXPORT jint JNICALL Java_flat_backend_GL_ProgramGetUsed(JNIEnv * jEnv, jclass jClass) {
+    GLint id;
+    glGetIntegerv(GL_CURRENT_PROGRAM, &id);
+    return id;
 }
 JNIEXPORT jboolean JNICALL Java_flat_backend_GL_ProgramIsDeleted(JNIEnv * jEnv, jclass jClass, jint id) {
     GLint data;
@@ -1054,6 +1159,50 @@ JNIEXPORT jint JNICALL Java_flat_backend_GL_ProgramGetUniformId(JNIEnv * jEnv, j
     return pos;
 }
 
+
+JNIEXPORT jint JNICALL Java_flat_backend_GL_ProgramGetUniformBlocksCount(JNIEnv *jEnv, jclass jClass, jint id) {
+    GLint size;
+    glGetProgramiv(id, GL_ACTIVE_UNIFORM_BLOCKS, &size);
+    return size;
+}
+JNIEXPORT jstring JNICALL Java_flat_backend_GL_ProgramGetUniformBlockName(JNIEnv *jEnv, jclass jClass, jint id, jint blockId) {
+    GLint size;
+    glGetProgramiv(id, GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH, &size);
+    char name[size];
+    GLint nameLen;
+    glGetActiveUniformBlockName(id, blockId, size, &nameLen, name);
+    return jEnv->NewStringUTF(name);
+}
+JNIEXPORT jint JNICALL Java_flat_backend_GL_ProgramGetUniformBlockBinding(JNIEnv *jEnv, jclass jClass, jint id, jint blockId) {
+    GLint data;
+    glGetActiveUniformBlockiv(id, blockId, GL_UNIFORM_BLOCK_BINDING, &data);
+    return data;
+}
+JNIEXPORT jint JNICALL Java_flat_backend_GL_ProgramGetUniformBlockSize(JNIEnv *jEnv, jclass jClass, jint id, jint blockId) {
+    GLint data;
+    glGetActiveUniformBlockiv(id, blockId, GL_UNIFORM_BLOCK_DATA_SIZE, &data);
+    return data;
+}
+JNIEXPORT jint JNICALL Java_flat_backend_GL_ProgramGetUniformBlockId(JNIEnv *jEnv, jclass jClass, jint id, jstring name) {
+    const char * str = jEnv->GetStringUTFChars(name, 0);
+    jint pos = glGetUniformBlockIndex(id, str);
+    jEnv->ReleaseStringUTFChars(name, str);
+    return pos;
+}
+JNIEXPORT void JNICALL Java_flat_backend_GL_ProgramUniformBlockBinding(JNIEnv *jEnv, jclass jClass, jint id, jint blockId, jint blockBind) {
+    glUniformBlockBinding(id, blockId, blockBind);
+}
+JNIEXPORT jint JNICALL Java_flat_backend_GL_ProgramGetUniformBlockChildrenCount(JNIEnv *jEnv, jclass jClass, jint id, jint blockId) {
+    GLint data;
+    glGetActiveUniformBlockiv(id, blockId, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &data);
+    return data;
+}
+JNIEXPORT void JNICALL Java_flat_backend_GL_ProgramGetUniformBlockChildren(JNIEnv *jEnv, jclass jClass, jint id, jint blockId, jintArray data) {
+    void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
+    glGetActiveUniformBlockiv(id, blockId, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, (GLint *) pointer);
+    jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
+}
+
 JNIEXPORT void JNICALL Java_flat_backend_GL_ProgramSetTFVars(JNIEnv * jEnv, jclass jClass, jint id, jobjectArray names, jint bufferModeFM) {
     jint length = jEnv->GetArrayLength(names);
     const char* cNames[length];
@@ -1123,6 +1272,23 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_ProgramSetUniformF(JNIEnv * jEnv, jc
     else if (attSize == 4) glUniform4fv(uniformId, arrSize, (const GLfloat *) (pointer + (offset * sizeof(jfloat))));
     jEnv->ReleasePrimitiveArrayCritical(value, pointer, 0);
 }
+JNIEXPORT void JNICALL Java_flat_backend_GL_ProgramSetUniformMatrix(JNIEnv * jEnv, jclass jClass, jint uniformId, jint w, jint h, jint arrSize, jboolean transpose, jfloatArray value, jint offset) {
+    void * pointer = jEnv->GetPrimitiveArrayCritical(value, 0);
+    if (w == 2) {
+        if (h == 2) glUniformMatrix2fv(uniformId, arrSize, transpose, (const GLfloat *) (pointer + (offset * sizeof(jfloat))));
+        if (h == 3) glUniformMatrix2x3fv(uniformId, arrSize, transpose, (const GLfloat *) (pointer + (offset * sizeof(jfloat))));
+        if (h == 4) glUniformMatrix2x4fv(uniformId, arrSize, transpose, (const GLfloat *) (pointer + (offset * sizeof(jfloat))));
+    } else if (w == 3) {
+        if (h == 2) glUniformMatrix3x2fv(uniformId, arrSize, transpose, (const GLfloat *) (pointer + (offset * sizeof(jfloat))));
+        if (h == 3) glUniformMatrix3fv(uniformId, arrSize, transpose, (const GLfloat *) (pointer + (offset * sizeof(jfloat))));
+        if (h == 4) glUniformMatrix3x4fv(uniformId, arrSize, transpose, (const GLfloat *) (pointer + (offset * sizeof(jfloat))));
+    } else if (w == 4) {
+        if (h == 2) glUniformMatrix4x2fv(uniformId, arrSize, transpose, (const GLfloat *) (pointer + (offset * sizeof(jfloat))));
+        if (h == 3) glUniformMatrix4x3fv(uniformId, arrSize, transpose, (const GLfloat *) (pointer + (offset * sizeof(jfloat))));
+        if (h == 4) glUniformMatrix4fv(uniformId, arrSize, transpose, (const GLfloat *) (pointer + (offset * sizeof(jfloat))));
+    }
+    jEnv->ReleasePrimitiveArrayCritical(value, pointer, 0);
+}
 JNIEXPORT void JNICALL Java_flat_backend_GL_ProgramSetUniformBuffer(JNIEnv * jEnv, jclass jClass, jint uniformId, jint attSize, jint arrSize, jint typeDT, jobject buffer, jint offset) {
     void * pointer = jEnv->GetDirectBufferAddress(buffer);
     if (typeDT == GL_INT) {
@@ -1173,6 +1339,11 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_VertexArrayDestroy(JNIEnv * jEnv, jc
 
 JNIEXPORT void JNICALL Java_flat_backend_GL_VertexArrayBind(JNIEnv * jEnv, jclass jClass, jint id) {
     glBindVertexArray(id);
+}
+JNIEXPORT jint JNICALL Java_flat_backend_GL_VertexArrayGetBound(JNIEnv * jEnv, jclass jClass) {
+    GLint id;
+    glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &id);
+    return id;
 }
 
 JNIEXPORT void JNICALL Java_flat_backend_GL_VertexArrayAttribEnable(JNIEnv * jEnv, jclass jClass, jint attrId, jboolean enable) {
