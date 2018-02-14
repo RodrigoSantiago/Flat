@@ -209,7 +209,7 @@ struct GLNVGfragUniforms {
         int interpolation;
         float stops[16];
         float colors[16];
-		int edgeAA;
+		int edgeA;
 	#else
 		// note: after modifying layout or size of uniform array,
 		// don't forget to also update the fragment shader source!
@@ -235,7 +235,7 @@ struct GLNVGfragUniforms {
                 int interpolation;
                 float stops[16];
                 float colors[16];
-				int edgeAA;
+				int edgeA;
 			};
 			float uniformArray[NANOVG_GL_UNIFORMARRAY_SIZE][4];
 		};
@@ -593,7 +593,7 @@ static int glnvg__renderCreate(void* uptr)
         "		int interpolation;\n"
         "       vec4 stops[4];\n"
         "       vec4 colors[4];\n"
-		"	    int edgeAA;\n"
+		"	    int edgeA;\n"
 		"	};\n"
 		"#else\n" // NANOVG_GL3 && !USE_UNIFORMBUFFER
 		"	uniform vec4 frag[UNIFORMARRAY_SIZE];\n"
@@ -628,7 +628,7 @@ static int glnvg__renderCreate(void* uptr)
         "	#define interpolation int(frag[11].w)\n"
         "	#define stops vec4[](frag[12], frag[13], frag[14], frag[15])\n"
         "	#define colors vec4[](frag[16], frag[17], frag[18], frag[19])\n"
-        "	#define edgeAA int(frag[20].x)\n"
+        "	#define edgeA int(frag[20].x)\n"
 		"#endif\n"
 		"\n"
         "vec4 decodeColor(int index) {\n"
@@ -672,7 +672,7 @@ static int glnvg__renderCreate(void* uptr)
 		"   vec4 result;\n"
 		"	float scissor = scissorMask(fpos);\n"
 		"#ifdef EDGE_AA\n"
-		"	float strokeAlpha = (edgeAA == 1) ? strokeMask() : 1;\n"
+		"	float strokeAlpha = (edgeA == 1) ? strokeMask() : 1;\n"
 		"	if (strokeAlpha < strokeThr) discard;\n"
 		"#else\n"
 		"	float strokeAlpha = 1.0;\n"
@@ -1003,7 +1003,7 @@ static int glnvg__convertPaint(GLNVGcontext* gl, GLNVGfragUniforms* frag, NVGpai
         frag->colors[i] = glnvg__premulColorF(paint->colors[i]);
     }
 
-	frag->edgeAA = paint->edgeAA;
+	frag->edgeA = paint->edgeA;
 
 	if (scissor->extent[0] < -0.5f || scissor->extent[1] < -0.5f) {
 		memset(frag->scissorMat, 0, sizeof(frag->scissorMat));

@@ -56,7 +56,7 @@ struct NVGpaint {
 	int interpolation;
 	float stops[16];
 	float colors[16];
-	int edgeAA;
+	int edgeA;
 };
 typedef struct NVGpaint NVGpaint;
 

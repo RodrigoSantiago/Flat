@@ -2218,7 +2218,7 @@ void nvgFill(NVGcontext* ctx)
 	// Apply global alpha
 	fillPaint.innerColor.a *= state->alpha;
 	fillPaint.outerColor.a *= state->alpha;
-	fillPaint.edgeAA = state->shapeAntiAlias;
+	fillPaint.edgeA = state->shapeAntiAlias;
 
 	ctx->params.renderFill(ctx->params.userPtr, &fillPaint, state->compositeOperation, &state->scissor, ctx->fringeWidth,
 						   ctx->cache->bounds, ctx->cache->paths, ctx->cache->npaths);
@@ -2253,7 +2253,7 @@ void nvgStroke(NVGcontext* ctx)
 	// Apply global alpha
 	strokePaint.innerColor.a *= state->alpha;
 	strokePaint.outerColor.a *= state->alpha;
-	strokePaint.edgeAA = state->shapeAntiAlias;
+	strokePaint.edgeA = state->shapeAntiAlias;
 
 	nvg__flattenPaths(ctx);
 
@@ -2409,7 +2409,7 @@ static void nvg__renderText(NVGcontext* ctx, NVGvertex* verts, int nverts)
 	// Apply global alpha
 	paint.innerColor.a *= state->alpha;
 	paint.outerColor.a *= state->alpha;
-	paint.edgeAA = state->shapeAntiAlias;
+	paint.edgeA = state->shapeAntiAlias;
 
 	ctx->params.renderTriangles(ctx->params.userPtr, &paint, state->compositeOperation, &state->scissor, verts, nverts);
 
