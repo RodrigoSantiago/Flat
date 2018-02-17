@@ -1,7 +1,7 @@
 package flat.widget;
 
 import flat.graphics.SmartContext;
-import flat.screen.Activity;
+import flat.application.Activity;
 import flat.uxml.Controller;
 import flat.uxml.UXAttributes;
 import flat.widget.layout.Box;

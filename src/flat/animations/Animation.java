@@ -1,6 +1,6 @@
 package flat.animations;
 
-import flat.screen.Application;
+import flat.application.Application;
 
 public abstract class Animation {
 

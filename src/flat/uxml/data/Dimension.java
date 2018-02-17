@@ -1,6 +1,6 @@
 package flat.uxml.data;
 
-import flat.screen.Application;
+import flat.application.Application;
 
 public class Dimension {
 

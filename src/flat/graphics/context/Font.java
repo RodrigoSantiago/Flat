@@ -3,7 +3,7 @@ package flat.graphics.context;
 import flat.backend.SVG;
 import flat.graphics.text.FontPosture;
 import flat.graphics.text.FontWeight;
-import flat.screen.Application;
+import flat.application.Application;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

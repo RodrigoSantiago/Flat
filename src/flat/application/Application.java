@@ -1,11 +1,11 @@
-package flat.screen;
+package flat.application;
 
 import flat.animations.Animation;
 import flat.backend.*;
 import flat.events.*;
 import flat.graphics.context.Context;
 import flat.graphics.SmartContext;
-import flat.graphics.image.Image;
+import flat.graphics.image.ImageRaster;
 import flat.widget.Widget;
 
 import java.util.ArrayList;
@@ -44,8 +44,26 @@ public final class Application {
 
     private static long loopTime;
     private static float dpi;
+    private static int vsync;
+
+    private Application() {
+    }
 
     public static void init(Settings settings) {
+        if (settings.activityClass == null) {
+            throw new RuntimeException("Invalide appliction settings (Null start activity)");
+        }
+        if (settings.width <= 0 || settings.height <= 0) {
+            throw new RuntimeException("Invalide appliction settings (Start screen size)");
+        }
+        if (settings.multsamples < 0) {
+            throw new RuntimeException("Invalide appliction settings (Negative multsamples)");
+        }
+        if (settings.vsync < 0) {
+            throw new RuntimeException("Invalide appliction settings (Negative vsync)");
+        }
+        ResourcesManager.setResources(settings.resources);
+
         long id = WL.Init(settings.width, settings.height, settings.multsamples, settings.transparent);
         if (id == 0) {
             throw new RuntimeException("Invalide context creation");
@@ -56,7 +74,7 @@ public final class Application {
             throw new RuntimeException("Invalide context creation");
         }
 
-        WL.SetVsync(1);
+        setVsync(settings.vsync);
         thread = Thread.currentThread();
         context = new Context(id, svgId);
         context.init();
@@ -79,7 +97,7 @@ public final class Application {
             WL.SetCharModsCallback((codepoint, mods) -> events.add(CharModsData.get(codepoint, mods)));
             WL.SetWindowSizeCallback((width, height) -> events.add(SizeData.get(width, height)));
 
-            activity = (Activity) settings.getActivityClass().getConstructor().newInstance();
+            activity = (Activity) settings.activityClass.getConstructor().newInstance();
             activity.invalidate(true);
 
             if (settings.start != null) {
@@ -387,6 +405,16 @@ public final class Application {
 
             smartContext.softFlush();
             WL.SwapBuffers();
+
+            if (vsync == 0) {
+                long time = System.currentTimeMillis() - loopTime;
+                if (time < 15) {
+                    try {
+                        Thread.sleep(15 - time);
+                    } catch (InterruptedException ignored) {
+                    }
+                }
+            }
         } else {
             long time = System.currentTimeMillis() - loopTime;
             if (time < 15) {
@@ -443,7 +471,11 @@ public final class Application {
     }
 
     public static void setVsync(int vsync) {
-        WL.SetVsync(vsync);
+        WL.SetVsync(Application.vsync = vsync);
+    }
+
+    public static int getVsync() {
+        return Application.vsync;
     }
 
     public static boolean isTransparent() {
@@ -482,7 +514,7 @@ public final class Application {
         WL.SetTitle(title);
     }
 
-    public static void setIcon(Image icons) {
+    public static void setIcon(ImageRaster icons) {
 
     }
 

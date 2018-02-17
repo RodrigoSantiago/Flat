@@ -35,9 +35,10 @@ public class SVG {
     //---------------------------
     public static native void SetShapeAntiAlias(long context, boolean enable);
     public static native void SetPaintColor(long context, int color);
-    public static native void SetPaintLinearGradient(long context, float x1, float y1, float x2, float y2, int count, float[] stops, int[] colors, int cycleMethod, int interpolation);
-    public static native void SetPaintRadialGradient(long context, float x1, float y1, float radiusIn, float radiusOut, int count, float[] stops, int[] colors, int cycleMethod, int interpolation);
-    public static native void SetPaintBoxShadow(long context, float x, float y, float width, float height, float corners, float blur, float alpha, int interpolation);
+    public static native void SetPaintLinearGradient(long context, float x1, float y1, float x2, float y2, int count, float[] stops, int[] colors, int cycleMethod);
+    public static native void SetPaintRadialGradient(long context, float x1, float y1, float radiusIn, float radiusOut, int count, float[] stops, int[] colors, int cycleMethod);
+    public static native void SetPaintBoxShadow(long context, float x, float y, float width, float height, float corners, float blur, float alpha);
+    public static native void SetPaintImage(long context, float x, float y, float width, float height, int textureID);
     public static native void SetMiterLimit(long context, float limit);
     public static native void SetStrokeWidth(long context, float size);
     public static native void SetLineCap(long context, int cap);

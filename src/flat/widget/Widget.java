@@ -24,8 +24,6 @@ public class Widget {
     public static final float WRAP_CONTENT = 0;
     public static final float MATCH_PARENT = Float.POSITIVE_INFINITY;
 
-    // anchors does not need a attribute list
-
     public static final int GONE = 0;
     public static final int VISIBLE = 1;
     public static final int INVISIBLE = 2;
@@ -41,13 +39,13 @@ public class Widget {
     //    Properties
     //---------------------
     private String id;
-    private boolean enabled, focus, focusTarget;
+    private boolean enabled = true, focus, focusTarget;
     private String nextFocusId, prevFocusId;
     private float width, height;
     private float marginTop, marginRight, marginBottom, marginLeft;
     private float paddingTop, paddingRight, paddingBottom, paddingLeft;
-    private float minWidth, minHeight, maxWidth, maxHeight, prefWidth = 0, prefHeight = 0;
-    private int visibility;
+    private float minWidth, minHeight, maxWidth = MATCH_PARENT, maxHeight = MATCH_PARENT, prefWidth, prefHeight;
+    private int visibility = VISIBLE;
     private float measureWidth, measureHeight;
 
     //---------------------
@@ -74,7 +72,7 @@ public class Widget {
     private final RoundRectangle bg = new RoundRectangle();
     private final Rectangle pd = new Rectangle();
     private int backgroundColor;
-    private float opacity;
+    private float opacity = 1;
 
     private RippleEffect ripple;
     private int rippleColor;

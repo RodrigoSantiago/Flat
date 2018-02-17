@@ -74,18 +74,6 @@ public class Button extends Label {
         setStyle(attributes.asConstant("style", styles, 0));
     }
 
-    @Override
-    public void onDraw(SmartContext context) {
-        int bgColor = getBackgroundColor();
-        if (style != RAISED && style != FLOAT) {
-            setBackgroundColor(0);
-        }
-        super.onDraw(context);
-        if (style != RAISED && style != FLOAT) {
-            setBackgroundColor(bgColor);
-        }
-    }
-
     public boolean isElevationEffectEnabled() {
         return elevationEffect;
     }

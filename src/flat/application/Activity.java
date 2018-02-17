@@ -1,4 +1,4 @@
-package flat.screen;
+package flat.application;
 
 import flat.graphics.SmartContext;
 import flat.uxml.Controller;

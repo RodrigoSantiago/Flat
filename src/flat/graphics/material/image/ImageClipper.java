@@ -1,6 +1,5 @@
 package flat.graphics.material.image;
 
-import flat.FileUtils;
 import flat.graphics.context.Shader;
 import flat.graphics.context.ShaderProgram;
 import flat.graphics.context.enuns.ShaderType;
@@ -8,6 +7,7 @@ import flat.graphics.material.MaterialValue;
 import flat.math.Matrix3;
 import flat.math.Vector2;
 import flat.math.Vector4;
+import flat.application.ResourcesManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,8 +27,8 @@ public class ImageClipper extends ImageMaterial {
     public ImageClipper() {
         if (shader == null) {
             try {
-                String shadowVtx = FileUtils.readFromInternal("resources/clip.vtx.glsl");
-                String shadowFrg = FileUtils.readFromInternal("resources/clip.frg.glsl");
+                String shadowVtx = ResourcesManager.readPersistentData("resources/clip.vtx.glsl");
+                String shadowFrg = ResourcesManager.readPersistentData("resources/clip.frg.glsl");
                 Shader vtx = new Shader(ShaderType.Vertex, shadowVtx);
                 if (!vtx.compile()) {
                     throw new Exception(vtx.getLog());

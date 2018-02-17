@@ -1,9 +1,13 @@
 package flat.widget.image;
 
 import flat.graphics.SmartContext;
-import flat.graphics.image.Drawable;
+import flat.graphics.image.Image;
+import flat.graphics.image.ImageVector;
 import flat.graphics.text.Align;
+import flat.math.shapes.Rectangle;
+import flat.math.shapes.Shape;
 import flat.uxml.Controller;
+import flat.uxml.SVGParser;
 import flat.uxml.UXAttributes;
 import flat.widget.Widget;
 
@@ -23,7 +27,7 @@ public class ImageView extends Widget {
             "CROP", CROP
     );
 
-    private Drawable drawable;
+    private Image image;
     private int scaleType;
 
     private float frame;
@@ -43,19 +47,60 @@ public class ImageView extends Widget {
 
         setFrame(attributes.asNumber("frame", 0));
         setSpeed(attributes.asNumber("speed", 1));
+
+        String drawable = attributes.get("drawable");
+        if (drawable != null) {
+            if (drawable.startsWith("img:")) {
+                String imgPath = drawable.substring(3);
+                // todo - load img path
+            } else if (drawable.startsWith("svg:")) {
+                Rectangle rect = null;
+                Shape path = null;
+                int iBox = drawable.indexOf("viewBox=");
+                int iPath = drawable.indexOf("path=");
+                if (iBox > -1) {
+                    int end = drawable.indexOf(";", iBox);
+                    if (end == -1) end = drawable.length();
+                    String[] data = drawable.substring(iBox + 8, end).split(" ");
+                    try {
+                        rect = new Rectangle(
+                                Float.parseFloat(data[0]),
+                                Float.parseFloat(data[1]),
+                                Float.parseFloat(data[2]),
+                                Float.parseFloat(data[3]));
+                    } catch (Exception ignored) {
+                    }
+                }
+                if (iPath > -1) {
+                    int end = drawable.indexOf(";", iPath);
+                    if (end == -1) end = drawable.length();
+                    try {
+                        SVGParser parser = new SVGParser();
+                        path = parser.parse(drawable.substring(iPath + 5, end), 0);
+                    } catch (Exception ignored) {
+                        System.out.println(drawable);
+                    }
+                }
+                if (path != null) {
+                    //setImage(new ImageVector(path, rect));
+                }
+            } else {
+                // invalid
+            }
+        }
     }
 
-    public Drawable getDrawable() {
-        return drawable;
+    public Image getImage() {
+        return image;
     }
 
-    public void setDrawable(Drawable drawable) {
-        this.drawable = drawable;
+    public void setImage(Image image) {
+        this.image = image;
         invalidate(false);
     }
 
-    public void setDrawable(Drawable drawable, float speed) {
-        this.drawable = drawable;
+    public void setDrawable(Image image, float speed) {
+        this.image = image;
         this.speed = speed;
         invalidate(false);
     }
@@ -122,11 +167,11 @@ public class ImageView extends Widget {
             frame += ((now - lastTime) / 1000f) * speed;
         }
         lastTime = now;
-        frame = Math.abs(frame % 1f);
+        frame = frame < 0 ? 1 - Math.abs(frame % 1f) : frame % 1f;
 
-        if (this.drawable != null) {
-            float dW = drawable.getWidth();
-            float dH = drawable.getHeight();
+        if (this.image != null) {
+            float dW = image.getWidth();
+            float dH = image.getHeight();
 
             if (dW > 0 && dH > 0) {
                 final float x = getInX();
@@ -155,11 +200,11 @@ public class ImageView extends Widget {
                 }
 
                 context.setTransform2D(getTransformView());
-                drawable.draw(context, xOff(x, x + width, dW), yOff(y, y + height, dH), dW, dH, frame);
+                image.draw(context, xOff(x, x + width, dW), yOff(y, y + height, dH), dW, dH, frame);
                 context.setTransform2D(null);
             }
 
-            if (drawable.isDynamic()) {
+            if (image.isDynamic()) {
                 invalidate(false);
             }
         }

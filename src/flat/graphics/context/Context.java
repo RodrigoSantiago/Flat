@@ -78,8 +78,6 @@ public final class Context {
     // ---- SVG ---- //
     private boolean svgMode;
     private boolean svgAntialias;
-    private boolean svgColorMode;
-    private int svgColor;
     private float svgAlpha;
     private Paint svgPaint;
     private float svgStrokeWidth;
@@ -95,7 +93,6 @@ public final class Context {
     private Align.Horizontal svgTextHorizontalAlign;
 
     private Affine svgTransform;
-    private Affine svgTransformView;
 
     public Context(long id, long svgId) {
         this.id = id;
@@ -204,10 +201,8 @@ public final class Context {
         // ---- SVG ---- //
         svgMode = false;
         svgAntialias = true;
-        svgColor = 0xFFFFFFFF;
         svgAlpha = 1f;
-        svgColorMode = true;
-        svgPaint = new Paint();
+        svgPaint = Paint.color(0x000000FF);
         svgStrokeWidth = 1f;
         svgLineCap = LineCap.BUTT;
         svgLineJoin = LineJoin.ROUND;
@@ -227,7 +222,6 @@ public final class Context {
         svgTextHorizontalAlign = Align.Horizontal.LEFT;
 
         svgTransform = new Affine();
-        svgTransformView = new Affine();
     }
 
     public void dispose() {
@@ -1110,20 +1104,28 @@ public final class Context {
     }
 
     private void svgApplyTransformGradientes() {
+
+        SVG.TransformSet(svgId,
+                svgPaint.transform.m00, svgPaint.transform.m10,
+                svgPaint.transform.m01, svgPaint.transform.m11,
+                svgPaint.transform.m02, svgPaint.transform.m12);
+
+        if (svgPaint.isColor()) {
+            SVG.SetPaintColor(svgId, svgPaint.color);
+        } else if (svgPaint.isLinearGradient()) {
+            SVG.SetPaintLinearGradient(svgId, svgPaint.x1, svgPaint.y1, svgPaint.x2, svgPaint.y2, svgPaint.stops.length, svgPaint.stops, svgPaint.colors, svgPaint.cycleMethod.ordinal());
+        } else if (svgPaint.isRadialGradient()) {
+            SVG.SetPaintRadialGradient(svgId, svgPaint.x1, svgPaint.y1, svgPaint.x2, svgPaint.y2, svgPaint.stops.length, svgPaint.stops, svgPaint.colors, svgPaint.cycleMethod.ordinal());
+        } else if (svgPaint.isBoxShadow()) {
+            SVG.SetPaintBoxShadow(svgId, svgPaint.x1, svgPaint.y1, svgPaint.x2, svgPaint.y2, svgPaint.corners, svgPaint.blur, svgPaint.alpha);
+        } else if (svgPaint.isImagePattern()) {
+            SVG.SetPaintImage(svgId, svgPaint.x1, svgPaint.y1, svgPaint.x2, svgPaint.y2, svgPaint.texture.getInternalID());
+        }
+
         SVG.TransformSet(svgId,
                 svgTransform.m00, svgTransform.m10,
                 svgTransform.m01, svgTransform.m11,
                 svgTransform.m02, svgTransform.m12);
-
-        if (svgColorMode) {
-            SVG.SetPaintColor(svgId, svgColor);
-        } else if (svgPaint.isLinear()) {
-            SVG.SetPaintLinearGradient(svgId, svgPaint.x1, svgPaint.y1, svgPaint.x2, svgPaint.y2, svgPaint.stopsCount, svgPaint.stops, svgPaint.colors, svgPaint.cycleMethod.ordinal(), svgPaint.interpolation.ordinal());
-        } else if (svgPaint.isRadial()) {
-            SVG.SetPaintRadialGradient(svgId, svgPaint.x1, svgPaint.y1, svgPaint.radiusIn, svgPaint.radiusOut, svgPaint.stopsCount, svgPaint.stops, svgPaint.colors, svgPaint.cycleMethod.ordinal(), svgPaint.interpolation.ordinal());
-        } else {
-            SVG.SetPaintBoxShadow(svgId, Math.min(svgPaint.x1, svgPaint.x2), Math.min(svgPaint.y1, svgPaint.y2), Math.abs(svgPaint.x1 - svgPaint.x2), Math.abs(svgPaint.y1 - svgPaint.y2), svgPaint.corners, svgPaint.blur, svgPaint.alpha, svgPaint.interpolation.ordinal());
-        }
     }
 
     public void svgAlpha(float alpha) {
@@ -1152,34 +1154,12 @@ public final class Context {
         return svgAntialias;
     }
 
-
-    public void svgColor(int color) {
-        if (svgColor != color || !svgColorMode) {
-            svgColor = color;
-            svgColorMode = true;
-            if (svgMode) {
-                SVG.SetPaintColor(svgId, color);
-            }
-        }
-    }
-
-    public int svgColor() {
-        return svgColor;
-    }
-
-    public boolean svgIsColorMode() {
-        return svgColorMode;
-    }
-
     public void svgPaint(Paint paint) {
-        if (paint != null) {
-            svgColorMode = false;
-            svgPaint.set(paint);
-        } else {
-            svgColorMode = true;
-        }
-        if (svgMode) {
-            svgApplyTransformGradientes();
+        if (!svgPaint.equals(paint)) {
+            svgPaint = paint;
+            if (svgMode) {
+                svgApplyTransformGradientes();
+            }
         }
     }
 
@@ -1253,8 +1233,8 @@ public final class Context {
         }
     }
 
-    public Affine svgTransformView() {
-        return svgTransformView.set(svgTransform);
+    public Affine svgTransform() {
+        return new Affine(svgTransform);
     }
 
     public boolean svgClip() {

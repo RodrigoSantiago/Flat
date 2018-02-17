@@ -4,7 +4,7 @@ import flat.backend.GL;
 import static flat.backend.GLEnuns.*;
 
 import flat.graphics.context.enuns.*;
-import flat.screen.Application;
+import flat.application.Application;
 
 import java.nio.Buffer;
 

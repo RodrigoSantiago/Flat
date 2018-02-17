@@ -1,57 +1,15 @@
 package flat.graphics.image;
 
-import flat.graphics.context.Texture2D;
+import flat.graphics.SmartContext;
 
-public class Image {
+public interface Image {
 
-    private Texture2D atlas;
-    private int srcx, srcy, width, height;
+    boolean isDynamic();
 
-    public Image(Texture2D atlas, int srcx, int srcy, int width, int height) {
-        this.atlas = atlas;
-        this.srcx = srcx;
-        this.srcy = srcy;
-        this.width = width;
-        this.height = height;
-    }
+    float getWidth();
 
-    public Texture2D getAtlas() {
-        return atlas;
-    }
+    float getHeight();
 
-    public void setAtlas(Texture2D atlas) {
-        this.atlas = atlas;
-    }
+    void draw(SmartContext context, float x, float y, float width, float height, float frame);
 
-    public int getSrcx() {
-        return srcx;
-    }
-
-    public void setSrcx(int srcx) {
-        this.srcx = srcx;
-    }
-
-    public int getSrcy() {
-        return srcy;
-    }
-
-    public void setSrcy(int srcy) {
-        this.srcy = srcy;
-    }
-
-    public int getWidth() {
-        return width;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public void resize(Texture2D atlas, int srcx, int srcy, int width, int height) {
-        this.atlas = atlas;
-        this.srcx = srcx;
-        this.srcy = srcy;
-        this.width = width;
-        this.height = height;
-    }
 }

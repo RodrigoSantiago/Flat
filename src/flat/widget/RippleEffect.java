@@ -40,7 +40,7 @@ class RippleEffect {
     }
 
     public void fire(float x, float y) {
-        circle.set(x, y, Dimension.dpPx(8));
+        circle.set(x, y, 1);
         animation.stop();
         animation.setDelta(1);
         animation.play();
@@ -51,12 +51,12 @@ class RippleEffect {
     }
 
     private class RippleAnimation extends Animation {
-
         @Override
         public void compute(float t) {
             float w = widget.getWidth() - widget.getMarginLeft() - widget.getMarginRight();
             float h = widget.getHeight() - widget.getMarginTop() - widget.getMarginBottom();
-            circle.radius = mix(Dimension.dpPx(8), Math.min(Dimension.dpPx(300), (float) Math.sqrt(w * w + h * h)), t);
+            float s = (float) Math.sqrt(w * w + h * h);
+            circle.radius = mix(Math.min(Dimension.dpPx(300), s / 10f), Math.min(Dimension.dpPx(300), s), t);
             RippleEffect.this.widget.invalidate(false);
         }
     }

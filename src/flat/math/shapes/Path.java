@@ -98,6 +98,139 @@ public final class Path implements PathConsumer, Shape, Cloneable {
         points[pointSize++] = y3;
     }
 
+    public void arcTo(float rx, float ry, float xAxisRotation, int largeArcFlag, int sweepFlag, float cx, float cy) {
+        if (typeSize == 0) {
+            throw new IllegalPathStateException("First segment must be a SEG_MOVETO");
+        }
+        float px, py;
+        int j = pointSize - 2;
+        if (types[typeSize - 1] == PathIterator.SEG_CLOSE) {
+            for (int i = typeSize - 2; i > 0; i--) {
+                int type = types[i];
+                if (type == PathIterator.SEG_MOVETO) {
+                    break;
+                }
+                j -= pointShift[type];
+            }
+        }
+        px = points[j];
+        py = points[j + 1];
+
+        //-------------------------------------------
+        //              Init
+        //-------------------------------------------
+        if (rx == 0 || ry == 0) {
+            return;
+        }
+
+        final float sinphi = Mathf.sin(xAxisRotation * Mathf.TAU / 360f);
+        final float cosphi = Mathf.cos(xAxisRotation * Mathf.TAU / 360f);
+
+        final float pxp = cosphi * (px - cx) / 2f + sinphi * (py - cy) / 2f;
+        final float pyp = -sinphi * (px - cx) / 2f + cosphi * (py - cy) / 2f;
+
+        if (pxp == 0 && pyp == 0) {
+            return;
+        }
+
+        rx = Math.abs(rx);
+        ry = Math.abs(ry);
+
+        final float lambda = Mathf.pow(pxp, 2f) / Mathf.pow(rx, 2f) + Mathf.pow(pyp, 2f) / Mathf.pow(ry, 2f);
+
+        if (lambda > 1) {
+            rx *= Math.sqrt(lambda);
+            ry *= Math.sqrt(lambda);
+        }
+
+        //-------------------------------------------
+        //              Center Angles
+        //-------------------------------------------
+        final float rxsq = Mathf.pow(rx, 2);
+        final float rysq = Mathf.pow(ry, 2);
+        final float pxpsq = Mathf.pow(pxp, 2);
+        final float pypsq = Mathf.pow(pyp, 2);
+
+        float radicant = (rxsq * rysq) - (rxsq * pypsq) - (rysq * pxpsq);
+
+        if (radicant < 0) {
+            radicant = 0;
+        }
+
+        radicant /= (rxsq * pypsq) + (rysq * pxpsq);
+        radicant = Mathf.sqrt(radicant) * (largeArcFlag == sweepFlag ? -1 : 1);
+
+        final float centerxp = radicant * rx / ry * pyp;
+        final float centeryp = radicant * -ry / rx * pxp;
+
+        final float centerx = cosphi * centerxp - sinphi * centeryp + (px + cx) / 2f;
+        final float centery = sinphi * centerxp + cosphi * centeryp + (py + cy) / 2f;
+
+        final float vx1 = (pxp - centerxp) / rx;
+        final float vy1 = (pyp - centeryp) / ry;
+        final float vx2 = (-pxp - centerxp) / rx;
+        final float vy2 = (-pyp - centeryp) / ry;
+
+        float ang1 = angle(1, 0, vx1, vy1);
+        float ang2 = angle(vx1, vy1, vx2, vy2);
+
+        if (sweepFlag == 0 && ang2 > 0) {
+            ang2 -= Mathf.TAU;
+        }
+
+        if (sweepFlag == 1 && ang2 < 0) {
+            ang2 += Mathf.TAU;
+        }
+        //-------------------------------------------
+        //              Segments
+        //-------------------------------------------
+        final float segments = Math.max(Mathf.ceil(Math.abs(ang2) / (Mathf.TAU / 4f)), 1f);
+
+        ang2 /= segments;
+
+        final float a = 4f / 3f * Mathf.tan(ang2 / 4f);
+        for (int i = 0; i < segments; i++) {
+            final float x1 = Mathf.cos(ang1);
+            final float y1 = Mathf.sin(ang1);
+            final float x2 = Mathf.cos(ang1 + ang2);
+            final float y2 = Mathf.sin(ang1 + ang2);
+
+            float xp = (x1 - y1 * a) * rx;
+            float yp = (y1 + x1 * a) * ry;
+            final float p1x = (cosphi * xp - sinphi * yp) + centerx;
+            final float p1y = (sinphi * xp + cosphi * yp) + centery;
+
+            xp = (x2 + y2 * a) * rx;
+            yp = (y2 - x2 * a) * ry;
+            final float p2x = (cosphi * xp - sinphi * yp) + centerx;
+            final float p2y = (sinphi * xp + cosphi * yp) + centery;
+
+            xp = x2 * rx;
+            yp = y2 * ry;
+            final float p3x = (cosphi * xp - sinphi * yp) + centerx;
+            final float p3y = (sinphi * xp + cosphi * yp) + centery;
+
+            curveTo(p1x, p1y, p2x, p2y, p3x, p3y);
+            ang1 += ang2;
+        }
+    }
+
+    private float angle(float ux, float uy, float vx, float vy) {
+        final float sign = (ux * vy - uy * vx < 0) ? -1 : 1;
+        final float umag = Mathf.sqrt(ux * ux + uy * uy);
+        final float vmag = Mathf.sqrt(ux * ux + uy * uy);
+        final float dot = ux * vx + uy * vy;
+
+        float div = dot / (umag * vmag);
+
+        if (div > 1) {
+            div = 1;
+        } else if (div < -1) {
+            div = -1;
+        }
+        return sign * Mathf.acos(div);
+    }
+
     public void closePath() {
         if (typeSize == 0 || types[typeSize - 1] != PathIterator.SEG_CLOSE) {
             checkBuf(0, true);

@@ -1,10 +1,12 @@
 package test;
 
-import flat.screen.Application;
-import flat.screen.Settings;
+import flat.application.Application;
+import flat.application.Settings;
 
 public class Main {
     public static void main(String[] args) {
-        Application.init(new Settings(MainActivity.class, null, 0));
+        Settings settings = new Settings(null, MainActivity.class);
+        settings.multsamples = 0;
+        Application.init(settings);
     }
 }

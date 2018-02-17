@@ -1,6 +1,6 @@
 package flat.uxml.data;
 
-import flat.FileUtils;
+import flat.application.ResourcesManager;
 
 import java.io.*;
 import java.util.*;
@@ -17,9 +17,8 @@ public class ResourceStream extends DimensionStream {
 
     public ResourceStream(String name) {
         super(name);
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
         try {
-            String[] files = FileUtils.getResourceListing(loader, name);
+            String[] files = ResourcesManager.listFiles(name);
             for (String fileName : files) {
                 if (fileName.startsWith(name)) {
                     if (fileName.matches(name + regex + "\\.uxml")) {
@@ -54,7 +53,7 @@ public class ResourceStream extends DimensionStream {
 
     @Override
     public InputStream getStream(Dimension dimension) {
-        return Thread.currentThread().getContextClassLoader().getResourceAsStream(getName() + "/" + map.get(dimension));
+        return ResourcesManager.getInput(getName() + "/" + map.get(dimension));
     }
 
 }

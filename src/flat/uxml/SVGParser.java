@@ -232,11 +232,7 @@ public class SVGParser {
         if (pos < n) {
             pos++;
         }
-        if (pos == n) {
-            return '\0';
-        } else {
-            return s.charAt(pos);
-        }
+        return pos == n ? '\0' : s.charAt(pos);
     }
 
     private void skipWhitespace() {
@@ -283,7 +279,6 @@ public class SVGParser {
         switch (current) {
             case '-':
                 mantPos = false;
-                // fallthrough
             case '+':
                 current = read();
         }
@@ -558,7 +553,7 @@ public class SVGParser {
         }
 
         if (mant >= (1 << 26)) {
-            mant++; // round up trailing bits if they will be dropped.
+            mant++;
         }
 
         return (float) ((exp > 0) ? mant * pow10[exp] : mant / pow10[-exp]);

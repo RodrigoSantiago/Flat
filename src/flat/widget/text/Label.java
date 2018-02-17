@@ -4,7 +4,7 @@ import flat.graphics.SmartContext;
 import flat.graphics.context.Context;
 import flat.graphics.text.Align;
 import flat.graphics.context.Font;
-import flat.screen.Application;
+import flat.application.Application;
 import flat.uxml.Controller;
 import flat.uxml.UXAttributes;
 import flat.uxml.data.Dimension;

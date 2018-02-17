@@ -75,7 +75,7 @@ public class UXAttributes {
     public Method asListener(String name, Class<?> argument, Object controller) {
         Method result = null;
         String value = get(name);
-        if (value != null) {
+        if (value != null && controller != null) {
             try {
                 Method method = controller.getClass().getMethod(value, argument);
                 method.setAccessible(true);

@@ -19,47 +19,39 @@ public final class BasicStroke {
     public static final int TYPE_INNER = 1;
     public static final int TYPE_OUTER = 2;
 
-    private float width;
-    private int type;
-    private int cap;
-    private int join;
-    private float miterLimit;
-    private float dash[];
-    private float dashPhase;
+    private final float width;
+    private final int type;
+    private final int cap;
+    private final int join;
+    private final float miterLimit;
+    private final float dash[];
+    private final float dashPhase;
 
     public BasicStroke() {
-        set(TYPE_CENTERED, 1.0f, CAP_SQUARE, JOIN_MITER, 10f);
+        this(1.0f);
+    }
+
+    public BasicStroke(BasicStroke other) {
+        this(other.width, other.cap, other.join, other.miterLimit, other.dash, other.dashPhase, other.type);
+    }
+
+    public BasicStroke(float width) {
+        this(width, CAP_SQUARE, JOIN_MITER);
+    }
+
+    public BasicStroke(float width, int cap, int join) {
+        this(width, cap, join, 10.0f);
     }
 
     public BasicStroke(float width, int cap, int join, float miterLimit) {
-        set(TYPE_CENTERED, width, cap, join, miterLimit);
-    }
-
-    public BasicStroke(int type, float width, int cap, int join, float miterLimit) {
-        set(type, width, cap, join, miterLimit);
+        this(width, cap, join, miterLimit, null, 0);
     }
 
     public BasicStroke(float width, int cap, int join, float miterLimit, float[] dash, float dashPhase) {
-        set(TYPE_CENTERED, width, cap, join, miterLimit);
-        set(dash, dashPhase);
+        this(width, cap, join, miterLimit, dash, dashPhase, TYPE_CENTERED);
     }
 
-    public BasicStroke(float width, int cap, int join, float miterLimit, double[] dash, float dashPhase) {
-        set(TYPE_CENTERED, width, cap, join, miterLimit);
-        set(dash, dashPhase);
-    }
-
-    public BasicStroke(int type, float width, int cap, int join, float miterLimit, float[] dash, float dashPhase) {
-        set(type, width, cap, join, miterLimit);
-        set(dash, dashPhase);
-    }
-
-    public BasicStroke(int type, float width, int cap, int join, float miterLimit, double[] dash, float dashPhase) {
-        set(type, width, cap, join, miterLimit);
-        set(dash, dashPhase);
-    }
-
-    public void set(int type, float width, int cap, int join, float miterLimit) {
+    public BasicStroke(float width, int cap, int join, float miterLimit, float[] dash, float dashPhase, int type) {
         if (type != TYPE_CENTERED && type != TYPE_INNER && type != TYPE_OUTER) {
             throw new IllegalArgumentException("illegal type");
         }
@@ -81,9 +73,7 @@ public final class BasicStroke {
         this.cap = cap;
         this.join = join;
         this.miterLimit = miterLimit;
-    }
 
-    public void set(float dash[], float dashPhase) {
         if (dash != null) {
             if (dashPhase < 0.0f) {
                 throw new IllegalArgumentException("negative dash phase");
@@ -101,32 +91,7 @@ public final class BasicStroke {
                 throw new IllegalArgumentException("dash lengths all zero");
             }
         }
-        this.dash = dash;
-        this.dashPhase = dashPhase;
-    }
-
-    public void set(double dash[], float dashPhase) {
-        if (dash != null) {
-            this.dash = new float[dash.length];
-            if (dashPhase < 0.0f) {
-                throw new IllegalArgumentException("negative dash phase");
-            }
-            boolean allzero = true;
-            for (int i = 0; i < dash.length; i++) {
-                double d = dash[i];
-                if (d > 0.0) {
-                    allzero = false;
-                } else if (d < 0.0) {
-                    throw new IllegalArgumentException("negative dash length");
-                }
-                this.dash[i] = (float) d;
-            }
-            if (allzero) {
-                throw new IllegalArgumentException("dash lengths all zero");
-            }
-        } else {
-            this.dash = null;
-        }
+        this.dash = dash == null ? null : dash.clone();
         this.dashPhase = dashPhase;
     }
 
@@ -200,7 +165,7 @@ public final class BasicStroke {
      * @return the dash array.
      */
     public float[] getDashArray() {
-        return dash;
+        return dash.clone();
     }
 
     /**
@@ -559,7 +524,8 @@ public final class BasicStroke {
         return true;
     }
 
-    public BasicStroke copy() {
-        return new BasicStroke(type, width, cap, join, miterLimit, dash, dashPhase);
+    @Override
+    public BasicStroke clone() {
+        return new BasicStroke(width, cap, join, miterLimit, dash, dashPhase, type);
     }
 }

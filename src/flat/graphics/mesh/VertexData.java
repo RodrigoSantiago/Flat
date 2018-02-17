@@ -5,7 +5,7 @@ import flat.graphics.context.VertexArray;
 import flat.graphics.context.enuns.AttributeType;
 import flat.graphics.context.enuns.BufferType;
 import flat.graphics.context.enuns.UsageType;
-import flat.screen.Application;
+import flat.application.Application;
 
 public class VertexData {
 
