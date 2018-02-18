@@ -1,0 +1,9 @@
+<VBox width="MATCH_PARENT" height="MATCH_PARENT" paddingTop="8" paddingLeft="8">
+    <Button text="" elevateStyle="FLOAT"
+            backgroundCornerTop="32" backgroundCornerLeft="32"
+            backgroundCornerBottom="32" backgroundCornerRight="32"
+            maxHeight="56" height="56"
+            maxWidth="56" width="56"
+            backgroundColor="#F50057FF"
+            image="img:add.png" marginTop="8"/>
+</VBox>
