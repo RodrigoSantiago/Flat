@@ -56,6 +56,7 @@ public class Activity extends Controller {
             if (stream != null) {
                 dm = stream.getCloserDimension(width, height, dpi);
                 if (dm != null && !dm.equals(dimension) || dpi != dimension.dpi || streamInvalided) {
+                    streamInvalided = false;
                     UXLoader loader = new UXLoader(stream, dm, null, this);
                     Widget widget = null;
                     try {

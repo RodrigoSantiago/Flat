@@ -135,7 +135,7 @@ public class Dimension {
 
     @Override
     public String toString() {
-        return size + ":" + density + ":" + orientation;
+        return super.toString()+"["+size + ":" + density + ":" + orientation+"]";
     }
 
     public static float dpPx(float dp) {

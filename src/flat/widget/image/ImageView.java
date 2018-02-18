@@ -2,92 +2,34 @@ package flat.widget.image;
 
 import flat.graphics.SmartContext;
 import flat.graphics.image.Image;
-import flat.graphics.image.ImageVector;
 import flat.graphics.text.Align;
-import flat.math.shapes.Rectangle;
-import flat.math.shapes.Shape;
 import flat.uxml.Controller;
-import flat.uxml.SVGParser;
 import flat.uxml.UXAttributes;
+import flat.widget.enuns.ImageScale;
 import flat.widget.Widget;
-
-import java.util.HashMap;
 
 public class ImageView extends Widget {
 
-    public static final int NOONE = 0;
-    public static final int STRETCH = 1;
-    public static final int FIT = 2;
-    public static final int CROP = 3;
-
-    protected static final HashMap<String, Integer> scaleTypes = UXAttributes.atts(
-            "NOONE", NOONE,
-            "STRETCH", STRETCH,
-            "FIT", FIT,
-            "CROP", CROP
-    );
-
     private Image image;
-    private int scaleType;
-
     private float frame;
     private float speed;
-    private long lastTime;
+    private ImageScale imageScale;
 
     private Align.Vertical verticalAlign;
     private Align.Horizontal horizontalAlign;
+
+    private long lastTime;
 
     @Override
     public void applyAttributes(Controller controller, UXAttributes attributes) {
         super.applyAttributes(controller, attributes);
 
-        setScaleType(attributes.asConstant("scaleType", scaleTypes, NOONE));
-        setVerticalAlign(attributes.asEnum("verticalAlign", Align.Vertical.class, Align.Vertical.TOP));
-        setHorizontalAlign(attributes.asEnum("horizontalAlign", Align.Horizontal.class, Align.Horizontal.LEFT));
-
+        setImage(attributes.asImage("image"));
         setFrame(attributes.asNumber("frame", 0));
         setSpeed(attributes.asNumber("speed", 1));
-
-        String drawable = attributes.get("drawable");
-        if (drawable != null) {
-            if (drawable.startsWith("img:")) {
-                String imgPath = drawable.substring(3);
-                // todo - load img path
-            } else if (drawable.startsWith("svg:")) {
-                Rectangle rect = null;
-                Shape path = null;
-                int iBox = drawable.indexOf("viewBox=");
-                int iPath = drawable.indexOf("path=");
-                if (iBox > -1) {
-                    int end = drawable.indexOf(";", iBox);
-                    if (end == -1) end = drawable.length();
-                    String[] data = drawable.substring(iBox + 8, end).split(" ");
-                    try {
-                        rect = new Rectangle(
-                                Float.parseFloat(data[0]),
-                                Float.parseFloat(data[1]),
-                                Float.parseFloat(data[2]),
-                                Float.parseFloat(data[3]));
-                    } catch (Exception ignored) {
-                    }
-                }
-                if (iPath > -1) {
-                    int end = drawable.indexOf(";", iPath);
-                    if (end == -1) end = drawable.length();
-                    try {
-                        SVGParser parser = new SVGParser();
-                        path = parser.parse(drawable.substring(iPath + 5, end), 0);
-                    } catch (Exception ignored) {
-                        System.out.println(drawable);
-                    }
-                }
-                if (path != null) {
-                    //setImage(new ImageVector(path, rect));
-                }
-            } else {
-                // invalid
-            }
-        }
+        setImageScale(attributes.asEnum("imageScale", ImageScale.class, ImageScale.NOONE));
+        setVerticalAlign(attributes.asEnum("verticalAlign", Align.Vertical.class, Align.Vertical.TOP));
+        setHorizontalAlign(attributes.asEnum("horizontalAlign", Align.Horizontal.class, Align.Horizontal.LEFT));
     }
 
     public Image getImage() {
@@ -96,12 +38,6 @@ public class ImageView extends Widget {
 
     public void setImage(Image image) {
         this.image = image;
-        invalidate(false);
-    }
-
-    public void setDrawable(Image image, float speed) {
-        this.image = image;
-        this.speed = speed;
         invalidate(false);
     }
 
@@ -124,16 +60,12 @@ public class ImageView extends Widget {
         invalidate(false);
     }
 
-    public void redraw() {
-        invalidate(false);
+    public ImageScale getImageScale() {
+        return imageScale;
     }
 
-    public int getScaleType() {
-        return scaleType;
-    }
-
-    public void setScaleType(int scaleType) {
-        this.scaleType = scaleType;
+    public void setImageScale(ImageScale imageScale) {
+        this.imageScale = imageScale;
     }
 
     public Align.Vertical getVerticalAlign() {
@@ -160,7 +92,7 @@ public class ImageView extends Widget {
 
     @Override
     public void onDraw(SmartContext context) {
-        super.onDraw(context);
+        backgroundDraw(context);
 
         long now = System.currentTimeMillis();
         if (lastTime != 0) {
@@ -178,7 +110,7 @@ public class ImageView extends Widget {
                 final float y = getInY();
                 float width = getInWidth();
                 float height = getInHeight();
-                if (scaleType == FIT) {
+                if (imageScale == ImageScale.FIT) {
                     if (dW > dH) {
                         dH = (dH / dW) * height;
                         dW = width;
@@ -186,7 +118,7 @@ public class ImageView extends Widget {
                         dW = (dW / dH) * width;
                         dH = height;
                     }
-                } else if (scaleType == CROP) {
+                } else if (imageScale == ImageScale.CROP) {
                     if (dW > dH) {
                         dW = (dW / dH) * width;
                         dH = height;
@@ -194,7 +126,7 @@ public class ImageView extends Widget {
                         dH = (dH / dW) * height;
                         dW = width;
                     }
-                } else if (scaleType == STRETCH) {
+                } else if (imageScale == ImageScale.STRETCH) {
                     dW = width;
                     dH = height;
                 }
@@ -208,6 +140,18 @@ public class ImageView extends Widget {
                 invalidate(false);
             }
         }
+    }
+
+    @Override
+    public void onMeasure() {
+        float mWidth = getPrefWidth(), mHeight = getPrefHeight();
+        if (image != null) {
+            mWidth = mWidth == WRAP_CONTENT ? image.getWidth() : mWidth;
+            mHeight = mHeight == WRAP_CONTENT ? image.getHeight() : mHeight;
+        }
+        mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
+        mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
+        setMeasure(mWidth, mHeight);
     }
 
     protected float xOff(float start, float end, float width) {

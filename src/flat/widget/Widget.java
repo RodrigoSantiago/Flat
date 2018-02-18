@@ -180,6 +180,11 @@ public class Widget {
     }
 
     public void onDraw(SmartContext context) {
+        backgroundDraw(context);
+        childrenDraw(context);
+    }
+
+    protected void backgroundDraw(SmartContext context) {
         float bgAlpha = (backgroundColor & 0xFF) / 255f * getDisplayOpacity();
         if (backgroundColor != 0) {
             if (shadowEffect && bgAlpha > 0) {
@@ -199,7 +204,9 @@ public class Widget {
             ripple.drawRipple(context, bg, rippleColor);
             context.setTransform2D(null);
         }
+    }
 
+    protected void childrenDraw(SmartContext context) {
         if (children != null) {
             childSort();
             for (Widget child : children) {
@@ -209,6 +216,7 @@ public class Widget {
             }
         }
     }
+
 
     public void onLayout(float x, float y, float width, float height) {
         setLayout(x, y, Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
@@ -257,6 +265,14 @@ public class Widget {
 
     public float getMeasureHeight()  {
         return measureHeight;
+    }
+
+    public void requestRender() {
+        invalidate(false);
+    }
+
+    public void requestLayout() {
+        invalidate(true);
     }
 
     protected void invalidate(boolean layout) {

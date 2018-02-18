@@ -47,7 +47,11 @@ public final class ResourcesManager {
     public synchronized static ImageRaster getImage(String pathName) {
         ImageRaster image = images.get(pathName);
         if (image == null) {
-            image = TextureManager.createImage(getInput(pathName));
+            try {
+                image = TextureManager.createImage(getInput(pathName));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             images.put(pathName, image);
         }
         return image;

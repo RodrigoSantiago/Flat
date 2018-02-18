@@ -114,8 +114,8 @@ public final class Paint {
         Paint paint = new Paint(4);
         paint.x1 = x;
         paint.y1 = y;
-        paint.x2 = x + width;
-        paint.y2 = y + height;
+        paint.x2 = width;
+        paint.y2 = height;
         paint.texture = texture;
         paint.transform = transform == null ? identity : new Affine(transform);
         return paint;

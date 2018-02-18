@@ -406,7 +406,7 @@ public final class Application {
             smartContext.softFlush();
             WL.SwapBuffers();
 
-            if (vsync == 0) {
+            /*if (vsync == 0) {
                 long time = System.currentTimeMillis() - loopTime;
                 if (time < 15) {
                     try {
@@ -414,7 +414,7 @@ public final class Application {
                     } catch (InterruptedException ignored) {
                     }
                 }
-            }
+            }*/
         } else {
             long time = System.currentTimeMillis() - loopTime;
             if (time < 15) {

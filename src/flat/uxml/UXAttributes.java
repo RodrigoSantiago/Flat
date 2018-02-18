@@ -1,7 +1,9 @@
 package flat.uxml;
 
 import flat.Flat;
+import flat.application.ResourcesManager;
 import flat.graphics.context.Font;
+import flat.graphics.image.Image;
 import flat.uxml.data.Dimension;
 import flat.widget.Widget;
 
@@ -88,6 +90,22 @@ public class UXAttributes {
             }
             if (result == null) {
                 getLoader().log("Method not found : " + value);
+            }
+        }
+        return result;
+    }
+
+    public Image asImage(String name) {
+        Image result = null;
+        String value = get(name);
+        if (value != null) {
+            if (value.startsWith("img:")) {
+                result = ResourcesManager.getImage(value.substring(4));
+            } else if (value.startsWith("svg:")) {
+                result = ResourcesManager.getVector(value.substring(4));
+            }
+            if (result == null) {
+                getLoader().log("Image not found : " + value);
             }
         }
         return result;

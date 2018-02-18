@@ -409,6 +409,7 @@ public class SmartContext {
                           Affine transform2D) {
         svgMode();
         Paint paint = context.svgPaint();
+        if (transform2D == null) transform2D = this.transform2D;
         context.svgPaint(Paint.image(srcX1, srcY1, srcX2, srcY2, dstX1, dstY1, dstX2, dstY2, texture, transform2D));
         drawRect(Math.min(dstX1, dstX2), Math.min(dstY1, dstY2), Math.abs(dstX2 - dstX1), Math.abs(dstY2 - dstY1), true);
         context.svgPaint(paint);

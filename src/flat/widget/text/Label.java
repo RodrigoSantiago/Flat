@@ -24,7 +24,7 @@ public class Label extends Widget {
 
     private String showText;
     private boolean invalidTextSize;
-    protected float textWidth;
+    private float textWidth;
 
     @Override
     public void applyAttributes(Controller controller, UXAttributes attributes) {
@@ -88,7 +88,7 @@ public class Label extends Widget {
 
     public void setTextColor(int textColor) {
         this.textColor = textColor;
-        invalidate(true);
+        invalidate(false);
     }
 
     private void invalidateTextSize() {
@@ -102,7 +102,7 @@ public class Label extends Widget {
     public void setVerticalAlign(Align.Vertical verticalAlign) {
         if (this.verticalAlign != verticalAlign) {
             this.verticalAlign = verticalAlign;
-            invalidate(true);
+            invalidate(false);
         }
     }
 
@@ -113,13 +113,13 @@ public class Label extends Widget {
     public void setHorizontalAlign(Align.Horizontal horizontalAlign) {
         if (this.horizontalAlign != horizontalAlign) {
             this.horizontalAlign = horizontalAlign;
-            invalidate(true);
+            invalidate(false);
         }
     }
 
     @Override
     public void onDraw(SmartContext context) {
-        super.onDraw(context);
+        backgroundDraw(context);
         context.setTransform2D(getTransformView());
         if (showText != null) {
             context.setColor(textColor);
@@ -142,18 +142,29 @@ public class Label extends Widget {
 
     @Override
     public void onMeasure() {
+        float mWidth = getPrefWidth();
+        float mHeight = getPrefHeight();
+        mWidth = mWidth == WRAP_CONTENT ? getTextWidth() : mWidth;
+        mHeight = mHeight == WRAP_CONTENT ? fontSize : mHeight;
+        mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
+        mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
+        setMeasure(mWidth, mHeight);
+    }
+
+    protected float getTextWidth() {
         if (invalidTextSize) {
             Context context = Application.getContext();
             context.svgTransform(getTransformView());
             context.svgTextFont(font);
             context.svgTextSize(fontSize);
             textWidth = context.svgTextGetWidth(showText);
+            invalidTextSize = false;
         }
-        float mWidth = Math.max(textWidth, getPrefWidth());
-        float mHeight = Math.max(fontSize, getPrefHeight());
-        mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
-        mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
-        setMeasure(mWidth, mHeight);
+        return textWidth;
+    }
+
+    protected String getShowText() {
+        return showText;
     }
 
     protected float xOff(float start, float end, float textWidth) {

@@ -1525,48 +1525,46 @@ public final class Context {
     public void svgDrawText(float x, float y, String text) {
         if (text == null) throw new NullPointerException();
         svgBegin();
-        SVG.BeginPath(svgId);
         SVG.DrawText(svgId, x, y, text);
     }
 
     public void svgDrawText(float x, float y, Buffer text, int offset, int length) {
         if (text == null) throw new NullPointerException();
         svgBegin();
-        SVG.BeginPath(svgId);
         SVG.DrawTextBuffer(svgId, x, y, text, offset, length);
     }
 
     public void svgDrawTextBox(float x, float y, float maxWidth, String text) {
         if (text == null) throw new NullPointerException();
         svgBegin();
-        SVG.BeginPath(svgId);
         SVG.DrawTextBox(svgId, x, y, maxWidth, text);
     }
 
     public void svgDrawTextBox(float x, float y, float maxWidth, Buffer text, int offset, int length) {
         if (text == null) throw new NullPointerException();
         svgBegin();
-        SVG.BeginPath(svgId);
         SVG.DrawTextBoxBuffer(svgId, x, y, maxWidth, text, offset, length);
     }
 
     public void svgDrawTextSlice(float x, float y, float maxWidth, String text) {
         if (text == null) throw new NullPointerException();
-        svgBegin();
-        SVG.BeginPath(svgId);
-        int last = SVG.TextGetLastGlyph(svgId, text, maxWidth);
-        if (last > 0) {
-            SVG.DrawText(svgId, x, y, text.substring(0, last + 1));
+        if (text.length() > 0) {
+            svgBegin();
+            int last = SVG.TextGetLastGlyph(svgId, text, maxWidth);
+            if (last >= 0) {
+                SVG.DrawText(svgId, x, y, text.substring(0, last + 1));
+            }
         }
     }
 
     public void svgDrawTextSlice(float x, float y, float maxWidth, Buffer text, int offset, int length) {
         if (text == null) throw new NullPointerException();
-        svgBegin();
-        SVG.BeginPath(svgId);
-        int last = SVG.TextGetLastGlyphBuffer(svgId, text, offset, length, maxWidth);
-        if (last > -1) {
-            SVG.DrawTextBuffer(svgId, x, y, text, offset, last + 1);
+        if (length > 0) {
+            svgBegin();
+            int last = SVG.TextGetLastGlyphBuffer(svgId, text, offset, length, maxWidth);
+            if (last > -1) {
+                SVG.DrawTextBuffer(svgId, x, y, text, offset, last + 1);
+            }
         }
     }
 }
