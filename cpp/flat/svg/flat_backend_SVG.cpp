@@ -80,55 +80,64 @@ JNIEXPORT void JNICALL Java_flat_backend_SVG_SetPaintColor(JNIEnv * jEnv, jclass
     nvgStrokeColor(((Ctx*)context)->ctx, p);
     nvgFillColor(((Ctx*)context)->ctx, p);
 }
-JNIEXPORT void JNICALL Java_flat_backend_SVG_SetPaintLinearGradient(JNIEnv * jEnv, jclass jClass, jlong context, jfloat x1, jfloat y1, jfloat x2, jfloat y2, jint count, jfloatArray stops, jintArray colors, jint cycleMethod, jint interpolation) {
+JNIEXPORT void JNICALL Java_flat_backend_SVG_SetPaintLinearGradient(JNIEnv * jEnv, jclass jClass, jlong context, jfloat x1, jfloat y1, jfloat x2, jfloat y2, jint count, jfloatArray stops, jintArray colors, jint cycleMethod) {
     NVGpaint p = nvgLinearGradient(((Ctx*)context)->ctx, x1, y1, x2, y2, nvgRGBAf(0,0,0,1), nvgRGBAf(1, 1, 1, 1));
-    p.multStopEnabled = 1;
+    p.fillType = 1;
     p.stopsCount = count;
     p.cycleMethod = cycleMethod;
-    p.interpolation = interpolation;
 
     void * pointer = jEnv->GetPrimitiveArrayCritical(stops, 0);
-    jfloat* data = reinterpret_cast<jfloat*>(pointer);
+    jfloat* fdata = reinterpret_cast<jfloat*>(pointer);
     for  (int i = 0; i < count; i++) {
-        p.stops[i] = data[i];
+        p.stops[i] = fdata[i];
     }
     jEnv->ReleasePrimitiveArrayCritical(stops, pointer, 0);
 
     pointer = jEnv->GetPrimitiveArrayCritical(colors, 0);
-    data = reinterpret_cast<jfloat*>(pointer);
+    jint* idata = reinterpret_cast<jint*>(pointer);
     for  (int i = 0; i < count; i++) {
-        p.colors[i] = data[i];
+        p.colors[i] = nvgRGBA(reinterpret_cast<unsigned char *>(&idata[i])[3],
+                              reinterpret_cast<unsigned char *>(&idata[i])[2],
+                              reinterpret_cast<unsigned char *>(&idata[i])[1],
+                              reinterpret_cast<unsigned char *>(&idata[i])[0]);
     }
     jEnv->ReleasePrimitiveArrayCritical(colors, pointer, 0);
     nvgStrokePaint(((Ctx*)context)->ctx, p);
     nvgFillPaint(((Ctx*)context)->ctx, p);
 }
-JNIEXPORT void JNICALL Java_flat_backend_SVG_SetPaintRadialGradient(JNIEnv * jEnv, jclass jClass, jlong context, jfloat x1, jfloat y1, jfloat radiusIn, jfloat radiusOut, jint count, jfloatArray stops, jintArray colors, jint cycleMethod, jint interpolation) {
+JNIEXPORT void JNICALL Java_flat_backend_SVG_SetPaintRadialGradient(JNIEnv * jEnv, jclass jClass, jlong context, jfloat x1, jfloat y1, jfloat radiusIn, jfloat radiusOut, jint count, jfloatArray stops, jintArray colors, jint cycleMethod) {
     NVGpaint p = nvgRadialGradient(((Ctx*)context)->ctx, x1, y1, radiusIn, radiusOut, nvgRGBAf(0,0,0,1), nvgRGBAf(1, 1, 1, 1));
-    p.multStopEnabled = 1;
+    p.fillType = 1;
     p.stopsCount = count;
     p.cycleMethod = cycleMethod;
-    p.interpolation = interpolation;
 
     void * pointer = jEnv->GetPrimitiveArrayCritical(stops, 0);
-    jfloat* data = reinterpret_cast<jfloat*>(pointer);
+    jfloat* fdata = reinterpret_cast<jfloat*>(pointer);
     for  (int i = 0; i < count; i++) {
-        p.stops[i] = data[i];
+        p.stops[i] = fdata[i];
     }
     jEnv->ReleasePrimitiveArrayCritical(stops, pointer, 0);
 
     pointer = jEnv->GetPrimitiveArrayCritical(colors, 0);
-    data = reinterpret_cast<jfloat*>(pointer);
+    jint* idata = reinterpret_cast<jint*>(pointer);
     for  (int i = 0; i < count; i++) {
-        p.colors[i] = data[i];
+        p.colors[i] = nvgRGBA(reinterpret_cast<unsigned char *>(&idata[i])[3],
+                              reinterpret_cast<unsigned char *>(&idata[i])[2],
+                              reinterpret_cast<unsigned char *>(&idata[i])[1],
+                              reinterpret_cast<unsigned char *>(&idata[i])[0]);
     }
     jEnv->ReleasePrimitiveArrayCritical(colors, pointer, 0);
     nvgStrokePaint(((Ctx*)context)->ctx, p);
     nvgFillPaint(((Ctx*)context)->ctx, p);
 }
-JNIEXPORT void JNICALL Java_flat_backend_SVG_SetPaintBoxShadow(JNIEnv * jEnv, jclass jClass, jlong context, jfloat x, jfloat y, jfloat width, jfloat height, jfloat corners, jfloat blur, jfloat alpha, jint interpolation) {
+JNIEXPORT void JNICALL Java_flat_backend_SVG_SetPaintBoxShadow(JNIEnv * jEnv, jclass jClass, jlong context, jfloat x, jfloat y, jfloat width, jfloat height, jfloat corners, jfloat blur, jfloat alpha) {
     NVGpaint p = nvgBoxGradient(((Ctx*)context)->ctx, x, y, width, height, corners, blur, nvgRGBAf(0,0,0, alpha), nvgRGBAf(0, 0, 0, 0));
-    p.interpolation = interpolation;
+    nvgStrokePaint(((Ctx*)context)->ctx, p);
+    nvgFillPaint(((Ctx*)context)->ctx, p);
+}
+JNIEXPORT void JNICALL Java_flat_backend_SVG_SetPaintImage(JNIEnv * jEnv, jclass jClass, jlong context, jfloat x, jfloat y, jfloat width, jfloat height, jint textureID) {
+    NVGpaint p = nvgImagePattern(((Ctx*)context)->ctx, x, y, width, height, 0, -(textureID + 1), 1);
+    p.fillType = 2;
     nvgStrokePaint(((Ctx*)context)->ctx, p);
     nvgFillPaint(((Ctx*)context)->ctx, p);
 }
@@ -253,7 +262,9 @@ JNIEXPORT jint JNICALL Java_flat_backend_SVG_FontCreate(JNIEnv * jEnv, jclass jC
     const char * n = jEnv->GetStringUTFChars(name, 0);
     jint size = jEnv->GetArrayLength(data);
     void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    jint id = nvgCreateFontMem(((Ctx*)context)->ctx, n, (unsigned char *) pointer, size, 0);
+    unsigned char * copy = (unsigned char *)malloc(sizeof(unsigned char) * size);
+    memcpy(copy, pointer, sizeof(unsigned char) * size);
+    jint id = nvgCreateFontMem(((Ctx*)context)->ctx, n, copy, size, 1);
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
     jEnv->ReleaseStringUTFChars(name, n);
     return id;

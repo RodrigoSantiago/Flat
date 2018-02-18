@@ -2218,7 +2218,7 @@ void nvgFill(NVGcontext* ctx)
 	// Apply global alpha
 	fillPaint.innerColor.a *= state->alpha;
 	fillPaint.outerColor.a *= state->alpha;
-	fillPaint.edgeA = state->shapeAntiAlias;
+	fillPaint.edgeAA = state->shapeAntiAlias;
 
 	ctx->params.renderFill(ctx->params.userPtr, &fillPaint, state->compositeOperation, &state->scissor, ctx->fringeWidth,
 						   ctx->cache->bounds, ctx->cache->paths, ctx->cache->npaths);
@@ -2253,7 +2253,7 @@ void nvgStroke(NVGcontext* ctx)
 	// Apply global alpha
 	strokePaint.innerColor.a *= state->alpha;
 	strokePaint.outerColor.a *= state->alpha;
-	strokePaint.edgeA = state->shapeAntiAlias;
+	strokePaint.edgeAA = state->shapeAntiAlias;
 
 	nvg__flattenPaths(ctx);
 
@@ -2409,7 +2409,7 @@ static void nvg__renderText(NVGcontext* ctx, NVGvertex* verts, int nverts)
 	// Apply global alpha
 	paint.innerColor.a *= state->alpha;
 	paint.outerColor.a *= state->alpha;
-	paint.edgeA = state->shapeAntiAlias;
+	paint.edgeAA = state->shapeAntiAlias;
 
 	ctx->params.renderTriangles(ctx->params.userPtr, &paint, state->compositeOperation, &state->scissor, verts, nverts);
 
@@ -2475,7 +2475,6 @@ float nvgText(NVGcontext* ctx, float x, float y, const char* string, const char*
 			nvg__vset(&verts[nverts], c[4], c[5], q.s1, q.t1); nverts++;
 		}
 	}
-
 	// TODO: add back-end bit to do this just once per frame.
 	nvg__flushTextTexture(ctx);
 

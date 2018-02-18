@@ -203,17 +203,16 @@ struct GLNVGfragUniforms {
 		float strokeThr;
 		int texType;
 		int type;
-        int multStopEnabled;
+        int edgeAA;
+        int fillType;
         int stopsCount;
         int cycleMethod;
-        int interpolation;
         float stops[16];
-        float colors[16];
-		int edgeA;
+		struct NVGcolor colors[16];
 	#else
 		// note: after modifying layout or size of uniform array,
 		// don't forget to also update the fragment shader source!
-		#define NANOVG_GL_UNIFORMARRAY_SIZE 21
+		#define NANOVG_GL_UNIFORMARRAY_SIZE 33
 		union {
 			struct {
 				float scissorMat[12]; // matrices are actually 3 vec4s
@@ -229,13 +228,12 @@ struct GLNVGfragUniforms {
 				float strokeThr;
 				float texType;
 				float type;
-                int multStopEnabled;
-                int stopsCount;
-                int cycleMethod;
-                int interpolation;
-                float stops[16];
-                float colors[16];
-				int edgeA;
+				int edgeAA;
+				int fillType;
+				int stopsCount;
+				int cycleMethod;
+				float stops[16];
+				struct NVGcolor colors[16];
 			};
 			float uniformArray[NANOVG_GL_UNIFORMARRAY_SIZE][4];
 		};
@@ -539,7 +537,7 @@ static int glnvg__renderCreate(void* uptr)
 #if NANOVG_GL_USE_UNIFORMBUFFER
 	"#define USE_UNIFORMBUFFER 1\n"
 #else
-	"#define UNIFORMARRAY_SIZE 21\n"
+	"#define UNIFORMARRAY_SIZE 33\n"
 #endif
 	"\n";
 
@@ -587,13 +585,12 @@ static int glnvg__renderCreate(void* uptr)
 		"		float strokeThr;\n"
 		"		int texType;\n"
 		"		int type;\n"
-        "		int multStopEnabled;\n"
+        "	    int edgeAA;\n"
+        "		int fillType;\n"
         "		int stopsCount;\n"
         "		int cycleMethod;\n"
-        "		int interpolation;\n"
         "       vec4 stops[4];\n"
-        "       vec4 colors[4];\n"
-		"	    int edgeA;\n"
+        "       vec4 colors[16];\n"
 		"	};\n"
 		"#else\n" // NANOVG_GL3 && !USE_UNIFORMBUFFER
 		"	uniform vec4 frag[UNIFORMARRAY_SIZE];\n"
@@ -622,96 +619,80 @@ static int glnvg__renderCreate(void* uptr)
 		"	#define strokeThr frag[10].y\n"
 		"	#define texType int(frag[10].z)\n"
 		"	#define type int(frag[10].w)\n"
-        "	#define multStopEnabled int(frag[11].x)\n"
-        "	#define stopsCount int(frag[11].y)\n"
-        "	#define cycleMethod int(frag[11].z)\n"
-        "	#define interpolation int(frag[11].w)\n"
+        "	#define edgeAA int(frag[11].x)\n"
+        "	#define fillType int(frag[11].y)\n"
+        "	#define stopsCount int(frag[11].z)\n"
+        "	#define cycleMethod int(frag[11].w)\n"
         "	#define stops vec4[](frag[12], frag[13], frag[14], frag[15])\n"
-        "	#define colors vec4[](frag[16], frag[17], frag[18], frag[19])\n"
-        "	#define edgeA int(frag[20].x)\n"
-		"#endif\n"
-		"\n"
-        "vec4 decodeColor(int index) {\n"
-        "    int rgba = floatBitsToInt(colors[index / 4][index % 4]);\n"
-        "    return vec4("
-                "((rgba >> 24) & 0xFF) / 255.0, "
-                "((rgba >> 16) & 0xFF) / 255.0, "
-                "((rgba >>  8) & 0xFF) / 255.0, "
-                "((rgba >>  0) & 0xFF) / 255.0);"
-        "}\n"
-        "float decodeStop(int index) {\n"
-        "    return stops[index / 4][index % 4];\n"
-        "}\n"
-        "vec4 decodeMix(vec4 a, vec4 b, float t) {\n"
-        "    t = clamp(t, 0.0, 1.0);\n"
-        "    if (interpolation == 1) t = sqrt(1 - (1 - t) * (1 - t));\n"
-        "    else if (interpolation == 2) t = 1 - sqrt(1 - t * t);\n"
-        "    else if (interpolation == 3) t = t * t * t * (t * (t * 6 - 15) + 10);\n"
-        "    return mix(a, b, t);\n"
-        "}\n"
+        "	#define colors vec4[]("
+				"frag[16], frag[17], frag[18], frag[19], "
+				"frag[20], frag[21], frag[22], frag[23],"
+				"frag[24], frag[25], frag[26], frag[27],"
+				"frag[28], frag[29], frag[30], frag[31])\n"
+		"#endif\n\n"
 		"float sdroundrect(vec2 pt, vec2 ext, float rad) {\n"
 		"	vec2 ext2 = ext - vec2(rad,rad);\n"
 		"	vec2 d = abs(pt) - ext2;\n"
 		"	return min(max(d.x,d.y),0.0) + length(max(d,0.0)) - rad;\n"
-		"}\n"
-		"\n"
+		"}\n\n"
 		"// Scissoring\n"
 		"float scissorMask(vec2 p) {\n"
 		"	vec2 sc = (abs((scissorMat * vec3(p,1.0)).xy) - scissorExt);\n"
 		"	sc = vec2(0.5,0.5) - sc * scissorScale;\n"
 		"	return clamp(sc.x,0.0,1.0) * clamp(sc.y,0.0,1.0);\n"
-		"}\n"
+		"}\n\n"
 		"#ifdef EDGE_AA\n"
 		"// Stroke - from [0..1] to clipped pyramid, where the slope is 1px.\n"
 		"float strokeMask() {\n"
 		"	return min(1.0, (1.0-abs(ftcoord.x*2.0-1.0))*strokeMult) * min(1.0, ftcoord.y);\n"
 		"}\n"
-		"#endif\n"
-		"\n"
+		"#endif\n\n"
+		"float decodeStop(int index) {\n"
+		"    return stops[index / 4][index % 4];\n"
+		"}\n\n"
+        "vec4 smoothMix(vec4 a, vec4 b, float t) {\n"
+        "    t = clamp(0.0, 1.0, t);\n"
+        "    return mix(a,b, t * t * t * (t * (t * 6 - 15) + 10));\n"
+        "}\n\n"
+		"vec4 decodeGradient(vec2 pt) {\n"
+		"    vec4 color;\n"
+        "    float d = (sdroundrect(pt, extent, radius) + feather*0.5) / feather;\n"
+        "    if (fillType == 1) {\n"
+        "        float fD = floor(d);\n"
+		"        if (cycleMethod == 1) d = d - fD;\n"
+		"        else if (cycleMethod == 2) d = (int(fD) % 2 == 0) ? d - fD : 1 - (d - fD);\n"
+		"        else d = clamp(d, 0.0, 1.0);\n"
+		"        color = mix(colors[0], colors[1], clamp((d - decodeStop(0)) / (decodeStop(1) - decodeStop(0)), 0.0, 1.0));"
+		"        for (int i = 1; i < stopsCount - 1; ++i) {"
+	    "            color = mix(color, colors[i + 1], "
+		"            clamp((d - decodeStop(i)) / (decodeStop(i + 1) - decodeStop(i)), 0.0, 1.0));\n"
+		"        }\n"
+		"    } else {\n"
+		"        color = smoothMix(innerCol, outerCol, d);\n"
+		"    }\n"
+		"    return color;\n"
+		"}\n\n"
 		"void main(void) {\n"
 		"   vec4 result;\n"
 		"	float scissor = scissorMask(fpos);\n"
 		"#ifdef EDGE_AA\n"
-		"	float strokeAlpha = (edgeA == 1) ? strokeMask() : 1;\n"
+		"	float strokeAlpha = (edgeAA == 1) ? strokeMask() : 1;\n"
 		"	if (strokeAlpha < strokeThr) discard;\n"
 		"#else\n"
 		"	float strokeAlpha = 1.0;\n"
 		"#endif\n"
+		"    vec2 pt = (paintMat * vec3(fpos, 1.0)).xy;\n"
 		"    if (type == 0) {			// Gradient\n"
-		"        // Calculate gradient color using box gradient\n"
-		"		 vec2 pt = (paintMat * vec3(fpos,1.0)).xy;\n"
-        "		 float d = (sdroundrect(pt, extent, radius) + feather*0.5) / feather;\n"
-		"		 vec4 color;\n"
-		"		 // Multstop gradient\n"
-        "        if (multStopEnabled == 1) {\n"
-        "            if (cycleMethod == 1) d = d - floor(d);\n"
-        "            else if (cycleMethod == 2) d = (int(floor(d)) % 2 == 0) ? d - floor(d) : 1 - (d - floor(d));\n"
-        "            else d = clamp(d, 0.0, 1.0);\n"
-        "            int choose = stopsCount - 1;\n"
-        "            float stop = 0;\n"
-        "            float nStop = 0;\n"
-        "            for (int i = 0; i < stopsCount; i++) {\n"
-        "                nStop = decodeStop(i);\n"
-        "                if (d < nStop) {\n"
-        "                    choose = i - 1;\n"
-        "                    break;\n"
-        "                }\n"
-        "                stop = nStop;\n"
-        "            }\n"
-        "            color = decodeMix(decodeColor(choose), decodeColor(choose + 1), (d - stop) / (nStop - stop));\n"
-        "        } else {\n"
-		"            color = decodeMix(innerCol, outerCol, d);\n"
-		"        }\n"
+		"		 vec4 color = decodeGradient(pt);\n"
         "		 // Combine alpha\n"
 		"		 color *= strokeAlpha * scissor;\n"
 		"        result = color;\n"
 		"	} else if (type == 1) {		// Image\n"
 		"		// Calculate color fron texture\n"
-		"		vec2 pt = (paintMat * vec3(fpos,1.0)).xy / extent;\n"
 		"#ifdef NANOVG_GL3\n"
-		"		vec4 color = texture(tex, pt);\n"
+		"		vec4 color = texture(tex, pt / extent);\n"
 		"#else\n"
-		"		vec4 color = texture2D(tex, pt);\n"
+		"		vec4 color = texture2D(tex, pt / extent);\n"
 		"#endif\n"
 		"		if (texType == 1) color = vec4(color.xyz*color.w,color.w);"
 		"		if (texType == 2) color = vec4(color.x);"
@@ -731,7 +712,7 @@ static int glnvg__renderCreate(void* uptr)
 		"		if (texType == 1) color = vec4(color.xyz*color.w,color.w);"
 		"		if (texType == 2) color = vec4(color.x);"
 		"		color *= scissor;\n"
-		"		result = color * innerCol;\n"
+		"		result = color * decodeGradient(pt);\n"
 		"	}\n"
 		"#ifdef NANOVG_GL3\n"
 		"	outColor = result;\n"
@@ -993,17 +974,18 @@ static int glnvg__convertPaint(GLNVGcontext* gl, GLNVGfragUniforms* frag, NVGpai
 	frag->innerCol = glnvg__premulColor(paint->innerColor);
 	frag->outerCol = glnvg__premulColor(paint->outerColor);
 
-    frag->multStopEnabled = paint->multStopEnabled;
+    frag->fillType = paint->fillType;
     frag->stopsCount = paint->stopsCount;
     frag->cycleMethod = paint->cycleMethod;
-    frag->interpolation = paint->interpolation;
 
     for (int i = 0; i < 16; i++) {
         frag->stops[i] = paint->stops[i];
-        frag->colors[i] = glnvg__premulColorF(paint->colors[i]);
+        frag->colors[i] = glnvg__premulColor(paint->colors[i]);
     }
 
-	frag->edgeA = paint->edgeA;
+	frag->edgeAA = paint->edgeAA;
+	frag->radius = paint->radius;
+	frag->feather = paint->feather;
 
 	if (scissor->extent[0] < -0.5f || scissor->extent[1] < -0.5f) {
 		memset(frag->scissorMat, 0, sizeof(frag->scissorMat));
@@ -1024,7 +1006,15 @@ static int glnvg__convertPaint(GLNVGcontext* gl, GLNVGfragUniforms* frag, NVGpai
 	frag->strokeMult = (width*0.5f + fringe*0.5f) / fringe;
 	frag->strokeThr = strokeThr;
 
-	if (paint->image != 0) {
+	if (paint->image < 0) {
+		frag->type = NSVG_SHADER_FILLIMG;
+		#if NANOVG_GL_USE_UNIFORMBUFFER
+			frag->texType = 1;
+		#else
+			frag->texType = 1.0f;
+		#endif
+		nvgTransformInverse(invxform, paint->xform);
+	} else if (paint->image > 0) {
 		tex = glnvg__findTexture(gl, paint->image);
 		if (tex == NULL) return 0;
 		if ((tex->flags & NVG_IMAGE_FLIPY) != 0) {
@@ -1055,8 +1045,6 @@ static int glnvg__convertPaint(GLNVGcontext* gl, GLNVGfragUniforms* frag, NVGpai
 //		printf("frag->texType = %d\n", frag->texType);
 	} else {
 		frag->type = NSVG_SHADER_FILLGRAD;
-		frag->radius = paint->radius;
-		frag->feather = paint->feather;
 		nvgTransformInverse(invxform, paint->xform);
 	}
 
@@ -1075,8 +1063,11 @@ static void glnvg__setUniforms(GLNVGcontext* gl, int uniformOffset, int image)
 	GLNVGfragUniforms* frag = nvg__fragUniformPtr(gl, uniformOffset);
 	glUniform4fv(gl->shader.loc[GLNVG_LOC_FRAG], NANOVG_GL_UNIFORMARRAY_SIZE, &(frag->uniformArray[0][0]));
 #endif
-
-	if (image != 0) {
+    if (image < 0) {
+        image = -(image + 1);
+        glnvg__bindTexture(gl, image);
+        glnvg__checkError(gl, "tex paint tex");
+    } else if (image > 0) {
 		GLNVGtexture* tex = glnvg__findTexture(gl, image);
 		glnvg__bindTexture(gl, tex != NULL ? tex->tex : 0);
 		glnvg__checkError(gl, "tex paint tex");

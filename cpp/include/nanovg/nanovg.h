@@ -50,13 +50,12 @@ struct NVGpaint {
 	NVGcolor innerColor;
 	NVGcolor outerColor;
 	int image;
-	int multStopEnabled;
+	int fillType;
 	int stopsCount;
 	int cycleMethod;
-	int interpolation;
 	float stops[16];
-	float colors[16];
-	int edgeA;
+	NVGcolor colors[16];
+	int edgeAA;
 };
 typedef struct NVGpaint NVGpaint;
 
