@@ -1,4 +1,4 @@
-package flat.uxml;
+package flat.resources;
 
 import flat.math.shapes.Path;
 

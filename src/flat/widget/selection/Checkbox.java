@@ -7,10 +7,10 @@ import flat.math.Affine;
 import flat.math.operations.Area;
 import flat.math.shapes.*;
 import flat.uxml.Controller;
-import flat.uxml.SVGParser;
+import flat.resources.SVGParser;
 import flat.uxml.UXAttributes;
 import flat.uxml.UXChildren;
-import flat.uxml.data.Dimension;
+import flat.resources.Dimension;
 
 import java.util.Objects;
 
@@ -98,7 +98,6 @@ public class Checkbox extends ToogleWidget {
         }
     }
 
-
     public int getOnColor() {
         return onColor;
     }
@@ -172,7 +171,7 @@ public class Checkbox extends ToogleWidget {
     @Override
     public void firePointer(PointerEvent pointerEvent) {
         if (pointerEvent.getType() == PointerEvent.RELEASED) {
-            setSelected(!isSelected());
+            toogle();
         }
         super.firePointer(pointerEvent);
     }

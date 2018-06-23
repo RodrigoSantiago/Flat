@@ -1,9 +1,9 @@
-package flat.uxml.data;
+package flat.resources;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import flat.uxml.data.Dimension.*;
+import flat.resources.Dimension.*;
 
 public abstract class DimensionStream {
 

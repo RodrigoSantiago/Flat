@@ -1,11 +1,12 @@
 package flat.uxml;
 
+import flat.resources.Dimension;
+import flat.resources.DimensionStream;
+import flat.resources.StringBundle;
 import flat.widget.*;
 import flat.widget.image.ImageView;
 import flat.widget.layout.*;
-import flat.widget.selection.Checkbox;
-import flat.widget.selection.RadioButton;
-import flat.widget.selection.ToogleGroup;
+import flat.widget.selection.*;
 import flat.widget.text.*;
 
 import javafx.util.Pair;
@@ -21,8 +22,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import flat.uxml.data.*;
 
 public final class UXLoader {
     private static HashMap<String, UXWidgetFactory> builders = new HashMap<>();
@@ -40,6 +39,7 @@ public final class UXLoader {
         UXLoader.install("ToogleGroup", ToogleGroup::new);
         UXLoader.install("Checkbox", Checkbox::new);
         UXLoader.install("RadioButton", RadioButton::new);
+        UXLoader.install("Switch", Switch::new);
     }
 
     private DimensionStream dimensionStream;

@@ -6,7 +6,7 @@ import flat.graphics.context.enuns.MagFilter;
 import flat.graphics.context.enuns.MinFilter;
 import flat.graphics.context.enuns.WrapMode;
 import flat.graphics.context.enuns.PixelFormat;
-import flat.application.Application;
+import flat.widget.Application;
 
 import java.nio.Buffer;
 

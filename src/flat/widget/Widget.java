@@ -306,6 +306,15 @@ public class Widget {
         }
     }
 
+    public Activity getActivity() {
+        Scene scene = getScene();
+        if (scene != null) {
+            return scene.getActivity();
+        } else {
+            return null;
+        }
+    }
+
     public Scene getScene() {
         Scene scene = null;
         if (parent != null) {
@@ -416,8 +425,29 @@ public class Widget {
         return focus;
     }
 
-    public void setFocus(boolean focus) {
-        this.focus = focus;
+    public void requestFocus(boolean focus) {
+        if (focusTarget) {
+            Application.runSync(() -> setFocus(focus));
+        }
+    }
+
+    void setFocus(boolean focus) {
+        if (this.focus != focus) {
+            Activity activity = getActivity();
+            if (activity != null) {
+                if (focus && focusTarget) {
+                    this.focus = true;
+                    if (activity.getFocus() != this) {
+                        activity.setFocus(this);
+                    }
+                } else {
+                    this.focus = false;
+                    if (activity.getFocus() == this) {
+                        activity.setFocus(null);
+                    }
+                }
+            }
+        }
     }
 
     public boolean isFocusTarget() {
@@ -425,7 +455,12 @@ public class Widget {
     }
 
     public void setFocusTarget(boolean focusTarget) {
-        this.focusTarget = focusTarget;
+        if (this.focusTarget != focusTarget) {
+            this.focusTarget = focusTarget;
+            if (!focusTarget) {
+                setFocus(false);
+            }
+        }
     }
 
     public String getNextFocusId() {
@@ -1128,6 +1163,12 @@ public class Widget {
         }
         if (!keyEvent.isConsumed() && parent != null) {
             parent.fireKey(keyEvent.recycle(parent));
+        }
+    }
+
+    public void fireFocus(FocusEvent focusEvent) {
+        if (focusListener != null) {
+            focusListener.handle(focusEvent);
         }
     }
 

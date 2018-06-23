@@ -1,4 +1,4 @@
-package flat.application;
+package flat.widget;
 
 import flat.animations.Animation;
 import flat.backend.*;
@@ -6,7 +6,7 @@ import flat.events.*;
 import flat.graphics.context.Context;
 import flat.graphics.SmartContext;
 import flat.graphics.image.ImageRaster;
-import flat.widget.Widget;
+import flat.resources.ResourcesManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -298,7 +298,12 @@ public final class Application {
                 boolean alt = (event.mods & (WLEnuns.MOD_ALT)) != 0;
                 boolean spr = (event.mods & (WLEnuns.MOD_SUPER)) != 0;
 
-                widget.fireKey(new KeyEvent(widget, eventType, shift, ctrl, alt, spr, "", event.key));
+                KeyEvent keyEvent = new KeyEvent(widget, eventType, shift, ctrl, alt, spr, "", event.key);
+                widget.fireKey(keyEvent);
+
+                if (!keyEvent.isConsumed()) {
+                    activity.onKeyPress(keyEvent);
+                }
 
                 KeyData.release(event);
             }
@@ -844,5 +849,9 @@ public final class Application {
             dragStarted = false;
             dragData = null;
         }
+    }
+
+    public interface GraphicTask {
+        void run(Context context);
     }
 }

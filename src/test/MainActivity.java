@@ -1,8 +1,8 @@
 package test;
 
 import flat.graphics.SmartContext;
-import flat.application.Activity;
-import flat.uxml.data.ResourceStream;
+import flat.widget.Activity;
+import flat.resources.ResourceStream;
 
 public class MainActivity extends Activity {
 

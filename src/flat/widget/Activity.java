@@ -1,18 +1,20 @@
-package flat.application;
+package flat.widget;
 
+import flat.events.FocusEvent;
+import flat.events.KeyCode;
+import flat.events.KeyEvent;
 import flat.graphics.SmartContext;
 import flat.uxml.Controller;
 import flat.uxml.UXAttributes;
 import flat.uxml.UXLoader;
-import flat.uxml.data.Dimension;
-import flat.uxml.data.DimensionStream;
-import flat.widget.Scene;
-import flat.widget.Widget;
+import flat.resources.Dimension;
+import flat.resources.DimensionStream;
 
 public class Activity extends Controller {
 
     private Scene scene;
     private Widget root;
+    private Widget focus;
 
     private float width;
     private float height;
@@ -23,7 +25,8 @@ public class Activity extends Controller {
     private boolean invalided, layoutInvalided, streamInvalided;
 
     public Activity() {
-        scene = new Scene(this);
+        scene = new Scene();
+        scene.activity = this;
         scene.applyAttributes(this, new UXAttributes(null));
         color = 0xDDDDDDFF;
     }
@@ -88,6 +91,48 @@ public class Activity extends Controller {
         context.setView(0, 0, (int) getWidth(), (int) getHeight());
         context.clear(color, 1, 0);
         scene.onDraw(context);
+    }
+
+    public void onKeyPress(KeyEvent event) {
+        if (event.getType() == KeyEvent.RELEASED) {
+            if (event.getKeycode() == KeyCode.KEY_TAB) {
+                if (getFocus() == null) {
+                    String firstFocus = scene.getNextFocusId();
+                    if (firstFocus != null) {
+                        setFocus(scene.findById(firstFocus));
+                    }
+                } else {
+                    setFocus(getFocus().findById(getFocus().getNextFocusId()));
+                }
+            }
+        }
+    }
+
+    public void setFocus(Widget widget) {
+        if ((widget == focus) || (widget != null && widget.getActivity() != this)) {
+            return;
+        }
+
+        Widget oldFocus = focus;
+        this.focus = widget;
+
+        if (oldFocus != null) {
+            oldFocus.setFocus(false);
+        }
+        if (focus != null) {
+            focus.setFocus(true);
+        }
+
+        if (oldFocus != null) {
+            oldFocus.fireFocus(new FocusEvent(oldFocus, focus));
+        }
+        if (focus != null) {
+            focus.fireFocus(new FocusEvent(oldFocus, focus));
+        }
+    }
+
+    public Widget getFocus() {
+        return focus;
     }
 
     public Scene getScene() {

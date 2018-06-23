@@ -1,7 +1,7 @@
 package test;
 
-import flat.application.Application;
-import flat.application.Settings;
+import flat.widget.Application;
+import flat.widget.Settings;
 
 public class Main {
     public static void main(String[] args) {

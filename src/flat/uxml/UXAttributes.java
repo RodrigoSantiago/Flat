@@ -1,7 +1,7 @@
 package flat.uxml;
 
 import flat.Flat;
-import flat.application.ResourcesManager;
+import flat.resources.ResourcesManager;
 import flat.graphics.context.Font;
 import flat.graphics.context.enuns.LineCap;
 import flat.graphics.context.enuns.LineJoin;
@@ -10,7 +10,8 @@ import flat.math.shapes.Rectangle;
 import flat.math.shapes.Shape;
 import flat.math.shapes.Stroke;
 import flat.math.stroke.BasicStroke;
-import flat.uxml.data.Dimension;
+import flat.resources.Dimension;
+import flat.resources.SVGParser;
 import flat.widget.Widget;
 
 import java.lang.reflect.Method;

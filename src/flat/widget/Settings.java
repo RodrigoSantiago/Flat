@@ -1,4 +1,4 @@
-package flat.application;
+package flat.widget;
 
 import java.io.File;
 

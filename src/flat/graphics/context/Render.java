@@ -2,7 +2,7 @@ package flat.graphics.context;
 
 import flat.backend.GL;
 import flat.graphics.context.enuns.PixelFormat;
-import flat.application.Application;
+import flat.widget.Application;
 
 public final class Render extends ContextObject {
 

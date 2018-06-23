@@ -3,7 +3,7 @@ package flat.graphics.context;
 import flat.backend.GL;
 import flat.graphics.context.enuns.BufferType;
 import flat.graphics.context.enuns.UsageType;
-import flat.application.Application;
+import flat.widget.Application;
 
 import java.nio.Buffer;
 

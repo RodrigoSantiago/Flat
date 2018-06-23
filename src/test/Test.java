@@ -1,27 +1,63 @@
 package test;
 
-public class Test {
-    static float stops[] = new float[]{0.01f, 0.1f, 0.2f, 0.3f, 1f};
-    static int colors[] = new int[]{1, 100, 200, 100, 0};
+import flat.math.operations.Area;
+import flat.math.shapes.Path;
+import flat.math.shapes.PathIterator;
+import flat.math.shapes.Rectangle;
+import flat.math.shapes.Shape;
 
+public class Test {
     public static void main(String... args) {
-        int color = 0;
-        for (float j = 0; j <= 1; j += 0.01f) {
-            int choose = stops.length - 1;
-            for (int i = 0; i < stops.length; i++) {
-                if (j < stops[i]) {
-                    choose = i - 1;
-                    break;
-                }
-            }
-            if (choose == -1) color = colors[0];
-            else if (choose == stops.length - 1) color = colors[stops.length - 1];
-            else color = mix(colors[choose], colors[choose + 1], (j  - stops[choose]) / (stops[choose + 1] - stops[choose]));
-            System.out.println( j + " : " + color);
+        new Area(new Rectangle(0, 0, 100, 100));
+    }
+
+    public static Path rec(Path p, int cx, int cy, int w, int h, boolean rigth) {
+        if (rigth) {
+            p.moveTo(cx - w / 2f, cy + h / 2f);
+            p.lineTo(cx + w / 2f, cy + h / 2f);
+            p.lineTo(cx + w / 2f, cy - h / 2f);
+            p.lineTo(cx - w / 2f, cy - h / 2f);
+            p.closePath();
+        } else {
+            p.moveTo(cx - w / 2f, cy - h / 2f);
+            p.lineTo(cx + w / 2f, cy - h / 2f);
+            p.lineTo(cx + w / 2f, cy + h / 2f);
+            p.lineTo(cx - w / 2f, cy + h / 2f);
+            p.closePath();
+        }
+        return p;
+    }
+
+    public static void printAreas(Shape shape) {
+        PathIterator it = shape.pathIterator(null);
+        while (!it.isDone()) {
+            System.out.println(polygonArea(it));
+            it.next();
         }
     }
 
-    private static int mix(int colorA, int colorB, float t) {
-        return (int) ((colorA * (1 - t)) + (colorB * t));
+    public static float polygonArea(PathIterator iterator) {
+        float sx = 0, sy = 0, x = 0, y = 0;
+        float[] coords = new float[6];
+        float area = 0;
+        while (!iterator.isDone()) {
+            switch (iterator.currentSegment(coords)) {
+                case PathIterator.SEG_MOVETO :
+                    sx = x = coords[0];
+                    sy = y = coords[1];
+                    break;
+                case PathIterator.SEG_LINETO :
+                    area += (x + coords[0]) * (y - coords[1]);
+                    x = coords[0];
+                    y = coords[1];
+                    break;
+                case PathIterator.SEG_CLOSE :
+                    area += (x + sx) * (y - sy);
+                    return area / 2;
+            }
+            iterator.next();
+        }
+        return Float.NaN;
     }
+
 }

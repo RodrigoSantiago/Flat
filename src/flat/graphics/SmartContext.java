@@ -243,6 +243,16 @@ public class SmartContext {
         context.svgDrawShape(path.isOptimized() ? path : new Area(path), fill);
     }
 
+    public void drawCircle(float x, float y, float radius, boolean fill) {
+        svgMode();
+        context.svgDrawEllipse(x - radius, y - radius, radius * 2, radius * 2, fill);
+    }
+
+    public void drawCircle(Circle circle,  boolean fill) {
+        svgMode();
+        context.svgDrawEllipse(circle.x - circle.radius, circle.y - circle.radius, circle.radius * 2, circle.radius * 2, fill);
+    }
+
     public void drawEllipse(Ellipse ellipse, boolean fill) {
         svgMode();
         context.svgDrawEllipse(ellipse.x, ellipse.y, ellipse.width, ellipse.height, fill);

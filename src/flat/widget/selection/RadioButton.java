@@ -9,7 +9,7 @@ import flat.math.shapes.Path;
 import flat.math.shapes.Shape;
 import flat.uxml.Controller;
 import flat.uxml.UXAttributes;
-import flat.uxml.data.Dimension;
+import flat.resources.Dimension;
 
 import java.util.Objects;
 
@@ -19,7 +19,7 @@ public class RadioButton extends ToogleWidget {
     private static Shape defBg = new Path(new Area(new Ellipse(0, 0, 24, 24)).subtract(new Area(new Ellipse(2,2,20,20))));
 
     private Shape icon;
-    private int backgroundOffColor;
+    private int onColor, offColor;
 
     private AnimShowHide animation = new AnimShowHide();
     private Shape bgPath, icPath;
@@ -32,11 +32,11 @@ public class RadioButton extends ToogleWidget {
 
         float dp24 = Dimension.dpPx(24);
         setPrefSize(attributes.asNumber("width", dp24), (attributes.asNumber("height", dp24)));
-        setBackgroundColor(attributes.asColor("backgroundColor", 0x000000FF));
-        setBackgroundOffColor(attributes.asColor("backgroundOffColor", 0x808080FF));
+        setOnColor(attributes.asColor("onColor", 0x000000FF));
+        setOffColor(attributes.asColor("offColor", 0x808080FF));
         setIcon(attributes.asShape("icon", defIcon));
 
-        bgColor = getBackgroundOffColor();
+        bgColor = getOffColor();
         bgPath = defBg;
     }
 
@@ -72,13 +72,24 @@ public class RadioButton extends ToogleWidget {
         }
     }
 
-    public int getBackgroundOffColor() {
-        return backgroundOffColor;
+    public int getOnColor() {
+        return onColor;
     }
 
-    public void setBackgroundOffColor(int backgroundOffColor) {
-        if (this.backgroundOffColor != backgroundOffColor) {
-            this.backgroundOffColor = backgroundOffColor;
+    public void setOnColor(int onColor) {
+        if (this.onColor != onColor) {
+            this.onColor = onColor;
+            invalidate(false);
+        }
+    }
+
+    public int getOffColor() {
+        return offColor;
+    }
+
+    public void setOffColor(int offColor) {
+        if (this.offColor != offColor) {
+            this.offColor = offColor;
             invalidate(false);
         }
     }
@@ -125,7 +136,8 @@ public class RadioButton extends ToogleWidget {
     }
 
     private class AnimShowHide extends Animation {
-        boolean show, _show;
+        public boolean show;
+        private boolean _show;
 
         AnimShowHide() {
             setDuration(150);
@@ -143,10 +155,10 @@ public class RadioButton extends ToogleWidget {
         protected void compute(float t) {
             if (_show) {
                 bgSize = t;
-                bgColor = mixColor(getBackgroundOffColor(), getBackgroundColor(), t);
+                bgColor = mixColor(getOnColor(), getOffColor(), t);
             } else {
                 bgSize = 1f - t;
-                bgColor = mixColor(getBackgroundColor(), getBackgroundOffColor(), t);
+                bgColor = mixColor(getOffColor(), getOnColor(), t);
             }
             invalidate(false);
         }

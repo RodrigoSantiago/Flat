@@ -1,4 +1,4 @@
-package flat.uxml.data;
+package flat.resources;
 
 import java.io.Serializable;
 import java.util.HashMap;

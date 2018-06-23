@@ -1,6 +1,6 @@
 package flat.graphics.context;
 
-import flat.application.Application;
+import flat.widget.Application;
 
 public abstract class Texture extends ContextObject {
 

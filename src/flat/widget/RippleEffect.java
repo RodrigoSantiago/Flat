@@ -5,15 +5,15 @@ import flat.animations.Interpolation;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Paint;
 import flat.math.shapes.Circle;
-import flat.math.shapes.Path;
 import flat.math.shapes.Shape;
-import flat.uxml.data.Dimension;
+import flat.resources.Dimension;
 
 public class RippleEffect {
 
-    private float[] stops = new float[]{0,1};
-    private int[] colors = new int[]{0,0};
+    private float[] stops = new float[]{0, 1};
+    private int[] colors = new int[]{0, 0};
 
+    public float size;
     private Widget widget;
     private RippleAnimation animation = new RippleAnimation();
     public Circle ripple = new Circle();
@@ -24,13 +24,21 @@ public class RippleEffect {
         animation.setInterpolation(Interpolation.quadOut);
     }
 
+    public float getSize() {
+        return size;
+    }
+
+    public void setSize(float size) {
+        this.size = size;
+    }
+
     public boolean isVisible() {
         return animation.isPlaying();
     }
 
     public void drawRipple(SmartContext context, Shape clip, int color) {
         float a = (((color & 0xFF) / 255f) * (1 - animation.getT()));
-        colors[0] = (color & 0xFFFFFF00) | ((int)(a * 255));
+        colors[0] = (color & 0xFFFFFF00) | ((int) (a * 255));
         colors[1] = (color & 0xFFFFFF00);
 
         context.setPaint(Paint.radial(ripple.x, ripple.y, ripple.radius, ripple.radius,
@@ -55,7 +63,7 @@ public class RippleEffect {
         public void compute(float t) {
             float w = widget.getWidth() - widget.getMarginLeft() - widget.getMarginRight();
             float h = widget.getHeight() - widget.getMarginTop() - widget.getMarginBottom();
-            float s = (float) Math.sqrt(w * w + h * h);
+            float s = size <= 0 ? (float) Math.sqrt(w * w + h * h) : size;
             ripple.radius = mix(Math.min(Dimension.dpPx(300), s / 10f), Math.min(Dimension.dpPx(300), s), t);
             RippleEffect.this.widget.invalidate(false);
         }

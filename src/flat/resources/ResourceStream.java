@@ -1,6 +1,4 @@
-package flat.uxml.data;
-
-import flat.application.ResourcesManager;
+package flat.resources;
 
 import java.io.*;
 import java.util.*;

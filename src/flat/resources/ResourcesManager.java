@@ -1,4 +1,4 @@
-package flat.application;
+package flat.resources;
 
 import flat.graphics.image.ImageRaster;
 import flat.graphics.image.TextureManager;
@@ -25,7 +25,11 @@ public final class ResourcesManager {
     private ResourcesManager() {
     }
 
-    static void setResources(File file) {
+    public static void setResources(File file) {
+        if (dir != null || zip != null) {
+            throw new RuntimeException("Resources redefinition not allowed");
+        }
+
         if (file == null) {
 
         } else if (file.isFile()) {

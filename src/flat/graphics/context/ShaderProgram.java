@@ -4,7 +4,7 @@ import flat.math.Vector2;
 import flat.backend.GL;
 import flat.graphics.context.enuns.AttributeType;
 import flat.math.*;
-import flat.application.Application;
+import flat.widget.Application;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -11,7 +11,7 @@ import flat.graphics.image.Image;
 import flat.graphics.text.Align;
 import flat.uxml.Controller;
 import flat.uxml.UXAttributes;
-import flat.uxml.data.Dimension;
+import flat.resources.Dimension;
 import flat.widget.enuns.ElevateStyle;
 
 import java.lang.reflect.Method;

@@ -1,27 +1,34 @@
 package flat.widget;
 
 import flat.graphics.SmartContext;
-import flat.application.Activity;
 import flat.uxml.Controller;
 import flat.uxml.UXAttributes;
 import flat.uxml.UXChildren;
-import flat.widget.layout.Box;
 
 import java.util.Collections;
 import java.util.HashMap;
 
 public class Scene extends Parent {
 
-    private Activity activity;
-
-    HashMap<String, Widget> widgets = new HashMap<>();
+    Activity activity;
+    HashMap<String, Widget> idMap = new HashMap<>();
 
     public Scene() {
 
     }
 
-    public Scene(Activity activity) {
-        this.activity = activity;
+    @Override
+    public Activity getActivity() {
+        if (activity != null) {
+            return activity;
+        } else {
+            Scene scene = getScene();
+            if (scene != null) {
+                return scene.getActivity();
+            } else {
+                return null;
+            }
+        }
     }
 
     @Override
@@ -128,40 +135,20 @@ public class Scene extends Parent {
 
     @Override
     public Widget findById(String id) {
-        return widgets.get(id);
+        return idMap.get(id);
     }
 
     final void assign(Widget widget) {
         String id = widget.getId();
         if (id != null) {
-            Widget old = widgets.put(id, widget);
+            Widget old = idMap.put(id, widget);
             if (old != null && old != widget) {
                 System.out.println("ID Overflow");
             }
         }
         if (!widget.isScene() && widget.children != null) {
             for (Widget child : widget.children) {
-                id = child.getId();
-                if (id != null) {
-                    Widget old = widgets.put(id, child);
-                    if (old != null && old != widget) {
-                        System.out.println("ID Overflow");
-                    }
-                }
-            }
-        }
-    }
-
-    final void reassign(String oldId, Widget widget) {
-        if (widgets.get(oldId) == widget) {
-            widgets.remove(oldId);
-        }
-
-        String newID = widget.getId();
-        if (newID != null) {
-            Widget old = widgets.put(newID, widget);
-            if (old != null && old != widget) {
-                System.out.println("ID Overflow");
+                assign(child);
             }
         }
     }
@@ -169,18 +156,27 @@ public class Scene extends Parent {
     final void deassign(Widget widget) {
         String id = widget.getId();
         if (id != null) {
-            if (!widgets.remove(id, widget)) {
+            if (!idMap.remove(id, widget)) {
                 System.out.println("The id \'"+ id+"\' wasn't assigned");
             }
         }
         if (!widget.isScene() && widget.children != null) {
             for (Widget child : widget.children) {
-                id = child.getId();
-                if (id != null) {
-                    if (!widgets.remove(id, child)) {
-                        System.out.println("The id \'" + id + "\' wasn't assigned");
-                    }
-                }
+                deassign(child);
+            }
+        }
+    }
+
+    final void reassign(String oldId, Widget widget) {
+        if (idMap.get(oldId) == widget) {
+            idMap.remove(oldId);
+        }
+
+        String newID = widget.getId();
+        if (newID != null) {
+            Widget old = idMap.put(newID, widget);
+            if (old != null && old != widget) {
+                System.out.println("ID Overflow");
             }
         }
     }

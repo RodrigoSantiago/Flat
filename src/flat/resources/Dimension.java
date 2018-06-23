@@ -1,6 +1,6 @@
-package flat.uxml.data;
+package flat.resources;
 
-import flat.application.Application;
+import flat.widget.Application;
 
 public class Dimension {
 
