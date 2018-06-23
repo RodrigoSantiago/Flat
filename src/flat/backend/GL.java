@@ -27,6 +27,7 @@ public class GL {
     //---------------------------
     //         State
     //---------------------------
+    public static native void SetDebug(boolean debug);
     public static native int GetError();
 
     public static native void SetHint(int targetHT, int modeHM);
@@ -214,7 +215,8 @@ public class GL {
     public static native int BufferCreate();
     public static native void BufferDestroy(int id);
     public static native void BufferBind(int trgBB, int id);
-    public static native void BufferBindRange(int trgBB, int id, int buffer, int offset, int length);
+    public static native void BufferBindBase(int trgBB, int bindIndex, int buffer);
+    public static native void BufferBindRange(int trgBB, int bindIndex, int buffer, int offset, int length);
     public static native int BufferGetBound(int trgBB);
 
     public static native void BufferDataB(int trgBB, byte[] data, int offset, int length, int usageTypeUT);
@@ -227,13 +229,13 @@ public class GL {
     public static native void BufferSubDataS(int trgBB, short[] data, int offset, int length, long buffOffset);
     public static native void BufferSubDataI(int trgBB, int[] data, int offset, int length, long buffOffset);
     public static native void BufferSubDataF(int trgBB, float[] data, int offset, int length, long buffOffset);
-    public static native void BufferSubDataBuffer(int trgBB, Buffer data, int offset, int length, long buffOffset);
+    public static native void BufferSubDataBuffer(int trgBB, Buffer buffer, int offset, int length, long buffOffset);
 
     public static native void BufferReadDataB(int trgBB, byte[] data, int offset, int length, long buffOffset);
     public static native void BufferReadDataS(int trgBB, short[] data, int offset, int length, long buffOffset);
     public static native void BufferReadDataI(int trgBB, int[] data, int offset, int length, long buffOffset);
     public static native void BufferReadDataF(int trgBB, float[] data, int offset, int length, long buffOffset);
-    public static native void BufferReadDataBuffer(int trgBB, Buffer data, int offset, int length, long buffOffset);
+    public static native void BufferReadDataBuffer(int trgBB, Buffer buffer, int offset, int length, long buffOffset);
 
     public static native void BufferCopy(int readTargetBB, int writeTargetBB, long readOffset, long writeOffset, long length);
     public static native long BufferMap(int trgBB, long offset, long length, int acessBimaskAM);
@@ -254,7 +256,7 @@ public class GL {
     public static native int ProgramGetUsed();
     public static native boolean ProgramIsDeleted(int id);
     public static native boolean ProgramIsLinked(int id);
-    public static native boolean ProgramisValidated(int id);
+    public static native boolean ProgramIsValidated(int id);
     public static native String ProgramGetLog(int id);
 
     public static native void ProgramAttachShader(int id, int shaderId);

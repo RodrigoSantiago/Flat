@@ -1,11 +1,13 @@
 package flat.graphics.context;
 
 import flat.backend.GL;
+import flat.graphics.context.enuns.AttributeType;
 
 public final class VertexArray extends ContextObject {
 
     private int vertexArrayId;
     private Context context;
+    private BufferObejct elementBuffer;
 
     public VertexArray(Context context) {
         this.context = context;
@@ -26,11 +28,21 @@ public final class VertexArray extends ContextObject {
         return vertexArrayId;
     }
 
+    void setElementBuffer(BufferObejct elementBuffer) {
+        this.elementBuffer = elementBuffer;
+    }
+
+    BufferObejct getElementBuffer() {
+        return elementBuffer;
+    }
+
     public void begin() {
+        context.refreshBufferBinds();
         context.bindVertexArray(this);
     }
 
     public void end() {
+        context.refreshBufferBinds();
         context.unbindVertexArray();
     }
 
@@ -39,9 +51,9 @@ public final class VertexArray extends ContextObject {
         GL.VertexArrayAttribEnable(att, enabled);
     }
 
-    public void setAttributePointer(int att, boolean normalized, int size, int stride, int type, int offset) {
+    public void setAttributePointer(int att, boolean normalized, int size, int stride, AttributeType type, int offset) {
         context.refreshBufferBinds();
-        GL.VertexArrayAttribPointer(att, size, normalized, stride, type, offset);
+        GL.VertexArrayAttribPointer(att, size, normalized, stride, type.getInternalEnum(), offset);
     }
 
     public void setAttributeDivisor(int att, int instanceCount) {

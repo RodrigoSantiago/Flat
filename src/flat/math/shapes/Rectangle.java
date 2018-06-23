@@ -209,6 +209,11 @@ public final class Rectangle implements Shape, Serializable {
     }
 
     @Override
+    public boolean isOptimized() {
+        return true;
+    }
+
+    @Override
     public boolean isEmpty() {
         return width <= 0 || height <= 0;
     }
@@ -338,16 +343,16 @@ public final class Rectangle implements Shape, Serializable {
                 type = SEG_LINETO;
                 switch (index) {
                     case 1:
-                        coords[0] = x + width;
-                        coords[1] = y;
+                        coords[0] = x;
+                        coords[1] = y + height;
                         break;
                     case 2:
                         coords[0] = x + width;
                         coords[1] = y + height;
                         break;
                     case 3:
-                        coords[0] = x;
-                        coords[1] = y + height;
+                        coords[0] = x + width;
+                        coords[1] = y;
                         break;
                     case 4:
                         coords[0] = x;

@@ -2,16 +2,20 @@ package flat.graphics.context;
 
 import flat.backend.GL;
 import flat.backend.SVG;
+import flat.backend.SVGEnuns;
 import flat.backend.WL;
 import flat.graphics.context.enuns.*;
 import flat.graphics.SmartContext;
 import flat.graphics.text.*;
 import flat.math.*;
+import flat.math.operations.Area;
+import flat.math.shapes.Path;
 import flat.math.shapes.PathIterator;
 import flat.math.shapes.Shape;
 
 import java.lang.ref.WeakReference;
 import java.nio.Buffer;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import static flat.backend.GLEnuns.*;
@@ -74,6 +78,7 @@ public final class Context {
     private boolean unbindShaderProgram, unbindVertexArray, unbindRender;
     private boolean[] unbindBuffer = new boolean[8];
     private boolean[] unbindTexture = new boolean[32];
+    private BufferObejct preVertexElementbuffer;
 
     // ---- SVG ---- //
     private boolean svgMode;
@@ -195,7 +200,8 @@ public final class Context {
         cullBackFace = true;
         clockWiseFrontFace = false;
 
-        multsampleEnabled = false;
+        multsampleEnabled = true;
+
         lineWidth = 1f;
 
         // ---- SVG ---- //
@@ -793,7 +799,7 @@ public final class Context {
 
     public void drawElements(VertexMode vertexMode, int first, int count, int instances) {
         softFlush();
-        GL.DrawElements(vertexMode.getInternalEnum(), count, DT_INT, instances, first);
+        GL.DrawElements(vertexMode.getInternalEnum(), count, instances, DT_INT, first);
     }
 
     void bindFrame(Frame frame, boolean draw, boolean read) {
@@ -885,11 +891,17 @@ public final class Context {
         unbindBuffer[index] = false;
         if (buffers[index] != buffer) {
             svgEnd();
+            if (unbindVertexArray) {
+                clearBindVertexArray();
+            }
             if (buffer == null) {
                 GL.BufferBind(type.getInternalEnum(), 0);
             } else {
                 GL.BufferBind(type.getInternalEnum(), buffer.getInternalID());
                 buffer.setBindType(type);
+            }
+            if (vertexArray != null && type == BufferType.Element) {
+                vertexArray.setElementBuffer(buffer);
             }
             buffers[index] = buffer;
         }
@@ -912,10 +924,18 @@ public final class Context {
         unbindVertexArray = false;
         if (vertexArray != array) {
             svgEnd();
+
+            // unbind element buffer is always false
+            final int i = BufferType.Element.ordinal();
+
             if (array == null) {
                 GL.VertexArrayBind(0);
+                buffers[i] = preVertexElementbuffer;
+                preVertexElementbuffer = null;
             } else {
                 GL.VertexArrayBind(array.getInternalID());
+                preVertexElementbuffer = buffers[i];
+                buffers[i] = array.getElementBuffer();
             }
             vertexArray = array;
         }
@@ -1046,7 +1066,7 @@ public final class Context {
         }
     }
 
-    protected void svgEnd() {
+    public void svgEnd() {
         if (svgMode) {
             svgMode = false;
             SVG.EndFrame(svgId);
@@ -1284,63 +1304,49 @@ public final class Context {
         return svgClipHeight;
     }
 
+    // ---- Temp Vars
+    private float[] data = new float[6];
+
     public void svgDrawShape(Shape shape, boolean fill) {
         svgBegin();
         SVG.BeginPath(svgId);
-        float[] data = new float[6];
-        for (PathIterator pi = shape.pathIterator(null); !pi.isDone(); pi.next()) {
+        PathIterator pi = shape.pathIterator(null);
+
+        float area = 0, x = 0, y = 0, sx = 0, sy = 0;
+        svgAlpha = 1;
+        while (!pi.isDone()) {
             switch (pi.currentSegment(data)) {
                 case PathIterator.SEG_MOVETO:
-                    SVG.PathWinding(svgId, SVG_HOLE);
                     SVG.MoveTo(svgId, data[0], data[1]);
+                    area = 0;
+                    sx = x = data[0];
+                    sy = y = data[1];
                     break;
                 case PathIterator.SEG_LINETO:
                     SVG.LineTo(svgId, data[0], data[1]);
+                    area += (x + data[0]) * (y - data[1]);
+                    x = data[0];
+                    y = data[1];
                     break;
                 case PathIterator.SEG_QUADTO:
                     SVG.QuadTo(svgId, data[0], data[1], data[2], data[3]);
+                    area += (x + data[2]) * (y - data[3]);
+                    x = data[2];
+                    y = data[3];
                     break;
                 case PathIterator.SEG_CUBICTO:
                     SVG.BezierTo(svgId, data[0], data[1], data[2], data[3], data[4], data[5]);
+                    area += (x + data[4]) * (y - data[5]);
+                    x = data[4];
+                    y = data[5];
                     break;
-                default:
+                case PathIterator.SEG_CLOSE:
                     SVG.ClosePath(svgId);
+                    area += (x + sx) * (y - sy);
+                    SVG.PathWinding (svgId, area > 0 ? SVGEnuns.SVG_CCW : SVGEnuns.SVG_CW);
                     break;
             }
-        }
-        if (fill) {
-            SVG.Fill(svgId);
-        } else {
-            SVG.Stroke(svgId);
-        }
-    }
-
-    public void svgDrawShape(int[] types, float[] data, boolean fill) {
-        svgBegin();
-        SVG.BeginPath(svgId);
-        int id = 0;
-        for (int i = 0; i < types.length; i++) {
-            switch (types[i]) {
-                case 0:
-                    SVG.MoveTo(svgId, data[id], data[id + 1]);
-                    id += 2;
-                    break;
-                case 1:
-                    SVG.LineTo(svgId, data[id], data[id + 1]);
-                    id += 2;
-                    break;
-                case 2:
-                    SVG.QuadTo(svgId, data[id], data[id + 1], data[id + 2], data[id + 3]);
-                    id += 4;
-                    break;
-                case 3:
-                    SVG.BezierTo(svgId, data[id], data[id + 1], data[id + 2], data[id + 3], data[id + 4], data[id + 5]);
-                    id += 6;
-                    break;
-                default:
-                    SVG.ClosePath(svgId);
-                    break;
-            }
+            pi.next();
         }
         if (fill) {
             SVG.Fill(svgId);
@@ -1566,5 +1572,9 @@ public final class Context {
                 SVG.DrawTextBuffer(svgId, x, y, text, offset, last + 1);
             }
         }
+    }
+
+    public int getError() {
+        return GL.GetError();
     }
 }

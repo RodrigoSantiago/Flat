@@ -121,6 +121,11 @@ public final class Line implements Shape, Serializable {
     }
 
     @Override
+    public boolean isOptimized() {
+        return true;
+    }
+
+    @Override
     public boolean isEmpty () {
         return true;
     }

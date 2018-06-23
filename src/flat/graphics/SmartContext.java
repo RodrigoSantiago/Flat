@@ -26,7 +26,7 @@ public class SmartContext {
     // -- 2D
     private Affine transform2D = new Affine();
     private Area clipArea = new Area();
-    private BasicStroke stroker;
+    private Stroke stroker;
 
     // -- 3D
     private Matrix4 projection3D = new Matrix4();
@@ -125,11 +125,13 @@ public class SmartContext {
     }
 
     public void setClip(Shape shape) {
-        clipArea.set(shape);
+        clipArea.set(shape.pathIterator(transform2D));
     }
 
-    public void intersectClip(Shape shape) {
-        clipArea.intersect(new Area(shape));
+    public Area intersectClip(Shape shape) {
+        Area old = new Area(clipArea);
+        clipArea.intersect(new Area(shape.pathIterator(transform2D)));
+        return old;
     }
 
     public Area getClip() {
@@ -164,7 +166,7 @@ public class SmartContext {
         return context.svgAlpha();
     }
 
-    public void setStroker(BasicStroke stroker) {
+    public void setStroker(Stroke stroker) {
         this.stroker = stroker;
         context.svgStrokeWidth(stroker.getLineWidth());
         context.svgLineCap(LineCap.values()[stroker.getEndCap()]);
@@ -172,7 +174,7 @@ public class SmartContext {
         context.svgMiterLimit(stroker.getMiterLimit());
     }
 
-    public BasicStroke getStroker() {
+    public Stroke getStroker() {
         return stroker;
     }
 
@@ -231,9 +233,14 @@ public class SmartContext {
         context.softFlush();
     }
 
-    public void drawShape(Shape path, boolean fill) {
+    public void drawShapeOptimized(Shape path, boolean fill) {
         svgMode();
         context.svgDrawShape(path, fill);
+    }
+
+    public void drawShape(Shape path, boolean fill) {
+        svgMode();
+        context.svgDrawShape(path.isOptimized() ? path : new Area(path), fill);
     }
 
     public void drawEllipse(Ellipse ellipse, boolean fill) {

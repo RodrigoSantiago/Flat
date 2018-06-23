@@ -3,7 +3,13 @@ package flat.uxml;
 import flat.Flat;
 import flat.application.ResourcesManager;
 import flat.graphics.context.Font;
+import flat.graphics.context.enuns.LineCap;
+import flat.graphics.context.enuns.LineJoin;
 import flat.graphics.image.Image;
+import flat.math.shapes.Rectangle;
+import flat.math.shapes.Shape;
+import flat.math.shapes.Stroke;
+import flat.math.stroke.BasicStroke;
 import flat.uxml.data.Dimension;
 import flat.widget.Widget;
 
@@ -46,6 +52,13 @@ public class UXAttributes {
         return val == null ? null : val.use();
     }
 
+    public void link(String name, UXWidgetLinker linker) {
+        String val = asString(name);
+        if (val != null) {
+            loader.addLink(val, linker);
+        }
+    }
+
     public <T extends Enum<T>> T asEnum(String name, Class<T> tClass, T def) {
         T result = def;
         String value = get(name);
@@ -72,6 +85,10 @@ public class UXAttributes {
             }
         }
         return result == null ? def : result;
+    }
+
+    public Method asListener(String name, Class<?> argument) {
+        return asListener(name, argument, getLoader().getController());
     }
 
     public Method asListener(String name, Class<?> argument, Object controller) {
@@ -111,6 +128,10 @@ public class UXAttributes {
         return result;
     }
 
+    public String asString(String name) {
+        return asString(name, null);
+    }
+
     public String asString(String name, String def) {
         String result = def;
         String value = get(name);
@@ -120,36 +141,31 @@ public class UXAttributes {
         return result;
     }
 
+    public float asSize(String name) {
+        return asSize(name, 0F);
+    }
+
     public float asSize(String name, float def) {
         float result = def;
         String value = get(name);
         if (value != null) {
-            Dimension dimension = loader.getDimension();
             if ("WRAP_CONTENT".equalsIgnoreCase(value)) {
                 result = Widget.WRAP_CONTENT;
             } else if ("MATCH_PARENT".equalsIgnoreCase(value)) {
                 result = Widget.MATCH_PARENT;
-            } else if (value.matches("\\d+(\\.\\d+)?")) {
-                result = Float.parseFloat(value) * (dimension.dpi / 160F);
-            } else if (value.matches("\\d+(\\.\\d+)?dp")) {
-                result = Float.parseFloat(value.substring(0, value.length() - 2)) * (dimension.dpi / 160F);
-            } else if (value.matches("\\d+(\\.\\d+)?sp")) {
-                result = Float.parseFloat(value.substring(0, value.length() - 2)) * (dimension.dpi / 160F) * loader.getFontScale();
-            } else if (value.matches("\\d+(\\.\\d+)?px")) {
-                result = Float.parseFloat(value.substring(0, value.length() - 2));
-            } else if (value.matches("\\d+(\\.\\d+)?in")) {
-                result = Float.parseFloat(value.substring(0, value.length() - 2)) * dimension.dpi;
-            } else if (value.matches("\\d+(\\.\\d+)?pt")) {
-                result = Float.parseFloat(value.substring(0, value.length() - 2)) * (dimension.dpi / 72F);
-            } else if (value.matches("\\d+(\\.\\d+)?mm")) {
-                result = Float.parseFloat(value.substring(0, value.length() - 2)) * (dimension.dpi / 25.4F);
-            } else if (value.matches("\\d+(\\.\\d+)?cm")) {
-                result = Float.parseFloat(value.substring(0, value.length() - 2)) * (dimension.dpi / 2.54F);
             } else {
-                loader.log("Invalid size : [" + name + " = " + value + "]");
+                result = sizeConvert(value);
+                if (Float.isNaN(result)) {
+                    result = def;
+                    loader.log("Invalid size : [" + name + " = " + value + "]");
+                }
             }
         }
         return Math.round(result);
+    }
+
+    public float asNumber(String name) {
+        return asNumber(name, 0F);
     }
 
     public float asNumber(String name, float def) {
@@ -165,6 +181,11 @@ public class UXAttributes {
         return result;
     }
 
+    public boolean asBoolean(String name) {
+        return asBoolean(name, false);
+    }
+
+
     public boolean asBoolean(String name, boolean def) {
         boolean result = def;
         String value = get(name);
@@ -178,6 +199,25 @@ public class UXAttributes {
             }
         }
         return result;
+    }
+
+    public Font asFont(String name) {
+        return asFont(name, Font.DEFAULT);
+    }
+
+    public Font asFont(String name, Font def) {
+        Font result = def;
+        String value = get(name);
+        if (value != null) {
+            result = Font.findFont(value);
+        }
+        return result;
+    }
+
+    // STYLE
+
+    public int asColor(String name) {
+        return asColor(name, 0);
     }
 
     public int asColor(String name, int def) {
@@ -195,41 +235,113 @@ public class UXAttributes {
         return result;
     }
 
-    public Font asFont(String name, Font def) {
-        Font result = def;
+    public Stroke asStroke(String name) {
+        return asStroke(name, BasicStroke.line);
+    }
+
+    public Stroke asStroke(String name, Stroke def) {
+        Stroke result = def;
         String value = get(name);
         if (value != null) {
-            result = Font.findFont(value);
+            try {
+                float width = 1, mitter = 10;
+                int cap = 0, join = 0;
+                String[] val = value.split(" ");
+                if (val.length >= 1) {
+                    width = sizeConvert(val[0]);
+                    if (Float.isNaN(width)) {
+                        loader.log("Invalid stroke : [" + value + "]");
+                        return result;
+                    }
+                }
+                if (val.length >= 2) {
+                    cap = LineCap.valueOf(val[1]).ordinal();
+                }
+                if (val.length >= 3) {
+                    join = LineJoin.valueOf(val[2]).ordinal();
+                }
+                if (val.length >= 4) {
+                    mitter = sizeConvert(val[3]);
+                    if (Float.isNaN(mitter)) {
+                        loader.log("Invalid stroke : [" + value + "]");
+                        return result;
+                    }
+                }
+                result = new BasicStroke(width, cap, join, mitter);
+            } catch (Exception e) {
+                loader.log("Invalid stroke : [" + value + "]");
+                return result;
+            }
         }
         return result;
     }
 
-    public Method asListener(String name, Class<?> argument) {
-        return asListener(name, argument, getLoader().getController());
+    public Shape asShape(String name) {
+        return asShape(name, null);
     }
 
-    public String asString(String name) {
-        return asString(name, null);
+    public Shape asShape(String name, Shape def) {
+        Shape result = def;
+        String value = get(name);
+        if (value != null) {
+            try {
+                result = new SVGParser().parse(value, 0);
+            } catch (Exception e) {
+                loader.log("Invalid shape : [" + value + "]");
+            }
+        }
+        return result;
     }
 
-    public float asSize(String name) {
-        return asSize(name, 0F);
+    public Rectangle asBounds(String name) {
+        return asBounds(name, null);
     }
 
-    public float asNumber(String name) {
-        return asNumber(name, 0F);
+    public Rectangle asBounds(String name, Rectangle def) {
+        Rectangle result = def;
+        String value = get(name);
+        if (value != null) {
+            try {
+                String[] vals = value.split(" ");
+                if (vals.length == 1 && vals[0].equals("center")) {
+                    result = null;
+                } else if (vals.length == 2) {
+                    result = new Rectangle(0, 0, Float.valueOf(vals[0]), Float.valueOf(vals[1]));
+                } else if (vals.length == 4) {
+                    result = new Rectangle(Float.valueOf(vals[0]), Float.valueOf(vals[1]), Float.valueOf(vals[2]), Float.valueOf(vals[3]));
+                } else {
+                    loader.log("Invalid bound : [" + value + "]");
+                }
+            } catch (Exception e) {
+                loader.log("Invalid bound : [" + value + "]");
+            }
+        }
+        return result;
     }
 
-    public boolean asBoolean(String name) {
-        return asBoolean(name, false);
-    }
-
-    public int asColor(String name) {
-        return asColor(name, 0);
-    }
-
-    public Font asFont(String name) {
-        return asFont(name, Font.DEFAULT);
+    private float sizeConvert(String value) {
+        Dimension dimension = loader.getDimension();
+        float r;
+        if (value.matches("\\d+(\\.\\d+)?")) {
+            r = Float.parseFloat(value) * (dimension.dpi / 160F);
+        } else if (value.matches("\\d+(\\.\\d+)?dp")) {
+            r = Float.parseFloat(value.substring(0, value.length() - 2)) * (dimension.dpi / 160F);
+        } else if (value.matches("\\d+(\\.\\d+)?sp")) {
+            r = Float.parseFloat(value.substring(0, value.length() - 2)) * (dimension.dpi / 160F) * loader.getFontScale();
+        } else if (value.matches("\\d+(\\.\\d+)?px")) {
+            r = Float.parseFloat(value.substring(0, value.length() - 2));
+        } else if (value.matches("\\d+(\\.\\d+)?in")) {
+            r = Float.parseFloat(value.substring(0, value.length() - 2)) * dimension.dpi;
+        } else if (value.matches("\\d+(\\.\\d+)?pt")) {
+            r = Float.parseFloat(value.substring(0, value.length() - 2)) * (dimension.dpi / 72F);
+        } else if (value.matches("\\d+(\\.\\d+)?mm")) {
+            r = Float.parseFloat(value.substring(0, value.length() - 2)) * (dimension.dpi / 25.4F);
+        } else if (value.matches("\\d+(\\.\\d+)?cm")) {
+            r = Float.parseFloat(value.substring(0, value.length() - 2)) * (dimension.dpi / 2.54F);
+        } else {
+            return Float.NaN;
+        }
+        return (float) Math.ceil(r);
     }
 
     public void logUnusedAttributes() {

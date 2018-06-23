@@ -8,6 +8,10 @@ import flat.math.Vector2;
  */
 public interface Shape {
 
+    default boolean isOptimized() {
+        return false;
+    }
+
     /** Returns true if this shape encloses no area. */
     boolean isEmpty ();
 
@@ -48,4 +52,6 @@ public interface Shape {
      *        flatness value generally allows for a path with fewer segments.
      */
     PathIterator pathIterator (Affine at, float flatness);
+
+    Shape clone();
 }

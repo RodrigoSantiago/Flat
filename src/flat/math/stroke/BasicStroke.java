@@ -1,12 +1,9 @@
 package flat.math.stroke;
 
 import flat.math.operations.Area;
-import flat.math.shapes.Path;
-import flat.math.shapes.PathConsumer;
-import flat.math.shapes.PathIterator;
-import flat.math.shapes.Shape;
+import flat.math.shapes.*;
 
-public final class BasicStroke {
+public final class BasicStroke implements Stroke {
     public static final int CAP_BUTT = Stroker.CAP_BUTT;
     public static final int CAP_ROUND = Stroker.CAP_ROUND;
     public static final int CAP_SQUARE = Stroker.CAP_SQUARE;
@@ -18,6 +15,8 @@ public final class BasicStroke {
     public static final int TYPE_CENTERED = 0;
     public static final int TYPE_INNER = 1;
     public static final int TYPE_OUTER = 2;
+
+    public static final BasicStroke line = new BasicStroke(1f);
 
     private final float width;
     private final int type;

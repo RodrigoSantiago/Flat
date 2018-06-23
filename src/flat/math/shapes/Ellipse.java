@@ -16,24 +16,26 @@ public final class Ellipse implements Shape, Serializable {
 
     private static final long serialVersionUID = -1205529661373764424L;
 
-    /** The bounding values of this ellipse. */
+    /**
+     * The bounding values of this ellipse.
+     */
     public float x, y, width, height;
 
     /**
      * Creates an ellipse with framing rectangle (0x0+0+0).
      */
-    public Ellipse () {
+    public Ellipse() {
     }
 
     /**
      * Creates an ellipse with the specified framing rectangle.
      */
-    public Ellipse (float x, float y, float width, float height) {
+    public Ellipse(float x, float y, float width, float height) {
         set(x, y, width, height);
     }
 
     @Override
-    public Ellipse clone () {
+    public Ellipse clone() {
         return new Ellipse(x, y, width, height);
     }
 
@@ -42,6 +44,11 @@ public final class Ellipse implements Shape, Serializable {
         this.y = y;
         this.width = width;
         this.height = height;
+    }
+
+    @Override
+    public boolean isOptimized() {
+        return true;
     }
 
     @Override
@@ -55,7 +62,7 @@ public final class Ellipse implements Shape, Serializable {
     }
 
     @Override
-    public boolean contains (float px, float py) {
+    public boolean contains(float px, float py) {
         if (isEmpty()) return false;
         float a = (px - x) / width - 0.5f;
         float b = (py - y) / height - 0.5f;
@@ -63,24 +70,24 @@ public final class Ellipse implements Shape, Serializable {
     }
 
     @Override
-    public boolean contains (Vector2 point) {
+    public boolean contains(Vector2 point) {
         return contains(point.x, point.y);
     }
 
     @Override
-    public boolean contains (float rx, float ry, float rw, float rh) {
+    public boolean contains(float rx, float ry, float rw, float rh) {
         if (isEmpty() || rw <= 0f || rh <= 0f) return false;
         float rx2 = rx + rw, ry2 = ry + rh;
         return contains(rx, ry) && contains(rx2, ry) && contains(rx2, ry2) && contains(rx, ry2);
     }
 
     @Override
-    public boolean contains (Rectangle rectangle) {
+    public boolean contains(Rectangle rectangle) {
         return contains(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
     }
 
     @Override
-    public boolean intersects (float rx, float ry, float rw, float rh) {
+    public boolean intersects(float rx, float ry, float rw, float rh) {
         if (isEmpty() || rw <= 0f || rh <= 0f) return false;
         float cx = x + width / 2f;
         float cy = y + height / 2f;
@@ -91,12 +98,12 @@ public final class Ellipse implements Shape, Serializable {
     }
 
     @Override
-    public boolean intersects (Rectangle rectangle) {
+    public boolean intersects(Rectangle rectangle) {
         return intersects(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
     }
 
     @Override
-    public PathIterator pathIterator (Affine at) {
+    public PathIterator pathIterator(Affine at) {
         return new Iterator(this, at);
     }
 
@@ -106,11 +113,11 @@ public final class Ellipse implements Shape, Serializable {
     }
 
     @Override
-    public boolean equals (Object obj) {
+    public boolean equals(Object obj) {
         if (obj == this) return true;
         if (obj == null) return false;
         if (obj.getClass() == getClass()) {
-            Ellipse elp = (Ellipse)obj;
+            Ellipse elp = (Ellipse) obj;
             return x == elp.x && y == elp.y && width == elp.width && height == elp.height;
         }
         return false;
@@ -126,13 +133,15 @@ public final class Ellipse implements Shape, Serializable {
         return "Ellipse[x:" + x + ", y:" + y + ", width:" + width + ", height:" + height + "]";
     }
 
-    /** An iterator over an {@link Ellipse}. */
+    /**
+     * An iterator over an {@link Ellipse}.
+     */
     protected static class Iterator implements PathIterator {
         private final float x, y, width, height;
         private final Affine t;
         private int index;
 
-        Iterator (Ellipse e, Affine t) {
+        Iterator(Ellipse e, Affine t) {
             this.x = e.x;
             this.y = e.y;
             this.width = e.width;
@@ -143,19 +152,23 @@ public final class Ellipse implements Shape, Serializable {
             }
         }
 
-        @Override public int windingRule () {
+        @Override
+        public int windingRule() {
             return WIND_NON_ZERO;
         }
 
-        @Override public boolean isDone () {
+        @Override
+        public boolean isDone() {
             return index > 5;
         }
 
-        @Override public void next () {
+        @Override
+        public void next() {
             index++;
         }
 
-        @Override public int currentSegment (float[] coords) {
+        @Override
+        public int currentSegment(float[] coords) {
             if (isDone()) {
                 throw new NoSuchElementException("Iterator out of bounds");
             }
@@ -193,13 +206,17 @@ public final class Ellipse implements Shape, Serializable {
     // m are calculated based on the requirement that the Bezier curve in point 0.5 should lay on
     // the arc.
 
-    /** The coefficient to calculate control points of Bezier curves. */
+    /**
+     * The coefficient to calculate control points of Bezier curves.
+     */
     private static final float U = 2f / 3f * (Mathf.sqrt(2) - 1f);
 
-    /** The points coordinates calculation table. */
+    /**
+     * The points coordinates calculation table.
+     */
     private static final float[][] POINTS = {
-            { 1f,       0.5f + U, 0.5f + U, 1f,       0.5f, 1f },
-            { 0.5f - U, 1f,       0f,       0.5f + U, 0f,   0.5f },
-            { 0f,       0.5f - U, 0.5f - U, 0f,       0.5f, 0f },
-            { 0.5f + U, 0f,       1f,       0.5f - U, 1f,   0.5f } };
+            {1f, 0.5f - U,   0.5f + U, 0f,  0.5f, 0f},
+            {0.5f - U, 0f,   0f, 0.5f - U,  0f, 0.5f},
+            {0f, 0.5f + U,   0.5f - U, 1f,  0.5f, 1f},
+            {0.5f + U, 1f,   1f, 0.5f + U,  1f, 0.5f}};
 }

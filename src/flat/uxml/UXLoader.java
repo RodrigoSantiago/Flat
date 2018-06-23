@@ -3,8 +3,12 @@ package flat.uxml;
 import flat.widget.*;
 import flat.widget.image.ImageView;
 import flat.widget.layout.*;
+import flat.widget.selection.Checkbox;
+import flat.widget.selection.RadioButton;
+import flat.widget.selection.ToogleGroup;
 import flat.widget.text.*;
 
+import javafx.util.Pair;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -33,6 +37,9 @@ public final class UXLoader {
         UXLoader.install("Button", Button::new);
         UXLoader.install("Label", Label::new);
         UXLoader.install("ImageView", ImageView::new);
+        UXLoader.install("ToogleGroup", ToogleGroup::new);
+        UXLoader.install("Checkbox", Checkbox::new);
+        UXLoader.install("RadioButton", RadioButton::new);
     }
 
     private DimensionStream dimensionStream;
@@ -42,6 +49,7 @@ public final class UXLoader {
     private float fontScale = 1f;
     private Controller controller;
     private ArrayList<String> logger = new ArrayList<>();
+    private ArrayList<Pair<String, UXWidgetLinker>> linkers = new ArrayList<>();
 
     public UXLoader(DimensionStream dimensionStream, Dimension dimension) {
         this(dimensionStream, dimension, null, null);
@@ -98,6 +106,17 @@ public final class UXLoader {
         return fontScale;
     }
 
+    void addLink(String id, UXWidgetLinker linker) {
+        linkers.add(new Pair<>(id, linker));
+    }
+
+    void link(Widget parent) {
+        for (Pair<String, UXWidgetLinker> linker : linkers) {
+            linker.getValue().onLink(parent.findById(linker.getKey()));
+        }
+        linkers.clear();
+    }
+
     public void log(String log) {
         logger.add(log);
     }
@@ -107,6 +126,10 @@ public final class UXLoader {
     }
 
     public Widget load() throws Exception {
+        return load(false);
+    }
+
+    public Widget load(boolean createScene) throws Exception {
         InputStream inputStream = dimensionStream.getStream(dimension);
         try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -130,7 +153,17 @@ public final class UXLoader {
                 }
             }
 
-            return uxml;
+            Scene scene = uxml instanceof Scene ? (Scene) uxml : new Scene();
+            if (uxml != scene) {
+                if (uxml != null) {
+                    scene.add(uxml);
+                }
+                link(scene);
+            } else {
+                link(uxml);
+            }
+
+            return createScene ? scene : uxml;
         } finally {
             try {
                 inputStream.close();

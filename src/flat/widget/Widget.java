@@ -11,10 +11,7 @@ import flat.uxml.UXAttributes;
 import flat.uxml.UXChildren;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class Widget {
 
@@ -251,7 +248,7 @@ public class Widget {
     }
 
     public void onMeasure() {
-        setMeasure(prefWidth, prefHeight);
+        setMeasure(getLayoutPrefWidth(), getLayoutPrefHeight());
     }
 
     public final void setMeasure(float width, float height) {
@@ -299,7 +296,30 @@ public class Widget {
     }
 
     public void setId(String id) {
-        this.id = id;
+        if (!Objects.equals(this.id, id)) {
+            String oldId = this.id;
+            this.id = id;
+            Scene scene = getScene();
+            if (scene != null) {
+                scene.reassign(oldId, this);
+            }
+        }
+    }
+
+    public Scene getScene() {
+        Scene scene = null;
+        if (parent != null) {
+            if (parent.isScene()) {
+                scene = (Scene) parent;
+            } else {
+                scene = parent.getScene();
+            }
+        }
+        return scene;
+    }
+
+    boolean isScene() {
+        return false;
     }
 
     public Parent getParent() {
@@ -310,7 +330,18 @@ public class Widget {
         if (this.parent != null && parent != null) {
             this.parent.childRemove(this);
         }
+        Scene sceneA = getScene();
         this.parent = parent;
+        Scene sceneB = getScene();
+        if (sceneA != sceneB) {
+            if (sceneA != null) {
+                sceneA.deassign(this);
+            }
+            if (sceneB != null) {
+                sceneB.assign(this);
+            }
+        }
+
     }
 
     public List<Widget> getUnmodifiableChildren() {
@@ -715,6 +746,14 @@ public class Widget {
         return maxHeight + marginTop + marginBottom;
     }
 
+    public float getLayoutPrefWidth() {
+        return prefWidth + paddingLeft + paddingRight + marginLeft + marginRight;
+    }
+
+    public float getLayoutPrefHeight() {
+        return prefHeight + paddingTop + paddingBottom + marginTop + marginBottom;
+    }
+
     public float getCenterX() {
         return centerX;
     }
@@ -980,6 +1019,10 @@ public class Widget {
         if (rippleEffect) {
             ripple.release();
         }
+    }
+
+    protected RippleEffect getRipple() {
+        return ripple;
     }
 
     public void setClip(Shape clip) {

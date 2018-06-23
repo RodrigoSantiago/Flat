@@ -3,6 +3,7 @@ package flat.math.shapes;
 import java.util.NoSuchElementException;
 
 import flat.math.*;
+import flat.math.operations.Area;
 import flat.math.util.FlatteningPathIterator;
 import flat.math.util.IllegalPathStateException;
 import flat.math.util.Platform;
@@ -60,6 +61,8 @@ public final class Path implements PathConsumer, Shape, Cloneable {
     }
 
     public void moveTo(float x, float y) {
+        optimized = false;
+
         if (typeSize > 0 && types[typeSize - 1] == PathIterator.SEG_MOVETO) {
             points[pointSize - 2] = x;
             points[pointSize - 1] = y;
@@ -72,6 +75,8 @@ public final class Path implements PathConsumer, Shape, Cloneable {
     }
 
     public void lineTo(float x, float y) {
+        optimized = false;
+
         checkBuf(2, true);
         types[typeSize++] = PathIterator.SEG_LINETO;
         points[pointSize++] = x;
@@ -79,6 +84,8 @@ public final class Path implements PathConsumer, Shape, Cloneable {
     }
 
     public void quadTo(float x1, float y1, float x2, float y2) {
+        optimized = false;
+
         checkBuf(4, true);
         types[typeSize++] = PathIterator.SEG_QUADTO;
         points[pointSize++] = x1;
@@ -88,6 +95,8 @@ public final class Path implements PathConsumer, Shape, Cloneable {
     }
 
     public void curveTo(float x1, float y1, float x2, float y2, float x3, float y3) {
+        optimized = false;
+
         checkBuf(6, true);
         types[typeSize++] = PathIterator.SEG_CUBICTO;
         points[pointSize++] = x1;
@@ -99,6 +108,8 @@ public final class Path implements PathConsumer, Shape, Cloneable {
     }
 
     public void arcTo(float rx, float ry, float xAxisRotation, int largeArcFlag, int sweepFlag, float cx, float cy) {
+        optimized = false;
+
         if (typeSize == 0) {
             throw new IllegalPathStateException("First segment must be a SEG_MOVETO");
         }
@@ -280,29 +291,16 @@ public final class Path implements PathConsumer, Shape, Cloneable {
         }
     }
 
-    public Vector2 currentPoint() {
-        if (typeSize == 0) {
-            return null;
-        }
-        int j = pointSize - 2;
-        if (types[typeSize - 1] == PathIterator.SEG_CLOSE) {
-            for (int i = typeSize - 2; i > 0; i--) {
-                int type = types[i];
-                if (type == PathIterator.SEG_MOVETO) {
-                    break;
-                }
-                j -= pointShift[type];
-            }
-        }
-        return new Vector2(points[j], points[j + 1]);
-    }
-
     public void reset() {
+        optimized = false;
+
         typeSize = 0;
         pointSize = 0;
     }
 
     public void reverse() {
+        optimized = false;
+
         for (int i = 0, len = pointSize / 2; i < len; i++) {
             final int index = i;
             final float x = points[i];
@@ -323,6 +321,8 @@ public final class Path implements PathConsumer, Shape, Cloneable {
     }
 
     public void transform(Affine t) {
+        optimized = false;
+
         t.transform(points, 0, points, 0, pointSize / 2);
     }
 
@@ -334,7 +334,38 @@ public final class Path implements PathConsumer, Shape, Cloneable {
         return p;
     }
 
-    @Override // from interface IShape
+    public Vector2 currentPoint() {
+        if (typeSize == 0) {
+            return null;
+        }
+        int j = pointSize - 2;
+        if (types[typeSize - 1] == PathIterator.SEG_CLOSE) {
+            for (int i = typeSize - 2; i > 0; i--) {
+                int type = types[i];
+                if (type == PathIterator.SEG_MOVETO) {
+                    break;
+                }
+                j -= pointShift[type];
+            }
+        }
+        return new Vector2(points[j], points[j + 1]);
+    }
+
+    public void optimize() {
+        if (!optimized) {
+            Area area = new Area(this);
+            reset();
+            append(area, false);
+            optimized = true;
+        }
+    }
+
+    @Override
+    public boolean isOptimized() {
+        return optimized;
+    }
+
+    @Override
     public Rectangle bounds() {
         float rx1, ry1, rx2, ry2;
         if (pointSize == 0) {
@@ -542,6 +573,9 @@ public final class Path implements PathConsumer, Shape, Cloneable {
 
     /* The path rule. */
     protected int rule;
+
+    /* The path rule. */
+    protected boolean optimized;
 
     /**
      * The space required in points buffer for different segment types.

@@ -36,8 +36,8 @@ public class ImageVector implements Image {
     public void draw(SmartContext context, float x, float y, float width, float height, float frame) {
         context.setTransform2D(
                 context.getTransform2D()
-                        .scale(width / view.width, height / view.height)
-                        .translate(x, y));
+                        .translate(x, y)
+                        .scale(width / view.width, height / view.height));
 
         for (int i = 0; i < paths.length; i++) {
             context.setPaint(paints[i]);

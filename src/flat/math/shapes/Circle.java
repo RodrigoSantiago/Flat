@@ -84,6 +84,11 @@ public final class Circle implements Shape, Serializable {
     }
 
     @Override
+    public boolean isOptimized() {
+        return true;
+    }
+
+    @Override
     public boolean isEmpty() {
         return radius <= 0;
     }
@@ -250,8 +255,8 @@ public final class Circle implements Shape, Serializable {
      * The points coordinates calculation table.
      */
     private static final float[][] POINTS = {
-            {1f, 0.5f + U, 0.5f + U, 1f, 0.5f, 1f},
-            {0.5f - U, 1f, 0f, 0.5f + U, 0f, 0.5f},
-            {0f, 0.5f - U, 0.5f - U, 0f, 0.5f, 0f},
-            {0.5f + U, 0f, 1f, 0.5f - U, 1f, 0.5f}};
+            {1f, 0.5f - U,   0.5f + U, 0f,  0.5f, 0f},
+            {0.5f - U, 0f,   0f, 0.5f - U,  0f, 0.5f},
+            {0f, 0.5f + U,   0.5f - U, 1f,  0.5f, 1f},
+            {0.5f + U, 1f,   1f, 0.5f + U,  1f, 0.5f}};
 }

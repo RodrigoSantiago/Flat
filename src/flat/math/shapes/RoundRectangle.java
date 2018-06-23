@@ -102,6 +102,11 @@ public final class RoundRectangle implements Shape, Serializable {
     }
 
     @Override
+    public boolean isOptimized() {
+        return true;
+    }
+
+    @Override
     public boolean isEmpty() {
         return width <= 0 || height <= 0;
     }
@@ -299,9 +304,9 @@ public final class RoundRectangle implements Shape, Serializable {
 
     /** The segment types correspond to points array. */
     protected static final int[] TYPES = {
-            PathIterator.SEG_MOVETO, PathIterator.SEG_LINETO, PathIterator.SEG_CUBICTO,
-            PathIterator.SEG_LINETO, PathIterator.SEG_CUBICTO, PathIterator.SEG_LINETO,
-            PathIterator.SEG_CUBICTO, PathIterator.SEG_LINETO, PathIterator.SEG_CUBICTO
+            PathIterator.SEG_MOVETO, PathIterator.SEG_CUBICTO, PathIterator.SEG_LINETO,
+            PathIterator.SEG_CUBICTO, PathIterator.SEG_LINETO, PathIterator.SEG_CUBICTO,
+            PathIterator.SEG_LINETO, PathIterator.SEG_CUBICTO, PathIterator.SEG_LINETO
     };
 
     /** The coefficient to calculate control points of Bezier curves. */
@@ -309,14 +314,15 @@ public final class RoundRectangle implements Shape, Serializable {
 
     /** The points coordinates calculation table. */
     protected static final float[][] POINTS = {
-            { 0f, 0.5f, 0f, 0f }, // MOVETO
-            { 1f, -0.5f, 0f, 0f }, // LINETO
-            { 1f, -U, 0f, 0f, 1f, 0f, 0f, U, 1f, 0f, 0f, 0.5f }, // CUBICTO
-            { 1f, 0f, 1f, -0.5f }, // LINETO
-            { 1f, 0f, 1f, -U, 1f, -U, 1f, 0f, 1f, -0.5f, 1f, 0f }, // CUBICTO
-            { 0f, 0.5f, 1f, 0f }, // LINETO
-            { 0f, U, 1f, 0f, 0f, 0f, 1f, -U, 0f, 0f, 1f, -0.5f }, // CUBICTO
-            { 0f, 0f, 0f, 0.5f }, // LINETO
-            { 0f, 0f, 0f, U, 0f, U, 0f, 0f, 0f, 0.5f, 0f, 0f }, // CUBICTO
+            {0f, 0.5f, 0f, 0f},// MOVETO
+            {0f, U, 0f, 0f, 0f, 0f, 0f, U, 0f, 0f, 0f, 0.5f}, // CUBICTO
+            {0f, 0f, 1f, -0.5f}, // LINETO
+            {0f, 0f, 1f, -U, 0f, U, 1f, 0f, 0f, 0.5f, 1f, 0f}, // CUBICTO
+            {1f, -0.5f, 1f, 0f}, // LINETO
+            {1f, -U, 1f, 0f, 1f, 0f, 1f, -U, 1f, 0f, 1f, -0.5f}, // CUBICTO
+            {1f, 0f, 0f, 0.5f}, // LINETO
+            {1f, 0f, 0f, U, 1f, -U, 0f, 0f, 1f, -0.5f, 0f, 0f}, // CUBICTO
+            {0f, 0.5f, 0f, 0f} // LINETO
+
     };
 }

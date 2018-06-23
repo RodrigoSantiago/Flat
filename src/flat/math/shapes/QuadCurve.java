@@ -136,6 +136,11 @@ public final class QuadCurve implements Shape, Serializable {
     }
 
     @Override
+    public boolean isOptimized() {
+        return true;
+    }
+
+    @Override
     public boolean isEmpty() {
         return true; // curves contain no space
     }

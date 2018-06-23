@@ -36,6 +36,10 @@ public class Area implements Shape, Cloneable {
         set(shape);
     }
 
+    public Area(PathIterator shape) {
+        curves = pathToCurves(shape);
+    }
+
     private static Vector<Curve> pathToCurves(PathIterator pi) {
         Vector<Curve> curves = new Vector<>();
         int windingRule = pi.windingRule();
@@ -96,6 +100,11 @@ public class Area implements Shape, Cloneable {
         } else {
             curves = pathToCurves(shape.pathIterator(null));
         }
+        return this;
+    }
+
+    public Area set(PathIterator iterator) {
+        curves = pathToCurves(iterator);
         return this;
     }
 
@@ -357,7 +366,8 @@ public class Area implements Shape, Cloneable {
         if (other == null) {
             return false;
         }
-        return new AreaOp.XorOp().calculate(this.curves, other.curves).isEmpty();
+        return false;
+        //return new AreaOp.XorOp().calculate(this.curves, other.curves).isEmpty();
     }
 
     /**

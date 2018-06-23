@@ -61,6 +61,11 @@ public abstract class Animation {
     }
 
     public void play() {
+        play(0);
+    }
+
+    public void play(float position) {
+        position = Math.max(Math.min(position, 1), 0);
         if (isPlaying()) {
             stop();
         }
@@ -75,6 +80,7 @@ public abstract class Animation {
             playing = true;
             paused = false;
         }
+        _reaming = (long) (_duration * (1 - position));
 
         Application.runAnimation(this);
     }
@@ -116,12 +122,16 @@ public abstract class Animation {
     public void jump(float position) {
         if (playing || paused) {
             position = Math.max(Math.min(position, 1), 0);
-            _reaming = (long) (_duration * position);
+            _reaming = (long) (_duration * (1 - position));
         }
     }
 
+    public float getT() {
+        return _interpolation.apply(getPosition());
+    }
+
     public float getPosition() {
-        return playing || paused ? _interpolation.apply(1 - (_reaming / (float) _duration)) : 0;
+        return playing || paused ? (1 - (_reaming / (float) _duration)) : 0;
     }
 
     public void handle(long time) {
@@ -161,6 +171,20 @@ public abstract class Animation {
 
     public static float mix(float a, float b, float t) {
         return a * (1 - t) + b * t;
+    }
+
+    public static int mixColor(int a, int b, float t) {
+        float ra = ((a >> 24) & 0xff) / 255f;
+        float rr = ((a >> 16) & 0xff) / 255f;
+        float rg = ((a >> 8) & 0xff) / 255f;
+        float rb = (a & 0xff) / 255f;
+
+        int sa = Math.min(255, Math.round(mix(ra, (((b >> 24) & 0xff) / 255f), t) * 255));
+        int sr = Math.min(255, Math.round(mix(rr, (((b >> 16) & 0xff) / 255f), t) * 255));
+        int sg = Math.min(255, Math.round(mix(rg, (((b >> 8) & 0xff) / 255f), t) * 255));
+        int sb = Math.min(255, Math.round(mix(rb, ((b & 0xff) / 255f), t) * 255));
+
+        return (sa << 24) | (sr << 16) | (sg << 8) | sb;
     }
 
     public static float angularMix(float a, float b, float t) {

@@ -15,4 +15,5 @@ public class ML {
 
     public static native boolean inv (float[] values);
     public static native float det (float[] values);
+
 }

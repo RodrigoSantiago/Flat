@@ -3,20 +3,20 @@ package flat.widget;
 import flat.animations.Animation;
 import flat.animations.Interpolation;
 import flat.graphics.SmartContext;
-import flat.math.operations.Area;
+import flat.graphics.context.Paint;
 import flat.math.shapes.Circle;
-import flat.math.shapes.RoundRectangle;
+import flat.math.shapes.Path;
+import flat.math.shapes.Shape;
 import flat.uxml.data.Dimension;
 
-class RippleEffect {
+public class RippleEffect {
+
+    private float[] stops = new float[]{0,1};
+    private int[] colors = new int[]{0,0};
 
     private Widget widget;
     private RippleAnimation animation = new RippleAnimation();
-
-    private Circle circle = new Circle();
-    private RoundRectangle bg = new RoundRectangle();
-    private Area rectArea = new Area(bg);
-    private Area rippleArea = new Area();
+    public Circle ripple = new Circle();
 
     public RippleEffect(Widget widget) {
         this.widget = widget;
@@ -28,19 +28,19 @@ class RippleEffect {
         return animation.isPlaying();
     }
 
-    public void drawRipple(SmartContext context, RoundRectangle background, int color) {
-        if (!background.equals(bg)) {
-            bg.set(background);
-            rectArea = new Area(bg);
-        }
-        rippleArea.set(circle).intersect(rectArea);
-        float alpha = (((color & 0xFF) / 255f) * (1 - animation.getPosition()));
-        context.setColor((color & 0xFFFFFF00) | ((int)(alpha * 255)));
-        context.drawShape(rippleArea, true);
+    public void drawRipple(SmartContext context, Shape clip, int color) {
+        float a = (((color & 0xFF) / 255f) * (1 - animation.getT()));
+        colors[0] = (color & 0xFFFFFF00) | ((int)(a * 255));
+        colors[1] = (color & 0xFFFFFF00);
+
+        context.setPaint(Paint.radial(ripple.x, ripple.y, ripple.radius, ripple.radius,
+                stops, colors, Paint.CycleMethod.CLAMP, context.getTransform2D()));
+
+        context.drawShape(clip == null ? ripple : clip, true);
     }
 
     public void fire(float x, float y) {
-        circle.set(x, y, 1);
+        ripple.set(x, y, 1);
         animation.stop();
         animation.setDelta(1);
         animation.play();
@@ -56,7 +56,7 @@ class RippleEffect {
             float w = widget.getWidth() - widget.getMarginLeft() - widget.getMarginRight();
             float h = widget.getHeight() - widget.getMarginTop() - widget.getMarginBottom();
             float s = (float) Math.sqrt(w * w + h * h);
-            circle.radius = mix(Math.min(Dimension.dpPx(300), s / 10f), Math.min(Dimension.dpPx(300), s), t);
+            ripple.radius = mix(Math.min(Dimension.dpPx(300), s / 10f), Math.min(Dimension.dpPx(300), s), t);
             RippleEffect.this.widget.invalidate(false);
         }
     }
