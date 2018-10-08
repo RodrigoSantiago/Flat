@@ -1,9 +1,8 @@
 package flat.widget;
 
 import flat.graphics.SmartContext;
-import flat.uxml.Controller;
-import flat.uxml.UXAttributes;
 import flat.uxml.UXChildren;
+import flat.widget.enuns.Visibility;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,17 +31,10 @@ public class Scene extends Parent {
     }
 
     @Override
-    public void applyAttributes(Controller controller, UXAttributes attributes) {
-        super.applyAttributes(controller, attributes);
-        setPrefWidth(attributes.asSize("width", MATCH_PARENT));
-        setPrefHeight(attributes.asSize("height", MATCH_PARENT));
-    }
-
-    @Override
     public void applyChildren(UXChildren children) {
         super.applyChildren(children);
         Widget child;
-        while ((child = children.next()) != null ) {
+        while ((child = children.next().getWidget()) != null ) {
             add(child);
         }
     }
@@ -51,7 +43,7 @@ public class Scene extends Parent {
     public void onLayout(float x, float y, float width, float height) {
         setLayout(x, y, Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
         for (Widget child : getChildren()) {
-            if (child.getVisibility() == GONE) continue;
+            if (child.getVisibility() == Visibility.Gone) continue;
 
             child.onLayout(child.getX(), child.getY(), getWidth(), getHeight());
         }
@@ -63,7 +55,7 @@ public class Scene extends Parent {
 
         for (Widget child : getChildren()) {
             child.onMeasure();
-            if (child.getVisibility() == GONE) continue;
+            if (child.getVisibility() == Visibility.Gone) continue;
 
             if (mWidth != MATCH_PARENT) {
                 if (child.getMeasureWidth() == MATCH_PARENT) {
@@ -108,7 +100,7 @@ public class Scene extends Parent {
 
     @Override
     public void onDraw(SmartContext context) {
-        if (getVisibility() == VISIBLE) {
+        if (getVisibility() == Visibility.Visible) {
             super.onDraw(context);
         }
     }

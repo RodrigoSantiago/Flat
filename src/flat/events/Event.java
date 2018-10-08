@@ -7,6 +7,7 @@ public abstract class Event {
     private Widget source;
     private int type;
     private boolean consumed;
+    private boolean focusConsumed;
 
     public Event(Widget source, int type) {
         this.source = source;
@@ -32,5 +33,13 @@ public abstract class Event {
 
     public boolean isConsumed() {
         return consumed;
+    }
+
+    public void consumeFocus(boolean focusConsumed) {
+        this.focusConsumed = focusConsumed;
+    }
+
+    public boolean isFocusConsumed() {
+        return focusConsumed;
     }
 }

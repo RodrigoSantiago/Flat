@@ -3,7 +3,7 @@ package flat.graphics.image;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Texture2D;
 
-public class ImageRaster implements Image {
+public class ImageRaster implements Drawable {
 
     private Texture2D atlas;
     private float srcx, srcy, width, height;

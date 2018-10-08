@@ -1,22 +1,25 @@
-package flat.widget;
+package flat.widget.effects;
 
 import flat.animations.Animation;
 import flat.animations.Interpolation;
+import flat.animations.PropertyAnimation;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Paint;
 import flat.math.shapes.Circle;
 import flat.math.shapes.Shape;
 import flat.resources.Dimension;
+import flat.widget.Widget;
 
 public class RippleEffect {
 
-    private float[] stops = new float[]{0, 1};
-    private int[] colors = new int[]{0, 0};
+    private static final float[] stops = new float[]{0, 1};
+    private final int[] colors = new int[]{0, 0};
 
-    public float size;
-    private Widget widget;
-    private RippleAnimation animation = new RippleAnimation();
-    public Circle ripple = new Circle();
+    private float size;
+
+    private final Widget widget;
+    private final Circle ripple = new Circle();
+    private final RippleAnimation animation = new RippleAnimation();
 
     public RippleEffect(Widget widget) {
         this.widget = widget;
@@ -58,14 +61,15 @@ public class RippleEffect {
         animation.setDelta(2);
     }
 
-    private class RippleAnimation extends Animation {
+    private class RippleAnimation extends PropertyAnimation {
         @Override
         public void compute(float t) {
             float w = widget.getWidth() - widget.getMarginLeft() - widget.getMarginRight();
             float h = widget.getHeight() - widget.getMarginTop() - widget.getMarginBottom();
-            float s = size <= 0 ? (float) Math.sqrt(w * w + h * h) : size;
-            ripple.radius = mix(Math.min(Dimension.dpPx(300), s / 10f), Math.min(Dimension.dpPx(300), s), t);
-            RippleEffect.this.widget.invalidate(false);
+            float s = size <= 0 ? (float) Math.min(Dimension.dpPx(300), Math.sqrt(w * w + h * h)) : size;
+            ripple.radius = Interpolation.mix(s / 10f,  s, t);
+
+            widget.invalidate(false);
         }
     }
 }

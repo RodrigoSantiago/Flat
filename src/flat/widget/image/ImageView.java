@@ -1,16 +1,16 @@
 package flat.widget.image;
 
+import flat.animations.StateInfo;
 import flat.graphics.SmartContext;
-import flat.graphics.image.Image;
+import flat.graphics.image.Drawable;
 import flat.graphics.text.Align;
-import flat.uxml.Controller;
-import flat.uxml.UXAttributes;
+import flat.resources.Resource;
 import flat.widget.enuns.ImageScale;
 import flat.widget.Widget;
 
 public class ImageView extends Widget {
 
-    private Image image;
+    private Drawable drawable;
     private float frame;
     private float speed;
     private ImageScale imageScale;
@@ -21,23 +21,32 @@ public class ImageView extends Widget {
     private long lastTime;
 
     @Override
-    public void applyAttributes(Controller controller, UXAttributes attributes) {
-        super.applyAttributes(controller, attributes);
+    public void applyStyle() {
+        super.applyStyle();
 
-        setImage(attributes.asImage("image"));
-        setFrame(attributes.asNumber("frame", 0));
-        setSpeed(attributes.asNumber("speed", 1));
-        setImageScale(attributes.asEnum("imageScale", ImageScale.class, ImageScale.NOONE));
-        setVerticalAlign(attributes.asEnum("verticalAlign", Align.Vertical.class, Align.Vertical.TOP));
-        setHorizontalAlign(attributes.asEnum("horizontalAlign", Align.Horizontal.class, Align.Horizontal.LEFT));
+        StateInfo info = getStateInfo();
+
+        Resource res = getStyle().asResource("image", info);
+        if (res != null) {
+            Drawable drawable = res.getDrawable();
+            if (drawable != null) {
+                setDrawable(drawable);
+            }
+        }
+
+        setFrame(getStyle().asNumber("frame", info, getFrame()));
+        setSpeed(getStyle().asNumber("speed", info, getSpeed()));
+        setImageScale(getStyle().asConstant("image-scale", ImageScale.NOONE));
+        setVerticalAlign(getStyle().asConstant("vertical-align", Align.Vertical.MIDDLE));
+        setHorizontalAlign(getStyle().asConstant("horizontal-align", Align.Horizontal.CENTER));
     }
 
-    public Image getImage() {
-        return image;
+    public Drawable getDrawable() {
+        return drawable;
     }
 
-    public void setImage(Image image) {
-        this.image = image;
+    public void setDrawable(Drawable drawable) {
+        this.drawable = drawable;
         invalidate(false);
     }
 
@@ -92,7 +101,7 @@ public class ImageView extends Widget {
 
     @Override
     public void onDraw(SmartContext context) {
-        backgroundDraw(context);
+        backgroundDraw(getBackgroundColor(), getBorderColor(), getRippleColor(), context);
 
         long now = System.currentTimeMillis();
         if (lastTime != 0) {
@@ -101,9 +110,9 @@ public class ImageView extends Widget {
         lastTime = now;
         frame = frame < 0 ? 1 - Math.abs(frame % 1f) : frame % 1f;
 
-        if (this.image != null) {
-            float dW = image.getWidth();
-            float dH = image.getHeight();
+        if (this.drawable != null) {
+            float dW = drawable.getWidth();
+            float dH = drawable.getHeight();
 
             if (dW > 0 && dH > 0) {
                 final float x = getInX();
@@ -131,12 +140,12 @@ public class ImageView extends Widget {
                     dH = height;
                 }
 
-                context.setTransform2D(getTransformView());
-                image.draw(context, xOff(x, x + width, dW), yOff(y, y + height, dH), dW, dH, frame);
+                context.setTransform2D(getTransform());
+                drawable.draw(context, xOff(x, x + width, dW), yOff(y, y + height, dH), dW, dH, frame);
                 context.setTransform2D(null);
             }
 
-            if (image.isDynamic()) {
+            if (drawable.isDynamic()) {
                 invalidate(false);
             }
         }
@@ -145,9 +154,9 @@ public class ImageView extends Widget {
     @Override
     public void onMeasure() {
         float mWidth = getPrefWidth(), mHeight = getPrefHeight();
-        if (image != null) {
-            mWidth = mWidth == WRAP_CONTENT ? image.getWidth() : mWidth;
-            mHeight = mHeight == WRAP_CONTENT ? image.getHeight() : mHeight;
+        if (drawable != null) {
+            mWidth = mWidth == WRAP_CONTENT ? drawable.getWidth() : mWidth;
+            mHeight = mHeight == WRAP_CONTENT ? drawable.getHeight() : mHeight;
         }
         mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
         mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();

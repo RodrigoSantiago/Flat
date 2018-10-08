@@ -4,16 +4,13 @@ import flat.events.FocusEvent;
 import flat.events.KeyCode;
 import flat.events.KeyEvent;
 import flat.graphics.SmartContext;
-import flat.uxml.Controller;
-import flat.uxml.UXAttributes;
-import flat.uxml.UXLoader;
+import flat.uxml.*;
 import flat.resources.Dimension;
 import flat.resources.DimensionStream;
 
 public class Activity extends Controller {
 
     private Scene scene;
-    private Widget root;
     private Widget focus;
 
     private float width;
@@ -22,12 +19,17 @@ public class Activity extends Controller {
 
     private Dimension dimension;
     private DimensionStream stream;
+    private UXTheme theme;
     private boolean invalided, layoutInvalided, streamInvalided;
 
     public Activity() {
         scene = new Scene();
         scene.activity = this;
-        scene.applyAttributes(this, new UXAttributes(null));
+        scene.applyAttributes(new UXStyleAttrs("attributes", null, null), this);
+        scene.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
+        scene.setMinSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
+        scene.setMaxSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
+
         color = 0xDDDDDDFF;
     }
 
@@ -45,6 +47,16 @@ public class Activity extends Controller {
         invalidate(true);
     }
 
+    public UXTheme getTheme() {
+        return theme;
+    }
+
+    public void setTheme(UXTheme theme) {
+        this.theme = theme;
+        streamInvalided = true;
+        invalidate(true);
+    }
+
     public void onSave() {
 
     }
@@ -58,21 +70,19 @@ public class Activity extends Controller {
             Dimension dm;
             if (stream != null) {
                 dm = stream.getCloserDimension(width, height, dpi);
-                if (dm != null && !dm.equals(dimension) || dpi != dimension.dpi || streamInvalided) {
+                if ((dm != null && !dm.equals(dimension)) || dpi != dimension.dpi || streamInvalided) {
                     streamInvalided = false;
-                    UXLoader loader = new UXLoader(stream, dm, null, this);
-                    Widget widget = null;
+                    UXLoader loader = new UXLoader(stream, dm, theme, null, this);
+                    Scene newScene = null;
                     try {
-                        widget = loader.load();
+                        newScene = (Scene) loader.load(true);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    if (widget != null) {
+                    if (newScene != null) {
                         onSave();
-                        if (root != null) {
-                            scene.childRemove(root);
-                        }
-                        scene.add(root = widget);
+                        this.scene = newScene;
+                        this.scene.activity = this;
                         onLoad();
                     }
                 }
@@ -94,15 +104,18 @@ public class Activity extends Controller {
     }
 
     public void onKeyPress(KeyEvent event) {
-        if (event.getType() == KeyEvent.RELEASED) {
+        if (event.getType() == KeyEvent.RELEASED || event.getType() == KeyEvent.REPEATED) {
             if (event.getKeycode() == KeyCode.KEY_TAB) {
+                Widget nextFocus;
                 if (getFocus() == null) {
-                    String firstFocus = scene.getNextFocusId();
-                    if (firstFocus != null) {
-                        setFocus(scene.findById(firstFocus));
-                    }
+                    String focusID = event.isShiftDown() ? scene.getPrevFocusId() : scene.getNextFocusId();
+                    nextFocus = scene.findById(focusID);
                 } else {
-                    setFocus(getFocus().findById(getFocus().getNextFocusId()));
+                    String focusID = event.isShiftDown() ? getFocus().getPrevFocusId() : getFocus().getNextFocusId();
+                    nextFocus = getFocus().findById(focusID);
+                }
+                if (nextFocus != null) {
+                    setFocus(nextFocus);
                 }
             }
         }
@@ -117,10 +130,10 @@ public class Activity extends Controller {
         this.focus = widget;
 
         if (oldFocus != null) {
-            oldFocus.setFocus(false);
+            oldFocus.setFocused(false);
         }
         if (focus != null) {
-            focus.setFocus(true);
+            focus.setFocused(true);
         }
 
         if (oldFocus != null) {
@@ -168,8 +181,8 @@ public class Activity extends Controller {
         return scene.findById(id);
     }
 
-    public Widget findByPosition(float x, float y) {
-        Widget child = scene.findByPosition(x , y);
+    public Widget findByPosition(float x, float y, boolean includeDisabled) {
+        Widget child = scene.findByPosition(x , y, includeDisabled);
         return child == null ? scene : child;
     }
 

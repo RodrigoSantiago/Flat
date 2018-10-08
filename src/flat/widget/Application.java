@@ -8,6 +8,7 @@ import flat.graphics.SmartContext;
 import flat.graphics.image.ImageRaster;
 import flat.resources.ResourcesManager;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,10 +52,10 @@ public final class Application {
 
     public static void init(Settings settings) {
         if (settings.activityClass == null) {
-            throw new RuntimeException("Invalide appliction settings (Null start activity)");
+            throw new RuntimeException("Invalide appliction settings (Null start activity class)");
         }
         if (settings.width <= 0 || settings.height <= 0) {
-            throw new RuntimeException("Invalide appliction settings (Start screen size)");
+            throw new RuntimeException("Invalide appliction settings (Negative screen size)");
         }
         if (settings.multsamples < 0) {
             throw new RuntimeException("Invalide appliction settings (Negative multsamples)");
@@ -231,7 +232,7 @@ public final class Application {
             if (eData.type == 1) {
                 MouseBtnData event = (MouseBtnData) eData;
                 PointerData pointer = getPointer(event.btn, -1, null);
-                Widget widget = activity.findByPosition(mouseX, mouseY);
+                Widget widget = activity.findByPosition(mouseX, mouseY, false);
 
                 // Pressed
                 if (event.action == WLEnuns.PRESS) {
@@ -273,7 +274,7 @@ public final class Application {
             // Mouse Scroll
             else if (eData.type == 3) {
                 MouseScrollData event = (MouseScrollData) eData;
-                Widget widget = activity.findByPosition(mouseX, mouseY);
+                Widget widget = activity.findByPosition(mouseX, mouseY, false);
                 widget.fireScroll(new ScrollEvent(widget, ScrollEvent.SCROLL, event.x, event.y));
 
                 MouseScrollData.release(event);
@@ -281,7 +282,7 @@ public final class Application {
             // Mouse Drop (system)
             else if (eData.type == 4) {
                 MouseDropData event = (MouseDropData) eData;
-                Widget widget = activity.findByPosition(mouseX, mouseY);
+                Widget widget = activity.findByPosition(mouseX, mouseY, false);
                 widget.fireDrag(new DragEvent(widget, DragEvent.DROPPED, event.paths, mouseX, mouseY));
 
                 MouseDropData.release(event);
@@ -337,7 +338,7 @@ public final class Application {
     }
 
     private static void mouseMove(float x, float y) {
-        Widget widget = activity.findByPosition(mouseX = x, mouseY = y);
+        Widget widget = activity.findByPosition(mouseX = x, mouseY = y, false);
 
         // Move
         if (mouse == null) {
@@ -463,7 +464,9 @@ public final class Application {
     }
 
     public static void runAnimation(Animation animation) {
-        anims.add(animation);
+        if (!anims.contains(animation)) {
+            anims.add(animation);
+        }
     }
 
     public static Activity getActivity() {
@@ -853,5 +856,47 @@ public final class Application {
 
     public interface GraphicTask {
         void run(Context context);
+    }
+
+    public static class Settings {
+
+        public final File resources;
+        public Class<?> activityClass;
+        public Runnable start;
+        public int multsamples;
+        public int width;
+        public int height;
+        public boolean transparent;
+        public int vsync;
+
+        public <T extends Activity> Settings(File resources) {
+            this(resources, null, null);
+        }
+
+        public <T extends Activity> Settings(File resources, Class<T> activityClass) {
+            this(resources, activityClass, null);
+        }
+
+        public <T extends Activity> Settings(File resources, Class<T> activityClass, Runnable start) {
+            this(resources, activityClass, start, 0);
+        }
+
+        public <T extends Activity> Settings(File resources, Class<T> activityClass, Runnable start, int multsamples) {
+            this(resources, activityClass, start, multsamples, 800, 600);
+        }
+
+        public <T extends Activity> Settings(File resources, Class<T> activityClass, Runnable start, int multsamples, int width, int height) {
+            this(resources, activityClass, start, multsamples, width, height, false);
+        }
+
+        public <T extends Activity> Settings(File resources, Class<T> activityClass, Runnable start, int multsamples, int width, int height, boolean transparent) {
+            this.resources = resources;
+            this.activityClass = activityClass;
+            this.start = start;
+            this.multsamples = multsamples;
+            this.width = width;
+            this.height = height;
+            this.transparent = transparent;
+        }
     }
 }

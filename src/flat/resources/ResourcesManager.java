@@ -1,5 +1,6 @@
 package flat.resources;
 
+import flat.graphics.image.Drawable;
 import flat.graphics.image.ImageRaster;
 import flat.graphics.image.TextureManager;
 import flat.graphics.image.ImageVector;
@@ -46,6 +47,14 @@ public final class ResourcesManager {
     public synchronized static void unloadResources() {
         images.clear();
         vectors.clear();
+    }
+
+    public synchronized static Resource getResource(String pathName) {
+        return null;
+    }
+
+    public synchronized static Drawable getDrawable(String pathName) {
+        return null;
     }
 
     public synchronized static ImageRaster getImage(String pathName) {

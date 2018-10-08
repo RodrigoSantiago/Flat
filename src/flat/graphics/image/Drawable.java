@@ -2,7 +2,7 @@ package flat.graphics.image;
 
 import flat.graphics.SmartContext;
 
-public interface Image {
+public interface Drawable {
 
     boolean isDynamic();
 

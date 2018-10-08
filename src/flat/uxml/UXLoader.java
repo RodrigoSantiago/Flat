@@ -24,42 +24,54 @@ import java.util.HashMap;
 import java.util.List;
 
 public final class UXLoader {
-    private static HashMap<String, UXWidgetFactory> builders = new HashMap<>();
-    public static void install(String name, UXWidgetFactory widgetFactory) {
-        builders.put(name, widgetFactory);
+    private static HashMap<String, UXGadgetFactory> builders = new HashMap<>();
+    public static void install(String name, UXGadgetFactory gadgetFactory) {
+        builders.put(name, gadgetFactory);
     }
 
     static {
+        UXLoader.install("Scene", Scene::new);
         UXLoader.install("Box", Box::new);
         UXLoader.install("VBox", VBox::new);
         UXLoader.install("HBox", HBox::new);
         UXLoader.install("Button", Button::new);
+        UXLoader.install("ToggleButton", ToggleButton::new);
+        UXLoader.install("ToggleGroup", RadioGroup::new);
         UXLoader.install("Label", Label::new);
         UXLoader.install("ImageView", ImageView::new);
-        UXLoader.install("ToogleGroup", ToogleGroup::new);
         UXLoader.install("Checkbox", Checkbox::new);
         UXLoader.install("RadioButton", RadioButton::new);
+        UXLoader.install("RadioGroup", RadioGroup::new);
         UXLoader.install("Switch", Switch::new);
     }
 
     private DimensionStream dimensionStream;
     private Dimension dimension;
     private StringBundle stringBundle;
+    private UXTheme theme;
 
-    private float fontScale = 1f;
     private Controller controller;
+
+    private ArrayList<Pair<String, UXGadgetLinker>> linkers = new ArrayList<>();
+    private HashMap<String, Gadget> targets = new HashMap<>();
+
+    // TODO - DEBUG
     private ArrayList<String> logger = new ArrayList<>();
-    private ArrayList<Pair<String, UXWidgetLinker>> linkers = new ArrayList<>();
 
     public UXLoader(DimensionStream dimensionStream, Dimension dimension) {
-        this(dimensionStream, dimension, null, null);
+        this(dimensionStream, dimension, null);
     }
 
-    public UXLoader(DimensionStream dimensionStream, Dimension dimension, StringBundle stringBundle, Controller controller) {
+    public UXLoader(DimensionStream dimensionStream, Dimension dimension, UXTheme theme) {
+        this(dimensionStream, dimension, theme, null, null);
+    }
+
+    public UXLoader(DimensionStream dimensionStream, Dimension dimension, UXTheme theme, StringBundle stringBundle, Controller controller) {
         setDimensionStream(dimensionStream);
         setDimension(dimension);
         setStringBundle(stringBundle);
         setController(controller);
+        setTheme(theme);
     }
 
     public DimensionStream getDimensionStream() {
@@ -77,6 +89,15 @@ public final class UXLoader {
 
     public UXLoader setDimension(Dimension dimension) {
         this.dimension = dimension;
+        return this;
+    }
+
+    public UXTheme getTheme() {
+        return theme;
+    }
+
+    public UXLoader setTheme(UXTheme theme) {
+        this.theme = theme;
         return this;
     }
 
@@ -98,23 +119,16 @@ public final class UXLoader {
         return this;
     }
 
-    public void setFontScale(float fontScale) {
-        this.fontScale = fontScale;
-    }
-
-    public float getFontScale() {
-        return fontScale;
-    }
-
-    void addLink(String id, UXWidgetLinker linker) {
+    void addLink(String id, UXGadgetLinker linker) {
         linkers.add(new Pair<>(id, linker));
     }
 
-    void link(Widget parent) {
-        for (Pair<String, UXWidgetLinker> linker : linkers) {
-            linker.getValue().onLink(parent.findById(linker.getKey()));
+    void link() {
+        for (Pair<String, UXGadgetLinker> linker : linkers) {
+            linker.getValue().onLink(targets.get(linker.getKey()));
         }
         linkers.clear();
+        targets.clear();
     }
 
     public void log(String log) {
@@ -145,25 +159,28 @@ public final class UXLoader {
                     if (uxml != null) {
                         log("Unexpected root node : " + node.getNodeName());
                     } else {
-                        uxml = recursive(controller, node);
-                        if (uxml == null) {
+                        Gadget gadget = recursive(controller, node);
+                        if (gadget == null) {
                             log("Unexpected root node : " + node.getNodeName());
+                        } else {
+                            uxml = gadget.getWidget();
+                            if (uxml == null) {
+                                log("Unexpected root node : " + node.getNodeName());
+                            }
                         }
                     }
                 }
             }
 
-            Scene scene = uxml instanceof Scene ? (Scene) uxml : new Scene();
-            if (uxml != scene) {
-                if (uxml != null) {
-                    scene.add(uxml);
-                }
-                link(scene);
-            } else {
-                link(uxml);
-            }
+            link();
 
-            return createScene ? scene : uxml;
+            if (createScene && !(uxml instanceof Scene)) {
+                Scene scene = new Scene();
+                scene.add(uxml);
+                return scene;
+            } else {
+                return uxml;
+            }
         } finally {
             try {
                 inputStream.close();
@@ -172,22 +189,25 @@ public final class UXLoader {
         }
     }
 
-    private Widget recursive(Controller controller, Node node) {
+    private Gadget recursive(Controller controller, Node node) {
         if (node.getNodeType() == Node.ELEMENT_NODE) {
             //Name
             String name = node.getNodeName();
 
             //Factory
-            UXWidgetFactory widgetFactory = builders.get(name);
+            UXGadgetFactory gadgetFactory = builders.get(name);
 
-            if (widgetFactory != null) {
-                Widget widget = widgetFactory.build();
+            if (gadgetFactory != null) {
+                Gadget gadget = gadgetFactory.build();
 
                 //Attributes
+                UXStyle style = null;
+                HashMap<String, UXValue> values = new HashMap<>();
+
                 NamedNodeMap nnm = node.getAttributes();
-                UXAttributes atts = new UXAttributes(this);
                 for (int i = 0; i < nnm.getLength(); i++) {
                     Node item = nnm.item(i);
+                    String att = item.getNodeName();
                     String value = item.getNodeValue();
                     if (value == null) {
                         value = "true";
@@ -196,24 +216,30 @@ public final class UXLoader {
                     } else if (value.startsWith("\\$")) {
                         value = value.substring(1);
                     }
-                    atts.set(item.getNodeName(), value);
+                    if (att.equals("style")) {
+                        style = theme.getStyle(value);
+                    } else {
+                        values.put(att, new UXValue(value));
+                    }
                 }
-                widget.applyAttributes(controller, atts);
+                gadget.applyAttributes(new UXStyleAttrs("attributes", style, this, values), controller);
+                if (gadget.getId() != null) {
+                    targets.put(gadget.getId(), gadget);
+                }
 
                 //Children
                 NodeList nList = node.getChildNodes();
                 UXChildren children = new UXChildren(this);
                 for (int i = 0; i < nList.getLength(); i++) {
-                    Widget child = recursive(controller, nList.item(i));
+                    Gadget child = recursive(controller, nList.item(i));
                     if (child != null) {
                         children.add(child);
                     }
                 }
-                widget.applyChildren(children);
+                gadget.applyChildren(children);
 
-                atts.logUnusedAttributes();
                 children.logUnusedChildren();
-                return widget;
+                return gadget;
             } else {
                 log("Widget not found : " + name);
             }

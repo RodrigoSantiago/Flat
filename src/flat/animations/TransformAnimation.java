@@ -2,7 +2,7 @@ package flat.animations;
 
 import flat.widget.Widget;
 
-public class TransformAnimation extends Animation {
+public class TransformAnimation extends PropertyAnimation {
 
     private float fTx, fTy, tTx, tTy;
     private float fSx, fSy, tSx, tSy;
@@ -217,19 +217,19 @@ public class TransformAnimation extends Animation {
     protected void compute(float t) {
         if (_widget != null) {
             if (!Float.isNaN(_fTx) && !Float.isNaN(_tTx)) {
-                widget.setTranslateX(mix(_fTx, _tTx, t));
+                widget.setTranslateX(Interpolation.mix(_fTx, _tTx, t));
             }
             if (!Float.isNaN(_fTy) && !Float.isNaN(_tTy)) {
-                widget.setTranslateY(mix(_fTy, _tTy, t));
+                widget.setTranslateY(Interpolation.mix(_fTy, _tTy, t));
             }
             if (!Float.isNaN(_fSx) && !Float.isNaN(_tSx)) {
-                widget.setScaleX(mix(_fSx, _tSx, t));
+                widget.setScaleX(Interpolation.mix(_fSx, _tSx, t));
             }
             if (!Float.isNaN(_fSy) && !Float.isNaN(_tSy)) {
-                widget.setScaleY(mix(_fSy, _tSy, t));
+                widget.setScaleY(Interpolation.mix(_fSy, _tSy, t));
             }
             if (!Float.isNaN(_fR) && !Float.isNaN(_tR)) {
-                widget.setRotate(_linearAngularMix ? mix(_fR, tR, t) : angularMix(_fR, _tR, t));
+                widget.setRotate(_linearAngularMix ? Interpolation.mix(_fR, tR, t) : Interpolation.mixAngle(_fR, _tR, t));
             }
         }
     }

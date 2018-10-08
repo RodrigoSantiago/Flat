@@ -1,49 +1,57 @@
 package flat.widget.selection;
 
-import flat.animations.Animation;
+import flat.animations.StateInfo;
+import flat.events.ActionEvent;
+import flat.events.ActionListener;
 import flat.events.PointerEvent;
 import flat.graphics.SmartContext;
+import flat.graphics.image.Drawable;
+import flat.resources.Resource;
 import flat.uxml.Controller;
-import flat.uxml.UXAttributes;
-import flat.resources.Dimension;
+import flat.uxml.UXStyle;
+import flat.uxml.UXStyleAttrs;
+import flat.widget.Widget;
 
-public class Switch extends ToogleWidget {
+public class Switch extends Widget {
 
-    private float size;
+    // Properties
+    private ActionListener toggleListener;
 
-    private int onColor, offColor;
-    private int onBackColor, offBackColor;
+    private int color;
+    private Drawable icon;
+    private Drawable delayIcon;
 
-    private int icColor, bgColor;
-    private float icPosition;
-    private AnimShowHide animation = new AnimShowHide();
-
-    // todo - progress indicator
+    private boolean delayed;
 
     @Override
-    public void applyAttributes(Controller controller, UXAttributes attributes) {
-        super.applyAttributes(controller, attributes);
+    public void applyAttributes(UXStyleAttrs style, Controller controller) {
+        super.applyAttributes(style, controller);
 
-        float dp36 = Dimension.dpPx(36);
-        float dp20 = Dimension.dpPx(20);
-        float dp14 = Dimension.dpPx(14);
+        setActivated(style.asBool("activated", isActivated()));
+    }
 
-        setElevation(attributes.asSize("elevation", 1));
-        setPrefSize(attributes.asNumber("width", dp36), (attributes.asNumber("height", dp14)));
-        setSize(attributes.asNumber("size", dp20));
+    @Override
+    public void applyStyle() {
+        super.applyStyle();
 
-        setBackgroundCorners(
-                attributes.asNumber("backgroundCornerTop", dp14 / 2f),
-                attributes.asNumber("backgroundCornerRight", dp14 / 2f),
-                attributes.asNumber("backgroundCornerBottom", dp14 / 2f),
-                attributes.asNumber("backgroundCornerLeft", dp14 / 2f));
+        StateInfo info = getStateInfo();
 
-        setOnColor(attributes.asColor("onColor", 0x6200EEFF));
-        setOffColor(attributes.asColor("offColor", 0xFFFFFFFF));
-        setOnBackColor(attributes.asColor("onBackColor", 0x6200ee89));
-        setOffBackColor(attributes.asColor("offBackColor", 0x808080FF));
-        icColor = getOffColor();
-        bgColor = getOffBackColor();
+        setColor(getStyle().asColor("color", info, getColor()));
+
+        Resource res = getStyle().asResource("icon", info);
+        if (res != null) {
+            Drawable drawable = res.getDrawable();
+            if (drawable != null) {
+                setIcon(drawable);
+            }
+        }
+        res = getStyle().asResource("delay-icon", info);
+        if (res != null) {
+            Drawable drawable = res.getDrawable();
+            if (drawable != null) {
+                setDelayIcon(drawable);
+            }
+        }
     }
 
     @Override
@@ -52,37 +60,44 @@ public class Switch extends ToogleWidget {
         final float y = getInY();
         final float width = getInWidth();
         final float height = getInHeight();
-        context.setTransform2D(getTransformView());
 
+        StateInfo info = getStateInfo();
+        final float ac = info.get(UXStyle.ACTIVATED);
 
-        float x1 = (x + height / 2) * (1 - icPosition) + (x + width - height / 2) * icPosition;
-        float y1 = y + height / 2;
-        float r = size / 2;
+        final float x1 = x + width * ac;
+        final float y1 = y + height * ac;
 
-        context.setTransform2D(getTransformView());
-        context.setColor(bgColor);
-        context.drawRoundRect(x,y,width,height,
-                getBackgroundCornerTop(), getBackgroundCornerRight(), getBackgroundCornerBottom(), getBackgroundCornerLeft(),
-                true);
+        context.setTransform2D(getTransform());
+        context.setColor(getBackgroundColor());
+        context.drawRoundRect(x, y, width, height,
+                getRadiusTop(), getRadiusRight(), getRadiusBottom(), getRadiusLeft(), true);
 
-        context.setTransform2D(getTransformView().preTranslate(0, Math.max(0, getElevation())));
-        context.setColor(0x000000FF);
-        context.drawRoundRectShadow(x1 - r, y1 - r, r + r, r + r, r, r, r, r, getElevation() * 2, 0.28f);
+        Drawable ic = delayed && delayIcon != null ? delayIcon : icon;
+        if (ic != null) {
 
-        context.setTransform2D(getTransformView());
-        context.setColor(icColor);
-        context.drawCircle(x1, y1, r, true);
+            if (isShadowEnabled()) {
+                context.setTransform2D(getTransform().preTranslate(0, Math.max(0, getElevation())));
+                context.setColor(0x000000FF);
+                context.drawRoundRectShadow(x1 - ic.getWidth() / 2f, y1 - ic.getHeight() / 2f, ic.getWidth(), ic.getHeight(),
+                        getRadiusTop(), getRadiusRight(), getRadiusBottom(), getRadiusLeft(), getElevation() * 2, 0.28f);
+            }
 
-        if (isRippleEffectEnabled() && getRipple().isVisible()) {
-            context.setTransform2D(getTransformView().translate(x1, y1));
-            getRipple().drawRipple(context, null, getRippleColor());
-            context.setTransform2D(null);
+            context.setTransform2D(getTransform());
+            context.setColor(color);
+            ic.draw(context, x1 - ic.getWidth() / 2f, y1 - ic.getHeight() / 2f, ic.getWidth(), ic.getHeight(), ac);
         }
+
+        if (isRippleEnabled() && getRipple().isVisible()) {
+            context.setTransform2D(getTransform().translate(x1, y1));
+            getRipple().drawRipple(context, null, getRippleColor());
+        }
+        context.setTransform2D(null);
     }
 
     @Override
     public void fireRipple(float x, float y) {
-        if (isRippleEffectEnabled()) {
+        if (isRippleEnabled()) {
+            getRipple().setSize(getInHeight());
             getRipple().fire(0, 0);
         }
     }
@@ -90,107 +105,76 @@ public class Switch extends ToogleWidget {
     @Override
     public void firePointer(PointerEvent pointerEvent) {
         if (pointerEvent.getType() == PointerEvent.RELEASED) {
-            toogle();
+            toggle();
         }
         super.firePointer(pointerEvent);
     }
 
-    @Override
-    public void onSelected(boolean selected) {
-        super.onSelected(selected);
-        animation.show = selected;
-        float p = 0;
-        if (animation.isPlaying()) {
-            p = 1 - animation.getPosition();
+    public ActionListener getToggleListener() {
+        return toggleListener;
+    }
+
+    public void setToggleListener(ActionListener toggleListener) {
+        this.toggleListener = toggleListener;
+    }
+
+    public void toggle() {
+        setActivated(!isActivated());
+    }
+
+    public void fireToggle(ActionEvent event) {
+        if (toggleListener != null) {
+            toggleListener.handle(event);
         }
-        animation.stop();
-        animation.play(p);
-        invalidate(false);
     }
 
-    public float getSize() {
-        return size;
+    public void setActivated(boolean activated) {
+        if (this.isActivated() != activated) {
+            super.setActivated(activated);
+            fireToggle(new ActionEvent(this, ActionEvent.ACTION));
+        }
     }
 
-    public void setSize(float size) {
-        if (this.size != size) {
-            this.size = size;
-            getRipple().setSize(size);
+    public boolean isDelayed() {
+        return delayed;
+    }
+
+    public void setDelayed(boolean delayed) {
+        if (this.delayed != delayed) {
+            this.delayed = delayed;
             invalidate(false);
         }
     }
 
-    public int getOnColor() {
-        return onColor;
+    public Drawable getIcon() {
+        return icon;
     }
 
-    public void setOnColor(int onColor) {
-        if (this.onColor != onColor) {
-            this.onColor = onColor;
+    public void setIcon(Drawable icon) {
+        if (this.icon != icon) {
+            this.icon = icon;
             invalidate(false);
         }
     }
 
-    public int getOffColor() {
-        return offColor;
+    public Drawable getDelayIcon() {
+        return delayIcon;
     }
 
-    public void setOffColor(int offColor) {
-        if (this.offColor != offColor) {
-            this.offColor = offColor;
+    public void setDelayIcon(Drawable delayIcon) {
+        if (this.delayIcon != delayIcon) {
+            this.delayIcon = delayIcon;
             invalidate(false);
         }
     }
 
-    public int getOnBackColor() {
-        return onBackColor;
+    public int getColor() {
+        return color;
     }
 
-    public void setOnBackColor(int onBackColor) {
-        if (this.onBackColor != onBackColor) {
-            this.onBackColor = onBackColor;
-            invalidate(false);
-        }
-    }
-
-    public int getOffBackColor() {
-        return offBackColor;
-    }
-
-    public void setOffBackColor(int offBackColor) {
-        if (this.offBackColor != offBackColor) {
-            this.offBackColor = offBackColor;
-            invalidate(false);
-        }
-    }
-
-    private class AnimShowHide extends Animation {
-        public boolean show;
-        private boolean _show;
-
-        AnimShowHide() {
-            setDuration(150);
-        }
-
-        @Override
-        protected void evaluate() {
-            super.evaluate();
-            if (isStopped()) {
-                _show = show;
-            }
-        }
-
-        @Override
-        protected void compute(float t) {
-            if (_show) {
-                icPosition = t;
-                icColor = mixColor(getOffColor(), getOnColor(), t);
-                bgColor = mixColor(getOffBackColor(), getOnBackColor(), t);
-            } else {
-                icPosition = 1f - t;
-                icColor = mixColor(getOnColor(), getOffColor(), t);
-                bgColor = mixColor(getOnBackColor(), getOffBackColor(), t);
-            }
+    public void setColor(int color) {
+        if (this.color != color) {
+            this.color = color;
             invalidate(false);
         }
     }

@@ -5,7 +5,7 @@ import flat.graphics.context.Paint;
 import flat.math.shapes.Rectangle;
 import flat.math.shapes.Shape;
 
-public class ImageVector implements Image {
+public class ImageVector implements Drawable {
 
     private final Rectangle view;
     private final Shape[] paths;

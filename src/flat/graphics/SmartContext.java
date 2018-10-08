@@ -360,6 +360,7 @@ public class SmartContext {
             alpha *= Math.max(width, height) / blur;
             if (alpha < 0.01f) return;
         }
+
         final float x1 = x - blur;
         final float y1 = y - blur;
         final float w = width + blur * 2;
@@ -367,7 +368,7 @@ public class SmartContext {
 
         if (cTop == cRight && cBottom == cLeft && cLeft == cTop) {
             context.svgPaint(Paint.shadow(x, y, x + width, y + height,
-                    Math.min(width / 2f, Math.min(height / 2f, cTop + blur / 2f)), blur * 2, alpha, transform2D));
+                    Math.min(width / 2f, Math.min(height / 2f, cTop + blur / 2f)), blur * 2, 0.5f, transform2D));
             drawRect(x1, y1, w, h, true);
         } else {
             final float hw = w / 2f;

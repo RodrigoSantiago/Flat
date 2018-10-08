@@ -1,96 +1,49 @@
 package flat.widget.selection;
 
-import flat.animations.Animation;
+import flat.animations.StateInfo;
+import flat.events.ActionEvent;
+import flat.events.ActionListener;
 import flat.events.PointerEvent;
 import flat.graphics.SmartContext;
-import flat.math.operations.Area;
-import flat.math.shapes.Ellipse;
-import flat.math.shapes.Path;
-import flat.math.shapes.Shape;
+import flat.graphics.image.Drawable;
+import flat.resources.Resource;
 import flat.uxml.Controller;
-import flat.uxml.UXAttributes;
-import flat.resources.Dimension;
+import flat.uxml.UXStyle;
+import flat.uxml.UXStyleAttrs;
+import flat.widget.Widget;
 
-import java.util.Objects;
+public class RadioButton extends Widget {
 
-public class RadioButton extends ToogleWidget {
+    // Properties
+    private ActionListener toggleListener;
+    private RadioGroup radioGroup;
 
-    private static Shape defIcon = new Ellipse(6,6,12,12);
-    private static Shape defBg = new Path(new Area(new Ellipse(0, 0, 24, 24)).subtract(new Area(new Ellipse(2,2,20,20))));
-
-    private Shape icon;
-    private int onColor, offColor;
-
-    private AnimShowHide animation = new AnimShowHide();
-    private Shape bgPath, icPath;
-    private float bgSize;
-    private int bgColor;
+    private Drawable icon;
+    private int color;
 
     @Override
-    public void applyAttributes(Controller controller, UXAttributes attributes) {
-        super.applyAttributes(controller, attributes);
+    public void applyAttributes(UXStyleAttrs style, Controller controller) {
+        super.applyAttributes(style, controller);
 
-        float dp24 = Dimension.dpPx(24);
-        setPrefSize(attributes.asNumber("width", dp24), (attributes.asNumber("height", dp24)));
-        setOnColor(attributes.asColor("onColor", 0x000000FF));
-        setOffColor(attributes.asColor("offColor", 0x808080FF));
-        setIcon(attributes.asShape("icon", defIcon));
+        setActivated(getStyle().asBool("activated", isActivated()));
 
-        bgColor = getOffColor();
-        bgPath = defBg;
+        style.link("group", (gadget) -> setRadioGroup((RadioGroup) gadget));
     }
 
     @Override
-    public void setSelected(boolean selected) {
-        if (this.selected != selected) {
-            this.selected = selected;
-            animation.show = selected;
-            float p = 0;
-            if (animation.isPlaying()) {
-                p = 1 - animation.getPosition();
+    public void applyStyle() {
+        super.applyStyle();
+
+        StateInfo info = getStateInfo();
+
+        setColor(getStyle().asColor("color", info, getColor()));
+
+        Resource res = getStyle().asResource("icon", info);
+        if (res != null) {
+            Drawable drawable = res.getDrawable();
+            if (drawable != null) {
+                setIcon(drawable);
             }
-            animation.stop();
-            animation.play(p);
-            invalidate(false);
-        }
-    }
-
-    public Shape getIcon() {
-        return icon;
-    }
-
-    public void setIcon(Shape icon) {
-        if (!Objects.equals(icon, this.icon)) {
-            if (icon == null) {
-                this.icon = null;
-                icPath = new Path();
-            } else {
-                this.icon = icon;
-                icPath = new Path(new Area(icon));
-            }
-            invalidate(false);
-        }
-    }
-
-    public int getOnColor() {
-        return onColor;
-    }
-
-    public void setOnColor(int onColor) {
-        if (this.onColor != onColor) {
-            this.onColor = onColor;
-            invalidate(false);
-        }
-    }
-
-    public int getOffColor() {
-        return offColor;
-    }
-
-    public void setOffColor(int offColor) {
-        if (this.offColor != offColor) {
-            this.offColor = offColor;
-            invalidate(false);
         }
     }
 
@@ -101,28 +54,104 @@ public class RadioButton extends ToogleWidget {
         final float width = getInWidth();
         final float height = getInHeight();
 
-        context.setTransform2D(getTransformView().translate(x, y).scale(width / 24f, height / 24f));
-        context.setColor(bgColor);
-        context.drawShape(bgPath, true);
-        if (bgSize > 0) {
-            float iw = (width) / 2f * (1f - bgSize);
-            float ih = (height) / 2f * (1f - bgSize);
-            float x2 = width - iw;
-            float y2 = height - ih;
-            context.setTransform2D(getTransformView().translate(x + iw, y + ih).scale((x2 - iw) / 24f, (y2 - ih) / 24f));
-            context.drawShape(icPath, true);
+        context.setTransform2D(getTransform());
+        context.setColor(color);
+
+        if (icon != null) {
+            StateInfo info = getStateInfo();
+            icon.draw(context, x, y, width, height, info.get(UXStyle.ACTIVATED));
         }
 
-        if (isRippleEffectEnabled() && getRipple().isVisible()) {
-            context.setTransform2D(getTransformView());
+        if (isRippleEnabled() && getRipple().isVisible()) {
+            context.setTransform2D(getTransform());
             getRipple().drawRipple(context, null, getRippleColor());
             context.setTransform2D(null);
         }
     }
 
+    public ActionListener getToggleListener() {
+        return toggleListener;
+    }
+
+    public void setToggleListener(ActionListener toggleListener) {
+        this.toggleListener = toggleListener;
+    }
+
+    public void fireToggle(ActionEvent event) {
+        if (toggleListener != null) {
+            toggleListener.handle(event);
+        }
+    }
+
+    public void toggle() {
+        setActivated(!isActivated());
+    }
+
+    public RadioGroup getRadioGroup() {
+        return radioGroup;
+    }
+
+    public void setRadioGroup(RadioGroup radioGroup) {
+        if (this.radioGroup != radioGroup) {
+            RadioGroup oldGroup = this.radioGroup;
+
+            this.radioGroup = radioGroup;
+
+            if (oldGroup != null) {
+                oldGroup.radioRemove(this);
+            }
+
+            if (radioGroup != null) {
+                radioGroup.radioAdd(this);
+            }
+        }
+    }
+
+    @Override
+    public void setActivated(boolean actived) {
+        if (this.isActivated() != actived) {
+            if (radioGroup == null) {
+                super.setActivated(actived);
+            } else if (actived) {
+                super.setActivated(true);
+                radioGroup.radioSelect(this);
+            } else if (radioGroup.getSelectionIndex() != radioGroup.radioIndex(this)) {
+                super.setActivated(false);
+            } else if (radioGroup.isEmptySelectionEnabled()) {
+                super.setActivated(false);
+                radioGroup.radioSelect(null);
+            }
+            if (this.isActivated() == actived) {
+                fireToggle(new ActionEvent(this, ActionEvent.ACTION));
+            }
+        }
+    }
+
+    public Drawable getIcon() {
+        return icon;
+    }
+
+    public void setIcon(Drawable icon) {
+        if (this.icon != icon) {
+            this.icon = icon;
+            invalidate(false);
+        }
+    }
+
+    public int getColor() {
+        return color;
+    }
+
+    public void setColor(int onColor) {
+        if (this.color != onColor) {
+            this.color = onColor;
+            invalidate(false);
+        }
+    }
+
     @Override
     public void fireRipple(float x, float y) {
-        if (isRippleEffectEnabled()) {
+        if (isRippleEnabled()) {
             getRipple().fire(getInX() + getInWidth() / 2f, getInY() + getInHeight() / 2f);
         }
     }
@@ -130,37 +159,9 @@ public class RadioButton extends ToogleWidget {
     @Override
     public void firePointer(PointerEvent pointerEvent) {
         if (pointerEvent.getType() == PointerEvent.RELEASED) {
-            setSelected(!isSelected());
+            toggle();
         }
         super.firePointer(pointerEvent);
     }
 
-    private class AnimShowHide extends Animation {
-        public boolean show;
-        private boolean _show;
-
-        AnimShowHide() {
-            setDuration(150);
-        }
-
-        @Override
-        protected void evaluate() {
-            super.evaluate();
-            if (isStopped()) {
-                _show = show;
-            }
-        }
-
-        @Override
-        protected void compute(float t) {
-            if (_show) {
-                bgSize = t;
-                bgColor = mixColor(getOnColor(), getOffColor(), t);
-            } else {
-                bgSize = 1f - t;
-                bgColor = mixColor(getOffColor(), getOnColor(), t);
-            }
-            invalidate(false);
-        }
-    }
 }

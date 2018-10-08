@@ -1,12 +1,12 @@
 package flat.uxml;
 
-import flat.widget.Widget;
+import flat.widget.Gadget;
 
 import java.util.ArrayList;
 
 public class UXChildren {
 
-    private final ArrayList<Widget> children = new ArrayList<>();
+    private final ArrayList<Gadget> children = new ArrayList<>();
     private final UXLoader loader;
     private int pos;
 
@@ -18,11 +18,11 @@ public class UXChildren {
         return loader;
     }
 
-    public void add(Widget child) {
+    public void add(Gadget child) {
         children.add(child);
     }
 
-    public Widget next() {
+    public Gadget next() {
         return pos >= children.size() ? null : children.get(pos++);
     }
 

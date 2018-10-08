@@ -443,7 +443,10 @@ public final class Affine {
 
     public Affine invert () {
         float det = m00 * m11 - m01 * m10;
-        if (det == 0) throw new NoninvertibleTransformException(this.toString());
+        if (det == 0) {
+            return this;
+            //throw new NoninvertibleTransformException(this.toString());
+        }
 
         float invDet = 1.0f / det;
 

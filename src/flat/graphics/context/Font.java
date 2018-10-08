@@ -53,7 +53,7 @@ public final class Font {
                     closer = font;
                 } else if (closer.posture != posture && font.posture == posture) {
                     closer = font;
-                } else if (closer.posture != posture) {
+                } else if (font.posture == posture) {
                     if (Math.abs(font.weight.getWeight() - weight.getWeight()) <
                             Math.abs(closer.weight.getWeight() - weight.getWeight())) {
                         closer = font;

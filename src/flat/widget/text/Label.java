@@ -1,13 +1,14 @@
 package flat.widget.text;
 
+import flat.animations.StateInfo;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Context;
 import flat.graphics.text.Align;
 import flat.graphics.context.Font;
+import flat.uxml.UXStyle;
+import flat.uxml.UXStyleAttrs;
 import flat.widget.Application;
 import flat.uxml.Controller;
-import flat.uxml.UXAttributes;
-import flat.resources.Dimension;
 import flat.widget.Widget;
 
 public class Label extends Widget {
@@ -27,17 +28,26 @@ public class Label extends Widget {
     private float textWidth;
 
     @Override
-    public void applyAttributes(Controller controller, UXAttributes attributes) {
-        super.applyAttributes(controller, attributes);
-        setFont(attributes.asFont("font", Font.DEFAULT));
-        setFontSize(attributes.asNumber("fontSize", Dimension.ptPx(16)));
+    public void applyAttributes(UXStyleAttrs style, Controller controller) {
+        super.applyAttributes(style, controller);
 
-        setText(attributes.asString("text", ""));
-        setTextColor(attributes.asColor("textColor", 0x000000FF));
-        setTextAllCaps(attributes.asBoolean("textAllCaps", false));
+        setText(style.asString("text", getText()));
+    }
 
-        setVerticalAlign(attributes.asEnum("verticalAlign", Align.Vertical.class, Align.Vertical.TOP));
-        setHorizontalAlign(attributes.asEnum("horizontalAlign", Align.Horizontal.class, Align.Horizontal.LEFT));
+    @Override
+    public void applyStyle() {
+        super.applyStyle();
+
+        StateInfo info = getStateInfo();
+
+        setFont(getStyle().asFont("font", info, getFont()));
+        setFontSize(getStyle().asSize("font-size", info, getFontSize()));
+
+        setTextColor(getStyle().asColor("text-color", info, getTextColor()));
+        setTextAllCaps(getStyle().asBool("text-all-caps", info, isTextAllCaps()));
+
+        setVerticalAlign(getStyle().asConstant("vertical-align", info, getVerticalAlign()));
+        setHorizontalAlign(getStyle().asConstant("horizontal-align", info, getHorizontalAlign()));
     }
 
     public String getText() {
@@ -119,8 +129,9 @@ public class Label extends Widget {
 
     @Override
     public void onDraw(SmartContext context) {
-        backgroundDraw(context);
-        context.setTransform2D(getTransformView());
+        backgroundDraw(getBackgroundColor(), getBorderColor(), getRippleColor(), context);
+
+        context.setTransform2D(getTransform());
         if (showText != null) {
             context.setColor(textColor);
             context.setTextFont(font);
@@ -154,7 +165,7 @@ public class Label extends Widget {
     protected float getTextWidth() {
         if (invalidTextSize) {
             Context context = Application.getContext();
-            context.svgTransform(getTransformView());
+            context.svgTransform(getTransform());
             context.svgTextFont(font);
             context.svgTextSize(fontSize);
             textWidth = context.svgTextGetWidth(showText);

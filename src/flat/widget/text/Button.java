@@ -1,76 +1,143 @@
 package flat.widget.text;
 
-import flat.animations.ElevationAnimation;
+import flat.animations.StateInfo;
 import flat.events.ActionEvent;
 import flat.events.ActionListener;
-import flat.events.HoverEvent;
 import flat.events.PointerEvent;
 import flat.graphics.SmartContext;
-import flat.graphics.context.Font;
-import flat.graphics.image.Image;
+import flat.graphics.image.Drawable;
 import flat.graphics.text.Align;
+import flat.resources.Resource;
 import flat.uxml.Controller;
-import flat.uxml.UXAttributes;
-import flat.resources.Dimension;
-import flat.widget.enuns.ElevateStyle;
+import flat.uxml.UXStyle;
+import flat.uxml.UXStyleAttrs;
 
 import java.lang.reflect.Method;
 
 public class Button extends Label {
+    public enum Type {
+        TEXT, OUTLINE, CONTAINER, FLOAT;
+
+        @Override
+        public String toString() {
+            return this == TEXT ? "text" : this == OUTLINE ? "outline" : this == CONTAINER ? "container" : "float";
+        }
+    }
 
     private ActionListener actionListener;
 
-    private boolean elevationEffect;
-    private ElevateStyle elevateStyle;
-    private Image image;
+    private Type type;
+
+    private Drawable drawable;
     private float imageMargin;
     private Align.Horizontal imageAlign;
 
-    private int elevationState;
-    private ElevationAnimation anim;
-    private boolean mouseIn;
-
     @Override
-    public void applyAttributes(Controller controller, UXAttributes attributes) {
-        super.applyAttributes(controller, attributes);
+    public void applyAttributes(UXStyleAttrs style, Controller controller) {
+        super.applyAttributes(style, controller);
 
-        float dp2 = Dimension.dpPx(2);
-        float dp8 = Dimension.dpPx(8);
-        float dp16 = Dimension.dpPx(16);
-
-        setMinWidth(attributes.asSize("minWidth", Dimension.dpPx(88)));
-        setMinHeight(attributes.asSize("minHeight", Dimension.dpPx(36)));
-
-        setShadowEffectEnabled(attributes.asBoolean("shadowEffect", true));
-        setRippleEffectEnabled(attributes.asBoolean("rippleEffect", true));
-
-        setPadding(attributes.asSize("paddingTop", dp8), attributes.asSize("paddingRight", dp16),
-                attributes.asSize("paddingBottom", dp8), attributes.asSize("paddingLeft", dp16));
-
-        setBackgroundColor(attributes.asColor("backgroundColor", 0xFFFFFFFF));
-        setBackgroundCorners(
-                attributes.asNumber("backgroundCornerTop", dp2), attributes.asNumber("backgroundCornerRight", dp2),
-                attributes.asNumber("backgroundCornerBottom", dp2),attributes.asNumber("backgroundCornerLeft", dp2));
-
-        setElevationEffectEnabled(attributes.asBoolean("elevationEffect", true));
-
-        setFont(attributes.asFont("font", Font.DEFAULT));
-        setFontSize(attributes.asSize("fontSize", Dimension.ptPx(13)));
-        setTextAllCaps(attributes.asBoolean("textAllCaps", true));
-
-        setVerticalAlign(attributes.asEnum("verticalAlign", Align.Vertical.class, Align.Vertical.MIDDLE));
-        setHorizontalAlign(attributes.asEnum("horizontalAlign", Align.Horizontal.class, Align.Horizontal.CENTER));
-
-        Method handle = attributes.asListener("onAction", ActionEvent.class, controller);
+        Method handle = style.asListener("onAction", ActionEvent.class, controller);
         if (handle != null) {
             setActionListener(new ActionListener.AutoActionListener(controller, handle));
         }
+    }
 
-        setElevateStyle(attributes.asEnum("elevateStyle", ElevateStyle.class, ElevateStyle.FLAT));
+    public void applyStyle() {
+        super.applyStyle();
 
-        setImage(attributes.asImage("image"));
-        setImageAlign(attributes.asEnum("imageAlign", Align.Horizontal.class, Align.Horizontal.LEFT));
-        setImageMargin(attributes.asSize("imageMargin", 8));
+        StateInfo info = getStateInfo();
+
+        Resource res = getStyle().asResource("image", info);
+        if (res != null) {
+            Drawable drawable = res.getDrawable();
+            if (drawable != null) {
+                setDrawable(drawable);
+            }
+        }
+
+        setImageAlign(getStyle().asConstant("image-align", info, getHorizontalAlign()));
+        setImageMargin(getStyle().asSize("image-margin", info, getImageMargin()));
+    }
+
+    @Override
+    public void onDraw(SmartContext context) {
+        backgroundDraw(getBackgroundColor(), getBorderColor(), getRippleColor(), context);
+
+        context.setTransform2D(getTransform());
+
+        final float x = getInX();
+        final float y = getInY();
+        final float width = getInWidth();
+        final float height = getInHeight();
+
+        if (drawable == null) {
+            if (getShowText() != null && !getShowText().isEmpty()) {
+                context.setColor(getTextColor());
+                context.setTextFont(getFont());
+                context.setTextSize(getFontSize());
+                context.setTextVerticalAlign(Align.Vertical.TOP);
+                context.setTextHorizontalAlign(Align.Horizontal.LEFT);
+                context.drawTextSlice(
+                        xOff(x, x + width, Math.min(getTextWidth(), width)),
+                        yOff(y, y + height, Math.min(getFontSize(), height)),
+                        width, getShowText());
+            }
+        } else {
+            if (getShowText() != null && !getShowText().isEmpty()) {
+                context.setColor(getTextColor());
+                context.setTextFont(getFont());
+                context.setTextSize(getFontSize());
+                context.setTextVerticalAlign(Align.Vertical.TOP);
+                context.setTextHorizontalAlign(Align.Horizontal.LEFT);
+
+                float xoff = xOff(x, x + width, Math.min(getTextWidth() + imageMargin + drawable.getWidth(), width));
+
+                if (imageAlign == Align.Horizontal.RIGHT) {
+                    context.drawTextSlice(xoff,
+                            yOff(y, y + height, Math.min(getFontSize(), height)),
+                            width - imageMargin - drawable.getWidth(), getShowText());
+                    xoff += width - drawable.getWidth();
+                    drawable.draw(context, xoff,
+                            yOff(y, y + height, drawable.getHeight()),
+                            drawable.getWidth(), drawable.getHeight(), 0);
+                } else {
+                    drawable.draw(context, xoff,
+                            yOff(y, y + height, drawable.getHeight()),
+                            drawable.getWidth(), drawable.getHeight(), 0);
+                    xoff += drawable.getWidth() + imageMargin;
+                    context.drawTextSlice(xoff,
+                            yOff(y, y + height, Math.min(getFontSize(), height)),
+                            width - imageMargin - drawable.getWidth(), getShowText());
+                }
+            } else {
+                drawable.draw(context,
+                        xOff(x, x + width, drawable.getWidth()),
+                        yOff(y, y + height, drawable.getHeight()), drawable.getWidth(), drawable.getHeight(), 0);
+            }
+        }
+    }
+
+    @Override
+    public void onMeasure() {
+        if (drawable == null) {
+            super.onMeasure();
+        } else {
+            float mWidth = getPrefWidth();
+            float mHeight = getPrefHeight();
+            mWidth = mWidth == WRAP_CONTENT ? getTextWidth() + drawable.getWidth() + imageMargin : mWidth;
+            mHeight = mHeight == WRAP_CONTENT ? Math.max(getFontSize(), drawable.getHeight()) : mHeight;
+            mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
+            mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
+            setMeasure(mWidth, mHeight);
+        }
+    }
+
+    @Override
+    public void firePointer(PointerEvent pointerEvent) {
+        if (pointerEvent.getType() == PointerEvent.RELEASED) {
+            fire();
+        }
+        super.firePointer(pointerEvent);
     }
 
     public ActionListener getActionListener() {
@@ -91,36 +158,28 @@ public class Button extends Label {
         fireAction(new ActionEvent(this, ActionEvent.ACTION));
     }
 
-    public boolean isElevationEffectEnabled() {
-        return elevationEffect;
+    public Type getType() {
+        return type;
     }
 
-    public void setElevationEffectEnabled(boolean enabled) {
-        if (!this.elevationEffect == enabled) {
-            this.elevationEffect = enabled;
-            setElevationState(elevationState);
+    public void setType(Type type) {
+        if (type == null) {
+            type = Type.TEXT;
+        }
+
+        if (type != this.type) {
+            this.type = type;
+            setStates(getStateBitset());
             invalidate(false);
         }
     }
 
-    public ElevateStyle getElevateStyle() {
-        return elevateStyle;
+    public Drawable getDrawable() {
+        return drawable;
     }
 
-    public void setElevateStyle(ElevateStyle elevateStyle) {
-        if (elevateStyle != this.elevateStyle) {
-            this.elevateStyle = elevateStyle;
-            setElevationState(elevationState);
-            invalidate(false);
-        }
-    }
-
-    public Image getImage() {
-        return image;
-    }
-
-    public void setImage(Image image) {
-        this.image = image;
+    public void setDrawable(Drawable drawable) {
+        this.drawable = drawable;
     }
 
     public float getImageMargin() {
@@ -137,114 +196,5 @@ public class Button extends Label {
 
     public void setImageAlign(Align.Horizontal imageAlign) {
         this.imageAlign = imageAlign;
-    }
-
-    @Override
-    public void onDraw(SmartContext context) {
-        if (image == null) {
-            super.onDraw(context);
-        } else {
-            backgroundDraw(context);
-            context.setTransform2D(getTransformView());
-
-            final float x = getInX();
-            final float y = getInY();
-            final float width = getInWidth();
-            final float height = getInHeight();
-
-            if (getShowText() != null && !getShowText().isEmpty()) {
-                context.setColor(getTextColor());
-                context.setTextFont(getFont());
-                context.setTextSize(getFontSize());
-                context.setTextVerticalAlign(Align.Vertical.TOP);
-                context.setTextHorizontalAlign(Align.Horizontal.LEFT);
-
-                float xoff = xOff(x, x + width, Math.min(getTextWidth() + imageMargin + image.getWidth(), width));
-
-                if (imageAlign == Align.Horizontal.RIGHT) {
-                    context.drawTextSlice(xoff,
-                            yOff(y, y + height, Math.min(getFontSize(), height)),
-                            width - imageMargin - image.getWidth(), getShowText());
-                    xoff += width - image.getWidth();
-                    image.draw(context, xoff,
-                            yOff(y, y + height, image.getHeight()),
-                            image.getWidth(), image.getHeight(), 0);
-                } else {
-                    image.draw(context, xoff,
-                            yOff(y, y + height, image.getHeight()),
-                            image.getWidth(), image.getHeight(), 0);
-                    xoff += image.getWidth() + imageMargin;
-                    context.drawTextSlice(xoff,
-                            yOff(y, y + height, Math.min(getFontSize(), height)),
-                            width - imageMargin - image.getWidth(), getShowText());
-                }
-            } else {
-                image.draw(context,
-                        xOff(x, x + width, image.getWidth()),
-                        yOff(y, y + height, image.getHeight()), image.getWidth(), image.getHeight(), 0);
-            }
-        }
-    }
-
-    @Override
-    public void onMeasure() {
-        if (image == null) {
-            super.onMeasure();
-        } else {
-            float mWidth = getPrefWidth();
-            float mHeight = getPrefHeight();
-            mWidth = mWidth == WRAP_CONTENT ? getTextWidth() + image.getWidth() + imageMargin : mWidth;
-            mHeight = mHeight == WRAP_CONTENT ? Math.max(getFontSize(), image.getHeight()) : mHeight;
-            mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
-            mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
-            setMeasure(mWidth, mHeight);
-        }
-    }
-
-    @Override
-    public void firePointer(PointerEvent pointerEvent) {
-        if (pointerEvent.getType() == PointerEvent.PRESSED) {
-            setElevationState(2);
-        }
-        if (pointerEvent.getType() == PointerEvent.RELEASED) {
-            setElevationState(mouseIn ? 1 : 0);
-        }
-        super.firePointer(pointerEvent);
-    }
-
-    @Override
-    public void fireHover(HoverEvent hoverEvent) {
-        if (hoverEvent.getType() == HoverEvent.ENTERED) {
-            mouseIn = true;
-            setElevationState(1);
-        }
-        if (hoverEvent.getType() == HoverEvent.EXITED) {
-            mouseIn = false;
-            setElevationState(0);
-        }
-        super.fireHover(hoverEvent);
-    }
-
-    private void setElevationState(int state) {
-        elevationState = state;
-        float elevation;
-        if (state == 0) {           // RELEASED - OUT
-            elevation = Dimension.dpPx(elevateStyle == ElevateStyle.RAISED ? 1 : elevateStyle == ElevateStyle.FLOAT ? 6 : 0);
-        } else if (state == 1) {    // RELEASED - IN
-            elevation = Dimension.dpPx(elevateStyle == ElevateStyle.RAISED ? 2 : elevateStyle == ElevateStyle.FLOAT ? 6 : 0);
-        } else {                    // PRESSED
-            elevation = Dimension.dpPx(elevateStyle == ElevateStyle.RAISED ? 8 : elevateStyle == ElevateStyle.FLOAT ? 12 : 0);
-        }
-
-        if (anim == null) {
-            anim = new ElevationAnimation(this);
-        }
-        anim.stop();
-        if (elevationEffect && elevation != getElevation()) {
-            anim.setDuration(200);
-            anim.setFromElevation(getElevation());
-            anim.setToElevation(elevation);
-            anim.play();
-        }
     }
 }

@@ -1,23 +1,27 @@
 package flat.widget.layout;
 
+import flat.animations.StateInfo;
 import flat.graphics.text.Align;
-import flat.uxml.Controller;
-import flat.uxml.UXAttributes;
 import flat.widget.Widget;
+import flat.widget.enuns.Visibility;
 
 import java.util.ArrayList;
 import java.util.Collections;
 
 public class HBox extends Box {
 
+    // todo - Horizontal ordering (RTF/LTF)
     private Align.Vertical align;
 
     ArrayList<Widget> orderedList = new ArrayList<>();
 
     @Override
-    public void applyAttributes(Controller controller, UXAttributes attributes) {
-        super.applyAttributes(controller, attributes);
-        setAlign(attributes.asEnum("align", Align.Vertical.class, Align.Vertical.TOP));
+    public void applyStyle() {
+        super.applyStyle();
+
+        StateInfo info = getStateInfo();
+
+        setAlign(getStyle().asConstant("align", info, Align.Vertical.TOP));
     }
 
     @Override
@@ -27,7 +31,7 @@ public class HBox extends Box {
 
         float xoff = Math.min(getWidth(), getPaddingLeft() + getMarginLeft()), sum = 0;
         for (Widget child : children) {
-            if (child.getVisibility() == GONE) continue;
+            if (child.getVisibility() == Visibility.Gone) continue;
 
             sum += Math.min(child.getMeasureWidth(), getWidth());
         }
@@ -41,7 +45,7 @@ public class HBox extends Box {
         float h = Math.max(0, getHeight() - getPaddingTop() - getPaddingBottom() - getMarginTop() - getMarginBottom());
         float reaming = w, sum2 = 0;
         for (Widget child : children) {
-            if (child.getVisibility() == GONE) continue;
+            if (child.getVisibility() == Visibility.Gone) continue;
 
             if (Math.min(child.getMeasureWidth(), w) * mul < Math.min(child.getLayoutMinWidth(), w)) {
                 reaming -= Math.min(child.getLayoutMinWidth(), w);
@@ -52,7 +56,7 @@ public class HBox extends Box {
 
         float mul2 = reaming / sum2;
         for (Widget child : children) {
-            if (child.getVisibility() == GONE) continue;
+            if (child.getVisibility() == Visibility.Gone) continue;
 
             float childW;
             if (Math.min(child.getMeasureWidth(), w) * mul < Math.min(child.getLayoutMinWidth(), w)) {
@@ -71,7 +75,7 @@ public class HBox extends Box {
 
         for (Widget child : getChildren()) {
             child.onMeasure();
-            if (child.getVisibility() == GONE) continue;
+            if (child.getVisibility() == Visibility.Gone) continue;
 
             if (mWidth != MATCH_PARENT) {
                 if (child.getMeasureWidth() == MATCH_PARENT) {

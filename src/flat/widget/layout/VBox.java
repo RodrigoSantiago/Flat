@@ -1,23 +1,27 @@
 package flat.widget.layout;
 
+import flat.animations.StateInfo;
 import flat.graphics.text.Align;
-import flat.uxml.Controller;
-import flat.uxml.UXAttributes;
 import flat.widget.Widget;
+import flat.widget.enuns.Visibility;
 
 import java.util.ArrayList;
 import java.util.Collections;
 
 public class VBox extends Box {
 
+    // todo - Vertical ordering
     private Align.Horizontal align = Align.Horizontal.LEFT;
 
     ArrayList<Widget> orderedList = new ArrayList<>();
 
     @Override
-    public void applyAttributes(Controller controller, UXAttributes attributes) {
-        super.applyAttributes(controller, attributes);
-        setAlign(attributes.asEnum("align", Align.Horizontal.class, Align.Horizontal.LEFT));
+    public void applyStyle() {
+        super.applyStyle();
+
+        StateInfo info = getStateInfo();
+
+        setAlign(getStyle().asConstant("align", info, Align.Horizontal.LEFT));
     }
 
     @Override
@@ -27,7 +31,7 @@ public class VBox extends Box {
 
         float yoff = Math.min(getHeight(), getPaddingTop() + getMarginTop()), sum = 0;
         for (Widget child : children) {
-            if (child.getVisibility() == GONE) continue;
+            if (child.getVisibility() == Visibility.Gone) continue;
 
             sum += Math.min(child.getMeasureHeight(), getHeight());
         }
@@ -41,7 +45,7 @@ public class VBox extends Box {
         float h = Math.max(0, getHeight() - getPaddingTop() - getPaddingBottom() - getMarginTop() - getMarginBottom());
         float reaming = h, sum2 = 0;
         for (Widget child : children) {
-            if (child.getVisibility() == GONE) continue;
+            if (child.getVisibility() == Visibility.Gone) continue;
 
             if (Math.min(child.getMeasureHeight(), h) * mul < Math.min(child.getLayoutMinHeight(), h)) {
                 reaming -= Math.min(child.getLayoutMinHeight(), h);
@@ -52,7 +56,7 @@ public class VBox extends Box {
 
         float mul2 = reaming / sum2;
         for (Widget child : children) {
-            if (child.getVisibility() == GONE) continue;
+            if (child.getVisibility() == Visibility.Gone) continue;
 
             float childH;
             if (Math.min(child.getMeasureHeight(), h) * mul < Math.min(child.getLayoutMinHeight(), h)) {
@@ -71,7 +75,7 @@ public class VBox extends Box {
 
         for (Widget child : getChildren()) {
             child.onMeasure();
-            if (child.getVisibility() == GONE) continue;
+            if (child.getVisibility() == Visibility.Gone) continue;
 
             if (mWidth != MATCH_PARENT) {
                 if (child.getMeasureWidth() == MATCH_PARENT) {

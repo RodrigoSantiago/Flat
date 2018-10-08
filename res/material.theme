@@ -1,0 +1,266 @@
+widget {
+    enabled : true
+    focusable : false
+    clickable : true
+    visibility : visible
+    width : wrap_content
+    height : wrap_content
+    max-width : match_parent
+    max-height : match_parent
+    min-width : 0
+    min-height : 0
+    x : 0
+    y : 0
+    centre-x : 0
+    centre-y : 0
+    scale-x : 1
+    scale-y : 1
+    rotation : 0
+    elevation : 0
+    opacity : 1
+    margin : 0
+    padding : 0
+    radius : 0
+    background-color : #00000000
+    border-width : 0
+    border-color : #000000FF
+    shadow : false
+    ripple : false
+    ripple-color : #000000BC
+}
+
+// Layouts
+
+scene : widget {
+    width : match_parent
+    height : match_parent
+    max-width : match_parent
+    max-height : match_parent
+    min-width : match_parent
+    min-height : match_parent
+}
+
+box : widget {
+
+}
+
+hbox : box {
+    align : top
+}
+
+vbox : box {
+    align : left
+}
+
+flow : box {
+
+}
+
+grid : box {
+
+}
+
+scroll : box {
+
+}
+
+tab : widget {
+
+}
+
+tabPage : widget {
+
+}
+
+// Text
+
+label : widget {
+    font : Roboto
+    font-size : 14sp
+    textColor : #000000FF
+    text-all-caps : false
+    vertical-align : top
+    horizontal-align : left
+}
+
+chip : label {
+
+}
+
+button : label {
+    font : Roboto, Bold
+    font-size : 18
+    text-color : #000000FF
+    min-width : 64
+    min-height : 36
+    padding : 0 16 0 16
+    vertical-align : middle
+    text-all-caps : true
+    radius : 2
+    text {
+        textColor : #FFFFFFFF
+        ripple-color : #00000028
+        ripple : true
+    }
+    outline {
+        textColor : #FFFFFFFF
+        border-width : 1
+        border-color : #000000FF
+        color-state-effect : (#00000000, #0000001E, #0000001E, #0000000A, #00000000)
+        ripple-color : #00000028
+        ripple : true
+    }
+    container {
+        textColor : #000000FF
+        ripple-color : #00000028
+        background-color : #FFFFFFFF
+        elevation-state-effect : (2, 0, 0, 2, 4)
+        color-state-effect : (#FFFFFFFF, #0000001E, #0000001E, #0000000A, #00000000)
+        ripple : true
+        shadow : true
+    }
+    float {
+
+    }
+}
+
+toogleButton : button {
+
+}
+
+tooglegroup : widget {
+
+}
+
+textField : widget {
+
+}
+
+textArea : widget {
+
+}
+
+dropdown : widget {
+
+}
+
+divider : widget {
+
+}
+
+// Image
+
+imageView : widget {
+    image-scale : noone
+    frame : 0
+    speed : 1
+    vertical-align : top
+    horizontal-align : left
+}
+
+// Selection
+
+checkbox : widget {
+    width : 24
+    height : 24
+    actived : false
+    icon : M10,17L5,12L6.41,10.58L10,14.17L17.59,6.58L19,8
+    icon-bounds : 0 0 24 24
+    on-color : #000000FF
+    off-color : #808080FF
+}
+
+radiobutton : widget {
+    width : 24
+    height : 24
+    actived : false
+    icon : M12,7c2.8,0,5,2.2,5,5s-2.2,5-5,5s-5-2.2-5-5S9.2,7,12,7z
+    on-color : #000000FF
+    off-color : #808080FF
+}
+
+radiogroup : widget {
+    enabled : true
+    focusable : false
+    clickable : false
+    visibility : gone
+    width : 0
+    height : 0
+    max-width : 0
+    max-height : 0
+    min-width : 0
+    min-height : 0
+    enableUnselection : false
+}
+
+switch : widget {
+    elevation : 1
+    width : 36
+    height : 14
+    size : 20
+    radius : 7
+    on-color : #6200EEFF
+    onBackColor : #6200ee89
+    off-color : #FFFFFFFF
+    offBackColor : #808080FF
+}
+
+// Menu
+
+popupMenu : widget {
+
+}
+
+headerMenu : widget {
+
+}
+
+menuItem : widget {
+
+}
+
+tooltip : widget {
+
+}
+
+snackbar : widget {
+
+}
+
+// Sliders
+
+slider : widget {
+
+}
+
+progress : widget {
+
+}
+
+scrollBar : widget {
+
+}
+
+// Lists
+
+list : widget {
+
+}
+
+treeList : widget {
+
+}
+
+// Toolbar
+
+toolbar : widget {
+
+}
+
+toolbarState : widget {
+
+}
+
+toolbarBottom : widget {
+
+}

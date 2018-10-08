@@ -1,10 +1,9 @@
 package flat.widget.layout;
 
-import flat.uxml.Controller;
-import flat.uxml.UXAttributes;
-import flat.uxml.UXChildren;
+import flat.uxml.*;
 import flat.widget.Parent;
 import flat.widget.Widget;
+import flat.widget.enuns.Visibility;
 
 import java.util.Collections;
 
@@ -15,15 +14,10 @@ public class Box extends Parent {
     }
 
     @Override
-    public void applyAttributes(Controller controller, UXAttributes attributes) {
-        super.applyAttributes(controller, attributes);
-    }
-
-    @Override
     public void applyChildren(UXChildren children) {
         super.applyChildren(children);
         Widget child;
-        while ((child = children.next()) != null ) {
+        while ((child = children.next().getWidget()) != null ) {
             add(child);
         }
     }
@@ -32,7 +26,7 @@ public class Box extends Parent {
     public void onLayout(float x, float y, float width, float height) {
         setLayout(x, y, Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
         for (Widget child : getChildren()) {
-            if (child.getVisibility() == GONE) continue;
+            if (child.getVisibility() == Visibility.Gone) continue;
 
             child.onLayout(child.getX(), child.getY(), getWidth(), getHeight());
         }
@@ -44,7 +38,7 @@ public class Box extends Parent {
 
         for (Widget child : getChildren()) {
             child.onMeasure();
-            if (child.getVisibility() == GONE) continue;
+            if (child.getVisibility() == Visibility.Gone) continue;
 
             if (mWidth != MATCH_PARENT) {
                 if (child.getMeasureWidth() == MATCH_PARENT) {

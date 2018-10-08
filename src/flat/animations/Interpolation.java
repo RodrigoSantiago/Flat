@@ -1,5 +1,7 @@
 package flat.animations;
 
+import flat.math.Mathf;
+
 public abstract class Interpolation {
     public static final Interpolation linear = new Interpolation() {
         @Override
@@ -255,4 +257,41 @@ public abstract class Interpolation {
             0.8740f, 0.8816f, 0.8892f, 0.8969f, 0.9046f, 0.9124f, 0.9201f,
             0.9280f, 0.9358f, 0.9437f, 0.9516f, 0.9595f, 0.9675f, 0.9755f,
             0.9836f, 0.9918f, 1.0000f };
+
+    public static float mix(float a, float b, float t) {
+        return a * (1 - t) + b * t;
+    }
+
+    public static int mixColor(int a, int b, float t) {
+        float rr = ((a >> 24) & 0xff) / 255f;
+        float rg = ((a >> 16) & 0xff) / 255f;
+        float rb = ((a >> 8) & 0xff) / 255f;
+        float ra = (a & 0xff) / 255f;
+
+        int sr = Math.min(255, Math.round(mix(rr, (((b >> 24) & 0xff) / 255f), t) * 255));
+        int sg = Math.min(255, Math.round(mix(rg, (((b >> 16) & 0xff) / 255f), t) * 255));
+        int sb = Math.min(255, Math.round(mix(rb, (((b >> 8) & 0xff) / 255f), t) * 255));
+        int sa = Math.min(255, Math.round(mix(ra, ((b & 0xff) / 255f), t) * 255));
+
+        return (sr << 24) | (sg << 16) | (sb << 8) | sa;
+    }
+
+    public static float mixAngle(float a, float b, float t) {
+        float difference = Math.abs(b - a);
+        if (difference > 180) {
+            if (b > a) {
+                a += 360;
+            } else {
+                b += 360;
+            }
+        }
+
+        float value = (a + ((b - a) * t));
+
+        if (value >= 0 && value <= 360) {
+            return value;
+        } else {
+            return (value % 360);
+        }
+    }
 }
