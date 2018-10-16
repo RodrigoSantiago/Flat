@@ -1,8 +1,7 @@
 package flat.widget.effects;
 
-import flat.animations.Animation;
 import flat.animations.Interpolation;
-import flat.animations.PropertyAnimation;
+import flat.animations.NormalizedAnimation;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Paint;
 import flat.math.shapes.Circle;
@@ -61,7 +60,7 @@ public class RippleEffect {
         animation.setDelta(2);
     }
 
-    private class RippleAnimation extends PropertyAnimation {
+    private class RippleAnimation extends NormalizedAnimation {
         @Override
         public void compute(float t) {
             float w = widget.getWidth() - widget.getMarginLeft() - widget.getMarginRight();

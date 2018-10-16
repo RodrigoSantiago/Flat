@@ -1125,10 +1125,12 @@ public final class Context {
 
     private void svgApplyTransformGradientes() {
 
-        SVG.TransformSet(svgId,
-                svgPaint.transform.m00, svgPaint.transform.m10,
-                svgPaint.transform.m01, svgPaint.transform.m11,
-                svgPaint.transform.m02, svgPaint.transform.m12);
+        if (svgPaint.transform != null) {
+            SVG.TransformSet(svgId,
+                    svgPaint.transform.m00, svgPaint.transform.m10,
+                    svgPaint.transform.m01, svgPaint.transform.m11,
+                    svgPaint.transform.m02, svgPaint.transform.m12);
+        }
 
         if (svgPaint.isColor()) {
             SVG.SetPaintColor(svgId, svgPaint.color);
@@ -1142,10 +1144,12 @@ public final class Context {
             SVG.SetPaintImage(svgId, svgPaint.x1, svgPaint.y1, svgPaint.x2, svgPaint.y2, svgPaint.texture.getInternalID());
         }
 
-        SVG.TransformSet(svgId,
-                svgTransform.m00, svgTransform.m10,
-                svgTransform.m01, svgTransform.m11,
-                svgTransform.m02, svgTransform.m12);
+        if (svgPaint.transform != null) {
+            SVG.TransformSet(svgId,
+                    svgTransform.m00, svgTransform.m10,
+                    svgTransform.m01, svgTransform.m11,
+                    svgTransform.m02, svgTransform.m12);
+        }
     }
 
     public void svgAlpha(float alpha) {

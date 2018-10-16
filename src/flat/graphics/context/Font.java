@@ -29,12 +29,12 @@ public final class Font {
     public static final Font MONOSPACE;
 
     static {
-        DEFAULT = addFont("Roboto", FontWeight.NORMAL, FontPosture.REGULAR, Font.class.getResourceAsStream("/resources/fonts/Roboto-Regular.ttf"));
-        DEFAULT_BOLD = addFont("Roboto", FontWeight.BOLD, FontPosture.REGULAR, Font.class.getResourceAsStream("/resources/fonts/Roboto-Bold.ttf"));
-        DEFAULT_ITALIC = addFont("Roboto", FontWeight.NORMAL, FontPosture.ITALIC, Font.class.getResourceAsStream("/resources/fonts/Roboto-Italic.ttf"));
-        SERIF = addFont("Serif", FontWeight.NORMAL, FontPosture.REGULAR, Font.class.getResourceAsStream("/resources/fonts/DroidSerif-Regular.ttf"));
-        SANS_SERIF = addFont("Sans", FontWeight.NORMAL, FontPosture.REGULAR, Font.class.getResourceAsStream("/resources/fonts/DroidSans-Regular.ttf"));
-        MONOSPACE = addFont("Mono", FontWeight.NORMAL, FontPosture.REGULAR, Font.class.getResourceAsStream("/resources/fonts/DroidSans-Mono.ttf"));
+        DEFAULT = addFont("Roboto", FontWeight.NORMAL, FontPosture.REGULAR, Font.class.getResourceAsStream("/fonts/Roboto-Regular.ttf"));
+        DEFAULT_BOLD = addFont("Roboto", FontWeight.BOLD, FontPosture.REGULAR, Font.class.getResourceAsStream("/fonts/Roboto-Bold.ttf"));
+        DEFAULT_ITALIC = addFont("Roboto", FontWeight.NORMAL, FontPosture.ITALIC, Font.class.getResourceAsStream("/fonts/Roboto-Italic.ttf"));
+        SERIF = addFont("Serif", FontWeight.NORMAL, FontPosture.REGULAR, Font.class.getResourceAsStream("/fonts/DroidSerif-Regular.ttf"));
+        SANS_SERIF = addFont("Sans", FontWeight.NORMAL, FontPosture.REGULAR, Font.class.getResourceAsStream("/fonts/DroidSans-Regular.ttf"));
+        MONOSPACE = addFont("Mono", FontWeight.NORMAL, FontPosture.REGULAR, Font.class.getResourceAsStream("/fonts/DroidSans-Mono.ttf"));
     }
 
     public static Font findFont(String family) {

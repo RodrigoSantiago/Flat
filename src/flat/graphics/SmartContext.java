@@ -11,7 +11,6 @@ import flat.math.operations.Area;
 import flat.math.shapes.*;
 import flat.math.shapes.CubicCurve;
 import flat.math.shapes.QuadCurve;
-import flat.math.stroke.BasicStroke;
 
 import java.nio.Buffer;
 import java.util.ArrayList;
@@ -22,6 +21,7 @@ public class SmartContext {
     private final Context context;
 
     private int mode;
+    private Surface surface;
 
     // -- 2D
     private Affine transform2D = new Affine();
@@ -77,6 +77,22 @@ public class SmartContext {
     }
 
     // ---- Properties ---- //
+    public void setSurface(Surface surface) {
+        if (this.surface != surface) {
+            clearMode();
+            if (this.surface != null) {
+                this.surface.unbind();
+            }
+            this.surface = surface;
+            if (this.surface != null) {
+                this.surface.bind(context);
+            }
+        }
+    }
+
+    public Surface getSurface() {
+        return surface;
+    }
 
     public void setView(int x, int y, int width, int height) {
         clearMode();
@@ -368,7 +384,7 @@ public class SmartContext {
 
         if (cTop == cRight && cBottom == cLeft && cLeft == cTop) {
             context.svgPaint(Paint.shadow(x, y, x + width, y + height,
-                    Math.min(width / 2f, Math.min(height / 2f, cTop + blur / 2f)), blur * 2, 0.5f, transform2D));
+                    Math.min(width / 2f, Math.min(height / 2f, cTop + blur / 2f)), blur * 2, alpha, transform2D));
             drawRect(x1, y1, w, h, true);
         } else {
             final float hw = w / 2f;
@@ -400,17 +416,17 @@ public class SmartContext {
         drawRoundRectShadow(rect.x, rect.y, rect.width, rect.height, rect.arcTop, rect.arcRight, rect.arcBottom, rect.arcLeft, blur, alpha);
     }
 
-    public void drawImage(ImageRaster image) {
+    public void drawImage(PixelMap image) {
         svgMode();
         drawImage(image, null);
     }
 
-    public void drawImage(ImageRaster image, Affine transform) {
+    public void drawImage(PixelMap image, Affine transform) {
         svgMode();
         drawImage(image, transform, 0, 0, image.getWidth(), image.getHeight());
     }
 
-    public void drawImage(ImageRaster image, Affine transform, float x, float y, float width, float height) {
+    public void drawImage(PixelMap image, Affine transform, float x, float y, float width, float height) {
         svgMode();
         drawImage(
                 image.getAtlas(),

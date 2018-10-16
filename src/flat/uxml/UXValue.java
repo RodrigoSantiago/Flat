@@ -6,6 +6,7 @@ import flat.graphics.context.Font;
 import flat.graphics.text.FontPosture;
 import flat.graphics.text.FontWeight;
 import flat.resources.Dimension;
+import flat.resources.Parser;
 import flat.resources.Resource;
 import flat.resources.ResourcesManager;
 import flat.widget.Widget;
@@ -19,53 +20,38 @@ public class UXValue {
     public static final int number = 2;
     public static final int angle = 3;
     public static final int color = 4;
-    public static final int rect = 5;
-    public static final int font = 6;
-    public static final int resource = 7;
-    public static final int constant = 8;
-    public static final int listener = 9;   // - not by style
+    public static final int font = 5;
+    public static final int resource = 6;
+    public static final int constant = 7;
+    public static final int listener = 8;   // - not by style
 
     private int type;
-    public Object value;
+    private Object value;
+    private String source;
     private byte sizeType;
 
-    public UXValue(String source) {
+    public UXValue(String source, boolean styleScript) {
+        this.source = source;
         if (source.startsWith("\"") && source.endsWith("\"")) {
             type = string;
+            if (styleScript) {
+                value = this.source = Parser.string(source.substring(1, source.length() - 2));
+            } else {
+                value = source;
+            }
         } else if (source.equalsIgnoreCase("true") || source.equalsIgnoreCase("false")) {
             type = bool;
-        } else if (source.matches("-?d+(\\.d+)?((px)|(dp)|(sp)|(in)|(pt)|(pc)|(mm)|(cm))?")) {
+            value = source.equalsIgnoreCase("true");
+        } else if (source.matches("-?\\d+(\\.\\d+)?((px)|(dp)|(sp)|(in)|(pt)|(pc)|(mm)|(cm))?")) {
             type = number;
-            float val;
-            if (source.matches("-?d+(\\.d+)?")) {
-                val = Float.parseFloat(source);
-            } else {
-                val = Float.parseFloat(source.substring(0, source.length() - 2));
-            }
-
-            if (source.endsWith("px")) {
-                sizeType = 1;
-            } else if (source.endsWith("sp")) {
-                sizeType = 2;
-            } else if (source.endsWith("in")) {
-                val *= 160f;
-            } else if (source.endsWith("pt")) {
-                val *= 160f / 72f;
-            } else if (source.endsWith("pc")) {
-                val *= 160f / 6f;
-            } else if (source.endsWith("mm")) {
-                val *= 160f / 25.4f;
-            } else if (source.endsWith("cm")) {
-                val *= 160f / 2.54f;
-            }
-            value = val;
+            value = parseNumber(source);
         } else if ("WRAP_CONTENT".equalsIgnoreCase(source)) {
             type = number;
             value = Widget.WRAP_CONTENT;
         } else if ("MATCH_PARENT".equalsIgnoreCase(source)) {
             type = number;
             value = Widget.MATCH_PARENT;
-        } else if (source.matches("-?d+(\\.d+)?º")) {
+        } else if (source.matches("-?\\d+(\\.d+)?º")) {
             type = angle;
             value = Float.parseFloat(source.substring(0, source.length() - 1));
         } else if (source.matches("#[ABCDEFabcdef0-9]{6}([ABCDEFabcdef0-9]{2})?")) {
@@ -75,23 +61,7 @@ public class UXValue {
             } else {
                 value = (int) Long.parseLong(source.substring(1), 16);
             }
-        } else if (source.matches("d+(\\.d+)\\s+(d+(\\.d+)(\\s+d+(\\.d+)\\s+d+(\\.d+))?)?")) {
-            type = rect;
-            float[] rect = new float[4];
-            String[] vals = source.split(" ");
-            if (vals.length == 1) {
-                rect[0] = rect[1] = rect[2] = rect[3] = Float.parseFloat(vals[0]);
-            } else if (vals.length == 2) {
-                rect[0] = rect[2] = Float.parseFloat(vals[0]);
-                rect[1] = rect[3] = Float.parseFloat(vals[1]);
-            } else {
-                rect[0] = Float.parseFloat(vals[0]);
-                rect[1] = Float.parseFloat(vals[1]);
-                rect[2] = Float.parseFloat(vals[2]);
-                rect[3] = Float.parseFloat(vals[3]);
-            }
-            value = rect;
-        } else if (source.matches("family\\(\\.+\\)(\\s+weight\\(\\.+\\))?(\\s+posture\\(\\.+\\))?")) {
+        } else if (source.matches("family\\(.+\\)(\\s+weight\\(.+\\))?(\\s+posture\\(.+\\))?")) {
             type = font;
             int fIndex = source.indexOf("family(");
             int wIndex = source.indexOf("weight(");
@@ -110,7 +80,7 @@ public class UXValue {
 
             FontPosture posture = FontPosture.REGULAR;
             if (pIndex > -1) {
-                String p = source.substring(fIndex + 7, source.indexOf(")", wIndex));
+                String p = source.substring(fIndex + 8, source.indexOf(")", wIndex));
                 try {
                     posture = FontPosture.valueOf(p.toUpperCase());
                 } catch (Exception ignored) {
@@ -124,10 +94,10 @@ public class UXValue {
                 }
             }
             value = val;
-        } else if (source.matches("url\\(\\.+\\)")) {
+        } else if (source.matches("url\\(.+\\)")) {
             type = resource;
             value = source.substring(4, source.length() - 1).trim();
-        } else if (source.matches("\\w+")) {
+        } else {
             type = constant;
             value = source;
         }
@@ -138,31 +108,12 @@ public class UXValue {
         this.value = value;
     }
 
-    public UXValue mix(UXValue uxValue, float t) {
+    public UXValue mix(UXValue uxValue, float t, UXTheme theme) {
         if (uxValue == null) return this;
         if (t == 0) return this;
         if (t == 1) return uxValue;
-        if (type != uxValue.type) {
-            if (this.type == number && uxValue.type == rect) {
-                float[] tValue = asRect(new float[4]);
-                float[] oValue = (float[]) uxValue.value;
-                tValue[0] = Interpolation.mix(tValue[0], oValue[0], t);
-                tValue[1] = Interpolation.mix(tValue[1], oValue[1], t);
-                tValue[2] = Interpolation.mix(tValue[2], oValue[2], t);
-                tValue[3] = Interpolation.mix(tValue[3], oValue[3], t);
-                return new UXValue(rect, tValue);
-            } else if (this.type == rect && uxValue.type == number) {
-                float[] tValue = (float[]) value;
-                float[] oValue = uxValue.asRect(new float[4]);
-                oValue[0] = Interpolation.mix(tValue[0], oValue[0], t);
-                oValue[1] = Interpolation.mix(tValue[1], oValue[1], t);
-                oValue[2] = Interpolation.mix(tValue[2], oValue[2], t);
-                oValue[3] = Interpolation.mix(tValue[3], oValue[3], t);
-                return new UXValue(rect, oValue);
-            } else {
-                return this;
-            }
-        }
+        if (type != uxValue.type) return t < 0.5 ? this : uxValue;
+
         switch (type) {
             case string:
             case bool:
@@ -172,25 +123,23 @@ public class UXValue {
             case listener:
                 return t < 0.5 ? this : uxValue;
             case number:
-                return new UXValue(number, Interpolation.mix((float) value, (float) uxValue.value, t));
+                if (sizeType != 0 || uxValue.sizeType != 0) {
+                    return new UXValue(number, Interpolation.mix(
+                            asSize(theme) / (theme.getDimension().dpi / 160F),
+                            uxValue.asSize(theme) / (theme.getDimension().dpi / 160F), t));
+                } else {
+                    return new UXValue(number, Interpolation.mix((float) value, (float) uxValue.value, t));
+                }
             case angle:
                 return new UXValue(angle, Interpolation.mixAngle((float) value, (float) uxValue.value, t));
             case color:
                 return new UXValue(color, Interpolation.mixColor((int) value, (int) uxValue.value, t));
-            case rect: {
-                float[] tValue = (float[]) value;
-                float[] oValue = (float[]) uxValue.value;
-                return new UXValue(rect, new float[]{
-                        Interpolation.mix(tValue[0], oValue[0], t), Interpolation.mix(tValue[1], oValue[1], t),
-                        Interpolation.mix(tValue[2], oValue[2], t), Interpolation.mix(tValue[3], oValue[3], t)
-                });
-            }
         }
         return this;
     }
 
     public String asString() {
-        return (String) value;
+        return source == null ? value.toString() : source;
     }
 
     public boolean asBool() {
@@ -202,7 +151,7 @@ public class UXValue {
     }
 
     public float asSize(UXTheme theme) {
-        if (sizeType == 1) {
+        if (theme == null || theme.getDimension() == null || sizeType == 1) {
             return (float) value;
         } else if (sizeType == 2) {
             return (float) value * (theme.getDimension().dpi / 160F) * theme.getFontScale();
@@ -212,7 +161,7 @@ public class UXValue {
     }
 
     public float asSize(Dimension dimension) {
-        if (sizeType == 1) {
+        if (dimension == null || sizeType == 1) {
             return (float) value;
         } else {
             return (float) value * (dimension.dpi / 160F);
@@ -225,18 +174,6 @@ public class UXValue {
 
     public int asColor() {
         return (int) value;
-    }
-
-    public float[] asRect(float[] value) {
-        if (type == number) {
-            float val = (float) this.value;
-            for (int i = 0; i < 4; i++) {
-                value[i] = val;
-            }
-        } else {
-            System.arraycopy(value, 0, value, 0, 4);
-        }
-        return value;
     }
 
     public Font asFont() {
@@ -283,5 +220,31 @@ public class UXValue {
             }
         }
         return result;
+    }
+
+    private float parseNumber(String source) {
+        float val;
+        if (source.matches("-?\\d+(\\.\\d+)?")) {
+            val = Float.parseFloat(source);
+        } else {
+            val = Float.parseFloat(source.substring(0, source.length() - 2));
+        }
+
+        if (source.endsWith("px")) {
+            sizeType = 1;
+        } else if (source.endsWith("sp")) {
+            sizeType = 2;
+        } else if (source.endsWith("in")) {
+            val *= 160f;
+        } else if (source.endsWith("pt")) {
+            val *= 160f / 72f;
+        } else if (source.endsWith("pc")) {
+            val *= 160f / 6f;
+        } else if (source.endsWith("mm")) {
+            val *= 160f / 25.4f;
+        } else if (source.endsWith("cm")) {
+            val *= 160f / 2.54f;
+        }
+        return val;
     }
 }

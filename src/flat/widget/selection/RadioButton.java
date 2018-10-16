@@ -6,9 +6,9 @@ import flat.events.ActionListener;
 import flat.events.PointerEvent;
 import flat.graphics.SmartContext;
 import flat.graphics.image.Drawable;
+import flat.math.Mathf;
 import flat.resources.Resource;
 import flat.uxml.Controller;
-import flat.uxml.UXStyle;
 import flat.uxml.UXStyleAttrs;
 import flat.widget.Widget;
 
@@ -59,7 +59,7 @@ public class RadioButton extends Widget {
 
         if (icon != null) {
             StateInfo info = getStateInfo();
-            icon.draw(context, x, y, width, height, info.get(UXStyle.ACTIVATED));
+            icon.draw(context, x, y, width, height, info.get(StateInfo.ACTIVATED));
         }
 
         if (isRippleEnabled() && getRipple().isVisible()) {
@@ -67,6 +67,22 @@ public class RadioButton extends Widget {
             getRipple().drawRipple(context, null, getRippleColor());
             context.setTransform2D(null);
         }
+    }
+
+    @Override
+    public void fireRipple(float x, float y) {
+        if (isRippleEnabled()) {
+            getRipple().setSize(Mathf.sqrt(getInWidth() * getInWidth() + getInHeight() * getInHeight()) * 0.75f);
+            getRipple().fire(getInX() + getInWidth() / 2f, getInY() + getInHeight() / 2f);
+        }
+    }
+
+    @Override
+    public void firePointer(PointerEvent pointerEvent) {
+        if (pointerEvent.getType() == PointerEvent.RELEASED) {
+            toggle();
+        }
+        super.firePointer(pointerEvent);
     }
 
     public ActionListener getToggleListener() {
@@ -98,31 +114,29 @@ public class RadioButton extends Widget {
             this.radioGroup = radioGroup;
 
             if (oldGroup != null) {
-                oldGroup.radioRemove(this);
+                oldGroup.remove(this);
             }
 
             if (radioGroup != null) {
-                radioGroup.radioAdd(this);
+                radioGroup.add(this);
             }
         }
     }
 
-    @Override
+    void _setActivated(boolean activated) {
+        if (activated != isActivated()) {
+            super.setActivated(activated);
+
+            fireToggle(new ActionEvent(this, ActionEvent.ACTION));
+        }
+    }
+
     public void setActivated(boolean actived) {
         if (this.isActivated() != actived) {
             if (radioGroup == null) {
-                super.setActivated(actived);
-            } else if (actived) {
-                super.setActivated(true);
-                radioGroup.radioSelect(this);
-            } else if (radioGroup.getSelectionIndex() != radioGroup.radioIndex(this)) {
-                super.setActivated(false);
-            } else if (radioGroup.isEmptySelectionEnabled()) {
-                super.setActivated(false);
-                radioGroup.radioSelect(null);
-            }
-            if (this.isActivated() == actived) {
-                fireToggle(new ActionEvent(this, ActionEvent.ACTION));
+                _setActivated(actived);
+            } else {
+                radioGroup.radioSetActivated(this, actived);
             }
         }
     }
@@ -147,21 +161,6 @@ public class RadioButton extends Widget {
             this.color = onColor;
             invalidate(false);
         }
-    }
-
-    @Override
-    public void fireRipple(float x, float y) {
-        if (isRippleEnabled()) {
-            getRipple().fire(getInX() + getInWidth() / 2f, getInY() + getInHeight() / 2f);
-        }
-    }
-
-    @Override
-    public void firePointer(PointerEvent pointerEvent) {
-        if (pointerEvent.getType() == PointerEvent.RELEASED) {
-            toggle();
-        }
-        super.firePointer(pointerEvent);
     }
 
 }

@@ -5,7 +5,7 @@ import flat.backend.*;
 import flat.events.*;
 import flat.graphics.context.Context;
 import flat.graphics.SmartContext;
-import flat.graphics.image.ImageRaster;
+import flat.graphics.image.PixelMap;
 import flat.resources.ResourcesManager;
 
 import java.io.File;
@@ -522,7 +522,7 @@ public final class Application {
         WL.SetTitle(title);
     }
 
-    public static void setIcon(ImageRaster icons) {
+    public static void setIcon(PixelMap icons) {
 
     }
 

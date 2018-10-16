@@ -25,15 +25,4 @@ public class UXChildren {
     public Gadget next() {
         return pos >= children.size() ? null : children.get(pos++);
     }
-
-    public void logUnusedChildren() {
-        if (pos < children.size()) {
-            StringBuilder sb = new StringBuilder();
-            for (int i = pos; i < children.size(); i++) {
-                if (i > pos) sb.append(", ");
-                sb.append(children.get(i));
-            }
-            loader.log("Unused children : [" + sb.toString() + "]");
-        }
-    }
 }

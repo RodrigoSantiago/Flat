@@ -58,8 +58,8 @@ public final class RadioGroup implements Gadget {
         if (this.enableEmptySelection != emptySelectionEnabled) {
             this.enableEmptySelection = emptySelectionEnabled;
 
-            if (!this.enableEmptySelection && radios.size() > 0) {
-                radioSelect(radios.get(0));
+            if (selectionIndex == -1 && !this.enableEmptySelection && radios.size() > 0) {
+                setSelectionIndex(0);
             }
         }
     }
@@ -69,18 +69,20 @@ public final class RadioGroup implements Gadget {
     }
 
     public void setSelectionIndex(int selectionIndex) {
-        selectionIndex = Math.min(radios.size() - 1, selectionIndex);
-        if (this.selectionIndex != selectionIndex) {
-            int oldIndex = this.selectionIndex;
+        selectionIndex = Math.max(-1, Math.min(radios.size() - 1, selectionIndex));
 
+        if (this.selectionIndex != selectionIndex &&
+                (selectionIndex > -1 || enableEmptySelection || radios.size() == 0)) {
+
+            int oldIndex = this.selectionIndex;
             this.selectionIndex = selectionIndex;
-            if (oldIndex != -1) {
-                RadioButton toggle = radios.get(oldIndex);
-                toggle.setActivated(false);
+
+            if (oldIndex > -1 && oldIndex < radios.size()) {
+                radios.get(oldIndex)._setActivated(false);
             }
-            if (selectionIndex != -1) {
-                RadioButton toggle = radios.get(selectionIndex);
-                toggle.setActivated(true);
+
+            if (selectionIndex > -1) {
+                radios.get(selectionIndex)._setActivated(true);
             }
         }
     }
@@ -89,48 +91,42 @@ public final class RadioGroup implements Gadget {
         return Collections.unmodifiableList(radios);
     }
 
-    public void radioAdd(RadioButton toggle) {
-        if (toggle.getRadioGroup() != this) {
-            toggle.setRadioGroup(this);
-        } else {
-            int index = radios.indexOf(toggle);
-            if (index == - 1) {
-                radios.add(toggle);
+    public void add(RadioButton radio) {
+        if (!radios.contains(radio)) {
+            radios.add(radio);
+            if (radios.size() == 1 && !enableEmptySelection) {
+                setSelectionIndex(0);
+            }
+        }
+    }
 
-                if (toggle.isActivated() || (!enableEmptySelection && selectionIndex == -1)) {
-                    radioSelect(toggle);
+    public void remove(RadioButton radio) {
+        int index = radios.indexOf(radio);
+        if (index > -1) {
+            radios.remove(index);
+            if (selectionIndex > index) {
+                selectionIndex -= 1;
+            } else if (selectionIndex == index) {
+                if (enableEmptySelection || radios.size() == 0) {
+                    selectionIndex = -1;
+                } else if (selectionIndex >= radios.size()) {
+                    selectionIndex = radios.size() - 1;
+                    radios.get(selectionIndex)._setActivated(true);
                 } else {
-                    toggle.setActivated(false);
+                    radios.get(selectionIndex)._setActivated(true);
                 }
             }
         }
     }
 
-    public void radioRemove(RadioButton toggle) {
-        if (toggle.getRadioGroup() == this) {
-            toggle.setRadioGroup(null);
-        } else {
-            int index = radios.indexOf(toggle);
-            if (index > - 1) {
-                radios.remove(toggle);
-                if (index == selectionIndex) {
-                    if (radios.size() == 0 || enableEmptySelection) {
-                        selectionIndex = -1;
-                    } else {
-                        radios.get(index == radios.size() ? index - 1 : index).setActivated(true);
-                    }
-                } else if (index < selectionIndex) {
-                    selectionIndex--;
-                }
+    void radioSetActivated(RadioButton radio, boolean activated) {
+        int index = radios.indexOf(radio);
+        if (index > -1) {
+            if (activated) {
+                setSelectionIndex(index);
+            } else {
+                setSelectionIndex(-1);
             }
         }
-    }
-
-    public int radioIndex(RadioButton widget) {
-        return radios.indexOf(widget);
-    }
-
-    public void radioSelect(RadioButton toggle) {
-        setSelectionIndex(radios.indexOf(toggle));
     }
 }

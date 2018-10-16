@@ -2,7 +2,7 @@ package flat.animations;
 
 import flat.widget.Application;
 
-public abstract class PropertyAnimation implements Animation {
+public abstract class NormalizedAnimation implements Animation {
 
     private float delta = 1f;
 

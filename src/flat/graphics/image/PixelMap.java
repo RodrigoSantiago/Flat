@@ -3,12 +3,12 @@ package flat.graphics.image;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Texture2D;
 
-public class ImageRaster implements Drawable {
+public class PixelMap implements Drawable {
 
     private Texture2D atlas;
     private float srcx, srcy, width, height;
 
-    public ImageRaster(Texture2D atlas, float srcx, float srcy, float width, float height) {
+    public PixelMap(Texture2D atlas, float srcx, float srcy, float width, float height) {
         this.atlas = atlas;
         this.srcx = srcx;
         this.srcy = srcy;
@@ -51,6 +51,6 @@ public class ImageRaster implements Drawable {
     @Override
     protected void finalize() throws Throwable {
         super.finalize();
-        TextureManager.disposeImage(this);
+        DrawableReader.disposeImage(this);
     }
 }

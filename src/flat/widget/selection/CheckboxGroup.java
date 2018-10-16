@@ -47,9 +47,13 @@ public final class CheckboxGroup implements Gadget {
 
     public void setRoot(Checkbox root) {
         if (this.root != root) {
+            if (this.root != null) {
+                this.root._setLeaderGroup(null);
+            }
             this.root = root;
 
             if (this.root != null) {
+                this.root._setLeaderGroup(this);
                 checkboxSetActive(this.root, this.root.isActivated());
             }
 
@@ -61,7 +65,11 @@ public final class CheckboxGroup implements Gadget {
         return root;
     }
 
-    public void checkboxAdd(Checkbox child) {
+    public List<Checkbox> checkboxes() {
+        return Collections.unmodifiableList(children);
+    }
+
+    public void add(Checkbox child) {
         if (child != null) {
             if (!children.contains(child)) {
                 children.add(child);
@@ -70,7 +78,7 @@ public final class CheckboxGroup implements Gadget {
         }
     }
 
-    public void checkboxRemove(Checkbox child) {
+    public void remove(Checkbox child) {
         if (child != null){
             if (children.remove(child)) {
                 updateRoot();
@@ -78,17 +86,14 @@ public final class CheckboxGroup implements Gadget {
         }
     }
 
-    public List<Checkbox> checkboxes() {
-        return Collections.unmodifiableList(children);
-    }
-
     void checkboxSetActive(Checkbox checkbox, boolean active) {
-        if (children.contains(checkbox)) {
-            if (checkbox == root) {
-                for (Checkbox child : children) {
-                    child._setActivated(active);
-                }
+        if (checkbox == root) {
+            for (Checkbox child : children) {
+                child.setActivated(active);
             }
+            checkbox._setActivated(active);
+            updateRoot();
+        } else if (children.contains(checkbox)) {
             checkbox._setActivated(active);
             updateRoot();
         }
@@ -100,16 +105,19 @@ public final class CheckboxGroup implements Gadget {
             boolean activated = children.get(0).isActivated();
             for (int i = 1; i < children.size(); i++) {
                 Checkbox child = children.get(i);
-                if (child.isActivated() != activated) {
+                if (child.isActivated() != activated || child.isIndeterminate()) {
                     defined = false;
                     break;
                 }
             }
             if (defined) {
-                root._setActivated(activated);
+                root.setActivated(activated);
             } else {
-                root._setActivated(false);
-                root.setUndefined(true);
+                root._setActivated(true);
+                root.setIndeterminate(true);
+            }
+            if (root.getGroup() != null) {
+                root.getGroup().updateRoot();
             }
         }
     }

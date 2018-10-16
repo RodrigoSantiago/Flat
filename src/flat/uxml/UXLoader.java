@@ -21,25 +21,26 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public final class UXLoader {
-    private static HashMap<String, UXGadgetFactory> builders = new HashMap<>();
+
+    private static HashMap<String, UXGadgetFactory> factories = new HashMap<>();
+
     public static void install(String name, UXGadgetFactory gadgetFactory) {
-        builders.put(name, gadgetFactory);
+        factories.put(name, gadgetFactory);
     }
 
     static {
         UXLoader.install("Scene", Scene::new);
         UXLoader.install("Box", Box::new);
-        UXLoader.install("VBox", VBox::new);
-        UXLoader.install("HBox", HBox::new);
+        UXLoader.install("LinearBox", LinearBox::new);
         UXLoader.install("Button", Button::new);
         UXLoader.install("ToggleButton", ToggleButton::new);
         UXLoader.install("ToggleGroup", RadioGroup::new);
         UXLoader.install("Label", Label::new);
         UXLoader.install("ImageView", ImageView::new);
         UXLoader.install("Checkbox", Checkbox::new);
+        UXLoader.install("CheckboxGroup", CheckboxGroup::new);
         UXLoader.install("RadioButton", RadioButton::new);
         UXLoader.install("RadioGroup", RadioGroup::new);
         UXLoader.install("Switch", Switch::new);
@@ -54,9 +55,6 @@ public final class UXLoader {
 
     private ArrayList<Pair<String, UXGadgetLinker>> linkers = new ArrayList<>();
     private HashMap<String, Gadget> targets = new HashMap<>();
-
-    // TODO - DEBUG
-    private ArrayList<String> logger = new ArrayList<>();
 
     public UXLoader(DimensionStream dimensionStream, Dimension dimension) {
         this(dimensionStream, dimension, null);
@@ -131,14 +129,6 @@ public final class UXLoader {
         targets.clear();
     }
 
-    public void log(String log) {
-        logger.add(log);
-    }
-
-    public List<String> getLog() {
-        return logger;
-    }
-
     public Widget load() throws Exception {
         return load(false);
     }
@@ -156,17 +146,11 @@ public final class UXLoader {
             for (int i = 0; i < nList.getLength(); i++) {
                 Node node = nList.item(i);
                 if (node.getNodeType() == Node.ELEMENT_NODE) {
-                    if (uxml != null) {
-                        log("Unexpected root node : " + node.getNodeName());
-                    } else {
-                        Gadget gadget = recursive(controller, node);
-                        if (gadget == null) {
-                            log("Unexpected root node : " + node.getNodeName());
-                        } else {
-                            uxml = gadget.getWidget();
-                            if (uxml == null) {
-                                log("Unexpected root node : " + node.getNodeName());
-                            }
+                    Gadget gadget = recursive(controller, node);
+                    if (gadget != null) {
+                        uxml = gadget.getWidget();
+                        if (uxml != null) {
+                            break;
                         }
                     }
                 }
@@ -174,7 +158,9 @@ public final class UXLoader {
 
             link();
 
-            if (createScene && !(uxml instanceof Scene)) {
+            if (uxml == null) {
+                return null;
+            } else if (createScene && !(uxml instanceof Scene)) {
                 Scene scene = new Scene();
                 scene.add(uxml);
                 return scene;
@@ -191,16 +177,16 @@ public final class UXLoader {
 
     private Gadget recursive(Controller controller, Node node) {
         if (node.getNodeType() == Node.ELEMENT_NODE) {
-            //Name
+            // Name
             String name = node.getNodeName();
 
-            //Factory
-            UXGadgetFactory gadgetFactory = builders.get(name);
+            // Factory
+            UXGadgetFactory gadgetFactory = factories.get(name);
 
             if (gadgetFactory != null) {
                 Gadget gadget = gadgetFactory.build();
 
-                //Attributes
+                // Attributes
                 UXStyle style = null;
                 HashMap<String, UXValue> values = new HashMap<>();
 
@@ -219,15 +205,23 @@ public final class UXLoader {
                     if (att.equals("style")) {
                         style = theme.getStyle(value);
                     } else {
-                        values.put(att, new UXValue(value));
+                        values.put(att, new UXValue(value, false));
                     }
                 }
+
+                // Style
+                if (style == null) {
+                    style = theme.getStyle(name.toLowerCase());
+                }
+
                 gadget.applyAttributes(new UXStyleAttrs("attributes", style, this, values), controller);
+
+                // ID Link
                 if (gadget.getId() != null) {
                     targets.put(gadget.getId(), gadget);
                 }
 
-                //Children
+                // Children
                 NodeList nList = node.getChildNodes();
                 UXChildren children = new UXChildren(this);
                 for (int i = 0; i < nList.getLength(); i++) {
@@ -237,22 +231,9 @@ public final class UXLoader {
                     }
                 }
                 gadget.applyChildren(children);
-
-                children.logUnusedChildren();
                 return gadget;
-            } else {
-                log("Widget not found : " + name);
             }
         }
         return null;
-    }
-
-    public boolean hasLog() {
-        return logger.size() > 0;
-    }
-
-    public void printLog() {
-        System.err.println("Imperfect UXML decode : " + dimensionStream.getName());
-        for (String log : logger) System.err.println("    " + log);
     }
 }

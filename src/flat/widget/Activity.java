@@ -25,7 +25,7 @@ public class Activity extends Controller {
     public Activity() {
         scene = new Scene();
         scene.activity = this;
-        scene.applyAttributes(new UXStyleAttrs("attributes", null, null), this);
+        scene.applyAttributes(new UXStyleAttrs("attributes", (UXStyle)null), this);
         scene.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
         scene.setMinSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
         scene.setMaxSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
@@ -53,6 +53,7 @@ public class Activity extends Controller {
 
     public void setTheme(UXTheme theme) {
         this.theme = theme;
+        this.theme.setDimension(dimension);
         streamInvalided = true;
         invalidate(true);
     }
@@ -70,6 +71,8 @@ public class Activity extends Controller {
             Dimension dm;
             if (stream != null) {
                 dm = stream.getCloserDimension(width, height, dpi);
+                theme.setDimension(dm);
+
                 if ((dm != null && !dm.equals(dimension)) || dpi != dimension.dpi || streamInvalided) {
                     streamInvalided = false;
                     UXLoader loader = new UXLoader(stream, dm, theme, null, this);
@@ -88,13 +91,14 @@ public class Activity extends Controller {
                 }
             } else {
                 dm = new Dimension(width, height, dpi);
+                theme.setDimension(dm);
             }
             this.dimension = dm;
             this.width = width;
             this.height = height;
         }
         scene.onMeasure();
-        scene.onLayout(0, 0, width, height);
+        scene.onLayout(width, height);
     }
 
     public void onDraw(SmartContext context) {

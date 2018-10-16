@@ -1,5 +1,9 @@
-<Scene nextFocusId="ola1">
-    <HBox width="MATCH_PARENT" height="MATCH_PARENT" padding="8">
-        <Button id="1" nextFocusId="2" text="OLA MUNDO" type="TEXT" margin="0 8 0 0"></Button>
-    </HBox>
+<Scene>
+    <LinearBox linear-flow="vertical" h-align="center" v-align="middle" margin-top="8" margin-right="8" margin-bottom="8" margin-left="8">
+        <Switch/>
+        <Switch/>
+        <Switch/>
+        <Switch/>
+        <Switch/>
+    </LinearBox>
 </Scene>

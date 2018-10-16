@@ -67,7 +67,7 @@ public final class Paint {
         paint.stops = stops.clone();
         paint.colors = colors.clone();
         paint.cycleMethod = cycleMethod;
-        paint.transform = transform == null ? identity : new Affine(transform);
+        paint.transform = transform;
         return paint;
     }
 
@@ -84,7 +84,7 @@ public final class Paint {
         paint.corners = corners;
         paint.blur = blur;
         paint.alpha = alpha;
-        paint.transform = transform == null ? identity : new Affine(transform);
+        paint.transform = transform;
         return paint;
     }
 
@@ -103,7 +103,7 @@ public final class Paint {
         paint.x2 = dw * xs;
         paint.y2 = dh * ys;
         paint.texture = texture;
-        paint.transform = transform == null ? new Affine(identity) : new Affine(transform);
+        paint.transform = transform;
         return paint;
     }
     public static Paint image(float x, float y, float width, float height, Texture2D texture) {
@@ -117,7 +117,7 @@ public final class Paint {
         paint.x2 = width;
         paint.y2 = height;
         paint.texture = texture;
-        paint.transform = transform == null ? identity : new Affine(transform);
+        paint.transform = transform;
         return paint;
     }
 

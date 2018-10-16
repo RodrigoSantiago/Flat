@@ -20,8 +20,8 @@ public class Label extends Widget {
     private float fontSize;
     private int textColor;
 
-    private Align.Vertical verticalAlign;
-    private Align.Horizontal horizontalAlign;
+    private Align.Vertical verticalAlign = Align.Vertical.TOP;
+    private Align.Horizontal horizontalAlign = Align.Horizontal.LEFT;
 
     private String showText;
     private boolean invalidTextSize;
@@ -55,10 +55,12 @@ public class Label extends Widget {
     }
 
     public void setText(String text) {
-        this.text = text;
-        showText = text == null ? null : textAllCaps ? text.toUpperCase() : text;
-        invalidate(true);
-        invalidateTextSize();
+        if (this.text != text) {
+            this.text = text;
+            showText = text == null ? null : textAllCaps ? text.toUpperCase() : text;
+            invalidate(true);
+            invalidateTextSize();
+        }
     }
 
     public boolean isTextAllCaps() {
@@ -66,10 +68,12 @@ public class Label extends Widget {
     }
 
     public void setTextAllCaps(boolean textAllCaps) {
-        this.textAllCaps = textAllCaps;
-        showText = text == null ? null : textAllCaps ? text.toUpperCase() : text;
-        invalidate(true);
-        invalidateTextSize();
+        if (this.textAllCaps != textAllCaps) {
+            this.textAllCaps = textAllCaps;
+            showText = text == null ? null : textAllCaps ? text.toUpperCase() : text;
+            invalidate(true);
+            invalidateTextSize();
+        }
     }
 
     public Font getFont() {
@@ -77,9 +81,11 @@ public class Label extends Widget {
     }
 
     public void setFont(Font font) {
-        this.font = font;
-        invalidate(true);
-        invalidateTextSize();
+        if (this.font != font) {
+            this.font = font;
+            invalidate(true);
+            invalidateTextSize();
+        }
     }
 
     public float getFontSize() {
@@ -87,9 +93,11 @@ public class Label extends Widget {
     }
 
     public void setFontSize(float fontSize) {
-        this.fontSize = fontSize;
-        invalidate(true);
-        invalidateTextSize();
+        if (this.fontSize != fontSize) {
+            this.fontSize = fontSize;
+            invalidate(true);
+            invalidateTextSize();
+        }
     }
 
     public int getTextColor() {
@@ -97,8 +105,10 @@ public class Label extends Widget {
     }
 
     public void setTextColor(int textColor) {
-        this.textColor = textColor;
-        invalidate(false);
+        if (this.textColor != textColor) {
+            this.textColor = textColor;
+            invalidate(false);
+        }
     }
 
     private void invalidateTextSize() {
@@ -110,6 +120,8 @@ public class Label extends Widget {
     }
 
     public void setVerticalAlign(Align.Vertical verticalAlign) {
+        if (verticalAlign == null) verticalAlign = Align.Vertical.TOP;
+
         if (this.verticalAlign != verticalAlign) {
             this.verticalAlign = verticalAlign;
             invalidate(false);
@@ -121,6 +133,8 @@ public class Label extends Widget {
     }
 
     public void setHorizontalAlign(Align.Horizontal horizontalAlign) {
+        if (horizontalAlign == null) horizontalAlign = Align.Horizontal.LEFT;
+
         if (this.horizontalAlign != horizontalAlign) {
             this.horizontalAlign = horizontalAlign;
             invalidate(false);
@@ -164,6 +178,9 @@ public class Label extends Widget {
 
     protected float getTextWidth() {
         if (invalidTextSize) {
+            if (showText == null) {
+                return textWidth = 0;
+            }
             Context context = Application.getContext();
             context.svgTransform(getTransform());
             context.svgTextFont(font);

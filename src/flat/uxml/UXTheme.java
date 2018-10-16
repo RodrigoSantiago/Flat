@@ -1,12 +1,9 @@
 package flat.uxml;
 
-import flat.graphics.image.Drawable;
+import flat.animations.StateInfo;
 import flat.resources.Dimension;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.HashMap;
 
 public class UXTheme {
@@ -44,7 +41,7 @@ public class UXTheme {
 
     public UXStyle getStyle(String name) {
         UXStyle style = styles.get(name);
-        if (style == null) {
+        if (style == null && parent != null) {
             return parent.getStyle(name);
         } else {
             return style;
@@ -52,63 +49,155 @@ public class UXTheme {
     }
 
     private void load(InputStream stream) {
-        BufferedReader is = new BufferedReader(new InputStreamReader(stream));
-
         try {
-            String line;
-            UXStyle style = null;
-            int state = -1;
-            while ((line = is.readLine()) != null) {
-                line = line.trim();
-                // TODO - BLOQUEAR ATRIBUTO CHAMADO 'ID', 'NEXTID', 'PREVIOUSID'
-                // TODO - IMPLEMENTAR LEITURA REAL { TER ESPAÇOS INDEFINIDOS E SEM PRECISAR DE NEWLINE e \\\" NO STRING}
-                if (!line.isEmpty() && !line.startsWith("//")) {
-                    if (line.matches("\\s*\\w+\\s*\\{")) {
-                        if (style == null) {
-                            style = new UXStyle(line.substring(0, line.lastIndexOf("{")).trim(), this);
-                            state = UXStyle.ENABLED;
-                            styles.put(style.name, style);
-                        } else {
-                            String stateName = line.substring(0, line.lastIndexOf("{")).trim();
+            int i;
 
-                            if (stateName.equals("focused")) {
-                                state = UXStyle.FOCUSED;
-                            } else if (stateName.equals("activated")) {
-                                state = UXStyle.ACTIVATED;
-                            } else if (stateName.equals("hovered")) {
-                                state = UXStyle.HOVERED;
-                            } else if (stateName.equals("pressed")) {
-                                state = UXStyle.PRESSED;
-                            } else if (stateName.equals("dragged")) {
-                                state = UXStyle.DRAGGED;
-                            } else if (stateName.equals("error")) {
-                                state = UXStyle.ERROR;
-                            } else if (stateName.equals("disabled")) {
-                                state = UXStyle.DISABLED;
-                            }
-                        }
-                    } else if (line.matches("\\s*\\w+\\s*:\\s*\\w+\\s*\\{")) {
-                        int div = line.indexOf(":");
-                        style = new UXStyle(line.substring(0, div).trim(),
-                                styles.get(line.substring(div + 1, line.lastIndexOf("{")).trim()));
-                        styles.put(style.name, style);
-                    } else if (line.matches("\\s*}\\s*")) {
-                        if (state != UXStyle.ENABLED) {
-                            state = UXStyle.ENABLED;
-                        } else {
-                            style = null;
-                        }
-                    } else if (line.matches("\\s*[\\w\\-]+\\s*:.*")) {
-                        int div = line.indexOf(":");
-                        String key = line.substring(0, div).trim();
-                        String value = line.substring(div + 1).trim();
-                        style.add(key, new UXValue(value), state);
+            String styleName = null;
+            String attrName = null;
+            UXStyle style = null;
+
+            boolean scaped = false, inverseBar = false;
+            StringBuilder string = new StringBuilder();
+            int state = 0, styleState = 0;
+
+            while ((i = stream.read()) != -1) {
+                char c = (char)i;
+                boolean letter = c == '-' || Character.isLetterOrDigit(c);
+
+                if (state == 0 && letter) {
+                    string.append(c);
+                    state = 1;
+                } else if (state == 0 && c == '/') {
+                    state = -1;
+                } else if (state == -1 && c =='*') {
+                    state = -2;
+                } else if (state == -1) {
+                    state = 0;
+                } else if (state == -2 && c =='*') {
+                    state = -3;
+                } else if (state == -3 && c =='/') {
+                    state = 0;
+                } else if (state == -3) {
+                    state = -2;
+                }
+                // [nome]
+                else if (state == 1 && letter) {
+                    string.append(c);
+                } else if (state == 1 && c == ':') {
+                    styleName = string.toString();
+                    string.setLength(0);
+                    state = 3;  // wait PARENT START NAME
+                } else if (state == 1 && c == '{') {
+                    styleName = string.toString();
+                    string.setLength(0);
+                    state = 5;  // wait ATTRIBUTE START
+                } else if (state == 1) {
+                    styleName = string.toString();
+                    string.setLength(0);
+                    state = 2;  // wait KEYS : OR {
+                }
+
+                else if (state == 2 && c == ':') {
+                    state = 3;  // wait PARENT START NAME
+                } else if (state == 2 && c == '{') {
+                    state = 5;  /// wait ATTRIBUTE START
+
+                    style = new UXStyle(styleName, this);
+                    styles.put(style.name, style);
+                    styleState = 0;
+                }
+
+                else if (state == 3 && letter) {
+                    string.append(c);
+                    state = 4;  // wait PARENT END NAME
+                }
+
+                else if (state == 4 && letter) {
+                    string.append(c);
+                } else if (state == 4 && c == '{') {
+                    String parentName = string.toString();
+                    string.setLength(0);
+                    state = 5;  // wait ATTRIBUTE START
+
+                    style = new UXStyle(styleName, styles.get(parentName));
+                    styles.put(style.name, style);
+                    styleState = 0;
+                }
+
+                else if ((state == 5 || state == 8) && letter) {
+                    string.append(c);
+                    state = state + 1; // wait ATTRIBUTE END[6, 9]
+                }
+
+                else if ((state == 6 || state == 9) && letter) {
+                    string.append(c);
+                } else if ((state == 6 || state == 9) && c == ':') {
+                    attrName = string.toString();
+                    string.setLength(0);
+                    state = state + 1; // wait VALUE START[7, 10]
+                } else if (state == 6 && c == '{') {
+                    attrName = string.toString();
+                    string.setLength(0);
+                    state = 8; // wait INNTER ATTRIBUTE START
+
+                    if (attrName.equals("default") || attrName.equals("enabled")) {
+                        styleState = StateInfo.ENABLED;
+                    } else if (attrName.equals("focused")) {
+                        styleState = StateInfo.FOCUSED;
+                    } else if (attrName.equals("activated")) {
+                        styleState = StateInfo.ACTIVATED;
+                    } else if (attrName.equals("hovered")) {
+                        styleState = StateInfo.HOVERED;
+                    } else if (attrName.equals("pressed")) {
+                        styleState = StateInfo.PRESSED;
+                    } else if (attrName.equals("dragged")) {
+                        styleState = StateInfo.DRAGGED;
+                    } else if (attrName.equals("error")) {
+                        styleState = StateInfo.ERROR;
+                    } else if (attrName.equals("disabled")) {
+                        styleState = StateInfo.DISABLED;
+                    } else {
+                        styleState = 0;
                     }
+                }
+
+                else if ((state == 7 || state == 10) && c == ';' && !scaped) {
+                    String attrValue = string.toString();
+                    string.setLength(0);
+                    state = state - 2;  // wait ATTRIBUTE [INNER] START[5, 8]
+
+                    style.add(attrName, new UXValue(attrValue.trim(), true), styleState);
+                }
+                else if ((state == 7 || state == 10) && c == '\\') {
+                    string.append(c);
+                    if (scaped) {
+                        inverseBar = !inverseBar;
+                    }
+                }
+                else if ((state == 7 || state == 10) && c == '"') {
+                    if (!scaped) {
+                        scaped = true;
+                    } else if (!inverseBar) {
+                        scaped = false;
+                    }
+                    string.append(c);
+                    inverseBar = false;
+                }
+                else if (state == 7 || state == 10) {
+                    string.append(c);
+                    inverseBar = false;
+                }
+
+                else if (state == 5 && c == '}') {
+                    state = 0;  // WAIT STYLE
+                }
+                else if (state == 8 && c == '}') {
+                    state = 5;  // wait ATTRIBUTE START
                 }
             }
         } catch (Exception e) {
             try {
-                is.close();
+                stream.close();
             } catch (IOException ignored) {
             }
         }

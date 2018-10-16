@@ -1,7 +1,14 @@
 package flat.animations;
 
 public interface StateInfo {
-    float get(int index);
+    int ENABLED = 0;
+    int FOCUSED = 1;
+    int ACTIVATED = 2;
+    int HOVERED = 3;
+    int PRESSED = 4;
+    int DRAGGED = 5;
+    int ERROR = 6;
+    int DISABLED = 7;
 
-    boolean isSimple();
+    float get(int index);
 }

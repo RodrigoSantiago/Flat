@@ -1,0 +1,190 @@
+widget {
+}
+
+/*
+  Text
+*/
+
+label {
+    font : family(Roboto);
+    font-size : 16sp;
+    text-color : #000000FF;
+    text-all-caps : false;
+    vertical-align : left;
+    horizontal-align : top;
+}
+
+button : label {
+    ripple : true;
+    ripple-color : #00000080;
+    shadow : true;
+    radius-top : 2;
+    radius-left : 2;
+    radius-right : 2;
+    radius-bottom : 2;
+    background-color : #FFFFFFFF;
+    transition-duration : 100;
+
+    enabled {
+        elevation : 1;
+    }
+    hovered {
+        elevation : 2;
+    }
+    pressed {
+        elevation : 4;
+    }
+}
+
+togglebutton : button {
+}
+
+textfield : label {
+}
+
+chip : label {
+}
+
+divider {
+}
+
+/*
+  Buttons Styles
+*/
+
+flat : button {
+}
+
+raised : button {
+}
+
+outline : button {
+}
+
+floating : button {
+}
+
+/*
+  Image
+*/
+
+canvas {
+}
+skecth {
+}
+
+/*
+  Selection
+*/
+
+checkbox {
+    width : 24;
+    height : 24;
+    ripple : true;
+    ripple-color : #00000080;
+    icon-indeterminate : url(icons/minus-box.svg);
+
+    enabled {
+        color : #000000;
+        icon : url(icons/checkbox-blank-outline.svg);
+    }
+    activated {
+        color : #FF0000;
+        icon : url(icons/checkbox-marked.svg);
+    }
+}
+
+radiobutton {
+    width : 24;
+    height : 24;
+    ripple : true;
+    ripple-color : #00000080;
+
+    enabled {
+        color : #000000;
+        icon : url(icons/radiobox-blank.svg);
+    }
+    activated {
+        color : #FF0000;
+        icon : url(icons/radiobox-marked.svg);
+    }
+}
+
+switch {
+    height : 16;
+    width : 36;
+    padding-top : 4;
+    padding-bottom : 4;
+    ripple : true;
+    ripple-color : #00000080;
+    radius-top : 8;
+    radius-left : 8;
+    radius-right : 8;
+    radius-bottom : 8;
+
+    shadow : true;
+    elevation : 1;
+    background-color : #CA5050;
+    icon : url(icons/switch-shape.svg);
+
+    transition-duration : 100;
+
+    enabled {
+        color : #FFFFFF;
+        slide-animation : 8;
+    }
+    activated {
+        color : #FF0000;
+        slide-animation : 24;
+    }
+}
+
+/*
+  Value
+*/
+
+slider {
+}
+
+scrollbar {
+}
+
+progressbar {
+}
+
+/*
+  Layout
+*/
+
+parent {
+}
+
+scene {
+}
+
+box {
+}
+
+vbox {
+}
+
+hbox {
+}
+
+grid {
+}
+
+tab {
+}
+
+scroll {
+}
+
+navigation {
+}
+
+listview {
+}
+
+treeview {
+}

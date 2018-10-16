@@ -2,43 +2,47 @@ package flat.uxml;
 
 import flat.animations.StateInfo;
 import flat.graphics.context.Font;
-import flat.graphics.image.Drawable;
 import flat.resources.Resource;
 
-import java.lang.reflect.Method;
 import java.util.HashMap;
-public class UXStyle {
+import java.util.HashSet;
 
-    public static final int ENABLED = 0;
-    public static final int FOCUSED = 1;
-    public static final int ACTIVATED = 2;
-    public static final int HOVERED = 3;
-    public static final int PRESSED = 4;
-    public static final int DRAGGED = 5;
-    public static final int ERROR = 6;
-    public static final int DISABLED = 7;
+public class UXStyle {
 
     public final String name;
     public final UXTheme theme;
     public final UXStyle parent;
+    protected HashSet<String> properties;
     protected HashMap<String, UXValue>[] entries;
 
-    public UXStyle(String name, UXTheme theme) {
+    UXStyle(String name, UXTheme theme) {
         this.name = name;
         this.theme = theme;
         this.parent = null;
         instance();
     }
 
-    public UXStyle(String name, UXStyle parent) {
+    UXStyle(String name, UXStyle parent) {
         this.name = name;
-        this.theme = parent.theme;
+        this.theme = parent == null ? null : parent.theme;
         this.parent = parent;
         instance();
     }
 
+    UXStyle(String name,  HashMap<String, UXValue>[] values, UXStyle parent) {
+        this.name = name;
+        this.theme = null;
+        this.parent = parent;
+        this.entries = values;
+        properties = new HashSet<>();
+        for (int i = 0; i < 8; i++) {
+            properties.addAll(entries[i].keySet());
+        }
+    }
+
     protected void instance() {
         entries = new HashMap[8];
+        properties = new HashSet<>();
         for (int i = 0; i < 8; i++) {
             entries[i] = new HashMap<>();
         }
@@ -46,6 +50,7 @@ public class UXStyle {
 
     protected void add(String name, UXValue value, int state) {
         entries[state].put(name, value);
+        properties.add(name);
     }
 
     /**
@@ -62,6 +67,35 @@ public class UXStyle {
         }
         return value;
     }
+
+    /**
+     * Verifica se este estilo contem algum modificador do atributo, em pelo menos um estado
+     *
+     * @param name Atributo
+     * @return true-false
+     */
+    public boolean contains(String name) {
+        return properties.contains(name);
+    }
+
+    /**
+     * Verifica se este estilo contem algum modificador de atributo diferente nesta mudanca de estado
+     *
+     * @param stateA Estado A
+     * @param stateB Estado B
+     * @return
+     */
+    public boolean containsChange(byte stateA, byte stateB) {
+        for (int i = 0; i < 8; i++) {
+            if (((stateA & (1 << i)) == (1 << i)) != ((stateB & (1 << i)) == (1 << i))) {
+                if (entries[i].size() > 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public String asString(String name) {
         return asString(name, null, null);
     }
@@ -188,32 +222,6 @@ public class UXStyle {
         }
     }
 
-    public float[] asRect(String name) {
-        return asRect(name, null, 0, 0, 0, 0);
-    }
-
-    public float[] asRect(String name, float def1, float def2, float def3, float def4) {
-        return asRect(name, null, 0, 0, 0, 0);
-    }
-
-    public float[] asRect(String name, StateInfo state) {
-        return asRect(name, state, 0, 0, 0, 0);
-    }
-
-    public float[] asRect(String name, StateInfo state, float def1, float def2, float def3, float def4) {
-        UXValue value = getValue(name, state);
-        float[] rect = new float[4];
-        if (value == null) {
-            rect[0] = def1;
-            rect[1] = def2;
-            rect[2] = def3;
-            rect[3] = def4;
-        } else {
-            value.asRect(rect);
-        }
-        return rect;
-    }
-
     public Font asFont(String name) {
         return asFont(name, null, Font.DEFAULT);
     }
@@ -269,15 +277,6 @@ public class UXStyle {
         }
     }
 
-    public Method asListener(String name, Class<?> argument, Controller controller) {
-        UXValue value = get(name, 0);
-        if (value == null) {
-            return null;
-        } else {
-            return value.asListener(argument, controller);
-        }
-    }
-
     public UXValue getValue(String name) {
         return getValue(name, null);
     }
@@ -300,7 +299,7 @@ public class UXStyle {
                 } else {
                     UXValue left = _getValue(name, state, index - 1);
                     if (left != null) {
-                        return left.mix(value, t);
+                        return left.mix(value, t, theme);
                     } else {
                         return value;
                     }

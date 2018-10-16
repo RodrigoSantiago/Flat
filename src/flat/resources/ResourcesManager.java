@@ -1,11 +1,12 @@
 package flat.resources;
 
 import flat.graphics.image.Drawable;
-import flat.graphics.image.ImageRaster;
-import flat.graphics.image.TextureManager;
-import flat.graphics.image.ImageVector;
+import flat.graphics.image.PixelMap;
+import flat.graphics.image.DrawableReader;
+import flat.graphics.image.LineMap;
 
 import java.io.*;
+import java.lang.ref.SoftReference;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.*;
@@ -20,8 +21,7 @@ public final class ResourcesManager {
     private static ZipFile zip;
     private static File dir;
 
-    private static HashMap<String, ImageRaster> images = new HashMap<>();
-    private static HashMap<String, ImageVector> vectors = new HashMap<>();
+    private static HashMap<String, SoftReference<Resource>> resources = new HashMap<>();
 
     private ResourcesManager() {
     }
@@ -45,33 +45,56 @@ public final class ResourcesManager {
     }
 
     public synchronized static void unloadResources() {
-        images.clear();
-        vectors.clear();
+        resources.clear();
     }
 
     public synchronized static Resource getResource(String pathName) {
-        return null;
-    }
-
-    public synchronized static Drawable getDrawable(String pathName) {
-        return null;
-    }
-
-    public synchronized static ImageRaster getImage(String pathName) {
-        ImageRaster image = images.get(pathName);
-        if (image == null) {
-            try {
-                image = TextureManager.createImage(getInput(pathName));
-            } catch (IOException e) {
-                e.printStackTrace();
+        SoftReference<Resource> resRef = resources.get(pathName);
+        if (resRef != null) {
+            Resource res = resRef.get();
+            if (res != null) {
+                return res;
             }
-            images.put(pathName, image);
         }
-        return image;
-    }
 
-    public synchronized static ImageVector getVector(String pathName) {
-        return null;
+        Resource res;
+        if (pathName.endsWith(".png")) {
+            res = new Resource() {
+                Drawable drawable;
+
+                @Override
+                public Drawable getDrawable() {
+                    if (drawable == null) {
+                        try {
+                            drawable = DrawableReader.loadPixelMap(getInput(pathName));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    return drawable;
+                }
+            };
+        } else if (pathName.endsWith(".svg")) {
+            res = new Resource() {
+                Drawable drawable;
+
+                @Override
+                public Drawable getDrawable() {
+                    if (drawable == null) {
+                        try {
+                            drawable = DrawableReader.loadLineMap(getInput(pathName));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    return drawable;
+                }
+            };
+        } else {
+            return null;
+        }
+        resources.put(pathName, new SoftReference<>(res));
+        return res;
     }
 
     public synchronized static InputStream getInput(String pathName) {

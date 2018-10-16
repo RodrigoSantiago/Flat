@@ -74,6 +74,7 @@ public final class Frame extends ContextObject {
 
     public void attach(int index, Render render) {
         if (index == DEPTH_STENCIL) {
+            // TODO - PODE ESTAR INCORRETO
             attach(DEPTH, render);
             attach(STENCIL, render);
         } else {
@@ -88,6 +89,7 @@ public final class Frame extends ContextObject {
 
     public void attach(int index, Texture2D texture, int level) {
         if (index == DEPTH_STENCIL) {
+            // TODO - PODE ESTAR INCORRETO
             attach(DEPTH, texture, level);
             attach(STENCIL, texture, level);
         } else {
@@ -102,6 +104,7 @@ public final class Frame extends ContextObject {
 
     public void attach(int index, Cubemap cubemap, CubeFace face, int level) {
         if (index == DEPTH_STENCIL) {
+            // TODO - PODE ESTAR INCORRETO
             attach(DEPTH, cubemap, face, level);
             attach(STENCIL, cubemap, face, level);
         } else {
@@ -113,6 +116,7 @@ public final class Frame extends ContextObject {
 
     public void detach(int index) {
         if (index == DEPTH_STENCIL) {
+            // TODO - PODE ESTAR INCORRETO
             detach(DEPTH);
             detach(STENCIL);
         } else {

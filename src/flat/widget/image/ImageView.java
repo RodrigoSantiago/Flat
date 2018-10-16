@@ -37,8 +37,8 @@ public class ImageView extends Widget {
         setFrame(getStyle().asNumber("frame", info, getFrame()));
         setSpeed(getStyle().asNumber("speed", info, getSpeed()));
         setImageScale(getStyle().asConstant("image-scale", ImageScale.NOONE));
-        setVerticalAlign(getStyle().asConstant("vertical-align", Align.Vertical.MIDDLE));
-        setHorizontalAlign(getStyle().asConstant("horizontal-align", Align.Horizontal.CENTER));
+        setVerticalAlign(getStyle().asConstant("v-align", Align.Vertical.MIDDLE));
+        setHorizontalAlign(getStyle().asConstant("h-align", Align.Horizontal.CENTER));
     }
 
     public Drawable getDrawable() {

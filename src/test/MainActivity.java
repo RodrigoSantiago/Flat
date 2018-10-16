@@ -9,7 +9,7 @@ import flat.resources.ResourceStream;
 public class MainActivity extends Activity {
 
     public MainActivity() {
-        setTheme(new UXTheme(ResourcesManager.getInput("material.theme")));
+        setTheme(new UXTheme(ResourcesManager.getInput("themes/material.uxss")));
         setStream(new ResourceStream("screen_test"));
     }
 
@@ -17,4 +17,6 @@ public class MainActivity extends Activity {
     public void onDraw(SmartContext context) {
         super.onDraw(context);
     }
+
+
 }

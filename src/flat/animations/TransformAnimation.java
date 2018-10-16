@@ -2,7 +2,7 @@ package flat.animations;
 
 import flat.widget.Widget;
 
-public class TransformAnimation extends PropertyAnimation {
+public final class TransformAnimation extends NormalizedAnimation {
 
     private float fTx, fTy, tTx, tTy;
     private float fSx, fSy, tSx, tSy;

@@ -1,6 +1,6 @@
 package flat.animations;
 
-public class StateBitset implements StateInfo {
+public final class StateBitset implements StateInfo {
     private static StateBitset[] states = new StateBitset[256];
 
     static {
@@ -15,13 +15,13 @@ public class StateBitset implements StateInfo {
         this.bitset = bitset;
     }
 
-    @Override
-    public float get(int index) {
-        return (bitset & (1 << index)) << index;
+    public static StateBitset getState(byte bitset) {
+        return states[bitset];
     }
 
     @Override
-    public boolean isSimple() {
-        return true;
+    public float get(int index) {
+        return (bitset & (1 << index)) == (1 << index) ? 1 : 0;
     }
+
 }

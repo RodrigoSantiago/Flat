@@ -1,8 +1,7 @@
 package flat.animations;
 
-import flat.math.Mathf;
-
 public abstract class Interpolation {
+
     public static final Interpolation linear = new Interpolation() {
         @Override
         public final float apply(float t) {
@@ -162,11 +161,6 @@ public abstract class Interpolation {
         }
     };
 
-    private Interpolation() {
-    }
-
-    public abstract float apply(float t);
-
     private static float[] kernel1 = new float[] { 0.0000f, 0.0222f,
             0.0424f, 0.0613f, 0.0793f, 0.0966f, 0.1132f, 0.1293f, 0.1449f,
             0.1600f, 0.1747f, 0.1890f, 0.2029f, 0.2165f, 0.2298f, 0.2428f,
@@ -257,6 +251,8 @@ public abstract class Interpolation {
             0.8740f, 0.8816f, 0.8892f, 0.8969f, 0.9046f, 0.9124f, 0.9201f,
             0.9280f, 0.9358f, 0.9437f, 0.9516f, 0.9595f, 0.9675f, 0.9755f,
             0.9836f, 0.9918f, 1.0000f };
+
+    public abstract float apply(float t);
 
     public static float mix(float a, float b, float t) {
         return a * (1 - t) + b * t;

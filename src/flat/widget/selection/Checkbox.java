@@ -6,9 +6,9 @@ import flat.events.ActionListener;
 import flat.events.PointerEvent;
 import flat.graphics.SmartContext;
 import flat.graphics.image.Drawable;
+import flat.math.Mathf;
 import flat.resources.Resource;
 import flat.uxml.Controller;
-import flat.uxml.UXStyle;
 import flat.uxml.UXStyleAttrs;
 import flat.widget.Widget;
 
@@ -16,11 +16,12 @@ public class Checkbox extends Widget {
 
     // Properties
     private ActionListener toggleListener;
+    private CheckboxGroup leaderGroup;
     private CheckboxGroup group;
-    private boolean undefined;
+    private boolean indeterminate;
 
     private Drawable icon;
-    private Drawable undefinedIcon;
+    private Drawable indeterminateIcon;
     private int color;
 
     @Override
@@ -47,17 +48,18 @@ public class Checkbox extends Widget {
                 setIcon(drawable);
             }
         }
-        res = getStyle().asResource("undefined-icon", info);
+        res = getStyle().asResource("icon-indeterminate", info);
         if (res != null) {
             Drawable drawable = res.getDrawable();
             if (drawable != null) {
-                setUndefinedIcon(drawable);
+                setIndeterminateIcon(drawable);
             }
         }
     }
 
     @Override
     public void onDraw(SmartContext context) {
+        backgroundDraw(getBackgroundColor(), getBorderColor(), 0, context);
         final float x = getInX();
         final float y = getInY();
         final float width = getInWidth();
@@ -67,8 +69,8 @@ public class Checkbox extends Widget {
         context.setColor(color);
 
         StateInfo info = getStateInfo();
-        Drawable ic = undefined && undefinedIcon != null ? undefinedIcon : icon;
-        ic.draw(context, x, y, width, height, info.get(UXStyle.ACTIVATED));
+        Drawable ic = indeterminate && indeterminateIcon != null ? indeterminateIcon : icon;
+        ic.draw(context, x, y, width, height, info.get(StateInfo.ACTIVATED));
 
         if (isRippleEnabled() && getRipple().isVisible()) {
             context.setTransform2D(getTransform());
@@ -80,6 +82,7 @@ public class Checkbox extends Widget {
     @Override
     public void fireRipple(float x, float y) {
         if (isRippleEnabled()) {
+            getRipple().setSize(Mathf.sqrt(getInWidth() * getInWidth() + getInHeight() * getInHeight()) * 0.75f);
             getRipple().fire(getInX() + getInWidth() / 2f, getInY() + getInHeight() / 2f);
         }
     }
@@ -101,7 +104,7 @@ public class Checkbox extends Widget {
     }
 
     public void toggle() {
-        setActivated(!isActivated());
+        setActivated(isIndeterminate() || !isActivated());
     }
 
     public void fireToggle(ActionEvent event) {
@@ -121,40 +124,71 @@ public class Checkbox extends Widget {
             this.group = group;
 
             if (oldGroup != null) {
-                oldGroup.checkboxRemove(this);
+                oldGroup.remove(this);
             }
 
             if (group != null) {
-                group.checkboxAdd(this);
+                group.add(this);
             }
         }
     }
 
+    CheckboxGroup getLeaderGroup() {
+        return leaderGroup;
+    }
 
-    void _setActivated(boolean actived) {
-        if (actived != isActivated()) {
-            super.setActivated(actived);
+    void _setLeaderGroup(CheckboxGroup group) {
+        this.leaderGroup = group;
+    }
+
+    void setLeaderGroup(CheckboxGroup group) {
+        if (this.leaderGroup != group) {
+            CheckboxGroup oldGroup = this.leaderGroup;
+
+            this.leaderGroup = group;
+
+            if (oldGroup != null) {
+                oldGroup.setRoot(null);
+            }
+
+            if (group != null) {
+                group.setRoot(this);
+            }
+        }
+    }
+
+    void _setActivated(boolean activated) {
+        if (activated != isActivated()) {
+            super.setActivated(activated);
 
             fireToggle(new ActionEvent(this, ActionEvent.ACTION));
         }
     }
 
     public void setActivated(boolean actived) {
-        if (this.isActivated() != actived) {
+        if (this.isActivated() != actived || isIndeterminate()) {
+            indeterminate = false;
+
             if (group == null) {
                 _setActivated(actived);
             } else {
                 group.checkboxSetActive(this, actived);
             }
+            if (leaderGroup != null) {
+                leaderGroup.checkboxSetActive(this, actived);
+            }
         }
     }
 
-    public void setUndefined(boolean undefined) {
-        this.undefined = undefined;
+    public void setIndeterminate(boolean indeterminate) {
+        if (this.indeterminate != indeterminate) {
+            this.indeterminate = indeterminate;
+            invalidate(false);
+        }
     }
 
-    public boolean isUndefined() {
-        return undefined;
+    public boolean isIndeterminate() {
+        return indeterminate;
     }
 
     public int getColor() {
@@ -179,14 +213,14 @@ public class Checkbox extends Widget {
         }
     }
 
-    public void setUndefinedIcon(Drawable undefinedIcon) {
-        if (this.undefinedIcon != undefinedIcon) {
-            this.undefinedIcon = undefinedIcon;
-            invalidate(false);
-        }
+    public Drawable getIndeterminateIcon() {
+        return indeterminateIcon;
     }
 
-    public Drawable getUndefinedIcon() {
-        return undefinedIcon;
+    public void setIndeterminateIcon(Drawable indeterminateIcon) {
+        if (this.indeterminateIcon != indeterminateIcon) {
+            this.indeterminateIcon = indeterminateIcon;
+            invalidate(false);
+        }
     }
 }

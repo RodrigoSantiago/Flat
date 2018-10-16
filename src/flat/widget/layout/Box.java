@@ -1,6 +1,7 @@
 package flat.widget.layout;
 
 import flat.uxml.*;
+import flat.widget.Gadget;
 import flat.widget.Parent;
 import flat.widget.Widget;
 import flat.widget.enuns.Visibility;
@@ -16,19 +17,22 @@ public class Box extends Parent {
     @Override
     public void applyChildren(UXChildren children) {
         super.applyChildren(children);
-        Widget child;
-        while ((child = children.next().getWidget()) != null ) {
-            add(child);
+        Gadget child;
+        while ((child = children.next()) != null ) {
+            Widget widget = child.getWidget();
+            if (widget != null) {
+                add(widget);
+            }
         }
     }
 
     @Override
-    public void onLayout(float x, float y, float width, float height) {
-        setLayout(x, y, Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
+    public void onLayout(float width, float height) {
+        setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
         for (Widget child : getChildren()) {
             if (child.getVisibility() == Visibility.Gone) continue;
 
-            child.onLayout(child.getX(), child.getY(), getWidth(), getHeight());
+            child.onLayout(getWidth(), getHeight());
         }
     }
 

@@ -1,10 +1,9 @@
 package flat.animations;
 
-import flat.uxml.UXStyle;
 import flat.widget.Application;
 import flat.widget.Widget;
 
-public class StateAnimation implements Animation, StateInfo {
+public final class StateAnimation implements Animation, StateInfo {
 
     public final Widget widget;
 
@@ -23,7 +22,7 @@ public class StateAnimation implements Animation, StateInfo {
 
     @Override
     public boolean isPlaying() {
-        return (fEnabled == tEnabled && fFocused == tFocused && fActivated == tActivated &&
+        return !(fEnabled == tEnabled && fFocused == tFocused && fActivated == tActivated &&
                 fHovered == tHovered && fPressed == tPressed && fDragged == tDragged &&
                 fError == tError && fDisabled == tDisabled);
     }
@@ -64,14 +63,14 @@ public class StateAnimation implements Animation, StateInfo {
 
     public void play(int bitmask) {
         boolean play = isPlaying();
-        tEnabled = (byte) ((bitmask & UXStyle.ENABLED) << UXStyle.ENABLED);
-        tFocused = (byte) ((bitmask & UXStyle.FOCUSED) << UXStyle.FOCUSED);
-        tActivated = (byte) ((bitmask & UXStyle.ACTIVATED) << UXStyle.ACTIVATED);
-        tHovered = (byte) ((bitmask & UXStyle.HOVERED) << UXStyle.HOVERED);
-        tPressed = (byte) ((bitmask & UXStyle.PRESSED) << UXStyle.PRESSED);
-        tDragged = (byte) ((bitmask & UXStyle.DRAGGED) << UXStyle.DRAGGED);
-        tError = (byte) ((bitmask & UXStyle.ERROR) << UXStyle.ERROR);
-        tDisabled = (byte) ((bitmask & UXStyle.DISABLED) << UXStyle.DISABLED);
+        tEnabled = (byte) ((bitmask & (1 << StateInfo.ENABLED)) == (1 << StateInfo.ENABLED) ? 1 : 0);
+        tFocused = (byte) ((bitmask & (1 << StateInfo.FOCUSED)) == (1 << StateInfo.FOCUSED) ? 1 : 0);
+        tActivated = (byte) ((bitmask & (1 << StateInfo.ACTIVATED)) == (1 << StateInfo.ACTIVATED) ? 1 : 0);
+        tHovered = (byte) ((bitmask & (1 << StateInfo.HOVERED)) == (1 << StateInfo.HOVERED) ? 1 : 0);
+        tPressed = (byte) ((bitmask & (1 << StateInfo.PRESSED)) == (1 << StateInfo.PRESSED) ? 1 : 0);
+        tDragged = (byte) ((bitmask & (1 << StateInfo.DRAGGED)) == (1 << StateInfo.DRAGGED) ? 1 : 0);
+        tError = (byte) ((bitmask & (1 << StateInfo.ERROR)) == (1 << StateInfo.ERROR) ? 1 : 0);
+        tDisabled = (byte) ((bitmask & (1 << StateInfo.DISABLED)) == (1 << StateInfo.DISABLED) ? 1 : 0);
         if (!play && isPlaying()) {
             Application.runAnimation(this);
             lastTime = System.currentTimeMillis();
@@ -97,20 +96,15 @@ public class StateAnimation implements Animation, StateInfo {
     @Override
     public float get(int stateIndex) {
         switch (stateIndex) {
-            case UXStyle.ENABLED : return fEnabled;
-            case UXStyle.FOCUSED  : return fFocused;
-            case UXStyle.ACTIVATED  : return fActivated;
-            case UXStyle.HOVERED  : return fHovered;
-            case UXStyle.PRESSED  : return fPressed;
-            case UXStyle.DRAGGED  : return fDragged;
-            case UXStyle.ERROR  : return fError;
+            case StateInfo.ENABLED : return fEnabled;
+            case StateInfo.FOCUSED  : return fFocused;
+            case StateInfo.ACTIVATED  : return fActivated;
+            case StateInfo.HOVERED  : return fHovered;
+            case StateInfo.PRESSED  : return fPressed;
+            case StateInfo.DRAGGED  : return fDragged;
+            case StateInfo.ERROR  : return fError;
             default : return disabledOverlayed ? disabledOverlay : fDisabled;
         }
-    }
-
-    @Override
-    public boolean isSimple() {
-        return false;
     }
 
     public void setDisabledOverlay(float disable) {
