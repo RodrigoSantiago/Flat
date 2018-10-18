@@ -1,9 +1,8 @@
 <Scene>
-    <LinearBox linear-flow="vertical" h-align="center" v-align="middle" margin-top="8" margin-right="8" margin-bottom="8" margin-left="8">
-        <Switch/>
-        <Switch/>
-        <Switch/>
-        <Switch/>
-        <Switch/>
+    <LinearBox linear-flow="vertical" h-align="center" v-align="middle" margin-top="24" margin-right="8" margin-bottom="8" margin-left="8">
+        <Slider min="0" max="100" value="50" value2="30" ticks="0" range-enabled="true" width="200"/>
+        <Slider min="0" max="-100" value="-50" value2="-30" ticks="0" range-enabled="false" width="200"/>
+        <Slider min="0" max="-100" value="-50" value2="-30" ticks="0" range-enabled="true" width="200"/>
+        <Slider min="0" max="100" value="50" value2="30" ticks="0" range-enabled="false" width="200"/>
     </LinearBox>
 </Scene>

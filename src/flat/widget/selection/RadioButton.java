@@ -79,10 +79,10 @@ public class RadioButton extends Widget {
 
     @Override
     public void firePointer(PointerEvent pointerEvent) {
-        if (pointerEvent.getType() == PointerEvent.RELEASED) {
+        super.firePointer(pointerEvent);
+        if (!pointerEvent.isConsumed() && pointerEvent.getType() == PointerEvent.RELEASED) {
             toggle();
         }
-        super.firePointer(pointerEvent);
     }
 
     public ActionListener getToggleListener() {

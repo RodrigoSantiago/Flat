@@ -144,6 +144,51 @@ switch {
 */
 
 slider {
+    focusable : true;
+    height : 2;
+    width : 128;
+    padding-top : 18;
+    padding-left : 18;
+    padding-bottom : 18;
+    padding-right : 18;
+    radius-top : 2;
+    radius-left : 2;
+    radius-right : 2;
+    radius-bottom : 2;
+    ripple : true;
+    ripple-color : #00000080;
+
+    color : #FF0000;
+    background-color : #CCCCCC;
+    icon : url(icons/slider-icon.svg);
+
+    label-enabled : true;
+    label-font : family(Roboto) weight(bold);
+    label-font-size : 16;
+    label-color : #FFFFFF;
+    label-position : 32;
+    label-decimal : 0;
+    label-time-out : 400;
+    label-icon : url(icons/slider-label.svg);
+
+    transition-duration : 100;
+
+    enabled {
+        expansion : 0;
+        expansion-color : #FF000000;
+    }
+    hovered {
+        expansion : 16;
+        expansion-color : #FF000030;
+    }
+    pressed {
+        expansion : 16;
+        expansion-color : #FF000030;
+    }
+    dragged {
+        expansion : 16;
+        expansion-color : #FF000030;
+    }
 }
 
 scrollbar {

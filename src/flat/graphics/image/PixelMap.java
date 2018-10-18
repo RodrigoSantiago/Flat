@@ -49,6 +49,11 @@ public class PixelMap implements Drawable {
     }
 
     @Override
+    public void draw(SmartContext context, float x, float y, float frame) {
+        draw(context, x, y, getWidth(), getHeight(), frame);
+    }
+
+    @Override
     protected void finalize() throws Throwable {
         super.finalize();
         DrawableReader.disposeImage(this);

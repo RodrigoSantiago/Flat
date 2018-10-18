@@ -254,6 +254,9 @@ public final class Application {
                             }
                         }
                         mouse.pressed.firePointer(new PointerEvent(mouse.pressed, PointerEvent.RELEASED, event.btn, mouseX, mouseY));
+                        if (mouse.pressed.isFocusable()) {
+                            activity.setFocus(mouse.pressed);
+                        }
                         mouse.reset();
                         mouse = null;
 

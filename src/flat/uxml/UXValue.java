@@ -71,7 +71,7 @@ public class UXValue {
 
             FontWeight weight = FontWeight.NORMAL;
             if (wIndex > -1) {
-                String w = source.substring(fIndex + 7, source.indexOf(")", wIndex));
+                String w = source.substring(wIndex + 7, source.indexOf(")", wIndex));
                 try {
                     weight = FontWeight.valueOf(w.toUpperCase());
                 } catch (Exception ignored) {
@@ -80,7 +80,7 @@ public class UXValue {
 
             FontPosture posture = FontPosture.REGULAR;
             if (pIndex > -1) {
-                String p = source.substring(fIndex + 8, source.indexOf(")", wIndex));
+                String p = source.substring(pIndex + 8, source.indexOf(")", wIndex));
                 try {
                     posture = FontPosture.valueOf(p.toUpperCase());
                 } catch (Exception ignored) {

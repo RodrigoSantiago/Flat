@@ -12,4 +12,6 @@ public interface Drawable {
 
     void draw(SmartContext context, float x, float y, float width, float height, float frame);
 
+    void draw(SmartContext context, float x, float y, float frame);
+
 }

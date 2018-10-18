@@ -101,7 +101,7 @@ public class Widget implements Gadget {
     private Shape clip;
     private boolean shadowEnabled;
     private boolean rippleEnabled;
-    private float transitionDuration;
+    private long transitionDuration;
 
     public Widget() {
 
@@ -165,7 +165,7 @@ public class Widget implements Gadget {
     public void applyStyle() {
         if (style == null) return;
 
-        setTransitionDuration(style.asNumber("transition-duration", getTransitionDuration()));
+        setTransitionDuration((long) style.asNumber("transition-duration", getTransitionDuration()));
 
         // Disabled State Overlay
         if (parent != null) {
@@ -569,11 +569,11 @@ public class Widget implements Gadget {
         }
     }
 
-    public float getTransitionDuration() {
+    public long getTransitionDuration() {
         return transitionDuration;
     }
 
-    public void setTransitionDuration(float transitionDuration) {
+    public void setTransitionDuration(long transitionDuration) {
         transitionDuration = Math.max(transitionDuration, 0);
 
         if (this.transitionDuration != transitionDuration) {
@@ -1192,7 +1192,6 @@ public class Widget implements Gadget {
         float tm = marginTop + paddingTop;
         float bm = marginBottom + paddingBottom;
 
-        //TODO - ESTE CALCULO FAZ SENTIDO ?
         inx = lm + rm > getWidth() ? (lm + getWidth() - rm) / 2f : lm;
         iny = tm + bm > getHeight() ? (tm + getHeight() - bm) / 2f : tm;
         inw = Math.max(0, getWidth() - lm - rm);
@@ -1424,11 +1423,14 @@ public class Widget implements Gadget {
 
     public void firePointer(PointerEvent pointerEvent) {
         // -- Pressed -- //
-        if (pointerEvent.getType() == PointerEvent.PRESSED) {
+        if (pointerEvent.getType() == PointerEvent.DRAGGED) {
+            setDragged(true);
+        } else if (pointerEvent.getType() == PointerEvent.PRESSED) {
             setPressed(true);
             fireRipple(pointerEvent.getX(), pointerEvent.getY());
         } else if (pointerEvent.getType() == PointerEvent.RELEASED) {
             setPressed(false);
+            setDragged(false);
             if (!pointerEvent.isFocusConsumed() && isFocusable()) {
                 pointerEvent.consumeFocus(true);
                 requestFocus(true);

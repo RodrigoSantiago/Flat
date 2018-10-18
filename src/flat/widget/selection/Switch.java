@@ -20,16 +20,12 @@ public class Switch extends Widget {
     private int color;
     private float slideAnimation;
     private Drawable icon;
-    private Drawable delayIcon;
-
-    private boolean delayed;
 
     @Override
     public void applyAttributes(UXStyleAttrs style, Controller controller) {
         super.applyAttributes(style, controller);
 
         setActivated(style.asBool("activated", isActivated()));
-        setDelayed(style.asBool("delayed", isDelayed()));
     }
 
     @Override
@@ -54,13 +50,6 @@ public class Switch extends Widget {
                 setIcon(drawable);
             }
         }
-        res = getStyle().asResource("delay-icon", info);
-        if (res != null) {
-            Drawable drawable = res.getDrawable();
-            if (drawable != null) {
-                setDelayIcon(drawable);
-            }
-        }
     }
 
     @Override
@@ -78,7 +67,7 @@ public class Switch extends Widget {
         StateInfo info = getStateInfo();
         float anim = info.get(StateInfo.ACTIVATED);
 
-        Drawable ic = delayed && delayIcon != null ? delayIcon : icon;
+        Drawable ic = icon;
         if (ic != null) {
 
             final float x1 = x + slideAnimation;
@@ -105,9 +94,8 @@ public class Switch extends Widget {
     @Override
     public void fireRipple(float x, float y) {
         if (isRippleEnabled()) {
-            Drawable ic = delayed && delayIcon != null ? delayIcon : icon;
-            if (ic != null) {
-                getRipple().setSize(Mathf.sqrt(ic.getWidth() * ic.getWidth() + ic.getHeight() * ic.getHeight()) * 0.5f);
+            if (icon != null) {
+                getRipple().setSize(Mathf.sqrt(icon.getWidth() * icon.getWidth() + icon.getHeight() * icon.getHeight()) * 0.5f);
             } else {
                 getRipple().setSize(-1);
             }
@@ -117,10 +105,10 @@ public class Switch extends Widget {
 
     @Override
     public void firePointer(PointerEvent pointerEvent) {
-        if (pointerEvent.getType() == PointerEvent.RELEASED) {
+        super.firePointer(pointerEvent);
+        if (!pointerEvent.isConsumed() && pointerEvent.getType() == PointerEvent.RELEASED) {
             toggle();
         }
-        super.firePointer(pointerEvent);
     }
 
     public ActionListener getToggleListener() {
@@ -148,17 +136,6 @@ public class Switch extends Widget {
         }
     }
 
-    public boolean isDelayed() {
-        return delayed;
-    }
-
-    public void setDelayed(boolean delayed) {
-        if (this.delayed != delayed) {
-            this.delayed = delayed;
-            invalidate(false);
-        }
-    }
-
     public Drawable getIcon() {
         return icon;
     }
@@ -166,17 +143,6 @@ public class Switch extends Widget {
     public void setIcon(Drawable icon) {
         if (this.icon != icon) {
             this.icon = icon;
-            invalidate(false);
-        }
-    }
-
-    public Drawable getDelayIcon() {
-        return delayIcon;
-    }
-
-    public void setDelayIcon(Drawable delayIcon) {
-        if (this.delayIcon != delayIcon) {
-            this.delayIcon = delayIcon;
             invalidate(false);
         }
     }

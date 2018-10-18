@@ -134,10 +134,10 @@ public class Button extends Label {
 
     @Override
     public void firePointer(PointerEvent pointerEvent) {
-        if (pointerEvent.getType() == PointerEvent.RELEASED) {
+        super.firePointer(pointerEvent);
+        if (!pointerEvent.isConsumed() && pointerEvent.getType() == PointerEvent.RELEASED) {
             fire();
         }
-        super.firePointer(pointerEvent);
     }
 
     public ActionListener getActionListener() {

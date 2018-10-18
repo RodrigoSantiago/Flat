@@ -8,6 +8,7 @@ import flat.widget.image.ImageView;
 import flat.widget.layout.*;
 import flat.widget.selection.*;
 import flat.widget.text.*;
+import flat.widget.value.*;
 
 import javafx.util.Pair;
 import org.w3c.dom.Document;
@@ -44,6 +45,7 @@ public final class UXLoader {
         UXLoader.install("RadioButton", RadioButton::new);
         UXLoader.install("RadioGroup", RadioGroup::new);
         UXLoader.install("Switch", Switch::new);
+        UXLoader.install("Slider", Slider::new);
     }
 
     private DimensionStream dimensionStream;
