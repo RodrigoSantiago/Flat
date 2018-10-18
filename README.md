@@ -20,18 +20,22 @@ The main purpose is to work similar to the "Activities" system with the ability 
  - Animations
  - Free transforms
  - Material Design Effects
+ - CSS-Like themes
  
 ### Widgets
  - Label
- 
  - Button
- 
+ - ToggleButton
  - ImageView
+ - CheckBox
+ - RadioButton
+ - Slider
+ - Box
+ - LinearBox
  
 ### Todo - List
  - [ ] Default Widgets
  - [ ] Tooltips
  - [ ] Transitions
- - [ ] Color themes
  - [ ] Dialogs
  - [ ] Pickers
