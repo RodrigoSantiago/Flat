@@ -9,11 +9,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public final class CheckboxGroup implements Gadget {
+public final class CheckGroup implements Gadget {
 
     private String id;
-    private Checkbox root;
-    private ArrayList<Checkbox> children = new ArrayList<>();
+    private CheckBox root;
+    private ArrayList<CheckBox> children = new ArrayList<>();
 
     @Override
     public void applyAttributes(UXStyleAttrs style, Controller controller) {
@@ -27,7 +27,7 @@ public final class CheckboxGroup implements Gadget {
             }
         }
 
-        style.link("root", (gadget) -> setRoot((Checkbox) gadget));
+        style.link("root", (gadget) -> setRoot((CheckBox) gadget));
     }
 
     @Override
@@ -45,7 +45,7 @@ public final class CheckboxGroup implements Gadget {
         return null;
     }
 
-    public void setRoot(Checkbox root) {
+    public void setRoot(CheckBox root) {
         if (this.root != root) {
             if (this.root != null) {
                 this.root._setLeaderGroup(null);
@@ -61,15 +61,15 @@ public final class CheckboxGroup implements Gadget {
         }
     }
 
-    public Checkbox getRoot() {
+    public CheckBox getRoot() {
         return root;
     }
 
-    public List<Checkbox> checkboxes() {
+    public List<CheckBox> checkboxes() {
         return Collections.unmodifiableList(children);
     }
 
-    public void add(Checkbox child) {
+    public void add(CheckBox child) {
         if (child != null) {
             if (!children.contains(child)) {
                 children.add(child);
@@ -78,7 +78,7 @@ public final class CheckboxGroup implements Gadget {
         }
     }
 
-    public void remove(Checkbox child) {
+    public void remove(CheckBox child) {
         if (child != null){
             if (children.remove(child)) {
                 updateRoot();
@@ -86,9 +86,9 @@ public final class CheckboxGroup implements Gadget {
         }
     }
 
-    void checkboxSetActive(Checkbox checkbox, boolean active) {
+    void checkboxSetActive(CheckBox checkbox, boolean active) {
         if (checkbox == root) {
-            for (Checkbox child : children) {
+            for (CheckBox child : children) {
                 child.setActivated(active);
             }
             checkbox._setActivated(active);
@@ -104,7 +104,7 @@ public final class CheckboxGroup implements Gadget {
             boolean defined = true;
             boolean activated = children.get(0).isActivated();
             for (int i = 1; i < children.size(); i++) {
-                Checkbox child = children.get(i);
+                CheckBox child = children.get(i);
                 if (child.isActivated() != activated || child.isIndeterminate()) {
                     defined = false;
                     break;

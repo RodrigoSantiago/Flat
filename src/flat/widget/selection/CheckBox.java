@@ -12,12 +12,12 @@ import flat.uxml.Controller;
 import flat.uxml.UXStyleAttrs;
 import flat.widget.Widget;
 
-public class Checkbox extends Widget {
+public class CheckBox extends Widget {
 
     // Properties
     private ActionListener toggleListener;
-    private CheckboxGroup leaderGroup;
-    private CheckboxGroup group;
+    private CheckGroup leaderGroup;
+    private CheckGroup group;
     private boolean indeterminate;
 
     private Drawable icon;
@@ -29,8 +29,9 @@ public class Checkbox extends Widget {
         super.applyAttributes(style, controller);
 
         setActivated(getStyle().asBool("activated", isActivated()));
+        setIndeterminate(getStyle().asBool("indeterminate", isIndeterminate()));
 
-        style.link("group", (gadget) -> setGroup((CheckboxGroup) gadget));
+        style.link("group", (gadget) -> setGroup((CheckGroup) gadget));
     }
 
     @Override
@@ -113,13 +114,13 @@ public class Checkbox extends Widget {
         }
     }
 
-    public CheckboxGroup getGroup() {
+    public CheckGroup getGroup() {
         return group;
     }
 
-    public void setGroup(CheckboxGroup group) {
+    public void setGroup(CheckGroup group) {
         if (this.group != group) {
-            CheckboxGroup oldGroup = this.group;
+            CheckGroup oldGroup = this.group;
 
             this.group = group;
 
@@ -133,17 +134,17 @@ public class Checkbox extends Widget {
         }
     }
 
-    CheckboxGroup getLeaderGroup() {
+    CheckGroup getLeaderGroup() {
         return leaderGroup;
     }
 
-    void _setLeaderGroup(CheckboxGroup group) {
+    void _setLeaderGroup(CheckGroup group) {
         this.leaderGroup = group;
     }
 
-    void setLeaderGroup(CheckboxGroup group) {
+    void setLeaderGroup(CheckGroup group) {
         if (this.leaderGroup != group) {
-            CheckboxGroup oldGroup = this.leaderGroup;
+            CheckGroup oldGroup = this.leaderGroup;
 
             this.leaderGroup = group;
 

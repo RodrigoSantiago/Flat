@@ -40,12 +40,13 @@ public final class UXLoader {
         UXLoader.install("ToggleGroup", RadioGroup::new);
         UXLoader.install("Label", Label::new);
         UXLoader.install("ImageView", ImageView::new);
-        UXLoader.install("Checkbox", Checkbox::new);
-        UXLoader.install("CheckboxGroup", CheckboxGroup::new);
+        UXLoader.install("CheckBox", CheckBox::new);
+        UXLoader.install("CheckGroup", CheckGroup::new);
         UXLoader.install("RadioButton", RadioButton::new);
         UXLoader.install("RadioGroup", RadioGroup::new);
         UXLoader.install("Switch", Switch::new);
         UXLoader.install("Slider", Slider::new);
+        UXLoader.install("ScrollBar", ScrollBar::new);
     }
 
     private DimensionStream dimensionStream;

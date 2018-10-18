@@ -3,7 +3,7 @@ package flat.widget.layout;
 import flat.animations.StateInfo;
 import flat.graphics.text.Align;
 import flat.widget.Widget;
-import flat.widget.enuns.LinearFlow;
+import flat.widget.enuns.Direction;
 import flat.widget.enuns.Visibility;
 
 import java.util.ArrayList;
@@ -11,7 +11,7 @@ import java.util.Collections;
 
 public class LinearBox extends Box {
 
-    private LinearFlow linearFlow = LinearFlow.HORIZONTAL;
+    private Direction direction = Direction.HORIZONTAL;
     private Align.Vertical valign = Align.Vertical.TOP;
     private Align.Horizontal halign = Align.Horizontal.LEFT;
 
@@ -24,7 +24,7 @@ public class LinearBox extends Box {
 
         StateInfo info = getStateInfo();
 
-        setLinearFlow(getStyle().asConstant("linear-flow", info, getLinearFlow()));
+        setDirection(getStyle().asConstant("direction", info, getDirection()));
         setVerticalAlign(getStyle().asConstant("v-align", info, getVerticalAlign()));
         setHorizontalAlign(getStyle().asConstant("h-align", info, getHorizontalAlign()));
     }
@@ -32,7 +32,7 @@ public class LinearBox extends Box {
     private void hLayout(float width, float height) {
         setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
         ArrayList<Widget> children = orderedList;
-        boolean inverse = linearFlow == LinearFlow.IHORIZONTAL;
+        boolean inverse = direction == Direction.IHORIZONTAL;
         int size = children.size() - 1;
 
         float xoff = Math.min(getWidth(), getPaddingLeft() + getMarginLeft()), sum = 0;
@@ -83,7 +83,7 @@ public class LinearBox extends Box {
         float mWidth = getPrefWidth(), mHeight = getPrefHeight();
 
         ArrayList<Widget> children = orderedList;
-        boolean inverse = linearFlow == LinearFlow.IHORIZONTAL;
+        boolean inverse = direction == Direction.IHORIZONTAL;
         int size = children.size() - 1;
 
         for (int i = 0; i < children.size(); i++) {
@@ -117,7 +117,7 @@ public class LinearBox extends Box {
     private void vLayout(float width, float height) {
         setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
         ArrayList<Widget> children = orderedList;
-        boolean inverse = linearFlow == LinearFlow.IVERTICAL;
+        boolean inverse = direction == Direction.IVERTICAL;
         int size = children.size() - 1;
 
         float yoff = Math.min(getHeight(), getPaddingTop() + getMarginTop()), sum = 0;
@@ -168,7 +168,7 @@ public class LinearBox extends Box {
         float mWidth = getPrefWidth(), mHeight = getPrefHeight();
 
         ArrayList<Widget> children = orderedList;
-        boolean inverse = linearFlow == LinearFlow.IHORIZONTAL;
+        boolean inverse = direction == Direction.IHORIZONTAL;
         int size = children.size() - 1;
 
         for (int i = 0; i < children.size(); i++) {
@@ -200,7 +200,7 @@ public class LinearBox extends Box {
 
     @Override
     public void onLayout(float width, float height) {
-        if (this.linearFlow == LinearFlow.VERTICAL || this.linearFlow == LinearFlow.IVERTICAL) {
+        if (this.direction == Direction.VERTICAL || this.direction == Direction.IVERTICAL) {
             vLayout(width, height);
         } else {
             hLayout(width, height);
@@ -209,7 +209,7 @@ public class LinearBox extends Box {
 
     @Override
     public void onMeasure() {
-        if (this.linearFlow == LinearFlow.VERTICAL || this.linearFlow == LinearFlow.IVERTICAL) {
+        if (this.direction == Direction.VERTICAL || this.direction == Direction.IVERTICAL) {
             vMeasure();
         } else {
             hMeasure();
@@ -232,13 +232,13 @@ public class LinearBox extends Box {
         super.childRemove(widget);
     }
 
-    public LinearFlow getLinearFlow() {
-        return linearFlow;
+    public Direction getDirection() {
+        return direction;
     }
 
-    public void setLinearFlow(LinearFlow linearFlow) {
-        if (this.linearFlow != linearFlow) {
-            this.linearFlow = linearFlow;
+    public void setDirection(Direction direction) {
+        if (this.direction != direction) {
+            this.direction = direction;
             invalidate(false);
         }
     }

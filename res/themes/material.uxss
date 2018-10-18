@@ -192,6 +192,26 @@ slider {
 }
 
 scrollbar {
+    color : #FF0000;
+    background-color : #ACACAC;
+
+    min-range-display : 24;
+    transition-duration : 100;
+
+    label-color : #FFFFFF;
+    label-font : family(Roboto) weight(bold);
+    label-font-size : 32;
+    popup-x : -32;
+    popup-y : -68;
+    popup-width : 64;
+    popup-height : 64;
+    popup-radius-top : 32;
+    popup-radius-right : 32;
+    popup-radius-bottom : 0;
+    popup-radius-left : 32;
+    popup-time-out : 300;
+
+    linear-flow : ihorizontal;
 }
 
 progressbar {

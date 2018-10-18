@@ -1,8 +1,6 @@
 <Scene>
-    <LinearBox linear-flow="vertical" h-align="center" v-align="middle" margin-top="24" margin-right="8" margin-bottom="8" margin-left="8">
-        <Slider min="0" max="100" value="50" value2="30" ticks="0" range-enabled="true" width="200"/>
-        <Slider min="0" max="-100" value="-50" value2="-30" ticks="0" range-enabled="false" width="200"/>
-        <Slider min="0" max="-100" value="-50" value2="-30" ticks="0" range-enabled="true" width="200"/>
-        <Slider min="0" max="100" value="50" value2="30" ticks="0" range-enabled="false" width="200"/>
+    <LinearBox linear-flow="vertical" margin-top="64" margin-right="8" margin-bottom="8" margin-left="8">
+        <ScrollBar label-text="A" popup-x="0" popup-y="0" popup-enabled="true" min-range-display="64" width="256" height="8" max-range="100" range="10" value="1"/>
+        <ScrollBar linear-flow="vertical" popup-x="6" popup-y="-64" popup-radius-left="0" popup-radius-bottom="32" label-text="A" popup-enabled="true" min-range-display="64" width="8" height="256" max-range="100" range="10" value="1" />
     </LinearBox>
 </Scene>
