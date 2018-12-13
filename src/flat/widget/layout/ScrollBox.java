@@ -13,7 +13,7 @@ import flat.widget.enuns.Policy;
 import flat.widget.enuns.Visibility;
 import flat.widget.value.ScrollBar;
 
-public class Scroll extends Parent {
+public class ScrollBox extends Parent {
 
     private float scrollX, scrollY;
     private Widget content;
@@ -22,7 +22,7 @@ public class Scroll extends Parent {
 
     private RoundRectangle clipper = new RoundRectangle();
 
-    public Scroll() {
+    public ScrollBox() {
 
     }
 
