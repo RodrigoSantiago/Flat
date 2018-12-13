@@ -69,7 +69,7 @@ public final class Application {
         if (id == 0) {
             throw new RuntimeException("Invalide context creation");
         }
-        long svgId = SVG.Create(SVG_ANTIALIAS | SVG_STENCIL_STROKES);
+        long svgId = SVG.Create();
         if (svgId == 0) {
             WL.Finish();
             throw new RuntimeException("Invalide context creation");
@@ -163,7 +163,7 @@ public final class Application {
 
             WL.ContextAssign(id);
 
-            long svgId = SVG.Create(SVG_ANTIALIAS | SVG_STENCIL_STROKES);
+            long svgId = SVG.Create();
             if (svgId == 0) {
                 runSync(() -> WL.ContextDestroy(id));
                 throw new RuntimeException("Invalide context creation");
@@ -239,8 +239,12 @@ public final class Application {
                     if (mouse == null) {
                         mouse = pointer;
                         mouse.pressed = widget;
+                        mouse.pressed.firePointer(new PointerEvent(mouse.pressed, PointerEvent.PRESSED, event.btn, mouseX, mouseY));
+                        mouse.pressed.setPressed(true);
+                        mouse.pressed.fireRipple(mouseX, mouseY);
+                    } else {
+                        mouse.pressed.firePointer(new PointerEvent(mouse.pressed, PointerEvent.PRESSED, event.btn, mouseX, mouseY));
                     }
-                    mouse.pressed.firePointer(new PointerEvent(mouse.pressed, PointerEvent.PRESSED, event.btn, mouseX, mouseY));
                 }
                 // Released
                 else if (event.action == WLEnuns.RELEASE) {
@@ -254,9 +258,11 @@ public final class Application {
                             }
                         }
                         mouse.pressed.firePointer(new PointerEvent(mouse.pressed, PointerEvent.RELEASED, event.btn, mouseX, mouseY));
-                        if (mouse.pressed.isFocusable()) {
-                            activity.setFocus(mouse.pressed);
+                        if (mouse.dragged != null) {
+                            mouse.dragged.setDragged(false);
                         }
+                        mouse.pressed.setPressed(false);
+                        mouse.pressed.releaseRipple();
                         mouse.reset();
                         mouse = null;
 
@@ -364,7 +370,10 @@ public final class Application {
             if (mouse.dragged == null) {
                 mouse.dragged = mouse.pressed;
                 mouse.hover = widget;
+
                 mouse.dragged.fireDrag(dragEvent = new DragEvent(mouse.dragged, DragEvent.STARTED, mouse.dragData, x, y));
+                mouse.dragged.setDragged(true);
+
                 mouse.dragData = dragEvent.getData();
                 mouse.dragStarted = dragEvent.isStarted();
             }

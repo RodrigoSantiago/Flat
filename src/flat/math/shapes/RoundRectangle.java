@@ -228,7 +228,7 @@ public final class RoundRectangle implements Shape, Serializable {
 
     /** Provides an iterator over an {@link RoundRectangle}. */
     protected static class Iterator implements PathIterator {
-        private final float x, y, width, height, aTopW, aTopH, aRightW, aRightH, aBottomW, aBottomH, aLeftW, aLeftH;
+        private final float x, y, width, height, rxBL, ryBL, rxBR, ryBR, rxTR, ryTR, rxTL, ryTL;
         private final Affine t;
         private int index;
 
@@ -238,14 +238,17 @@ public final class RoundRectangle implements Shape, Serializable {
             this.width = rr.width;
             this.height = rr.height;
 
-            aRightW = Math.min(width / 2f, rr.arcRight) * 2;
-            aRightH = Math.min(height / 2f, rr.arcRight) * 2;
-            aBottomW = Math.min(width / 2f, rr.arcBottom) * 2;
-            aBottomH = Math.min(height / 2f, rr.arcBottom) * 2;
-            aLeftW = Math.min(width / 2f, rr.arcLeft) * 2;
-            aLeftH = Math.min(height / 2f, rr.arcLeft) * 2;
-            aTopW = Math.min(width / 2f, rr.arcTop) * 2;
-            aTopH = Math.min(height / 2f, rr.arcTop) * 2;
+
+            float halfw = Math.abs(width) * 0.5f;
+            float halfh = Math.abs(height) * 0.5f;
+            rxBL = Math.min(rr.arcLeft, halfw) * Math.signum(width);
+            ryBL = Math.min(rr.arcLeft, halfh) * Math.signum(height);
+            rxBR = Math.min(rr.arcBottom, halfw) * Math.signum(width);
+            ryBR = Math.min(rr.arcBottom, halfh) * Math.signum(height);
+            rxTR = Math.min(rr.arcRight, halfw) * Math.signum(width);
+            ryTR = Math.min(rr.arcRight, halfh) * Math.signum(height);
+            rxTL = Math.min(rr.arcTop, halfw) * Math.signum(width);
+            ryTL = Math.min(rr.arcTop, halfh) * Math.signum(height);
 
             this.t = at;
             if (width < 0f || height < 0f) {
@@ -258,7 +261,7 @@ public final class RoundRectangle implements Shape, Serializable {
         }
 
         @Override public boolean isDone () {
-            return index > POINTS.length;
+            return index > 8;
         }
 
         @Override public void next () {
@@ -269,36 +272,49 @@ public final class RoundRectangle implements Shape, Serializable {
             if (isDone()) {
                 throw new NoSuchElementException("Iterator out of bounds");
             }
-            if (index == POINTS.length) {
+
+            int type = SEG_MOVETO;
+            if (index == 0) {
+                line(coords, x, y + height - ryBL);
+            } else if (index == 1) {
+                type = cubic(coords, x, y + height - ryBL * (1 - _el90), x + rxBL * (1 - _el90), y + height, x + rxBL, y + height);
+            } else if (index == 2) {
+                type = line(coords, x + width - rxBR, y + height);
+            } else if (index == 3) {
+                type = cubic(coords, x + width - rxBR * (1 - _el90), y + height, x + width, y + height - ryBR * (1 - _el90), x + width, y + height - ryBR);
+            } else if (index == 4) {
+                type = line(coords, x + width, y + ryTR);
+            } else if (index == 5) {
+                type = cubic(coords, x + width, y + ryTR * (1 - _el90), x + width - rxTR * (1 - _el90), y, x + width - rxTR, y);
+            } else if (index == 6) {
+                type = line(coords, x + rxTL, y);
+            } else if (index == 7) {
+                type = cubic(coords, x + rxTL * (1 - _el90), y, x, y + ryTL * (1 - _el90), x, y + ryTL);
+            } else {
                 return SEG_CLOSE;
             }
-            int j = 0;
-            float[] p = POINTS[index];
-            float aw;
-            float ah;
-            if (index == 1 || index == 2) {
-                aw = aRightW;
-                ah = aRightH;
-            } else if (index == 3 || index == 4) {
-                aw = aBottomW;
-                ah = aBottomH;
-            } else if (index == 5 || index == 6) {
-                aw = aLeftW;
-                ah = aLeftH;
-            } else {
-                aw = aTopW;
-                ah = aTopH;
-            }
-            for (int i = 0; i < p.length; i += 4) {
-                coords[j++] = x + p[i + 0] * width + p[i + 1] * aw;
-                coords[j++] = y + p[i + 2] * height + p[i + 3] * ah;
-            }
             if (t != null) {
-                t.transform(coords, 0, coords, 0, j / 2);
+                t.transform(coords, 0, coords, 0, type == SEG_CUBICTO ? 3 : 1);
             }
-            return TYPES[index];
+            return type;
+        }
+
+        private int line(float[] coords, float x, float y) {
+            coords[0] = x;
+            coords[1] = y;
+            return SEG_LINETO;
+        }
+        private int cubic(float[] coords, float cx1, float cy1, float cx2, float cy2, float x, float y) {
+            coords[0] = cx1;
+            coords[1] = cy1;
+            coords[2] = cx2;
+            coords[3] = cy2;
+            coords[4] = x;
+            coords[5] = y;
+            return SEG_CUBICTO;
         }
     }
+    protected static final float _el90 = 0.5522847493f;
 
     // the path for round corners is generated the same way as for Ellipse
 

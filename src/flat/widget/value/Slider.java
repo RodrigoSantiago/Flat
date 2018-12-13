@@ -238,7 +238,7 @@ public class Slider extends Widget {
                 } else {
                     _setValue(val);
                 }
-            } else if (pointerEvent.getType() == PointerEvent.PRESSED) {
+            } else if (pointerEvent.getType() == PointerEvent.PRESSED && !isDragged() && !isPressed()) {
                 if (icon != null && !isDragged()) {
                     hover = valMove ? 1 : 2;
                     invalidate(false);
@@ -249,7 +249,7 @@ public class Slider extends Widget {
                 } else {
                     setValue(val);
                 }
-            } else if (pointerEvent.getType() == PointerEvent.RELEASED) {
+            } else if (pointerEvent.getType() == PointerEvent.RELEASED && isPressed()) {
                 anim3.stop();
                 anim3.tValue = hover;
                 anim3.fValue = hover;

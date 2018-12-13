@@ -431,17 +431,17 @@ public final class Affine {
      *
      * @throws NoninvertibleTransformException if the transform is not invertible.
      */
-    /*public Affine invert() {
+    public Affine invert() {
         float det = m00 * m11 - m10 * m01;
         if (Math.abs(det) == 0f) {
-            throw new NoninvertibleTransformException(this.toString());
+            return identity();
         }
         float rdet = 1f / det;
         return set(m11 * rdet, -m10 * rdet, -m01 * rdet, m00 * rdet,
                 (m10 * m12 - m11 * m02) * rdet, (m01 * m02 - m00 * m12) * rdet);
-    }*/
+    }
 
-    public Affine invert () {
+    /*public Affine invert () {
         float det = m00 * m11 - m01 * m10;
         if (det == 0) {
             return this;
@@ -464,7 +464,7 @@ public final class Affine {
         m11 = invDet * tmp11;
         m12 = invDet * tmp12;
         return this;
-    }
+    }*/
 
     /**
      * Postmultiplies this matrix with the provided matrix and stores the result in this matrix. For example:

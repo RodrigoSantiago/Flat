@@ -62,7 +62,7 @@ public class LinearBox extends Box {
             }
         }
 
-        float mul2 = reaming / sum2;
+        float mul2 = (sum2 == 0 ? 1 : reaming / sum2);
         for (int i = 0; i < children.size(); i++) {
             Widget child = children.get(inverse ? size - i : i);
             if (child.getVisibility() == Visibility.Gone) continue;
@@ -147,7 +147,7 @@ public class LinearBox extends Box {
             }
         }
 
-        float mul2 = reaming / sum2;
+        float mul2 = (sum2 == 0 ? 1 : reaming / sum2);
         for (int i = 0; i < children.size(); i++) {
             Widget child = children.get(inverse ? size - i : i);
             if (child.getVisibility() == Visibility.Gone) continue;

@@ -93,7 +93,7 @@ public class UXStyle {
                 }
             }
         }
-        return false;
+        return parent != null && parent.containsChange(stateA, stateB);
     }
 
     public String asString(String name) {

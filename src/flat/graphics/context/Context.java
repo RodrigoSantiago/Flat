@@ -2,20 +2,17 @@ package flat.graphics.context;
 
 import flat.backend.GL;
 import flat.backend.SVG;
-import flat.backend.SVGEnuns;
 import flat.backend.WL;
 import flat.graphics.context.enuns.*;
 import flat.graphics.SmartContext;
 import flat.graphics.text.*;
 import flat.math.*;
-import flat.math.operations.Area;
 import flat.math.shapes.Path;
 import flat.math.shapes.PathIterator;
 import flat.math.shapes.Shape;
 
 import java.lang.ref.WeakReference;
 import java.nio.Buffer;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import static flat.backend.GLEnuns.*;
@@ -83,17 +80,14 @@ public final class Context {
     // ---- SVG ---- //
     private boolean svgMode;
     private boolean svgAntialias;
-    private float svgAlpha;
     private Paint svgPaint;
     private float svgStrokeWidth;
     private LineCap svgLineCap;
     private LineJoin svgLineJoin;
     private float svgMiterLimit;
-    private boolean svgClip;
-    private float svgClipX, svgClipY, svgClipWidth, svgClipHeight;
 
     private Font svgTextFont;
-    private float svgTextSize, svgTextBlur, svgTextLetterSpacing, svgTextLineHeight;
+    private float svgTextScale, svgTextSpacing;
     private Align.Vertical svgTextVerticalAlign;
     private Align.Horizontal svgTextHorizontalAlign;
 
@@ -206,24 +200,16 @@ public final class Context {
 
         // ---- SVG ---- //
         svgMode = false;
-        svgAntialias = true;
-        svgAlpha = 1f;
+        svgAntialias = false;
         svgPaint = Paint.color(0x000000FF);
         svgStrokeWidth = 1f;
         svgLineCap = LineCap.BUTT;
         svgLineJoin = LineJoin.ROUND;
         svgMiterLimit = 10.0f;
-        svgClip = false;
-        svgClipX = 0;
-        svgClipY = 0;
-        svgClipWidth = 0;
-        svgClipHeight = 0;
 
         svgTextFont = Font.DEFAULT;
-        svgTextSize = 16f;
-        svgTextBlur = 0f;
-        svgTextLetterSpacing = 0f;
-        svgTextLineHeight = 1f;
+        svgTextScale = 1.0f;
+        svgTextSpacing = 1.0f;
         svgTextVerticalAlign = Align.Vertical.TOP;
         svgTextHorizontalAlign = Align.Horizontal.LEFT;
 
@@ -238,7 +224,6 @@ public final class Context {
         render = null;
         buffers = null;
         textures = null;
-        Font.dispose(thread);
     }
 
     // ---- CORE ---- //
@@ -332,33 +317,6 @@ public final class Context {
             svgEnd();
             GL.EnableScissorTest(scizorEnabled = enable);
         }
-    }
-
-    public boolean isScizorEnabled() {
-        return scizorEnabled;
-    }
-
-    public void setScissor(int x, int y, int width, int height) {
-        if (scissorX != x || scissorY != y || scissorWidth != width || scissorHeight != height) {
-            svgEnd();
-            GL.SetScissor(scissorX = x, scissorY = y, scissorWidth = width, scissorHeight = height);
-        }
-    }
-
-    public int getScissorX() {
-        return scissorX;
-    }
-
-    public int getScissorY() {
-        return scissorY;
-    }
-
-    public int getScissorWidth() {
-        return scissorWidth;
-    }
-
-    public int getScissorHeight() {
-        return scissorHeight;
     }
 
     public void setRasterizeEnabled(boolean enable) {
@@ -1041,28 +999,19 @@ public final class Context {
             refreshBinds();
 
             svgMode = true;
-            SVG.BeginFrame(svgId, viewWidth, viewHeight, 1.0f);
+            SVG.BeginFrame(svgId, viewWidth, viewHeight);
 
             svgApplyTransformGradientes();
 
-            SVG.SetShapeAntiAlias(svgId, svgAntialias);
+            SVG.SetAntiAlias(svgId, svgAntialias);
 
-            SVG.SetGlobalAlpha(svgId, svgAlpha);
-            SVG.SetStrokeWidth(svgId, svgStrokeWidth);
-            SVG.SetLineCap(svgId, svgLineCap.getInternalEnum());
-            SVG.SetLineJoin(svgId, svgLineJoin.getInternalEnum());
-            SVG.SetMiterLimit(svgId, svgMiterLimit);
+            SVG.SetStroke(svgId, svgStrokeWidth,
+                    svgLineCap.getInternalEnum(),
+                    svgLineJoin.getInternalEnum(), svgMiterLimit);
 
-            SVG.TextSetFont(svgId, svgTextFont.getInternalID());
-            SVG.TextSetSize(svgId, svgTextSize);
-            SVG.TextSetBlur(svgId, svgTextBlur);
-            SVG.TextSetLetterSpacing(svgId, svgTextLetterSpacing);
-            SVG.TextSetLineHeight(svgId, svgTextLineHeight);
-            SVG.TextSetAlign(svgId, svgTextHorizontalAlign.getInternalEnum() | svgTextVerticalAlign.getInternalEnum());
-
-            if (svgClip) {
-                SVG.SetScissor(svgId, svgClipX, svgClipY, svgClipWidth, svgClipHeight);
-            }
+            SVG.SetFont(svgId, svgTextFont.getInternalID());
+            SVG.SetFontScale(svgId, svgTextScale);
+            SVG.SetFontSpacing(svgId, svgTextSpacing);
         }
     }
 
@@ -1124,52 +1073,29 @@ public final class Context {
     }
 
     private void svgApplyTransformGradientes() {
-
-        if (svgPaint.transform != null) {
-            SVG.TransformSet(svgId,
-                    svgPaint.transform.m00, svgPaint.transform.m10,
-                    svgPaint.transform.m01, svgPaint.transform.m11,
-                    svgPaint.transform.m02, svgPaint.transform.m12);
-        }
-
         if (svgPaint.isColor()) {
             SVG.SetPaintColor(svgId, svgPaint.color);
         } else if (svgPaint.isLinearGradient()) {
-            SVG.SetPaintLinearGradient(svgId, svgPaint.x1, svgPaint.y1, svgPaint.x2, svgPaint.y2, svgPaint.stops.length, svgPaint.stops, svgPaint.colors, svgPaint.cycleMethod.ordinal());
+            SVG.SetPaintLinearGradient(svgId, svgPaint.transform, svgPaint.x1, svgPaint.y1, svgPaint.x2, svgPaint.y2, svgPaint.stops.length, svgPaint.stops, svgPaint.colors, svgPaint.cycleMethod.ordinal());
         } else if (svgPaint.isRadialGradient()) {
-            SVG.SetPaintRadialGradient(svgId, svgPaint.x1, svgPaint.y1, svgPaint.x2, svgPaint.y2, svgPaint.stops.length, svgPaint.stops, svgPaint.colors, svgPaint.cycleMethod.ordinal());
+            SVG.SetPaintRadialGradient(svgId, svgPaint.transform, svgPaint.x1, svgPaint.y1, svgPaint.x2, svgPaint.y2, svgPaint.stops.length, svgPaint.stops, svgPaint.colors, svgPaint.cycleMethod.ordinal());
         } else if (svgPaint.isBoxShadow()) {
-            SVG.SetPaintBoxShadow(svgId, svgPaint.x1, svgPaint.y1, svgPaint.x2, svgPaint.y2, svgPaint.corners, svgPaint.blur, svgPaint.alpha);
+            SVG.SetPaintBoxGradient(svgId, svgPaint.transform, svgPaint.x1, svgPaint.y1, svgPaint.x2, svgPaint.y2, svgPaint.corners, svgPaint.blur, svgPaint.stops.length, svgPaint.stops, svgPaint.colors, svgPaint.cycleMethod.ordinal());
         } else if (svgPaint.isImagePattern()) {
-            SVG.SetPaintImage(svgId, svgPaint.x1, svgPaint.y1, svgPaint.x2, svgPaint.y2, svgPaint.texture.getInternalID());
+            SVG.SetPaintImage(svgId, svgPaint.texture.getInternalID(), svgPaint.transformImage, 0);
         }
 
-        if (svgPaint.transform != null) {
-            SVG.TransformSet(svgId,
-                    svgTransform.m00, svgTransform.m10,
-                    svgTransform.m01, svgTransform.m11,
-                    svgTransform.m02, svgTransform.m12);
-        }
-    }
-
-    public void svgAlpha(float alpha) {
-        if (svgAlpha != alpha) {
-            svgAlpha = alpha;
-            if (svgMode) {
-                SVG.SetGlobalAlpha(svgId, alpha);
-            }
-        }
-    }
-
-    public float svgAlpha() {
-        return svgAlpha;
+        SVG.TransformSet(svgId,
+                svgTransform.m00, svgTransform.m10,
+                svgTransform.m01, svgTransform.m11,
+                svgTransform.m02, svgTransform.m12);
     }
 
     public void svgAntialias(boolean enabled) {
         if (svgAntialias != enabled) {
             svgAntialias = enabled;
             if (svgMode) {
-                SVG.SetShapeAntiAlias(svgId, enabled);
+                SVG.SetAntiAlias(svgId, enabled);
             }
         }
     }
@@ -1191,11 +1117,13 @@ public final class Context {
         return svgPaint;
     }
 
-    public void svgStrokeWidth(float strokeWifth) {
-        if (svgStrokeWidth != strokeWifth) {
-            svgStrokeWidth = strokeWifth;
+    public void svgStrokeWidth(float strokeWidth) {
+        if (svgStrokeWidth != strokeWidth) {
+            svgStrokeWidth = strokeWidth;
             if (svgMode) {
-                SVG.SetStrokeWidth(svgId, strokeWifth);
+                SVG.SetStroke(svgId, svgStrokeWidth,
+                        svgLineCap.getInternalEnum(),
+                        svgLineJoin.getInternalEnum(), svgMiterLimit);
             }
         }
     }
@@ -1208,7 +1136,9 @@ public final class Context {
         if (svgLineCap != lineCap) {
             svgLineCap = lineCap;
             if (svgMode) {
-                SVG.SetLineCap(svgId, lineCap.getInternalEnum());
+                SVG.SetStroke(svgId, svgStrokeWidth,
+                        svgLineCap.getInternalEnum(),
+                        svgLineJoin.getInternalEnum(), svgMiterLimit);
             }
         }
     }
@@ -1221,7 +1151,9 @@ public final class Context {
         if (svgLineJoin != lineJoin) {
             svgLineJoin = lineJoin;
             if (svgMode) {
-                SVG.SetLineJoin(svgId, lineJoin.getInternalEnum());
+                SVG.SetStroke(svgId, svgStrokeWidth,
+                        svgLineCap.getInternalEnum(),
+                        svgLineJoin.getInternalEnum(), svgMiterLimit);
             }
         }
     }
@@ -1234,7 +1166,9 @@ public final class Context {
         if (svgMiterLimit != miterLimit) {
             svgMiterLimit = miterLimit;
             if (svgMode) {
-                SVG.SetMiterLimit(svgId, miterLimit);
+                SVG.SetStroke(svgId, svgStrokeWidth,
+                        svgLineCap.getInternalEnum(),
+                        svgLineJoin.getInternalEnum(), svgMiterLimit);
             }
         }
     }
@@ -1261,170 +1195,162 @@ public final class Context {
         return new Affine(svgTransform);
     }
 
-    public boolean svgClip() {
-        return svgClip;
-    }
-
-    public void svgClip(boolean clip) {
-        if (this.svgClip != clip) {
-            this.svgClip = clip;
-            if (svgMode) {
-                if (clip) {
-                    SVG.SetScissor(svgId, svgClipX, svgClipY, svgClipWidth, svgClipHeight);
-                } else {
-                    SVG.ResetScissor(svgId);
-                }
-            }
-        }
-    }
-
-    public void svgClipBox(float x, float y, float width, float height) {
-        if (svgClipX != x || svgClipY != y || svgClipWidth != width || svgClipHeight != height) {
-            svgClipX = x;
-            svgClipY = y;
-            svgClipWidth = width;
-            svgClipHeight = height;
-            if (svgMode) {
-                if (svgClip) {
-                    SVG.SetScissor(svgId, svgClipX, svgClipY, svgClipWidth, svgClipHeight);
-                }
-            }
-        }
-    }
-
-    public float svgClipX() {
-        return svgClipX;
-    }
-
-    public float svgClipY() {
-        return svgClipY;
-    }
-
-    public float svgClipWidth() {
-        return svgClipWidth;
-    }
-
-    public float svgClipHeight() {
-        return svgClipHeight;
-    }
-
     // ---- Temp Vars
     private float[] data = new float[6];
 
-    public void svgDrawShape(Shape shape, boolean fill) {
+    public void svgClearClip(boolean clip) {
         svgBegin();
-        SVG.BeginPath(svgId);
-        PathIterator pi = shape.pathIterator(null);
+        SVG.ClearClip(svgId, clip ? 1 : 0);
+    }
 
-        float area = 0, x = 0, y = 0, sx = 0, sy = 0;
-        svgAlpha = 1;
+    public void svgClip(Shape shape, boolean clip) {
+        if (shape.isEmpty()) return;
+
+        svgBegin();
+        SVG.PathBegin(svgId, clip ? SVG_CLIP : SVG_UNCLIP);
+        PathIterator pi = shape.pathIterator(null);
         while (!pi.isDone()) {
             switch (pi.currentSegment(data)) {
                 case PathIterator.SEG_MOVETO:
                     SVG.MoveTo(svgId, data[0], data[1]);
-                    area = 0;
-                    sx = x = data[0];
-                    sy = y = data[1];
                     break;
                 case PathIterator.SEG_LINETO:
                     SVG.LineTo(svgId, data[0], data[1]);
-                    area += (x + data[0]) * (y - data[1]);
-                    x = data[0];
-                    y = data[1];
                     break;
                 case PathIterator.SEG_QUADTO:
                     SVG.QuadTo(svgId, data[0], data[1], data[2], data[3]);
-                    area += (x + data[2]) * (y - data[3]);
-                    x = data[2];
-                    y = data[3];
                     break;
                 case PathIterator.SEG_CUBICTO:
-                    SVG.BezierTo(svgId, data[0], data[1], data[2], data[3], data[4], data[5]);
-                    area += (x + data[4]) * (y - data[5]);
-                    x = data[4];
-                    y = data[5];
+                    SVG.CubicTo(svgId, data[0], data[1], data[2], data[3], data[4], data[5]);
                     break;
                 case PathIterator.SEG_CLOSE:
-                    SVG.ClosePath(svgId);
-                    area += (x + sx) * (y - sy);
-                    SVG.PathWinding (svgId, area > 0 ? SVGEnuns.SVG_CCW : SVGEnuns.SVG_CW);
+                    SVG.Close(svgId);
                     break;
             }
             pi.next();
         }
+        SVG.PathEnd(svgId);
+    }
+
+    public void svgDrawShape(Shape shape, boolean fill) {
+        if (shape.isEmpty()) return;
+
+        svgBegin();
+        SVG.PathBegin(svgId, fill ? SVG_FILL : SVG_STROKE);
+        PathIterator pi = shape.pathIterator(null);
+        while (!pi.isDone()) {
+            switch (pi.currentSegment(data)) {
+                case PathIterator.SEG_MOVETO:
+                    SVG.MoveTo(svgId, data[0], data[1]);
+                    break;
+                case PathIterator.SEG_LINETO:
+                    SVG.LineTo(svgId, data[0], data[1]);
+                    break;
+                case PathIterator.SEG_QUADTO:
+                    SVG.QuadTo(svgId, data[0], data[1], data[2], data[3]);
+                    break;
+                case PathIterator.SEG_CUBICTO:
+                    SVG.CubicTo(svgId, data[0], data[1], data[2], data[3], data[4], data[5]);
+                    break;
+                case PathIterator.SEG_CLOSE:
+                    SVG.Close(svgId);
+                    break;
+            }
+            pi.next();
+        }
+        SVG.PathEnd(svgId);
+    }
+
+    public void svgDrawRect(float x, float y, float width, float height, boolean fill) {
+        if (width <= 0 || height <= 0) return;
+
+        svgBegin();
         if (fill) {
-            SVG.Fill(svgId);
+            SVG.Rect(svgId, x, y, width, height);
         } else {
-            SVG.Stroke(svgId);
+            SVG.PathBegin(svgId, SVG_STROKE);
+            SVG.MoveTo(svgId, x, y);
+            SVG.LineTo(svgId, x, y + height);
+            SVG.LineTo(svgId, x + width, y + height);
+            SVG.LineTo(svgId, x + width, y);
+            SVG.Close(svgId);
+            SVG.PathEnd(svgId);
         }
     }
 
-    public void svgDrawRect(float x, float y, float with, float height, boolean fill) {
-        svgBegin();
-        SVG.BeginPath(svgId);
-        SVG.Rect(svgId, x, y, with, height);
-        if (fill) {
-            SVG.Fill(svgId);
-        } else {
-            SVG.Stroke(svgId);
-        }
-    }
+    private static final float _el90 = 0.5522847493f;
 
     public void svgDrawEllipse(float x, float y, float width, float height, boolean fill) {
+        if (width <= 0 || height <= 0) return;
+
         svgBegin();
-        SVG.BeginPath(svgId);
-        SVG.Ellipse(svgId, x + width / 2f, y + height / 2f, width / 2f, height / 2f);
         if (fill) {
-            SVG.Fill(svgId);
+            SVG.Ellipse(svgId, x, y, width, height);
         } else {
-            SVG.Stroke(svgId);
+            float cx = x + width / 2f;
+            float cy = y + height / 2f;
+            float rx = width / 2f;
+            float ry = height / 2f;
+            SVG.PathBegin(svgId, SVG_STROKE);
+            SVG.MoveTo(svgId, cx - rx, cy);
+            SVG.CubicTo(svgId, cx - rx, cy + ry * _el90, cx - rx * _el90, cy + ry, cx, cy + ry);
+            SVG.CubicTo(svgId, cx + rx * _el90, cy + ry, cx + rx, cy + ry * _el90, cx + rx, cy);
+            SVG.CubicTo(svgId, cx + rx, cy - ry * _el90, cx + rx * _el90, cy - ry, cx, cy - ry);
+            SVG.CubicTo(svgId, cx - rx * _el90, cy - ry, cx - rx, cy - ry * _el90, cx - rx, cy);
+            SVG.Close(svgId);
+            SVG.PathEnd(svgId);
         }
     }
 
     public void svgDrawRoundRect(float x, float y, float width, float height, float cTop, float cRight, float cBottom, float cLeft, boolean fill) {
-        svgBegin();
-        SVG.BeginPath(svgId);
-        SVG.RoundedRect(svgId, x, y, width, height, cTop, cRight, cBottom, cLeft);
-        if (fill) {
-            SVG.Fill(svgId);
-        } else {
-            SVG.Stroke(svgId);
-        }
-    }
+        if (width <= 0 || height <= 0) return;
 
-    public void svgDrawArc(float x, float y, float radius, float angleA, float angleB, boolean fill) {
         svgBegin();
-        SVG.BeginPath(svgId);
-        SVG.Arc(svgId, x, y, radius, angleA, angleB, SVG_CCW);
         if (fill) {
-            SVG.Fill(svgId);
+            SVG.RoundRect(svgId, x, y, width, height, cTop, cRight, cBottom, cLeft);
         } else {
-            SVG.Stroke(svgId);
+            float halfw = Math.abs(width) * 0.5f;
+            float halfh = Math.abs(height) * 0.5f;
+            float rxBL = Math.min(cLeft, halfw) * Math.signum(width), ryBL = Math.min(cLeft, halfh) * Math.signum(height);
+            float rxBR = Math.min(cBottom, halfw) * Math.signum(width), ryBR = Math.min(cBottom, halfh) * Math.signum(height);
+            float rxTR = Math.min(cRight, halfw) * Math.signum(width), ryTR = Math.min(cRight, halfh) * Math.signum(height);
+            float rxTL = Math.min(cTop, halfw) * Math.signum(width), ryTL = Math.min(cTop, halfh) * Math.signum(height);
+            SVG.PathBegin(svgId, SVG_STROKE);
+            SVG.MoveTo(svgId, x, y + ryTL);
+            SVG.CubicTo(svgId, x, y + ryTL * (1 - _el90), x + rxTL * (1 - _el90), y, x + rxTL, y);
+            SVG.LineTo(svgId, x + width - rxTR, y);
+            SVG.CubicTo(svgId, x + width - rxTR * (1 - _el90), y, x + width, y + ryTR * (1 - _el90), x + width, y + ryTR);
+            SVG.LineTo(svgId, x + width, y + height - ryBR);
+            SVG.CubicTo(svgId, x + width, y + height - ryBR * (1 - _el90), x + width - rxBR * (1 - _el90), y + height, x + width - rxBR, y + height);
+            SVG.LineTo(svgId, x + rxBL, y + height);
+            SVG.CubicTo(svgId, x + rxBL * (1 - _el90), y + height, x, y + height - ryBL * (1 - _el90), x, y + height - ryBL);
+            SVG.Close(svgId);
+            SVG.PathEnd(svgId);
         }
     }
 
     public void svgDrawLine(float x1, float y1, float x2, float y2) {
         svgBegin();
-        SVG.BeginPath(svgId);
+        SVG.PathBegin(svgId, SVG_STROKE);
         SVG.MoveTo(svgId, x1, y1);
         SVG.LineTo(svgId, x2, y2);
-        SVG.Stroke(svgId);
+        SVG.PathEnd(svgId);
     }
 
     public void svgDrawQuadCurve(float x1, float y1, float cx, float cy, float x2, float y2) {
         svgBegin();
-        SVG.BeginPath(svgId);
+        SVG.PathBegin(svgId, SVG_STROKE);
         SVG.MoveTo(svgId, x1, y1);
         SVG.QuadTo(svgId, cx, cy, x2, y2);
-        SVG.Stroke(svgId);
+        SVG.PathEnd(svgId);
     }
 
     public void svgDrawBezierCurve(float x1, float y1, float cx1, float cy1, float cx2, float cy2, float x2, float y2) {
         svgBegin();
-        SVG.BeginPath(svgId);
+        SVG.PathBegin(svgId, SVG_STROKE);
         SVG.MoveTo(svgId, x1, y1);
-        SVG.BezierTo(svgId, cx1, cy1, cx2, cy2, x2, y2);
-        SVG.Stroke(svgId);
+        SVG.CubicTo(svgId, cx1, cy1, cx2, cy2, x2, y2);
+        SVG.PathEnd(svgId);
     }
 
     // ---- TEXT ----
@@ -1433,7 +1359,7 @@ public final class Context {
         if (svgTextFont != font) {
             svgTextFont = font;
             if (svgMode) {
-                SVG.TextSetFont(svgId, font.getInternalID());
+                SVG.SetFont(svgId, font.getInternalID());
             }
         }
     }
@@ -1442,64 +1368,35 @@ public final class Context {
         return svgTextFont;
     }
 
-    public void svgTextSize(float size) {
-        if (svgTextSize != size) {
-            svgTextSize = size;
+    public void svgTextScale(float scale) {
+        if (svgTextScale != scale) {
+            svgTextScale = scale;
             if (svgMode) {
-                SVG.TextSetSize(svgId, size);
+                SVG.SetFontScale(svgId, scale);
             }
         }
     }
 
-    public float svgTextSize() {
-        return svgTextSize;
+    public float svgTextScale() {
+        return svgTextScale;
     }
 
-    public void svgTextBlur(float blur) {
-        if (svgTextBlur != blur) {
-            svgTextBlur = blur;
+    public void svgTextSpacing(float spacing) {
+        if (svgTextSpacing != spacing) {
+            svgTextSpacing = spacing;
             if (svgMode) {
-                SVG.TextSetBlur(svgId, blur);
+                SVG.SetFontSpacing(svgId, spacing);
             }
         }
     }
 
-    public float svgTextBlur() {
-        return svgTextBlur;
-    }
-
-    public void svgTextLetterSpacing(float spacing) {
-        if (svgTextLetterSpacing != spacing) {
-            svgTextLetterSpacing = spacing;
-            if (svgMode) {
-                SVG.TextSetLetterSpacing(svgId, spacing);
-            }
-        }
-    }
-
-    public float svgTextLetterSpacing() {
-        return svgTextLetterSpacing;
-    }
-
-    public void svgTextLineHeight(float height) {
-        if (svgTextLineHeight != height) {
-            svgTextLineHeight = height;
-            if (svgMode) {
-                SVG.TextSetLineHeight(svgId, height);
-            }
-        }
-    }
-
-    public float svgTextLineHeight() {
-        return svgTextLineHeight;
+    public float svgTextSpacing() {
+        return svgTextSpacing;
     }
 
     public void svgTextVerticalAlign(Align.Vertical align) {
         if (svgTextVerticalAlign != align) {
             svgTextVerticalAlign = align;
-            if (svgMode) {
-                SVG.TextSetAlign(svgId, svgTextHorizontalAlign.getInternalEnum() | svgTextVerticalAlign.getInternalEnum());
-            }
         }
     }
 
@@ -1510,9 +1407,6 @@ public final class Context {
     public void svgTextHorizontalAlign(Align.Horizontal align) {
         if (svgTextHorizontalAlign != align) {
             svgTextHorizontalAlign = align;
-            if (svgMode) {
-                SVG.TextSetAlign(svgId, svgTextHorizontalAlign.getInternalEnum() | svgTextVerticalAlign.getInternalEnum());
-            }
         }
     }
 
@@ -1522,60 +1416,28 @@ public final class Context {
 
     public float svgTextGetWidth(String text) {
         if (text == null) throw new NullPointerException();
-        svgBegin();
-        return SVG.TextGetWidth(svgId, text);
+        return SVG.FontGetTextWidth(svgTextFont.getInternalID(), text, svgTextSpacing);
     }
 
     public float svgTextGetWidth(Buffer text, int offset, int length) {
         if (text == null) throw new NullPointerException();
-        svgBegin();
-        return SVG.TextGetWidthBuffer(svgId, text, offset, length);
+        return SVG.FontGetTextWidthBuffer(svgTextFont.getInternalID(), text, offset, length, svgTextSpacing);
     }
 
-    public void svgDrawText(float x, float y, String text) {
+    public void svgDrawText(float x, float y, String text, float maxWidth) {
         if (text == null) throw new NullPointerException();
         svgBegin();
-        SVG.DrawText(svgId, x, y, text);
+        SVG.PathBegin(svgId, SVG_TEXT);
+        SVG.DrawText(svgId, x, y, text, maxWidth, svgTextHorizontalAlign.getInternalEnum(), svgTextVerticalAlign.getInternalEnum());
+        SVG.PathEnd(svgId);
     }
 
-    public void svgDrawText(float x, float y, Buffer text, int offset, int length) {
+    public void svgDrawText(float x, float y, Buffer text, int offset, int length, float maxWidth) {
         if (text == null) throw new NullPointerException();
         svgBegin();
-        SVG.DrawTextBuffer(svgId, x, y, text, offset, length);
-    }
-
-    public void svgDrawTextBox(float x, float y, float maxWidth, String text) {
-        if (text == null) throw new NullPointerException();
-        svgBegin();
-        SVG.DrawTextBox(svgId, x, y, maxWidth, text);
-    }
-
-    public void svgDrawTextBox(float x, float y, float maxWidth, Buffer text, int offset, int length) {
-        if (text == null) throw new NullPointerException();
-        svgBegin();
-        SVG.DrawTextBoxBuffer(svgId, x, y, maxWidth, text, offset, length);
-    }
-
-    public void svgDrawTextSlice(float x, float y, float maxWidth, String text) {
-        if (text == null) throw new NullPointerException();
-        if (text.length() > 0) {
-            svgBegin();
-            int last = SVG.TextGetLastGlyph(svgId, text, maxWidth);
-            if (last >= 0) {
-                SVG.DrawText(svgId, x, y, text.substring(0, last + 1));
-            }
-        }
-    }
-
-    public void svgDrawTextSlice(float x, float y, float maxWidth, Buffer text, int offset, int length) {
-        if (text == null) throw new NullPointerException();
-        if (length > 0) {
-            svgBegin();
-            int last = SVG.TextGetLastGlyphBuffer(svgId, text, offset, length, maxWidth);
-            if (last > -1) {
-                SVG.DrawTextBuffer(svgId, x, y, text, offset, last + 1);
-            }
-        }
+        SVG.PathBegin(svgId, SVG_TEXT);
+        SVG.DrawTextBuffer(svgId, x, y, text, offset, length, maxWidth, svgTextHorizontalAlign.getInternalEnum(), svgTextVerticalAlign.getInternalEnum());
+        SVG.PathEnd(svgId);
     }
 
     public int getError() {

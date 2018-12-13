@@ -98,7 +98,6 @@ public class Widget implements Gadget {
     private RippleEffect ripple;
     private int rippleColor;
 
-    private Shape clip;
     private boolean shadowEnabled;
     private boolean rippleEnabled;
     private long transitionDuration;
@@ -254,7 +253,6 @@ public class Widget implements Gadget {
 
     protected void backgroundDraw(int backgroundColor, int borderColor, int rippleColor, SmartContext context) {
         if (getDisplayOpacity() > 0) {
-            context.setAlpha(getDisplayOpacity());
             float b = borderWidth;
             float b2 = borderWidth / 2;
 
@@ -286,7 +284,6 @@ public class Widget implements Gadget {
                 ripple.drawRipple(context, bg, rippleColor);
             }
 
-            context.setAlpha(1);
             context.setTransform2D(null);
         }
     }
@@ -1366,13 +1363,6 @@ public class Widget implements Gadget {
         return ripple;
     }
 
-    public void setClip(Shape clip) {
-        if (this.clip != clip) {
-            this.clip = clip;
-            invalidate(true);
-        }
-    }
-
     public void setPointerListener(PointerListener pointerListener) {
         this.pointerListener = pointerListener;
     }
@@ -1423,19 +1413,11 @@ public class Widget implements Gadget {
 
     public void firePointer(PointerEvent pointerEvent) {
         // -- Pressed -- //
-        if (pointerEvent.getType() == PointerEvent.DRAGGED) {
-            setDragged(true);
-        } else if (pointerEvent.getType() == PointerEvent.PRESSED) {
-            setPressed(true);
-            fireRipple(pointerEvent.getX(), pointerEvent.getY());
-        } else if (pointerEvent.getType() == PointerEvent.RELEASED) {
-            setPressed(false);
-            setDragged(false);
+        if (pointerEvent.getType() == PointerEvent.RELEASED) {
             if (!pointerEvent.isFocusConsumed() && isFocusable()) {
                 pointerEvent.consumeFocus(true);
                 requestFocus(true);
             }
-            releaseRipple();
         }
 
         if (pointerListener != null) {

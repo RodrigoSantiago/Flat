@@ -5,10 +5,10 @@ import static flat.backend.SVGEnuns.*;
 public final class Align {
 
     public enum Vertical {
-        MIDDLE(SVG_ALIGN_MIDDLE),
-        TOP(SVG_ALIGN_TOP),
-        BOTTOM(SVG_ALIGN_BOTTOM),
-        BASELINE(SVG_ALIGN_BASELINE);
+        TOP(SVG_TOP),
+        MIDDLE(SVG_MIDDLE),
+        BOTTOM(SVG_BASELINE),
+        BASELINE(SVG_BOTTOM);
 
         private final int svgEnum;
 
@@ -22,9 +22,9 @@ public final class Align {
     }
 
     public enum Horizontal {
-        LEFT(SVG_ALIGN_LEFT),
-        CENTER(SVG_ALIGN_CENTER),
-        RIGHT(SVG_ALIGN_RIGHT);
+        LEFT(SVG_LEFT),
+        CENTER(SVG_CENTER),
+        RIGHT(SVG_RIGHT);
 
         private final int svgEnum;
 

@@ -184,8 +184,8 @@ public class Label extends Widget {
             Context context = Application.getContext();
             context.svgTransform(getTransform());
             context.svgTextFont(font);
-            context.svgTextSize(fontSize);
-            textWidth = context.svgTextGetWidth(showText);
+            context.svgTextScale(fontSize / 48);
+            textWidth = context.svgTextGetWidth(showText) * (fontSize / 48);
             invalidTextSize = false;
         }
         return textWidth;

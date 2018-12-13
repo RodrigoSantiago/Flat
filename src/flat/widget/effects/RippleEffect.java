@@ -5,7 +5,10 @@ import flat.animations.NormalizedAnimation;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Paint;
 import flat.math.shapes.Circle;
+import flat.math.shapes.Rectangle;
+import flat.math.shapes.RoundRectangle;
 import flat.math.shapes.Shape;
+import flat.math.stroke.BasicStroke;
 import flat.resources.Dimension;
 import flat.widget.Widget;
 
@@ -44,7 +47,7 @@ public class RippleEffect {
         colors[1] = (color & 0xFFFFFF00);
 
         context.setPaint(Paint.radial(ripple.x, ripple.y, ripple.radius, ripple.radius,
-                stops, colors, Paint.CycleMethod.CLAMP, context.getTransform2D()));
+                stops, colors, Paint.CycleMethod.CLAMP));
 
         context.drawShape(clip == null ? ripple : clip, true);
     }

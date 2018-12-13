@@ -5,10 +5,11 @@ import flat.math.Affine;
 public final class Paint {
     public enum CycleMethod {CLAMP, REPEATE, REFLECT}
 
-    private static final Affine identity = new Affine();
+    private static final float[] identity = new float[]{1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f};
 
     protected int type;
-    protected Affine transform;
+    protected float[] transform;
+    protected float[] transformImage;
     protected CycleMethod cycleMethod;
 
     protected int color;
@@ -18,7 +19,7 @@ public final class Paint {
 
     protected float x1, y1, x2, y2;
 
-    protected float corners, alpha, blur;
+    protected float corners, blur;
 
     protected Texture2D texture;
 
@@ -46,7 +47,11 @@ public final class Paint {
         paint.stops = stops.clone();
         paint.colors = colors.clone();
         paint.cycleMethod = cycleMethod;
-        paint.transform = transform == null ? identity : new Affine(transform);
+        paint.transform = transform == null ? identity :
+                new float[]{
+                        transform.m00, transform.m10,
+                        transform.m01, transform.m11,
+                        transform.m02, transform.m12};
         return paint;
     }
 
@@ -67,7 +72,11 @@ public final class Paint {
         paint.stops = stops.clone();
         paint.colors = colors.clone();
         paint.cycleMethod = cycleMethod;
-        paint.transform = transform;
+        paint.transform = transform == null ? identity :
+                new float[]{
+                        transform.m00, transform.m10,
+                        transform.m01, transform.m11,
+                        transform.m02, transform.m12};
         return paint;
     }
 
@@ -83,8 +92,14 @@ public final class Paint {
         paint.y2 = Math.abs(y1 - y2);
         paint.corners = corners;
         paint.blur = blur;
-        paint.alpha = alpha;
-        paint.transform = transform;
+        paint.stops = new float[]{0.0f, 1.0f};
+        paint.colors = new int[]{0x000000FF & (int) ((alpha > 1 ? 1 : alpha < 0 ? 0 : alpha) * 255), 0};
+        paint.cycleMethod = CycleMethod.CLAMP;
+        paint.transform = transform == null ? identity :
+                new float[]{
+                        transform.m00, transform.m10,
+                        transform.m01, transform.m11,
+                        transform.m02, transform.m12};
         return paint;
     }
 
@@ -103,7 +118,12 @@ public final class Paint {
         paint.x2 = dw * xs;
         paint.y2 = dh * ys;
         paint.texture = texture;
-        paint.transform = transform;
+        paint.transform = identity;
+        paint.transformImage = transform == null ? identity :
+                new float[]{
+                        transform.m00, transform.m10,
+                        transform.m01, transform.m11,
+                        transform.m02, transform.m12};
         return paint;
     }
     public static Paint image(float x, float y, float width, float height, Texture2D texture) {
@@ -117,7 +137,12 @@ public final class Paint {
         paint.x2 = width;
         paint.y2 = height;
         paint.texture = texture;
-        paint.transform = transform;
+        paint.transform = identity;
+        paint.transformImage = transform == null ? identity :
+                new float[]{
+                        transform.m00, transform.m10,
+                        transform.m01, transform.m11,
+                        transform.m02, transform.m12};
         return paint;
     }
 

@@ -1,6 +1,22 @@
 <Scene>
-    <LinearBox linear-flow="vertical" margin-top="64" margin-right="8" margin-bottom="8" margin-left="8">
-        <ScrollBar label-text="A" popup-x="0" popup-y="0" popup-enabled="true" min-range-display="64" width="256" height="8" max-range="100" range="10" value="1"/>
-        <ScrollBar linear-flow="vertical" popup-x="6" popup-y="-64" popup-radius-left="0" popup-radius-bottom="32" label-text="A" popup-enabled="true" min-range-display="64" width="8" height="256" max-range="100" range="10" value="1" />
+    <LinearBox direction="vertical" margin-top="10" margin-right="10" margin-bottom="10" margin-left="10">
+        <Scroll fit-height="true" fit-width="true" id="scroll" width="256" height="0"
+                padding-left="8" padding-top="8" padding-bottom="8" padding-right="8"
+                radius-top="4" radius-right="4" radius-left="4" radius-bottom="4">
+            <LinearBox width="512" height="512" direction="vertical" background-color="#0000FF">
+                <Button style="raised" text="BUTTOM" id="btn"/>
+                <CheckBox></CheckBox>
+                <RadioButton></RadioButton>
+                <Switch></Switch>
+                <CheckBox></CheckBox>
+                <RadioButton></RadioButton>
+                <Switch></Switch>
+                <CheckBox></CheckBox>
+                <RadioButton></RadioButton>
+                <Switch></Switch>
+            </LinearBox>
+            <ScrollBar range="0.1" max-range="1" direction="vertical" width="16" height="MATCH_PARENT"></ScrollBar>
+            <ScrollBar range="0.1" max-range="1" direction="horizontal" width="MATCH_PARENT" height="16"></ScrollBar>
+        </Scroll>
     </LinearBox>
 </Scene>

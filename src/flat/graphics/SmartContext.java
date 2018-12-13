@@ -65,7 +65,14 @@ public class SmartContext {
     public void clear(int color) {
         clearMode();
         context.setClearColor(color);
-        context.clear(true, true, true);
+        context.clear(true, false, false);
+    }
+
+    public void clear(int color, double depth) {
+        clearMode();
+        context.setClearColor(color);
+        context.setClearDepth(depth);
+        context.clear(true, true, false);
     }
 
     public void clear(int color, double depth, int stencil) {
@@ -74,6 +81,7 @@ public class SmartContext {
         context.setClearDepth(depth);
         context.setClearStencil(stencil);
         context.clear(true, true, true);
+        clipArea.set(getView());
     }
 
     // ---- Properties ---- //
@@ -140,16 +148,40 @@ public class SmartContext {
         return new Matrix4(this.transform3D);
     }
 
+    public void clearClip(boolean clip) {
+        if (clip) {
+            clipArea.reset();
+        } else {
+            clipArea.set(getView());
+        }
+        context.svgClearClip(clip);
+    }
+
     public void setClip(Shape shape) {
-        clipArea.set(shape.pathIterator(transform2D));
+        Affine aff = transform2D == null || transform2D.isIdentity() ? null : transform2D;
+        clipArea.set(shape.pathIterator(aff));
+        context.svgClearClip(true);
+        if (!clipArea.isEmpty()) {
+            context.svgTransform(null);
+            context.svgClip(clipArea, false);
+            context.svgTransform(transform2D);
+        }
     }
 
     public Area intersectClip(Shape shape) {
+        Affine aff = transform2D == null || transform2D.isIdentity() ? null : transform2D;
         Area old = new Area(clipArea);
-        clipArea.intersect(new Area(shape.pathIterator(transform2D)));
+        clipArea.intersect(new Area(shape.pathIterator(aff)));
+        context.svgClearClip(true);
+        if (!clipArea.isEmpty()) {
+            context.svgTransform(null);
+            context.svgClip(clipArea, false);
+            context.svgTransform(transform2D);
+        }
         return old;
     }
 
+    // TODO - BOUNDING BOX CHECK FOR CLIP
     public Area getClip() {
         return new Area(clipArea);
     }
@@ -174,14 +206,6 @@ public class SmartContext {
         return context.svgPaint();
     }
 
-    public void setAlpha(float alpha) {
-        context.svgAlpha(alpha);
-    }
-
-    public float getAlpha() {
-        return context.svgAlpha();
-    }
-
     public void setStroker(Stroke stroker) {
         this.stroker = stroker;
         context.svgStrokeWidth(stroker.getLineWidth());
@@ -203,11 +227,11 @@ public class SmartContext {
     }
 
     public void setTextSize(float size) {
-        context.svgTextSize(size);
+        context.svgTextScale(size / 48);
     }
 
     public float getTextSize() {
-        return context.svgTextSize();
+        return context.svgTextScale();
     }
 
     public void setTextVerticalAlign(Align.Vertical align) {
@@ -224,14 +248,6 @@ public class SmartContext {
 
     public Align.Horizontal getTextHorizontalAlign() {
         return context.svgTextHorizontalAlign();
-    }
-
-    public void setTextLineHeight(float height) {
-        context.svgTextLineHeight(height);
-    }
-
-    public float getTextLineHeight() {
-        return context.svgTextLineHeight();
     }
 
     // ---- CANVAS ---- //
@@ -299,16 +315,6 @@ public class SmartContext {
         context.svgDrawRoundRect(x, y, width, height, cTop, cRight, cBottom, cLeft, fill);
     }
 
-    public void drawArc(Arc arc, boolean fill) {
-        svgMode();
-        context.svgDrawShape(arc, fill);
-    }
-
-    public void drawArc(float x, float y, float radius, float angleA, float angleB, boolean fill) {
-        svgMode();
-        context.svgDrawArc(x, y, radius, angleA, angleB, fill);
-    }
-
     public void drawLine(Line line) {
         svgMode();
         context.svgDrawLine(line.x1, line.y1, line.x2, line.y2);
@@ -341,36 +347,38 @@ public class SmartContext {
 
     public void drawText(float x, float y, String text) {
         svgMode();
-        context.svgDrawText(x, y, text);
+        context.svgDrawText(x, y, text, 0);
     }
 
     public void drawText(float x, float y, Buffer text, int offset, int length) {
         svgMode();
-        context.svgDrawText(x, y, text, offset, length);
+        context.svgDrawText(x, y, text, offset, length, 0);
     }
 
     public void drawTextBox(float x, float y, float maxWidth, String text) {
         svgMode();
-        context.svgDrawTextBox(x, y, maxWidth, text);
+        // split on spaces [draw check size]
+        drawTextSlice(x, y, maxWidth, text);
     }
 
     public void drawTextBox(float x, float y, float maxWidth, Buffer text, int offset, int length) {
         svgMode();
-        context.svgDrawTextBox(x, y, maxWidth, text, offset, length);
+        // split on spaces [draw check size]
+        drawTextSlice(x, y, maxWidth, text, offset, length);
     }
 
     public void drawTextSlice(float x, float y, float maxWidth, String text) {
         svgMode();
-        context.svgDrawTextSlice(x, y, maxWidth, text);
+        context.svgDrawText(x, y, text, maxWidth);
     }
 
     public void drawTextSlice(float x, float y, float maxWidth, Buffer text, int offset, int length) {
         svgMode();
-        context.svgDrawTextSlice(x, y, maxWidth, text, offset, length);
+        context.svgDrawText(x, y, text, offset, length, maxWidth);
     }
 
-    public void drawRoundRectShadow(float x, float y, float width, float height, float cTop, float cRight, float cBottom, float cLeft,
-                                    float blur, float alpha) {
+    public void drawRoundRectShadow(float x, float y, float width, float height,
+                                    float cTop, float cRight, float cBottom, float cLeft, float blur, float alpha) {
         Paint paint = context.svgPaint();
         if (blur > Math.max(width, height)) {
             alpha *= Math.max(width, height) / blur;
@@ -384,7 +392,7 @@ public class SmartContext {
 
         if (cTop == cRight && cBottom == cLeft && cLeft == cTop) {
             context.svgPaint(Paint.shadow(x, y, x + width, y + height,
-                    Math.min(width / 2f, Math.min(height / 2f, cTop + blur / 2f)), blur * 2, alpha, transform2D));
+                    Math.min(width / 2f, Math.min(height / 2f, cTop + blur / 2f)), blur * 2, alpha));
             drawRect(x1, y1, w, h, true);
         } else {
             final float hw = w / 2f;
@@ -392,19 +400,19 @@ public class SmartContext {
             final float xm = x1 + hw;
             final float ym = y1 + hh;
             context.svgPaint(Paint.shadow(x, y, x + width, y + height,
-                    Math.min(width / 2f, Math.min(height / 2f, cTop + blur)), blur * 2, alpha, transform2D));
+                    Math.min(width / 2f, Math.min(height / 2f, cTop + blur)), blur * 2, alpha));
             drawRect(x1, y1, hw, hh, true);
 
             context.svgPaint(Paint.shadow(x, y, x + width, y + height,
-                    Math.min(width / 2f, Math.min(height / 2f, cRight + blur)), blur * 2, alpha, transform2D));
+                    Math.min(width / 2f, Math.min(height / 2f, cRight + blur)), blur * 2, alpha));
             drawRect(xm, y1, hw, hh, true);
 
             context.svgPaint(Paint.shadow(x, y, x + width, y + height,
-                    Math.min(width / 2f, Math.min(height / 2f, cBottom + blur)), blur * 2, alpha, transform2D));
+                    Math.min(width / 2f, Math.min(height / 2f, cBottom + blur)), blur * 2, alpha));
             drawRect(xm, ym, hw, hh, true);
 
             context.svgPaint(Paint.shadow(x, y, x + width, y + height,
-                    Math.min(width / 2f, Math.min(height / 2f, cLeft + blur)), blur * 2, alpha, transform2D));
+                    Math.min(width / 2f, Math.min(height / 2f, cLeft + blur)), blur * 2, alpha));
             drawRect(x1, ym, hw, hh, true);
         }
 

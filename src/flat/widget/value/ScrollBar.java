@@ -152,14 +152,14 @@ public class ScrollBar extends Widget {
                 t = 1 - t;
             }
 
-            if (pointerEvent.getType() == PointerEvent.PRESSED) {
+            if (pointerEvent.getType() == PointerEvent.PRESSED && !isDragged() && !isPressed()) {
                 setValue(t);
             }
             if (pointerEvent.getType() == PointerEvent.DRAGGED) {
                 setValue(t);
                 anim.stop();
             }
-            if (pointerEvent.getType() == PointerEvent.RELEASED && popupEnabled) {
+            if (pointerEvent.getType() == PointerEvent.RELEASED && popupEnabled && isPressed()) {
                 anim2.play();
             }
         }

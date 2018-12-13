@@ -3,21 +3,18 @@ package flat.graphics.context;
 import flat.backend.SVG;
 import flat.graphics.text.FontPosture;
 import flat.graphics.text.FontWeight;
-import flat.widget.Application;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public final class Font {
     private final String family;
     private final FontPosture posture;
     private final FontWeight weight;
 
-    private HashMap<Thread, Integer> fontIds = new HashMap<>();
-    private byte[] data;
+    private long fontID;
 
     private static final ArrayList<Font> fonts = new ArrayList<>();
 
@@ -98,34 +95,16 @@ public final class Font {
         }
     }
 
-    private Font(String family, FontWeight weight, FontPosture posture, byte[] data) {
+    public Font(String family, FontWeight weight, FontPosture posture, byte[] data) {
         this.family = family;
         this.weight = weight;
         this.posture = posture;
-        this.data = data.clone();
+        fontID = SVG.FontCreate(data, 48, 1);
+        SVG.FontLoadAllGlyphs(fontID);
     }
 
-    public int getInternalID() {
-        Integer index;
-        synchronized (Font.class) {
-            index = fontIds.get(Thread.currentThread());
-        }
-        if (index == null) {
-            long svgId = Application.getCurrentContext().svgId;
-            index = SVG.FontCreate(svgId, family + "-" + posture + "-" + weight, data);
-            synchronized (Font.class) {
-                fontIds.put(Thread.currentThread(), index);
-            }
-        }
-        return index;
-    }
-
-    static void dispose(Thread thread) {
-        synchronized (Font.class) {
-            for (Font font : fonts) {
-                font.fontIds.remove(thread);
-            }
-        }
+    public long getInternalID() {
+        return fontID;
     }
 
     public String getFamily() {
@@ -146,6 +125,11 @@ public final class Font {
 
     public boolean isItalic() {
         return posture == FontPosture.ITALIC;
+    }
+
+    @Override
+    protected void finalize() {
+        SVG.FontDestroy(fontID);
     }
 
     @Override

@@ -22,6 +22,11 @@ button : label {
     radius-left : 2;
     radius-right : 2;
     radius-bottom : 2;
+    padding-left : 8;
+    padding-right : 8;
+    padding-top : 4;
+    padding-bottom : 4;
+    font-size : 24sp;
     background-color : #FFFFFFFF;
     transition-duration : 100;
 
@@ -243,6 +248,12 @@ tab {
 }
 
 scroll {
+    enabled {
+        background-color : #FF000000;
+    }
+    hovered {
+        background-color : #FF000030;
+    }
 }
 
 navigation {

@@ -47,6 +47,7 @@ public final class UXLoader {
         UXLoader.install("Switch", Switch::new);
         UXLoader.install("Slider", Slider::new);
         UXLoader.install("ScrollBar", ScrollBar::new);
+        UXLoader.install("Scroll", Scroll::new);
     }
 
     private DimensionStream dimensionStream;

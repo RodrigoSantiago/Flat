@@ -102,8 +102,10 @@ public class Activity extends Controller {
     }
 
     public void onDraw(SmartContext context) {
+        context.setAntialiasEnabled(true);
         context.setView(0, 0, (int) getWidth(), (int) getHeight());
         context.clear(color, 1, 0);
+        context.clearClip(false);
         scene.onDraw(context);
     }
 
