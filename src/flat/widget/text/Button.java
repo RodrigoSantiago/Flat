@@ -9,7 +9,6 @@ import flat.graphics.image.Drawable;
 import flat.graphics.text.Align;
 import flat.resources.Resource;
 import flat.uxml.Controller;
-import flat.uxml.UXStyle;
 import flat.uxml.UXStyleAttrs;
 
 import java.lang.reflect.Method;
@@ -44,6 +43,7 @@ public class Button extends Label {
 
     public void applyStyle() {
         super.applyStyle();
+        if (getStyle() == null) return;
 
         StateInfo info = getStateInfo();
 
@@ -74,7 +74,7 @@ public class Button extends Label {
             if (getShowText() != null && !getShowText().isEmpty()) {
                 context.setColor(getTextColor());
                 context.setTextFont(getFont());
-                context.setTextSize(getFontSize());
+                context.setTextFontSize(getFontSize());
                 context.setTextVerticalAlign(Align.Vertical.TOP);
                 context.setTextHorizontalAlign(Align.Horizontal.LEFT);
                 context.drawTextSlice(
@@ -86,7 +86,7 @@ public class Button extends Label {
             if (getShowText() != null && !getShowText().isEmpty()) {
                 context.setColor(getTextColor());
                 context.setTextFont(getFont());
-                context.setTextSize(getFontSize());
+                context.setTextFontSize(getFontSize());
                 context.setTextVerticalAlign(Align.Vertical.TOP);
                 context.setTextHorizontalAlign(Align.Horizontal.LEFT);
 

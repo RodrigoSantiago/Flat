@@ -266,6 +266,10 @@ public final class RoundRectangle implements Shape, Serializable {
 
         @Override public void next () {
             index++;
+            if (index == 1 && rxBL == 0) index++;
+            if (index == 3 && rxBR == 0) index++;
+            if (index == 5 && rxTR == 0) index++;
+            if (index == 7 && rxTL == 0) index++;
         }
 
         @Override public int currentSegment (float[] coords) {

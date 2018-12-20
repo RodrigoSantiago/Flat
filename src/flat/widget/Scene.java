@@ -82,16 +82,14 @@ public class Scene extends Parent {
         setMeasure(mWidth, mHeight);
     }
 
+    @Override
     public void add(Widget child) {
-        childAttach(child);
-        getChildren().add(child);
+        super.add(child);
     }
 
+    @Override
     public void add(Widget... children) {
-        for (Widget child : children) {
-            childAttach(child);
-        }
-        Collections.addAll(getChildren(), children);
+        super.add(children);
     }
 
     @Override

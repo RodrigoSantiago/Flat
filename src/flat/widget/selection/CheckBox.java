@@ -37,6 +37,7 @@ public class CheckBox extends Widget {
     @Override
     public void applyStyle() {
         super.applyStyle();
+        if (getStyle() == null) return;
 
         StateInfo info = getStateInfo();
 

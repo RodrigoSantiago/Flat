@@ -1,22 +1,14 @@
 <Scene>
-    <LinearBox direction="vertical" margin-top="10" margin-right="10" margin-bottom="10" margin-left="10">
-        <Scroll fit-height="true" fit-width="true" id="scroll" width="256" height="0"
-                padding-left="8" padding-top="8" padding-bottom="8" padding-right="8"
-                radius-top="4" radius-right="4" radius-left="4" radius-bottom="4">
-            <LinearBox width="512" height="512" direction="vertical" background-color="#0000FF">
-                <Button style="raised" text="BUTTOM" id="btn"/>
-                <CheckBox></CheckBox>
-                <RadioButton></RadioButton>
-                <Switch></Switch>
-                <CheckBox></CheckBox>
-                <RadioButton></RadioButton>
-                <Switch></Switch>
-                <CheckBox></CheckBox>
-                <RadioButton></RadioButton>
-                <Switch></Switch>
-            </LinearBox>
-            <ScrollBar range="0.1" max-range="1" direction="vertical" width="16" height="MATCH_PARENT"></ScrollBar>
-            <ScrollBar range="0.1" max-range="1" direction="horizontal" width="MATCH_PARENT" height="16"></ScrollBar>
-        </Scroll>
-    </LinearBox>
+    <Tab id="tab" header-scrollable="true" width="match_parent" height="match_parent" active-page="1">
+        <Page id="page 1" name="Pagina 1" background-color="#FF0000" width="match_parent" height="match_parent"></Page>
+        <Page id="page 2" name="Pagina 2" background-color="#FF8000" width="match_parent" height="match_parent"></Page>
+        <Page id="page 3" name="Pagina 3" background-color="#FFFF00" width="match_parent" height="match_parent"></Page>
+        <Page id="page 4" name="Pagina 4" background-color="#8FFF00" width="match_parent" height="match_parent"></Page>
+        <Page id="page 5" name="Pagina 5" background-color="#00FF00" width="match_parent" height="match_parent"></Page>
+        <Page id="page 6" name="Pagina 6" background-color="#00FF80" width="match_parent" height="match_parent"></Page>
+        <Page id="page 7" name="Pagina 7" background-color="#00FFFF" width="match_parent" height="match_parent"></Page>
+        <Page id="page 8" name="Pagina 8" background-color="#0080FF" width="match_parent" height="match_parent"></Page>
+        <Page id="page 9" name="Pagina 9" background-color="#8000FF" width="match_parent" height="match_parent"></Page>
+        <Page id="page 10" name="Pagina 10" background-color="#FF00FF" width="match_parent" height="match_parent"></Page>
+    </Tab>
 </Scene>

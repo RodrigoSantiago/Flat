@@ -4,6 +4,7 @@ import flat.animations.StateInfo;
 import flat.graphics.context.Font;
 import flat.resources.Resource;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -38,6 +39,22 @@ public class UXStyle {
         for (int i = 0; i < 8; i++) {
             properties.addAll(entries[i].keySet());
         }
+    }
+
+    public ArrayList<String> dynamicFinder(String startWith) {
+        ArrayList<String> names = new ArrayList<>();
+        for (HashMap<String, UXValue> entry : entries) {
+            for (String name : entry.keySet()){
+                if (name.startsWith(startWith) && !names.contains(name)) {
+                    names.add(name);
+                }
+            }
+        }
+        return names;
+    }
+
+    public UXTheme getTheme() {
+        return theme;
     }
 
     protected void instance() {

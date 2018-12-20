@@ -29,207 +29,82 @@ public class LinearBox extends Box {
         setHorizontalAlign(getStyle().asConstant("h-align", info, getHorizontalAlign()));
     }
 
-    private void hLayout(float width, float height) {
-        setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
-        ArrayList<Widget> children = orderedList;
-        boolean inverse = direction == Direction.IHORIZONTAL;
-        int size = children.size() - 1;
-
-        float xoff = Math.min(getWidth(), getPaddingLeft() + getMarginLeft()), sum = 0;
-        for (int i = 0; i < children.size(); i++) {
-            Widget child = children.get(inverse ? size - i : i);
-            if (child.getVisibility() == Visibility.Gone) continue;
-
-            sum += Math.min(child.getMeasureWidth(), getWidth());
-        }
-
-        float mul = 1f;
-        if (sum > getWidth()) {
-            mul = getWidth() / sum;
-        }
-
-        float w = Math.max(0, getWidth() - getPaddingLeft() - getPaddingRight() - getMarginLeft() - getMarginRight());
-        float h = Math.max(0, getHeight() - getPaddingTop() - getPaddingBottom() - getMarginTop() - getMarginBottom());
-        float reaming = w, sum2 = 0;
-        for (int i = 0; i < children.size(); i++) {
-            Widget child = children.get(inverse ? size - i : i);
-            if (child.getVisibility() == Visibility.Gone) continue;
-
-            if (Math.min(child.getMeasureWidth(), w) * mul < Math.min(child.getLayoutMinWidth(), w)) {
-                reaming -= Math.min(child.getLayoutMinWidth(), w);
-            } else {
-                sum2 += Math.min(child.getMeasureWidth(), w);
-            }
-        }
-
-        float mul2 = (sum2 == 0 ? 1 : reaming / sum2);
-        for (int i = 0; i < children.size(); i++) {
-            Widget child = children.get(inverse ? size - i : i);
-            if (child.getVisibility() == Visibility.Gone) continue;
-
-            float childW;
-            if (Math.min(child.getMeasureWidth(), w) * mul < Math.min(child.getLayoutMinWidth(), w)) {
-                childW = Math.min(child.getLayoutMinWidth(), w);
-            } else {
-                childW = Math.min(child.getMeasureWidth(), w) * mul2;
-            }
-            child.onLayout(childW, h);
-            child.setPosition(xoff, yOff(child.getHeight()));
-            xoff += child.getWidth();
-        }
-    }
-
-    private void hMeasure() {
-        float mWidth = getPrefWidth(), mHeight = getPrefHeight();
-
-        ArrayList<Widget> children = orderedList;
-        boolean inverse = direction == Direction.IHORIZONTAL;
-        int size = children.size() - 1;
-
-        for (int i = 0; i < children.size(); i++) {
-            Widget child = children.get(inverse ? size - i : i);
-
-            child.onMeasure();
-            if (child.getVisibility() == Visibility.Gone) continue;
-
-            if (mWidth != MATCH_PARENT) {
-                if (child.getMeasureWidth() == MATCH_PARENT) {
-                    if (getPrefWidth() == WRAP_CONTENT)
-                        mWidth = MATCH_PARENT;
-                } else {
-                    mWidth += child.getMeasureWidth();
-                }
-            }
-            if (mHeight != MATCH_PARENT) {
-                if (child.getMeasureHeight() == MATCH_PARENT) {
-                    if (getPrefHeight() == WRAP_CONTENT)
-                        mHeight = MATCH_PARENT;
-                } else if (child.getMeasureHeight() > mHeight) {
-                    mHeight = child.getMeasureHeight();
-                }
-            }
-        }
-        mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
-        mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
-        setMeasure(mWidth, mHeight);
-    }
-
-    private void vLayout(float width, float height) {
-        setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
-        ArrayList<Widget> children = orderedList;
-        boolean inverse = direction == Direction.IVERTICAL;
-        int size = children.size() - 1;
-
-        float yoff = Math.min(getHeight(), getPaddingTop() + getMarginTop()), sum = 0;
-        for (int i = 0; i < children.size(); i++) {
-            Widget child = children.get(inverse ? size - i : i);
-            if (child.getVisibility() == Visibility.Gone) continue;
-
-            sum += Math.min(child.getMeasureHeight(), getHeight());
-        }
-
-        float mul = 1f;
-        if (sum > getHeight()) {
-            mul = getHeight() / sum;
-        }
-
-        float w = Math.max(0, getWidth() - getPaddingLeft() - getPaddingRight() - getMarginLeft() - getMarginRight());
-        float h = Math.max(0, getHeight() - getPaddingTop() - getPaddingBottom() - getMarginTop() - getMarginBottom());
-        float reaming = h, sum2 = 0;
-        for (int i = 0; i < children.size(); i++) {
-            Widget child = children.get(inverse ? size - i : i);
-            if (child.getVisibility() == Visibility.Gone) continue;
-
-            if (Math.min(child.getMeasureHeight(), h) * mul < Math.min(child.getLayoutMinHeight(), h)) {
-                reaming -= Math.min(child.getLayoutMinHeight(), h);
-            } else {
-                sum2 += Math.min(child.getMeasureHeight(), h);
-            }
-        }
-
-        float mul2 = (sum2 == 0 ? 1 : reaming / sum2);
-        for (int i = 0; i < children.size(); i++) {
-            Widget child = children.get(inverse ? size - i : i);
-            if (child.getVisibility() == Visibility.Gone) continue;
-
-            float childH;
-            if (Math.min(child.getMeasureHeight(), h) * mul < Math.min(child.getLayoutMinHeight(), h)) {
-                childH = Math.min(child.getLayoutMinHeight(), h);
-            } else {
-                childH = Math.min(child.getMeasureHeight(), h) * mul2;
-            }
-            child.onLayout(w, childH);
-            child.setPosition(xOff(child.getWidth()), yoff);
-            yoff += child.getHeight();
-        }
-    }
-
-    private void vMeasure() {
-        float mWidth = getPrefWidth(), mHeight = getPrefHeight();
-
-        ArrayList<Widget> children = orderedList;
-        boolean inverse = direction == Direction.IHORIZONTAL;
-        int size = children.size() - 1;
-
-        for (int i = 0; i < children.size(); i++) {
-            Widget child = children.get(inverse ? size - i : i);
-            child.onMeasure();
-            if (child.getVisibility() == Visibility.Gone) continue;
-
-            if (mWidth != MATCH_PARENT) {
-                if (child.getMeasureWidth() == MATCH_PARENT) {
-                    if (getPrefWidth() == WRAP_CONTENT)
-                        mWidth = MATCH_PARENT;
-                } else if (child.getMeasureWidth() > mWidth) {
-                    mWidth = child.getMeasureWidth();
-                }
-            }
-            if (mHeight != MATCH_PARENT) {
-                if (child.getMeasureHeight() == MATCH_PARENT) {
-                    if (getPrefHeight() == WRAP_CONTENT)
-                        mHeight = MATCH_PARENT;
-                } else {
-                    mHeight += child.getMeasureHeight();
-                }
-            }
-        }
-        mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
-        mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
-        setMeasure(mWidth, mHeight);
-    }
-
     @Override
     public void onLayout(float width, float height) {
+        setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
         if (this.direction == Direction.VERTICAL || this.direction == Direction.IVERTICAL) {
-            vLayout(width, height);
+            layoutHelperVertical(getChildren(), getInX(), getInY(), getInWidth(), getInHeight(), halign);
         } else {
-            hLayout(width, height);
+            layoutHelperHorizontal(getChildren(), getInX(), getInY(), getInWidth(), getInHeight(), valign);
         }
     }
 
     @Override
     public void onMeasure() {
-        if (this.direction == Direction.VERTICAL || this.direction == Direction.IVERTICAL) {
-            vMeasure();
-        } else {
-            hMeasure();
+        final float offWidth = getPaddingLeft() + getPaddingRight();
+        final float offHeight = getPaddingTop() + getPaddingBottom();
+        float mWidth = Math.max(getPrefWidth(), Math.max(getMinWidth(), offWidth));
+        float mHeight = Math.max(getPrefHeight(), Math.max(getMinHeight(), offHeight));
+
+        boolean vertical = (this.direction == Direction.VERTICAL || this.direction == Direction.IVERTICAL);
+        ArrayList<Widget> children = orderedList;
+
+        float childrenWidth = 0, childrenMinWidth = 0;
+        float childrenHeight = 0, childrenMinHeight = 0;
+        for (Widget child : children) {
+            child.onMeasure();
+            if (child.getVisibility() == Visibility.Gone) continue;
+
+            if (vertical) {
+                if (child.getMeasureWidth() > childrenWidth) {
+                    childrenWidth = child.getMeasureWidth();
+                }
+                if (child.getLayoutMinWidth() > childrenMinWidth) {
+                    childrenMinWidth += child.getLayoutMinWidth();
+                }
+                childrenHeight += child.getMeasureHeight();
+                childrenMinHeight += child.getLayoutMinHeight();
+            } else {
+                childrenWidth += child.getMeasureWidth();
+                childrenMinWidth += child.getLayoutMinWidth();
+                if (child.getMeasureHeight() > childrenHeight) {
+                    childrenHeight = child.getMeasureHeight();
+                }
+                if (child.getLayoutMinHeight() > childrenMinHeight) {
+                    childrenMinHeight += child.getLayoutMinHeight();
+                }
+            }
         }
+        if (getPrefWidth() == WRAP_CONTENT) {
+            mWidth = childrenWidth + offWidth;
+        } else if (mWidth < childrenMinWidth + offWidth) {
+            mWidth = childrenMinWidth + offWidth;
+        }
+        if (getPrefHeight() == WRAP_CONTENT) {
+            mHeight = childrenHeight + offHeight;
+        } else if (mHeight < childrenMinHeight + offHeight) {
+            mHeight = childrenMinHeight + offHeight;
+        }
+
+        setMeasure(mWidth + getMarginLeft() + getMarginRight(), mHeight + getMarginTop() + getMarginBottom());
     }
 
+    @Override
     public void add(Widget child) {
         orderedList.add(child);
         super.add(child);
     }
 
+    @Override
     public void add(Widget... children) {
         Collections.addAll(orderedList, children);
         super.add(children);
     }
 
     @Override
-    public void childRemove(Widget widget) {
+    public void remove(Widget widget) {
         orderedList.remove(widget);
-        super.childRemove(widget);
+        super.remove(widget);
     }
 
     public Direction getDirection() {
@@ -263,23 +138,5 @@ public class LinearBox extends Box {
             this.halign = halign;
             invalidate(true);
         }
-    }
-
-    private float xOff(float childWidth) {
-        float start = getPaddingLeft() + getMarginLeft();
-        float end = getWidth() - getPaddingRight() - getMarginRight();
-        if (end < start) return (start + end) / 2f;
-        if (halign == Align.Horizontal.RIGHT) return end - childWidth;
-        if (halign == Align.Horizontal.CENTER) return (start + end - childWidth) / 2f;
-        return start;
-    }
-
-    private float yOff(float childHeight) {
-        float start = getPaddingTop() + getMarginTop();
-        float end = getHeight() - getPaddingBottom() - getMarginBottom();
-        if (end < start) return (start + end) / 2f;
-        if (valign == Align.Vertical.BOTTOM || valign == Align.Vertical.BASELINE) return end - childHeight;
-        if (valign == Align.Vertical.MIDDLE) return (start + end - childHeight) / 2f;
-        return start;
     }
 }

@@ -54,8 +54,8 @@ public class ScrollBar extends Widget {
 
     @Override
     public void applyStyle() {
-        if (getStyle() == null) return;
         super.applyStyle();
+        if (getStyle() == null) return;
 
         StateInfo info = getStateInfo();
 
@@ -125,7 +125,7 @@ public class ScrollBar extends Widget {
             if (labelText != null) {
                 context.setTransform2D(getTransform());
                 context.setColor(labelColor);
-                context.setTextSize(labelFontSize);
+                context.setTextFontSize(labelFontSize);
                 context.setTextFont(labelFont);
                 context.setTextVerticalAlign(Align.Vertical.MIDDLE);
                 context.setTextHorizontalAlign(Align.Horizontal.CENTER);

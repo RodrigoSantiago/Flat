@@ -2,10 +2,8 @@ package flat.widget.text;
 
 import flat.animations.StateInfo;
 import flat.graphics.SmartContext;
-import flat.graphics.context.Context;
 import flat.graphics.text.Align;
 import flat.graphics.context.Font;
-import flat.uxml.UXStyle;
 import flat.uxml.UXStyleAttrs;
 import flat.widget.Application;
 import flat.uxml.Controller;
@@ -37,6 +35,7 @@ public class Label extends Widget {
     @Override
     public void applyStyle() {
         super.applyStyle();
+        if (getStyle() == null) return;
 
         StateInfo info = getStateInfo();
 
@@ -149,7 +148,7 @@ public class Label extends Widget {
         if (showText != null) {
             context.setColor(textColor);
             context.setTextFont(font);
-            context.setTextSize(fontSize);
+            context.setTextFontSize(fontSize);
             context.setTextVerticalAlign(Align.Vertical.TOP);
             context.setTextHorizontalAlign(Align.Horizontal.LEFT);
 
@@ -181,11 +180,10 @@ public class Label extends Widget {
             if (showText == null) {
                 return textWidth = 0;
             }
-            Context context = Application.getContext();
-            context.svgTransform(getTransform());
-            context.svgTextFont(font);
-            context.svgTextScale(fontSize / 48);
-            textWidth = context.svgTextGetWidth(showText) * (fontSize / 48);
+            SmartContext context = Application.getContext().getSmartContext();
+            context.setTextFont(font);
+            context.setTextFontSize(fontSize);
+            textWidth = context.getTextWidth(showText);
             invalidTextSize = false;
         }
         return textWidth;

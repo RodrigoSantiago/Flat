@@ -1,5 +1,7 @@
 package flat.widget.layout;
 
+import flat.animations.StateInfo;
+import flat.events.ScrollEvent;
 import flat.graphics.SmartContext;
 import flat.math.shapes.*;
 import flat.uxml.Controller;
@@ -32,8 +34,17 @@ public class ScrollBox extends Parent {
 
         setScrollX(style.asNumber("scroll-x", getScrollX()));
         setScrollY(style.asNumber("scroll-y", getScrollY()));
-        setHorizontalPolicy(style.asConstant("horizontal-policy", getHorizontalPolicy()));
-        setVerticalPolicy(style.asConstant("vertical-policy", getVerticalPolicy()));
+    }
+
+    @Override
+    public void applyStyle() {
+        super.applyStyle();
+        if (getStyle() == null) return;
+
+        StateInfo info = getStateInfo();
+
+        setHorizontalPolicy(getStyle().asConstant("horizontal-policy", info, getHorizontalPolicy()));
+        setVerticalPolicy(getStyle().asConstant("vertical-policy", info, getVerticalPolicy()));
     }
 
     @Override
@@ -80,8 +91,11 @@ public class ScrollBox extends Parent {
         context.setTransform2D(getTransform());
         Shape clip = context.intersectClip(clipper);
 
-        super.onDraw(context);
+        backgroundDraw(getBackgroundColor(), getBorderColor(), getRippleColor(), context);
 
+        if (content != null) {
+            content.onDraw(context);
+        }
         if (verticalBar != null && verticalBar.getVisibility() == Visibility.Visible) {
             verticalBar.onDraw(context);
         }
@@ -97,7 +111,16 @@ public class ScrollBox extends Parent {
     public void onLayout(float width, float height) {
         setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
         if (content != null && content.getVisibility() != Visibility.Gone) {
-            content.onLayout(MATCH_PARENT, MATCH_PARENT);
+            float cw = content.getMeasureWidth();
+            float ch = content.getMeasureHeight();;
+            if (content.getMeasureWidth() == MATCH_PARENT) {
+                cw = width - (verticalBar != null && verticalPolicy == Policy.AWAYS ? verticalBar.getMeasureWidth() : 0);
+            }
+            if (content.getMeasureHeight() == MATCH_PARENT) {
+                ch = height - (horizontalBar != null && horizontalPolicy == Policy.AWAYS ? horizontalBar.getMeasureHeight() : 0);
+            }
+
+            content.onLayout(cw, ch);
             if (horizontalBar != null) {
                 if (horizontalPolicy == Policy.AWAYS) {
                     horizontalBar.setVisibility(Visibility.Visible);
@@ -158,8 +181,6 @@ public class ScrollBox extends Parent {
 
     @Override
     public void onMeasure() {
-        boolean fitWidth = getPrefWidth() == WRAP_CONTENT;
-        boolean fitHeight = getPrefHeight() == WRAP_CONTENT;
         if (content != null) {
             content.onMeasure();
         }
@@ -169,37 +190,56 @@ public class ScrollBox extends Parent {
         if (horizontalBar != null) {
             horizontalBar.onMeasure();
         }
-        if (content == null
-                || content.getVisibility() == Visibility.Gone
-                || (!fitWidth && !fitHeight)) {
-            super.onMeasure();
-            return;
-        }
 
-        float mWidth = getPrefWidth(), mHeight = getPrefHeight();
+        final float offWidth = getPaddingLeft() + getPaddingRight();
+        final float offHeight = getPaddingTop() + getPaddingBottom();
+        float mWidth = Math.max(getPrefWidth(), Math.max(getMinWidth(), offWidth));
+        float mHeight = Math.max(getPrefHeight(), Math.max(getMinHeight(), offHeight));
 
-        if (mWidth != MATCH_PARENT) {
-            if (content.getMeasureWidth() == MATCH_PARENT) {
-                if (getPrefWidth() == WRAP_CONTENT)
-                    mWidth = MATCH_PARENT;
-            } else if (content.getMeasureWidth() > mWidth) {
-                mWidth = content.getMeasureWidth();
+        if (content != null && content.getVisibility() != Visibility.Gone) {
+            if (getPrefWidth() == WRAP_CONTENT) {
+                mWidth = content.getMeasureWidth() + offWidth;
+                if (verticalBar != null && verticalPolicy == Policy.AWAYS) {
+                    mWidth += verticalBar.getMeasureWidth();
+                }
+            }
+            if (getPrefHeight() == WRAP_CONTENT) {
+                mHeight = content.getMeasureHeight() + offHeight;
+                if (horizontalBar != null && horizontalPolicy == Policy.AWAYS) {
+                    mHeight += horizontalBar.getHeight();
+                }
             }
         }
+        setMeasure(mWidth + getMarginLeft() + getMarginRight(), mHeight + getMarginTop() + getMarginBottom());
+    }
 
-        if (mHeight != MATCH_PARENT) {
-            if (content.getMeasureHeight() == MATCH_PARENT) {
-                if (getPrefHeight() == WRAP_CONTENT)
-                    mHeight = MATCH_PARENT;
-            } else if (content.getMeasureHeight() > mHeight) {
-                mHeight = content.getMeasureHeight();
+    @Override
+    public void fireScroll(ScrollEvent scrollEvent) {
+        super.fireScroll(scrollEvent);
+
+        if (!scrollEvent.isConsumed() && content != null && verticalBar != null
+                && verticalBar.getVisibility() == Visibility.Visible) {
+
+            if (content.getHeight() > 0 && getHeight() > 0) {
+                verticalBar.setValue(getScrollY() - (scrollEvent.getDeltaY() * getHeight() / content.getHeight()) / 6f);
+            } else {
+                verticalBar.setValue(getScrollY() - (scrollEvent.getDeltaY() * 0.1f));
             }
         }
+    }
 
-
-        mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
-        mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
-        setMeasure(fitWidth ? mWidth : getLayoutPrefWidth(), fitHeight ? mHeight : getLayoutPrefHeight());
+    @Override
+    public void remove(Widget widget) {
+        if (widget == content) content = null;
+        if (widget == horizontalBar) {
+            horizontalBar.setOnValueChange(null);
+            horizontalBar = null;
+        }
+        if (widget == verticalBar) {
+            verticalBar.setOnValueChange(null);
+            verticalBar = null;
+        }
+        super.remove(widget);
     }
 
     public Widget getContent() {
@@ -209,12 +249,11 @@ public class ScrollBox extends Parent {
     public void setContent(Widget content) {
         if (this.content != content) {
             if (this.content != null) {
-                childRemove(this.content);
+                remove(this.content);
             }
             this.content = content;
             if (content != null) {
-                childAttach(content);
-                getChildren().add(content);
+                add(content);
             }
         }
     }
@@ -227,13 +266,12 @@ public class ScrollBox extends Parent {
         if (this.horizontalBar != horizontalBar) {
             if (this.horizontalBar != null) {
                 this.horizontalBar.setOnValueChange(null);
-                childRemove(this.horizontalBar);
+                remove(this.horizontalBar);
             }
             this.horizontalBar = horizontalBar;
             if (horizontalBar != null) {
                 horizontalBar.setOnValueChange((event) -> setScrollX(horizontalBar.getValue()));
-                childAttach(horizontalBar);
-                getChildren().add(horizontalBar);
+                add(horizontalBar);
             }
         }
     }
@@ -246,13 +284,12 @@ public class ScrollBox extends Parent {
         if (this.verticalBar != verticalBar) {
             if (this.verticalBar != null) {
                 this.verticalBar.setOnValueChange(null);
-                childRemove(this.verticalBar);
+                remove(this.verticalBar);
             }
             this.verticalBar = verticalBar;
             if (verticalBar != null) {
                 verticalBar.setOnValueChange((event) -> setScrollY(verticalBar.getValue()));
-                childAttach(verticalBar);
-                getChildren().add(verticalBar);
+                add(verticalBar);
             }
         }
     }

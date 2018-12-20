@@ -50,6 +50,8 @@ public class Widget implements Gadget {
     private float measureWidth, measureHeight;
 
     private int visibility = Visibility.Visible.ordinal();
+    private UXTheme theme;
+
 
     //---------------------
     //    Family
@@ -299,6 +301,11 @@ public class Widget implements Gadget {
         }
     }
 
+    protected Shape backgroundClip(SmartContext context) {
+        context.setTransform2D(getTransform());
+        return context.intersectClip(bg);
+    }
+
     public void onLayout(float width, float height) {
         setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
     }
@@ -338,7 +345,8 @@ public class Widget implements Gadget {
     }
 
     public void onMeasure() {
-        setMeasure(getLayoutPrefWidth(), getLayoutPrefHeight());
+        setMeasure(Math.max(prefWidth + marginLeft + marginRight, getLayoutMinWidth()),
+                Math.max(prefHeight + marginTop + marginBottom, getLayoutMinHeight()));
     }
 
     public final void setMeasure(float width, float height) {
@@ -425,7 +433,7 @@ public class Widget implements Gadget {
 
     void setParent(Parent parent) {
         if (this.parent != null && parent != null) {
-            this.parent.childRemove(this);
+            this.parent.remove(this);
         }
         Scene sceneA = getScene();
         this.parent = parent;
@@ -456,8 +464,14 @@ public class Widget implements Gadget {
         if (scene != null) {
             return scene.findById(id);
         } else {
-            return null;
+            if (children != null) {
+                for (Widget child : children) {
+                    Widget found = child.findById(id);
+                    if (found != null) return found;
+                }
+            }
         }
+        return null;
     }
 
     public Widget findByPosition(float x, float y, boolean includeDisabled) {
@@ -1000,14 +1014,6 @@ public class Widget implements Gadget {
 
     public float getLayoutMaxHeight() {
         return maxHeight + marginTop + marginBottom;
-    }
-
-    public float getLayoutPrefWidth() {
-        return prefWidth + paddingLeft + paddingRight + marginLeft + marginRight;
-    }
-
-    public float getLayoutPrefHeight() {
-        return prefHeight + paddingTop + paddingBottom + marginTop + marginBottom;
     }
 
     public float getCenterX() {

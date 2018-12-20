@@ -7,7 +7,7 @@ widget {
 
 label {
     font : family(Roboto);
-    font-size : 16sp;
+    font-size : 24sp;
     text-color : #000000FF;
     text-all-caps : false;
     vertical-align : left;
@@ -245,9 +245,45 @@ grid {
 }
 
 tab {
+    padding-left : 16;
+    padding-right : 16;
+    transition-duration : 100;
+    header-height : 64;
+    header-elevation : 2;
+    header-indicator-height : 2;
+    header-indicator-color : #00FF00;
+    header-color : #000000;
+    header-padding-left : 16;
+    header-padding-right : 16;
 }
 
-scroll {
+tab-header : label {
+
+    ripple : true;
+    ripple-color : #00000080;
+    shadow : true;
+    transition-duration : 100;
+
+    height : match_parent;
+    max-width : 160;
+    min-width : 90;
+
+    vertical-align : middle;
+    horizontal-align : center;
+
+    enabled {
+        background-color : #FF0000;
+    }
+    hovered {
+        background-color : #BBBB00;
+    }
+    activated {
+        background-color : #FFFF00;
+        font : family(Roboto) weight(bold);
+    }
+}
+
+scrollbox {
     enabled {
         background-color : #FF000000;
     }
@@ -257,10 +293,13 @@ scroll {
 }
 
 navigation {
+
 }
 
 listview {
+
 }
 
 treeview {
+
 }

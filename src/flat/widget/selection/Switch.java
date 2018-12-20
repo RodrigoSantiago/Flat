@@ -30,8 +30,8 @@ public class Switch extends Widget {
 
     @Override
     public void applyStyle() {
-        if (getStyle() == null) return;
         super.applyStyle();
+        if (getStyle() == null) return;
 
         StateInfo info = getStateInfo();
 

@@ -1356,6 +1356,10 @@ public final class Context {
     // ---- TEXT ----
 
     public void svgTextFont(Font font) {
+        if (font == null) {
+            font = Font.DEFAULT;
+        }
+
         if (svgTextFont != font) {
             svgTextFont = font;
             if (svgMode) {
@@ -1415,29 +1419,37 @@ public final class Context {
     }
 
     public float svgTextGetWidth(String text) {
-        if (text == null) throw new NullPointerException();
-        return SVG.FontGetTextWidth(svgTextFont.getInternalID(), text, svgTextSpacing);
+        if (text == null || text.isEmpty()) {
+            return 0;
+        } else {
+            return SVG.FontGetTextWidth(svgTextFont.getInternalID(), text, svgTextSpacing);
+        }
     }
 
     public float svgTextGetWidth(Buffer text, int offset, int length) {
-        if (text == null) throw new NullPointerException();
-        return SVG.FontGetTextWidthBuffer(svgTextFont.getInternalID(), text, offset, length, svgTextSpacing);
+        if (text == null || offset < 0 || offset + length >= text.limit()) {
+            return 0;
+        } else {
+            return SVG.FontGetTextWidthBuffer(svgTextFont.getInternalID(), text, offset, length, svgTextSpacing);
+        }
     }
 
     public void svgDrawText(float x, float y, String text, float maxWidth) {
-        if (text == null) throw new NullPointerException();
-        svgBegin();
-        SVG.PathBegin(svgId, SVG_TEXT);
-        SVG.DrawText(svgId, x, y, text, maxWidth, svgTextHorizontalAlign.getInternalEnum(), svgTextVerticalAlign.getInternalEnum());
-        SVG.PathEnd(svgId);
+        if (text != null) {
+            svgBegin();
+            SVG.PathBegin(svgId, SVG_TEXT);
+            SVG.DrawText(svgId, x, y, text, maxWidth, svgTextHorizontalAlign.getInternalEnum(), svgTextVerticalAlign.getInternalEnum());
+            SVG.PathEnd(svgId);
+        }
     }
 
     public void svgDrawText(float x, float y, Buffer text, int offset, int length, float maxWidth) {
-        if (text == null) throw new NullPointerException();
-        svgBegin();
-        SVG.PathBegin(svgId, SVG_TEXT);
-        SVG.DrawTextBuffer(svgId, x, y, text, offset, length, maxWidth, svgTextHorizontalAlign.getInternalEnum(), svgTextVerticalAlign.getInternalEnum());
-        SVG.PathEnd(svgId);
+        if (text != null && offset > 0 && offset + length < text.limit()) {
+            svgBegin();
+            SVG.PathBegin(svgId, SVG_TEXT);
+            SVG.DrawTextBuffer(svgId, x, y, text, offset, length, maxWidth, svgTextHorizontalAlign.getInternalEnum(), svgTextVerticalAlign.getInternalEnum());
+            SVG.PathEnd(svgId);
+        }
     }
 
     public int getError() {

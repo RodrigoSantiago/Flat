@@ -29,52 +29,56 @@ public class Box extends Parent {
     @Override
     public void onLayout(float width, float height) {
         setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
-        for (Widget child : getChildren()) {
-            if (child.getVisibility() == Visibility.Gone) continue;
-
-            child.onLayout(getWidth(), getHeight());
-        }
+        layoutHelperBox(getChildren(), getInX(), getInY(), getInWidth(), getInHeight());
     }
 
     @Override
     public void onMeasure() {
-        float mWidth = getPrefWidth(), mHeight = getPrefHeight();
+        final float offWidth = getPaddingLeft() + getPaddingRight();
+        final float offHeight = getPaddingTop() + getPaddingBottom();
+        float mWidth = Math.max(getPrefWidth(), Math.max(getMinWidth(), offWidth));
+        float mHeight = Math.max(getPrefHeight(), Math.max(getMinHeight(), offHeight));
 
+        float childrenWidth = 0, childrenMinWidth = 0;
+        float childrenHeight = 0, childrenMinHeight = 0;
         for (Widget child : getChildren()) {
             child.onMeasure();
             if (child.getVisibility() == Visibility.Gone) continue;
 
-            if (mWidth != MATCH_PARENT) {
-                if (child.getMeasureWidth() == MATCH_PARENT) {
-                    if (getPrefWidth() == WRAP_CONTENT)
-                        mWidth = MATCH_PARENT;
-                } else if (child.getMeasureWidth() > mWidth) {
-                    mWidth = child.getMeasureWidth();
-                }
+
+            if (child.getMeasureWidth() > childrenWidth) {
+                childrenWidth = child.getMeasureWidth();
             }
-            if (mHeight != MATCH_PARENT) {
-                if (child.getMeasureHeight() == MATCH_PARENT) {
-                    if (getPrefHeight() == WRAP_CONTENT)
-                        mHeight = MATCH_PARENT;
-                } else if (child.getMeasureHeight() > mHeight) {
-                    mHeight = child.getMeasureHeight();
-                }
+            if (child.getLayoutMinWidth() > childrenMinWidth) {
+                childrenMinWidth += child.getLayoutMinWidth();
+            }
+            if (child.getMeasureHeight() > childrenHeight) {
+                childrenHeight = child.getMeasureHeight();
+            }
+            if (child.getLayoutMinHeight() > childrenMinHeight) {
+                childrenMinHeight += child.getLayoutMinHeight();
             }
         }
-        mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
-        mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
-        setMeasure(mWidth, mHeight);
+        if (getPrefWidth() == WRAP_CONTENT) {
+            mWidth = childrenWidth + offWidth;
+        } else if (mWidth < childrenMinWidth + offWidth) {
+            mWidth = childrenMinWidth + offWidth;
+        }
+        if (getPrefHeight() == WRAP_CONTENT) {
+            mHeight = childrenHeight + offHeight;
+        } else if (mHeight < childrenMinHeight + offHeight) {
+            mHeight = childrenMinHeight + offHeight;
+        }
+        setMeasure(mWidth + getMarginLeft() + getMarginRight(), mHeight + getMarginTop() + getMarginBottom());
     }
 
+    @Override
     public void add(Widget child) {
-        childAttach(child);
-        getChildren().add(child);
+        super.add(child);
     }
 
+    @Override
     public void add(Widget... children) {
-        for (Widget child : children) {
-            childAttach(child);
-        }
-        Collections.addAll(getChildren(), children);
+        super.add(children);
     }
 }

@@ -48,6 +48,10 @@ public final class UXLoader {
         UXLoader.install("Slider", Slider::new);
         UXLoader.install("ScrollBar", ScrollBar::new);
         UXLoader.install("ScrollBox", ScrollBox::new);
+        UXLoader.install("Grid", Grid::new);
+        UXLoader.install("Cell", Cell::new);
+        UXLoader.install("Tab", Tab::new);
+        UXLoader.install("Page", Page::new);
     }
 
     private DimensionStream dimensionStream;

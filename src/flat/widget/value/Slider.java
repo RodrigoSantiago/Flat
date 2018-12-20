@@ -59,8 +59,8 @@ public class Slider extends Widget {
 
     @Override
     public void applyStyle() {
-        if (getStyle() == null) return;
         super.applyStyle();
+        if (getStyle() == null) return;
 
         StateInfo info = getStateInfo();
 
@@ -184,7 +184,7 @@ public class Slider extends Widget {
                 String str = String.format("%.0"+ labelDecimal +"f", fValue ? val : val2);
                 context.setTransform2D(getTransform());
                 context.setColor(labelColor);
-                context.setTextSize(labelFontSize);
+                context.setTextFontSize(labelFontSize);
                 context.setTextFont(labelFont);
                 context.setTextHorizontalAlign(Align.Horizontal.CENTER);
                 context.drawText((fValue ? x1 : x2), y1 - labelPosition, str);

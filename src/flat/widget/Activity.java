@@ -169,6 +169,7 @@ public class Activity extends Controller {
 
     final boolean layout() {
         if (layoutInvalided) {
+            invalided = true;
             layoutInvalided = false;
             return true;
         } else {

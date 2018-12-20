@@ -226,12 +226,12 @@ public class SmartContext {
         return context.svgTextFont();
     }
 
-    public void setTextSize(float size) {
+    public void setTextFontSize(float size) {
         context.svgTextScale(size / 48);
     }
 
-    public float getTextSize() {
-        return context.svgTextScale();
+    public float getTextFontSize() {
+        return context.svgTextScale() * 48;
     }
 
     public void setTextVerticalAlign(Align.Vertical align) {
@@ -248,6 +248,10 @@ public class SmartContext {
 
     public Align.Horizontal getTextHorizontalAlign() {
         return context.svgTextHorizontalAlign();
+    }
+
+    public float getTextWidth(String text) {
+        return context.svgTextGetWidth(text) * (getTextFontSize() / 48f);
     }
 
     // ---- CANVAS ---- //
