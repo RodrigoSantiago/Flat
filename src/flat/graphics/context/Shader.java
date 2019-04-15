@@ -2,6 +2,7 @@ package flat.graphics.context;
 
 import flat.backend.GL;
 import flat.graphics.context.enuns.ShaderType;
+import flat.widget.Application;
 
 public final class Shader extends ContextObject {
 
@@ -28,7 +29,8 @@ public final class Shader extends ContextObject {
 
     @Override
     protected void onDispose() {
-        GL.ShaderDestroy(shaderId);
+        final int shaderId = this.shaderId;
+        Application.runSync(() -> GL.ShaderDestroy(shaderId));
     }
 
     int getInternalID() {

@@ -33,9 +33,9 @@ public class LinearBox extends Box {
     public void onLayout(float width, float height) {
         setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
         if (this.direction == Direction.VERTICAL || this.direction == Direction.IVERTICAL) {
-            layoutHelperVertical(getChildren(), getInX(), getInY(), getInWidth(), getInHeight(), halign);
+            layoutHelperVertical(orderedList, getInX(), getInY(), getInWidth(), getInHeight(), halign);
         } else {
-            layoutHelperHorizontal(getChildren(), getInX(), getInY(), getInWidth(), getInHeight(), valign);
+            layoutHelperHorizontal(orderedList, getInX(), getInY(), getInWidth(), getInHeight(), valign);
         }
     }
 

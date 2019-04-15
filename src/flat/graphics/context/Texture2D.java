@@ -31,7 +31,8 @@ public final class Texture2D extends Texture {
 
     @Override
     protected void onDispose() {
-        GL.TextureDestroy(textureId);
+        final int textureId = this.textureId;
+        Application.runSync(() -> GL.TextureDestroy(textureId));
     }
 
     int getInternalID() {

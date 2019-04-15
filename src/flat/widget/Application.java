@@ -5,6 +5,7 @@ import flat.backend.*;
 import flat.events.*;
 import flat.graphics.context.Context;
 import flat.graphics.SmartContext;
+import flat.graphics.cursor.Cursor;
 import flat.graphics.image.PixelMap;
 import flat.resources.ResourcesManager;
 
@@ -38,6 +39,8 @@ public final class Application {
 
     private static ArrayList<EventData> events = new ArrayList<>();
     private static ArrayList<EventData> eventsCp = new ArrayList<>();
+    private static Cursor cursor = Cursor.ARROW;
+    private static Cursor currentCursor = null;
 
     private static PointerData mouse;
     private static float mouseX, mouseY, outMouseX, outMouseY;
@@ -89,7 +92,7 @@ public final class Application {
             mouseY = (float) WL.GetCursorY();
             dpi = (float) WL.GetDpi();
             WL.SetInputMode(WLEnuns.STICKY_KEYS, 1);
-            WL.SetInputMode(WLEnuns.STICKY_MOUSE_BUTTONS, 1);
+            WL.SetInputMode(WLEnuns.STICKY_MOUSE_BUTTONS, 1); // --- Ocorreu Antes dessa linha {porem em thread diferente}
             WL.SetMouseButtonCallback((button, action, mods) -> events.add(MouseBtnData.get(button + 1, action, mods)));
             WL.SetCursorPosCallback((x, y) -> events.add(MouseMoveData.get(outMouseX = (float) x, outMouseY = (float) y)));
             WL.SetScrollCallback((x, y) -> events.add(MouseScrollData.get(x, y)));
@@ -209,6 +212,11 @@ public final class Application {
             processDraws();
 
             processSyncCalls();
+
+            if (cursor != currentCursor) {
+                currentCursor = cursor;
+                WL.SetCursor(currentCursor.getInternalCursor());
+            }
         }
     }
 
@@ -299,36 +307,39 @@ public final class Application {
             // Key
             else if (eData.type == 5) {
                 KeyData event = (KeyData) eData;
-                Widget widget = activity.findFocused();
-                int eventType = (event.action == WLEnuns.PRESS) ? KeyEvent.PRESSED :
-                        (event.action == WLEnuns.RELEASE) ? KeyEvent.RELEASED : KeyEvent.REPEATED;
+                Widget widget = activity.getFocus();
+                if (widget != null) {
+                    int eventType = (event.action == WLEnuns.PRESS) ? KeyEvent.PRESSED :
+                            (event.action == WLEnuns.RELEASE) ? KeyEvent.RELEASED : KeyEvent.REPEATED;
 
-                boolean shift = (event.mods & (WLEnuns.MOD_SHIFT)) != 0;
-                boolean ctrl = (event.mods & (WLEnuns.MOD_CONTROL)) != 0;
-                boolean alt = (event.mods & (WLEnuns.MOD_ALT)) != 0;
-                boolean spr = (event.mods & (WLEnuns.MOD_SUPER)) != 0;
+                    boolean shift = (event.mods & (WLEnuns.MOD_SHIFT)) != 0;
+                    boolean ctrl = (event.mods & (WLEnuns.MOD_CONTROL)) != 0;
+                    boolean alt = (event.mods & (WLEnuns.MOD_ALT)) != 0;
+                    boolean spr = (event.mods & (WLEnuns.MOD_SUPER)) != 0;
 
-                KeyEvent keyEvent = new KeyEvent(widget, eventType, shift, ctrl, alt, spr, "", event.key);
-                widget.fireKey(keyEvent);
+                    KeyEvent keyEvent = new KeyEvent(widget, eventType, shift, ctrl, alt, spr, "", event.key);
+                    widget.fireKey(keyEvent);
 
-                if (!keyEvent.isConsumed()) {
-                    activity.onKeyPress(keyEvent);
+                    if (!keyEvent.isConsumed()) {
+                        activity.onKeyPress(keyEvent);
+                    }
                 }
-
                 KeyData.release(event);
             }
             // Char Typed
             else if (eData.type == 7) {
                 CharModsData event = (CharModsData) eData;
-                Widget widget = activity.findFocused();
+                Widget widget = activity.getFocus();
+                if (widget != null) {
 
-                boolean shift = (event.mods & (WLEnuns.MOD_SHIFT)) != 0;
-                boolean ctrl = (event.mods & (WLEnuns.MOD_CONTROL)) != 0;
-                boolean alt = (event.mods & (WLEnuns.MOD_ALT)) != 0;
-                boolean spr = (event.mods & (WLEnuns.MOD_SUPER)) != 0;
+                    boolean shift = (event.mods & (WLEnuns.MOD_SHIFT)) != 0;
+                    boolean ctrl = (event.mods & (WLEnuns.MOD_CONTROL)) != 0;
+                    boolean alt = (event.mods & (WLEnuns.MOD_ALT)) != 0;
+                    boolean spr = (event.mods & (WLEnuns.MOD_SUPER)) != 0;
 
-                String value = new String(Character.toChars(event.codepoint));
-                widget.fireKey(new KeyEvent(widget, KeyEvent.TYPED, shift, ctrl, alt, spr, value, -1));
+                    String value = new String(Character.toChars(event.codepoint));
+                    widget.fireKey(new KeyEvent(widget, KeyEvent.TYPED, shift, ctrl, alt, spr, value, -1));
+                }
 
                 CharModsData.release(event);
             }
@@ -416,6 +427,7 @@ public final class Application {
         }
     }
 
+    static int aa = 0;
     static void processDraws() {
         if (activity.draw()) {
             SmartContext smartContext = context.getSmartContext();
@@ -423,6 +435,7 @@ public final class Application {
 
             smartContext.softFlush();
             WL.SwapBuffers();
+            GL.Finish();
 
             if (vsync == 0) {
                 long time = System.currentTimeMillis() - loopTime;
@@ -434,6 +447,7 @@ public final class Application {
                 }
             }
         } else {
+            //aa = 0;
             long time = System.currentTimeMillis() - loopTime;
             if (time < 15) {
                 try {
@@ -536,6 +550,17 @@ public final class Application {
 
     public static void setIcon(PixelMap icons) {
 
+    }
+
+    public static void setCursor(Cursor cursor) {
+        if (cursor == null) {
+            cursor = Cursor.ARROW;
+        }
+        Application.cursor = cursor;
+    }
+
+    public static Cursor getCursor() {
+        return Application.cursor;
     }
 
     public static int getX() {

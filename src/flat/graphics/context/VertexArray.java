@@ -2,6 +2,7 @@ package flat.graphics.context;
 
 import flat.backend.GL;
 import flat.graphics.context.enuns.AttributeType;
+import flat.widget.Application;
 
 public final class VertexArray extends ContextObject {
 
@@ -21,7 +22,8 @@ public final class VertexArray extends ContextObject {
 
     @Override
     protected void onDispose() {
-        GL.VertexArrayDestroy(vertexArrayId);
+        final int vertexArrayId = this.vertexArrayId;
+        Application.runSync(() -> GL.VertexArrayDestroy(vertexArrayId));
     }
 
     int getInternalID() {

@@ -1,68 +1,53 @@
 package test;
 
 import flat.Flat;
-import flat.events.ActionEvent;
-import flat.events.HoverEvent;
 import flat.events.PointerEvent;
 import flat.graphics.SmartContext;
-import flat.math.shapes.Circle;
-import flat.math.shapes.Ellipse;
-import flat.math.shapes.RoundRectangle;
+import flat.graphics.context.Font;
 import flat.resources.ResourcesManager;
 import flat.uxml.UXTheme;
 import flat.widget.Activity;
 import flat.resources.ResourceStream;
-import flat.widget.layout.Box;
-import flat.widget.layout.Grid;
 import flat.widget.layout.ScrollBox;
 import flat.widget.layout.Tab;
-import flat.widget.text.Button;
+import flat.widget.text.TextField;
 
 public class MainActivity extends Activity {
 
     @Flat
-    Tab tab;
+    TextField text;
 
     public MainActivity() {
         setTheme(new UXTheme(ResourcesManager.getInput("themes/material.uxss")));
         setStream(new ResourceStream("screen_test"));
     }
 
-    Box b = new Box() {
-        @Override
-        public void onDraw(SmartContext context) {
-            super.onDraw(context);
-        }
-    };
-
     @Override
     public void onLoad() {
 
     }
 
+    int a = 0;
     @Override
     public void onDraw(SmartContext context) {
         super.onDraw(context);
+
+        /*context.setAntialiasEnabled(true);
+        context.setView(0, 0, (int) getWidth(), (int) getHeight());
+        context.clear(0, 1, 0);
+        context.clearClip(false);
+        context.setColor(0xFF0000FF);
+        context.drawRect(0, 0, 100, 100, true);*/
     }
 
     @Flat
-    public void pagina_1(PointerEvent event) {
-        if (event.getType() == PointerEvent.RELEASED) {
-            tab.setActivePage(1);
-        }
-    }
-
-    @Flat
-    public void pagina_2(PointerEvent event) {
-        if (event.getType() == PointerEvent.RELEASED) {
-            tab.setActivePage(2);
-        }
-    }
-
-    @Flat
-    public void pagina_3(PointerEvent event) {
-        if (event.getType() == PointerEvent.RELEASED) {
-            tab.remove(tab.getPages().get(1));
+    public void onClick(PointerEvent event) {
+        if (event.getType() == PointerEvent.PRESSED) {
+            if (event.getPointerID() == 1) {
+                text.setTextSize(text.getTextSize() + 1);
+            } else {
+                text.setTextSize(text.getTextSize() - 1);
+            }
         }
     }
 }

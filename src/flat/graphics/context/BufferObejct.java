@@ -26,7 +26,8 @@ public final class BufferObejct extends ContextObject {
 
     @Override
     protected void onDispose() {
-        GL.BufferDestroy(bufferId);
+        final int bufferId = this.bufferId;
+        Application.runSync(() -> GL.BufferDestroy(bufferId));
     }
 
     int getInternalID() {

@@ -5,7 +5,6 @@ import flat.graphics.SmartContext;
 import flat.graphics.text.Align;
 import flat.graphics.context.Font;
 import flat.uxml.UXStyleAttrs;
-import flat.widget.Application;
 import flat.uxml.Controller;
 import flat.widget.Widget;
 
@@ -15,7 +14,7 @@ public class Label extends Widget {
     private boolean textAllCaps;
 
     private Font font;
-    private float fontSize;
+    private float textSize;
     private int textColor;
 
     private Align.Vertical verticalAlign = Align.Vertical.TOP;
@@ -40,8 +39,7 @@ public class Label extends Widget {
         StateInfo info = getStateInfo();
 
         setFont(getStyle().asFont("font", info, getFont()));
-        setFontSize(getStyle().asSize("font-size", info, getFontSize()));
-
+        setTextSize(getStyle().asSize("text-size", info, getTextSize()));
         setTextColor(getStyle().asColor("text-color", info, getTextColor()));
         setTextAllCaps(getStyle().asBool("text-all-caps", info, isTextAllCaps()));
 
@@ -87,13 +85,13 @@ public class Label extends Widget {
         }
     }
 
-    public float getFontSize() {
-        return fontSize;
+    public float getTextSize() {
+        return textSize;
     }
 
-    public void setFontSize(float fontSize) {
-        if (this.fontSize != fontSize) {
-            this.fontSize = fontSize;
+    public void setTextSize(float textSize) {
+        if (this.textSize != textSize) {
+            this.textSize = textSize;
             invalidate(true);
             invalidateTextSize();
         }
@@ -148,7 +146,7 @@ public class Label extends Widget {
         if (showText != null) {
             context.setColor(textColor);
             context.setTextFont(font);
-            context.setTextFontSize(fontSize);
+            context.setTextSize(textSize);
             context.setTextVerticalAlign(Align.Vertical.TOP);
             context.setTextHorizontalAlign(Align.Horizontal.LEFT);
 
@@ -159,7 +157,7 @@ public class Label extends Widget {
 
             context.drawTextSlice(
                     xOff(x, x + width, Math.min(textWidth, width)),
-                    yOff(y, y + height, Math.min(fontSize, height)),
+                    yOff(y, y + height, Math.min(textSize, height)),
                     width, showText);
         }
     }
@@ -169,7 +167,7 @@ public class Label extends Widget {
         float mWidth = getPrefWidth();
         float mHeight = getPrefHeight();
         mWidth = mWidth == WRAP_CONTENT ? getTextWidth() : mWidth;
-        mHeight = mHeight == WRAP_CONTENT ? fontSize : mHeight;
+        mHeight = mHeight == WRAP_CONTENT ? textSize : mHeight;
         mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
         mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
         setMeasure(mWidth, mHeight);
@@ -180,10 +178,7 @@ public class Label extends Widget {
             if (showText == null) {
                 return textWidth = 0;
             }
-            SmartContext context = Application.getContext().getSmartContext();
-            context.setTextFont(font);
-            context.setTextFontSize(fontSize);
-            textWidth = context.getTextWidth(showText);
+            textWidth = font.getWidth(showText, textSize, 1);
             invalidTextSize = false;
         }
         return textWidth;

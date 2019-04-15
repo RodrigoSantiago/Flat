@@ -88,8 +88,9 @@ public class ScrollBox extends Parent {
         final float height = Math.max(0, getHeight() - getMarginTop() - getMarginBottom());
 
         clipper.set(x, y, width, height, getRadiusTop(), getRadiusRight(), getRadiusBottom(), getRadiusLeft());
+
         context.setTransform2D(getTransform());
-        Shape clip = context.intersectClip(clipper);
+        Shape clip = backgroundClip(context);
 
         backgroundDraw(getBackgroundColor(), getBorderColor(), getRippleColor(), context);
 
@@ -225,6 +226,7 @@ public class ScrollBox extends Parent {
             } else {
                 verticalBar.setValue(getScrollY() - (scrollEvent.getDeltaY() * 0.1f));
             }
+            scrollEvent.consume();
         }
     }
 

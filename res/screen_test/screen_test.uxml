@@ -1,14 +1,14 @@
 <Scene>
-    <Tab id="tab" header-scrollable="true" width="match_parent" height="match_parent" active-page="1">
-        <Page id="page 1" name="Pagina 1" background-color="#FF0000" width="match_parent" height="match_parent"></Page>
-        <Page id="page 2" name="Pagina 2" background-color="#FF8000" width="match_parent" height="match_parent"></Page>
-        <Page id="page 3" name="Pagina 3" background-color="#FFFF00" width="match_parent" height="match_parent"></Page>
-        <Page id="page 4" name="Pagina 4" background-color="#8FFF00" width="match_parent" height="match_parent"></Page>
-        <Page id="page 5" name="Pagina 5" background-color="#00FF00" width="match_parent" height="match_parent"></Page>
-        <Page id="page 6" name="Pagina 6" background-color="#00FF80" width="match_parent" height="match_parent"></Page>
-        <Page id="page 7" name="Pagina 7" background-color="#00FFFF" width="match_parent" height="match_parent"></Page>
-        <Page id="page 8" name="Pagina 8" background-color="#0080FF" width="match_parent" height="match_parent"></Page>
-        <Page id="page 9" name="Pagina 9" background-color="#8000FF" width="match_parent" height="match_parent"></Page>
-        <Page id="page 10" name="Pagina 10" background-color="#FF00FF" width="match_parent" height="match_parent"></Page>
-    </Tab>
+    <LinearBox direction="vertical">
+        <TextField text="8  - OLA MUNDO" margin-top="8" text-size="8"></TextField>
+        <TextField text="10 - OLA MUNDO" margin-top="8" text-size="10"></TextField>
+        <TextField text="12 - OLA MUNDO" margin-top="8" text-size="12"></TextField>
+        <TextField text="14 - OLA MUNDO" margin-top="8" text-size="14"></TextField>
+        <TextField text="16 - OLA MUNDO" margin-top="8" text-size="16" id="text"></TextField>
+        <TextField text="24 - OLA MUNDO" margin-top="8" text-size="24"></TextField>
+        <TextField text="32 - OLA MUNDO" margin-top="8" text-size="32"></TextField>
+        <TextField text="48 - OLA MUNDO" margin-top="8" text-size="48"></TextField>
+        <TextField text="64 - OLA MUNDO" margin-top="8" text-size="64"></TextField>
+        <TextField text="128 - OLA MUNDO" margin-top="8" text-size="128"></TextField>
+    </LinearBox>
 </Scene>

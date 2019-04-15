@@ -27,6 +27,7 @@ public class SmartContext {
     private Affine transform2D = new Affine();
     private Area clipArea = new Area();
     private Stroke stroker;
+    private float textHeight;
 
     // -- 3D
     private Matrix4 projection3D = new Matrix4();
@@ -41,7 +42,6 @@ public class SmartContext {
         context.setBlendFunction(BlendFunction.SRC_ALPHA, BlendFunction.ONE_MINUS_SRC_ALPHA, BlendFunction.ONE, BlendFunction.ONE);
 
         stroker = getStroker();
-        setMeshMaterial(null);
     }
 
     public Context getContext() {
@@ -157,9 +157,9 @@ public class SmartContext {
         context.svgClearClip(clip);
     }
 
+    // TODO - BOUNDING BOX CHECK FOR CLIP
     public void setClip(Shape shape) {
-        Affine aff = transform2D == null || transform2D.isIdentity() ? null : transform2D;
-        clipArea.set(shape.pathIterator(aff));
+        clipArea.set(shape.pathIterator(transform2D));
         context.svgClearClip(true);
         if (!clipArea.isEmpty()) {
             context.svgTransform(null);
@@ -169,9 +169,8 @@ public class SmartContext {
     }
 
     public Area intersectClip(Shape shape) {
-        Affine aff = transform2D == null || transform2D.isIdentity() ? null : transform2D;
         Area old = new Area(clipArea);
-        clipArea.intersect(new Area(shape.pathIterator(aff)));
+        clipArea.intersect(new Area(shape.pathIterator(transform2D)));
         context.svgClearClip(true);
         if (!clipArea.isEmpty()) {
             context.svgTransform(null);
@@ -181,7 +180,6 @@ public class SmartContext {
         return old;
     }
 
-    // TODO - BOUNDING BOX CHECK FOR CLIP
     public Area getClip() {
         return new Area(clipArea);
     }
@@ -220,18 +218,20 @@ public class SmartContext {
 
     public void setTextFont(Font font) {
         context.svgTextFont(font);
+        context.svgTextScale(textHeight / context.svgTextFont().getRasterHeight());
     }
 
     public Font getTextFont() {
         return context.svgTextFont();
     }
 
-    public void setTextFontSize(float size) {
-        context.svgTextScale(size / 48);
+    public void setTextSize(float size) {
+        textHeight = size;
+        context.svgTextScale(textHeight / context.svgTextFont().getRasterHeight());
     }
 
-    public float getTextFontSize() {
-        return context.svgTextScale() * 48;
+    public float getTextSize() {
+        return textHeight;
     }
 
     public void setTextVerticalAlign(Align.Vertical align) {
@@ -248,10 +248,6 @@ public class SmartContext {
 
     public Align.Horizontal getTextHorizontalAlign() {
         return context.svgTextHorizontalAlign();
-    }
-
-    public float getTextWidth(String text) {
-        return context.svgTextGetWidth(text) * (getTextFontSize() / 48f);
     }
 
     // ---- CANVAS ---- //
@@ -349,14 +345,14 @@ public class SmartContext {
         context.svgDrawBezierCurve(x1, y1, cx1, cy1, cx2, cy2, x2, y2);
     }
 
-    public void drawText(float x, float y, String text) {
+    public float drawText(float x, float y, String text) {
         svgMode();
-        context.svgDrawText(x, y, text, 0);
+        return context.svgDrawText(x, y, text, 0);
     }
 
-    public void drawText(float x, float y, Buffer text, int offset, int length) {
+    public float drawText(float x, float y, Buffer text, int offset, int length) {
         svgMode();
-        context.svgDrawText(x, y, text, offset, length, 0);
+        return context.svgDrawText(x, y, text, offset, length, 0);
     }
 
     public void drawTextBox(float x, float y, float maxWidth, String text) {
@@ -454,10 +450,27 @@ public class SmartContext {
                           float dstX1, float dstY1, float dstX2, float dstY2,
                           Affine transform2D) {
         svgMode();
+        if (dstX1 > dstX2) {
+            float v = dstX1;
+            dstX1 = dstX2;
+            dstX2 = v;
+
+            v = srcX1;
+            srcX1 = srcX2;
+            srcX2 = v;
+        }
+        if (dstY1 > dstY2) {
+            float v = dstY1;
+            dstY1 = dstY2;
+            dstY2 = v;
+
+            v = srcY1;
+            srcY1 = srcY2;
+            srcY2 = v;
+        }
         Paint paint = context.svgPaint();
-        if (transform2D == null) transform2D = this.transform2D;
         context.svgPaint(Paint.image(srcX1, srcY1, srcX2, srcY2, dstX1, dstY1, dstX2, dstY2, texture, transform2D));
-        drawRect(Math.min(dstX1, dstX2), Math.min(dstY1, dstY2), Math.abs(dstX2 - dstX1), Math.abs(dstY2 - dstY1), true);
+        drawRect(dstX1,dstY1, dstX2 - dstX1, dstY2 - dstY1, true);
         context.svgPaint(paint);
     }
 

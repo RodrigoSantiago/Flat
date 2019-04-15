@@ -29,9 +29,9 @@ public class Slider extends Widget {
     private int labelDecimal;
     private boolean labelEnabled;
     private Font labelFont;
-    private float labelFontSize;
+    private float labelTextSize;
+    private int labelTextColor;
     private float labelPosition;
-    private int labelColor;
     private long labelTimeOut;
     private Drawable labelIcon;
 
@@ -71,9 +71,9 @@ public class Slider extends Widget {
 
         setLabelDecimal((int) getStyle().asNumber("label-decimal", info, getLabelDecimal()));
         setLabelFont(getStyle().asFont("label-font", info, getLabelFont()));
-        setLabelColor(getStyle().asColor("label-color", info, getLabelColor()));
+        setLabelTextSize(getStyle().asSize("label-text-size", info, getLabelTextSize()));
+        setLabelTextColor(getStyle().asColor("label-text-color", info, getLabelTextColor()));
         setLabelEnabled(getStyle().asBool("label-enabled", info, isLabelEnabled()));
-        setLabelFontSize(getStyle().asSize("label-font-size", info, getLabelFontSize()));
         setLabelPosition(getStyle().asSize("label-position", info, getLabelPosition()));
         setLabelTimeOut((long) getStyle().asSize("label-time-out", info, getLabelTimeOut()));
 
@@ -183,8 +183,8 @@ public class Slider extends Widget {
             if (labelEnabled) {
                 String str = String.format("%.0"+ labelDecimal +"f", fValue ? val : val2);
                 context.setTransform2D(getTransform());
-                context.setColor(labelColor);
-                context.setTextFontSize(labelFontSize);
+                context.setColor(labelTextColor);
+                context.setTextSize(labelTextSize);
                 context.setTextFont(labelFont);
                 context.setTextHorizontalAlign(Align.Horizontal.CENTER);
                 context.drawText((fValue ? x1 : x2), y1 - labelPosition, str);
@@ -483,13 +483,13 @@ public class Slider extends Widget {
         }
     }
 
-    public float getLabelFontSize() {
-        return labelFontSize;
+    public float getLabelTextSize() {
+        return labelTextSize;
     }
 
-    public void setLabelFontSize(float labelFontSize) {
-        if (this.labelFontSize != labelFontSize) {
-            this.labelFontSize = labelFontSize;
+    public void setLabelTextSize(float labelTextSize) {
+        if (this.labelTextSize != labelTextSize) {
+            this.labelTextSize = labelTextSize;
             invalidate(false);
         }
     }
@@ -516,13 +516,13 @@ public class Slider extends Widget {
         }
     }
 
-    public int getLabelColor() {
-        return labelColor;
+    public int getLabelTextColor() {
+        return labelTextColor;
     }
 
-    public void setLabelColor(int labelColor) {
-        if (this.labelColor != labelColor) {
-            this.labelColor = labelColor;
+    public void setLabelTextColor(int labelTextColor) {
+        if (this.labelTextColor != labelTextColor) {
+            this.labelTextColor = labelTextColor;
             invalidate(false);
         }
     }

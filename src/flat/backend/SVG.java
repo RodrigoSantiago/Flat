@@ -15,6 +15,7 @@ public class SVG {
     //---------------------------
     public static native void BeginFrame(long context, int width, int height);
     public static native void EndFrame(long context);
+    public static native void Flush(long context);
 
     //---------------------------
     //      Render styles
@@ -71,8 +72,10 @@ public class SVG {
     public static native float FontGetHeight(long font);
     public static native float FontGetAscent(long font);
     public static native float FontGetDescent(long font);
-    public static native float FontGetTextWidth(long font, String string, float spacing);
-    public static native float FontGetTextWidthBuffer(long font, Buffer string, int offset, int length, float spacing);
+    public static native float FontGetTextWidth(long font, String string, float size, float spacing);
+    public static native float FontGetTextWidthBuffer(long font, Buffer string, int offset, int length, float size, float spacing);
+    public static native int FontGetOffset(long font, String string, float size, float spacing, float x);
+    public static native int FontGetOffsetBuffer(long font, Buffer string, int offset, int length, float size, float spacing, float x);
     public static native void FontDestroy(long font);
 
     public static native void SetFont(long context, long font);

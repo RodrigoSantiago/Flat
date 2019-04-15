@@ -28,11 +28,12 @@ public class ScrollBar extends Widget {
     private long popupTimeOut;
 
     private String labelText;
-    private int labelColor;
+    private int labelTextColor;
     private Font labelFont;
-    private float labelFontSize;
+    private float labelTextSize;
 
     private float maxRange, range, value, minRangeDisplay;
+    private float pOffset;
 
     private ActionListener onValueChange;
 
@@ -62,8 +63,8 @@ public class ScrollBar extends Widget {
         setColor(getStyle().asColor("color", info, getColor()));
 
         setLabelFont(getStyle().asFont("label-font", info, getLabelFont()));
-        setLabelColor(getStyle().asColor("label-color", info, getLabelColor()));
-        setLabelFontSize(getStyle().asSize("label-font-size", info, getLabelFontSize()));
+        setLabelTextColor(getStyle().asColor("label-text-color", info, getLabelTextColor()));
+        setLabelTextSize(getStyle().asSize("label-text-size", info, getLabelTextSize()));
 
         setPopupColor(getStyle().asColor("popup-color", info, getPopupColor()));
         setPopupX(getStyle().asSize("popup-x", info, getPopupX()));
@@ -124,8 +125,8 @@ public class ScrollBar extends Widget {
 
             if (labelText != null) {
                 context.setTransform2D(getTransform());
-                context.setColor(labelColor);
-                context.setTextFontSize(labelFontSize);
+                context.setColor(labelTextColor);
+                context.setTextSize(labelTextSize);
                 context.setTextFont(labelFont);
                 context.setTextVerticalAlign(Align.Vertical.MIDDLE);
                 context.setTextHorizontalAlign(Align.Horizontal.CENTER);
@@ -144,18 +145,34 @@ public class ScrollBar extends Widget {
             boolean h = direction == Direction.HORIZONTAL || direction == Direction.IHORIZONTAL;
             boolean i = direction == Direction.IVERTICAL || direction == Direction.IHORIZONTAL;
 
-            final float w = Math.max(minRangeDisplay, (range * (h ? getInWidth() : getInHeight())) / maxRange);
-            float tPoint = h ? point.x : point.y;
-            float t = Math.max(0, Math.min(1, (tPoint - w / 2f) / ((h ? getInWidth() : getInHeight()) - w)));
-
-            if (i) {
-                t = 1 - t;
-            }
+            float tPoint = (h ? point.x : point.y);
+            float size = (h ? getInWidth() : getInHeight());
+            // Bar Width
+            float w = Math.max(minRangeDisplay, (range * size) / maxRange);
+            // Bar position
+            float p = (size - w) * value + w / 2f;
 
             if (pointerEvent.getType() == PointerEvent.PRESSED && !isDragged() && !isPressed()) {
-                setValue(t);
+                if (tPoint >= p - w / 2f && tPoint <= p + w / 2f) {
+                    pOffset = p - tPoint;
+                } else {
+                    if (tPoint > p + w / 2f) {
+                        pOffset = -w / 2f;
+                    } else {
+                        pOffset = w / 2f;
+                    }
+                    float t = Math.max(0, Math.min(1, (tPoint + pOffset - w / 2f) / (size - w)));
+                    if (i) {
+                        t = 1 - t;
+                    }
+                    setValue(t);
+                }
             }
             if (pointerEvent.getType() == PointerEvent.DRAGGED) {
+                float t = Math.max(0, Math.min(1, (tPoint + pOffset - w / 2f) / (size - w)));
+                if (i) {
+                    t = 1 - t;
+                }
                 setValue(t);
                 anim.stop();
             }
@@ -402,24 +419,24 @@ public class ScrollBar extends Widget {
         }
     }
 
-    public float getLabelFontSize() {
-        return labelFontSize;
+    public float getLabelTextSize() {
+        return labelTextSize;
     }
 
-    public void setLabelFontSize(float labelFontSize) {
-        if (this.labelFontSize != labelFontSize) {
-            this.labelFontSize = labelFontSize;
+    public void setLabelTextSize(float labelTextSize) {
+        if (this.labelTextSize != labelTextSize) {
+            this.labelTextSize = labelTextSize;
             invalidate(false);
         }
     }
 
-    public int getLabelColor() {
-        return labelColor;
+    public int getLabelTextColor() {
+        return labelTextColor;
     }
 
-    public void setLabelColor(int labelColor) {
-        if (this.labelColor != labelColor) {
-            this.labelColor = labelColor;
+    public void setLabelTextColor(int labelTextColor) {
+        if (this.labelTextColor != labelTextColor) {
+            this.labelTextColor = labelTextColor;
             invalidate(false);
         }
     }

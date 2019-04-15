@@ -29,7 +29,8 @@ public final class Cubemap extends Texture {
 
     @Override
     protected void onDispose() {
-        GL.TextureDestroy(cubemapId);
+        final int cubemapId = this.cubemapId;
+        Application.runSync(() -> GL.TextureDestroy(cubemapId));
     }
 
     int getInternalID() {

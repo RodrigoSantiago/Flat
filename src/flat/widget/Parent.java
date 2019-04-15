@@ -22,18 +22,12 @@ public abstract class Parent extends Widget {
     // add child - children list unaltered
     protected void attachChildren(Widget child) {
         child.setParent(this);
-        //children.add(child);
-        //invalidateChildrenOrder();
-        //invalidate(true);
     }
 
     // remove child - children list unaltered
     protected void detachChildren(Widget child) {
         if (child.parent == this) {
             child.setParent(null);
-            //children.add(child);
-            //invalidateChildrenOrder();
-            //invalidate(true);
         }
     }
 
@@ -51,13 +45,12 @@ public abstract class Parent extends Widget {
     }
 
     public void remove(Widget widget) {
-        if (children.remove(widget)) {
-            if (widget.parent == this) {
-                widget.setParent(null);
-            }
-            invalidateChildrenOrder();
-            invalidate(true);
+        children.remove(widget);
+        if (widget.parent == this) {
+            widget.setParent(null);
         }
+        invalidateChildrenOrder();
+        invalidate(true);
     }
 
     protected static void layoutHelperBox(List<? extends Widget> children, float x, float y, float w, float h) {

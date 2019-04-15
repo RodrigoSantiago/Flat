@@ -4,7 +4,6 @@ import flat.graphics.SmartContext;
 import flat.uxml.UXChildren;
 import flat.widget.enuns.Visibility;
 
-import java.util.Collections;
 import java.util.HashMap;
 
 public class Scene extends Parent {

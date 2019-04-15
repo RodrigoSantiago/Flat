@@ -1,10 +1,8 @@
 package flat.widget.layout;
 
-import flat.animations.StateInfo;
 import flat.events.ActionEvent;
 import flat.events.ActionListener;
 import flat.graphics.SmartContext;
-import flat.graphics.context.Font;
 import flat.graphics.image.Drawable;
 import flat.uxml.Controller;
 import flat.uxml.UXStyleAttrs;
@@ -17,10 +15,6 @@ public class Page extends Box {
 
     private String name;
     private Drawable icon;
-
-    int textColor;
-    String showText;
-    float textWidth;
 
     private Tab tab;
     private ActionListener onActivated, onDeactivated;

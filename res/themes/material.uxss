@@ -7,7 +7,7 @@ widget {
 
 label {
     font : family(Roboto);
-    font-size : 24sp;
+    text-size : 24sp;
     text-color : #000000FF;
     text-all-caps : false;
     vertical-align : left;
@@ -26,7 +26,7 @@ button : label {
     padding-right : 8;
     padding-top : 4;
     padding-bottom : 4;
-    font-size : 24sp;
+    text-size : 24sp;
     background-color : #FFFFFFFF;
     transition-duration : 100;
 
@@ -45,6 +45,16 @@ togglebutton : button {
 }
 
 textfield : label {
+    cursor : ibeam;
+    text-size : 24sp;
+    focusable : true;
+    background-color : #CCCCCCFF;
+    hovered {
+        background-color : #EEFFFFFF;
+    }
+    focused {
+        background-color : #FFFFFFFF;
+    }
 }
 
 chip : label {
@@ -169,8 +179,8 @@ slider {
 
     label-enabled : true;
     label-font : family(Roboto) weight(bold);
-    label-font-size : 16;
-    label-color : #FFFFFF;
+    label-text-size : 16;
+    label-text-color : #FFFFFF;
     label-position : 32;
     label-decimal : 0;
     label-time-out : 400;
@@ -203,9 +213,9 @@ scrollbar {
     min-range-display : 24;
     transition-duration : 100;
 
-    label-color : #FFFFFF;
     label-font : family(Roboto) weight(bold);
-    label-font-size : 32;
+    label-text-color : #FFFFFF;
+    label-text-size : 32;
     popup-x : -32;
     popup-y : -68;
     popup-width : 64;
@@ -230,6 +240,8 @@ parent {
 }
 
 scene {
+    focusable : true;
+    cursor : arrow;
 }
 
 box {
@@ -245,8 +257,15 @@ grid {
 }
 
 tab {
+    background-color : #CCCCCC;
     padding-left : 16;
-    padding-right : 16;
+    padding-right : 8;
+    padding-top : 32;
+    padding-bottom : 8;
+    margin-left : 24;
+    margin-right : 32;
+    margin-top : 64;
+    margin-bottom : 2;
     transition-duration : 100;
     header-height : 64;
     header-elevation : 2;
@@ -270,7 +289,6 @@ tab-header : label {
 
     vertical-align : middle;
     horizontal-align : center;
-
     enabled {
         background-color : #FF0000;
     }

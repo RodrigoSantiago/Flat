@@ -3,16 +3,19 @@ package flat.graphics.context;
 import flat.backend.SVG;
 import flat.graphics.text.FontPosture;
 import flat.graphics.text.FontWeight;
+import flat.widget.Application;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 public final class Font {
     private final String family;
     private final FontPosture posture;
     private final FontWeight weight;
+    private final float height, ascent, descent;
 
     private long fontID;
 
@@ -42,7 +45,7 @@ public final class Font {
         return findFont(family,weight, FontPosture.REGULAR);
     }
 
-    public static Font findFont(String family, FontWeight weight, FontPosture posture) {
+    public static synchronized Font findFont(String family, FontWeight weight, FontPosture posture) {
         Font closer = null;
         for (Font font : fonts) {
             if (font.family.equalsIgnoreCase(family)) {
@@ -62,45 +65,62 @@ public final class Font {
     }
 
     public static Font addFont(String family, FontWeight weight, FontPosture posture, InputStream is) {
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        int nRead;
-        byte[] data = new byte[16384];
-        try {
+        try (ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
+            int nRead;
+            byte[] data = new byte[16384];
             while ((nRead = is.read(data, 0, data.length)) != -1) {
                 buffer.write(data, 0, nRead);
             }
             buffer.flush();
-            return Font.addFont(family,  weight, posture, buffer.toByteArray());
+            return Font.addFont(family, weight, posture, buffer.toByteArray());
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                buffer.close();
-            } catch (IOException ignored) {
-            }
+            // todo - add handler
         }
         return null;
     }
 
-    public static Font addFont(String family, FontWeight weight, FontPosture posture, byte[] data) {
+    public static synchronized Font addFont(String family, FontWeight weight, FontPosture posture, byte[] data) {
         Font found = findFont(family, weight, posture);
-        if (found == null || found.weight != weight || found.posture != posture) {
-            Font font = new Font(family, weight, posture, data);
-            synchronized (Font.class) {
-                fonts.add(font);
-            }
-            return font;
-        } else  {
-            return found;
+        Font font = new Font(family, weight, posture, data);
+
+        if (found != null && found.weight == weight && found.posture == posture) {
+            fonts.remove(found);
         }
+
+        fonts.add(font);
+
+        return font;
+    }
+
+    public static synchronized Font addFont(Font font) {
+        Font found = findFont(font.getFamily(), font.getWeight(), font.getPosture());
+
+        if (found != null && found.weight == font.getWeight() && found.posture == font.getPosture()) {
+            fonts.remove(found);
+        }
+
+        fonts.add(font);
+
+        return font;
     }
 
     public Font(String family, FontWeight weight, FontPosture posture, byte[] data) {
+        this(family, weight, posture, data, 48, true);
+    }
+
+    public Font(String family, FontWeight weight, FontPosture posture, byte[] data, float size, boolean sdf) {
         this.family = family;
         this.weight = weight;
         this.posture = posture;
-        fontID = SVG.FontCreate(data, 48, 1);
-        SVG.FontLoadAllGlyphs(fontID);
+
+        synchronized (Font.class) {
+            this.fontID = SVG.FontCreate(data, size, sdf ? 1 : 0);
+            this.height = SVG.FontGetHeight(fontID);
+            this.ascent = SVG.FontGetAscent(fontID);
+            this.descent = SVG.FontGetDescent(fontID);
+            SVG.FontLoadAllGlyphs(fontID);
+        }
     }
 
     public long getInternalID() {
@@ -127,9 +147,43 @@ public final class Font {
         return posture == FontPosture.ITALIC;
     }
 
+    public float getWidth(String text, float size, float spacing) {
+        return SVG.FontGetTextWidth(fontID, text, size / height, spacing);
+    }
+
+    public float getWidth(ByteBuffer text, int offset, int length, float size, float spacing) {
+        return SVG.FontGetTextWidthBuffer(fontID, text, offset, length, size / height, spacing);
+    }
+
+    public float getRasterHeight() {
+        return height;
+    }
+
+    public float getHeight(float size) {
+        return size;
+    }
+
+    public float getAscent(float size) {
+        return ascent * (size / height);
+    }
+
+    public float getDescent(float size) {
+        return descent * (size / height);
+    }
+
+    public int getOffset(String text, float size, float spacing, float x) {
+        return SVG.FontGetOffset(fontID, text, size / height, spacing, x);
+    }
+
+    public int getOffset(ByteBuffer text, int offset, int length, float size, float spacing, float x) {
+        return SVG.FontGetOffsetBuffer(fontID, text, offset, length, size / height, spacing, x);
+    }
+
     @Override
     protected void finalize() {
-        SVG.FontDestroy(fontID);
+        final long fontID = this.fontID;
+
+        Application.runSync(() -> SVG.FontDestroy(fontID));
     }
 
     @Override

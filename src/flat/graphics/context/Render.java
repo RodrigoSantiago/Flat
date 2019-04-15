@@ -22,7 +22,8 @@ public final class Render extends ContextObject {
 
     @Override
     protected void onDispose() {
-        GL.RenderBufferDestroy(renderBufferId);
+        final int renderBufferId = this.renderBufferId;
+        Application.runSync(() -> GL.RenderBufferDestroy(renderBufferId));
     }
 
     int getInternalID() {

@@ -110,22 +110,25 @@ public final class Paint {
         final float sh = srcy2 - srcy1;
         final float dw = dstx2 - dstx1;
         final float dh = dsty2 - dsty1;
-        final float xs = texture.getWidth() / sw;
-        final float ys = texture.getHeight() / sh;
+        Affine inner = new Affine()
+                .translate(Math.min(dstx1, dstx2), Math.min(dsty1, dsty2))
+                .scale(dw / sw, dh / sh)
+                .translate(-srcx1, -srcy1)
+                .scale(dw, dh);
+        if (transform != null) {
+            inner.mul(transform);
+        }
         Paint paint = new Paint(4);
-        paint.x1 = dstx1 - srcx1 * xs;
-        paint.y1 = dsty1 - srcy1 * ys;
-        paint.x2 = dw * xs;
-        paint.y2 = dh * ys;
         paint.texture = texture;
         paint.transform = identity;
-        paint.transformImage = transform == null ? identity :
+        paint.transformImage =
                 new float[]{
-                        transform.m00, transform.m10,
-                        transform.m01, transform.m11,
-                        transform.m02, transform.m12};
+                        inner.m00, inner.m10,
+                        inner.m01, inner.m11,
+                        inner.m02, inner.m12};
         return paint;
     }
+
     public static Paint image(float x, float y, float width, float height, Texture2D texture) {
         return image(x, y, width, height, texture, null);
     }

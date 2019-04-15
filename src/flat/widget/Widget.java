@@ -5,6 +5,7 @@ import flat.animations.StateBitset;
 import flat.animations.StateInfo;
 import flat.events.*;
 import flat.graphics.SmartContext;
+import flat.graphics.cursor.Cursor;
 import flat.math.*;
 import flat.math.shapes.RoundRectangle;
 import flat.math.shapes.Shape;
@@ -50,8 +51,8 @@ public class Widget implements Gadget {
     private float measureWidth, measureHeight;
 
     private int visibility = Visibility.Visible.ordinal();
+    private Cursor cursor;
     private UXTheme theme;
-
 
     //---------------------
     //    Family
@@ -200,6 +201,16 @@ public class Widget implements Gadget {
 
         setEnabled(style.asBool("enabled", info, isEnabled()));
         setVisibility(style.asConstant("visibility", info, getVisibility()));
+
+        switch (style.asString("cursor", info, String.valueOf(getCursor())).toLowerCase()) {
+            case "arrow": setCursor(Cursor.ARROW); break;
+            case "crosshair": setCursor(Cursor.CROSSHAIR);break;
+            case "hand": setCursor(Cursor.HAND);break;
+            case "ibeam": setCursor(Cursor.IBEAM);break;
+            case "hresize": setCursor(Cursor.HRESIZE);break;
+            case "vresize": setCursor(Cursor.VRESIZE);break;
+            default: setCursor(null);
+        }
 
         setFocusable(style.asBool("focusable", info, isFocusable()));
         setClickable(style.asBool("clickable", info, isClickable()));
@@ -768,6 +779,22 @@ public class Widget implements Gadget {
         return inh;
     }
 
+    protected float getOutX() {
+        return bg.x;
+    }
+
+    protected float getOutY() {
+        return bg.y;
+    }
+
+    protected float getOutWidth() {
+        return bg.width;
+    }
+
+    protected float getOutHeight() {
+        return bg.height;
+    }
+
     public float getX() {
         return x;
     }
@@ -1140,6 +1167,16 @@ public class Widget implements Gadget {
         }
     }
 
+    public Cursor getCursor() {
+        return cursor;
+    }
+
+    public void setCursor(Cursor cursor) {
+        if (this.cursor != cursor) {
+            this.cursor = cursor;
+        }
+    }
+
     public float getDisplayOpacity() {
         return parent == null ? opacity : parent.getDisplayOpacity() * opacity;
     }
@@ -1448,6 +1485,9 @@ public class Widget implements Gadget {
         // Hover events are not consumables
         if (parent != null && hoverEvent.isRecyclable(parent)) {
             parent.fireHover(hoverEvent.recycle(parent));
+        }
+        if (cursor != null) {
+            Application.setCursor(cursor);
         }
     }
 

@@ -29,13 +29,37 @@ The main purpose is to work similar to the "Activities" system with the ability 
  - ImageView
  - CheckBox
  - RadioButton
+ - Switch
  - Slider
+ - ScrollBar
  - Box
  - LinearBox
+ - ScrollBox
+ - Grid
+ - Tab
  
 ### Todo - List
  - [ ] Default Widgets
+    - [ ] TextField
+    - [ ] TextArea
+    - [ ] Chip
+    - [ ] Divider
+    - [ ] Canvas
+    - [ ] Sketch
+    - [ ] ProgressBar
+    - [ ] Navigation
+    - [ ] ListView
+    - [ ] TreeView
+ - [ ] Menus
  - [ ] Tooltips
- - [ ] Transitions
  - [ ] Dialogs
+   - [ ] DialogActivity
+   - [ ] Dialogs Presets
+   - [ ] SnackBar
+   - [ ] Context Menu
  - [ ] Pickers
+   - [ ] Date Picker
+   - [ ] Time Picker
+   - [ ] Color Picker
+   - [ ] Font Picker
+ - [ ] Activity Transitions

@@ -52,6 +52,7 @@ public final class UXLoader {
         UXLoader.install("Cell", Cell::new);
         UXLoader.install("Tab", Tab::new);
         UXLoader.install("Page", Page::new);
+        UXLoader.install("TextField", TextField::new);
     }
 
     private DimensionStream dimensionStream;

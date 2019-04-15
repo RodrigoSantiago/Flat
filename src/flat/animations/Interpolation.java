@@ -18,21 +18,21 @@ public abstract class Interpolation {
 
     public static final Interpolation cubic = new Interpolation() {
         @Override
-        public float apply(float t) {
+        public final float apply(float t) {
             return ((t *= 2) <= 1 ? t * t * t : (t -= 2) * t * t + 2) / 2;
         }
     };
 
     public static final Interpolation cubicIn = new Interpolation() {
         @Override
-        public float apply(float t) {
+        public final float apply(float t) {
             return t * t * t;
         }
     };
 
     public static final Interpolation cubicOut = new Interpolation() {
         @Override
-        public float apply(float t) {
+        public final float apply(float t) {
             return --t * t * t + 1;
         }
     };

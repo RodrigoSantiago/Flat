@@ -10,6 +10,13 @@ public class WLEnuns {
     public static final int CURSOR_HIDDEN = 0x00034002;
     public static final int CURSOR_DISABLED = 0x00034003;
 
+    public static final int	STANDARD_ARROW_CURSOR = 0x00036001;
+    public static final int	STANDARD_IBEAM_CURSOR = 0x00036002;
+    public static final int	STANDARD_CROSSHAIR_CURSOR = 0x00036003;
+    public static final int	STANDARD_HAND_CURSOR = 0x00036004;
+    public static final int	STANDARD_HRESIZE_CURSOR = 0x00036005;
+    public static final int	STANDARD_VRESIZE_CURSOR = 0x00036006;
+
     public static final int RELEASE = 0;
     public static final int PRESS = 1;
     public static final int REPEAT = 2;

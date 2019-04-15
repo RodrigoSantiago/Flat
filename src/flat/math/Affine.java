@@ -25,32 +25,21 @@ public final class Affine {
      * Creates an affine transform configured with the identity transform.
      */
     public Affine() {
-        this(1, 0, 0, 1, 0, 0);
+        identity();
     }
 
     /**
      * Creates an affine transform from the supplied scale, rotation and translation.
      */
-    public Affine(float scaleX, float scaleY, float angle, float m02, float m12) {
-        float sina = Mathf.sin(angle), cosa = Mathf.cos(angle);
-        this.m00 = cosa * scaleX;
-        this.m01 = sina * scaleY;
-        this.m10 = -sina * scaleX;
-        this.m11 = cosa * scaleY;
-        this.m02 = m02;
-        this.m12 = m12;
+    public Affine(float scaleX, float scaleY, float angle, float x, float y) {
+        set(scaleX, scaleY, angle, x, y);
     }
 
     /**
      * Creates an affine transform with the specified transform matrix.
      */
     public Affine(float m00, float m01, float m10, float m11, float m02, float m12) {
-        this.m00 = m00;
-        this.m01 = m01;
-        this.m10 = m10;
-        this.m11 = m11;
-        this.m02 = m02;
-        this.m12 = m12;
+        set(m00, m01, m10, m11, m02, m12);
     }
 
     /**
@@ -96,13 +85,16 @@ public final class Affine {
      */
     public Affine set(float scaleX, float scaleY, float angle, float x, float y) {
         angle = Mathf.toRadians(angle);
-        float sina = Mathf.sin(angle), cosa = Mathf.cos(angle);
-        this.m00 = cosa * scaleX;
-        this.m01 = sina * scaleY;
-        this.m10 = -sina * scaleX;
-        this.m11 = cosa * scaleY;
+
+        float sin = Mathf.sin(angle);
+        float cos = Mathf.cos(angle);
+        this.m00 = cos * scaleX;
+        this.m01 = sin * scaleY;
+        this.m10 = -sin * scaleX;
+        this.m11 = cos * scaleY;
         this.m02 = x;
         this.m12 = y;
+
         return this;
     }
 
@@ -111,13 +103,13 @@ public final class Affine {
      *
      * @return this instance, for chaining.
      */
-    public Affine set(float m00, float m01, float m10, float m11, float tx, float ty) {
+    public Affine set(float m00, float m01, float m10, float m11, float m02, float m12) {
         this.m00 = m00;
         this.m01 = m01;
         this.m10 = m10;
         this.m11 = m11;
-        this.m02 = tx;
-        this.m12 = ty;
+        this.m02 = m02;
+        this.m12 = m12;
         return this;
     }
 
@@ -176,19 +168,15 @@ public final class Affine {
      * Returns the rotation applied by this transform.
      */
     public float rotate() {
-        /*/ start with the contents of the upper 2x2 portion of the matrix
         float n00 = m00, n10 = m10;
         float n01 = m01, n11 = m11;
-        for (int i = 0; i < 10; i++) {
-            // store the results of the previous iteration
+        for (int ii = 0; ii < 10; ii++) {
             float o00 = n00, o10 = n10;
             float o01 = n01, o11 = n11;
 
-            // compute average of the matrix with its inverse transpose
             float det = o00 * o11 - o10 * o01;
             if (Math.abs(det) == 0f) {
-                // determinant is zero; matrix is not invertible
-                throw new NoninvertibleTransformException(this.toString());
+                return 0;
             }
             float hrdet = 0.5f / det;
             n00 = +o11 * hrdet + o00 * 0.5f;
@@ -197,16 +185,13 @@ public final class Affine {
             n01 = -o10 * hrdet + o01 * 0.5f;
             n11 = +o00 * hrdet + o11 * 0.5f;
 
-            // compute the difference; if it's small enough, we're done
             float d00 = n00 - o00, d10 = n10 - o10;
             float d01 = n01 - o01, d11 = n11 - o11;
             if (d00 * d00 + d10 * d10 + d01 * d01 + d11 * d11 < Mathf.EPSILON) {
                 break;
             }
         }
-        // now that we have a nice orthogonal matrix, we can extract the rotation
-        return Mathf.atan2(n01, n00);*/
-        return Mathf.atan2(m10, m00);
+        return Mathf.atan2(n01, n00);
     }
 
     /**
@@ -217,15 +202,13 @@ public final class Affine {
      * @return This matrix for the purpose of chaining.
      */
     public Affine translate(float x, float y) {
-        m02 += m00 * x + m01 * y;
-        m12 += m10 * x + m11 * y;
+        this.m02 += m00 * x + m10 * y;
+        this.m12 += m11 * y + m01 * x;
         return this;
     }
 
     public Affine preTranslate (float x, float y) {
-        m02 += x;
-        m12 += y;
-        return this;
+        return multiply(1, 0, 0, 1, x, y, this, this);
     }
 
     /**
@@ -237,57 +220,29 @@ public final class Affine {
      */
     public Affine scale(float x, float y) {
         m00 *= x;
-        m01 *= y;
-        m10 *= x;
+        m01 *= x;
+        m10 *= y;
         m11 *= y;
         return this;
     }
 
     public Affine preScale (float scaleX, float scaleY) {
-        m00 *= scaleX;
-        m01 *= scaleX;
-        m02 *= scaleX;
-        m10 *= scaleY;
-        m11 *= scaleY;
-        m12 *= scaleY;
-        return this;
+        return multiply(scaleX, 0, 0, scaleY, 0, 0, this, this);
     }
 
     /**
      * Multiplies this matrix by a shear matrix.
      *
-     * @param x The shear in x direction.
-     * @param y The shear in y direction.
+     * @param shearX The shear in x direction.
+     * @param shearY The shear in y direction.
      * @return This matrix for the purpose of chaining.
      */
-    public Affine shear(float x, float y) {
-        float tmp0 = m00 + y * m01;
-        float tmp1 = m01 + x * m00;
-        m00 = tmp0;
-        m01 = tmp1;
-
-        tmp0 = m10 + y * m11;
-        tmp1 = m11 + x * m10;
-        m10 = tmp0;
-        m11 = tmp1;
-        return this;
+    public Affine shear(float shearX, float shearY) {
+        return multiply(this, 1, shearY, shearX, 1, 0, 0, this);
     }
 
     public Affine preShear (float shearX, float shearY) {
-        float tmp00 = m00 + shearX * m10;
-        float tmp01 = m01 + shearX * m11;
-        float tmp02 = m02 + shearX * m12;
-        float tmp10 = m10 + shearY * m00;
-        float tmp11 = m11 + shearY * m01;
-        float tmp12 = m12 + shearY * m02;
-
-        m00 = tmp00;
-        m01 = tmp01;
-        m02 = tmp02;
-        m10 = tmp10;
-        m11 = tmp11;
-        m12 = tmp12;
-        return this;
+        return multiply(1, shearY, shearX, 1, 0, 0, this, this);
     }
 
     /**
@@ -297,47 +252,17 @@ public final class Affine {
      * @return This matrix for the purpose of chaining.
      */
     public Affine rotate(float angle) {
-        if (angle == 0) return this;
-
         angle = Mathf.toRadians(angle);
-
-        float cos = Mathf.cos(angle);
         float sin = Mathf.sin(angle);
-
-        float tmp00 = m00 * cos + m01 * sin;
-        float tmp01 = m00 * -sin + m01 * cos;
-        float tmp10 = m10 * cos + m11 * sin;
-        float tmp11 = m10 * -sin + m11 * cos;
-
-        m00 = tmp00;
-        m01 = tmp01;
-        m10 = tmp10;
-        m11 = tmp11;
-        return this;
+        float cos = Mathf.cos(angle);
+        return multiply(this, cos, sin, -sin, cos, 0, 0, this);
     }
 
     public Affine preRotate (float angle) {
-        if (angle == 0) return this;
-
         angle = Mathf.toRadians(angle);
-
-        float cos = Mathf.cos(angle);
         float sin = Mathf.sin(angle);
-
-        float tmp00 = cos * m00 - sin * m10;
-        float tmp01 = cos * m01 - sin * m11;
-        float tmp02 = cos * m02 - sin * m12;
-        float tmp10 = sin * m00 + cos * m10;
-        float tmp11 = sin * m01 + cos * m11;
-        float tmp12 = sin * m02 + cos * m12;
-
-        m00 = tmp00;
-        m01 = tmp01;
-        m02 = tmp02;
-        m10 = tmp10;
-        m11 = tmp11;
-        m12 = tmp12;
-        return this;
+        float cos = Mathf.cos(angle);
+        return multiply(cos, sin, -sin, cos, 0, 0, this, this);
     }
 
     /**
@@ -364,9 +289,9 @@ public final class Affine {
     public Affine setToTranslation(float x, float y) {
         m00 = 1;
         m01 = 0;
-        m02 = x;
         m10 = 0;
         m11 = 1;
+        m02 = x;
         m12 = y;
         return this;
     }
@@ -381,9 +306,9 @@ public final class Affine {
     public Affine setToScaling(float scaleX, float scaleY) {
         m00 = scaleX;
         m01 = 0;
-        m02 = 0;
         m10 = 0;
         m11 = scaleY;
+        m02 = 0;
         m12 = 0;
         return this;
     }
@@ -397,10 +322,10 @@ public final class Affine {
      */
     public Affine setToShearing(float shearX, float shearY) {
         m00 = 1;
-        m01 = shearX;
-        m02 = 0;
-        m10 = shearY;
+        m01 = shearY;
+        m10 = shearX;
         m11 = 1;
+        m02 = 0;
         m12 = 0;
         return this;
     }
@@ -418,10 +343,10 @@ public final class Affine {
         float sin = Mathf.sin(angle);
 
         m00 = cos;
-        m01 = -sin;
-        m02 = 0;
-        m10 = sin;
+        m01 = sin;
+        m10 = -sin;
         m11 = cos;
+        m02 = 0;
         m12 = 0;
         return this;
     }
@@ -429,42 +354,17 @@ public final class Affine {
     /**
      * Set this transform to the inverse.
      *
-     * @throws NoninvertibleTransformException if the transform is not invertible.
      */
     public Affine invert() {
         float det = m00 * m11 - m10 * m01;
-        if (Math.abs(det) == 0f) {
+        if (Math.abs(det) < Mathf.EPSILON) {
             return identity();
         }
         float rdet = 1f / det;
         return set(m11 * rdet, -m10 * rdet, -m01 * rdet, m00 * rdet,
-                (m10 * m12 - m11 * m02) * rdet, (m01 * m02 - m00 * m12) * rdet);
+                (m10 * m12 - m11 * m02) * rdet,
+                (m01 * m02 - m00 * m12) * rdet);
     }
-
-    /*public Affine invert () {
-        float det = m00 * m11 - m01 * m10;
-        if (det == 0) {
-            return this;
-            //throw new NoninvertibleTransformException(this.toString());
-        }
-
-        float invDet = 1.0f / det;
-
-        float tmp00 = m11;
-        float tmp01 = -m01;
-        float tmp02 = m01 * m12 - m11 * m02;
-        float tmp10 = -m10;
-        float tmp11 = m00;
-        float tmp12 = m10 * m02 - m00 * m12;
-
-        m00 = invDet * tmp00;
-        m01 = invDet * tmp01;
-        m02 = invDet * tmp02;
-        m10 = invDet * tmp10;
-        m11 = invDet * tmp11;
-        m12 = invDet * tmp12;
-        return this;
-    }*/
 
     /**
      * Postmultiplies this matrix with the provided matrix and stores the result in this matrix. For example:
@@ -477,20 +377,7 @@ public final class Affine {
      * @return This matrix for the purpose of chaining operations together.
      */
     public Affine mul(Affine other) {
-        float tmp00 = m00 * other.m00 + m01 * other.m10;
-        float tmp01 = m00 * other.m01 + m01 * other.m11;
-        float tmp02 = m00 * other.m02 + m01 * other.m12 + m02;
-        float tmp10 = m10 * other.m00 + m11 * other.m10;
-        float tmp11 = m10 * other.m01 + m11 * other.m11;
-        float tmp12 = m10 * other.m02 + m11 * other.m12 + m12;
-
-        m00 = tmp00;
-        m01 = tmp01;
-        m02 = tmp02;
-        m10 = tmp10;
-        m11 = tmp11;
-        m12 = tmp12;
-        return this;
+        return multiply(this, other, this);
     }
 
     /**
@@ -504,20 +391,7 @@ public final class Affine {
      * @return This matrix for the purpose of chaining operations.
      */
     public Affine preMul(Affine other) {
-        float tmp00 = other.m00 * m00 + other.m01 * m10;
-        float tmp01 = other.m00 * m01 + other.m01 * m11;
-        float tmp02 = other.m00 * m02 + other.m01 * m12 + other.m02;
-        float tmp10 = other.m10 * m00 + other.m11 * m10;
-        float tmp11 = other.m10 * m01 + other.m11 * m11;
-        float tmp12 = other.m10 * m02 + other.m11 * m12 + other.m12;
-
-        m00 = tmp00;
-        m01 = tmp01;
-        m02 = tmp02;
-        m10 = tmp10;
-        m11 = tmp11;
-        m12 = tmp12;
-        return this;
+        return multiply(other, this, this);
     }
 
     /**
@@ -555,8 +429,8 @@ public final class Affine {
      */
     public Vector2 transform(Vector2 point) {
         float x = point.x, y = point.y;
-        point.x = m00 * x + m01 * y + m02;
-        point.y = m10 * x + m11 * y + m12;
+        point.x = m00 * x + m10 * y + m02;
+        point.y = m01 * x + m11 * y + m12;
         return point;
     }
 
@@ -572,8 +446,8 @@ public final class Affine {
     public void transform(float[] src, int srcOff, float[] dst, int dstOff, int count) {
         for (int i = 0; i < count; i++) {
             float x = src[srcOff++], y = src[srcOff++];
-            dst[dstOff++] = m00 * x + m01 * y + m02;
-            dst[dstOff++] = m10 * x + m11 * y + m12;
+            dst[dstOff++] = m00 * x + m10 * y + m02;
+            dst[dstOff++] = m01 * x + m11 * y + m12;
         }
     }
 
@@ -586,7 +460,7 @@ public final class Affine {
      */
     public Vector2 transformPoint(Vector2 v, Vector2 into) {
         float x = v.x, y = v.y;
-        return into.set(m00 * x + m01 * y + m02, m10 * x + m11 * y + m12);
+        return into.set(m00 * x + m10 * y + m02, m01 * x + m11 * y + m12);
     }
 
     /**
@@ -597,7 +471,7 @@ public final class Affine {
      */
     public Vector2 transformVector(Vector2 v, Vector2 into) {
         float x = v.x, y = v.y;
-        return into.set(m00 * x + m01 * y, m10 * x + m11 * y).normalize();
+        return into.set(m00 * x + m10 * y, m01 * x + m11 * y).normalize();
     }
 
     @Override
@@ -616,5 +490,51 @@ public final class Affine {
     @Override
     public int hashCode() {
         return Platform.hashCode(m00 + m01 + m02 + m10 + m11 + m12);
+    }
+
+    /**
+     * Multiplies the supplied two affine transforms, storing the result in {@code into}. {@code
+     * into} may refer to the same instance as {@code a} or {@code b}.
+     * @return {@code into} for chaining.
+     */
+    public static Affine multiply (Affine a, Affine b, Affine into) {
+        return multiply(a.m00, a.m01, a.m10, a.m11, a.m02, a.m12,
+                b.m00, b.m01, b.m10, b.m11, b.m02, b.m12, into);
+    }
+
+    /**
+     * Multiplies the supplied two affine transforms, storing the result in {@code into}. {@code
+     * into} may refer to the same instance as {@code a}.
+     * @return {@code into} for chaining.
+     */
+    public static Affine multiply (
+            Affine a, float m00, float m01, float m10, float m11, float tx, float ty, Affine into) {
+        return multiply(a.m00, a.m01, a.m10, a.m11, a.m02, a.m12, m00, m01, m10, m11, tx, ty, into);
+    }
+
+    /**
+     * Multiplies the supplied two affine transforms, storing the result in {@code into}. {@code
+     * into} may refer to the same instance as {@code b}.
+     * @return {@code into} for chaining.
+     */
+    public static Affine multiply (
+            float m00, float m01, float m10, float m11, float tx, float ty, Affine b, Affine into) {
+        return multiply(m00, m01, m10, m11, tx, ty, b.m00, b.m01, b.m10, b.m11, b.m02, b.m12, into);
+    }
+
+    /**
+     * Multiplies the supplied two affine transforms, storing the result in {@code into}.
+     * @return {@code into} for chaining.
+     */
+    public static Affine multiply (
+            float am00, float am01, float am10, float am11, float atx, float aty,
+            float bm00, float bm01, float bm10, float bm11, float btx, float bty, Affine into) {
+        into.set(am00 * bm00 + am10 * bm01,
+                am01 * bm00 + am11 * bm01,
+                am00 * bm10 + am10 * bm11,
+                am01 * bm10 + am11 * bm11,
+                am00 *  btx + am10 *  bty + atx,
+                am01 *  btx + am11 *  bty + aty);
+        return into;
     }
 }

@@ -16,8 +16,6 @@ import flat.widget.Parent;
 import flat.widget.Widget;
 import flat.widget.enuns.Visibility;
 import flat.widget.text.Button;
-import flat.widget.text.Label;
-import flat.widget.text.ToggleButton;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,14 +24,16 @@ import java.util.List;
 public class Tab extends Parent {
 
     private float headerHeight;
-    private float headerWidth;
     private float headerElevation;
+    private float headerOffset;
+    private float headerScroll;
     private int headerColor;
     private int headerIndicatorColor;
     private boolean headerScrollable;
     private float headerIndicatorHeight;
 
-    private float headerScrollX;
+    private float headerWidth;
+    private boolean headerHovered;
 
     private int activePage = -1;
     private int showLeft, showRight;
@@ -62,7 +62,7 @@ public class Tab extends Parent {
 
             // Padding is for beauty !
             if ((headerWidth - getWidth()) > 0 &&
-                    act.getX() < getPaddingLeft() || act.getX() + act.getWidth() > getWidth() - getPaddingRight()) {
+                    act.getX() < getInX() || act.getX() + act.getWidth() > getInX() + getInWidth()) {
                 float minX = getPaddingLeft();
                 for (TabLabel label : labels) {
                     if (label != act) {
@@ -72,10 +72,10 @@ public class Tab extends Parent {
                     }
                 }
                 float maxX = minX + act.getWidth();
-                minX = (minX - getPaddingLeft()) / (headerWidth - getWidth());
-                maxX = ((maxX + getPaddingRight()) - getWidth()) / (headerWidth - getWidth());
-                if (headerScrollX > minX) setHeaderScrollX(headerScrollX * (1 - anim.getT()) + minX * anim.getT());
-                else if (headerScrollX < maxX) setHeaderScrollX(headerScrollX * (1 - anim.getT()) + maxX * anim.getT());
+                minX = (minX - getPaddingLeft()) / (headerWidth - getOutWidth());
+                maxX = ((maxX + getPaddingRight()) - getOutWidth()) / (headerWidth - getOutWidth());
+                if (headerScroll > minX) setHeaderScroll(headerScroll * (1 - anim.getT()) + minX * anim.getT());
+                else if (headerScroll < maxX) setHeaderScroll(headerScroll * (1 - anim.getT()) + maxX * anim.getT());
             }
             invalidate(true);
         }
@@ -123,6 +123,7 @@ public class Tab extends Parent {
 
         activePage = (int) style.asNumber("active-page", -1);
         setHeaderScrollable(style.asBool("header-scrollable", isHeaderScrollable()));
+        setHeaderScroll(style.asNumber("header-scroll", getHeaderScroll()));
     }
 
     @Override
@@ -137,11 +138,11 @@ public class Tab extends Parent {
         setHeaderIndicatorHeight(getStyle().asSize("header-indicator-height", info, getHeaderIndicatorHeight()));
         setHeaderElevation(getStyle().asSize("header-elevation", info, getHeaderElevation()));
         setHeaderIndicatorColor(getStyle().asColor("header-indicator-color", info, getHeaderColor()));
+        setHeaderOffset(getStyle().asNumber("header-offset", getHeaderOffset()));
     }
 
     @Override
     public void applyChildren(UXChildren children) {
-        super.applyChildren(children);
         Gadget child;
         while ((child = children.next()) != null ) {
             if (child instanceof Page) {
@@ -154,8 +155,16 @@ public class Tab extends Parent {
 
     @Override
     public void onDraw(SmartContext context) {
-        Shape clip = backgroundClip(context);
 
+        final float cx = getMarginLeft() + getMarginRight() > getWidth() ? (getMarginLeft() + getWidth() - getMarginRight()) / 2f : getMarginLeft();
+        final float cy = getMarginTop() + getMarginBottom() > getHeight() ? (getMarginTop() + getHeight() - getMarginBottom()) / 2f : getMarginTop();
+        final float cwidth = Math.max(0, getWidth() - getMarginLeft() - getMarginRight());
+        final float cheight = Math.max(0, getHeight() - getMarginTop() - getMarginBottom());
+
+        context.setTransform2D(getTransform());
+        context.drawRoundRect(cx, cy, cwidth, cheight, getRadiusTop(), getRadiusRight(), getRadiusBottom(), getRadiusLeft(), true);
+
+        Shape clip = backgroundClip(context);
         backgroundDraw(getBackgroundColor(), getBorderColor(), getRippleColor(), context);
 
         for (int i = 0; i < pages.size(); i++) {
@@ -165,21 +174,26 @@ public class Tab extends Parent {
             }
         }
 
+        // Header Background Shadow - Ignore Padding
         if (headerElevation > 0) {
             if ((headerColor & 0xFF) > 0) {
                 context.setTransform2D(getTransform().preTranslate(0, Math.max(0, headerElevation)));
-                context.drawRoundRectShadow(0, 0, getWidth(), headerHeight, 0, 0, 0, 0,
-                        headerElevation * 2, 0.28f * ((headerColor & 0xFF) / 255f));
+                context.drawRoundRectShadow(getOutX(), getOutY(), getOutWidth(), headerHeight + getPaddingTop() + getPaddingBottom(),
+                        0, 0, 0, 0, headerElevation * 2, 0.28f * ((headerColor & 0xFF) / 255f));
             }
         }
 
+        // Header Background - Ignore Padding
         context.setTransform2D(getTransform());
         context.setColor(headerColor);
-        context.drawRect(0, 0, getWidth(), headerHeight, true);
+        context.drawRect(getOutX(), getOutY(), getOutWidth(), headerHeight + getPaddingTop() + getPaddingBottom(), true);
 
-        for (int i = 0; i < labels.size(); i++) {
-            labels.get(i).onDraw(context);
+        // Header Labels
+        for (TabLabel tabLabel : labels) {
+            tabLabel.onDraw(context);
         }
+
+        // Header Indicator
         if (anim.isPlaying()) {
             TabLabel labelA = labels.get(showLeft == activePage ? showRight : showLeft);
             TabLabel labelB = labels.get(showLeft == activePage ? showLeft : showRight);
@@ -187,14 +201,15 @@ public class Tab extends Parent {
             context.setColor(headerIndicatorColor);
             float x = Interpolation.mix(labelA.getX(), labelB.getX(), anim.getT());
             float w = Interpolation.mix(labelA.getWidth(), labelB.getWidth(), anim.getT());
-            context.drawRect(x, headerHeight - headerIndicatorHeight, w, headerIndicatorHeight, true);
+            context.drawRect(x, getInY() + headerHeight - headerIndicatorHeight, w, headerIndicatorHeight, true);
         } else {
             TabLabel label = labels.get(activePage);
             context.setTransform2D(getTransform());
             context.setColor(headerIndicatorColor);
-            context.drawRect(label.getX(), headerHeight - headerIndicatorHeight, label.getWidth(), headerIndicatorHeight, true);
+            context.drawRect(label.getX(), getInY() + headerHeight - headerIndicatorHeight, label.getWidth(), headerIndicatorHeight, true);
         }
 
+        context.setTransform2D(null);
         context.setClip(clip);
     }
 
@@ -203,11 +218,10 @@ public class Tab extends Parent {
         setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
 
         if (isHeaderScrollable()) {
-            // Defined Width Math
+            // Defined Width
             int match_parent_count = 0;
             float maxW = 0;
-            for (int i = 0; i < pages.size(); i++) {
-                TabLabel child = labels.get(i);
+            for (TabLabel child : labels) {
                 float w = child.getMeasureWidth();
                 if (w == MATCH_PARENT) {
                     match_parent_count += 1;
@@ -216,10 +230,9 @@ public class Tab extends Parent {
                     maxW += child.getWidth();
                 }
             }
-            // Undefined Width Math (divide)
+            // Undefined Width (divide)
             float reamingW = getInWidth() - maxW;
-            for (int i = 0; i < pages.size(); i++) {
-                TabLabel child = labels.get(i);
+            for (TabLabel child : labels) {
                 float w = child.getMeasureWidth();
                 if (w == MATCH_PARENT) {
                     child.onLayout(Math.max(child.getLayoutMinWidth(), reamingW / match_parent_count), headerHeight);
@@ -227,11 +240,10 @@ public class Tab extends Parent {
                 }
             }
             // Positions
-            float mx = Math.max(0, (maxW + getPaddingLeft() + getPaddingRight() - getWidth()));
-            float x = -(headerScrollX * mx) + getPaddingLeft();
-            for (int i = 0; i < pages.size(); i++) {
-                TabLabel child = labels.get(i);
-                child.setPosition(x, 0);
+            float mx = Math.max(0, (maxW + getPaddingLeft() + getPaddingRight() - getOutWidth()));
+            float x = -(headerScroll * mx) + getPaddingLeft() + getMarginLeft();
+            for (TabLabel child : labels) {
+                child.setPosition(x, getInY());
                 x += child.getWidth();
             }
             headerWidth = maxW + getPaddingLeft() + getPaddingRight();
@@ -240,24 +252,25 @@ public class Tab extends Parent {
             headerWidth = getInWidth();
         }
 
+        float yOff = headerHeight + getPaddingTop() + getPaddingBottom();
         for (int i = 0; i < pages.size(); i++) {
             Page child = pages.get(i);
             if (i == activePage || i == showLeft || i == showRight) {
-                child.onLayout(getWidth(), getHeight() - headerHeight);
+                child.onLayout(getOutWidth(), getOutHeight() - yOff);
                 if (showLeft == showRight) {
-                    child.setPosition(0, headerHeight);
+                    child.setPosition(getOutX(), getMarginTop() + yOff);
                 } else {
                     if (i == showLeft && i == activePage) {
-                        child.setPosition(-getWidth() * (1 - anim.getT()), headerHeight);
+                        child.setPosition(getOutX() - getInWidth() * (1 - anim.getT()), getMarginTop() + yOff);
                     }
                     if (i == showRight && i != activePage) {
-                        child.setPosition(getWidth() * anim.getT(), headerHeight);
+                        child.setPosition(getOutX() + getInWidth() * anim.getT(), getMarginTop() + yOff);
                     }
                     if (i == showLeft && i != activePage) {
-                        child.setPosition(-getWidth() * anim.getT(), headerHeight);
+                        child.setPosition(getOutX() - getInWidth() * anim.getT(), getMarginTop() + yOff);
                     }
                     if (i == showRight && i == activePage) {
-                        child.setPosition(getWidth() * (1 - anim.getT()), headerHeight);
+                        child.setPosition(getOutX() + getInWidth() * (1 - anim.getT()), getMarginTop() + yOff);
                     }
                 }
             }
@@ -266,7 +279,10 @@ public class Tab extends Parent {
 
     @Override
     public void onMeasure() {
-        float mWidth = getPrefWidth(), mHeight = getPrefHeight();
+        final float offWidth = getPaddingLeft() + getPaddingRight();
+        final float offHeight = getPaddingTop() + getPaddingBottom();
+        float mWidth = Math.max(getPrefWidth(), Math.max(getMinWidth(), offWidth));
+        float mHeight = Math.max(getPrefHeight(), Math.max(getMinHeight(), offHeight));
 
         for (int i = 0; i < pages.size(); i++) {
             Page child = pages.get(i);
@@ -279,9 +295,7 @@ public class Tab extends Parent {
             label.onMeasure();
         }
 
-        mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
-        mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
-        setMeasure(mWidth, mHeight);
+        setMeasure(mWidth + getMarginLeft() + getMarginRight(), mHeight + getMarginTop() + getMarginBottom());
     }
 
     public void add(Page child) {
@@ -297,7 +311,7 @@ public class Tab extends Parent {
         labels.add(label);
 
         super.add(child);
-        super.attachChildren(label);
+        super.add(label);
     }
 
     public void add(Page... children) {
@@ -317,20 +331,18 @@ public class Tab extends Parent {
                 int index = pages.indexOf(widget);
                 if (index > -1) {
                     super.remove(pages.remove(index));
-                    super.detachChildren(labels.remove(index));
+                    super.remove(labels.remove(index));
                 }
             } else if (widget instanceof TabLabel) {
                 int index = labels.indexOf(widget);
                 if (index > -1) {
                     super.remove(pages.remove(index));
-                    super.detachChildren(labels.remove(index));
+                    super.remove(labels.remove(index));
                 }
             }
             setActivePage(activePage);
         }
     }
-
-    private boolean hoverHeader;
 
     @Override
     public void fireHover(HoverEvent hoverEvent) {
@@ -340,13 +352,9 @@ public class Tab extends Parent {
             if (hoverEvent.getType() != HoverEvent.EXITED) {
                 Vector2 pos = new Vector2(hoverEvent.getX(), hoverEvent.getY());
                 screenToLocal(pos);
-                if (pos.y < headerHeight) {
-                    hoverHeader = true;
-                } else {
-                    hoverHeader = false;
-                }
+                headerHovered = (pos.y >= getOutY() && pos.y <= getInY() + headerHeight + getPaddingBottom());
             } else {
-                hoverHeader = false;
+                headerHovered = false;
             }
         }
     }
@@ -355,11 +363,11 @@ public class Tab extends Parent {
     public void fireScroll(ScrollEvent scrollEvent) {
         super.fireScroll(scrollEvent);
 
-        if (!scrollEvent.isConsumed() && hoverHeader) {
+        if (!scrollEvent.isConsumed() && headerHovered) {
             if (headerWidth > 0 && getWidth() > 0) {
-                setHeaderScrollX(headerScrollX - (scrollEvent.getDeltaY() * getWidth() / headerWidth) / 6f);
+                setHeaderScroll(headerScroll - (scrollEvent.getDeltaY() * getWidth() / headerWidth) / 6f);
             } else {
-                setHeaderScrollX(headerScrollX - (scrollEvent.getDeltaY() * 0.1f));
+                setHeaderScroll(headerScroll - (scrollEvent.getDeltaY() * 0.1f));
             }
             scrollEvent.consume();
         }
@@ -466,14 +474,25 @@ public class Tab extends Parent {
         }
     }
 
-    public float getHeaderScrollX() {
-        return headerScrollX;
+    public float getHeaderScroll() {
+        return headerScroll;
     }
 
-    public void setHeaderScrollX(float headerScrollX) {
-        headerScrollX = Math.max(0 , Math.min(1, headerScrollX));
-        if (this.headerScrollX != headerScrollX) {
-            this.headerScrollX = headerScrollX;
+    public void setHeaderScroll(float headerScroll) {
+        headerScroll = Math.max(0 , Math.min(1, headerScroll));
+        if (this.headerScroll != headerScroll) {
+            this.headerScroll = headerScroll;
+            invalidate(true);
+        }
+    }
+
+    public float getHeaderOffset() {
+        return headerOffset;
+    }
+
+    public void setHeaderOffset(float headerOffset) {
+        if (this.headerOffset != headerOffset) {
+            this.headerOffset = headerOffset;
             invalidate(true);
         }
     }

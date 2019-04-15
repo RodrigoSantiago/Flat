@@ -2,6 +2,7 @@ package flat.graphics.context;
 
 import flat.backend.GL;
 import flat.graphics.context.enuns.CubeFace;
+import flat.widget.Application;
 
 import static flat.backend.GLEnuns.*;
 
@@ -32,7 +33,8 @@ public final class Frame extends ContextObject {
 
     @Override
     protected void onDispose() {
-        GL.FrameBufferDestroy(frameBufferId);
+        final int frameBufferId = this.frameBufferId;
+        Application.runSync(() -> GL.FrameBufferDestroy(frameBufferId));
     }
 
     int getInternalID() {

@@ -42,7 +42,8 @@ public final class ShaderProgram extends ContextObject {
 
     @Override
     protected void onDispose() {
-        GL.ProgramDestroy(programId);
+        final int programId = this.programId;
+        Application.runSync(() -> GL.ProgramDestroy(programId));
     }
 
     int getInternalID() {
