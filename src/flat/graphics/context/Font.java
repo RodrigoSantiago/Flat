@@ -171,12 +171,12 @@ public final class Font {
         return descent * (size / height);
     }
 
-    public int getOffset(String text, float size, float spacing, float x) {
-        return SVG.FontGetOffset(fontID, text, size / height, spacing, x);
+    public int getOffset(String text, float size, float spacing, float x, boolean half) {
+        return SVG.FontGetOffset(fontID, text, size / height, spacing, x, half);
     }
 
-    public int getOffset(ByteBuffer text, int offset, int length, float size, float spacing, float x) {
-        return SVG.FontGetOffsetBuffer(fontID, text, offset, length, size / height, spacing, x);
+    public int getOffset(ByteBuffer text, int offset, int length, float size, float spacing, float x, boolean half) {
+        return SVG.FontGetOffsetBuffer(fontID, text, offset, length, size / height, spacing, x, half);
     }
 
     @Override

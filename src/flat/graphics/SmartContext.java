@@ -345,36 +345,36 @@ public class SmartContext {
         context.svgDrawBezierCurve(x1, y1, cx1, cy1, cx2, cy2, x2, y2);
     }
 
-    public float drawText(float x, float y, String text) {
+    public int drawText(float x, float y, String text) {
         svgMode();
         return context.svgDrawText(x, y, text, 0);
     }
 
-    public float drawText(float x, float y, Buffer text, int offset, int length) {
+    public int drawText(float x, float y, Buffer text, int offset, int length) {
         svgMode();
         return context.svgDrawText(x, y, text, offset, length, 0);
     }
 
-    public void drawTextBox(float x, float y, float maxWidth, String text) {
+    public int drawTextBox(float x, float y, float maxWidth, String text) {
         svgMode();
         // split on spaces [draw check size]
-        drawTextSlice(x, y, maxWidth, text);
+        return drawTextSlice(x, y, maxWidth, text);
     }
 
-    public void drawTextBox(float x, float y, float maxWidth, Buffer text, int offset, int length) {
+    public int drawTextBox(float x, float y, float maxWidth, Buffer text, int offset, int length) {
         svgMode();
         // split on spaces [draw check size]
-        drawTextSlice(x, y, maxWidth, text, offset, length);
+        return drawTextSlice(x, y, maxWidth, text, offset, length);
     }
 
-    public void drawTextSlice(float x, float y, float maxWidth, String text) {
+    public int drawTextSlice(float x, float y, float maxWidth, String text) {
         svgMode();
-        context.svgDrawText(x, y, text, maxWidth);
+        return context.svgDrawText(x, y, text, maxWidth);
     }
 
-    public void drawTextSlice(float x, float y, float maxWidth, Buffer text, int offset, int length) {
+    public int drawTextSlice(float x, float y, float maxWidth, Buffer text, int offset, int length) {
         svgMode();
-        context.svgDrawText(x, y, text, offset, length, maxWidth);
+        return context.svgDrawText(x, y, text, offset, length, maxWidth);
     }
 
     public void drawRoundRectShadow(float x, float y, float width, float height,

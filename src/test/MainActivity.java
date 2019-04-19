@@ -27,10 +27,22 @@ public class MainActivity extends Activity {
 
     }
 
-    int a = 0;
+    long t = 0;
+    float mean = 0;
     @Override
     public void onDraw(SmartContext context) {
         super.onDraw(context);
+        long n = System.nanoTime();
+        context.setTransform2D(null);
+        if (mean == 0) {
+            mean = (1000000000f/(n - t));
+        } else {
+            mean = mean * 0.9f + (1000000000f/(n - t)) * 0.1f;
+        }
+        context.setTextSize(64);
+        context.drawText(300, 0, ""+ ((int)mean));
+        invalidate(true);
+        t = n;
 
         /*context.setAntialiasEnabled(true);
         context.setView(0, 0, (int) getWidth(), (int) getHeight());
@@ -43,11 +55,7 @@ public class MainActivity extends Activity {
     @Flat
     public void onClick(PointerEvent event) {
         if (event.getType() == PointerEvent.PRESSED) {
-            if (event.getPointerID() == 1) {
-                text.setTextSize(text.getTextSize() + 1);
-            } else {
-                text.setTextSize(text.getTextSize() - 1);
-            }
+            text.setSingleLine(!text.isSingleLine());
         }
     }
 }

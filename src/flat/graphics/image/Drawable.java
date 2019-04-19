@@ -4,6 +4,8 @@ import flat.graphics.SmartContext;
 
 public interface Drawable {
 
+    // TODO - ADD Default DPI for scaling system
+
     boolean isDynamic();
 
     float getWidth();

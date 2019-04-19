@@ -1,14 +1,8 @@
 <Scene>
     <LinearBox direction="vertical">
-        <TextField text="8  - OLA MUNDO" margin-top="8" text-size="8"></TextField>
-        <TextField text="10 - OLA MUNDO" margin-top="8" text-size="10"></TextField>
-        <TextField text="12 - OLA MUNDO" margin-top="8" text-size="12"></TextField>
-        <TextField text="14 - OLA MUNDO" margin-top="8" text-size="14"></TextField>
-        <TextField text="16 - OLA MUNDO" margin-top="8" text-size="16" id="text"></TextField>
-        <TextField text="24 - OLA MUNDO" margin-top="8" text-size="24"></TextField>
-        <TextField text="32 - OLA MUNDO" margin-top="8" text-size="32"></TextField>
-        <TextField text="48 - OLA MUNDO" margin-top="8" text-size="48"></TextField>
-        <TextField text="64 - OLA MUNDO" margin-top="8" text-size="64"></TextField>
-        <TextField text="128 - OLA MUNDO" margin-top="8" text-size="128"></TextField>
+        <Button text="click" on-pointer="onClick"></Button>
+        <TextField text="te. Mauris quis tristique urna, ut mattis dui. Nunc vitae tortor eu orci eleifend euismod. Nulla vitae mauris ut dolor imperdiet rhoncus. Cras non ligula quis tortor fringilla sagittis. Vestibulum libero ipsum, efficitur in lectus et, rutrum dictum sapien. Phasellus ante tortor, semper at lorem ut, scelerisque efficitur tortor. Quisque rhoncus id diam at finibus. Fusce eget nunc ac metus pharetra pulvinar. Vestibulum hendrerit fermentum venenatis. Proin condimentum efficitur urna, vel elementum ante maximus id. Sed elementum rhoncus dui, sodales lacinia lacus luctus a. Praesent ac dignissim sem. Aliquam ut luctus enim."
+                   width="MATCH_PARENT" single-line="false" wrap-text="true"
+                   margin-top="8" height="MATCH_PARENT" text-size="64" id="text"></TextField>
     </LinearBox>
 </Scene>

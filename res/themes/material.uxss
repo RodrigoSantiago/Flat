@@ -49,6 +49,7 @@ textfield : label {
     text-size : 24sp;
     focusable : true;
     background-color : #CCCCCCFF;
+    selection-color : #0000FF;
     hovered {
         background-color : #EEFFFFFF;
     }

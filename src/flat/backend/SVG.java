@@ -74,15 +74,17 @@ public class SVG {
     public static native float FontGetDescent(long font);
     public static native float FontGetTextWidth(long font, String string, float size, float spacing);
     public static native float FontGetTextWidthBuffer(long font, Buffer string, int offset, int length, float size, float spacing);
-    public static native int FontGetOffset(long font, String string, float size, float spacing, float x);
-    public static native int FontGetOffsetBuffer(long font, Buffer string, int offset, int length, float size, float spacing, float x);
+    public static native int FontGetOffset(long font, String string, float size, float spacing, float x, boolean half);
+    public static native int FontGetOffsetBuffer(long font, Buffer string, int offset, int length, float size, float spacing, float x, boolean half);
     public static native void FontDestroy(long font);
+    // Todo - Unificar Width e Offset
+
 
     public static native void SetFont(long context, long font);
     public static native void SetFontScale(long context, float size);
     public static native void SetFontSpacing(long context, float spacing);
 
-    public static native float DrawText(long context, float x, float y, String string, float maxWidth, int hAlign, int vAlign);
-    public static native float DrawTextBuffer(long context, float x, float y, Buffer string, int offset, int length, float maxWidth, int hAlign, int vAlign);
+    public static native int DrawText(long context, float x, float y, String string, float maxWidth, int hAlign, int vAlign);
+    public static native int DrawTextBuffer(long context, float x, float y, Buffer string, int offset, int length, float maxWidth, int hAlign, int vAlign);
 
 }

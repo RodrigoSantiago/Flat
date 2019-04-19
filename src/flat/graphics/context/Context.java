@@ -1424,8 +1424,8 @@ public final class Context {
         return svgTextHorizontalAlign;
     }
 
-    public float svgDrawText(float x, float y, String text, float maxWidth) {
-        float w = 0;
+    public int svgDrawText(float x, float y, String text, float maxWidth) {
+        int w = 0;
         if (text != null) {
             svgBegin();
             SVG.PathBegin(svgId, SVG_TEXT);
@@ -1435,8 +1435,8 @@ public final class Context {
         return w;
     }
 
-    public float svgDrawText(float x, float y, Buffer text, int offset, int length, float maxWidth) {
-        float w = 0;
+    public int svgDrawText(float x, float y, Buffer text, int offset, int length, float maxWidth) {
+        int w = 0;
         if (text != null && offset >= 0 && offset + length <= text.limit()) {
             svgBegin();
             SVG.PathBegin(svgId, SVG_TEXT);
