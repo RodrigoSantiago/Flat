@@ -9,7 +9,7 @@ int utf8loop(const char* str, int strLen, int& i, unsigned long& unicode) {
     if (((unsigned char) str[i] | 0b01111111u) == 0b01111111u) {             //0xxxxxxx
         unicode = ((unsigned long) str[i]) & 127u;
         i += 1;
-    } else if (((unsigned char) str[i] | 0b11011111u) == 0b11011111u) {      //110xxxxx
+    } else if (((unsigned char) str[i] >> 5) == 0b110u) {      //110xxxxx
         if (i + 1 < strLen) {
             unicode = (((unsigned long) str[i]) & 31u) << 6u |
                       (((unsigned long) str[i + 1]) & 63u);
@@ -17,7 +17,7 @@ int utf8loop(const char* str, int strLen, int& i, unsigned long& unicode) {
         } else {
             return 0;
         }
-    } else if (((unsigned char) str[i] | 0b11101111u) == 0b11101111u) {     //1110xxxx
+    } else if (((unsigned char) str[i] >> 4) == 0b1110u) {     //1110xxxx
         if (i + 2 < strLen) {
             unicode = (((unsigned long) str[i]) & 15u) << 12u |
                       (((unsigned long) str[i + 1]) & 63u) << 6u |
@@ -26,7 +26,7 @@ int utf8loop(const char* str, int strLen, int& i, unsigned long& unicode) {
         } else {
             return 0;
         }
-    } else if (((unsigned char) str[i] | 0b11110111u) == 0b11110111u) {     //11110xxx
+    } else if (((unsigned char) str[i] >> 3) == 0b11110u) {     //11110xxx
         if (i + 3 < strLen) {
             unicode = (((unsigned long) str[i]) & 7u) << 18u |
                       (((unsigned long) str[i + 1]) & 63u) << 12u |

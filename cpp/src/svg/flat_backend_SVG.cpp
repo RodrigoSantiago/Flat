@@ -235,15 +235,15 @@ JNIEXPORT jfloat JNICALL Java_flat_backend_SVG_FontGetTextWidthBuffer(JNIEnv * j
     const char * chars = (const char *) (jEnv->GetDirectBufferAddress(characters) + offset);
     return fvFontGetTextWidth((fvFont *) font, chars, length, scale, spacing);
 }
-JNIEXPORT jint JNICALL Java_flat_backend_SVG_FontGetOffset(JNIEnv * jEnv, jclass jClass, jlong font, jstring characters, jfloat scale, jfloat spacing, jfloat x) {
+JNIEXPORT jint JNICALL Java_flat_backend_SVG_FontGetOffset(JNIEnv * jEnv, jclass jClass, jlong font, jstring characters, jfloat scale, jfloat spacing, jfloat x, jboolean half) {
     const char *chars = jEnv->GetStringUTFChars(characters, 0);
-    jint offset = fvFontGetOffset((fvFont *) font, chars, jEnv->GetStringUTFLength(characters), scale, spacing, x);
+    jint offset = fvFontGetOffset((fvFont *) font, chars, jEnv->GetStringUTFLength(characters), scale, spacing, x, half);
     jEnv->ReleaseStringUTFChars(characters, chars);
     return offset;
 }
-JNIEXPORT jint JNICALL Java_flat_backend_SVG_FontGetOffsetBuffer(JNIEnv * jEnv, jclass jClass, jlong font, jobject characters, jint offset, jint length, jfloat scale, jfloat spacing, jfloat x) {
+JNIEXPORT jint JNICALL Java_flat_backend_SVG_FontGetOffsetBuffer(JNIEnv * jEnv, jclass jClass, jlong font, jobject characters, jint offset, jint length, jfloat scale, jfloat spacing, jfloat x, jboolean half) {
     const char * chars = (const char *) (jEnv->GetDirectBufferAddress(characters) + offset);
-    return fvFontGetOffset((fvFont *) font, chars, length, scale, spacing, x);
+    return fvFontGetOffset((fvFont *) font, chars, length, scale, spacing, x, half);
 }
 JNIEXPORT void JNICALL Java_flat_backend_SVG_FontDestroy(JNIEnv * jEnv, jclass jClass, jlong font) {
     fvFontDestroy((fvFont*) font);
@@ -257,7 +257,7 @@ JNIEXPORT void JNICALL Java_flat_backend_SVG_SetFontScale(JNIEnv * jEnv, jclass 
 JNIEXPORT void JNICALL Java_flat_backend_SVG_SetFontSpacing(JNIEnv * jEnv, jclass jClass, jlong context, jfloat spacing) {
     fvSetFontSpacing((fvContext*) context, spacing);
 }
-JNIEXPORT jfloat JNICALL Java_flat_backend_SVG_DrawText(JNIEnv * jEnv, jclass jClass, jlong context, jfloat x, jfloat y, jstring characters, jfloat maxWidth, jint hAlign, jint vAlign) {
+JNIEXPORT jint JNICALL Java_flat_backend_SVG_DrawText(JNIEnv * jEnv, jclass jClass, jlong context, jfloat x, jfloat y, jstring characters, jfloat maxWidth, jint hAlign, jint vAlign) {
     fvHAlign ha = hAlign == 0 ? fvHAlign::LEFT :
                   hAlign == 1 ? fvHAlign::CENTER : fvHAlign::RIGHT;
     fvVAlign va = vAlign == 0 ? fvVAlign::TOP :
@@ -268,7 +268,7 @@ JNIEXPORT jfloat JNICALL Java_flat_backend_SVG_DrawText(JNIEnv * jEnv, jclass jC
     jEnv->ReleaseStringUTFChars(characters, chars);
     return width;
 }
-JNIEXPORT jfloat JNICALL Java_flat_backend_SVG_DrawTextBuffer(JNIEnv * jEnv, jclass jClass, jlong context, jfloat x, jfloat y, jobject characters, jint offset, jint length, jfloat maxWidth, jint hAlign, jint vAlign) {
+JNIEXPORT jint JNICALL Java_flat_backend_SVG_DrawTextBuffer(JNIEnv * jEnv, jclass jClass, jlong context, jfloat x, jfloat y, jobject characters, jint offset, jint length, jfloat maxWidth, jint hAlign, jint vAlign) {
     fvHAlign ha = hAlign == 0 ? fvHAlign::LEFT :
                   hAlign == 1 ? fvHAlign::CENTER : fvHAlign::RIGHT;
     fvVAlign va = vAlign == 0 ? fvVAlign::TOP :

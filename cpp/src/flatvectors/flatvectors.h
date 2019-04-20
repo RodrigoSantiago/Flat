@@ -186,7 +186,7 @@ void fvFontGetMetrics(fvFont* font, float* ascender, float* descender, float* he
 
 float fvFontGetTextWidth(fvFont* font, const char* str, int strLen, float size, float spacing);
 
-int fvFontGetOffset(fvFont* font, const char* str, int strLen, float size, float spacing, float x);
+int fvFontGetOffset(fvFont* font, const char* str, int strLen, float size, float spacing, float x, int half);
 //-----------------------------------------
 //
 //-----------------------------------------
@@ -197,7 +197,7 @@ void fvSetFontScale(fvContext* context, float scale);
 
 void fvSetFontSpacing(fvContext* context, float spacing);
 
-float fvText(fvContext* context, const char* str, int strLen, float x, float y, float maxWidth, fvHAlign hAlign, fvVAlign vAlign);
+int fvText(fvContext* context, const char* str, int strLen, float x, float y, float maxWidth, fvHAlign hAlign, fvVAlign vAlign);
 
 //-----------------------------------------
 //

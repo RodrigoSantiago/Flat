@@ -322,18 +322,18 @@ JNIEXPORT jfloat JNICALL Java_flat_backend_SVG_FontGetTextWidthBuffer
 /*
  * Class:     flat_backend_SVG
  * Method:    FontGetOffset
- * Signature: (JLjava/lang/String;FFF)I
+ * Signature: (JLjava/lang/String;FFFZ)I
  */
 JNIEXPORT jint JNICALL Java_flat_backend_SVG_FontGetOffset
-  (JNIEnv *, jclass, jlong, jstring, jfloat, jfloat, jfloat);
+  (JNIEnv *, jclass, jlong, jstring, jfloat, jfloat, jfloat, jboolean);
 
 /*
  * Class:     flat_backend_SVG
  * Method:    FontGetOffsetBuffer
- * Signature: (JLjava/nio/Buffer;IIFFF)I
+ * Signature: (JLjava/nio/Buffer;IIFFFZ)I
  */
 JNIEXPORT jint JNICALL Java_flat_backend_SVG_FontGetOffsetBuffer
-  (JNIEnv *, jclass, jlong, jobject, jint, jint, jfloat, jfloat, jfloat);
+  (JNIEnv *, jclass, jlong, jobject, jint, jint, jfloat, jfloat, jfloat, jboolean);
 
 /*
  * Class:     flat_backend_SVG
@@ -370,17 +370,17 @@ JNIEXPORT void JNICALL Java_flat_backend_SVG_SetFontSpacing
 /*
  * Class:     flat_backend_SVG
  * Method:    DrawText
- * Signature: (JFFLjava/lang/String;FII)F
+ * Signature: (JFFLjava/lang/String;FII)I
  */
-JNIEXPORT jfloat JNICALL Java_flat_backend_SVG_DrawText
+JNIEXPORT jint JNICALL Java_flat_backend_SVG_DrawText
   (JNIEnv *, jclass, jlong, jfloat, jfloat, jstring, jfloat, jint, jint);
 
 /*
  * Class:     flat_backend_SVG
  * Method:    DrawTextBuffer
- * Signature: (JFFLjava/nio/Buffer;IIFII)F
+ * Signature: (JFFLjava/nio/Buffer;IIFII)I
  */
-JNIEXPORT jfloat JNICALL Java_flat_backend_SVG_DrawTextBuffer
+JNIEXPORT jint JNICALL Java_flat_backend_SVG_DrawTextBuffer
   (JNIEnv *, jclass, jlong, jfloat, jfloat, jobject, jint, jint, jfloat, jint, jint);
 
 #ifdef __cplusplus

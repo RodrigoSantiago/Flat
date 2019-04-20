@@ -147,6 +147,52 @@ int fv__flush(fvContext* ctx) {
     }
 }
 
+void fv__commit(fvContext* ctx) {
+    for (int i = ctx->bInd; i < ctx->vInd; i += 2) {
+        float x = ctx->vtx[i], y = ctx->vtx[i + 1];
+        ctx->vtx[i] = x * ctx->transform[0] + y * ctx->transform[2] + ctx->transform[4];
+        ctx->vtx[i + 1] = x * ctx->transform[1] + y * ctx->transform[3] + ctx->transform[5];
+    }
+
+    if (ctx->pInd + 1 >= ctx->MPAINT) {
+        fv__flush(ctx);
+    }
+
+    fvPaint drawpaint = ctx->paint;
+
+    drawpaint.size = (unsigned  long) ctx->eInd;
+
+    if (ctx->op == TEXT) {
+        drawpaint.edgeAA = (ctx->op << 2u) | ((ctx->font->sdf ? 1u : 0u) << 1u) | 0u;//(ctx->aa ? 1u : 0u);
+
+        if (drawpaint.type == 0) {
+            drawpaint.type = 3;
+        }
+        if (drawpaint.type == 1) {
+            drawpaint.type = 2;
+        }
+        drawpaint.image1 = ctx->font->imageID;
+    } else {
+        drawpaint.edgeAA = (ctx->op << 2u) | (0u << 1u) | (ctx->aa ? 1u : 0u);
+        drawpaint.image1 = 0;
+    }
+
+    fv__multiply(drawpaint.colorMat, ctx->transform);
+    fv__inverse(drawpaint.colorMat, drawpaint.colorMat);
+    fv__affineToMat4(drawpaint.colorMat, drawpaint.colorMat);
+
+    fv__multiply(drawpaint.imageMat, ctx->transform);
+    fv__inverse(drawpaint.imageMat, drawpaint.imageMat);
+    fv__affineToMat4(drawpaint.imageMat, drawpaint.imageMat);
+
+    ctx->paints[ctx->pInd] = drawpaint;
+    ctx->pInd++;
+    ctx->_vInd = ctx->vInd;
+    ctx->_eInd = ctx->eInd;
+
+    ctx->op = NOONE;
+}
+
 int fv__assert(fvContext* ctx, int vertex, int element) {
     if (ctx->vInd + vertex * 2 >= ctx->MVERTEX || ctx->eInd + element * 3 >= ctx->MELEMENT) {
         return fv__flush(ctx);
@@ -158,7 +204,7 @@ int fv__assert(fvContext* ctx, int vertex, int element) {
 int fv__vertex(fvContext* ctx, float x, float y) {
     if (ctx->vInd + 2 >= ctx->MVERTEX) {
         fv__flush(ctx);
-        std::cout << "invalid flush v" << std::endl;
+        std::cout << "flat:invalid flush vertex" << std::endl;
     }
 
     ctx->vtx[ctx->vInd] = x;
@@ -171,7 +217,7 @@ int fv__vertex(fvContext* ctx, float x, float y) {
 void fv__text_vertex(fvContext* ctx, float x, float y, float u, float v) {
     if (ctx->vInd + 2 >= ctx->MVERTEX) {
         fv__flush(ctx);
-        std::cout << "invalid flush tv" << std::endl;
+        std::cout << "flat:invalid flush text vertex" << std::endl;
     }
 
     ctx->vtx[ctx->vInd] = x;
@@ -187,7 +233,7 @@ void fv__triangle(fvContext* ctx, int e01, int e02, int e03) {
         e01 -= offSet;
         e02 -= offSet;
         e03 -= offSet;
-        std::cout << "invalid flush el" << std::endl;
+        std::cout << "flat:invalid flush elements" << std::endl;
     }
 
     ctx->elements[ctx->eInd] = (short) e01;
@@ -442,52 +488,6 @@ void fv__curvepoint(void* data, double x, double y) {
     ctx->cy = (float) y;
 }
 
-void fv__commit(fvContext* ctx) {
-    for (int i = ctx->bInd; i < ctx->vInd; i += 2) {
-        float x = ctx->vtx[i], y = ctx->vtx[i + 1];
-        ctx->vtx[i] = x * ctx->transform[0] + y * ctx->transform[2] + ctx->transform[4];
-        ctx->vtx[i + 1] = x * ctx->transform[1] + y * ctx->transform[3] + ctx->transform[5];
-    }
-
-    if (ctx->pInd + 1 >= ctx->MPAINT) {
-        fv__flush(ctx);
-    }
-
-    fvPaint drawpaint = ctx->paint;
-
-    drawpaint.size = (unsigned  long) ctx->eInd;
-
-    if (ctx->op == TEXT) {
-        drawpaint.edgeAA = (ctx->op << 2u) | ((ctx->font->sdf ? 1u : 0u) << 1u) | (ctx->aa ? 1u : 0u);
-
-        if (drawpaint.type == 0) {
-            drawpaint.type = 3;
-        }
-        if (drawpaint.type == 1) {
-            drawpaint.type = 2;
-        }
-        drawpaint.image1 = ctx->font->imageID;
-    } else {
-        drawpaint.edgeAA = (ctx->op << 2u) | (0u << 1u) | (ctx->aa ? 1u : 0u);
-        drawpaint.image1 = 0;
-    }
-
-    fv__multiply(drawpaint.colorMat, ctx->transform);
-    fv__inverse(drawpaint.colorMat, drawpaint.colorMat);
-    fv__affineToMat4(drawpaint.colorMat, drawpaint.colorMat);
-
-    fv__multiply(drawpaint.imageMat, ctx->transform);
-    fv__inverse(drawpaint.imageMat, drawpaint.imageMat);
-    fv__affineToMat4(drawpaint.imageMat, drawpaint.imageMat);
-
-    ctx->paints[ctx->pInd] = drawpaint;
-    ctx->pInd++;
-    ctx->_vInd = ctx->vInd;
-    ctx->_eInd = ctx->eInd;
-
-    ctx->op = NOONE;
-}
-
 fvContext* fvCreate() {
     fvContext *ctx = (fvContext *) malloc(sizeof(fvContext));
     memset(ctx, 0, sizeof(fvContext));
@@ -529,7 +529,7 @@ fvContext* fvCreate() {
     ctx->MELEMENT = 0;
     ctx->MVERTEX = 0;
 
-    fv__realloc(ctx, 64, 256, 3072, 2048);
+    fv__realloc(ctx, 64, 256, 32768, 32768);
 
     return ctx;
 }
@@ -831,35 +831,41 @@ float fvFontGetTextWidth(fvFont* font, const char* str, int strLen, float scale,
     int i = 0, f = 0;
     unsigned long chr = 0, prev = 0;
     while (utf8loop(str, strLen, i, chr)) {
-        fvGlyph& glyph = fontGlyph(font, chr);
-        if (glyph.enabled) {
-            w += (glyph.advance + (f ? fontKerning(font, prev, chr) : 0));
-            prev = chr;
-            f = 1;
+        if (chr != '\n') {
+            fvGlyph &glyph = fontGlyph(font, chr);
+            if (glyph.enabled) {
+                w += (glyph.advance + (f ? fontKerning(font, prev, chr) : 0));
+                prev = chr;
+                f = 1;
+            }
         }
     }
     return w * scl;
 }
 
-int fvFontGetOffset(fvFont* font, const char* str, int strLen, float scale, float spacing, float x) {
+int fvFontGetOffset(fvFont* font, const char* str, int strLen, float scale, float spacing, float x, int half) {
     float scl = scale * spacing;
 
     float w = 0;
     int i = 0, f = 0, pi = 0;
     unsigned long chr = 0, pchr = 0;
     while (utf8loop(str, strLen, i, chr)) {
-        fvGlyph& glyph = fontGlyph(font, chr);
-        if (glyph.enabled) {
-            float advance = (glyph.advance + (f ? fontKerning(font, pchr, chr) : 0)) * scl;
-            if (w + advance / 2 > x) {
-                return pi;
-            } else if (w + advance > x) {
-                return i;
+        if (chr != '\n') {
+            fvGlyph &glyph = fontGlyph(font, chr);
+            if (glyph.enabled) {
+                float advance = (glyph.advance + (f ? fontKerning(font, pchr, chr) : 0)) * scl;
+                if (!half && w + advance > x) {
+                    return pi;
+                } else if (w + advance / 2 > x) {
+                    return pi;
+                } else if (w + advance > x) {
+                    return i;
+                }
+                w += advance;
+                pchr = chr;
+                pi = i;
+                f = 1;
             }
-            w += advance;
-            pchr = chr;
-            pi = i;
-            f = 1;
         }
     }
     return i;
@@ -880,9 +886,11 @@ void fvSetFontSpacing(fvContext* ctx, float spacing) {
     ctx->fontSpacing = spacing;
 }
 
-float fvText(fvContext* ctx, const char* str, int strLen, float x, float y, float maxWidth, fvHAlign hAlign, fvVAlign vAlign) {
+int fvText(fvContext* ctx, const char* str, int strLen, float x, float y, float maxWidth, fvHAlign hAlign, fvVAlign vAlign) {
     fvFont *font = ctx->font;
     maxWidth = ceil(maxWidth);
+
+    fv__assert(ctx, strLen * 4, strLen * 2);
 
     float start = x;
     int fEl = ctx->vInd / 2;
@@ -897,52 +905,57 @@ float fvText(fvContext* ctx, const char* str, int strLen, float x, float y, floa
         y -= font->ascent * scl;
     }
 
-    int i = 0, f = 0;
+    int p = 0, i = 0, f = 0;
     unsigned long chr = 0, prev = 0;
     while (utf8loop(str, strLen, i, chr)) {
-        fvGlyph &glyph = fontGlyphRendered(font, chr);
-        if (glyph.enabled) {
-            float kern = (f ? fontKerning(font, prev, chr) * scl * spc : 0);
-            float advance = glyph.advance * scl * spc;
-            if (maxWidth > 0 && floor(x + kern + advance - start) > maxWidth) {
-                break;
+        if (chr != '\n') {
+            fvGlyph &glyph = fontGlyphRendered(font, chr);
+            if (glyph.enabled) {
+                float kern = (f ? fontKerning(font, prev, chr) * scl * spc : 0);
+                float advance = glyph.advance * scl * spc;
+                if (maxWidth > 0 && floor(x + kern + advance - start) > maxWidth) {
+                    break;
+                }
+                x += kern;
+                if (glyph.u > -1) {
+                    float x1 = x + glyph.x * scl, y1 = y + glyph.y * scl;
+                    float x2 = x1 + (glyph.w * scl), y2 = y1 + (glyph.h * scl);
+
+                    if (ctx->vInd + 8 >= ctx->MVERTEX || ctx->eInd + 6 >= ctx->MELEMENT) {
+                        break;
+                    }
+
+                    int el = (ctx->vInd / 2);
+                    fv__text_vertex(ctx, x1, y1, glyph.u, glyph.v);
+                    fv__text_vertex(ctx, x2, y1, glyph.u2, glyph.v);
+                    fv__text_vertex(ctx, x2, y2, glyph.u2, glyph.v2);
+                    fv__text_vertex(ctx, x1, y2, glyph.u, glyph.v2);
+                    fv__triangle(ctx, el, el + 1, el + 2);
+                    fv__triangle(ctx, el, el + 2, el + 3);
+                }
+                x += advance;
+
+                prev = chr;
+                f = 1;
             }
-            x += kern;
-            if (glyph.u > -1) {
-                float x1 = x + glyph.x * scl, y1 = y + glyph.y * scl;
-                float x2 = x1 + (glyph.w * scl), y2 = y1 + (glyph.h * scl);
-
-                fEl -= fv__assert(ctx, 4, 2);
-
-                int el = (ctx->vInd / 2);
-                fv__text_vertex(ctx, x1, y1, glyph.u, glyph.v);
-                fv__text_vertex(ctx, x2, y1, glyph.u2, glyph.v);
-                fv__text_vertex(ctx, x2, y2, glyph.u2, glyph.v2);
-                fv__text_vertex(ctx, x1, y2, glyph.u, glyph.v2);
-                fv__triangle(ctx, el, el + 1, el + 2);
-                fv__triangle(ctx, el, el + 2, el + 3);
-            }
-            x += advance;
-
-            prev = chr;
-            f = 1;
+            p = i;
         }
     }
 
     if (hAlign == fvHAlign::RIGHT) {
         float offset = x - start;
         int el = (ctx->vInd / 2);
-        for (int i = fEl; i < el; i++) {
-            ctx->vtx[i * 2] -= offset;
+        for (int j = fEl; j < el; j++) {
+            ctx->vtx[j * 2] -= offset;
         }
     } else if (hAlign == fvHAlign::CENTER) {
         float offset = (x - start) / 2;
         int el = (ctx->vInd / 2);
-        for (int i = fEl; i < el; i++) {
-            ctx->vtx[i * 2] -= offset;
+        for (int j = fEl; j < el; j++) {
+            ctx->vtx[j * 2] -= offset;
         }
     }
-    return x - start;
+    return p;
 }
 
 //-----------------------------
