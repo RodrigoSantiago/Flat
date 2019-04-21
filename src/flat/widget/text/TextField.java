@@ -8,7 +8,9 @@ import flat.graphics.SmartContext;
 import flat.graphics.context.Font;
 import flat.graphics.image.Drawable;
 import flat.graphics.text.Align;
+import flat.math.Affine;
 import flat.math.Vector2;
+import flat.math.shapes.Shape;
 import flat.resources.Resource;
 import flat.uxml.Controller;
 import flat.uxml.UXStyle;
@@ -18,7 +20,6 @@ import flat.widget.Widget;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Objects;
 
 public class TextField extends Widget {
@@ -27,8 +28,9 @@ public class TextField extends Widget {
     private String string;
     private int size, capacity;
 
-    int cursorPos, cursorStart, selStart, selEnd; //UTF-8 Positions (+ 0.1 fixer)
+    int cursorPos, cursorStart, selStart, selEnd; //UTF-8 Positions
     int cursorLine, cursorStartLine, selStartLine, selEndLine;
+    float cursorMoveAdvance = -1;
 
     private Font font;
     private float textSize;
@@ -56,13 +58,13 @@ public class TextField extends Widget {
     private float leadingSpacing;
     private float activationSpacing;
 
-    private int lines;
+    // TODO - SCROLL LIMIT AFTER TEXT CHANGE
     private float scrollX, scrollY;
-    private float offsetLine;
-    private boolean invalidTextSize;
+    private boolean invalidTextSize, invalidScroll;
     private float textWidth, textHeight;
     private float wrapWidth;
 
+    // TODO - REMOVER ESSE BUFFER BOSTA
     private ByteBuffer buffer;
 
     private SpanManager spanManager = new SpanManager();
@@ -78,7 +80,6 @@ public class TextField extends Widget {
     public void applyAttributes(UXStyleAttrs style, Controller controller) {
         super.applyAttributes(style, controller);
 
-        setText(style.asString("text", getText()));
         setLabelText(style.asString("label-text", getLabelText()));
         setHelpText(style.asString("help-text", getHelpText()));
         setSingleLine(style.asBool("single-line", isSingleLine()));
@@ -86,6 +87,8 @@ public class TextField extends Widget {
 
         setMinLines((int) style.asNumber("min-lines", getMinLines()));
         setMaxLines((int) style.asNumber("max-lines", getMaxLines()));
+
+        setText(style.asString("text", getText()));
     }
 
     @Override
@@ -130,11 +133,20 @@ public class TextField extends Widget {
     }
 
     @Override
+    public void invalidate(boolean layout) {
+        super.invalidate(layout);
+
+        if (layout) {
+            invalidScroll = true;
+        }
+    }
+
+    @Override
     public void onDraw(SmartContext context) {
         super.onDraw(context);
 
-        //Affine transform = context.getTransform2D();
-        //Shape shape = backgroundClip(context);
+        Affine transform = context.getTransform2D();
+        Shape shape = backgroundClip(context);
 
         float x = getInX();
         float y = getInY();
@@ -151,10 +163,16 @@ public class TextField extends Widget {
 
         context.setColor(textColor);
 
+        updateScroll();
+
         Span span;
         spanManager.setWidth(w);
         for (spanManager.setPos(0); spanManager.hasNext();) {
             span = spanManager.next();
+            float xpos = x - scrollX;
+            float ypos = y + span.id * lineHeight - scrollY;
+            if (ypos + lineHeight < y) continue;
+            if (ypos > y + h) break;
 
             toBuffer(span.start, span.len);
 
@@ -165,57 +183,54 @@ public class TextField extends Widget {
                 if (ss && se) {
                     float offs = font.getWidth(buffer, 0, selStart - span.start, textSize, 1);
                     float offe = font.getWidth(buffer, 0, selEnd - span.start, textSize, 1);
-                    context.drawRect(x + offs, y, offe - offs, lineHeight, true);
+                    context.drawRect(xpos + offs, ypos, offe - offs, lineHeight, true);
                 } else if (ss) {
                     float offs = font.getWidth(buffer, 0, selStart - span.start, textSize, 1);
-                    context.drawRect(x + offs, y, w - offs, lineHeight, true);
+                    context.drawRect(xpos + offs, ypos, w + scrollX - offs, lineHeight, true);
                 } else if (se) {
                     float offe = font.getWidth(buffer, 0, selEnd - span.start, textSize, 1);
-                    context.drawRect(x, y, offe, lineHeight, true);
+                    context.drawRect(xpos, ypos, offe, lineHeight, true);
                 } else if (selStartLine < span.id && selEndLine > span.id) {
-                    context.drawRect(x, y, w, lineHeight, true);
+                    context.drawRect(xpos, ypos, w + scrollX, lineHeight, true);
                 }
             }
 
             context.setColor(textColor);
-            context.drawText(x + span.x, y, buffer, 0, span.len);
+            context.drawText(xpos + span.x, ypos, buffer, 0, span.len);
 
             if ((isFocused() || isPressed()) && cursorLine == span.id) {
                 float off = font.getWidth(buffer, 0, cursorPos - span.start, textSize, 1);
                 context.setColor(textColor);
-                context.drawRect((float) Math.floor(x + span.x + off), y, lineHeight / 16f, lineHeight, true);
-            }
-
-            if (span.line) {
-                y += lineHeight;
-            }
-
-            if (y > h) {
-                break;
+                context.drawRect((float) Math.floor(xpos + span.x + off), ypos,
+                        Math.min(1, Math.round(lineHeight / 16f)), lineHeight, true);
             }
         }
 
-        //context.setTransform2D(transform);
-        //context.setClip(shape);
+        context.setTransform2D(transform);
+        context.setClip(shape);
     }
 
+    long timer = 0;
     @Override
     public void firePointer(PointerEvent pointerEvent) {
         super.firePointer(pointerEvent);
 
         if (!pointerEvent.isConsumed()) {
             if (pointerEvent.getType() == PointerEvent.PRESSED) {
-                cursorPos = getPositionIndex(pointerEvent.getX(), pointerEvent.getY(), true);
+                int pos = getPositionIndex(pointerEvent.getX(), pointerEvent.getY(), true);
+                timer = System.currentTimeMillis();
+                setCursorPos(pos, cursorLine);
                 cursorStart = cursorPos;
                 cursorStartLine = cursorLine;
-                selStart = cursorPos;
-                selStartLine = cursorLine;
-                selEnd = cursorPos;
-                selEndLine = cursorLine;
                 invalidate(true);
             }
             if (pointerEvent.getType() == PointerEvent.DRAGGED) {
-                cursorPos = getPositionIndex(pointerEvent.getX(), pointerEvent.getY(), true);
+                int pos = getPositionIndex(pointerEvent.getX(), pointerEvent.getY(), true);
+                if ((System.currentTimeMillis() - timer) > 100) {
+                    timer = System.currentTimeMillis();
+                }
+
+                setCursorPos(pos, cursorLine);
                 if (cursorPos < cursorStart) {
                     selStart = cursorPos;
                     selStartLine = cursorLine;
@@ -227,7 +242,6 @@ public class TextField extends Widget {
                     selEnd = cursorPos;
                     selEndLine = cursorLine;
                 }
-
                 invalidate(true);
             }
         }
@@ -240,47 +254,133 @@ public class TextField extends Widget {
         if (!keyEvent.isConsumed()) {
             if (keyEvent.getType() == KeyEvent.PRESSED || keyEvent.getType() == KeyEvent.REPEATED) {
                 if (keyEvent.getKeycode() == KeyCode.KEY_LEFT) {
-                    setCursorPos(findPrev(cursorPos));
+                    int line = cursorLine;
+                    int prev = findPrev(cursorPos);
+
+                    if (!singleLine && wrapText) {
+                        Span span = spanManager.get(cursorLine);
+                        Span prevSpan = spanManager.get(cursorLine - 1);
+
+                        if (span != null && prev < span.start) {
+                            if (prevSpan != null && (prevSpan.len == 0 || text[prevSpan.end - 1] != '\n')) {
+                                setCursorPos(cursorPos, prevSpan.id);
+                            } else {
+                                setCursorPos(prev);
+                            }
+                        } else {
+                            setCursorPos(prev, line);
+                        }
+                    } else {
+                        setCursorPos(prev);
+                    }
                 }
                 if (keyEvent.getKeycode() == KeyCode.KEY_RIGHT) {
-                    setCursorPos(findNext(cursorPos));
+                    int line = cursorLine;
+                    int next = findNext(cursorPos);
+
+                    if (!singleLine && wrapText) {
+                        Span span = spanManager.get(cursorLine);
+                        Span nextSpan = spanManager.get(cursorLine + 1);
+
+                        if (span != null && next >= span.end) {
+                            if (nextSpan != null && next > span.end && (span.len == 0 || text[span.end - 1] != '\n')) {
+                                setCursorPos(cursorPos, nextSpan.id);
+                            } else {
+                                if (next == span.end && (span.len == 0 || text[span.end - 1] != '\n')) {
+                                    setCursorPos(next, line);
+                                } else {
+                                    setCursorPos(next);
+                                }
+                            }
+                        } else {
+                            setCursorPos(next, line);
+                        }
+                    } else {
+                        setCursorPos(next);
+                    }
+                }
+                if (keyEvent.getKeycode() == KeyCode.KEY_UP) {
+                    if (cursorLine > 0) {
+                        Span spanLine = spanManager.get(cursorLine);
+                        Span span = spanManager.get(cursorLine - 1);
+                        if (spanLine != null && span != null) {
+                            toBuffer(spanLine.start, spanLine.len);
+                            float w = cursorMoveAdvance;
+                            if (w == -1) {
+                                w = font.getWidth(buffer, 0, cursorPos - spanLine.start, textSize, 1);
+                            }
+                            toBuffer(span.start, span.len);
+                            int off = font.getOffset(buffer, 0, span.len, textSize, 1, w, true);
+                            setCursorPos(span.start + off, span.id);
+                            cursorMoveAdvance = w;
+                        }
+                    }
+                }
+                if (keyEvent.getKeycode() == KeyCode.KEY_DOWN) {
+                    Span spanLine = spanManager.get(cursorLine);
+                    Span span = spanManager.get(cursorLine + 1);
+                    if (spanLine != null && span != null) {
+                        toBuffer(spanLine.start, spanLine.len);
+                        float w = cursorMoveAdvance;
+                        if (w == -1) {
+                            w = font.getWidth(buffer, 0, cursorPos - spanLine.start, textSize, 1);
+                        }
+                        toBuffer(span.start, span.len);
+                        int off = font.getOffset(buffer, 0, span.len, textSize, 1, w, true);
+                        setCursorPos(span.start + off, span.id);
+                        cursorMoveAdvance = w;
+                    }
                 }
 
                 if (keyEvent.getKeycode() == KeyCode.KEY_BACKSPACE) {
                     if (selStart != selEnd) {
                         replace(selStart, selEnd - selStart, "");
-                        selStart = selEnd = cursorPos;
-                        selStartLine = selEndLine = cursorLine;
+                        setCursorPos(cursorPos, cursorLine);
                     } else {
                         int back = findPrev(selStart);
                         replace(back, selStart - back, "");
-                        selStart = selEnd = cursorPos;
-                        selStartLine = selEndLine = cursorLine;
+                        setCursorPos(cursorPos, cursorLine);
+
+                        updateScroll();
+                        Span spanLine = spanManager.get(cursorLine);
+                        if (spanLine != null) {
+                            toBuffer(spanLine.start, spanLine.len);
+                            float w = font.getWidth(buffer, 0, cursorPos - spanLine.start, textSize, 1);
+                            if (w == scrollX) {
+                                scrollX = Math.min(w, Math.max(0, scrollX - (textSize * 4)));
+                            }
+                        }
                     }
                 }
                 if (keyEvent.getKeycode() == KeyCode.KEY_DELETE) {
                     if (selStart != selEnd) {
                         replace(selStart, selEnd - selStart, "");
-                        selStart = selEnd = cursorPos;
-                        selStartLine = selEndLine = cursorLine;
+                        setCursorPos(cursorPos, cursorLine);
                     } else {
                         int next = findNext(selStart);
                         replace(selStart, next - selStart, "");
-                        selStart = selEnd = cursorPos;
-                        selStartLine = selEndLine = cursorLine;
+                        setCursorPos(cursorPos, cursorLine);
                     }
                 }
                 if (keyEvent.getKeycode() == KeyCode.KEY_ENTER && !singleLine) {
                     replace(selStart, selEnd - selStart, "\n");
-                    selStart = selEnd = cursorPos;
-                    selStartLine = selEndLine = cursorLine;
+                    setCursorPos(cursorPos, cursorLine);
+                }
+                if (keyEvent.getKeycode() == KeyCode.KEY_HOME) {
+                    Span spanLine = spanManager.get(cursorLine);
+                    setCursorPos(spanLine.start, spanLine.id);
+                }
+                if (keyEvent.getKeycode() == KeyCode.KEY_END) {
+                    Span spanLine = spanManager.get(cursorLine);
+                    if (spanLine != null) {
+                        setCursorPos(spanLine.end, spanLine.id);
+                    }
                 }
             }
             if (keyEvent.getType() == KeyEvent.TYPED) {
                 if (keyEvent.getChar() != null) {
                     replace(selStart, selEnd - selStart, keyEvent.getChar());
-                    selStart = selEnd = cursorPos;
-                    selStartLine = selEndLine = cursorLine;
+                    setCursorPos(cursorPos, cursorLine);
                 }
             }
         }
@@ -337,7 +437,42 @@ public class TextField extends Widget {
                     textWidth = span.width;
                 }
             }
-            textHeight = ((span == null ? 0 : span.id) + 1) * lineHeight;
+            textHeight = Math.min(Math.max((span == null ? 0 : span.id) + 1, minLines), maxLines) * lineHeight;
+        }
+    }
+
+    void updateScroll() {
+        if (invalidScroll) {
+            float bx = scrollX, by = scrollY;
+            Span line = spanManager.get(cursorLine);
+            if (line == null || (!singleLine && wrapText)) {
+                scrollX = 0;
+            } else {
+                float w = getInWidth();
+
+                toBuffer(line.start, line.len);
+                float tw = font.getWidth(buffer, 0, cursorPos - line.start, textSize, 1);
+
+                if (tw - scrollX > w) {
+                    scrollX = tw - w;
+                } else if (tw - scrollX < 0) {
+                    scrollX = tw;
+                }
+            }
+            if (line == null || singleLine) {
+                scrollY = 0;
+            } else {
+                float h = getInHeight();
+                float th = font.getHeight(textSize);
+                if ((cursorLine + 1) * th - scrollY > h) {
+                    scrollY = (cursorLine + 1) * th - h;
+                } else if (cursorLine * th - scrollY < 0) {
+                    scrollY = cursorLine * th;
+                }
+            }
+            if (scrollX != bx || scrollY != by) {
+                invalidate(false);
+            }
         }
     }
 
@@ -411,14 +546,11 @@ public class TextField extends Widget {
 
         spanManager.invalidate(span == null ? 0 : span.id);
 
+        // Offset
         if (cursorPos >= start && cursorPos < start + length) {
             cursorPos = start + bytes.length;
-            Span cLine = spanManager.findFoward(cursorLine, cursorPos);
-            cursorLine = cLine == null ? 0 : cLine.id;
         } else if (cursorPos >= start + length) {
             cursorPos += offset;
-            Span cLine = spanManager.findFoward(cursorLine, cursorPos);
-            cursorLine = cLine == null ? 0 : cLine.id;
         }
 
         if (selStart >= start && selStart < start + length) {
@@ -432,21 +564,26 @@ public class TextField extends Widget {
             selEnd += offset;
         }
 
+        // Lines
+        Span cLine = spanManager.find(cursorPos);
+        cursorLine = cLine == null ? 0 : cLine.id;
+
         if (selStart == cursorPos) {
             selStartLine = cursorLine;
         } else {
-            Span cLine = spanManager.find(selStart);
+            cLine = spanManager.find(selStart);
             selStartLine = cLine == null ? cursorLine : cLine.id;
         }
         if (selEnd == cursorPos) {
             selEndLine = cursorLine;
         } else {
-            Span cLine = spanManager.find(selEnd);
+            cLine = spanManager.find(selEnd);
             selEndLine = cLine == null ? cursorLine : cLine.id;
         }
 
         string = null;
         invalidTextSize = true;
+        invalidScroll = true;
         invalidate(true);
     }
 
@@ -454,20 +591,62 @@ public class TextField extends Widget {
         return cursorPos;
     }
 
+    public int getLinePos() {
+        return cursorLine;
+    }
+
     public void setCursorPos(int cursorPos) {
         if (cursorPos < 0) cursorPos = 0;
         if (cursorPos > size) cursorPos = size;
+        if (cursorPos > 0 && cursorPos < size) {
+            cursorPos = findPrev(findNext(cursorPos));
+        }
 
         if (this.cursorPos != cursorPos || selStart != cursorPos || selEnd != cursorPos) {
-            boolean less = cursorPos < this.cursorPos;
             this.cursorPos = cursorPos;
+            this.cursorMoveAdvance = -1;
 
-            Span cLine = less ? spanManager.findBackward(cursorLine, cursorPos) : spanManager.findFoward(cursorLine, cursorPos);
-            cursorLine = cLine == null ? 0 : cLine.id;
+            Span line = spanManager.find(cursorPos);
+            cursorLine = line == null ? 0 : line.id;
 
             selStart = cursorPos;
+            selStartLine = cursorLine;
             selEnd = cursorPos;
+            selEndLine = cursorLine;
 
+            invalidScroll = true;
+            invalidate(false);
+        }
+    }
+
+    public void setCursorPos(int cursorPos, int preferedLine) {
+        if (cursorPos < 0) cursorPos = 0;
+        if (cursorPos > size) cursorPos = size;
+        if (cursorPos > 0 && cursorPos < size) {
+            cursorPos = findPrev(findNext(cursorPos));
+        }
+
+        if (this.cursorPos != cursorPos || preferedLine != cursorLine
+                || selStart != cursorPos || selEnd != cursorPos
+                || selStartLine != preferedLine || selEndLine != preferedLine) {
+
+            this.cursorPos = cursorPos;
+            this.cursorMoveAdvance = -1;
+
+            Span line = spanManager.get(preferedLine);
+            if (line != null && cursorPos >= line.start && cursorPos <= line.end) {
+                cursorLine = line.id;
+            } else {
+                line = spanManager.find(cursorPos);
+                cursorLine = line == null ? 0 : line.id;
+            }
+
+            selStart = cursorPos;
+            selStartLine = cursorLine;
+            selEnd = cursorPos;
+            selEndLine = cursorLine;
+
+            invalidScroll = true;
             invalidate(false);
         }
     }
@@ -476,55 +655,66 @@ public class TextField extends Widget {
         return getPositionIndex(x, y, false);
     }
 
-    int getPositionIndex(float x, float y, boolean sCursorLine) {
-        Vector2 point = new Vector2(x, y);
+    int getPositionIndex(float px, float py, boolean sCursorLine) {
+        updateScroll();
+
+        Vector2 point = new Vector2(px, py);
         screenToLocal(point);
-        x = point.x - getPaddingLeft() - getMarginLeft();
-        y = Math.max(0, point.y - getPaddingTop() - getMarginTop());
+        px = point.x - getInX() + scrollX;
+        py = point.y;
 
-        int iLine = 0;
-        int index = -1;
-        float line = 0;
+        boolean s = (System.currentTimeMillis() - timer) > 100;
+        boolean fConsume = false;
+
         float lineHeight = font.getHeight(textSize);
+        float h = getInHeight();
+        float x = getInX();
+        float y = getInY();
 
-        Span span;
+        int i = size;
+        Span span = null;
         for (spanManager.setPos(0); spanManager.hasNext();) {
             span = spanManager.next();
-            if ((line <= y && line + lineHeight >= y) || (!spanManager.hasNext() && index == -1)) {
-                int len = span.len;
-                if (len > 0 && span.start + len - 1 < size && text[span.start + len - 1] == '\n') {
-                    len --;
-                }
+            float ypos = y + span.id * lineHeight - scrollY;
 
-                toBuffer(span.start, len);
-                int off = font.getOffset(buffer, 0, len, textSize, 1, x - span.x, true);
-                if (off == 0) {
-                    if (index > -1) {
+            if (!s && sCursorLine && Math.round(ypos) < Math.round(y)) continue;
+            boolean first = !fConsume;
+            fConsume = true;
+
+            boolean last;
+            if (!s && sCursorLine && ypos >= y + h - lineHeight) {
+                last = true;
+            } else {
+                last = !spanManager.hasNext();
+            }
+
+            if ((first && py < ypos)
+                || (ypos <= py && ypos + lineHeight > py)
+                || (last && py > ypos)) {
+
+                toBuffer(span.start, span.len);
+                int index = font.getOffset(buffer, 0, span.len, textSize, 1, px, true);
+                if (index == span.len) {
+                    if (span.line) {
+                        if (span.len > 0 && text[span.start + span.len - 1] == '\n') {
+                            i = span.start + index - 1;
+                        } else {
+                            i = span.start + index;
+                        }
                         break;
-                    } else {
-                        iLine = span.id;
-                        index = span.start;
                     }
-                } else if (off < len) {
-                    iLine = span.id;
-                    index = span.start + off;
-                    break;
                 } else {
-                    iLine = span.id;
-                    index = span.start + len;
+                    i = span.start + index;
+                    break;
                 }
-            } else if (index > -1) {
-                break;
             }
 
-            if (span.line) {
-                line += lineHeight;
-            }
+            if (last) break;
         }
         if (sCursorLine) {
-            cursorLine = iLine;
+            cursorLine = span == null ? 0 : span.id;
         }
-        return index > -1 ? index : size;
+        return i;
     }
 
     public String getText() {
@@ -536,6 +726,7 @@ public class TextField extends Widget {
 
     public void setText(String text) {
         replace(0, size, text);
+        setCursorPos(0, 0);
         invalidate(true);
     }
 
@@ -545,13 +736,14 @@ public class TextField extends Widget {
 
     public void setSingleLine(boolean singleLine) {
         if (this.singleLine != singleLine) {
-            this.singleLine = singleLine;
             int cPos = cursorPos;
             if (singleLine) {
-                replace(0, size, getText());
+                replace(0, size, getText().replaceAll("\n",""));
             }
             setCursorPos(cPos);
 
+            this.singleLine = singleLine;
+            spanManager.invalidate(0);
             invalidTextSize = true;
             invalidate(true);
         }
@@ -877,9 +1069,11 @@ public class TextField extends Widget {
                 }
             }
         }
+
         Span get() {
             Span oSpan = null;
 
+            // TODO - ALL TO CPP SIDE !
             if (singleLine) {
                 cur = next;
                 if (cur < size) {
@@ -892,7 +1086,7 @@ public class TextField extends Widget {
                     byte b = text[cur];
                     next = findNext(cur);
                     if (b == '\n' || next >= size) {
-                        int len = prev - next;
+                        int len = next - prev;
                         toBuffer(prev, len);
                         oSpan = new Span(count++, prev, len, true, 0, font.getWidth(buffer, 0, len, textSize, 1));
                         prev = next;
@@ -909,7 +1103,7 @@ public class TextField extends Widget {
                     if (wnext == -1) {
                         next = findNext(cur);
                     }
-                    if (b == '_' || b == '\n' || next >= size) {
+                    if (b == ' ' || b == '\n' || next >= size) {
                         int len = next - prev;
                         toBuffer(prev, len);
 
@@ -960,60 +1154,15 @@ public class TextField extends Widget {
             return oSpan;
         }
 
-        public Span get(int index) {
-            Span oSpan = null;
-            if (count < index) {
-                while (count < index && hasNext()) {
-                    oSpan = next();
-                }
-            } else {
-                int pos = count;
-                setPos(index + 1);
-                setPos(pos);
-                oSpan = spans.get(index);
-            }
-            return oSpan;
-        }
+        public Span get(int line) {
+            if (line < 0) return null;
 
-        public Span findFoward(int spanID, int position) {
-            setPos(spanID);
-            while (hasNext()) {
-                Span s = next();
-                if (s.start <= position && s.end > position) {
-                    return s;
+            if (line >= spans.size()) {
+                while (line >= spans.size() && hasNext()) {
+                    next();
                 }
             }
-
-            setPos(0);
-            while (hasNext()) {
-                Span s = next();
-                if (s.start <= position && s.end > position) {
-                    return s;
-                }
-                if (count >= spanID) {
-                    return null;
-                }
-            }
-            return null; // assert
-        }
-
-        public Span findBackward(int spanID, int position) {
-            setPos(spanID);
-            while (spanID > 0) {
-                Span s = get(spanID--);
-                if (s != null && s.start <= position && s.end > position) {
-                    return s;
-                }
-            }
-
-            setPos(spanID);
-            while (hasNext()) {
-                Span s = next();
-                if (s.start <= position && s.end > position) {
-                    return s;
-                }
-            }
-            return null;
+            return line >= spans.size() ? null : spans.get(line);
         }
 
         public Span find(int position) {
@@ -1050,7 +1199,6 @@ public class TextField extends Widget {
                 spans.subList(line, spans.size()).clear();
             }
 
-            System.out.println("Invalidado : " + line);
             if (line <= 0) {
                 count = 0;
                 prev = 0;
@@ -1071,6 +1219,14 @@ public class TextField extends Widget {
             }
         }
 
+        // TODO - Performance Improvement
+        public void inlineInvalidate(int line, int start, int end, int newLen) {
+            // Only for SingleLine or Non-WrapTexts
+            // Only for simple between text changes [no \n, no hit the line's edges]
+            // Atualizar valores e linhas da linha
+            // Update only aftewards loaded values [>= line]
+        }
+
         public void setPos(int count) {
             if (count < this.count) {
                 this.count = count;
@@ -1089,7 +1245,6 @@ public class TextField extends Widget {
             int c = count;
 
             if (count < spans.size()) {
-                //System.out.println("Reusar "+c+"("+(spans.get(count).id)+"){"+spans.get(count)+"}");
                 return spans.get(count++);
             }
 
@@ -1099,7 +1254,6 @@ public class TextField extends Widget {
 
                 cur = size + 1;
 
-                //System.out.println("Novo* "+(c)+"("+(oSpan.id)+"){"+oSpan+"}");
                 return oSpan;
             }
 
@@ -1120,7 +1274,6 @@ public class TextField extends Widget {
 
             if (cache) spans.add(oSpan);
 
-            //System.out.println("Novo "+(c)+"("+(oSpan.id)+"){"+oSpan+"}");
             return oSpan;
         }
     }
