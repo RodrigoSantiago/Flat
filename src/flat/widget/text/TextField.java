@@ -1,22 +1,25 @@
 package flat.widget.text;
 
+import flat.animations.Interpolation;
 import flat.animations.StateInfo;
-import flat.events.KeyCode;
-import flat.events.KeyEvent;
-import flat.events.PointerEvent;
+import flat.events.*;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Font;
+import flat.graphics.cursor.Cursor;
 import flat.graphics.image.Drawable;
 import flat.graphics.text.Align;
-import flat.math.Affine;
 import flat.math.Vector2;
+import flat.math.shapes.Rectangle;
 import flat.math.shapes.Shape;
 import flat.resources.Resource;
 import flat.uxml.Controller;
 import flat.uxml.UXStyle;
 import flat.uxml.UXStyleAttrs;
+import flat.widget.Application;
 import flat.widget.Widget;
+import flat.widget.effects.RippleEffect;
 
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -28,41 +31,55 @@ public class TextField extends Widget {
     private String string;
     private int size, capacity;
 
-    int cursorPos, cursorStart, selStart, selEnd; //UTF-8 Positions
-    int cursorLine, cursorStartLine, selStartLine, selEndLine;
-    float cursorMoveAdvance = -1;
+    private int cursorPos, cursorStart, selStart, selEnd; //UTF-8 Positions
+    private int cursorLine, cursorStartLine, selStartLine, selEndLine;
+    private float cursorMoveAdvance = -1;
 
-    private Font font;
+    private Font font = Font.DEFAULT;
     private float textSize;
     private int textColor;
     private int selectionColor;
+    private int cursorColor;
+    private boolean borderDiscret;
 
     private boolean singleLine = true;
     private boolean wrapText;
     private int minLines = 1, maxLines = Integer.MAX_VALUE;
 
     private String labelText;
-    private Font labelFont;
+    private Font labelFont = Font.DEFAULT;
     private float labelTextSize;
     private int labelTextColor;
     private float highLabelTextSize;
     private int highLabelTextColor;
+    private boolean highLabelFixed;
+
+    private String placeholder;
+    private int placeholderTextColor;
 
     private String helpText;
-    private Font helpFont;
+    private Font helpFont = Font.DEFAULT;
     private float helpTextSize;
     private int helpTextColor;
 
     private Drawable leadingIcon;
-    private Drawable activationIcon;
+    private Drawable actIcon;
     private float leadingSpacing;
-    private float activationSpacing;
+    private float actSpacing;
+    private RippleEffect actRipple;
+    private int actRippleColor;
+    private boolean actRippleEnabled;
+
+    private long timer = 0;
+    private int actPress = -1;
+
+    private PointerListener actPointerListener;
 
     // TODO - SCROLL LIMIT AFTER TEXT CHANGE
     private float scrollX, scrollY;
     private boolean invalidTextSize, invalidScroll;
     private float textWidth, textHeight;
-    private float wrapWidth;
+    private float wrapWidth, wrapHeight;
 
     // TODO - REMOVER ESSE BUFFER BOSTA
     private ByteBuffer buffer;
@@ -89,6 +106,13 @@ public class TextField extends Widget {
         setMaxLines((int) style.asNumber("max-lines", getMaxLines()));
 
         setText(style.asString("text", getText()));
+        setPlaceholder(style.asString("placeholder", getPlaceholder()));
+
+
+        Method handle = style.asListener("on-act-pointer", PointerEvent.class, controller);
+        if (handle != null) {
+            setActPointerListener(new PointerListener.AutoPointerListener(controller, handle));
+        }
     }
 
     @Override
@@ -99,20 +123,32 @@ public class TextField extends Widget {
 
         StateInfo info = getStateInfo();
 
+        if (info.get(StateInfo.FOCUSED) != 0) {
+            invalidate(false);
+        }
+
         setFont(style.asFont("font", info, getFont()));
         setTextSize(style.asSize("text-size", info, getTextSize()));
         setTextColor(style.asColor("text-color", info, getTextColor()));
         setSelectionColor(style.asColor("selection-color", info, getSelectionColor()));
+        setCursorColor(style.asColor("cursor-color", info, getCursorColor()));
 
         setLabelFont(style.asFont("label-font", info, getLabelFont()));
         setLabelTextSize(style.asSize("label-text-size", info, getLabelTextSize()));
         setLabelTextColor(style.asColor("label-text-color", info, getLabelTextColor()));
         setHighLabelTextSize(style.asSize("high-label-text-size", info, getHighLabelTextSize()));
         setHighLabelTextColor(style.asColor("high-label-text-color", info, getHighLabelTextColor()));
+        setHighLabelFixed(style.asBool("high-label-fixed", info, getHighLabelFixed()));
+
+        setPlaceholderTextColor(style.asColor("placeholder-text-color", info, getPlaceholderTextColor()));
+        setBorderDiscret(style.asBool("border-discret", info, isBorderDiscret()));
 
         setHelpFont(style.asFont("help-font", info, getHelpFont()));
         setHelpTextSize(style.asSize("help-text-size", info, getHelpTextSize()));
         setHelpTextColor(style.asColor("help-text-color", info, getHelpTextColor()));
+
+        setActRippleEnabled(style.asBool("act-ripple", info, isActRippleEnabled()));
+        setActRippleColor(style.asColor("act-ripple-color", info, getActRippleColor()));
 
         Resource res = getStyle().asResource("leading-icon", info);
         if (res != null) {
@@ -121,15 +157,15 @@ public class TextField extends Widget {
                 setLeadingIcon(drawable);
             }
         }
-        res = getStyle().asResource("activation-icon", info);
+        res = getStyle().asResource("act-icon", info);
         if (res != null) {
             Drawable drawable = res.getDrawable();
             if (drawable != null) {
-                setActivationIcon(drawable);
+                setActIcon(drawable);
             }
         }
         setLeadingSpacing(style.asSize("leading-spacing", info, getLeadingSpacing()));
-        setActivationSpacing(style.asSize("activation-spacing", info, getActivationSpacing()));
+        setActSpacing(style.asSize("act-spacing", info, getActSpacing()));
     }
 
     @Override
@@ -143,21 +179,69 @@ public class TextField extends Widget {
 
     @Override
     public void onDraw(SmartContext context) {
-        super.onDraw(context);
+        backgroundDraw(getBackgroundColor(), isBorderDiscret() ? 0 : getBorderColor(), getRippleColor(), context);
 
-        Affine transform = context.getTransform2D();
-        Shape shape = backgroundClip(context);
-
-        float x = getInX();
-        float y = getInY();
-        float w = getInWidth();
-        float h = getInHeight();
+        float x = getTextInX();
+        float y = getTextInY();
+        float w = getTextInWidth();
+        float h = getTextInHeight();
         context.setTransform2D(getTransform());
+        context.setTextVerticalAlign(Align.Vertical.TOP);
+        context.setTextHorizontalAlign(Align.Horizontal.LEFT);
+
+        if (isBorderDiscret()) {
+            context.setColor(getBorderColor());
+            context.drawRect(getOutX(), getOutY() + getOutHeight() - getBorderWidth(), getOutWidth(), getBorderWidth(), true);
+        }
+
+        StateInfo info = getStateInfo();
+        float focusTime = info.get(StateInfo.FOCUSED);
+        if (labelText != null) {
+            float hLabel = labelFont.getHeight(highLabelTextSize);
+            if (size == 0 && focusTime < 1 && !highLabelFixed) {
+                context.setTextFont(labelFont);
+                context.setTextSize(Interpolation.mix(labelTextSize, highLabelTextSize, focusTime));
+                context.setColor(Interpolation.mixColor(labelTextColor, highLabelTextColor, focusTime));
+                context.drawText(x, y - Interpolation.mix(0, hLabel, focusTime), labelText);
+            } else {
+                context.setTextFont(labelFont);
+                context.setTextSize(highLabelTextSize);
+                context.setColor(highLabelTextColor);
+                context.drawText(x, y - hLabel, labelText);
+            }
+        }
+
+        if (helpText != null) {
+            context.setTextFont(helpFont);
+            context.setTextSize(helpTextSize);
+            context.setColor(helpTextColor);
+            context.drawText(x, getOutY() + getOutHeight(), helpText);
+        }
+
+        if (leadingIcon != null) {
+            leadingIcon.draw(context, getInX(), getInY(), 0);
+            context.setTransform2D(getTransform());
+        }
+
+        if (actIcon != null) {
+            actIcon.draw(context, getTextInX() + getTextInWidth() + getActSpacing(), getInY(), 0);
+            context.setTransform2D(getTransform());
+            if (isActRippleEnabled() && getActRipple().isVisible()) {
+                getActRipple().drawRipple(context, null, actRippleColor);
+            }
+        }
+
         context.setTextFont(font);
         context.setTextSize(textSize);
         context.setColor(textColor);
-        context.setTextVerticalAlign(Align.Vertical.TOP);
-        context.setTextHorizontalAlign(Align.Horizontal.LEFT);
+
+        Shape shape = backgroundClip(context);
+        context.intersectClip(new Rectangle(x, y, w, h));
+
+        if (size == 0 && placeholder != null && (focusTime >= 1 || highLabelFixed || labelText == null)) {
+            context.setColor(placeholderTextColor);
+            context.drawText(x, y, placeholder);
+        }
 
         float lineHeight = font.getHeight(textSize);
 
@@ -200,22 +284,55 @@ public class TextField extends Widget {
 
             if ((isFocused() || isPressed()) && cursorLine == span.id) {
                 float off = font.getWidth(buffer, 0, cursorPos - span.start, textSize, 1);
-                context.setColor(textColor);
+                context.setColor(cursorColor);
                 context.drawRect((float) Math.floor(xpos + span.x + off), ypos,
                         Math.min(1, Math.round(lineHeight / 16f)), lineHeight, true);
             }
         }
 
-        context.setTransform2D(transform);
+        context.setTransform2D(null);
         context.setClip(shape);
     }
 
-    long timer = 0;
     @Override
     public void firePointer(PointerEvent pointerEvent) {
         super.firePointer(pointerEvent);
 
         if (!pointerEvent.isConsumed()) {
+            if (getActIcon() != null) {
+                float x1 = getTextInX() + getTextInWidth() + getActSpacing();
+                float x2 = x1 + getActIcon().getWidth();
+                float y1 = getInY();
+                float y2 = y1 + getActIcon().getHeight();
+                Vector2 point = new Vector2(pointerEvent.getX(), pointerEvent.getY());
+                screenToLocal(point);
+                if (point.x >= x1 && point.x <= x2 && point.y >= y1 && point.y <= y2) {
+                    if (actPress == -1 && pointerEvent.getType() == PointerEvent.PRESSED) {
+                        actPress = pointerEvent.getPointerID();
+                        if (isActRippleEnabled()) {
+                            getActRipple().setSize(getActIcon().getWidth());
+                            getActRipple().fire(x1 + getActIcon().getWidth() / 2, y1 + getActIcon().getHeight() / 2);
+                        }
+                        if (actPointerListener != null) {
+                            actPointerListener.handle(pointerEvent);
+                        }
+                        return;
+                    }
+                }
+            }
+            if (actPress != -1 && actPress == pointerEvent.getPointerID()) {
+                if (pointerEvent.getType() == PointerEvent.RELEASED) {
+                    if (isActRippleEnabled()) {
+                        getActRipple().release();
+                    }
+                    if (actPointerListener != null) {
+                        actPointerListener.handle(pointerEvent);
+                    }
+                    actPress = -1;
+                    return;
+                }
+            }
+
             if (pointerEvent.getType() == PointerEvent.PRESSED) {
                 int pos = getPositionIndex(pointerEvent.getX(), pointerEvent.getY(), true);
                 timer = System.currentTimeMillis();
@@ -243,6 +360,24 @@ public class TextField extends Widget {
                     selEndLine = cursorLine;
                 }
                 invalidate(true);
+            }
+        }
+    }
+
+    @Override
+    public void fireHover(HoverEvent hoverEvent) {
+        super.fireHover(hoverEvent);
+        if (getActIcon() != null) {
+            float x1 = getTextInX() + getTextInWidth() + getActSpacing();
+            float x2 = x1 + getActIcon().getWidth();
+            float y1 = getInY();
+            float y2 = y1 + getActIcon().getHeight();
+            Vector2 point = new Vector2(hoverEvent.getX(), hoverEvent.getY());
+            screenToLocal(point);
+            if (point.x >= x1 && point.x <= x2 && point.y >= y1 && point.y <= y2) {
+                if (actPress == -1) {
+                    Application.setCursor(Cursor.HAND);
+                }
             }
         }
     }
@@ -341,6 +476,7 @@ public class TextField extends Widget {
                         replace(back, selStart - back, "");
                         setCursorPos(cursorPos, cursorLine);
 
+                        // Enhaced Scroll - Fixer
                         updateScroll();
                         Span spanLine = spanManager.get(cursorLine);
                         if (spanLine != null) {
@@ -350,6 +486,7 @@ public class TextField extends Widget {
                                 scrollX = Math.min(w, Math.max(0, scrollX - (textSize * 4)));
                             }
                         }
+                        invalidScroll = true;
                     }
                 }
                 if (keyEvent.getKeycode() == KeyCode.KEY_DELETE) {
@@ -408,13 +545,44 @@ public class TextField extends Widget {
     @Override
     public void onLayout(float width, float height) {
         super.onLayout(width, height);
-        if (getWidth() != wrapWidth) {
-            wrapWidth = getWidth();
-            if (!singleLine && wrapText) {
-                invalidTextSize = true;
-                invalidate(true);
-            }
+        if (getTextInWidth() != wrapWidth) {
+            wrapWidth = getTextInWidth();
+            invalidTextSize = true;
+            invalidScroll = true;
+            invalidate(true);
         }
+        if (getInHeight() != wrapHeight) {
+            wrapHeight = getInHeight();
+            invalidScroll = true;
+            invalidate(true);
+        }
+    }
+
+    float getTextInY() {
+        return getInY();
+    }
+
+    float getTextInX() {
+        float add = 0;
+        if (getLeadingIcon() != null) {
+            add = getLeadingIcon().getWidth() + getLeadingSpacing();
+        }
+        return getInX() + add;
+    }
+
+    float getTextInWidth() {
+        float add = 0;
+        if (getLeadingIcon() != null) {
+            add = getLeadingIcon().getWidth() + getLeadingSpacing();
+        }
+        if (getActIcon() != null) {
+            add += getActIcon().getWidth() + getActSpacing();
+        }
+        return getInWidth() - add;
+    }
+
+    float getTextInHeight() {
+        return getInHeight();
     }
 
     void updatePrefSize(float width) {
@@ -424,7 +592,7 @@ public class TextField extends Widget {
             textWidth = 0;
             textHeight = 0;
 
-            float w = (!singleLine && wrapText) ? wrapWidth: width == 0 ? MATCH_PARENT : width;
+            float w = (!singleLine && wrapText) ? wrapWidth : width == 0 ? MATCH_PARENT : width;
             float lineHeight = font.getHeight(textSize);
 
             SpanManager sm = spanManager.getWidth() == w ? spanManager : new SpanManager(false);
@@ -448,7 +616,7 @@ public class TextField extends Widget {
             if (line == null || (!singleLine && wrapText)) {
                 scrollX = 0;
             } else {
-                float w = getInWidth();
+                float w = getTextInWidth();
 
                 toBuffer(line.start, line.len);
                 float tw = font.getWidth(buffer, 0, cursorPos - line.start, textSize, 1);
@@ -462,12 +630,24 @@ public class TextField extends Widget {
             if (line == null || singleLine) {
                 scrollY = 0;
             } else {
-                float h = getInHeight();
+                float h = getTextInHeight();
                 float th = font.getHeight(textSize);
                 if ((cursorLine + 1) * th - scrollY > h) {
                     scrollY = (cursorLine + 1) * th - h;
                 } else if (cursorLine * th - scrollY < 0) {
                     scrollY = cursorLine * th;
+                }
+
+                spanManager.setPos((int) ((scrollY) / th));
+                while (spanManager.hasNext()) {
+                    Span span = spanManager.next();
+                    if (span.id * th - scrollY > h) {
+                        break;
+                    }
+                    if (!spanManager.hasNext()) {
+                        scrollY = (span.id + 1) * th - h;
+                        scrollY = Math.max(scrollY, 0);
+                    }
                 }
             }
             if (scrollX != bx || scrollY != by) {
@@ -536,7 +716,7 @@ public class TextField extends Widget {
             if (equal) return;
         }
 
-        spanManager.setWidth(getInWidth());
+        spanManager.setWidth(getTextInWidth());
         Span span = spanManager.find(start);
 
         ensureCapacity (size + offset);
@@ -660,16 +840,15 @@ public class TextField extends Widget {
 
         Vector2 point = new Vector2(px, py);
         screenToLocal(point);
-        px = point.x - getInX() + scrollX;
+        px = point.x - getTextInX() + scrollX;
         py = point.y;
 
         boolean s = (System.currentTimeMillis() - timer) > 100;
         boolean fConsume = false;
 
         float lineHeight = font.getHeight(textSize);
-        float h = getInHeight();
-        float x = getInX();
-        float y = getInY();
+        float h = getTextInHeight();
+        float y = getTextInY();
 
         int i = size;
         Span span = null;
@@ -845,6 +1024,28 @@ public class TextField extends Widget {
         }
     }
 
+    public int getCursorColor() {
+        return cursorColor;
+    }
+
+    public void setCursorColor(int cursorColor) {
+        if (this.cursorColor != cursorColor) {
+            this.cursorColor = cursorColor;
+            invalidate(false);
+        }
+    }
+
+    public boolean isBorderDiscret() {
+        return borderDiscret;
+    }
+
+    public void setBorderDiscret(boolean borderDiscret) {
+        if (this.borderDiscret != borderDiscret) {
+            this.borderDiscret = borderDiscret;
+            invalidate(false);
+        }
+    }
+
     public Font getLabelFont() {
         return labelFont;
     }
@@ -911,6 +1112,39 @@ public class TextField extends Widget {
         }
     }
 
+    public boolean getHighLabelFixed() {
+        return highLabelFixed;
+    }
+
+    public void setHighLabelFixed(boolean highLabelFixed) {
+        if (this.highLabelFixed != highLabelFixed) {
+            this.highLabelFixed = highLabelFixed;
+            invalidate(false);
+        }
+    }
+
+    public String getPlaceholder() {
+        return placeholder;
+    }
+
+    public void setPlaceholder(String placeholder) {
+        if (!Objects.equals(this.placeholder, placeholder)) {
+            this.placeholder = placeholder;
+            invalidate(false);
+        }
+    }
+
+    public int getPlaceholderTextColor() {
+        return placeholderTextColor;
+    }
+
+    public void setPlaceholderTextColor(int placeholderTextColor) {
+        if (this.placeholderTextColor != placeholderTextColor) {
+            this.placeholderTextColor = placeholderTextColor;
+            invalidate(false);
+        }
+    }
+
     public String getHelpText() {
         return helpText;
     }
@@ -955,6 +1189,35 @@ public class TextField extends Widget {
         }
     }
 
+    private RippleEffect getActRipple() {
+        if (actRipple == null) {
+            actRipple = new RippleEffect(this);
+        }
+        return actRipple;
+    }
+
+    public boolean isActRippleEnabled() {
+        return actRippleEnabled;
+    }
+
+    public void setActRippleEnabled(boolean actRippleEnabled) {
+        if (this.actRippleEnabled != actRippleEnabled) {
+            this.actRippleEnabled = actRippleEnabled;
+            invalidate(false);
+        }
+    }
+
+    public int getActRippleColor() {
+        return actRippleColor;
+    }
+
+    public void setActRippleColor(int actRippleColor) {
+        if (this.actRippleColor != actRippleColor) {
+            this.actRippleColor = actRippleColor;
+            invalidate(false);
+        }
+    }
+
     public Drawable getLeadingIcon() {
         return leadingIcon;
     }
@@ -966,13 +1229,13 @@ public class TextField extends Widget {
         }
     }
 
-    public Drawable getActivationIcon() {
-        return activationIcon;
+    public Drawable getActIcon() {
+        return actIcon;
     }
 
-    public void setActivationIcon(Drawable activationIcon) {
-        if (this.activationIcon != activationIcon) {
-            this.activationIcon = activationIcon;
+    public void setActIcon(Drawable actIcon) {
+        if (this.actIcon != actIcon) {
+            this.actIcon = actIcon;
             invalidate(true);
         }
     }
@@ -988,15 +1251,23 @@ public class TextField extends Widget {
         }
     }
 
-    public float getActivationSpacing() {
-        return activationSpacing;
+    public float getActSpacing() {
+        return actSpacing;
     }
 
-    public void setActivationSpacing(float activationSpacing) {
-        if (this.activationSpacing != activationSpacing) {
-            this.activationSpacing = activationSpacing;
+    public void setActSpacing(float actSpacing) {
+        if (this.actSpacing != actSpacing) {
+            this.actSpacing = actSpacing;
             invalidate(true);
         }
+    }
+
+    public PointerListener getActPointerListener() {
+        return actPointerListener;
+    }
+
+    public void setActPointerListener(PointerListener actPointerListener) {
+        this.actPointerListener = actPointerListener;
     }
 
     class Span {

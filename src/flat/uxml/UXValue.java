@@ -13,6 +13,7 @@ import flat.widget.Widget;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 
 public class UXValue {
     public static final int string = 0;
@@ -61,34 +62,60 @@ public class UXValue {
             } else {
                 value = (int) Long.parseLong(source.substring(1), 16);
             }
-        } else if (source.matches("family\\(.+\\)(\\s+weight\\(.+\\))?(\\s+posture\\(.+\\))?")) {
+        } else if (source.matches("font\\(.+\\)")) {
             type = font;
-            int fIndex = source.indexOf("family(");
-            int wIndex = source.indexOf("weight(");
-            int pIndex = source.indexOf("posture(");
-
-            String family = source.substring(fIndex + 7, source.indexOf(")", fIndex));
-
-            FontWeight weight = FontWeight.NORMAL;
-            if (wIndex > -1) {
-                String w = source.substring(wIndex + 7, source.indexOf(")", wIndex));
-                try {
-                    weight = FontWeight.valueOf(w.toUpperCase());
-                } catch (Exception ignored) {
+            int state = 0;
+            int start = -1;
+            int end = -1;
+            boolean inverseBar = false;
+            for (int i = 0; i < source.length(); i++) {
+                char c = source.charAt(i);
+                if (state == 0 && c == '"') {
+                    state = 1;
+                    start = i;
+                } else if (state == 1 && c == '"' && !inverseBar) {
+                    end = i;
+                    break;
                 }
+                inverseBar = state == 1 && c == '\\' && !inverseBar;
             }
 
+            String family = null;
+            String generic = "Roboto";
+            FontWeight weight = FontWeight.NORMAL;
             FontPosture posture = FontPosture.REGULAR;
-            if (pIndex > -1) {
-                String p = source.substring(pIndex + 8, source.indexOf(")", wIndex));
-                try {
-                    posture = FontPosture.valueOf(p.toUpperCase());
-                } catch (Exception ignored) {
+            if (start != -1 && end != -1) {
+                family = source.substring(start + 1, end);
+            }
+            if (end == -1) end = 4;
+            for (String str : source.substring(end + 1, source.length() - 1).split(",")) {
+                str = str.toUpperCase().trim();
+                switch (str) {
+                    case "BLACK" : weight = FontWeight.BLACK; break;
+                    case "EXTRA_BOLD" : weight = FontWeight.EXTRA_BOLD; break;
+                    case "BOLD" : weight = FontWeight.BOLD; break;
+                    case "SEMI_BOLD" : weight = FontWeight.SEMI_BOLD; break;
+                    case "MEDIUM" : weight = FontWeight.MEDIUM; break;
+                    case "NORMAL" : weight = FontWeight.NORMAL; break;
+                    case "LIGHT" : weight = FontWeight.LIGHT; break;
+                    case "EXTRA_LIGHT" : weight = FontWeight.EXTRA_LIGHT; break;
+                    case "THIN" : weight = FontWeight.THIN; break;
+                    case "ITALIC" : posture = FontPosture.ITALIC; break;
+                    case "SERIF": generic = "Serif"; break;
+                    case "MONO":
+                    case "MONOSPACE" : generic = "Mono"; break;
+                    case "SANS" :
+                    case "SANS-SERIF" : generic = "Sans"; break;
+                    case "FANTASY":
+                    case "CURSIVE": generic = "Cursive"; break;
                 }
+            }
+            if (family == null) {
+                family = generic;
             }
             Font val = Font.findFont(family, weight, posture);
             if (val == null) {
-                val = Font.findFont("ROBOTO", weight, posture);
+                val = Font.findFont(generic, weight, posture);
                 if (val == null) {
                     val = Font.DEFAULT;
                 }
@@ -108,6 +135,12 @@ public class UXValue {
         this.value = value;
     }
 
+    public UXValue(int type, Object value, int sizeType) {
+        this.type = type;
+        this.value = value;
+        this.sizeType = (byte) sizeType;
+    }
+
     public UXValue mix(UXValue uxValue, float t, UXTheme theme) {
         if (uxValue == null) return this;
         if (t == 0) return this;
@@ -123,13 +156,12 @@ public class UXValue {
             case listener:
                 return t < 0.5 ? this : uxValue;
             case number:
-                if (sizeType != 0 || uxValue.sizeType != 0) {
-                    return new UXValue(number, Interpolation.mix(
-                            asSize(theme) / (theme.getDimension().dpi / 160F),
-                            uxValue.asSize(theme) / (theme.getDimension().dpi / 160F), t));
-                } else {
-                    return new UXValue(number, Interpolation.mix((float) value, (float) uxValue.value, t));
+                float v1 = asSize(theme);
+                float v2 = uxValue.asSize(theme);
+                if (Math.abs(v1 - v2) > 0.01f) {
+                    return new UXValue(number, Interpolation.mix(v1, v2, t), 1);
                 }
+                return this;
             case angle:
                 return new UXValue(angle, Interpolation.mixAngle((float) value, (float) uxValue.value, t));
             case color:
@@ -151,20 +183,22 @@ public class UXValue {
     }
 
     public float asSize(UXTheme theme) {
-        if (theme == null || theme.getDimension() == null || sizeType == 1) {
+        if (sizeType == 1 || theme == null || theme.getDimension() == null) {
+            // Pixel
+
             return (float) value;
         } else if (sizeType == 2) {
-            return (float) value * (theme.getDimension().dpi / 160F) * theme.getFontScale();
-        } else {
-            return (float) value * (theme.getDimension().dpi / 160F);
-        }
-    }
+            // SP
 
-    public float asSize(Dimension dimension) {
-        if (dimension == null || sizeType == 1) {
-            return (float) value;
+            return Math.round((float) value * (Dimension.getDensity(theme.getDimension().dpi).dpi / 160f * theme.getFontScale()));
+        } else if (sizeType == 3) {
+            // DP
+
+            return Math.round((float) value * (Dimension.getDensity(theme.getDimension().dpi).dpi / 160f));
         } else {
-            return (float) value * (dimension.dpi / 160F);
+            // Real
+
+            return Math.round((float) value * (theme.getDimension().dpi / 160f));
         }
     }
 
@@ -235,15 +269,17 @@ public class UXValue {
         } else if (source.endsWith("sp")) {
             sizeType = 2;
         } else if (source.endsWith("in")) {
-            val *= 160f;
+            val *= 160;
         } else if (source.endsWith("pt")) {
-            val *= 160f / 72f;
+            val *= 160 / 72.0f;
         } else if (source.endsWith("pc")) {
-            val *= 160f / 6f;
+            val *= 160 / 6.0f;
         } else if (source.endsWith("mm")) {
-            val *= 160f / 25.4f;
+            val *= 160 / 25.4f;
         } else if (source.endsWith("cm")) {
-            val *= 160f / 2.54f;
+            val *= 160 / 2.54f;
+        } else {
+            sizeType = 3;
         }
         return val;
     }

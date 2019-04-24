@@ -72,6 +72,7 @@ public class SVG {
     public static native float FontGetHeight(long font);
     public static native float FontGetAscent(long font);
     public static native float FontGetDescent(long font);
+    public static native float FontGetLineGap(long font);
     public static native float FontGetTextWidth(long font, String string, float size, float spacing);
     public static native float FontGetTextWidthBuffer(long font, Buffer string, int offset, int length, float size, float spacing);
     public static native int FontGetOffset(long font, String string, float size, float spacing, float x, boolean half);

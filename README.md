@@ -26,6 +26,7 @@ The main purpose is to work similar to the "Activities" system with the ability 
  - Label
  - Button
  - ToggleButton
+ - Divider
  - ImageView
  - CheckBox
  - RadioButton
@@ -37,16 +38,16 @@ The main purpose is to work similar to the "Activities" system with the ability 
  - ScrollBox
  - Grid
  - Tab
+ - TextField
+ - ProgressBar
+ - ProgressCircle
  
 ### Todo - List
  - [ ] Default Widgets
-    - [ ] TextField
-    - [ ] TextArea
     - [ ] Chip
-    - [ ] Divider
     - [ ] Canvas
     - [ ] Sketch
-    - [ ] ProgressBar
+    - [ ] TextArea
     - [ ] Navigation
     - [ ] ListView
     - [ ] TreeView

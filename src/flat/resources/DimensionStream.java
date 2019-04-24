@@ -61,7 +61,7 @@ public abstract class DimensionStream {
             Dimension t = temp.get(i);
             if (choose == null) {
                 choose = t;
-            } else if (Math.abs(t.density.val - dpi) < Math.abs(choose.density.val - dpi)) {
+            } else if (Math.abs(t.density.dpi - dpi) < Math.abs(choose.density.dpi - dpi)) {
                 choose = t;
             }
         }

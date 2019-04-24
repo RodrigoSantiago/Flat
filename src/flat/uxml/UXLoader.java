@@ -35,6 +35,7 @@ public final class UXLoader {
         UXLoader.install("Scene", Scene::new);
         UXLoader.install("Box", Box::new);
         UXLoader.install("LinearBox", LinearBox::new);
+        UXLoader.install("Divider", Divider::new);
         UXLoader.install("Button", Button::new);
         UXLoader.install("ToggleButton", ToggleButton::new);
         UXLoader.install("ToggleGroup", RadioGroup::new);
@@ -53,6 +54,8 @@ public final class UXLoader {
         UXLoader.install("Tab", Tab::new);
         UXLoader.install("Page", Page::new);
         UXLoader.install("TextField", TextField::new);
+        UXLoader.install("ProgressBar", ProgressBar::new);
+        UXLoader.install("ProgressCircle", ProgressCircle::new);
     }
 
     private DimensionStream dimensionStream;

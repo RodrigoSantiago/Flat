@@ -1,8 +1,9 @@
-<Scene>
-    <LinearBox direction="vertical">
-        <Button text="click" on-pointer="onClick"></Button>
-        <TextField text="te. Mauris quis tristique urna, ut mattis dui. Nunc vitae tortor eu orci eleifend euismod. Nulla vitae mauris ut dolor imperdiet rhoncus. Cras non ligula quis tortor fringilla sagittis. Vestibulum libero ipsum, efficitur in lectus et, rutrum dictum sapien. Phasellus ante tortor, semper at lorem ut, scelerisque efficitur tortor. Quisque rhoncus id diam at finibus. Fusce eget nunc ac metus pharetra pulvinar. Vestibulum hendrerit fermentum venenatis. Proin condimentum efficitur urna, vel elementum ante maximus id. Sed elementum rhoncus dui, sodales lacinia lacus luctus a. Praesent ac dignissim sem. Aliquam ut luctus enim."
-                   width="MATCH_PARENT" single-line="false" wrap-text="true"
-                   margin-top="8" height="MATCH_PARENT" text-size="64" id="text"></TextField>
+<Scene next-focus-id="text">
+    <LinearBox direction="vertical" padding-left="16" padding-top="16" padding-right="16">
+        <ProgressBar height="4" width="128" progress="-1" color="#FFFFFF" background-color="#FF0000"
+                        animation-duration="3000" indicator-size="4"
+                        radius-left="2" radius-top="2" radius-right="2" radius-bottom="2"></ProgressBar>
+        <ProgressCircle height="48" width="48" progress="-1" color="#FFFFFF"
+                        animation-duration="10000" indicator-size="4"></ProgressCircle>
     </LinearBox>
 </Scene>

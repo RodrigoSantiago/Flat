@@ -79,7 +79,7 @@ public class Button extends Label {
                 context.setTextHorizontalAlign(Align.Horizontal.LEFT);
                 context.drawTextSlice(
                         xOff(x, x + width, Math.min(getTextWidth(), width)),
-                        yOff(y, y + height, Math.min(getTextSize(), height)),
+                        yOff(y, y + height, Math.min(getTextHeight(), height)),
                         width, getShowText());
             }
         } else {
@@ -94,7 +94,7 @@ public class Button extends Label {
 
                 if (imageAlign == Align.Horizontal.RIGHT) {
                     context.drawTextSlice(xoff,
-                            yOff(y, y + height, Math.min(getTextSize(), height)),
+                            yOff(y, y + height, Math.min(getTextHeight(), height)),
                             width - imageMargin - drawable.getWidth(), getShowText());
                     xoff += width - drawable.getWidth();
                     drawable.draw(context, xoff,
@@ -106,7 +106,7 @@ public class Button extends Label {
                             drawable.getWidth(), drawable.getHeight(), 0);
                     xoff += drawable.getWidth() + imageMargin;
                     context.drawTextSlice(xoff,
-                            yOff(y, y + height, Math.min(getTextSize(), height)),
+                            yOff(y, y + height, Math.min(getTextHeight(), height)),
                             width - imageMargin - drawable.getWidth(), getShowText());
                 }
             } else {
@@ -125,7 +125,7 @@ public class Button extends Label {
             float mWidth = getPrefWidth();
             float mHeight = getPrefHeight();
             mWidth = mWidth == WRAP_CONTENT ? getTextWidth() + drawable.getWidth() + imageMargin : mWidth;
-            mHeight = mHeight == WRAP_CONTENT ? Math.max(getTextSize(), drawable.getHeight()) : mHeight;
+            mHeight = mHeight == WRAP_CONTENT ? Math.max(getTextHeight(), drawable.getHeight()) : mHeight;
             mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
             mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
             setMeasure(mWidth, mHeight);

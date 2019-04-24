@@ -27,7 +27,7 @@ public class SmartContext {
     private Affine transform2D = new Affine();
     private Area clipArea = new Area();
     private Stroke stroker;
-    private float textHeight;
+    private float textSize;
 
     // -- 3D
     private Matrix4 projection3D = new Matrix4();
@@ -218,7 +218,7 @@ public class SmartContext {
 
     public void setTextFont(Font font) {
         context.svgTextFont(font);
-        context.svgTextScale(textHeight / context.svgTextFont().getRasterHeight());
+        context.svgTextScale(textSize / context.svgTextFont().getSize());
     }
 
     public Font getTextFont() {
@@ -226,12 +226,12 @@ public class SmartContext {
     }
 
     public void setTextSize(float size) {
-        textHeight = size;
-        context.svgTextScale(textHeight / context.svgTextFont().getRasterHeight());
+        textSize = size;
+        context.svgTextScale(textSize / context.svgTextFont().getSize());
     }
 
     public float getTextSize() {
-        return textHeight;
+        return textSize;
     }
 
     public void setTextVerticalAlign(Align.Vertical align) {
@@ -376,6 +376,8 @@ public class SmartContext {
         svgMode();
         return context.svgDrawText(x, y, text, offset, length, maxWidth);
     }
+
+    // TODO - Implement draw round rect border (use gradient values to create the effect)
 
     public void drawRoundRectShadow(float x, float y, float width, float height,
                                     float cTop, float cRight, float cBottom, float cLeft, float blur, float alpha) {

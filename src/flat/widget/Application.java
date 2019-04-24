@@ -427,7 +427,6 @@ public final class Application {
         }
     }
 
-    static int aa = 0;
     static void processDraws() {
         if (activity.draw()) {
             SmartContext smartContext = context.getSmartContext();
@@ -447,7 +446,6 @@ public final class Application {
                 }
             }
         } else {
-            //aa = 0;
             long time = System.currentTimeMillis() - loopTime;
             if (time < 15) {
                 try {

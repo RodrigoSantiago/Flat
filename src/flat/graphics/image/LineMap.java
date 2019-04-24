@@ -2,6 +2,7 @@ package flat.graphics.image;
 
 import flat.graphics.SmartContext;
 import flat.graphics.context.Paint;
+import flat.math.Affine;
 import flat.math.shapes.Rectangle;
 import flat.math.shapes.Shape;
 import flat.math.shapes.Stroke;
@@ -33,7 +34,6 @@ public class LineMap implements Drawable {
 
     @Override
     public void draw(SmartContext context, float x, float y, float width, float height, float frame) {
-
         context.setTransform2D(
                 context.getTransform2D()
                         .translate(x, y)

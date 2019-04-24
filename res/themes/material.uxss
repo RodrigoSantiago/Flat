@@ -6,29 +6,30 @@ widget {
 */
 
 label {
-    font : family(Roboto);
+    font : font("Roboto");
     text-size : 24sp;
     text-color : #000000FF;
     text-all-caps : false;
-    vertical-align : left;
-    horizontal-align : top;
+    vertical-align : middle;
+    horizontal-align : left;
 }
 
 button : label {
+    font : font("Roboto", bold);
     ripple : true;
     ripple-color : #00000080;
     shadow : true;
-    radius-top : 2;
-    radius-left : 2;
-    radius-right : 2;
-    radius-bottom : 2;
-    padding-left : 8;
-    padding-right : 8;
-    padding-top : 4;
-    padding-bottom : 4;
-    text-size : 24sp;
+    radius-top : 4;
+    radius-left : 4;
+    radius-right : 4;
+    radius-bottom : 4;
+    padding-left : 16;
+    padding-right : 16;
+    min-height : 36;
+    text-size : 14sp;
     background-color : #FFFFFFFF;
     transition-duration : 100;
+    horizontal-align : bottom;
 
     enabled {
         elevation : 1;
@@ -46,15 +47,48 @@ togglebutton : button {
 
 textfield : label {
     cursor : ibeam;
-    text-size : 24sp;
+    text-size : 16sp;
+
     focusable : true;
+    label-text-size : 16sp;
+    label-text-color : #00000080;
+    high-label-text-size : 12sp;
+    high-label-text-color : #FF0000FF;
+    help-text-size : 12sp;
+    help-text-color : #FF0000;
+    placeholder-text-color : #00000080;
+    cursor-color : #FF0000;
+
+    padding-top : 20;
+    padding-right : 12;
+    padding-bottom : 16;
+    padding-left : 12;
+
+    radius-top : 4;
+    radius-right : 4;
+
+    margin-bottom : 24;
+
+    leading-spacing : 12;
+    act-ripple : true;
+    act-ripple-color : #0000FFFF;
+    act-spacing : 12;
+
     background-color : #CCCCCCFF;
-    selection-color : #0000FF;
+    selection-color : #60A0FF;
+    transition-duration : 100;
+    border-color : #000000AC;
+    border-width : 1;
+
+    border-discret : true;
+
     hovered {
-        background-color : #EEFFFFFF;
+        background-color : #FFFFFF;
     }
     focused {
-        background-color : #FFFFFFFF;
+        background-color : #EEEEEE;
+        border-color : #FF0000;
+        border-width : 2;
     }
 }
 
@@ -62,6 +96,9 @@ chip : label {
 }
 
 divider {
+    height : 1;
+    width : MATCH_PARENT;
+    background-color : #00000080;
 }
 
 /*
@@ -78,6 +115,24 @@ outline : button {
 }
 
 floating : button {
+}
+
+/*
+  TextField Styles
+*/
+text-outline : textfield {
+    radius-top : 4;
+    radius-right : 4;
+    radius-bottom : 4;
+    radius-left : 4;
+
+    high-label-text-size : 10sp;
+    high-label-text-color : #FF0000FF;
+
+    padding-top : 16;
+    border-discret : false;
+}
+text-dense : textfield {
 }
 
 /*
@@ -179,7 +234,7 @@ slider {
     icon : url(icons/slider-icon.svg);
 
     label-enabled : true;
-    label-font : family(Roboto) weight(bold);
+    label-font : font("Roboto", bold);
     label-text-size : 16;
     label-text-color : #FFFFFF;
     label-position : 32;
@@ -214,7 +269,7 @@ scrollbar {
     min-range-display : 24;
     transition-duration : 100;
 
-    label-font : family(Roboto) weight(bold);
+    label-font : font("Roboto", bold);
     label-text-color : #FFFFFF;
     label-text-size : 32;
     popup-x : -32;
@@ -298,7 +353,7 @@ tab-header : label {
     }
     activated {
         background-color : #FFFF00;
-        font : family(Roboto) weight(bold);
+        font : font("Roboto", bold);
     }
 }
 

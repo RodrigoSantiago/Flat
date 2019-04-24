@@ -7,6 +7,7 @@ import flat.events.*;
 import flat.graphics.SmartContext;
 import flat.graphics.cursor.Cursor;
 import flat.math.*;
+import flat.math.shapes.Rectangle;
 import flat.math.shapes.RoundRectangle;
 import flat.math.shapes.Shape;
 import flat.math.stroke.BasicStroke;
@@ -279,6 +280,11 @@ public class Widget implements Gadget {
 
             context.setTransform2D(getTransform());
 
+            if ((backgroundColor & 0xFF) > 0) {
+                context.setColor(backgroundColor);
+                context.drawRoundRect(bg, true);
+            }
+
             if ((borderColor & 0xFF) > 0 && borderWidth > 0) {
                 context.setColor(borderColor);
                 context.setStroker(new BasicStroke(borderWidth));
@@ -286,11 +292,6 @@ public class Widget implements Gadget {
                         bg.x - b2, bg.y - b2, bg.width + b, bg.height + b,
                         bg.arcTop + b2, bg.arcRight + b2, bg.arcBottom + b2, bg.arcLeft + b2,
                         false);
-            }
-
-            if ((backgroundColor & 0xFF) > 0) {
-                context.setColor(backgroundColor);
-                context.drawRoundRect(bg, true);
             }
 
             if ((rippleColor & 0xFF) > 0 && rippleEnabled && ripple.isVisible()) {

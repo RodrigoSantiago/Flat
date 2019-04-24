@@ -33,9 +33,9 @@ public class Dimension {
      */
     public enum Density {
         any(-1), ldpi(120), mdpi(160), hdpi(240), xhdpi(320), xxhdpi(480), xxxhdpi(640);
-        int val;
-        Density(int val) {
-            this.val = val;
+        public final int dpi;
+        Density(int dpi) {
+            this.dpi = dpi;
         }
     }
 
@@ -92,11 +92,11 @@ public class Dimension {
 
     public int compareDensity(Dimension dimension) {
         return dimension.density == Density.any ? -1 :
-                Math.abs(dimension.density.val - density.val);
+                Math.abs(dimension.density.dpi - density.dpi);
     }
 
     public static Size getSize(float width, float height, float dpi) {
-        int dp = (int) Math.ceil(Math.sqrt(width * width + height * height) / (dpi / 160f));
+        int dp = (int) Math.ceil(Math.sqrt(width * width + height * height) / (dpi / 160));
         return dp < 568 ? Size.small
                 : dp < 800 ? Size.normal
                 : dp < 1200 ? Size.large
@@ -104,11 +104,11 @@ public class Dimension {
     }
 
     public static Density getDensity(float dpi) {
-        return dpi < 140 /*(120 <> 160)*/ ? Density.ldpi
-                : dpi < 200 /*(160 <> 240)*/ ? Density.mdpi
-                : dpi < 280 /*(240 <> 320)*/ ? Density.hdpi
-                : dpi < 400 /*(320 <> 480)*/ ? Density.xhdpi
-                : dpi < 560 /*(480 <> 640)*/ ? Density.xxhdpi
+        return dpi <= 120 /*(120 <> 160)*/ ? Density.ldpi
+                : dpi <= 213 /*(160 <> 240)*/ ? Density.mdpi
+                : dpi <= 240 /*(240 <> 320)*/ ? Density.hdpi
+                : dpi <= 320 /*(320 <> 480)*/ ? Density.xhdpi
+                : dpi <= 480 /*(480 <> 640)*/ ? Density.xxhdpi
                 : Density.xxxhdpi;
     }
 

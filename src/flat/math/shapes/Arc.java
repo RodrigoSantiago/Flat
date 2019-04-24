@@ -230,7 +230,7 @@ public final class Arc implements Shape, Serializable {
 
     @Override
     public boolean isEmpty () {
-        return (type != Type.PIE && type != Type.CHORD) || width <= 0 || height <= 0;
+        return extent == 0 || width <= 0 || height <= 0;
     }
 
     @Override

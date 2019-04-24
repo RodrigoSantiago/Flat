@@ -15,7 +15,10 @@ public final class Font {
     private final String family;
     private final FontPosture posture;
     private final FontWeight weight;
-    private final float height, ascent, descent;
+    private float size, height, ascent, descent, lineGap;
+    private boolean sdf;
+    private boolean loaded;
+    private byte[] data;
 
     private long fontID;
 
@@ -27,6 +30,8 @@ public final class Font {
     public static final Font SERIF;
     public static final Font SANS_SERIF;
     public static final Font MONOSPACE;
+    public static final Font CURSIVE;
+    // CURSIVE
 
     static {
         DEFAULT = addFont("Roboto", FontWeight.NORMAL, FontPosture.REGULAR, Font.class.getResourceAsStream("/fonts/Roboto-Regular.ttf"));
@@ -35,6 +40,7 @@ public final class Font {
         SERIF = addFont("Serif", FontWeight.NORMAL, FontPosture.REGULAR, Font.class.getResourceAsStream("/fonts/DroidSerif-Regular.ttf"));
         SANS_SERIF = addFont("Sans", FontWeight.NORMAL, FontPosture.REGULAR, Font.class.getResourceAsStream("/fonts/DroidSans-Regular.ttf"));
         MONOSPACE = addFont("Mono", FontWeight.NORMAL, FontPosture.REGULAR, Font.class.getResourceAsStream("/fonts/DroidSans-Mono.ttf"));
+        CURSIVE = addFont("Cursive", FontWeight.NORMAL, FontPosture.REGULAR, Font.class.getResourceAsStream("/fonts/DancingScript-Regular.ttf"));
     }
 
     public static Font findFont(String family) {
@@ -113,18 +119,9 @@ public final class Font {
         this.family = family;
         this.weight = weight;
         this.posture = posture;
-
-        synchronized (Font.class) {
-            this.fontID = SVG.FontCreate(data, size, sdf ? 1 : 0);
-            this.height = SVG.FontGetHeight(fontID);
-            this.ascent = SVG.FontGetAscent(fontID);
-            this.descent = SVG.FontGetDescent(fontID);
-            SVG.FontLoadAllGlyphs(fontID);
-        }
-    }
-
-    public long getInternalID() {
-        return fontID;
+        this.size = size;
+        this.sdf = sdf;
+        this.data = data.clone();
     }
 
     public String getFamily() {
@@ -139,6 +136,10 @@ public final class Font {
         return weight;
     }
 
+    public boolean isSdf() {
+        return sdf;
+    }
+
     public boolean isBold() {
         return weight.getWeight() >= FontWeight.BOLD.getWeight();
     }
@@ -148,42 +149,77 @@ public final class Font {
     }
 
     public float getWidth(String text, float size, float spacing) {
-        return SVG.FontGetTextWidth(fontID, text, size / height, spacing);
+        load();
+        return SVG.FontGetTextWidth(fontID, text, size / this.size, spacing);
     }
 
     public float getWidth(ByteBuffer text, int offset, int length, float size, float spacing) {
-        return SVG.FontGetTextWidthBuffer(fontID, text, offset, length, size / height, spacing);
+        load();
+        return SVG.FontGetTextWidthBuffer(fontID, text, offset, length, size / this.size, spacing);
     }
 
-    public float getRasterHeight() {
-        return height;
-    }
-
-    public float getHeight(float size) {
+    public float getSize() {
         return size;
     }
 
+    public float getHeight(float size) {
+        load();
+        return size * height / this.size;
+    }
+
+    public float getLineGap(float size) {
+        load();
+        return size * lineGap / this.size;
+    }
+
     public float getAscent(float size) {
-        return ascent * (size / height);
+        load();
+        return size * ascent / this.size;
     }
 
     public float getDescent(float size) {
-        return descent * (size / height);
+        load();
+        return size * descent / this.size;
     }
 
     public int getOffset(String text, float size, float spacing, float x, boolean half) {
-        return SVG.FontGetOffset(fontID, text, size / height, spacing, x, half);
+        load();
+        return SVG.FontGetOffset(fontID, text, size / this.size, spacing, x, half);
     }
 
     public int getOffset(ByteBuffer text, int offset, int length, float size, float spacing, float x, boolean half) {
-        return SVG.FontGetOffsetBuffer(fontID, text, offset, length, size / height, spacing, x, half);
+        load();
+        return SVG.FontGetOffsetBuffer(fontID, text, offset, length, size / this.size, spacing, x, half);
+    }
+
+    public long getInternalID() {
+        load();
+        return fontID;
+    }
+
+    private void load() {
+        synchronized (Font.class) {
+            if (!loaded) {
+                this.fontID = SVG.FontCreate(data, size, sdf ? 1 : 0);
+                this.height = SVG.FontGetHeight(fontID);
+                this.ascent = SVG.FontGetAscent(fontID);
+                this.descent = SVG.FontGetDescent(fontID);
+                this.lineGap = SVG.FontGetLineGap(fontID);
+                SVG.FontLoadAllGlyphs(fontID);
+
+                this.data = null;
+                loaded = true;
+            }
+        }
     }
 
     @Override
     protected void finalize() {
-        final long fontID = this.fontID;
+        if (loaded) {
+            final long fontID = this.fontID;
 
-        Application.runSync(() -> SVG.FontDestroy(fontID));
+            Application.runSync(() -> SVG.FontDestroy(fontID));
+        }
     }
 
     @Override

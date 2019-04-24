@@ -8,6 +8,8 @@ import flat.uxml.UXStyleAttrs;
 import flat.uxml.Controller;
 import flat.widget.Widget;
 
+import java.util.Objects;
+
 public class Label extends Widget {
 
     private String text;
@@ -52,7 +54,7 @@ public class Label extends Widget {
     }
 
     public void setText(String text) {
-        if (this.text != text) {
+        if (!Objects.equals(this.text, text)) {
             this.text = text;
             showText = text == null ? null : textAllCaps ? text.toUpperCase() : text;
             invalidate(true);
@@ -156,8 +158,8 @@ public class Label extends Widget {
             final float height = getInHeight();
 
             context.drawTextSlice(
-                    xOff(x, x + width, Math.min(textWidth, width)),
-                    yOff(y, y + height, Math.min(textSize, height)),
+                    xOff(x, x + width, Math.min(getTextWidth(), width)),
+                    yOff(y, y + height, Math.min(getTextHeight(), height)),
                     width, showText);
         }
     }
@@ -167,7 +169,7 @@ public class Label extends Widget {
         float mWidth = getPrefWidth();
         float mHeight = getPrefHeight();
         mWidth = mWidth == WRAP_CONTENT ? getTextWidth() : mWidth;
-        mHeight = mHeight == WRAP_CONTENT ? textSize : mHeight;
+        mHeight = mHeight == WRAP_CONTENT ? getTextHeight() : mHeight;
         mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
         mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
         setMeasure(mWidth, mHeight);
@@ -182,6 +184,10 @@ public class Label extends Widget {
             invalidTextSize = false;
         }
         return textWidth;
+    }
+
+    protected float getTextHeight() {
+        return font.getHeight(textSize);
     }
 
     protected String getShowText() {
