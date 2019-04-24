@@ -1,9 +1,6 @@
 <Scene next-focus-id="text">
     <LinearBox direction="vertical" padding-left="16" padding-top="16" padding-right="16">
-        <ProgressBar height="4" width="128" progress="-1" color="#FFFFFF" background-color="#FF0000"
-                        animation-duration="3000" indicator-size="4"
-                        radius-left="2" radius-top="2" radius-right="2" radius-bottom="2"></ProgressBar>
-        <ProgressCircle height="48" width="48" progress="-1" color="#FFFFFF"
-                        animation-duration="10000" indicator-size="4"></ProgressCircle>
+        <ProgressBar progress="-1"></ProgressBar>
+        <ProgressCircle progress="-1" ></ProgressCircle>
     </LinearBox>
 </Scene>

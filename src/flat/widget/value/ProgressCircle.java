@@ -19,7 +19,10 @@ import flat.widget.Widget;
 public class ProgressCircle extends Widget {
 
     private float progress;
-    private int color;
+    private int color0;
+    private int color1;
+    private int color2;
+    private int color3;
     private float indicatorSize;
     private float animationDuration;
     private float anim;
@@ -32,6 +35,9 @@ public class ProgressCircle extends Widget {
 
         setProgress(style.asNumber("progress", getProgress()));
         setAnimationDuration(style.asNumber("animation-duration", getAnimationDuration()));
+        if (style.contains("color")) {
+            setColor(style.asColor("color", getColor0()));
+        }
     }
 
     @Override
@@ -42,7 +48,11 @@ public class ProgressCircle extends Widget {
 
         StateInfo info = getStateInfo();
 
-        setColor(style.asColor("color", info, getColor()));
+        setColor0(style.asColor("color-0", info, getColor0()));
+        setColor1(style.asColor("color-1", info, getColor1()));
+        setColor2(style.asColor("color-2", info, getColor2()));
+        setColor3(style.asColor("color-3", info, getColor3()));
+
         setIndicatorSize(style.asSize("indicator-size", info, getIndicatorSize()));
     }
 
@@ -56,13 +66,13 @@ public class ProgressCircle extends Widget {
         float w = getInWidth();
         float h = getInHeight();
 
-        context.setStroker(new BasicStroke(4f));
+        context.setStroker(new BasicStroke(indicatorSize));
         context.setColor(getBackgroundColor());
         context.drawEllipse(x + 2, y + 2, w - 4, h - 4, false);
 
-        context.setColor(color);
         if (progress >= 0) {
             arc.set(x + 2, y + 2, w - 4, h - 4, 90, 0, Arc.Type.OPEN);
+            context.setColor(color0);
             context.drawShape(arc, false);
         } else if (animationDuration > 0) {
             long t = System.currentTimeMillis();
@@ -87,7 +97,8 @@ public class ProgressCircle extends Widget {
                                                     p < 0.750f ? (p - 0.375f) * 6 :
                                                             p < 0.875f ? 2.25f : (p - 0.500f) * 6;
 
-            arc.set(x + 2, y + 2, w - 4, h - 4, -((anim * 3240) + (p1 * 360)), ((p1 - p0) * 360), Arc.Type.OPEN);
+            context.setColor(p < 0.25 ? color0 : p < 0.5 ? color1 : p < 0.75 ? color2 : color3);
+            arc.set(x + 2, y + 2, w - 4, h - 4, -((anim * 2160) + (p1 * 360)), ((p1 - p0) * 360), Arc.Type.OPEN);
             context.drawShape(arc, false);
 
             if (anim == 1) {
@@ -116,13 +127,71 @@ public class ProgressCircle extends Widget {
         }
     }
 
-    public int getColor() {
-        return color;
+    public void setColor(int color) {
+        if (color != color0 || color != color1 || color != color2 || color != color3) {
+            this.color0 = this.color1 = this.color2 = this.color3 = color;
+            invalidate(false);
+        }
     }
 
-    public void setColor(int color) {
-        if (this.color != color) {
-            this.color = color;
+    public void setColor(int colorIn, int colorOut) {
+        if (colorIn != color0 || colorIn != color1 || colorOut != color2 || colorOut != color3) {
+            this.color0 = this.color1 = colorIn;
+            this.color2 = this.color3 = colorOut;
+            invalidate(false);
+        }
+    }
+
+    public void setColor(int color0, int color1, int color2, int color3) {
+        if (this.color0 != color0 || this.color1 != color1 || this.color2 != color2 || this.color3 != color3) {
+            this.color0 = color0;
+            this.color1 = color1;
+            this.color2 = color2;
+            this.color3 = color3;
+            invalidate(false);
+        }
+    }
+
+    public int getColor0() {
+        return color0;
+    }
+
+    public void setColor0(int color0) {
+        if (this.color0 != color0) {
+            this.color0 = color0;
+            invalidate(false);
+        }
+    }
+
+    public int getColor1() {
+        return color1;
+    }
+
+    public void setColor1(int color1) {
+        if (this.color1 != color1) {
+            this.color1 = color1;
+            invalidate(false);
+        }
+    }
+
+    public int getColor2() {
+        return color2;
+    }
+
+    public void setColor2(int color2) {
+        if (this.color2 != color2) {
+            this.color2 = color2;
+            invalidate(false);
+        }
+    }
+
+    public int getColor3() {
+        return color3;
+    }
+
+    public void setColor3(int color3) {
+        if (this.color3 != color3) {
+            this.color3 = color3;
             invalidate(false);
         }
     }

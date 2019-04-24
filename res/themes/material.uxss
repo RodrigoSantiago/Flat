@@ -286,6 +286,21 @@ scrollbar {
 }
 
 progressbar {
+    height : 4;
+    width : 240;
+    color : #FFFFFF;
+    background-color : #EEEEEE;
+    animation-duration : 3000;
+}
+progresscircle {
+    height : 48;
+    width : 48;
+    indicator-size : 4;
+    animation-duration : 8000;
+    color-0 : #FFFFFF;
+    color-1 : #FFFFFF;
+    color-2 : #FFFFFF;
+    color-3 : #FFFFFF;
 }
 
 /*
