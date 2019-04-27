@@ -249,7 +249,7 @@ public class ScrollBar extends Widget {
 
             this.value = value;
             if (onValueChange != null) {
-                onValueChange.handle(new ActionEvent(this, ActionEvent.ACTION));
+                onValueChange.handle(new ActionEvent(this));
             }
             invalidate(false);
         }

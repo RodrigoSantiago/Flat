@@ -1,6 +1,7 @@
 package test;
 
 import flat.Flat;
+import flat.events.ActionEvent;
 import flat.events.DrawEvent;
 import flat.events.PointerEvent;
 import flat.graphics.SmartContext;
@@ -43,11 +44,8 @@ public class MainActivity extends Activity {
         }
     }
 
-    float x = 0;
     @Flat
-    public void onDraw(DrawEvent event) {
-        SmartContext context = event.getSmartContext();
-        context.setColor(0x00C000FF);
-        context.drawRect(x++, 0, 100, 100, true);
+    public void onAction(ActionEvent event) {
+        System.out.println(event);
     }
 }

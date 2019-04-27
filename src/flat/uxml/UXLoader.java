@@ -58,6 +58,7 @@ public final class UXLoader {
         UXLoader.install("Page", Page::new);
         UXLoader.install("TextField", TextField::new);
         UXLoader.install("TextArea", TextArea::new);
+        UXLoader.install("Chip", Chip::new);
     }
 
     private DimensionStream dimensionStream;

@@ -132,7 +132,7 @@ public class Switch extends Widget {
     public void setActivated(boolean activated) {
         if (this.isActivated() != activated) {
             super.setActivated(activated);
-            fireToggle(new ActionEvent(this, ActionEvent.ACTION));
+            fireToggle(new ActionEvent(this));
         }
     }
 

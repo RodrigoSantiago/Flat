@@ -6,8 +6,8 @@ public class ActionEvent extends Event {
 
     public static final int ACTION = 1;
 
-    public ActionEvent(Widget source, int type) {
-        super(source, type);
+    public ActionEvent(Widget source) {
+        super(source, ACTION);
     }
 
     @Override

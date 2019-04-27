@@ -46,9 +46,9 @@ public class Page extends Box {
         if (isEnabled() && tab != null) {
             super.setActivated(actived);
             if (actived && onActivated != null) {
-                onActivated.handle(new ActionEvent(this, ActionEvent.ACTION));
+                onActivated.handle(new ActionEvent(this));
             } else if (!actived && onDeactivated != null) {
-                onDeactivated.handle(new ActionEvent(this, ActionEvent.ACTION));
+                onDeactivated.handle(new ActionEvent(this));
             }
         }
     }

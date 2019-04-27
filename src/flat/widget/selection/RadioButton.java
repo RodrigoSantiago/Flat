@@ -128,7 +128,7 @@ public class RadioButton extends Widget {
         if (activated != isActivated()) {
             super.setActivated(activated);
 
-            fireToggle(new ActionEvent(this, ActionEvent.ACTION));
+            fireToggle(new ActionEvent(this));
         }
     }
 

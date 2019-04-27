@@ -469,8 +469,16 @@ public class TextArea extends Widget {
     }
 
     public void replace(int start, int length, String str) {
-        start = Math.min(size, Math.max(0, start));
+        if (start < 0) start = 0;
+        if (start > size) start = size;
+        if (start > 0 && start < size) {
+            start = findPrev(findNext(start));
+        }
         length = Math.min(size - start, Math.max(0, length));
+        if (start + length > 0 && start + length < size) {
+            length = findPrev(findNext(start + length)) - start;
+        }
+
 
         byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
         int offset = bytes.length - length;
@@ -545,9 +553,15 @@ public class TextArea extends Widget {
     }
 
     public void setStyle(int start, int length, Style style) {
-        start = Math.min(size, Math.max(0, start));
+        if (start < 0) start = 0;
+        if (start > size) start = size;
+        if (start > 0 && start < size) {
+            start = findPrev(findNext(start));
+        }
         length = Math.min(size - start, Math.max(0, length));
-
+        if (start + length > 0 && start + length < size) {
+            length = findPrev(findNext(start + length)) - start;
+        }
 
         Span newBegin = null;
         Span newEnd = null;

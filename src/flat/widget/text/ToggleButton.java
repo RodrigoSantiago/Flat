@@ -46,7 +46,7 @@ public class ToggleButton extends Button {
     public void setActivated(boolean actived) {
         if (this.isActivated() != actived) {
             super.setActivated(actived);
-            fireToggle(new ActionEvent(this, ActionEvent.ACTION));
+            fireToggle(new ActionEvent(this));
         }
     }
 

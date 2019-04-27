@@ -367,7 +367,7 @@ public class Slider extends Widget {
             this.value = value;
             invalidate(false);
             if (onValueChange != null) {
-                onValueChange.handle(new ActionEvent(this, ActionEvent.ACTION));
+                onValueChange.handle(new ActionEvent(this));
             }
         }
     }
@@ -398,7 +398,7 @@ public class Slider extends Widget {
             this.value2 = value2;
             invalidate(false);
             if (onValue2Change != null) {
-                onValue2Change.handle(new ActionEvent(this, ActionEvent.ACTION));
+                onValue2Change.handle(new ActionEvent(this));
             }
         }
     }

@@ -63,9 +63,11 @@ public class TextField extends Widget {
     private int helpTextColor;
 
     private Drawable leadingIcon;
-    private Drawable actIcon;
     private float leadingSpacing;
+
+    private Drawable actIcon;
     private float actSpacing;
+
     private RippleEffect actRipple;
     private int actRippleColor;
     private boolean actRippleEnabled;
@@ -73,7 +75,7 @@ public class TextField extends Widget {
     private long timer = 0;
     private int actPress = -1;
 
-    private PointerListener actPointerListener;
+    private ActionListener actionListener;
 
     private float scrollX, scrollY;
     private boolean invalidTextSize, invalidScroll;
@@ -105,9 +107,9 @@ public class TextField extends Widget {
         setText(style.asString("text", getText()));
         setPlaceholder(style.asString("placeholder", getPlaceholder()));
 
-        Method handle = style.asListener("on-act-pointer", PointerEvent.class, controller);
+        Method handle = style.asListener("on-action", ActionEvent.class, controller);
         if (handle != null) {
-            setActPointerListener(new PointerListener.AutoPointerListener(controller, handle));
+            setActionListener(new ActionListener.AutoActionListener(controller, handle));
         }
     }
 
@@ -313,9 +315,7 @@ public class TextField extends Widget {
                             getActRipple().setSize(getActIcon().getWidth());
                             getActRipple().fire(x1 + getActIcon().getWidth() / 2, y1 + getActIcon().getHeight() / 2);
                         }
-                        if (actPointerListener != null) {
-                            actPointerListener.handle(pointerEvent);
-                        }
+                        fireAction(new ActionEvent(this));
                         return;
                     }
                 }
@@ -325,9 +325,7 @@ public class TextField extends Widget {
                     if (isActRippleEnabled()) {
                         getActRipple().release();
                     }
-                    if (actPointerListener != null) {
-                        actPointerListener.handle(pointerEvent);
-                    }
+                    fireAction(new ActionEvent(this));
                     actPress = -1;
                     return;
                 }
@@ -361,6 +359,12 @@ public class TextField extends Widget {
                 }
                 invalidate(true);
             }
+        }
+    }
+
+    public void fireAction(ActionEvent actionEvent) {
+        if (actionListener != null) {
+            actionListener.handle(actionEvent);
         }
     }
 
@@ -699,8 +703,15 @@ public class TextField extends Widget {
             str = str.replaceAll("\n", "");
         }
 
-        start = Math.min(size, Math.max(0, start));
+        if (start < 0) start = 0;
+        if (start > size) start = size;
+        if (start > 0 && start < size) {
+            start = findPrev(findNext(start));
+        }
         length = Math.min(size - start, Math.max(0, length));
+        if (start + length > 0 && start + length < size) {
+            length = findPrev(findNext(start + length)) - start;
+        }
 
         byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
         int offset = bytes.length - length;
@@ -1267,12 +1278,12 @@ public class TextField extends Widget {
         }
     }
 
-    public PointerListener getActPointerListener() {
-        return actPointerListener;
+    public ActionListener getActionListener() {
+        return actionListener;
     }
 
-    public void setActPointerListener(PointerListener actPointerListener) {
-        this.actPointerListener = actPointerListener;
+    public void setActionListener(ActionListener actionListener) {
+        this.actionListener = actionListener;
     }
 
     class Span {

@@ -14,28 +14,18 @@ import flat.uxml.UXStyleAttrs;
 import java.lang.reflect.Method;
 
 public class Button extends Label {
-    public enum Type {
-        TEXT, OUTLINE, CONTAINER, FLOAT;
-
-        @Override
-        public String toString() {
-            return this == TEXT ? "text" : this == OUTLINE ? "outline" : this == CONTAINER ? "container" : "float";
-        }
-    }
 
     private ActionListener actionListener;
 
-    private Type type;
-
-    private Drawable drawable;
-    private float imageMargin;
-    private Align.Horizontal imageAlign;
+    private Drawable iconImage;
+    private float iconSpacing;
+    private Align.Horizontal iconAlign = Align.Horizontal.LEFT;
 
     @Override
     public void applyAttributes(UXStyleAttrs style, Controller controller) {
         super.applyAttributes(style, controller);
 
-        Method handle = style.asListener("onAction", ActionEvent.class, controller);
+        Method handle = style.asListener("on-action", ActionEvent.class, controller);
         if (handle != null) {
             setActionListener(new ActionListener.AutoActionListener(controller, handle));
         }
@@ -47,16 +37,16 @@ public class Button extends Label {
 
         StateInfo info = getStateInfo();
 
-        Resource res = getStyle().asResource("image", info);
+        Resource res = getStyle().asResource("icon-image", info);
         if (res != null) {
             Drawable drawable = res.getDrawable();
             if (drawable != null) {
-                setDrawable(drawable);
+                setIconImage(drawable);
             }
         }
 
-        setImageAlign(getStyle().asConstant("image-align", info, getHorizontalAlign()));
-        setImageMargin(getStyle().asSize("image-margin", info, getImageMargin()));
+        setIconAlign(getStyle().asConstant("icon-align", info, getIconAlign()));
+        setIconSpacing(getStyle().asSize("icon-spacing", info, getIconSpacing()));
     }
 
     @Override
@@ -70,7 +60,7 @@ public class Button extends Label {
         final float width = getInWidth();
         final float height = getInHeight();
 
-        if (drawable == null) {
+        if (iconImage == null) {
             if (getShowText() != null && !getShowText().isEmpty()) {
                 context.setColor(getTextColor());
                 context.setTextFont(getFont());
@@ -90,42 +80,42 @@ public class Button extends Label {
                 context.setTextVerticalAlign(Align.Vertical.TOP);
                 context.setTextHorizontalAlign(Align.Horizontal.LEFT);
 
-                float xoff = xOff(x, x + width, Math.min(getTextWidth() + imageMargin + drawable.getWidth(), width));
+                float tw = Math.min(getTextWidth() + iconSpacing + iconImage.getWidth(), width);
+                float xoff = xOff(x, x + width, tw);
 
-                if (imageAlign == Align.Horizontal.RIGHT) {
+                if (iconAlign == Align.Horizontal.RIGHT) {
                     context.drawTextSlice(xoff,
-                            yOff(y, y + height, Math.min(getTextHeight(), height)),
-                            width - imageMargin - drawable.getWidth(), getShowText());
-                    xoff += width - drawable.getWidth();
-                    drawable.draw(context, xoff,
-                            yOff(y, y + height, drawable.getHeight()),
-                            drawable.getWidth(), drawable.getHeight(), 0);
+                            yOff(y, y + height, getTextHeight()),
+                            width - iconSpacing - iconImage.getWidth(), getShowText());
+                    iconImage.draw(context, xoff + getTextWidth() + iconSpacing,
+                            yOff(y, y + height, iconImage.getHeight()),
+                            iconImage.getWidth(), iconImage.getHeight(), 0);
                 } else {
-                    drawable.draw(context, xoff,
-                            yOff(y, y + height, drawable.getHeight()),
-                            drawable.getWidth(), drawable.getHeight(), 0);
-                    xoff += drawable.getWidth() + imageMargin;
-                    context.drawTextSlice(xoff,
-                            yOff(y, y + height, Math.min(getTextHeight(), height)),
-                            width - imageMargin - drawable.getWidth(), getShowText());
+                    context.drawTextSlice(xoff + iconImage.getWidth() + iconSpacing,
+                            yOff(y, y + height, getTextHeight()),
+                            width - iconSpacing - iconImage.getWidth(), getShowText());
+                    iconImage.draw(context, xoff,
+                            yOff(y, y + height, iconImage.getHeight()),
+                            iconImage.getWidth(), iconImage.getHeight(), 0);
                 }
             } else {
-                drawable.draw(context,
-                        xOff(x, x + width, drawable.getWidth()),
-                        yOff(y, y + height, drawable.getHeight()), drawable.getWidth(), drawable.getHeight(), 0);
+                context.setColor(getTextColor());
+                iconImage.draw(context,
+                        xOff(x, x + width, iconImage.getWidth()),
+                        yOff(y, y + height, iconImage.getHeight()), iconImage.getWidth(), iconImage.getHeight(), 0);
             }
         }
     }
 
     @Override
     public void onMeasure() {
-        if (drawable == null) {
+        if (iconImage == null) {
             super.onMeasure();
         } else {
             float mWidth = getPrefWidth();
             float mHeight = getPrefHeight();
-            mWidth = mWidth == WRAP_CONTENT ? getTextWidth() + drawable.getWidth() + imageMargin : mWidth;
-            mHeight = mHeight == WRAP_CONTENT ? Math.max(getTextHeight(), drawable.getHeight()) : mHeight;
+            mWidth = mWidth == WRAP_CONTENT ? getTextWidth() + iconImage.getWidth() + iconSpacing : mWidth;
+            mHeight = mHeight == WRAP_CONTENT ? Math.max(getTextHeight(), iconImage.getHeight()) : mHeight;
             mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
             mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
             setMeasure(mWidth, mHeight);
@@ -155,46 +145,39 @@ public class Button extends Label {
     }
 
     public void fire() {
-        fireAction(new ActionEvent(this, ActionEvent.ACTION));
+        fireAction(new ActionEvent(this));
     }
 
-    public Type getType() {
-        return type;
+    public Drawable getIconImage() {
+        return iconImage;
     }
 
-    public void setType(Type type) {
-        if (type == null) {
-            type = Type.TEXT;
+    public void setIconImage(Drawable iconImage) {
+        if (this.iconImage != iconImage) {
+            this.iconImage = iconImage;
+            invalidate(true);
         }
+    }
 
-        if (type != this.type) {
-            this.type = type;
-            setStates(getStateBitset());
+    public float getIconSpacing() {
+        return iconSpacing;
+    }
+
+    public void setIconSpacing(float iconSpacing) {
+        if (this.iconSpacing != iconSpacing) {
+            this.iconSpacing = iconSpacing;
+            invalidate(true);
+        }
+    }
+
+    public Align.Horizontal getIconAlign() {
+        return iconAlign;
+    }
+
+    public void setIconAlign(Align.Horizontal iconAlign) {
+        if (this.iconAlign != iconAlign) {
+            this.iconAlign = iconAlign;
             invalidate(false);
         }
-    }
-
-    public Drawable getDrawable() {
-        return drawable;
-    }
-
-    public void setDrawable(Drawable drawable) {
-        this.drawable = drawable;
-    }
-
-    public float getImageMargin() {
-        return imageMargin;
-    }
-
-    public void setImageMargin(float imageMargin) {
-        this.imageMargin = imageMargin;
-    }
-
-    public Align.Horizontal getImageAlign() {
-        return imageAlign;
-    }
-
-    public void setImageAlign(Align.Horizontal imageAlign) {
-        this.imageAlign = imageAlign;
     }
 }

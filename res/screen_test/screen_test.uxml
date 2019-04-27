@@ -1,11 +1,9 @@
 <Scene next-focus-id="text">
-    <LinearBox direction="vertical" padding-left="16" padding-top="16" padding-right="16">
-        <TextField width="300" height="200" single-line="false"
-                  label-text="label" help-text="help" placeholder="placeholder"
-                  font="font(cursive)"></TextField>
-        <TextArea width="300" height="200" single-line="false"
-        label-text="label" help-text="help" placeholder="placeholder"
-        font="font(cursive)" id="text"></TextArea>
-        <Button text="CLICK" on-pointer="onClick"/>
+    <LinearBox direction="vertical">
+        <Chip text="Chip" icon-image="url(icons/radiobox-marked.svg)"
+        action-image="url(icons/radiobox-blank.svg)" on-action="onAction"></Chip>
+        <Chip text="Chip" icon-image="url(icons/radiobox-marked.svg)" on-action="onAction"></Chip>
+        <Chip text="Chip" action-image="url(icons/radiobox-blank.svg)" on-action="onAction"></Chip>
+        <Chip text="Chip" on-action="onAction"></Chip>
     </LinearBox>
 </Scene>
