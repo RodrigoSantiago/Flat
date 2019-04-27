@@ -16,7 +16,7 @@ The main purpose is to work similar to the "Activities" system with the ability 
  - Smart acess to OpenGL (Easy to use)
  - XML UI Reader
  - SVG support (render, boolean operations)
- - Font support (ttf)
+ - Font support (ttf, otf)
  - Animations
  - Free transforms
  - Material Design Effects
@@ -28,6 +28,7 @@ The main purpose is to work similar to the "Activities" system with the ability 
  - ToggleButton
  - Divider
  - ImageView
+ - Canvas
  - CheckBox
  - RadioButton
  - Switch
@@ -39,15 +40,13 @@ The main purpose is to work similar to the "Activities" system with the ability 
  - Grid
  - Tab
  - TextField
+ - TextArea
  - ProgressBar
  - ProgressCircle
  
 ### Todo - List
  - [ ] Default Widgets
     - [ ] Chip
-    - [ ] Canvas
-    - [ ] Sketch
-    - [ ] TextArea
     - [ ] Navigation
     - [ ] ListView
     - [ ] TreeView

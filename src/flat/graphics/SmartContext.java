@@ -148,6 +148,11 @@ public class SmartContext {
         return new Matrix4(this.transform3D);
     }
 
+    /**
+     * Clear the clipping, or, clip everthing !
+     *
+     * @param clip True for clip everthing(STENCIL BUFFER TO 0), False for draw anywhere(STENCIL BUFFER TO 1)
+     */
     public void clearClip(boolean clip) {
         if (clip) {
             clipArea.reset();
@@ -345,26 +350,14 @@ public class SmartContext {
         context.svgDrawBezierCurve(x1, y1, cx1, cy1, cx2, cy2, x2, y2);
     }
 
-    public int drawText(float x, float y, String text) {
+    public void drawText(float x, float y, String text) {
         svgMode();
-        return context.svgDrawText(x, y, text, 0);
+        context.svgDrawText(x, y, text, 0);
     }
 
-    public int drawText(float x, float y, Buffer text, int offset, int length) {
+    public void drawText(float x, float y, Buffer text, int offset, int length) {
         svgMode();
-        return context.svgDrawText(x, y, text, offset, length, 0);
-    }
-
-    public int drawTextBox(float x, float y, float maxWidth, String text) {
-        svgMode();
-        // split on spaces [draw check size]
-        return drawTextSlice(x, y, maxWidth, text);
-    }
-
-    public int drawTextBox(float x, float y, float maxWidth, Buffer text, int offset, int length) {
-        svgMode();
-        // split on spaces [draw check size]
-        return drawTextSlice(x, y, maxWidth, text, offset, length);
+        context.svgDrawText(x, y, text, offset, length, 0);
     }
 
     public int drawTextSlice(float x, float y, float maxWidth, String text) {

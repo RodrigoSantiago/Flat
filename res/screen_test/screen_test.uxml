@@ -1,6 +1,11 @@
 <Scene next-focus-id="text">
     <LinearBox direction="vertical" padding-left="16" padding-top="16" padding-right="16">
-        <ProgressBar progress="-1"></ProgressBar>
-        <ProgressCircle progress="-1" ></ProgressCircle>
+        <TextField width="300" height="200" single-line="false"
+                  label-text="label" help-text="help" placeholder="placeholder"
+                  font="font(cursive)"></TextField>
+        <TextArea width="300" height="200" single-line="false"
+        label-text="label" help-text="help" placeholder="placeholder"
+        font="font(cursive)" id="text"></TextArea>
+        <Button text="CLICK" on-pointer="onClick"/>
     </LinearBox>
 </Scene>

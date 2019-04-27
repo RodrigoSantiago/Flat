@@ -75,15 +75,12 @@ public class TextField extends Widget {
 
     private PointerListener actPointerListener;
 
-    // TODO - SCROLL LIMIT AFTER TEXT CHANGE
     private float scrollX, scrollY;
     private boolean invalidTextSize, invalidScroll;
     private float textWidth, textHeight;
     private float wrapWidth, wrapHeight;
 
-    // TODO - REMOVER ESSE BUFFER BOSTA
     private ByteBuffer buffer;
-
     private SpanManager spanManager = new SpanManager();
 
     public TextField() {
@@ -107,7 +104,6 @@ public class TextField extends Widget {
 
         setText(style.asString("text", getText()));
         setPlaceholder(style.asString("placeholder", getPlaceholder()));
-
 
         Method handle = style.asListener("on-act-pointer", PointerEvent.class, controller);
         if (handle != null) {
@@ -280,13 +276,17 @@ public class TextField extends Widget {
             }
 
             context.setColor(textColor);
-            context.drawText(xpos + span.x, ypos, buffer, 0, span.len);
+            context.drawText(xpos, ypos, buffer, 0, span.len);
 
             if ((isFocused() || isPressed()) && cursorLine == span.id) {
                 float off = font.getWidth(buffer, 0, cursorPos - span.start, textSize, 1);
+
+                float cursorX = (float) Math.floor(xpos + off);
+                float cursorW = Math.max(2, Math.round(lineHeight / 16f));
+                float cursorW2 = Math.abs(cursorX - (x + w)) < cursorW ? cursorW : 0;
+
                 context.setColor(cursorColor);
-                context.drawRect((float) Math.floor(xpos + span.x + off), ypos,
-                        Math.min(1, Math.round(lineHeight / 16f)), lineHeight, true);
+                context.drawRect(cursorX - cursorW2, ypos, cursorW, lineHeight, true);
             }
         }
 
@@ -483,7 +483,7 @@ public class TextField extends Widget {
                             toBuffer(spanLine.start, spanLine.len);
                             float w = font.getWidth(buffer, 0, cursorPos - spanLine.start, textSize, 1);
                             if (w == scrollX) {
-                                scrollX = Math.min(w, Math.max(0, scrollX - (textSize * 4)));
+                                scrollX = Math.min(w, Math.max(0, scrollX - Math.max(1, getTextInWidth() * 0.25f)));
                             }
                         }
                         invalidScroll = true;
@@ -840,32 +840,37 @@ public class TextField extends Widget {
 
         Vector2 point = new Vector2(px, py);
         screenToLocal(point);
-        px = point.x - getTextInX() + scrollX;
-        py = point.y;
+        px = point.x - getTextInX();
+        py = point.y - getTextInY();
 
-        boolean s = (System.currentTimeMillis() - timer) > 100;
-        boolean fConsume = false;
+        float w = getTextInWidth();
+        float h = getTextInHeight();
+
+        if (sCursorLine) {
+            if ((System.currentTimeMillis() - timer) <= 100) {
+                if (px < 0) px = 0;
+                if (px > w) px = w;
+                if (py < 0) py = 0;
+                if (py > h) py = h - 1;
+            }
+        }
+
+        px += scrollX;
+        py += scrollY;
+        float ypos = 0;
 
         float lineHeight = font.getHeight(textSize);
-        float h = getTextInHeight();
-        float y = getTextInY();
 
-        int i = size;
+        boolean first = true;
+        boolean last;
+
+        int off = size;
         Span span = null;
         for (spanManager.setPos(0); spanManager.hasNext();) {
             span = spanManager.next();
-            float ypos = y + span.id * lineHeight - scrollY;
+            ypos = span.id * lineHeight;
 
-            if (!s && sCursorLine && Math.round(ypos) < Math.round(y)) continue;
-            boolean first = !fConsume;
-            fConsume = true;
-
-            boolean last;
-            if (!s && sCursorLine && ypos >= y + h - lineHeight) {
-                last = true;
-            } else {
-                last = !spanManager.hasNext();
-            }
+            last = !spanManager.hasNext();
 
             if ((first && py < ypos)
                 || (ypos <= py && ypos + lineHeight > py)
@@ -876,24 +881,24 @@ public class TextField extends Widget {
                 if (index == span.len) {
                     if (span.line) {
                         if (span.len > 0 && text[span.start + span.len - 1] == '\n') {
-                            i = span.start + index - 1;
+                            off = span.start + index - 1;
                         } else {
-                            i = span.start + index;
+                            off = span.start + index;
                         }
                         break;
                     }
                 } else {
-                    i = span.start + index;
+                    off = span.start + index;
                     break;
                 }
             }
 
-            if (last) break;
+            first = false;
         }
         if (sCursorLine) {
             cursorLine = span == null ? 0 : span.id;
         }
-        return i;
+        return off;
     }
 
     public String getText() {
@@ -1273,17 +1278,16 @@ public class TextField extends Widget {
     class Span {
         int id;
         int start, end, len;
-        float width, x;
+        float width;
         boolean line;
         boolean midline;
 
-        Span(int id, int start, int len, boolean line, float x, float width) {
+        Span(int id, int start, int len, boolean line, float width) {
             this.id = id;
             this.start = start;
             this.len = len;
             this.end = start + len;
             this.line = line;
-            this.x = x;
             this.width = width;
         }
 
@@ -1344,11 +1348,10 @@ public class TextField extends Widget {
         Span get() {
             Span oSpan = null;
 
-            // TODO - ALL TO CPP SIDE !
             if (singleLine) {
                 cur = next;
                 if (cur < size) {
-                    oSpan = new Span(count++, 0, size, true, 0, font.getWidth(buffer, 0, size, textSize, 1));
+                    oSpan = new Span(count++, 0, size, true, font.getWidth(buffer, 0, size, textSize, 1));
                     next = size;
                 }
             } else if (!wrapText) {
@@ -1359,7 +1362,7 @@ public class TextField extends Widget {
                     if (b == '\n' || next >= size) {
                         int len = next - prev;
                         toBuffer(prev, len);
-                        oSpan = new Span(count++, prev, len, true, 0, font.getWidth(buffer, 0, len, textSize, 1));
+                        oSpan = new Span(count++, prev, len, true, font.getWidth(buffer, 0, len, textSize, 1));
                         prev = next;
                         break;
                     }
@@ -1402,7 +1405,7 @@ public class TextField extends Widget {
                                 oSpan = span;
                             }
                         } else {
-                            oSpan = new Span(count++, prev, cOff, line, moveX, tw);
+                            oSpan = new Span(count++, prev, cOff, line, tw);
                             oSpan.midline = cOff < len || wnext != -1;
                         }
 
@@ -1520,7 +1523,7 @@ public class TextField extends Widget {
             }
 
             if (cur == size) {
-                Span oSpan = new Span(count++, cur, 0, false, 0, 0);
+                Span oSpan = new Span(count++, cur, 0, false, 0);
                 if (cache) spans.add(oSpan);
 
                 cur = size + 1;

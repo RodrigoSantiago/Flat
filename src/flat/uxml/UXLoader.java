@@ -4,7 +4,7 @@ import flat.resources.Dimension;
 import flat.resources.DimensionStream;
 import flat.resources.StringBundle;
 import flat.widget.*;
-import flat.widget.image.ImageView;
+import flat.widget.image.*;
 import flat.widget.layout.*;
 import flat.widget.selection.*;
 import flat.widget.text.*;
@@ -41,12 +41,15 @@ public final class UXLoader {
         UXLoader.install("ToggleGroup", RadioGroup::new);
         UXLoader.install("Label", Label::new);
         UXLoader.install("ImageView", ImageView::new);
+        UXLoader.install("Canvas", Canvas::new);
         UXLoader.install("CheckBox", CheckBox::new);
         UXLoader.install("CheckGroup", CheckGroup::new);
         UXLoader.install("RadioButton", RadioButton::new);
         UXLoader.install("RadioGroup", RadioGroup::new);
         UXLoader.install("Switch", Switch::new);
         UXLoader.install("Slider", Slider::new);
+        UXLoader.install("ProgressBar", ProgressBar::new);
+        UXLoader.install("ProgressCircle", ProgressCircle::new);
         UXLoader.install("ScrollBar", ScrollBar::new);
         UXLoader.install("ScrollBox", ScrollBox::new);
         UXLoader.install("Grid", Grid::new);
@@ -54,8 +57,7 @@ public final class UXLoader {
         UXLoader.install("Tab", Tab::new);
         UXLoader.install("Page", Page::new);
         UXLoader.install("TextField", TextField::new);
-        UXLoader.install("ProgressBar", ProgressBar::new);
-        UXLoader.install("ProgressCircle", ProgressCircle::new);
+        UXLoader.install("TextArea", TextArea::new);
     }
 
     private DimensionStream dimensionStream;
