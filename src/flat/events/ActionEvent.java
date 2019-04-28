@@ -11,12 +11,6 @@ public class ActionEvent extends Event {
     }
 
     @Override
-    public ActionEvent recycle(Widget source) {
-        super.recycle(source);
-        return this;
-    }
-
-    @Override
     public String toString() {
         return "ActionEvent [ACTION]";
     }

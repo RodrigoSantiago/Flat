@@ -22,12 +22,6 @@ public class KeyEvent extends Event {
         this.keycode = keycode;
     }
 
-    @Override
-    public KeyEvent recycle(Widget source) {
-        super.recycle(source);
-        return this;
-    }
-
     public boolean isShiftDown() {
         return shift;
     }

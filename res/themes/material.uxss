@@ -468,8 +468,12 @@ tab-header : label {
     }
 }
 
-navigation {
-
+navigationdrawer {
+    front-width : 256;
+    front-height : MATCH_PARENT;
+    height : MATCH_PARENT;
+    width : MATCH_PARENT;
+    slide-anim-duration : 200;
 }
 
 listview {

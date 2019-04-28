@@ -29,12 +29,6 @@ public class DragEvent extends Event {
         this.y = y;
     }
 
-    @Override
-    public DragEvent recycle(Widget source) {
-        super.recycle(source);
-        return this;
-    }
-
     public boolean isRecyclable(Widget source) {
         return (getType() != EXITED && getType() != ENTERED) || source != widget;
     }

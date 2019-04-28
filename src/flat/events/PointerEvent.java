@@ -23,12 +23,6 @@ public class PointerEvent extends Event {
         this(source, type, true, buttonID, x, y);
     }
 
-    @Override
-    public PointerEvent recycle(Widget source) {
-        super.recycle(source);
-        return this;
-    }
-
     public boolean isMouseEvent() {
         return mouseEvent;
     }
@@ -47,7 +41,7 @@ public class PointerEvent extends Event {
 
     @Override
     public String toString() {
-        StringBuilder s = new StringBuilder("PointerEvent ");
+        StringBuilder s = new StringBuilder("(").append(getSource()).append(") PointerEvent ");
         if (getType() == PRESSED) s.append("[PRESSED]");
         else if (getType() == RELEASED) s.append("[RELEASED]");
         else if (getType() == DRAGGED) s.append("[DRAGGED]");

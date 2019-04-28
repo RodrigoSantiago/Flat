@@ -318,10 +318,49 @@ public class Widget implements Gadget {
         return context.intersectClip(bg);
     }
 
+    /**
+     * Calculate the best size (internal)
+     *
+     * Equation : minsize < ([preferedSize || computedSize] + padding + margins) < maxsize
+     */
+    public void onMeasure() {
+        setMeasure(Math.max(prefWidth + marginLeft + marginRight, getLayoutMinWidth()),
+                Math.max(prefHeight + marginTop + marginBottom, getLayoutMinHeight()));
+    }
+
+    public float getMeasureWidth()  {
+        return measureWidth;
+    }
+
+    public float getMeasureHeight()  {
+        return measureHeight;
+    }
+
+    /**
+     * Define the best size (internal)
+     *
+     * @param width
+     * @param height
+     */
+    public final void setMeasure(float width, float height) {
+        measureWidth = Math.max(width, getLayoutMinWidth());
+        measureHeight = Math.max(height, getLayoutMinHeight());
+    }
+
+    /**
+     * Define the position and computate the best size amoung multiples children (internal)
+     * @param width
+     * @param height
+     */
     public void onLayout(float width, float height) {
         setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
     }
 
+    /**
+     * Set the widget real size, based on parent's size (internal)
+     * @param width
+     * @param height
+     */
     public final void setLayout(float width, float height) {
         if (parent != null) {
             if (width == MATCH_PARENT && (maxWidth == MATCH_PARENT || maxWidth == WRAP_CONTENT)) {
@@ -348,30 +387,17 @@ public class Widget implements Gadget {
         }
     }
 
+    /**
+     * Set the widget position (internal)
+     * @param x
+     * @param y
+     */
     public final void setPosition(float x, float y) {
         if (this.x != x || this.y != y) {
             this.x = x;
             this.y = y;
             updateRect();
         }
-    }
-
-    public void onMeasure() {
-        setMeasure(Math.max(prefWidth + marginLeft + marginRight, getLayoutMinWidth()),
-                Math.max(prefHeight + marginTop + marginBottom, getLayoutMinHeight()));
-    }
-
-    public final void setMeasure(float width, float height) {
-        measureWidth = Math.max(width, getLayoutMinWidth());
-        measureHeight = Math.max(height, getLayoutMinHeight());
-    }
-
-    public float getMeasureWidth()  {
-        return measureWidth;
-    }
-
-    public float getMeasureHeight()  {
-        return measureHeight;
     }
 
     public void invalidate(boolean layout) {
@@ -457,8 +483,16 @@ public class Widget implements Gadget {
             if (sceneB != null) {
                 sceneB.assign(this);
             }
+            onSceneChange();
         }
+    }
 
+    protected void onSceneChange() {
+        if (children != null) {
+            for (Widget widget : children) {
+                widget.onSceneChange();
+            }
+        }
     }
 
     public List<Widget> getUnmodifiableChildren() {
@@ -747,6 +781,12 @@ public class Widget implements Gadget {
         float y = transform.pointY(point.x, point.y);
         point.x = x;
         point.y = y;
+    }
+
+    public Vector2 screenToLocal(float x, float y) {
+        Vector2 point = new Vector2(x, y);
+        screenToLocal(point);
+        return point;
     }
 
     public void screenToLocal(Vector2 point) {
@@ -1468,7 +1508,7 @@ public class Widget implements Gadget {
             pointerListener.handle(pointerEvent);
         }
         if (!pointerEvent.isConsumed() && parent != null) {
-            parent.firePointer(pointerEvent.recycle(parent));
+            parent.firePointer(pointerEvent);
         }
     }
 
@@ -1485,7 +1525,7 @@ public class Widget implements Gadget {
         }
         // Hover events are not consumables
         if (parent != null && hoverEvent.isRecyclable(parent)) {
-            parent.fireHover(hoverEvent.recycle(parent));
+            parent.fireHover(hoverEvent);
         }
         if (cursor != null) {
             Application.setCursor(cursor);
@@ -1497,7 +1537,7 @@ public class Widget implements Gadget {
             scrollListener.handle(scrollEvent);
         }
         if (!scrollEvent.isConsumed() && parent != null) {
-            parent.fireScroll(scrollEvent.recycle(parent));
+            parent.fireScroll(scrollEvent);
         }
     }
 
@@ -1506,7 +1546,7 @@ public class Widget implements Gadget {
             dragListener.handle(dragEvent);
         }
         if (!dragEvent.isConsumed() && parent != null && dragEvent.isRecyclable(parent)) {
-            parent.fireDrag(dragEvent.recycle(parent));
+            parent.fireDrag(dragEvent);
         }
     }
 
@@ -1515,7 +1555,7 @@ public class Widget implements Gadget {
             keyListener.handle(keyEvent);
         }
         if (!keyEvent.isConsumed() && parent != null) {
-            parent.fireKey(keyEvent.recycle(parent));
+            parent.fireKey(keyEvent);
         }
     }
 

@@ -13,12 +13,6 @@ public class FocusEvent extends Event {
         this.target = target;
     }
 
-    @Override
-    public FocusEvent recycle(Widget source) {
-        super.recycle(source);
-        return this;
-    }
-
     public Widget getTarget() {
         return target;
     }

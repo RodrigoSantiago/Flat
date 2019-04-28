@@ -20,10 +20,4 @@ public class ScrollEvent extends Event {
     public float getDeltaY() {
         return deltaY;
     }
-
-    @Override
-    public ScrollEvent recycle(Widget source) {
-        super.recycle(source);
-        return this;
-    }
 }

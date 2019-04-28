@@ -1,9 +1,24 @@
 <Scene next-focus-id="text">
-    <LinearBox direction="vertical">
-        <Chip text="Chip" icon-image="url(icons/radiobox-marked.svg)"
-        action-image="url(icons/radiobox-blank.svg)" on-action="onAction"></Chip>
-        <Chip text="Chip" icon-image="url(icons/radiobox-marked.svg)" on-action="onAction"></Chip>
-        <Chip text="Chip" action-image="url(icons/radiobox-blank.svg)" on-action="onAction"></Chip>
-        <Chip text="Chip" on-action="onAction"></Chip>
-    </LinearBox>
+    <NavigationDrawer color="#00000080" id="nav" background-color="#FF0000"
+                      show-icon-image="url(icons/radiobox-marked.svg)"
+                      hide-icon-image="url(icons/radiobox-blank.svg)"
+                      toogle-button="btn" hide-width="800">
+        <LinearBox direction="vertical" background-color="#FFFFFF" width="MATCH_PARENT" height="MATCH_PARENT">
+            <Chip text="Chip" icon-image="url(icons/radiobox-marked.svg)"
+            action-image="url(icons/radiobox-blank.svg)"></Chip>
+            <Chip text="Chip" icon-image="url(icons/radiobox-marked.svg)"></Chip>
+            <Chip text="Chip" action-image="url(icons/radiobox-blank.svg)"></Chip>
+            <Chip text="Chip"></Chip>
+        </LinearBox>
+        <LinearBox direction="horizontal" background-color="#00FF0080">
+            <Box min-width="100" min-height="150" background-color="#FF000080"></Box>
+            <Box min-width="150" min-height="100" background-color="#0000FF80">
+            </Box>
+            <Box min-width="100" min-height="350" background-color="#FF00F080"></Box>
+            <Box min-width="250" min-height="100" background-color="#00F0FF80"></Box>
+            <Chip text="Chip" icon-image="url(icons/radiobox-marked.svg)"></Chip>
+            <Chip text="Chip" action-image="url(icons/radiobox-blank.svg)"></Chip>
+            <Button text="click" id="btn"></Button>
+        </LinearBox>
+    </NavigationDrawer>
 </Scene>

@@ -12,6 +12,7 @@ import flat.resources.ResourcesManager;
 import flat.uxml.UXTheme;
 import flat.widget.Activity;
 import flat.resources.ResourceStream;
+import flat.widget.layout.NavigationDrawer;
 import flat.widget.layout.ScrollBox;
 import flat.widget.layout.Tab;
 import flat.widget.text.TextArea;
@@ -19,7 +20,7 @@ import flat.widget.text.TextArea;
 public class MainActivity extends Activity {
 
     @Flat
-    TextArea text;
+    NavigationDrawer nav;
 
     public MainActivity() {
         setTheme(new UXTheme(ResourcesManager.getInput("themes/material.uxss")));
@@ -37,15 +38,9 @@ public class MainActivity extends Activity {
     }
 
     TextArea.Style style = new TextArea.Style(Font.CURSIVE, 48, 0x0000FFFF);
-    @Flat
-    public void onClick(PointerEvent event) {
-        if (event.getType() == PointerEvent.PRESSED) {
-            text.setStyle(1, 10, style);
-        }
-    }
 
     @Flat
     public void onAction(ActionEvent event) {
-        System.out.println(event);
+        nav.setShown(!nav.isShown());
     }
 }

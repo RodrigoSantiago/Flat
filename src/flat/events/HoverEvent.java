@@ -17,12 +17,6 @@ public class HoverEvent extends Event {
         this.y = y;
     }
 
-    @Override
-    public HoverEvent recycle(Widget source) {
-        super.recycle(source);
-        return this;
-    }
-
     public boolean isRecyclable(Widget source) {
         return getType() == MOVED || source != widget;
     }

@@ -127,7 +127,7 @@ public abstract class NormalizedAnimation implements Animation {
     }
 
     public float getT() {
-        return _interpolation.apply(getPosition());
+        return _interpolation == null ? interpolation.apply(getPosition()) : _interpolation.apply(getPosition());
     }
 
     public float getPosition() {

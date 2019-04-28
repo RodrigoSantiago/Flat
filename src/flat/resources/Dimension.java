@@ -139,11 +139,11 @@ public class Dimension {
     }
 
     public static float dpPx(float dp) {
-        return (float) Math.ceil(dp * (Application.getDpi() / 160));
+        return (float) Math.ceil(dp * (getDensity((float) Application.getDpi()).dpi / 160f));
     }
 
     public static float pxDp(float px) {
-        return (float) Math.ceil(px / (Application.getDpi() / 160));
+        return (float) Math.ceil(px / (getDensity((float) Application.getDpi()).dpi / 160f));
     }
 
     public static float ptPx(int pt) {

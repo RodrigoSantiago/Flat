@@ -27,12 +27,6 @@ public class Box extends Parent {
     }
 
     @Override
-    public void onLayout(float width, float height) {
-        setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
-        layoutHelperBox(getChildren(), getInX(), getInY(), getInWidth(), getInHeight());
-    }
-
-    @Override
     public void onMeasure() {
         final float offWidth = getPaddingLeft() + getPaddingRight();
         final float offHeight = getPaddingTop() + getPaddingBottom();
@@ -50,13 +44,13 @@ public class Box extends Parent {
                 childrenWidth = child.getMeasureWidth();
             }
             if (child.getLayoutMinWidth() > childrenMinWidth) {
-                childrenMinWidth += child.getLayoutMinWidth();
+                childrenMinWidth = child.getLayoutMinWidth();
             }
             if (child.getMeasureHeight() > childrenHeight) {
                 childrenHeight = child.getMeasureHeight();
             }
             if (child.getLayoutMinHeight() > childrenMinHeight) {
-                childrenMinHeight += child.getLayoutMinHeight();
+                childrenMinHeight = child.getLayoutMinHeight();
             }
         }
         if (getPrefWidth() == WRAP_CONTENT) {
@@ -70,6 +64,12 @@ public class Box extends Parent {
             mHeight = childrenMinHeight + offHeight;
         }
         setMeasure(mWidth + getMarginLeft() + getMarginRight(), mHeight + getMarginTop() + getMarginBottom());
+    }
+
+    @Override
+    public void onLayout(float width, float height) {
+        setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
+        layoutHelperBox(getChildren(), getInX(), getInY(), getInWidth(), getInHeight());
     }
 
     @Override

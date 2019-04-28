@@ -14,17 +14,12 @@ public abstract class Event {
         this.type = type;
     }
 
-    protected Widget getSource() {
+    public Widget getSource() {
         return source;
     }
 
     public int getType() {
         return type;
-    }
-
-    public Event recycle(Widget source) {
-        this.source = source;
-        return this;
     }
 
     public void consume() {
