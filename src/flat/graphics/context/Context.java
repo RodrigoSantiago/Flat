@@ -1310,6 +1310,17 @@ public final class Context {
 
     public void svgDrawRoundRect(float x, float y, float width, float height, float cTop, float cRight, float cBottom, float cLeft, boolean fill) {
         if (width <= 0 || height <= 0) return;
+        float max = Math.min(width, height) / 2f;
+        cTop = Math.max(0, Math.min(max, cTop));
+        cRight = Math.max(0, Math.min(max, cRight));
+        cBottom = Math.max(0, Math.min(max, cBottom));
+        cLeft = Math.max(0, Math.min(max, cLeft));
+
+        if (Mathf.epsilonEquals(cTop, cRight) && Mathf.epsilonEquals(cRight, cBottom)
+                && Mathf.epsilonEquals(cBottom, cLeft) && Mathf.epsilonEquals(cLeft, 0)) {
+            svgDrawRect(x, y, width, height, fill);
+            return;
+        }
 
         svgBegin();
         if (fill) {

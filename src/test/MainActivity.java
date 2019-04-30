@@ -2,25 +2,19 @@ package test;
 
 import flat.Flat;
 import flat.events.ActionEvent;
-import flat.events.DrawEvent;
-import flat.events.PointerEvent;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Font;
-import flat.math.Affine;
-import flat.math.stroke.BasicStroke;
 import flat.resources.ResourcesManager;
 import flat.uxml.UXTheme;
 import flat.widget.Activity;
 import flat.resources.ResourceStream;
-import flat.widget.layout.NavigationDrawer;
-import flat.widget.layout.ScrollBox;
-import flat.widget.layout.Tab;
+import flat.widget.layout.Drawer;
 import flat.widget.text.TextArea;
 
 public class MainActivity extends Activity {
 
     @Flat
-    NavigationDrawer nav;
+    Drawer nav;
 
     public MainActivity() {
         setTheme(new UXTheme(ResourcesManager.getInput("themes/material.uxss")));

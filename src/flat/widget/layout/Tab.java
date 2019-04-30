@@ -361,16 +361,18 @@ public class Tab extends Parent {
 
     @Override
     public void fireScroll(ScrollEvent scrollEvent) {
-        super.fireScroll(scrollEvent);
-
         if (!scrollEvent.isConsumed() && headerHovered) {
+            float prev = headerScroll;
             if (headerWidth > 0 && getWidth() > 0) {
                 setHeaderScroll(headerScroll - (scrollEvent.getDeltaY() * getWidth() / headerWidth) / 6f);
             } else {
                 setHeaderScroll(headerScroll - (scrollEvent.getDeltaY() * 0.1f));
             }
-            scrollEvent.consume();
+            if (headerScroll != prev) {
+                scrollEvent.consume();
+            }
         }
+        super.fireScroll(scrollEvent);
     }
 
     public int getActivePage() {

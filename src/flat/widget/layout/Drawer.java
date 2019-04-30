@@ -20,11 +20,16 @@ import flat.widget.Widget;
 import flat.widget.enuns.Visibility;
 import flat.widget.text.Button;
 
-public class NavigationDrawer extends Parent {
+public class Drawer extends Parent {
 
     private float frontWidth;
     private float frontHeight;
+
+    private float frontPos;
+
     private float hideWidth;
+
+    private float slideGestureArea;
     private long slideAnimDuration;
 
     private int color;
@@ -39,21 +44,16 @@ public class NavigationDrawer extends Parent {
     private int gesPressID = -1;
     private float gesPress;
     private float gesOffset;
+    private float gesPreOffset;
     private long gesTimer;
 
     private boolean hideEffect;
 
-    private NormalizedAnimation anim = new NormalizedAnimation() {
-        @Override
-        protected void compute(float t) {
-            invalidate(true);
-        }
-    };
-
+    private SlideAnimation anim = new SlideAnimation(this);
     private ActionListener actionListener = (event) -> setShown(!isShown());
 
-    public NavigationDrawer() {
-        anim.setInterpolation(Interpolation.quadIn);
+    public Drawer() {
+        anim.setInterpolation(Interpolation.quadOut);
     }
 
     @Override
@@ -63,6 +63,8 @@ public class NavigationDrawer extends Parent {
         setFrontWidth(style.asSize("front-width", getFrontWidth()));
         setFrontHeight(style.asSize("front-height", getFrontHeight()));
         setHideWidth(style.asSize("hide-width", getHideWidth()));
+        setSlideGestureArea(style.asSize("slide-gesture-area", getSlideGestureArea()));
+        setSlideAnimDuration((long) style.asNumber("slide-anim-duration", getSlideAnimDuration()));
 
         style.link("toogle-button", (gadget) -> setToggleButton((Button) gadget.getWidget()));
     }
@@ -95,7 +97,6 @@ public class NavigationDrawer extends Parent {
         StateInfo info = getStateInfo();
 
         setColor(style.asColor("color", info, getColor()));
-        setSlideAnimDuration((long) style.asNumber("slide-anim-duration", info, getSlideAnimDuration()));
 
         Resource res = getStyle().asResource("show-icon-image", info);
         if (res != null) {
@@ -159,18 +160,7 @@ public class NavigationDrawer extends Parent {
     @Override
     public void onLayout(float width, float height) {
         setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
-
-        if (hideEffect != (getInWidth() <= hideWidth)) {
-            hideEffect = (getInWidth() <= hideWidth);
-            if (!hideEffect) {
-                shown = true;
-                if (toggleButton != null) {
-                    toggleButton.setIconImage(shown ? hideIconImage : showIconImage);
-                }
-            }
-            anim.stop(true);
-            invalidate(true);
-        }
+        setHideEffect((getInWidth() <= hideWidth));
 
         if (hideEffect) {
             if (back != null && back.getVisibility() != Visibility.Gone) {
@@ -179,12 +169,7 @@ public class NavigationDrawer extends Parent {
             }
             if (front != null && front.getVisibility() != Visibility.Gone) {
                 front.onLayout(frontWidth, getInHeight());
-                if (anim.isPlaying()) {
-                    float t = anim.getT();
-                    front.setPosition((shown ? (1 - t) : t) * -front.getWidth(), 0);
-                } else {
-                    front.setPosition(Math.max(Math.min((shown ? 0 : -front.getWidth()) + gesOffset, 0), -front.getWidth()), 0);
-                }
+                front.setPosition(Mathf.clamp(frontPos + gesOffset, -frontWidth, 0), 0);
             }
         } else {
             if (front != null && front.getVisibility() != Visibility.Gone) {
@@ -294,60 +279,42 @@ public class NavigationDrawer extends Parent {
     public void firePointer(PointerEvent event) {
         super.firePointer(event);
 
-        if (!hideEffect) {
-            gesPress = 0;
-            gesOffset = 0;
-            gesPressID = -1;
-            gesTimer = 0;
-            anim.stop(true);
-            return;
-        }
-
         if (gesPressID == -1 && event.getType() == PointerEvent.PRESSED) {
             Vector2 point = screenToLocal(event.getX(), event.getY());
-            if ((!shown && point.x < frontWidth / 8) || (shown && point.x < frontWidth)) {
+            if ((!shown && point.x < slideGestureArea) || (shown && point.x < frontWidth)) {
                 gesPress = point.x;
                 gesPressID = event.getPointerID();
                 gesTimer = System.currentTimeMillis();
+                gesPreOffset = 0;
             }
         }
 
         if (gesPressID == event.getPointerID() && event.getType() == PointerEvent.DRAGGED) {
             Vector2 point = screenToLocal(event.getX(), event.getY());
-            gesOffset = point.x - gesPress;
+            gesPreOffset = point.x - gesPress;
+            if (Math.abs(gesPreOffset) > slideGestureArea || gesOffset != 0) {
+                gesOffset = gesPreOffset;
+            }
             invalidate(true);
         }
 
         if (event.getType() == PointerEvent.RELEASED) {
             long t = System.currentTimeMillis();
+
             if (gesPressID == event.getPointerID()) {
-                if (Math.abs(gesPressID - gesOffset) > frontWidth / 8 || (t - gesTimer < 200 && Math.abs(gesPressID - gesOffset) > frontWidth / 16)) {
-                    if (isShown()) {
-                        if (front.getX() < -frontWidth / 4) {
-                            setShown(false);
-                        } else {
-                            if (front != null) {
-                                float p = Interpolation.quadOut.apply(Mathf.clamp(1 + front.getX() / frontWidth, 0, 1));
-                                anim.play(p);
-                            } else {
-                                anim.play();
-                            }
-                        }
-                    } else {
-                        if (front.getX() > -frontWidth * 3 / 4) {
-                            setShown(true);
-                        } else {
-                            if (front != null) {
-                                float p = Interpolation.quadOut.apply(Mathf.clamp(-front.getX() / frontWidth, 0, 1));
-                                anim.play(p);
-                            } else {
-                                anim.play();
-                            }
-                        }
-                    }
-                    invalidate(true);
+                boolean autoAnimation = false;
+                if (isShown() && (gesOffset < -frontWidth * 0.3 || (t - gesTimer < 300 && gesOffset < -frontWidth / 8))) {
+                    setShown(false);
+                    autoAnimation = true;
+                } else if (!isShown() && (gesOffset > frontWidth / 4 || (t - gesTimer < 300 && gesOffset > frontWidth / 8))) {
+                    setShown(true);
+                    autoAnimation = true;
                 } else if (event.getSource() == this && event.getType() == PointerEvent.RELEASED && shown) {
                     setShown(false);
+                    autoAnimation = true;
+                }
+                if (!autoAnimation) {
+                    playAnim(this.shown);
                 }
                 gesTimer = 0;
                 gesPressID = -1;
@@ -396,12 +363,7 @@ public class NavigationDrawer extends Parent {
             this.shown = shown;
 
             if (hideEffect) {
-                if (front != null) {
-                    float p = (shown ? (frontWidth + front.getX()) : -front.getX()) / frontWidth;
-                    anim.play(Interpolation.quadOut.apply(Mathf.clamp(p, 0, 1)));
-                } else {
-                    anim.play();
-                }
+                playAnim(this.shown);
             }
 
             if (toggleButton != null) {
@@ -417,6 +379,9 @@ public class NavigationDrawer extends Parent {
 
     public void setFrontWidth(float frontWidth) {
         if (this.frontWidth != frontWidth) {
+            if (Mathf.epsilonEquals(frontPos, -this.frontWidth)) {
+                frontPos = -frontWidth;
+            }
             this.frontWidth = frontWidth;
             invalidate(true);
         }
@@ -452,6 +417,16 @@ public class NavigationDrawer extends Parent {
         if (this.slideAnimDuration != milis) {
             this.slideAnimDuration = milis;
             anim.setDuration(slideAnimDuration);
+        }
+    }
+
+    public float getSlideGestureArea() {
+        return slideGestureArea;
+    }
+
+    public void setSlideGestureArea(float slideGestureArea) {
+        if (this.slideGestureArea != slideGestureArea) {
+            this.slideGestureArea = slideGestureArea;
         }
     }
 
@@ -508,6 +483,69 @@ public class NavigationDrawer extends Parent {
                     toggleButton.setActionListener(actionListener);
                 }
             }
+        }
+    }
+
+    private void setHideEffect(boolean hideEffect) {
+        if (this.hideEffect != hideEffect) {
+            this.hideEffect = hideEffect;
+
+            gesPress = 0;
+            gesOffset = 0;
+            gesPressID = -1;
+            gesTimer = 0;
+            anim.stop(true);
+            if (!hideEffect) {
+                shown = true;
+                frontPos = 0;
+                if (toggleButton != null) {
+                    toggleButton.setIconImage(hideIconImage);
+                }
+            }
+            invalidate(true);
+        }
+    }
+
+    void setFrontPos(float pos) {
+        this.frontPos = pos;
+        invalidate(true);
+    }
+
+    void playAnim(boolean toShow) {
+        anim.stop(false);
+        anim.setDuration(slideAnimDuration);
+        anim.setValues(Mathf.clamp(frontPos + gesOffset, -frontWidth, 0), toShow ? 0 : -frontWidth);
+        anim.play();
+    }
+
+    static class SlideAnimation extends NormalizedAnimation {
+
+        public final Drawer drawer;
+
+        private float pos, toPos;
+        private float _pos, _toPos;
+
+        public SlideAnimation(Drawer drawer) {
+            this.drawer = drawer;
+        }
+
+        public void setValues(float pos, float toPos) {
+            this.pos = pos;
+            this.toPos = toPos;
+        }
+
+        @Override
+        protected void evaluate() {
+            super.evaluate();
+            if (isStopped()) {
+                _pos = pos;
+                _toPos = toPos;
+            }
+        }
+
+        @Override
+        protected void compute(float t) {
+            drawer.setFrontPos(Interpolation.mix(_pos, _toPos, t));
         }
     }
 }

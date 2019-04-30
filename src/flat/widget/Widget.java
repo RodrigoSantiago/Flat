@@ -470,6 +470,7 @@ public class Widget implements Gadget {
     }
 
     void setParent(Parent parent) {
+        // todo - Cyclic parent bug
         if (this.parent != null && parent != null) {
             this.parent.remove(this);
         }
@@ -1533,8 +1534,9 @@ public class Widget implements Gadget {
     }
 
     public void fireScroll(ScrollEvent scrollEvent) {
-        if (scrollListener != null) {
+        if (!scrollEvent.isConsumed() && scrollListener != null) {
             scrollListener.handle(scrollEvent);
+            scrollEvent.consume();
         }
         if (!scrollEvent.isConsumed() && parent != null) {
             parent.fireScroll(scrollEvent);

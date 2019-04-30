@@ -1,5 +1,5 @@
 <Scene next-focus-id="text">
-    <NavigationDrawer color="#00000080" id="nav" background-color="#FF0000"
+    <Drawer color="#00000080" id="nav" background-color="#FF0000"
                       show-icon-image="url(icons/radiobox-marked.svg)"
                       hide-icon-image="url(icons/radiobox-blank.svg)"
                       toogle-button="btn" hide-width="800">
@@ -11,14 +11,25 @@
             <Chip text="Chip"></Chip>
         </LinearBox>
         <LinearBox direction="horizontal" background-color="#00FF0080">
-            <Box min-width="100" min-height="150" background-color="#FF000080"></Box>
-            <Box min-width="150" min-height="100" background-color="#0000FF80">
-            </Box>
-            <Box min-width="100" min-height="350" background-color="#FF00F080"></Box>
-            <Box min-width="250" min-height="100" background-color="#00F0FF80"></Box>
-            <Chip text="Chip" icon-image="url(icons/radiobox-marked.svg)"></Chip>
-            <Chip text="Chip" action-image="url(icons/radiobox-blank.svg)"></Chip>
-            <Button text="click" id="btn"></Button>
+            <ScrollBox background-color="#FFFFFF">
+                <Tab width="800" height="800" header-scrollable="true">
+                    <Page name="Page AAAAAAAAAAA">
+                        <Button text="A"></Button>
+                    </Page>
+                    <Page name="Page BBBBBBBBBBB">
+                        <Button text="B"></Button>
+                    </Page>
+                    <Page name="Page CCCCCCCCCCC">
+                        <Button text="B"></Button>
+                    </Page>
+                    <Page name="Page DDDDDDDDDDD">
+                        <Button text="B"></Button>
+                    </Page>
+                </Tab>
+                <ScrollBar direction="vertical" width="4" height="MATCH_PARENT"></ScrollBar>
+                <ScrollBar direction="horizontal" height="4" width="MATCH_PARENT"></ScrollBar>
+            </ScrollBox>
+            <Button text="click" id="btn" min-width="100"></Button>
         </LinearBox>
-    </NavigationDrawer>
+    </Drawer>
 </Scene>

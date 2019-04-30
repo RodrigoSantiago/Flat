@@ -468,12 +468,13 @@ tab-header : label {
     }
 }
 
-navigationdrawer {
+drawer {
     front-width : 256;
     front-height : MATCH_PARENT;
     height : MATCH_PARENT;
     width : MATCH_PARENT;
     slide-anim-duration : 200;
+    slide-gesture-area : 16;
 }
 
 listview {
