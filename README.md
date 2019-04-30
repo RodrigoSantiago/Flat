@@ -43,13 +43,17 @@ The main purpose is to work similar to the "Activities" system with the ability 
  - TextArea
  - ProgressBar
  - ProgressCircle
+ - Chip
+ - Drawer
  
 ### Todo - List
  - [ ] Default Widgets
-    - [ ] Chip
-    - [ ] Navigation
+    - [ ] Backdrop
+    - [ ] Toolbar
+    - [ ] BottomNav
     - [ ] ListView
     - [ ] TreeView
+    - [ ] Table
  - [ ] Menus
  - [ ] Tooltips
  - [ ] Dialogs
@@ -63,3 +67,5 @@ The main purpose is to work similar to the "Activities" system with the ability 
    - [ ] Color Picker
    - [ ] Font Picker
  - [ ] Activity Transitions
+ - [ ] Add Animations to all drawables containers
+ - [ ] Add "paint" to all "color" css-like styles
