@@ -109,16 +109,20 @@ public class Menu extends Parent {
 
     @Override
     public Widget findByPosition(float x, float y, boolean includeDisabled) {
-        if ((includeDisabled || isEnabled()) &&
-                (getVisibility() == Visibility.Visible || getVisibility() == Visibility.Invisible)) {
-            for (int i = children.size() - 1; i >= 0; i--) {
-                Widget child = children.get(i);
-                Widget found = child.findByPosition(x, y, includeDisabled);
-                if (found != null) return found;
+        if (getParent() == null) {
+            if ((includeDisabled || isEnabled()) &&
+                    (getVisibility() == Visibility.Visible || getVisibility() == Visibility.Invisible)) {
+                for (int i = children.size() - 1; i >= 0; i--) {
+                    Widget child = children.get(i);
+                    Widget found = child.findByPosition(x, y, includeDisabled);
+                    if (found != null) return found;
+                }
+                return this;
+            } else {
+                return null;
             }
-            return this;
         } else {
-            return null;
+            return super.findByPosition(x, y, includeDisabled);
         }
     }
 
@@ -163,6 +167,16 @@ public class Menu extends Parent {
             if (activity != null) {
                 activity.hideMenu(this);
             }
+        }
+    }
+
+    public void show(Activity activity, float x, float y) {
+        activity.showMenu(this, x, y);
+    }
+
+    public void hide() {
+        if (activity != null) {
+            activity.hideMenu(this);
         }
     }
 

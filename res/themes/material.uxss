@@ -508,4 +508,11 @@ menuitem : label {
     width : match_parent;
     padding-left : 16;
     padding-right : 16;
+
+    elevation : 0;
+    background-color : #FFFFFF;
+    hovered {
+        elevation : 1;
+        background-color : #DDDDDD;
+    }
 }

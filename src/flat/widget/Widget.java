@@ -445,9 +445,8 @@ public class Widget implements Gadget {
     }
 
     public Activity getActivity() {
-        Scene scene = getScene();
-        if (scene != null) {
-            return scene.getActivity();
+        if (parent != null) {
+            return parent.getActivity();
         } else {
             return null;
         }
@@ -589,6 +588,18 @@ public class Widget implements Gadget {
 
     public void setContextMenu(Menu contextMenu) {
         this.contextMenu = contextMenu;
+    }
+
+    public void showContextMenu(float x, float y) {
+        if (contextMenu != null) {
+            contextMenu.show(getActivity(), x, y);
+        }
+    }
+
+    public void hideContextMenu() {
+        if (contextMenu != null) {
+            contextMenu.hide();
+        }
     }
 
     // ---- STATES ---- //

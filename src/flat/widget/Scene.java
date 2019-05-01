@@ -20,12 +20,7 @@ public class Scene extends Parent {
         if (activity != null) {
             return activity;
         } else {
-            Scene scene = getScene();
-            if (scene != null) {
-                return scene.getActivity();
-            } else {
-                return null;
-            }
+            return super.getActivity();
         }
     }
 

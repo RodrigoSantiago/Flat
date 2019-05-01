@@ -49,6 +49,41 @@ public class Label extends Widget {
         setHorizontalAlign(getStyle().asConstant("horizontal-align", info, getHorizontalAlign()));
     }
 
+    @Override
+    public void onDraw(SmartContext context) {
+        backgroundDraw(getBackgroundColor(), getBorderColor(), getRippleColor(), context);
+
+        context.setTransform2D(getTransform());
+        if (showText != null) {
+            context.setColor(textColor);
+            context.setTextFont(font);
+            context.setTextSize(textSize);
+            context.setTextVerticalAlign(Align.Vertical.TOP);
+            context.setTextHorizontalAlign(Align.Horizontal.LEFT);
+
+            final float x = getInX();
+            final float y = getInY();
+            final float width = getInWidth();
+            final float height = getInHeight();
+
+            context.drawTextSlice(
+                    xOff(x, x + width, Math.min(getTextWidth(), width)),
+                    yOff(y, y + height, Math.min(getTextHeight(), height)),
+                    width, showText);
+        }
+    }
+
+    @Override
+    public void onMeasure() {
+        float mWidth = getPrefWidth();
+        float mHeight = getPrefHeight();
+        mWidth = mWidth == WRAP_CONTENT ? getTextWidth() : mWidth;
+        mHeight = mHeight == WRAP_CONTENT ? getTextHeight() : mHeight;
+        mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
+        mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
+        setMeasure(mWidth, mHeight);
+    }
+
     public String getText() {
         return text;
     }
@@ -138,41 +173,6 @@ public class Label extends Widget {
             this.horizontalAlign = horizontalAlign;
             invalidate(false);
         }
-    }
-
-    @Override
-    public void onDraw(SmartContext context) {
-        backgroundDraw(getBackgroundColor(), getBorderColor(), getRippleColor(), context);
-
-        context.setTransform2D(getTransform());
-        if (showText != null) {
-            context.setColor(textColor);
-            context.setTextFont(font);
-            context.setTextSize(textSize);
-            context.setTextVerticalAlign(Align.Vertical.TOP);
-            context.setTextHorizontalAlign(Align.Horizontal.LEFT);
-
-            final float x = getInX();
-            final float y = getInY();
-            final float width = getInWidth();
-            final float height = getInHeight();
-
-            context.drawTextSlice(
-                    xOff(x, x + width, Math.min(getTextWidth(), width)),
-                    yOff(y, y + height, Math.min(getTextHeight(), height)),
-                    width, showText);
-        }
-    }
-
-    @Override
-    public void onMeasure() {
-        float mWidth = getPrefWidth();
-        float mHeight = getPrefHeight();
-        mWidth = mWidth == WRAP_CONTENT ? getTextWidth() : mWidth;
-        mHeight = mHeight == WRAP_CONTENT ? getTextHeight() : mHeight;
-        mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
-        mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
-        setMeasure(mWidth, mHeight);
     }
 
     protected float getTextWidth() {

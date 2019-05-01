@@ -104,11 +104,14 @@ public class Activity extends Controller {
             this.width = width;
             this.height = height;
         }
-        scene.onMeasure();
-        scene.onLayout(width, height);
 
+        scene.onMeasure();
         for (Menu menu : menus) {
             menu.onMeasure();
+        }
+
+        scene.onLayout(width, height);
+        for (Menu menu : menus) {
             menu.onLayout(Math.min(width, menu.getMeasureWidth()), Math.max(height, menu.getMeasureHeight()));
         }
     }
