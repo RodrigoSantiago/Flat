@@ -73,6 +73,7 @@ public class Grid extends Parent {
     @Override
     public void applyChildren(UXChildren children) {
         super.applyChildren(children);
+
         Gadget child;
         while ((child = children.next()) != null ) {
             if (child instanceof Cell) {

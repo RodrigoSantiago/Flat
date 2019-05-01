@@ -357,7 +357,7 @@ scrollbar {
 
     label-font : font("Roboto", bold);
     label-text-color : #FFFFFF;
-    label-text-size : 32;
+    label-text-size : 32sp;
     popup-x : -32;
     popup-y : -68;
     popup-width : 64;
@@ -483,4 +483,29 @@ listview {
 
 treeview {
 
+}
+
+/*
+  Menu
+*/
+
+menu {
+    shadow : true;
+    elevation : 8;
+    radius-top : 4;
+    radius-left : 4;
+    radius-right : 4;
+    radius-bottom : 4;
+    padding-top : 8;
+    padding-bottom : 8;
+}
+
+menuitem : label {
+    ripple : true;
+    ripple-color : #00000080;
+    text-size : 14sp;
+    height : 48;
+    width : match_parent;
+    padding-left : 16;
+    padding-right : 16;
 }

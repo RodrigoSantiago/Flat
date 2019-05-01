@@ -17,6 +17,14 @@ public class ToggleButton extends Button {
     }
 
     @Override
+    public void setActivated(boolean actived) {
+        if (this.isActivated() != actived) {
+            super.setActivated(actived);
+            fireToggle(new ActionEvent(this));
+        }
+    }
+
+    @Override
     public void fireAction(ActionEvent actionEvent) {
         super.fireAction(actionEvent);
         if (!actionEvent.isConsumed()) {
@@ -40,14 +48,6 @@ public class ToggleButton extends Button {
 
     public void toggle() {
         setActivated(!isActivated());
-    }
-
-    @Override
-    public void setActivated(boolean actived) {
-        if (this.isActivated() != actived) {
-            super.setActivated(actived);
-            fireToggle(new ActionEvent(this));
-        }
     }
 
 }

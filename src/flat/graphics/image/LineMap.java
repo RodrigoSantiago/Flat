@@ -34,6 +34,7 @@ public class LineMap implements Drawable {
 
     @Override
     public void draw(SmartContext context, float x, float y, float width, float height, float frame) {
+        Affine affine = context.getTransform2D();
         context.setTransform2D(
                 context.getTransform2D()
                         .translate(x, y)
@@ -59,6 +60,7 @@ public class LineMap implements Drawable {
                 context.drawShape(svgPath.shape, false);
             }
         }
+        context.setTransform2D(affine);
     }
 
     @Override

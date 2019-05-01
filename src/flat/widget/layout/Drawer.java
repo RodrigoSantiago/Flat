@@ -44,7 +44,6 @@ public class Drawer extends Parent {
     private int gesPressID = -1;
     private float gesPress;
     private float gesOffset;
-    private float gesPreOffset;
     private long gesTimer;
 
     private boolean hideEffect;
@@ -70,25 +69,6 @@ public class Drawer extends Parent {
     }
 
     @Override
-    public void applyChildren(UXChildren children) {
-        super.applyChildren(children);
-        boolean first = true;
-        Gadget child;
-        while ((child = children.next()) != null ) {
-            Widget widget = child.getWidget();
-            if (widget != null) {
-                if (first) {
-                    setFront(widget);
-                    first = false;
-                } else {
-                    setBack(widget);
-                    break;
-                }
-            }
-        }
-    }
-
-    @Override
     public void applyStyle() {
         super.applyStyle();
         UXStyle style = getStyle();
@@ -110,6 +90,26 @@ public class Drawer extends Parent {
             Drawable drawable = res.getDrawable();
             if (drawable != null) {
                 setHideIconImage(drawable);
+            }
+        }
+    }
+
+    @Override
+    public void applyChildren(UXChildren children) {
+        super.applyChildren(children);
+
+        boolean first = true;
+        Gadget child;
+        while ((child = children.next()) != null ) {
+            Widget widget = child.getWidget();
+            if (widget != null) {
+                if (first) {
+                    setFront(widget);
+                    first = false;
+                } else {
+                    setBack(widget);
+                    break;
+                }
             }
         }
     }
@@ -193,7 +193,7 @@ public class Drawer extends Parent {
         }
         if (hideEffect) {
             if ((shown || anim.isPlaying() || gesOffset != 0) && front != null && front.getVisibility() == Visibility.Visible) {
-                int alpha = (int) ((color & 0xFF) * (1 + front.getX() / frontWidth));
+                int alpha = (int) ((color & 0xFF) * (1 + Mathf.clamp(frontPos + gesOffset, -frontWidth, 0) / frontWidth));
 
                 context.setTransform2D(getTransform());
                 context.setColor((color & 0xFFFFFF00) | (alpha));
@@ -210,9 +210,9 @@ public class Drawer extends Parent {
 
     @Override
     public Widget findByPosition(float x, float y, boolean includeDisabled) {
-        if (hideEffect) {
-            if ((includeDisabled || isEnabled()) &&
-                    (getVisibility() == Visibility.Visible || getVisibility() == Visibility.Invisible)) {
+        if ((includeDisabled || isEnabled()) &&
+                (getVisibility() == Visibility.Visible || getVisibility() == Visibility.Invisible)) {
+            if (hideEffect) {
                 if (isShown()) {
                     if (front != null) {
                         Widget widget = front.findByPosition(x, y, includeDisabled);
@@ -228,22 +228,22 @@ public class Drawer extends Parent {
                 }
                 return isClickable() && contains(x, y) ? this : null;
             } else {
-                return null;
+                if (front != null) {
+                    Widget widget = front.findByPosition(x, y, includeDisabled);
+                    if (widget != null) {
+                        return widget;
+                    }
+                }
+                if (back != null) {
+                    Widget widget = back.findByPosition(x, y, includeDisabled);
+                    if (widget != null) {
+                        return widget;
+                    }
+                }
+                return isClickable() && contains(x, y) ? this : null;
             }
         } else {
-            if (front != null) {
-                Widget widget = front.findByPosition(x, y, includeDisabled);
-                if (widget != null) {
-                    return widget;
-                }
-            }
-            if (back != null) {
-                Widget widget = back.findByPosition(x, y, includeDisabled);
-                if (widget != null) {
-                    return widget;
-                }
-            }
-            return isClickable() && contains(x, y) ? this : null;
+            return null;
         }
     }
 
@@ -282,43 +282,37 @@ public class Drawer extends Parent {
         if (gesPressID == -1 && event.getType() == PointerEvent.PRESSED) {
             Vector2 point = screenToLocal(event.getX(), event.getY());
             if ((!shown && point.x < slideGestureArea) || (shown && point.x < frontWidth)) {
-                gesPress = point.x;
                 gesPressID = event.getPointerID();
+                gesPress = point.x;
                 gesTimer = System.currentTimeMillis();
-                gesPreOffset = 0;
             }
         }
 
         if (gesPressID == event.getPointerID() && event.getType() == PointerEvent.DRAGGED) {
             Vector2 point = screenToLocal(event.getX(), event.getY());
-            gesPreOffset = point.x - gesPress;
+            float gesPreOffset = point.x - gesPress;
             if (Math.abs(gesPreOffset) > slideGestureArea || gesOffset != 0) {
                 gesOffset = gesPreOffset;
+                invalidate(true);
             }
-            invalidate(true);
         }
 
         if (event.getType() == PointerEvent.RELEASED) {
             long t = System.currentTimeMillis();
 
             if (gesPressID == event.getPointerID()) {
-                boolean autoAnimation = false;
                 if (isShown() && (gesOffset < -frontWidth * 0.3 || (t - gesTimer < 300 && gesOffset < -frontWidth / 8))) {
                     setShown(false);
-                    autoAnimation = true;
                 } else if (!isShown() && (gesOffset > frontWidth / 4 || (t - gesTimer < 300 && gesOffset > frontWidth / 8))) {
                     setShown(true);
-                    autoAnimation = true;
                 } else if (event.getSource() == this && event.getType() == PointerEvent.RELEASED && shown) {
                     setShown(false);
-                    autoAnimation = true;
-                }
-                if (!autoAnimation) {
+                } else {
                     playAnim(this.shown);
                 }
-                gesTimer = 0;
                 gesPressID = -1;
                 gesOffset = 0;
+                gesTimer = 0;
                 invalidate(true);
             } else if (event.getSource() == this && event.getType() == PointerEvent.RELEASED && shown) {
                 setShown(false);
@@ -486,7 +480,7 @@ public class Drawer extends Parent {
         }
     }
 
-    private void setHideEffect(boolean hideEffect) {
+    void setHideEffect(boolean hideEffect) {
         if (this.hideEffect != hideEffect) {
             this.hideEffect = hideEffect;
 

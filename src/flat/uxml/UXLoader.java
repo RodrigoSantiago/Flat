@@ -60,6 +60,8 @@ public final class UXLoader {
         UXLoader.install("TextArea", TextArea::new);
         UXLoader.install("Chip", Chip::new);
         UXLoader.install("Drawer", Drawer::new);
+        UXLoader.install("Menu", Menu::new);
+        UXLoader.install("MenuItem", MenuItem::new);
     }
 
     private DimensionStream dimensionStream;
@@ -241,9 +243,14 @@ public final class UXLoader {
                 NodeList nList = node.getChildNodes();
                 UXChildren children = new UXChildren(this);
                 for (int i = 0; i < nList.getLength(); i++) {
-                    Gadget child = recursive(controller, nList.item(i));
+                    Node childNode = nList.item(i);
+                    Gadget child = recursive(controller, childNode);
                     if (child != null) {
-                        children.add(child);
+                        if ("Menu".equals(childNode.getNodeName())) {
+                            children.setContextMenu((Menu) child.getWidget());
+                        } else {
+                            children.add(child);
+                        }
                     }
                 }
                 gadget.applyChildren(children);

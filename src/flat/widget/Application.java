@@ -92,7 +92,7 @@ public final class Application {
             mouseY = (float) WL.GetCursorY();
             dpi = (float) WL.GetDpi();
             WL.SetInputMode(WLEnuns.STICKY_KEYS, 1);
-            WL.SetInputMode(WLEnuns.STICKY_MOUSE_BUTTONS, 1); // --- Ocorreu Antes dessa linha {porem em thread diferente}
+            WL.SetInputMode(WLEnuns.STICKY_MOUSE_BUTTONS, 1);
             WL.SetMouseButtonCallback((button, action, mods) -> events.add(MouseBtnData.get(button + 1, action, mods)));
             WL.SetCursorPosCallback((x, y) -> events.add(MouseMoveData.get(outMouseX = (float) x, outMouseY = (float) y)));
             WL.SetScrollCallback((x, y) -> events.add(MouseScrollData.get(x, y)));

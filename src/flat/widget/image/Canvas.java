@@ -46,7 +46,6 @@ public class Canvas extends Widget {
         }
     }
 
-
     public boolean isAutorefresh() {
         return autorefresh;
     }

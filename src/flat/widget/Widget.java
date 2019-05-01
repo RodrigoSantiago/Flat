@@ -7,7 +7,6 @@ import flat.events.*;
 import flat.graphics.SmartContext;
 import flat.graphics.cursor.Cursor;
 import flat.math.*;
-import flat.math.shapes.Rectangle;
 import flat.math.shapes.RoundRectangle;
 import flat.math.shapes.Shape;
 import flat.math.stroke.BasicStroke;
@@ -54,6 +53,8 @@ public class Widget implements Gadget {
     private int visibility = Visibility.Visible.ordinal();
     private Cursor cursor;
     private UXTheme theme;
+
+    private Menu contextMenu;
 
     //---------------------
     //    Family
@@ -160,11 +161,6 @@ public class Widget implements Gadget {
         setStyle(style);
     }
 
-    @Override
-    public void applyChildren(UXChildren children) {
-
-    }
-
     public void applyStyle() {
         if (style == null) return;
 
@@ -258,6 +254,14 @@ public class Widget implements Gadget {
         setBorderRound(style.asBool("border-round", info, isBorderRound()));
         setBorderColor(style.asColor("border-color", info, getBorderColor()));
         setBorderWidth(style.asSize("border-width", info, getBorderWidth()));
+    }
+
+    @Override
+    public void applyChildren(UXChildren children) {
+        Menu menu = children.getContextMenu();
+        if (menu != null) {
+            setContextMenu(menu);
+        }
     }
 
     public void onDraw(SmartContext context) {
@@ -470,21 +474,28 @@ public class Widget implements Gadget {
     }
 
     void setParent(Parent parent) {
-        // todo - Cyclic parent bug
         if (this.parent != null && parent != null) {
             this.parent.remove(this);
         }
-        Scene sceneA = getScene();
-        this.parent = parent;
-        Scene sceneB = getScene();
-        if (sceneA != sceneB) {
-            if (sceneA != null) {
-                sceneA.deassign(this);
+        if (parent != null && parent.isChildOf(this)) {
+            parent.getParent().remove(parent);
+        }
+
+        if (parent == this) {
+            setParent(null);
+        } else {
+            Scene sceneA = getScene();
+            this.parent = parent;
+            Scene sceneB = getScene();
+            if (sceneA != sceneB) {
+                if (sceneA != null) {
+                    sceneA.deassign(this);
+                }
+                if (sceneB != null) {
+                    sceneB.assign(this);
+                }
+                onSceneChange();
             }
-            if (sceneB != null) {
-                sceneB.assign(this);
-            }
-            onSceneChange();
         }
     }
 
@@ -553,10 +564,12 @@ public class Widget implements Gadget {
     }
 
     public boolean isChildOf(Widget widget) {
-        if (parent == widget) {
-            return true;
-        } else if (parent != null) {
-            return parent.isChildOf(widget);
+        if (parent != null) {
+            if (parent == widget) {
+                return true;
+            } else {
+                return parent.isChildOf(widget);
+            }
         } else {
             return false;
         }
@@ -568,6 +581,14 @@ public class Widget implements Gadget {
 
     public void setClickable(boolean clickable) {
         this.clickable = clickable;
+    }
+
+    public Menu getContextMenu() {
+        return contextMenu;
+    }
+
+    public void setContextMenu(Menu contextMenu) {
+        this.contextMenu = contextMenu;
     }
 
     // ---- STATES ---- //
@@ -1499,6 +1520,12 @@ public class Widget implements Gadget {
     public void firePointer(PointerEvent pointerEvent) {
         // -- Pressed -- //
         if (pointerEvent.getType() == PointerEvent.RELEASED) {
+            if (pointerEvent.getPointerID() == 2 && contextMenu != null) {
+                Activity act = getActivity();
+                if (act != null) {
+                    act.showMenu(contextMenu, pointerEvent.getX(), pointerEvent.getY());
+                }
+            }
             if (!pointerEvent.isFocusConsumed() && isFocusable()) {
                 pointerEvent.consumeFocus(true);
                 requestFocus(true);

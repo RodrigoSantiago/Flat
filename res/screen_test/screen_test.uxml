@@ -1,35 +1,11 @@
 <Scene next-focus-id="text">
-    <Drawer color="#00000080" id="nav" background-color="#FF0000"
-                      show-icon-image="url(icons/radiobox-marked.svg)"
-                      hide-icon-image="url(icons/radiobox-blank.svg)"
-                      toogle-button="btn" hide-width="800">
-        <LinearBox direction="vertical" background-color="#FFFFFF" width="MATCH_PARENT" height="MATCH_PARENT">
-            <Chip text="Chip" icon-image="url(icons/radiobox-marked.svg)"
-            action-image="url(icons/radiobox-blank.svg)"></Chip>
-            <Chip text="Chip" icon-image="url(icons/radiobox-marked.svg)"></Chip>
-            <Chip text="Chip" action-image="url(icons/radiobox-blank.svg)"></Chip>
-            <Chip text="Chip"></Chip>
-        </LinearBox>
-        <LinearBox direction="horizontal" background-color="#00FF0080">
-            <ScrollBox background-color="#FFFFFF">
-                <Tab width="800" height="800" header-scrollable="true">
-                    <Page name="Page AAAAAAAAAAA">
-                        <Button text="A"></Button>
-                    </Page>
-                    <Page name="Page BBBBBBBBBBB">
-                        <Button text="B"></Button>
-                    </Page>
-                    <Page name="Page CCCCCCCCCCC">
-                        <Button text="B"></Button>
-                    </Page>
-                    <Page name="Page DDDDDDDDDDD">
-                        <Button text="B"></Button>
-                    </Page>
-                </Tab>
-                <ScrollBar direction="vertical" width="4" height="MATCH_PARENT"></ScrollBar>
-                <ScrollBar direction="horizontal" height="4" width="MATCH_PARENT"></ScrollBar>
-            </ScrollBox>
-            <Button text="click" id="btn" min-width="100"></Button>
-        </LinearBox>
-    </Drawer>
+    <LinearBox padding-left="32" padding-top="32">
+        <Button text="Ola">
+            <Menu width="200" background-color="#FFFFFF">
+                <MenuItem text="Item 01" icon-image="url(icons/radiobox-marked.svg)" icon-spacing="8"></MenuItem>
+                <MenuItem text="Item 02" action-image="url(icons/radiobox-marked.svg)"></MenuItem>
+                <MenuItem text="Item 03"></MenuItem>
+            </Menu>
+        </Button>
+    </LinearBox>
 </Scene>

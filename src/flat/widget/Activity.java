@@ -8,6 +8,9 @@ import flat.uxml.*;
 import flat.resources.Dimension;
 import flat.resources.DimensionStream;
 
+import java.util.ArrayList;
+import java.util.Objects;
+
 public class Activity extends Controller {
 
     private Scene scene;
@@ -22,7 +25,11 @@ public class Activity extends Controller {
     private UXTheme theme;
     private boolean invalided, layoutInvalided, streamInvalided;
 
+    private ArrayList<Menu> menus;
+
     public Activity() {
+        menus = new ArrayList<>();
+
         scene = new Scene();
         scene.activity = this;
         scene.applyAttributes(new UXStyleAttrs("attributes", (UXStyle)null), this);
@@ -99,6 +106,11 @@ public class Activity extends Controller {
         }
         scene.onMeasure();
         scene.onLayout(width, height);
+
+        for (Menu menu : menus) {
+            menu.onMeasure();
+            menu.onLayout(Math.min(width, menu.getMeasureWidth()), Math.max(height, menu.getMeasureHeight()));
+        }
     }
 
     public void onDraw(SmartContext context) {
@@ -107,6 +119,11 @@ public class Activity extends Controller {
         context.clear(color, 1, 0);
         context.clearClip(false);
         scene.onDraw(context);
+
+
+        for (Menu menu : menus) {
+            menu.onDraw(context);
+        }
     }
 
     public void onKeyPress(KeyEvent event) {
@@ -158,6 +175,27 @@ public class Activity extends Controller {
         return scene;
     }
 
+    public void showMenu(Menu menu, float x, float y) {
+        if (menu.activity != this) {
+            if (menu.activity != null) {
+                menu.activity.hideMenu(menu);
+            }
+
+            menus.add(menu);
+            menu.activity = this;
+            menu.setPosition(x, y);
+        }
+        invalidate(true);
+    }
+
+    public void hideMenu(Menu menu) {
+        if (menu.activity == this) {
+            menus.remove(menu);
+            menu.activity = null;
+        }
+        invalidate(false);
+    }
+
     final boolean draw() {
         if (invalided) {
             invalided = false;
@@ -185,15 +223,33 @@ public class Activity extends Controller {
     }
 
     public Widget findById(String id) {
+        for (Menu menu : menus) {
+            Widget widget = menu.findById(id);
+            if (widget != null) {
+                return widget;
+            }
+        }
         return scene.findById(id);
     }
 
     public Widget findByPosition(float x, float y, boolean includeDisabled) {
-        Widget child = scene.findByPosition(x , y, includeDisabled);
+        for (int i = menus.size() - 1; i >= 0; i--) {
+            Widget widget = menus.get(i).findByPosition(x, y, includeDisabled);
+            if (widget != null) {
+                return widget;
+            }
+        }
+        Widget child = scene.findByPosition(x, y, includeDisabled);
         return child == null ? scene : child;
     }
 
     public Widget findFocused() {
+        for (Menu menu : menus) {
+            Widget widget = menu.findFocused();
+            if (widget != null) {
+                return widget;
+            }
+        }
         Widget child = scene.findFocused();
         return child == null ? scene : child;
     }

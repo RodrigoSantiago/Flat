@@ -30,16 +30,6 @@ public class LinearBox extends Box {
     }
 
     @Override
-    public void onLayout(float width, float height) {
-        setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
-        if (this.direction == Direction.VERTICAL || this.direction == Direction.IVERTICAL) {
-            layoutHelperVertical(orderedList, getInX(), getInY(), getInWidth(), getInHeight(), halign);
-        } else {
-            layoutHelperHorizontal(orderedList, getInX(), getInY(), getInWidth(), getInHeight(), valign);
-        }
-    }
-
-    @Override
     public void onMeasure() {
         final float offWidth = getPaddingLeft() + getPaddingRight();
         final float offHeight = getPaddingTop() + getPaddingBottom();
@@ -87,6 +77,16 @@ public class LinearBox extends Box {
         }
 
         setMeasure(mWidth + getMarginLeft() + getMarginRight(), mHeight + getMarginTop() + getMarginBottom());
+    }
+
+    @Override
+    public void onLayout(float width, float height) {
+        setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
+        if (this.direction == Direction.VERTICAL || this.direction == Direction.IVERTICAL) {
+            layoutHelperVertical(orderedList, getInX(), getInY(), getInWidth(), getInHeight(), halign);
+        } else {
+            layoutHelperHorizontal(orderedList, getInX(), getInY(), getInWidth(), getInHeight(), valign);
+        }
     }
 
     @Override

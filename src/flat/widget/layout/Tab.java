@@ -96,28 +96,6 @@ public class Tab extends Parent {
     }
 
     @Override
-    public Widget findByPosition(float x, float y, boolean includeDisabled) {
-        if (!contains(x, y)) return null;
-
-        if ((includeDisabled || isEnabled()) &&
-                (getVisibility() == Visibility.Visible || getVisibility() == Visibility.Invisible)) {
-            for (TabLabel label : labels) {
-                Widget found = label.findByPosition(x, y, includeDisabled);
-                if (found != null) {
-                    return found;
-                }
-            }
-            if (activePage > -1 && !anim.isPlaying()) {
-                Widget found = pages.get(activePage).findByPosition(x, y, includeDisabled);
-                if (found != null) return found;
-            }
-            return isClickable() && contains(x, y) ? this : null;
-        } else {
-            return null;
-        }
-    }
-
-    @Override
     public void applyAttributes(UXStyleAttrs style, Controller controller) {
         super.applyAttributes(style, controller);
 
@@ -143,6 +121,8 @@ public class Tab extends Parent {
 
     @Override
     public void applyChildren(UXChildren children) {
+        super.applyChildren(children);
+
         Gadget child;
         while ((child = children.next()) != null ) {
             if (child instanceof Page) {
@@ -214,6 +194,49 @@ public class Tab extends Parent {
     }
 
     @Override
+    public Widget findByPosition(float x, float y, boolean includeDisabled) {
+        if (!contains(x, y)) return null;
+
+        if ((includeDisabled || isEnabled()) &&
+                (getVisibility() == Visibility.Visible || getVisibility() == Visibility.Invisible)) {
+            for (TabLabel label : labels) {
+                Widget found = label.findByPosition(x, y, includeDisabled);
+                if (found != null) {
+                    return found;
+                }
+            }
+            if (activePage > -1 && !anim.isPlaying()) {
+                Widget found = pages.get(activePage).findByPosition(x, y, includeDisabled);
+                if (found != null) return found;
+            }
+            return isClickable() && contains(x, y) ? this : null;
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public void onMeasure() {
+        final float offWidth = getPaddingLeft() + getPaddingRight();
+        final float offHeight = getPaddingTop() + getPaddingBottom();
+        float mWidth = Math.max(getPrefWidth(), Math.max(getMinWidth(), offWidth));
+        float mHeight = Math.max(getPrefHeight(), Math.max(getMinHeight(), offHeight));
+
+        for (int i = 0; i < pages.size(); i++) {
+            Page child = pages.get(i);
+            if (i == activePage || i == showLeft || i == showRight) {
+                child.onMeasure();
+            }
+        }
+        for (int i = 0; i < labels.size(); i++) {
+            TabLabel label = labels.get(i);
+            label.onMeasure();
+        }
+
+        setMeasure(mWidth + getMarginLeft() + getMarginRight(), mHeight + getMarginTop() + getMarginBottom());
+    }
+
+    @Override
     public void onLayout(float width, float height) {
         setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
 
@@ -275,27 +298,6 @@ public class Tab extends Parent {
                 }
             }
         }
-    }
-
-    @Override
-    public void onMeasure() {
-        final float offWidth = getPaddingLeft() + getPaddingRight();
-        final float offHeight = getPaddingTop() + getPaddingBottom();
-        float mWidth = Math.max(getPrefWidth(), Math.max(getMinWidth(), offWidth));
-        float mHeight = Math.max(getPrefHeight(), Math.max(getMinHeight(), offHeight));
-
-        for (int i = 0; i < pages.size(); i++) {
-            Page child = pages.get(i);
-            if (i == activePage || i == showLeft || i == showRight) {
-                child.onMeasure();
-            }
-        }
-        for (int i = 0; i < labels.size(); i++) {
-            TabLabel label = labels.get(i);
-            label.onMeasure();
-        }
-
-        setMeasure(mWidth + getMarginLeft() + getMarginRight(), mHeight + getMarginTop() + getMarginBottom());
     }
 
     public void add(Page child) {

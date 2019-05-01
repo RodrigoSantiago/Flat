@@ -32,22 +32,13 @@ public class Scene extends Parent {
     @Override
     public void applyChildren(UXChildren children) {
         super.applyChildren(children);
+
         Gadget child;
         while ((child = children.next()) != null ) {
             Widget widget = child.getWidget();
             if (widget != null) {
                 add(widget);
             }
-        }
-    }
-
-    @Override
-    public void onLayout(float width, float height) {
-        setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
-        for (Widget child : getChildren()) {
-            if (child.getVisibility() == Visibility.Gone) continue;
-
-            child.onLayout(getWidth(), getHeight());
         }
     }
 
@@ -79,6 +70,16 @@ public class Scene extends Parent {
         mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
         mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
         setMeasure(mWidth, mHeight);
+    }
+
+    @Override
+    public void onLayout(float width, float height) {
+        setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
+        for (Widget child : getChildren()) {
+            if (child.getVisibility() == Visibility.Gone) continue;
+
+            child.onLayout(getWidth(), getHeight());
+        }
     }
 
     @Override

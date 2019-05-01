@@ -15,7 +15,7 @@ public class Label extends Widget {
     private String text;
     private boolean textAllCaps;
 
-    private Font font;
+    private Font font = Font.DEFAULT;
     private float textSize;
     private int textColor;
 

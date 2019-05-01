@@ -9,7 +9,8 @@ import flat.widget.Widget;
 public final class Cell implements Gadget {
 
     Widget widget;
-    int c, r, cSpan, rSpan;
+
+    private int c, r, cSpan, rSpan;
 
     public Cell() {
         cSpan = 1;

@@ -167,15 +167,6 @@ public class TextField extends Widget {
     }
 
     @Override
-    public void invalidate(boolean layout) {
-        super.invalidate(layout);
-
-        if (layout) {
-            invalidScroll = true;
-        }
-    }
-
-    @Override
     public void onDraw(SmartContext context) {
         backgroundDraw(getBackgroundColor(), isBorderDiscret() ? 0 : getBorderColor(), getRippleColor(), context);
 
@@ -294,6 +285,15 @@ public class TextField extends Widget {
 
         context.setTransform2D(null);
         context.setClip(shape);
+    }
+
+    @Override
+    public void invalidate(boolean layout) {
+        super.invalidate(layout);
+
+        if (layout) {
+            invalidScroll = true;
+        }
     }
 
     @Override

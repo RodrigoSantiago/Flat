@@ -11,23 +11,12 @@ import flat.widget.Widget;
 import java.util.Objects;
 
 public class Page extends Box {
-    //[rect header][rect body]{show or hidden}
 
     private String name;
     private Drawable icon;
 
     private Tab tab;
     private ActionListener onActivated, onDeactivated;
-
-    @Override
-    public Widget findByPosition(float x, float y, boolean includeDisabled) {
-        Widget widget = super.findByPosition(x, y, includeDisabled);
-        if (widget == this) {
-            return null;
-        } else {
-            return widget;
-        }
-    }
 
     @Override
     public void applyAttributes(UXStyleAttrs style, Controller controller) {
@@ -53,6 +42,16 @@ public class Page extends Box {
         }
     }
 
+    @Override
+    public Widget findByPosition(float x, float y, boolean includeDisabled) {
+        Widget widget = super.findByPosition(x, y, includeDisabled);
+        if (widget == this) {
+            return null;
+        } else {
+            return widget;
+        }
+    }
+
     public String getName() {
         return name;
     }
@@ -63,6 +62,7 @@ public class Page extends Box {
             if (tab != null) {
                 tab.setLabelValue(this, name);
             }
+            invalidate(true);
         }
     }
 
@@ -76,6 +76,7 @@ public class Page extends Box {
             if (tab != null) {
                 //tab.setLabelValue(this, name); ?
             }
+            invalidate(true);
         }
     }
 

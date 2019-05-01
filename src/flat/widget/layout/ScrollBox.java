@@ -48,13 +48,9 @@ public class ScrollBox extends Parent {
     }
 
     @Override
-    public Widget findByPosition(float x, float y, boolean includeDisabled) {
-        return contains(x, y) ? super.findByPosition(x, y, includeDisabled) : null;
-    }
-
-    @Override
     public void applyChildren(UXChildren children) {
         super.applyChildren(children);
+
         Gadget child;
         while ((child = children.next()) != null ) {
             Widget widget = child.getWidget();
@@ -78,6 +74,11 @@ public class ScrollBox extends Parent {
                 }
             }
         }
+    }
+
+    @Override
+    public Widget findByPosition(float x, float y, boolean includeDisabled) {
+        return contains(x, y) ? super.findByPosition(x, y, includeDisabled) : null;
     }
 
     @Override
@@ -106,6 +107,40 @@ public class ScrollBox extends Parent {
 
         context.setTransform2D(null);
         context.setClip(clip);
+    }
+
+    @Override
+    public void onMeasure() {
+        if (content != null) {
+            content.onMeasure();
+        }
+        if (verticalBar != null) {
+            verticalBar.onMeasure();
+        }
+        if (horizontalBar != null) {
+            horizontalBar.onMeasure();
+        }
+
+        final float offWidth = getPaddingLeft() + getPaddingRight();
+        final float offHeight = getPaddingTop() + getPaddingBottom();
+        float mWidth = Math.max(getPrefWidth(), Math.max(getMinWidth(), offWidth));
+        float mHeight = Math.max(getPrefHeight(), Math.max(getMinHeight(), offHeight));
+
+        if (content != null && content.getVisibility() != Visibility.Gone) {
+            if (getPrefWidth() == WRAP_CONTENT) {
+                mWidth = content.getMeasureWidth() + offWidth;
+                if (verticalBar != null && verticalPolicy == Policy.AWAYS) {
+                    mWidth += verticalBar.getMeasureWidth();
+                }
+            }
+            if (getPrefHeight() == WRAP_CONTENT) {
+                mHeight = content.getMeasureHeight() + offHeight;
+                if (horizontalBar != null && horizontalPolicy == Policy.AWAYS) {
+                    mHeight += horizontalBar.getHeight();
+                }
+            }
+        }
+        setMeasure(mWidth + getMarginLeft() + getMarginRight(), mHeight + getMarginTop() + getMarginBottom());
     }
 
     @Override
@@ -181,40 +216,6 @@ public class ScrollBox extends Parent {
     }
 
     @Override
-    public void onMeasure() {
-        if (content != null) {
-            content.onMeasure();
-        }
-        if (verticalBar != null) {
-            verticalBar.onMeasure();
-        }
-        if (horizontalBar != null) {
-            horizontalBar.onMeasure();
-        }
-
-        final float offWidth = getPaddingLeft() + getPaddingRight();
-        final float offHeight = getPaddingTop() + getPaddingBottom();
-        float mWidth = Math.max(getPrefWidth(), Math.max(getMinWidth(), offWidth));
-        float mHeight = Math.max(getPrefHeight(), Math.max(getMinHeight(), offHeight));
-
-        if (content != null && content.getVisibility() != Visibility.Gone) {
-            if (getPrefWidth() == WRAP_CONTENT) {
-                mWidth = content.getMeasureWidth() + offWidth;
-                if (verticalBar != null && verticalPolicy == Policy.AWAYS) {
-                    mWidth += verticalBar.getMeasureWidth();
-                }
-            }
-            if (getPrefHeight() == WRAP_CONTENT) {
-                mHeight = content.getMeasureHeight() + offHeight;
-                if (horizontalBar != null && horizontalPolicy == Policy.AWAYS) {
-                    mHeight += horizontalBar.getHeight();
-                }
-            }
-        }
-        setMeasure(mWidth + getMarginLeft() + getMarginRight(), mHeight + getMarginTop() + getMarginBottom());
-    }
-
-    @Override
     public void fireScroll(ScrollEvent scrollEvent) {
         super.fireScroll(scrollEvent);
 
@@ -272,6 +273,7 @@ public class ScrollBox extends Parent {
             }
             this.horizontalBar = horizontalBar;
             if (horizontalBar != null) {
+                // todo - save as default listener {remove on scene detach}
                 horizontalBar.setOnValueChange((event) -> setScrollX(horizontalBar.getValue()));
                 add(horizontalBar);
             }

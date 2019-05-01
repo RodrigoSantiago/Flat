@@ -41,64 +41,6 @@ public class ImageView extends Widget {
         setHorizontalAlign(getStyle().asConstant("h-align", Align.Horizontal.CENTER));
     }
 
-    public Drawable getDrawable() {
-        return drawable;
-    }
-
-    public void setDrawable(Drawable drawable) {
-        this.drawable = drawable;
-        invalidate(false);
-    }
-
-    public float getFrame() {
-        return frame;
-    }
-
-    public void setFrame(float frame) {
-        this.frame = Math.max(Math.min(1, frame), 0);
-        lastTime = 0;
-        invalidate(false);
-    }
-
-    public float getSpeed() {
-        return speed;
-    }
-
-    public void setSpeed(float speed) {
-        this.speed = speed;
-        invalidate(false);
-    }
-
-    public ImageScale getImageScale() {
-        return imageScale;
-    }
-
-    public void setImageScale(ImageScale imageScale) {
-        this.imageScale = imageScale;
-    }
-
-    public Align.Vertical getVerticalAlign() {
-        return verticalAlign;
-    }
-
-    public void setVerticalAlign(Align.Vertical verticalAlign) {
-        if (this.verticalAlign != verticalAlign) {
-            this.verticalAlign = verticalAlign;
-            invalidate(true);
-        }
-    }
-
-    public Align.Horizontal getHorizontalAlign() {
-        return horizontalAlign;
-    }
-
-    public void setHorizontalAlign(Align.Horizontal horizontalAlign) {
-        if (this.horizontalAlign != horizontalAlign) {
-            this.horizontalAlign = horizontalAlign;
-            invalidate(true);
-        }
-    }
-
     @Override
     public void onDraw(SmartContext context) {
         backgroundDraw(getBackgroundColor(), getBorderColor(), getRippleColor(), context);
@@ -161,6 +103,64 @@ public class ImageView extends Widget {
         mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
         mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
         setMeasure(mWidth, mHeight);
+    }
+
+    public Drawable getDrawable() {
+        return drawable;
+    }
+
+    public void setDrawable(Drawable drawable) {
+        this.drawable = drawable;
+        invalidate(false);
+    }
+
+    public float getFrame() {
+        return frame;
+    }
+
+    public void setFrame(float frame) {
+        this.frame = Math.max(Math.min(1, frame), 0);
+        lastTime = 0;
+        invalidate(false);
+    }
+
+    public float getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(float speed) {
+        this.speed = speed;
+        invalidate(false);
+    }
+
+    public ImageScale getImageScale() {
+        return imageScale;
+    }
+
+    public void setImageScale(ImageScale imageScale) {
+        this.imageScale = imageScale;
+    }
+
+    public Align.Vertical getVerticalAlign() {
+        return verticalAlign;
+    }
+
+    public void setVerticalAlign(Align.Vertical verticalAlign) {
+        if (this.verticalAlign != verticalAlign) {
+            this.verticalAlign = verticalAlign;
+            invalidate(true);
+        }
+    }
+
+    public Align.Horizontal getHorizontalAlign() {
+        return horizontalAlign;
+    }
+
+    public void setHorizontalAlign(Align.Horizontal horizontalAlign) {
+        if (this.horizontalAlign != horizontalAlign) {
+            this.horizontalAlign = horizontalAlign;
+            invalidate(true);
+        }
     }
 
     protected float xOff(float start, float end, float width) {
