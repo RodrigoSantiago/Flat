@@ -452,6 +452,11 @@ public class Widget implements Gadget {
         }
     }
 
+    /**
+     * Return the top-most scene, direct assigned to an activity
+     *
+     * @return
+     */
     public Scene getScene() {
         Scene scene = null;
         if (parent != null) {
@@ -532,6 +537,8 @@ public class Widget implements Gadget {
     }
 
     public Widget findByPosition(float x, float y, boolean includeDisabled) {
+        // TODO - reverse order {child -> contains to contains -> child on cliping }
+
         if ((includeDisabled || isEnabled()) &&
                 (getVisibility() == Visibility.Visible || getVisibility() == Visibility.Invisible)) {
             if (children != null) {
@@ -1546,7 +1553,7 @@ public class Widget implements Gadget {
         if (pointerListener != null) {
             pointerListener.handle(pointerEvent);
         }
-        if (!pointerEvent.isConsumed() && parent != null) {
+        if (parent != null) {
             parent.firePointer(pointerEvent);
         }
     }
@@ -1562,21 +1569,20 @@ public class Widget implements Gadget {
         if (hoverListener != null) {
             hoverListener.handle(hoverEvent);
         }
-        // Hover events are not consumables
         if (parent != null && hoverEvent.isRecyclable(parent)) {
             parent.fireHover(hoverEvent);
         }
+        // TODO - REMOVE CURSOR
         if (cursor != null) {
             Application.setCursor(cursor);
         }
     }
 
     public void fireScroll(ScrollEvent scrollEvent) {
-        if (!scrollEvent.isConsumed() && scrollListener != null) {
+        if (scrollListener != null) {
             scrollListener.handle(scrollEvent);
-            scrollEvent.consume();
         }
-        if (!scrollEvent.isConsumed() && parent != null) {
+        if (parent != null) {
             parent.fireScroll(scrollEvent);
         }
     }
@@ -1585,7 +1591,7 @@ public class Widget implements Gadget {
         if (dragListener != null) {
             dragListener.handle(dragEvent);
         }
-        if (!dragEvent.isConsumed() && parent != null && dragEvent.isRecyclable(parent)) {
+        if (parent != null && dragEvent.isRecyclable(parent)) {
             parent.fireDrag(dragEvent);
         }
     }
@@ -1594,7 +1600,7 @@ public class Widget implements Gadget {
         if (keyListener != null) {
             keyListener.handle(keyEvent);
         }
-        if (!keyEvent.isConsumed() && parent != null) {
+        if (parent != null) {
             parent.fireKey(keyEvent);
         }
     }

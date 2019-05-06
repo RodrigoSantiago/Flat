@@ -68,17 +68,17 @@ public final class Texture2D extends Texture {
     }
 
     public void setData(int level, Buffer buffer, int offset, int x, int y, int width, int height) {
-        Application.getCurrentContext().refreshBufferBinds();
+        Application.getContext().refreshBufferBinds();
         GL.TextureSubDataBuffer(TT_TEXTURE_2D, level, x, y, width, height, format.getInternalEnum(), buffer, offset);
     }
 
     public void setData(int level, int[] data, int offset, int x, int y, int width, int height) {
-        Application.getCurrentContext().refreshBufferBinds();
+        Application.getContext().refreshBufferBinds();
         GL.TextureSubDataI(TT_TEXTURE_2D, level, x, y, width, height, format.getInternalEnum(), data, offset);
     }
 
     public void setData(int level, byte[] data, int offset, int x, int y, int width, int height) {
-        Application.getCurrentContext().refreshBufferBinds();
+        Application.getContext().refreshBufferBinds();
         GL.TextureSubDataB(TT_TEXTURE_2D, level, x, y, width, height, format.getInternalEnum(), data, offset);
     }
 

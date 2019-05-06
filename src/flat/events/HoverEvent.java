@@ -31,7 +31,7 @@ public class HoverEvent extends Event {
 
     @Override
     public String toString() {
-        StringBuilder s = new StringBuilder("HoverEvent ");
+        StringBuilder s = new StringBuilder("(").append(getSource()).append(") HoverEvent ");
         if (getType() == MOVED) s.append("[MOVED]");
         else if (getType() == ENTERED) s.append("[ENTERED]");
         else if (getType() == EXITED) s.append("[EXITED]");

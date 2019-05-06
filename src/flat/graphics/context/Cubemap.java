@@ -71,17 +71,17 @@ public final class Cubemap extends Texture {
     }
 
     public void setData(CubeFace face, int level, Buffer buffer, int offset, int x, int y, int width, int height) {
-        Application.getCurrentContext().refreshBufferBinds();
+        Application.getContext().refreshBufferBinds();
         GL.TextureSubDataBuffer(face.getInternalEnum(), level, x, y, width, height, format.getInternalEnum(), buffer, offset);
     }
 
     public void setData(CubeFace face, int level, int[] data, int offset, int x, int y, int width, int height) {
-        Application.getCurrentContext().refreshBufferBinds();
+        Application.getContext().refreshBufferBinds();
         GL.TextureSubDataI(face.getInternalEnum(), level, x, y, width, height, format.getInternalEnum(), data, offset);
     }
 
     public void setData(CubeFace face, int level, byte[] data, int offset, int x, int y, int width, int height) {
-        Application.getCurrentContext().refreshBufferBinds();
+        Application.getContext().refreshBufferBinds();
         GL.TextureSubDataB(face.getInternalEnum(), level, x, y, width, height, format.getInternalEnum(), data, offset);
     }
 

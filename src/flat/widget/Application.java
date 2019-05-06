@@ -1,5 +1,6 @@
 package flat.widget;
 
+import flat.animations.ActivityTransition;
 import flat.animations.Animation;
 import flat.backend.*;
 import flat.events.*;
@@ -11,11 +12,8 @@ import flat.resources.ResourcesManager;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.*;
-
-import static flat.backend.SVGEnuns.*;
 
 public final class Application {
 
@@ -26,11 +24,9 @@ public final class Application {
     private static Thread thread;
     private static Context context;
     private static Activity activity;
-
-    private static HashMap<Thread, Context> contexts = new HashMap<>();
-
-    private static int gThreadCount;
-    private static final Object key = new Object();
+    private static ActivityTransition transition;
+    private static ArrayList<Activity> dialogs = new ArrayList<>();
+    private static ArrayList<Runnable> activityChanges = new ArrayList<>();
 
     private static ArrayList<FutureTask<?>> runSync = new ArrayList<>();
     private static ArrayList<FutureTask<?>> runSyncCp = new ArrayList<>();
@@ -43,7 +39,7 @@ public final class Application {
     private static Cursor currentCursor = null;
 
     private static PointerData mouse;
-    private static float mouseX, mouseY, outMouseX, outMouseY;
+    private static float mx, my, outMouseX, outMouseY;
     private static ArrayList<PointerData> pointersData = new ArrayList<>();
 
     private static long loopTime;
@@ -54,9 +50,6 @@ public final class Application {
     }
 
     public static void init(Settings settings) {
-        if (settings.activityClass == null) {
-            throw new RuntimeException("Invalide appliction settings (Null start activity class)");
-        }
         if (settings.width <= 0 || settings.height <= 0) {
             throw new RuntimeException("Invalide appliction settings (Negative screen size)");
         }
@@ -83,133 +76,86 @@ public final class Application {
         context = new Context(id, svgId);
         context.init();
 
-        synchronized (Application.class) {
-            contexts.put(thread, context);
-        }
+        mx = (float) WL.GetCursorX();
+        my = (float) WL.GetCursorY();
+        dpi = (float) WL.GetDpi();
+
+        WL.SetInputMode(WLEnuns.STICKY_KEYS, 1);
+        WL.SetInputMode(WLEnuns.STICKY_MOUSE_BUTTONS, 1);
+        WL.SetMouseButtonCallback((button, action, mods) -> events.add(MouseBtnData.get(button + 1, action, mods)));
+        WL.SetCursorPosCallback((x, y) -> events.add(MouseMoveData.get(outMouseX = (float) x, outMouseY = (float) y)));
+        WL.SetScrollCallback((x, y) -> events.add(MouseScrollData.get(x, y)));
+        WL.SetDropCallback(names -> events.add(MouseDropData.get(names)));
+        WL.SetKeyCallback((key, scancode, action, mods) -> events.add(KeyData.get(key, scancode, action, mods)));
+        WL.SetCharModsCallback((codepoint, mods) -> events.add(CharModsData.get(codepoint, mods)));
+        WL.SetWindowSizeCallback((width, height) -> events.add(SizeData.get(width, height)));
+
+    }
+
+    public static void launch(Activity activity) {
+        setActivity(activity);
 
         try {
-            mouseX = (float) WL.GetCursorX();
-            mouseY = (float) WL.GetCursorY();
-            dpi = (float) WL.GetDpi();
-            WL.SetInputMode(WLEnuns.STICKY_KEYS, 1);
-            WL.SetInputMode(WLEnuns.STICKY_MOUSE_BUTTONS, 1);
-            WL.SetMouseButtonCallback((button, action, mods) -> events.add(MouseBtnData.get(button + 1, action, mods)));
-            WL.SetCursorPosCallback((x, y) -> events.add(MouseMoveData.get(outMouseX = (float) x, outMouseY = (float) y)));
-            WL.SetScrollCallback((x, y) -> events.add(MouseScrollData.get(x, y)));
-            WL.SetDropCallback(names -> events.add(MouseDropData.get(names)));
-            WL.SetKeyCallback((key, scancode, action, mods) -> events.add(KeyData.get(key, scancode, action, mods)));
-            WL.SetCharModsCallback((codepoint, mods) -> events.add(CharModsData.get(codepoint, mods)));
-            WL.SetWindowSizeCallback((width, height) -> events.add(SizeData.get(width, height)));
+            show();
 
-            activity = (Activity) settings.activityClass.getConstructor().newInstance();
-            activity.invalidate(true);
-
-            if (settings.start != null) {
-                settings.start.run();
-            } else {
-                show();
-            }
-
-            launch();
+            loop();
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
-            synchronized (Application.class) {
-                contexts.remove(thread);
-            }
+            long svgId = context.svgId;
             context.dispose();
             context = null;
+
             SVG.Destroy(svgId);
-            WL.ContextAssign(0);
 
-            synchronized (key) {
-                while (gThreadCount > 0) {
-                    try {
-                        processSyncCalls();
-                        key.wait();
-                    } catch (Exception e) {
-                        break;
-                    }
-                }
-            }
-
+            // TODO - DELETE OPENGL LIVE OBJECTS {NOT FINALIZED}
             WL.Finish();
         }
-
     }
 
     public static Context getContext() {
-        if (Thread.currentThread() != thread) {
-            throw new RuntimeException("The context is not current");
-        }
+        // assert - thread
         return context;
     }
 
-    public static Context getCurrentContext() {
-        if  (Thread.currentThread() == thread) {
-            return context;
-        }
-        synchronized (Application.class) {
-            return contexts.get(Thread.currentThread());
-        }
-    }
+    static void loop() {
+        long t = System.currentTimeMillis();
 
-    public static Thread createGraphicalThread(GraphicTask task) {
-        long id = WL.ContextCreate(0);
-        if (id == 0) {
-            throw new RuntimeException("Invalide context creation");
-        }
-        return new Thread(() -> {
-            synchronized (key) {
-                gThreadCount++;
-            }
-
-            WL.ContextAssign(id);
-
-            long svgId = SVG.Create();
-            if (svgId == 0) {
-                runSync(() -> WL.ContextDestroy(id));
-                throw new RuntimeException("Invalide context creation");
-            }
-
-            Thread thread = Thread.currentThread();
-            Context context = new Context(id, svgId);
-            context.init();
-
-            synchronized (Application.class) {
-                contexts.put(thread, context);
-            }
-
-            try {
-                task.run(context);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            } finally {
-                synchronized (Application.class) {
-                    contexts.remove(thread);
-                }
-                context.dispose();
-                SVG.Destroy(svgId);
-
-                synchronized (key) {
-                    gThreadCount--;
-                    runSync(() -> WL.ContextDestroy(id));
-                }
-            }
-        });
-    }
-
-    static void launch() {
         while (!WL.IsClosed()) {
-            loopTime = System.currentTimeMillis();
 
-            processEvents();
+            // Timer
+            long now = System.currentTimeMillis();
+            loopTime = now - t;
+            t = now;
 
-            processAnimations();
+            // Transitions Calls
+            while (transition == null && activityChanges.size() > 0) {
+                activityChanges.remove(0).run();
+            }
 
-            processLayout();
+            if (transition != null) {
+                // Transitions
 
-            processDraws();
+                transition.handle(loopTime);
+
+                processDraws(transition);
+
+                if (!transition.isPlaying()) {
+                    transition.getPrev().onHide();
+                    transition.getNext().onStart();
+                    transition = null;
+                }
+            } else if (activity != null) {
+                // Activity
+
+                processEvents(activity);
+
+                processAnimations(activity);
+
+                processLayout(activity);
+
+                processDraws(activity);
+            }
 
             processSyncCalls();
 
@@ -220,18 +166,20 @@ public final class Application {
         }
     }
 
-    static void processEvents() {
+    static void processEvents(Activity activity) {
         WL.HandleEvents();
         ArrayList<EventData> swap = eventsCp;
         eventsCp = events;
         events = swap;
 
+        // DPI - Listener
         if (dpi != (float) Math.ceil(WL.GetDpi())) {
             dpi = (float) Math.ceil(WL.GetDpi());
             eventsCp.add(SizeData.get(Application.getWidth(), Application.getHeight()));
         }
 
-        if  (outMouseX != WL.GetCursorX() || outMouseY != WL.GetCursorY()) {
+        // Mouse Listener
+        if  (outMouseX != (float) WL.GetCursorX() || outMouseY != (float) WL.GetCursorY()) {
             eventsCp.add(MouseMoveData.get(outMouseX = (float) WL.GetCursorX(), outMouseY = (float) WL.GetCursorY()));
         }
 
@@ -239,59 +187,60 @@ public final class Application {
             // Mouse Button
             if (eData.type == 1) {
                 MouseBtnData event = (MouseBtnData) eData;
-                PointerData pointer = getPointer(event.btn, -1, null);
-                Widget widget = activity.findByPosition(mouseX, mouseY, false);
+                PointerData pt = getPointer(event.btn, -1, null);
+                Widget widget = activity.findByPosition(mx, my, false);
 
                 // Pressed
                 if (event.action == WLEnuns.PRESS) {
                     if (mouse == null) {
-                        mouse = pointer;
-                        mouse.pressed = widget;
-                        mouse.pressed.firePointer(new PointerEvent(mouse.pressed, PointerEvent.PRESSED, event.btn, mouseX, mouseY));
-                        mouse.pressed.setPressed(true);
-                        mouse.pressed.fireRipple(mouseX, mouseY);
-                    } else {
-                        mouse.pressed.firePointer(new PointerEvent(mouse.pressed, PointerEvent.PRESSED, event.btn, mouseX, mouseY));
+                        mouse = pt;
                     }
+                    pt.pressed = widget;
+                    widget.firePointer(new PointerEvent(widget, PointerEvent.PRESSED, pt.btnId, mx, my));
+                    widget.setPressed(true);
+                    widget.fireRipple(mx, my);
+
                 }
                 // Released
                 else if (event.action == WLEnuns.RELEASE) {
-                    if (mouse == pointer) {
-                        if (mouse.dragStarted) {
-                            DragEvent dragEvent = new DragEvent(widget, DragEvent.DROPPED, mouse.dragData, mouseX, mouseY);
-                            widget.fireDrag(dragEvent);
-                            mouse.dragData = dragEvent.getData();
-                            if (dragEvent.isDragCompleted()) {
-                                mouse.dragged.fireDrag(new DragEvent(mouse.dragged, DragEvent.DONE, mouse.dragData, mouseX, mouseY));
+                    if (pt == mouse) {
+                        if (pt.dragStarted) {
+                            if (widget != pt.dragged) {
+                                DragEvent dragEvent = new DragEvent(widget, DragEvent.DROPPED, pt.dragData, mx, my);
+                                widget.fireDrag(dragEvent);
+                                pt.dragData = dragEvent.getData();
                             }
+                            pt.dragged.fireDrag(new DragEvent(pt.dragged, DragEvent.DONE, pt.dragData, mx, my));
                         }
-                        mouse.pressed.firePointer(new PointerEvent(mouse.pressed, PointerEvent.RELEASED, event.btn, mouseX, mouseY));
-                        if (mouse.dragged != null) {
-                            mouse.dragged.setDragged(false);
+                        pt.pressed.firePointer(new PointerEvent(pt.pressed, PointerEvent.RELEASED, pt.btnId, mx, my));
+                        if (pt.dragged != null) {
+                            pt.dragged.setDragged(false);
                         }
-                        mouse.pressed.setPressed(false);
-                        mouse.pressed.releaseRipple();
-                        mouse.reset();
+                        pt.pressed.setPressed(false);
+                        pt.pressed.releaseRipple();
+                        pt.reset();
+
                         mouse = null;
+                        mouseMove(activity, mx, my);
 
-                        mouseMove(mouseX, mouseY);
-
-                    } else if (mouse != null) {
-                        mouse.pressed.firePointer(new PointerEvent(mouse.pressed, PointerEvent.RELEASED, event.btn, mouseX, mouseY));
+                    } else if (pt.pressed != null) {
+                        pt.pressed.firePointer(new PointerEvent(pt.pressed, PointerEvent.RELEASED, pt.btnId, mx, my));
                     }
                 }
+
                 MouseBtnData.release(event);
             }
             // Mouse Move
             else if (eData.type == 2) {
                 MouseMoveData event = (MouseMoveData) eData;
-                mouseMove(event.x, event.y);
+                mouseMove(activity, event.x, event.y);
+
                 MouseMoveData.release(event);
             }
             // Mouse Scroll
             else if (eData.type == 3) {
                 MouseScrollData event = (MouseScrollData) eData;
-                Widget widget = activity.findByPosition(mouseX, mouseY, false);
+                Widget widget = activity.findByPosition(mx, my, false);
                 widget.fireScroll(new ScrollEvent(widget, ScrollEvent.SCROLL, event.x, event.y));
 
                 MouseScrollData.release(event);
@@ -299,8 +248,8 @@ public final class Application {
             // Mouse Drop (system)
             else if (eData.type == 4) {
                 MouseDropData event = (MouseDropData) eData;
-                Widget widget = activity.findByPosition(mouseX, mouseY, false);
-                widget.fireDrag(new DragEvent(widget, DragEvent.DROPPED, event.paths, mouseX, mouseY));
+                Widget widget = activity.findByPosition(mx, my, false);
+                widget.fireDrag(new DragEvent(widget, DragEvent.DROPPED, event.paths, mx, my));
 
                 MouseDropData.release(event);
             }
@@ -347,9 +296,7 @@ public final class Application {
             else if (eData.type == 8) {
                 SizeData event = (SizeData) eData;
 
-                if (activity != null) {
-                    activity.invalidate(true);
-                }
+                activity.invalidate(true);
 
                 SizeData.release(event);
             }
@@ -357,14 +304,15 @@ public final class Application {
         eventsCp.clear();
     }
 
-    private static void mouseMove(float x, float y) {
-        Widget widget = activity.findByPosition(mouseX = x, mouseY = y, false);
+    static void mouseMove(Activity activity, float x, float y) {
+        Widget widget = activity.findByPosition(mx = x, my = y, false);
 
         // Move
         if (mouse == null) {
             PointerData pointer = getPointer(-1, -1, null);
             if (pointer.hover == null) pointer.hover = widget;
             if (pointer.hover != widget) {
+                // TODO - CURSOR HERE
                 if (!widget.isChildOf(pointer.hover)) {
                     pointer.hover.fireHover(new HoverEvent(pointer.hover, HoverEvent.EXITED, widget, x, y));
                 }
@@ -377,39 +325,80 @@ public final class Application {
         }
         // Drag
         else {
-            DragEvent dragEvent;
             if (mouse.dragged == null) {
                 mouse.dragged = mouse.pressed;
                 mouse.hover = widget;
 
-                mouse.dragged.fireDrag(dragEvent = new DragEvent(mouse.dragged, DragEvent.STARTED, mouse.dragData, x, y));
+                DragEvent event = new DragEvent(mouse.dragged, DragEvent.STARTED, mouse.dragData, x, y);
+                mouse.dragged.fireDrag(event);
                 mouse.dragged.setDragged(true);
 
-                mouse.dragData = dragEvent.getData();
-                mouse.dragStarted = dragEvent.isStarted();
+                mouse.dragData = event.getData();
+                mouse.dragStarted = event.isStarted();
             }
             if (mouse.dragStarted) {
                 if (mouse.hover != widget) {
-                    if (!widget.isChildOf(mouse.hover)) {
-                        mouse.hover.fireDrag(dragEvent = new DragEvent(mouse.hover, DragEvent.EXITED, widget, mouse.dragData, x, y));
-                        mouse.dragData = dragEvent.getData();
+                    if (mouse.hover != mouse.dragged && !widget.isChildOf(mouse.hover)) {
+                        DragEvent event = new DragEvent(mouse.hover, DragEvent.EXITED, widget, mouse.dragData, x, y);
+                        mouse.hover.fireDrag(event);
+                        mouse.dragData = event.getData();
                     }
-                    if (!mouse.hover.isChildOf(widget)) {
-                        widget.fireDrag(dragEvent = new DragEvent(widget, DragEvent.ENTERED, mouse.hover, mouse.dragData, x, y));
-                        mouse.dragData = dragEvent.getData();
+                    if (widget != mouse.dragged && !mouse.hover.isChildOf(widget)) {
+                        DragEvent event = new DragEvent(widget, DragEvent.ENTERED, mouse.hover, mouse.dragData, x, y);
+                        widget.fireDrag(event);
+                        mouse.dragData = event.getData();
                     }
                 }
-                widget.fireDrag(dragEvent = new DragEvent(widget, DragEvent.OVER, mouse.dragData, x, y));
-                mouse.dragData = dragEvent.getData();
 
-                mouse.hover = widget;
+                if (widget != mouse.dragged) {
+                    DragEvent event = new DragEvent(widget, DragEvent.OVER, mouse.dragData, x, y);
+                    widget.fireDrag(event);
+                    mouse.dragData = event.getData();
+                }
             }
 
-            mouse.dragged.firePointer(new PointerEvent(mouse.dragged, PointerEvent.DRAGGED, mouse.mouseButton, x, y));
+            mouse.hover = widget;
+            mouse.dragged.firePointer(new PointerEvent(mouse.dragged, PointerEvent.DRAGGED, mouse.btnId, x, y));
         }
     }
 
-    static void processAnimations() {
+    static void releaseEvents(Activity activity) {
+        if (activity == null) {
+            for (PointerData pt : pointersData) {
+                pt.reset();
+            }
+            return;
+        }
+
+        for (PointerData pt : pointersData) {
+            Widget widget = activity.findByPosition(mx, my, false);
+
+            if (pt == mouse) {
+
+                if (pt.dragStarted) {
+                    if (widget != pt.dragged) {
+                        DragEvent dragEvent = new DragEvent(widget, DragEvent.DROPPED, pt.dragData, mx, my);
+                        widget.fireDrag(dragEvent);
+                        pt.dragData = dragEvent.getData();
+                    }
+                    pt.dragged.fireDrag(new DragEvent(pt.dragged, DragEvent.DONE, pt.dragData, mx, my));
+                }
+                pt.pressed.firePointer(new PointerEvent(pt.pressed, PointerEvent.RELEASED, pt.btnId, mx, my));
+                if (pt.dragged != null) {
+                    pt.dragged.setDragged(false);
+                }
+                pt.pressed.setPressed(false);
+                pt.pressed.releaseRipple();
+                mouse = null;
+
+            } else if (pt.pressed != null) {
+                pt.pressed.firePointer(new PointerEvent(pt.pressed, PointerEvent.RELEASED, pt.btnId, mx, my));
+            }
+            pt.reset();
+        }
+    }
+
+    static void processAnimations(Activity activity) {
         for (int i = 0; i < anims.size(); i++) {
             Animation anim = anims.get(i);
             if (anim.isPlaying()) {
@@ -421,17 +410,44 @@ public final class Application {
         }
     }
 
-    static void processLayout() {
+    static void processLayout(Activity activity) {
         if (activity.layout()) {
             activity.onLayout(getClientWidth(), getClientHeight(), (float) getDpi());
         }
     }
 
-    static void processDraws() {
-        if (activity.draw()) {
-            SmartContext smartContext = context.getSmartContext();
-            activity.onDraw(smartContext);
+    static void processDraws(Activity activity) {
+        SmartContext smartContext = context.getSmartContext();
 
+        if (activity.draw(smartContext)) {
+            smartContext.softFlush();
+            WL.SwapBuffers();
+            GL.Finish();
+
+            if (vsync == 0) {
+                long time = System.currentTimeMillis() - loopTime;
+                if (time < 15) {
+                    try {
+                        Thread.sleep(15 - time);
+                    } catch (InterruptedException ignored) {
+                    }
+                }
+            }
+        } else {
+            long time = System.currentTimeMillis() - loopTime;
+            if (time < 15) {
+                try {
+                    Thread.sleep(15 - time);
+                } catch (InterruptedException ignored) {
+                }
+            }
+        }
+    }
+
+    static void processDraws(ActivityTransition transition) {
+        SmartContext smartContext = context.getSmartContext();
+
+        if (transition.draw(smartContext)) {
             smartContext.softFlush();
             WL.SwapBuffers();
             GL.Finish();
@@ -457,7 +473,7 @@ public final class Application {
     }
 
     static void processSyncCalls() {
-        synchronized (key) {
+        synchronized (Application.class) {
             ArrayList<FutureTask<?>> swap = runSyncCp;
             runSyncCp = runSync;
             runSync = swap;
@@ -469,9 +485,8 @@ public final class Application {
     }
 
     public static void runSync(FutureTask<?> task) {
-        synchronized (key) {
+        synchronized (Application.class) {
             runSync.add(task);
-            key.notifyAll();
         }
     }
 
@@ -497,9 +512,57 @@ public final class Application {
         return activity;
     }
 
-    public static void setActivity(Activity activity) {
-        Application.activity = activity;
-        Application.activity.invalidate(true);
+    public static void setActivity(final Activity activity) {
+        activityChanges.add(() -> {
+            if (Application.activity != activity) {
+
+                if (Application.activity != null) {
+                    releaseEvents(Application.activity);
+                    Application.activity.onPause();
+                    Application.activity.onHide();
+                }
+
+                Application.activity = activity;
+                Application.activity.onShow();
+                Application.activity.onStart();
+                Application.activity.invalidate(true);
+            }
+        });
+    }
+
+    public static void setActivity(final Activity next, final ActivityTransition transition) {
+        activityChanges.add(() -> {
+            if (Application.activity != next) {
+                final Activity prev = Application.activity;
+
+                releaseEvents(Application.activity);
+
+                Application.activity = next;
+                Application.transition = transition;
+
+
+                if (prev != null) {
+                    prev.onPause();
+                }
+                next.onShow();
+
+                transition.setActivities(prev, next);
+            }
+        });
+    }
+
+    public static void showDialog(Activity dialog) {
+        activityChanges.add(() -> {
+            if (!dialogs.contains(dialog)) {
+                dialogs.add(dialog);
+                dialog.onShow();
+            }
+        });
+    }
+
+    public static void hideDialog() {
+        Activity dialog = dialogs.remove(dialogs.size() - 1);
+        dialog.onHide();
     }
 
     public static void setVsync(int vsync) {
@@ -686,7 +749,7 @@ public final class Application {
     static PointerData getPointer(int mb, int pid, List<PointerData> points) {
         int touchId = points != null ? points.get(pid).touchId : -1;
         for (PointerData entity : pointersData) {
-            if (entity.touchId == touchId && entity.mouseButton == mb) {
+            if (entity.touchId == touchId && entity.btnId == mb) {
                 return entity;
             }
         }
@@ -870,15 +933,15 @@ public final class Application {
     }
 
     static class PointerData {
-        final int mouseButton, touchId;
+        final int btnId, touchId;
 
         Widget pressed, dragged, hover;
 
         boolean dragStarted;
         Object dragData;
 
-        PointerData(int mouseButton, int touchId) {
-            this.mouseButton = mouseButton;
+        PointerData(int btnId, int touchId) {
+            this.btnId = btnId;
             this.touchId = touchId;
         }
 
@@ -889,14 +952,9 @@ public final class Application {
         }
     }
 
-    public interface GraphicTask {
-        void run(Context context);
-    }
-
     public static class Settings {
 
         public final File resources;
-        public Class<?> activityClass;
         public Runnable start;
         public int multsamples;
         public int width;
@@ -905,28 +963,23 @@ public final class Application {
         public int vsync;
 
         public <T extends Activity> Settings(File resources) {
-            this(resources, null, null);
+            this(resources, null);
         }
 
-        public <T extends Activity> Settings(File resources, Class<T> activityClass) {
-            this(resources, activityClass, null);
+        public <T extends Activity> Settings(File resources, Runnable start) {
+            this(resources, start, 0);
         }
 
-        public <T extends Activity> Settings(File resources, Class<T> activityClass, Runnable start) {
-            this(resources, activityClass, start, 0);
+        public <T extends Activity> Settings(File resources, Runnable start, int multsamples) {
+            this(resources, start, multsamples, 800, 600);
         }
 
-        public <T extends Activity> Settings(File resources, Class<T> activityClass, Runnable start, int multsamples) {
-            this(resources, activityClass, start, multsamples, 800, 600);
+        public <T extends Activity> Settings(File resources, Runnable start, int multsamples, int width, int height) {
+            this(resources, start, multsamples, width, height, false);
         }
 
-        public <T extends Activity> Settings(File resources, Class<T> activityClass, Runnable start, int multsamples, int width, int height) {
-            this(resources, activityClass, start, multsamples, width, height, false);
-        }
-
-        public <T extends Activity> Settings(File resources, Class<T> activityClass, Runnable start, int multsamples, int width, int height, boolean transparent) {
+        public <T extends Activity> Settings(File resources, Runnable start, int multsamples, int width, int height, boolean transparent) {
             this.resources = resources;
-            this.activityClass = activityClass;
             this.start = start;
             this.multsamples = multsamples;
             this.width = width;

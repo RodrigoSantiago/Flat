@@ -103,17 +103,15 @@ public class Scene extends Parent {
 
     @Override
     public Scene getScene() {
-        Scene scene;
         if (parent != null) {
             if (parent.isScene()) {
-                scene = (Scene) parent;
+                return (Scene) parent;
             } else {
-                scene = parent.getScene();
+                return parent.getScene();
             }
         } else {
-            scene = this;
+            return this;
         }
-        return scene;
     }
 
     @Override

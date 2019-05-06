@@ -14,6 +14,7 @@ import java.util.Objects;
 public class Activity extends Controller {
 
     private Scene scene;
+    private ArrayList<Menu> menus;
     private Widget focus;
 
     private float width;
@@ -24,8 +25,6 @@ public class Activity extends Controller {
     private DimensionStream stream;
     private UXTheme theme;
     private boolean invalided, layoutInvalided, streamInvalided;
-
-    private ArrayList<Menu> menus;
 
     public Activity() {
         menus = new ArrayList<>();
@@ -63,6 +62,22 @@ public class Activity extends Controller {
         this.theme.setDimension(dimension);
         streamInvalided = true;
         invalidate(true);
+    }
+
+    public void onShow() {
+
+    }
+
+    public void onStart() {
+
+    }
+
+    public void onPause() {
+
+    }
+
+    public void onHide() {
+
     }
 
     public void onSave() {
@@ -122,7 +137,6 @@ public class Activity extends Controller {
         context.clear(color, 1, 0);
         context.clearClip(false);
         scene.onDraw(context);
-
 
         for (Menu menu : menus) {
             menu.onDraw(context);
@@ -184,6 +198,7 @@ public class Activity extends Controller {
                 menu.activity.hideMenu(menu);
             }
 
+            menu.setParent(null);
             menus.add(menu);
             menu.activity = this;
             menu.setPosition(x, y);
@@ -199,9 +214,10 @@ public class Activity extends Controller {
         invalidate(false);
     }
 
-    final boolean draw() {
+    final boolean draw(SmartContext context) {
         if (invalided) {
             invalided = false;
+            onDraw(context);
             return true;
         } else {
             return false;

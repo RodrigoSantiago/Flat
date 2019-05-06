@@ -79,7 +79,7 @@ public class DragEvent extends Event {
 
     @Override
     public String toString() {
-        StringBuilder s = new StringBuilder("DragEvent ");
+        StringBuilder s = new StringBuilder("(").append(getSource()).append(") DragEvent ");
         if (getType() == STARTED) s.append("[STARTED]");
         else if (getType() == DONE) s.append("[DONE]");
         else if (getType() == DROPPED) s.append("[DROPPED]");

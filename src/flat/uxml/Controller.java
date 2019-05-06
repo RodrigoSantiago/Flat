@@ -7,29 +7,20 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 
 public class Controller {
-    private HashMap<String, Field> flatFields;
-
     public void assign(String name, Object object) {
-        if (flatFields == null) {
-            flatFields = new HashMap<>();
-            Field[] fields = getClass().getDeclaredFields();
-            for (Field field : fields) {
-                field.setAccessible(true);
-                if (field.isAnnotationPresent(Flat.class)
-                        && !Modifier.isPrivate(field.getModifiers())
-                        && !Modifier.isStatic(field.getModifiers())
-                        && !Modifier.isFinal(field.getModifiers())) {
-                    flatFields.put(field.getName(), field);
-                }
-            }
-        }
-        Field field = flatFields.get(name);
-        if (field != null) {
-            try {
+        try {
+            Field field = getClass().getField(name);
+            field.setAccessible(true);
+            if (field.isAnnotationPresent(Flat.class)
+                    && !Modifier.isPrivate(field.getModifiers())
+                    && !Modifier.isStatic(field.getModifiers())
+                    && !Modifier.isFinal(field.getModifiers())) {
                 field.set(this, object);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
             }
+        } catch (NoSuchFieldException ignored) {
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

@@ -31,11 +31,11 @@ public final class Render extends ContextObject {
     }
 
     public void begin() {
-        Application.getCurrentContext().bindRender(this);
+        Application.getContext().bindRender(this);
     }
 
     public void end() {
-        Application.getCurrentContext().unbindRender();
+        Application.getContext().unbindRender();
     }
 
     public void setSize(int width, int height, PixelFormat format) {

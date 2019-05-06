@@ -13,7 +13,6 @@ public final class StateAnimation implements Animation, StateInfo {
     float disabledOverlay;
     boolean disabledOverlayed;
 
-    long lastTime;
     long duration;
 
     public StateAnimation(Widget widget) {
@@ -29,7 +28,7 @@ public final class StateAnimation implements Animation, StateInfo {
 
     @Override
     public void handle(long milis) {
-        float pass = (milis - lastTime) / (float) duration;
+        float pass = milis / (float) duration;
 
         if (tEnabled == 0) fEnabled = Math.max(0, fEnabled - pass);
         else fEnabled = Math.min(1, fEnabled + pass);
@@ -47,8 +46,6 @@ public final class StateAnimation implements Animation, StateInfo {
         else fError = Math.min(1, fError + pass);
         if (tDisabled == 0) fDisabled = Math.max(0, fDisabled - pass);
         else fDisabled = Math.min(1, fDisabled + pass);
-
-        lastTime = milis;
 
         widget.applyStyle();
     }
@@ -73,7 +70,6 @@ public final class StateAnimation implements Animation, StateInfo {
         tDisabled = (byte) ((bitmask & (1 << StateInfo.DISABLED)) == (1 << StateInfo.DISABLED) ? 1 : 0);
         if (!play && isPlaying()) {
             Application.runAnimation(this);
-            lastTime = System.currentTimeMillis();
         }
     }
 

@@ -10,11 +10,11 @@ public abstract class Texture extends ContextObject {
     }
 
     public void begin(int index) {
-        Application.getCurrentContext().bindTexture(this, index);
+        Application.getContext().bindTexture(this, index);
     }
 
     public void end() {
-        Application.getCurrentContext().unbindTexture(activePos);
+        Application.getContext().unbindTexture(activePos);
     }
 
     void setActivePos(int activePos) {

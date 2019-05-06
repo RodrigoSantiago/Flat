@@ -16,7 +16,7 @@ public class VertexData {
     private boolean elementMode;
 
     public VertexData() {
-        vertexArray = new VertexArray(Application.getCurrentContext());
+        vertexArray = new VertexArray(Application.getContext());
         vertices = new BufferObejct();
         elements = new BufferObejct();
     }

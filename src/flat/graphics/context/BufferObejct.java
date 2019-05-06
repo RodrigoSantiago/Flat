@@ -35,11 +35,11 @@ public final class BufferObejct extends ContextObject {
     }
 
     public void begin(BufferType bufferType) {
-        Application.getCurrentContext().bindBuffer(this, bufferType);
+        Application.getContext().bindBuffer(this, bufferType);
     }
 
     public void end() {
-        Application.getCurrentContext().unbindBuffer(type);
+        Application.getContext().unbindBuffer(type);
     }
 
     void setBindType(BufferType type) {

@@ -122,11 +122,11 @@ public final class ShaderProgram extends ContextObject {
     }
 
     public void begin() {
-        Application.getCurrentContext().bindShaderProgram(this);
+        Application.getContext().bindShaderProgram(this);
     }
 
     public void end() {
-        Application.getCurrentContext().unbindShaderProgram();
+        Application.getContext().unbindShaderProgram();
     }
 
     public List<Attribute> getAttributes() {
