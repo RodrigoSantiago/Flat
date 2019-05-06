@@ -374,7 +374,6 @@ public final class Application {
             Widget widget = activity.findByPosition(mx, my, false);
 
             if (pt == mouse) {
-
                 if (pt.dragStarted) {
                     if (widget != pt.dragged) {
                         DragEvent dragEvent = new DragEvent(widget, DragEvent.DROPPED, pt.dragData, mx, my);
@@ -399,15 +398,7 @@ public final class Application {
     }
 
     static void processAnimations(Activity activity) {
-        for (int i = 0; i < anims.size(); i++) {
-            Animation anim = anims.get(i);
-            if (anim.isPlaying()) {
-                anim.handle(loopTime);
-            }
-            if (!anim.isPlaying()) {
-                anims.remove(i--);
-            }
-        }
+        activity.onAnimate(loopTime);
     }
 
     static void processLayout(Activity activity) {
@@ -500,12 +491,6 @@ public final class Application {
         FutureTask<T> fTask = new FutureTask<>(task, null);
         runSync(fTask);
         return fTask;
-    }
-
-    public static void runAnimation(Animation animation) {
-        if (!anims.contains(animation)) {
-            anims.add(animation);
-        }
     }
 
     public static Activity getActivity() {

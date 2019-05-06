@@ -1,5 +1,6 @@
 package flat.animations;
 
+import flat.widget.Activity;
 import flat.widget.Application;
 import flat.widget.Widget;
 
@@ -69,7 +70,10 @@ public final class StateAnimation implements Animation, StateInfo {
         tError = (byte) ((bitmask & (1 << StateInfo.ERROR)) == (1 << StateInfo.ERROR) ? 1 : 0);
         tDisabled = (byte) ((bitmask & (1 << StateInfo.DISABLED)) == (1 << StateInfo.DISABLED) ? 1 : 0);
         if (!play && isPlaying()) {
-            Application.runAnimation(this);
+            Activity activity = widget.getActivity();
+            if (activity != null) {
+                activity.addAnimation(this);
+            }
         }
     }
 

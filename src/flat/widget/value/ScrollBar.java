@@ -12,6 +12,7 @@ import flat.graphics.text.Align;
 import flat.math.Vector2;
 import flat.uxml.Controller;
 import flat.uxml.UXStyleAttrs;
+import flat.widget.Activity;
 import flat.widget.Widget;
 import flat.widget.enuns.Direction;
 
@@ -76,6 +77,21 @@ public class ScrollBar extends Widget {
         setPopupRadiusBottom(getStyle().asSize("popup-radius-bottom", info, getPopupRadiusBottom()));
         setPopupRadiusLeft(getStyle().asSize("popup-radius-left", info, getPopupRadiusLeft()));
         setPopupTimeOut((long) getStyle().asSize("popup-time-out", info, getPopupTimeOut()));
+    }
+
+    @Override
+    protected void onActivityChange(Activity prev, Activity activity) {
+        super.onActivityChange(prev, activity);
+
+        if (anim.isPlaying()) {
+            if (prev != null) prev.removeAnimation(anim);
+            if (activity != null) activity.addAnimation(anim);
+        }
+
+        if (anim2.isPlaying()) {
+            if (prev != null) prev.removeAnimation(anim2);
+            if (activity != null) activity.addAnimation(anim2);
+        }
     }
 
     @Override
@@ -177,7 +193,7 @@ public class ScrollBar extends Widget {
                 anim.stop();
             }
             if (pointerEvent.getType() == PointerEvent.RELEASED && popupEnabled && isPressed()) {
-                anim2.play();
+                anim2.play(getActivity());
             }
         }
     }
@@ -245,7 +261,7 @@ public class ScrollBar extends Widget {
             anim.fValue = this.value;
             anim.tValue = value;
             anim.setDuration(getTransitionDuration());
-            anim.play();
+            anim.play(getActivity());
 
             this.value = value;
             if (onValueChange != null) {

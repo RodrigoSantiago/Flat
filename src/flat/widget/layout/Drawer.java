@@ -14,6 +14,7 @@ import flat.uxml.Controller;
 import flat.uxml.UXChildren;
 import flat.uxml.UXStyle;
 import flat.uxml.UXStyleAttrs;
+import flat.widget.Activity;
 import flat.widget.Gadget;
 import flat.widget.Parent;
 import flat.widget.Widget;
@@ -111,6 +112,16 @@ public class Drawer extends Parent {
                     break;
                 }
             }
+        }
+    }
+
+    @Override
+    protected void onActivityChange(Activity prev, Activity activity) {
+        super.onActivityChange(prev, activity);
+
+        if (anim.isPlaying()) {
+            if (prev != null) prev.removeAnimation(anim);
+            if (activity != null) activity.addAnimation(anim);
         }
     }
 
@@ -509,7 +520,8 @@ public class Drawer extends Parent {
         anim.stop(false);
         anim.setDuration(slideAnimDuration);
         anim.setValues(Mathf.clamp(frontPos + gesOffset, -frontWidth, 0), toShow ? 0 : -frontWidth);
-        anim.play();
+
+        anim.play(getActivity());
     }
 
     static class SlideAnimation extends NormalizedAnimation {

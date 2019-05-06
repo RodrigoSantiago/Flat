@@ -13,6 +13,7 @@ import flat.math.shapes.Rectangle;
 import flat.resources.Resource;
 import flat.uxml.Controller;
 import flat.uxml.UXStyleAttrs;
+import flat.widget.Activity;
 import flat.widget.Widget;
 
 public class Slider extends Widget {
@@ -55,6 +56,26 @@ public class Slider extends Widget {
         _setValue2(style.asNumber("value2", getValue2()));
         setTicks((int) style.asNumber("ticks", getTicks()));
         setRangeEnabled(style.asBool("range-enabled", isRangeEnabled()));
+    }
+
+    @Override
+    protected void onActivityChange(Activity prev, Activity activity) {
+        super.onActivityChange(prev, activity);
+
+        if (anim.isPlaying()) {
+            prev.removeAnimation(anim);
+            activity.addAnimation(anim);
+        }
+
+        if (anim2.isPlaying()) {
+            prev.removeAnimation(anim2);
+            activity.addAnimation(anim2);
+        }
+
+        if (anim3.isPlaying()) {
+            prev.removeAnimation(anim3);
+            activity.addAnimation(anim3);
+        }
     }
 
     @Override
@@ -254,7 +275,7 @@ public class Slider extends Widget {
                 anim3.tValue = hover;
                 anim3.fValue = hover;
                 anim3.setDuration(labelTimeOut);
-                anim3.play();
+                anim3.play(getActivity());
             }
         }
     }
@@ -381,7 +402,7 @@ public class Slider extends Widget {
             anim.fValue = oldValue;
             anim.tValue = this.value;
             anim.setDuration(getTransitionDuration());
-            anim.play();
+            anim.play(getActivity());
         }
     }
 
@@ -412,7 +433,7 @@ public class Slider extends Widget {
             anim2.fValue = oldRange;
             anim2.tValue = this.value2;
             anim2.setDuration(getTransitionDuration());
-            anim2.play();
+            anim2.play(getActivity());
         }
     }
 

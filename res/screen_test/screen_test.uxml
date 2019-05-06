@@ -1,17 +1,18 @@
 <Scene next-focus-id="text">
     <LinearBox padding-left="32" padding-top="32">
-        <Button text="Ola">
+        <Button id="btn1" text="Ola" on-action="onAction" on-pointer="onPointer" on-drag="onDrag1">
             <Menu width="200" background-color="#FFFFFF">
                 <MenuItem id="01" text="Item 01" icon-image="url(icons/radiobox-marked.svg)" icon-spacing="8"></MenuItem>
                 <MenuItem id="02" text="Item 02" action-image="url(icons/radiobox-marked.svg)">
                     <Menu width="200" background-color="#FFFFFF">
-                        <MenuItem id="10" text="Item 10" icon-image="url(icons/radiobox-marked.svg)" icon-spacing="8"></MenuItem>
-                        <MenuItem id="11" text="Item 11" action-image="url(icons/radiobox-marked.svg)"></MenuItem>
+                        <MenuItem id="10" text="Item 10"></MenuItem>
+                        <MenuItem id="11" text="Item 11"></MenuItem>
                         <MenuItem id="12" text="Item 12"></MenuItem>
                     </Menu>
                 </MenuItem>
                 <MenuItem id="03" text="Item 03"></MenuItem>
             </Menu>
         </Button>
+        <Button id="btn2" text="Ola" on-action="onAction" on-pointer="onPointer" on-drag="onDrag2"/>
     </LinearBox>
 </Scene>

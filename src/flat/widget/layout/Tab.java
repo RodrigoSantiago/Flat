@@ -11,6 +11,7 @@ import flat.graphics.text.Align;
 import flat.math.Vector2;
 import flat.math.shapes.Shape;
 import flat.uxml.*;
+import flat.widget.Activity;
 import flat.widget.Gadget;
 import flat.widget.Parent;
 import flat.widget.Widget;
@@ -131,6 +132,16 @@ public class Tab extends Parent {
         }
 
         setActivePage(activePage);
+    }
+
+    @Override
+    protected void onActivityChange(Activity prev, Activity activity) {
+        super.onActivityChange(prev, activity);
+
+        if (anim.isPlaying()) {
+            if (prev != null) prev.removeAnimation(anim);
+            if (activity != null) activity.addAnimation(anim);
+        }
     }
 
     @Override
@@ -401,12 +412,12 @@ public class Tab extends Parent {
                 showLeft = old;
                 showRight = activePage;
                 anim.setDuration(getTransitionDuration());
-                anim.play(0);
+                anim.play(getActivity());
             } else {
                 showLeft = activePage;
                 showRight = old;
                 anim.setDuration(getTransitionDuration());
-                anim.play(0);
+                anim.play(getActivity());
             }
             invalidate(true);
         }

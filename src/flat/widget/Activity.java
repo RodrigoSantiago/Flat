@@ -1,5 +1,7 @@
 package flat.widget;
 
+import flat.Weak;
+import flat.animations.Animation;
 import flat.events.FocusEvent;
 import flat.events.KeyCode;
 import flat.events.KeyEvent;
@@ -8,13 +10,16 @@ import flat.uxml.*;
 import flat.resources.Dimension;
 import flat.resources.DimensionStream;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Objects;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 public class Activity extends Controller {
 
     private Scene scene;
     private ArrayList<Menu> menus;
+    private LinkedList<Weak<Animation>> animations;
     private Widget focus;
 
     private float width;
@@ -28,6 +33,7 @@ public class Activity extends Controller {
 
     public Activity() {
         menus = new ArrayList<>();
+        animations = new LinkedList<>();
 
         scene = new Scene();
         scene.activity = this;
@@ -62,6 +68,39 @@ public class Activity extends Controller {
         this.theme.setDimension(dimension);
         streamInvalided = true;
         invalidate(true);
+    }
+
+    public void addAnimation(final Animation animation) {
+        Weak<Animation> w = new Weak<>(animation);
+        if (!animations.contains(w)) {
+            animations.add(w);
+        }
+    }
+
+    public void removeAnimation(final Animation animation) {
+        for (Iterator<Weak<Animation>> iterator = animations.iterator(); iterator.hasNext(); ) {
+            if (iterator.next().get() == animation) {
+                iterator.remove();
+                break;
+            }
+        }
+    }
+
+    public void onAnimate(long loopTime) {
+        for (Iterator<Weak<Animation>> iterator = animations.iterator(); iterator.hasNext(); ) {
+            Weak<Animation> w = iterator.next();
+            Animation anim = w.get();
+            if (anim != null) {
+                if (anim.isPlaying()) {
+                    anim.handle(loopTime);
+                }
+                if (!anim.isPlaying()) {
+                    iterator.remove();
+                }
+            } else {
+                iterator.remove();
+            }
+        }
     }
 
     public void onShow() {

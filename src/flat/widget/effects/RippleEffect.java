@@ -10,6 +10,7 @@ import flat.math.shapes.RoundRectangle;
 import flat.math.shapes.Shape;
 import flat.math.stroke.BasicStroke;
 import flat.resources.Dimension;
+import flat.widget.Activity;
 import flat.widget.Widget;
 
 public class RippleEffect {
@@ -56,7 +57,14 @@ public class RippleEffect {
         ripple.set(x, y, 1);
         animation.stop();
         animation.setDelta(1);
-        animation.play();
+        animation.play(widget.getActivity());
+    }
+
+    public void onActivityChange(Activity prev, Activity activity) {
+        if (animation.isPlaying()) {
+            if (prev != null) prev.removeAnimation(animation);
+            if (activity != null) activity.addAnimation(animation);
+        }
     }
 
     public void release() {

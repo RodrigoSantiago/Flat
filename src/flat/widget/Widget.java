@@ -488,9 +488,15 @@ public class Widget implements Gadget {
         if (parent == this) {
             setParent(null);
         } else {
+
             Scene sceneA = getScene();
+            Activity activityA = sceneA == null ? null : sceneA.getActivity();
+
             this.parent = parent;
+
             Scene sceneB = getScene();
+            Activity activityB = sceneB == null ? null : sceneB.getActivity();
+
             if (sceneA != sceneB) {
                 if (sceneA != null) {
                     sceneA.deassign(this);
@@ -500,6 +506,10 @@ public class Widget implements Gadget {
                 }
                 onSceneChange();
             }
+
+            if (activityA != activityB) {
+                onActivityChange(activityA, activityB);
+            }
         }
     }
 
@@ -507,6 +517,23 @@ public class Widget implements Gadget {
         if (children != null) {
             for (Widget widget : children) {
                 widget.onSceneChange();
+            }
+        }
+    }
+
+    protected void onActivityChange(Activity prev, Activity activity) {
+        if (children != null) {
+            for (Widget widget : children) {
+                widget.onActivityChange(prev, activity);
+            }
+
+            if (ripple != null) {
+                ripple.onActivityChange(prev, activity);
+            }
+
+            if (stateAnimation != null && stateAnimation.isPlaying()) {
+                if (prev != null) prev.removeAnimation(stateAnimation);
+                if (activity != null) activity.addAnimation(stateAnimation);
             }
         }
     }

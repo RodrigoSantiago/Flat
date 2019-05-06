@@ -1,5 +1,6 @@
 package flat.animations;
 
+import flat.widget.Activity;
 import flat.widget.Application;
 
 public abstract class NormalizedAnimation implements Animation {
@@ -59,11 +60,11 @@ public abstract class NormalizedAnimation implements Animation {
         this.delta = delta;
     }
 
-    public void play() {
-        play(0);
+    public void play(Activity activity) {
+        play(activity, 0);
     }
 
-    public void play(float position) {
+    public void play(Activity activity, float position) {
         position = Math.max(Math.min(position, 1), 0);
         if (isPlaying()) {
             stop();
@@ -79,7 +80,9 @@ public abstract class NormalizedAnimation implements Animation {
         }
         _reaming = (long) (_duration * (1 - position));
 
-        Application.runAnimation(this);
+        if (activity != null) {
+            activity.addAnimation(this);
+        }
     }
 
     public void pause() {
