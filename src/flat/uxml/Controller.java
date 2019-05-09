@@ -23,4 +23,8 @@ public class Controller {
             e.printStackTrace();
         }
     }
+
+    public boolean isListening() {
+        return true;
+    }
 }

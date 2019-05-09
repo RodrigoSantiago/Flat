@@ -1,15 +1,17 @@
 package flat.events;
 
+import flat.uxml.Controller;
+
 import java.lang.reflect.Method;
 
 public interface KeyListener {
     void handle(KeyEvent event);
 
     final class AutoKeyListener implements KeyListener {
-        private final Object object;
-        private final Method method;
+        private Controller object;
+        private Method method;
 
-        public AutoKeyListener(Object object, Method method) {
+        public AutoKeyListener(Controller object, Method method) {
             this.object = object;
             this.method = method;
         }
@@ -17,7 +19,13 @@ public interface KeyListener {
         @Override
         public void handle(KeyEvent event) {
             try {
-                method.invoke(object, event);
+                if (object != null) {
+                    if (object.isListening()) {
+                        method.invoke(object, event);
+                    } else {
+                        object = null;
+                    }
+                }
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

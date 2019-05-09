@@ -10,10 +10,10 @@ import flat.uxml.*;
 import flat.resources.Dimension;
 import flat.resources.DimensionStream;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Objects;
 
 public class Activity extends Controller {
 
@@ -26,6 +26,7 @@ public class Activity extends Controller {
     private float height;
     private int color;
 
+    private Scene nextScene;
     private Dimension dimension;
     private DimensionStream stream;
     private UXTheme theme;
@@ -45,18 +46,42 @@ public class Activity extends Controller {
         color = 0xDDDDDDFF;
     }
 
-    public void setBackgroundColor(int color) {
-        this.color = color;
+    @Override
+    public boolean isListening() {
+        return true;
     }
 
-    public DimensionStream getStream() {
+    public Scene getScene() {
+        return scene;
+    }
+
+    public void setScene(Scene scene) {
+        if (this.stream != null || this.nextScene != scene) {
+            this.stream = null;
+            this.nextScene = scene;
+            invalidate(true);
+        }
+    }
+
+    public void setSceneStream(DimensionStream stream) {
+        if (this.stream != stream) {
+            this.stream = stream;
+            this.nextScene = null;
+            streamInvalided = true;
+            invalidate(true);
+        }
+    }
+
+    public DimensionStream getSceneStream() {
         return stream;
     }
 
-    public void setStream(DimensionStream stream) {
-        this.stream = stream;
-        streamInvalided = true;
-        invalidate(true);
+    public int getBackgroundColor() {
+        return color;
+    }
+
+    public void setBackgroundColor(int color) {
+        this.color = color;
     }
 
     public UXTheme getTheme() {
@@ -64,10 +89,12 @@ public class Activity extends Controller {
     }
 
     public void setTheme(UXTheme theme) {
-        this.theme = theme;
-        this.theme.setDimension(dimension);
-        streamInvalided = true;
-        invalidate(true);
+        if (!Objects.equals(this.theme, theme)) {
+            this.theme = theme;
+            this.theme.setDimension(dimension);
+            streamInvalided = true;
+            invalidate(true);
+        }
     }
 
     public void addAnimation(final Animation animation) {
@@ -86,51 +113,70 @@ public class Activity extends Controller {
         }
     }
 
-    public void onAnimate(long loopTime) {
-        for (Iterator<Weak<Animation>> iterator = animations.iterator(); iterator.hasNext(); ) {
-            Weak<Animation> w = iterator.next();
-            Animation anim = w.get();
-            if (anim != null) {
-                if (anim.isPlaying()) {
-                    anim.handle(loopTime);
-                }
-                if (!anim.isPlaying()) {
-                    iterator.remove();
-                }
-            } else {
-                iterator.remove();
-            }
-        }
-    }
-
+    /**
+     * Called when activity is attached to Application, even before animations
+     */
     public void onShow() {
 
     }
 
+    /**
+     * Called after activity transition, or, imediatily when no animations is required
+     */
     public void onStart() {
 
     }
 
+    /**
+     * Can be used to stop heavy process during transitions or before hiding
+     */
     public void onPause() {
 
     }
 
+    /**
+     * Called when the activity is deatached from Application
+     */
     public void onHide() {
 
     }
 
+    /**
+     * Called Before SceneStream load a new Scene behavior
+     */
     public void onSave() {
 
     }
 
+    /**
+     * Called After SceneStream load a new Scene or User has setted manually the screen (aways on onLayout event)
+     */
     public void onLoad() {
 
     }
 
+    /**
+     * Called when the size or dpi changes. Called when a member has a significative size change
+     *
+     * @param width
+     * @param height
+     * @param dpi
+     */
     public void onLayout(float width, float height, float dpi) {
         if (width != this.width || height != this.height) {
             Dimension dm;
-            if (stream != null) {
+            if (nextScene != null) {
+                dm = new Dimension(width, height, dpi);
+                theme.setDimension(dm);
+
+                Scene newScene = nextScene;
+                onSave();
+                this.scene.onActivityChange(this, null);
+                this.scene = newScene;
+                this.scene.activity = this;
+                this.scene.onActivityChange(null, this);
+                onLoad();
+            } else if (stream != null) {
                 dm = stream.getCloserDimension(width, height, dpi);
                 theme.setDimension(dm);
 
@@ -145,8 +191,10 @@ public class Activity extends Controller {
                     }
                     if (newScene != null) {
                         onSave();
+                        this.scene.onActivityChange(this, null);
                         this.scene = newScene;
                         this.scene.activity = this;
+                        this.scene.onActivityChange(null, this);
                         onLoad();
                     }
                 }
@@ -170,18 +218,27 @@ public class Activity extends Controller {
         }
     }
 
+    /**
+     * Called when rendering is needed
+     *
+     * @param context
+     */
     public void onDraw(SmartContext context) {
         context.setAntialiasEnabled(true);
         context.setView(0, 0, (int) getWidth(), (int) getHeight());
         context.clear(color, 1, 0);
         context.clearClip(false);
-        scene.onDraw(context);
 
+        scene.onDraw(context);
         for (Menu menu : menus) {
             menu.onDraw(context);
         }
     }
 
+    /**
+     * Called when to atached activity when a key is pressed,released,typed
+     * @param event
+     */
     public void onKeyPress(KeyEvent event) {
         if (event.getType() == KeyEvent.RELEASED || event.getType() == KeyEvent.REPEATED) {
             if (event.getKeycode() == KeyCode.KEY_TAB) {
@@ -200,6 +257,11 @@ public class Activity extends Controller {
         }
     }
 
+    /**
+     * Requested by focusables widgets, or, manually
+     *
+     * @param widget
+     */
     public void setFocus(Widget widget) {
         if ((widget == focus) || (widget != null && widget.getActivity() != this)) {
             return;
@@ -227,10 +289,6 @@ public class Activity extends Controller {
         return focus;
     }
 
-    public Scene getScene() {
-        return scene;
-    }
-
     public void showMenu(Menu menu, float x, float y) {
         if (menu.activity != this) {
             if (menu.activity != null) {
@@ -253,20 +311,35 @@ public class Activity extends Controller {
         invalidate(false);
     }
 
+    final void animate(long loopTime) {
+        for (Iterator<Weak<Animation>> iterator = animations.iterator(); iterator.hasNext(); ) {
+            Weak<Animation> w = iterator.next();
+            Animation anim = w.get();
+            if (anim != null) {
+                if (anim.isPlaying()) {
+                    anim.handle(loopTime);
+                }
+                if (!anim.isPlaying()) {
+                    iterator.remove();
+                }
+            } else {
+                iterator.remove();
+            }
+        }
+    }
+
+    final void layout(float width, float height, float dpi) {
+        if (layoutInvalided) {
+            invalided = true;
+            layoutInvalided = false;
+            onLayout(width, height, dpi);
+        }
+    }
+
     final boolean draw(SmartContext context) {
         if (invalided) {
             invalided = false;
             onDraw(context);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    final boolean layout() {
-        if (layoutInvalided) {
-            invalided = true;
-            layoutInvalided = false;
             return true;
         } else {
             return false;
@@ -281,8 +354,8 @@ public class Activity extends Controller {
     }
 
     public Widget findById(String id) {
-        for (Menu menu : menus) {
-            Widget widget = menu.findById(id);
+        for (int i = menus.size() - 1; i >= 0; i--) {
+            Widget widget = menus.get(i).findById(id);
             if (widget != null) {
                 return widget;
             }
@@ -302,8 +375,8 @@ public class Activity extends Controller {
     }
 
     public Widget findFocused() {
-        for (Menu menu : menus) {
-            Widget widget = menu.findFocused();
+        for (int i = menus.size() - 1; i >= 0; i--) {
+            Widget widget = menus.get(i).findFocused();
             if (widget != null) {
                 return widget;
             }

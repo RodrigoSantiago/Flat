@@ -1,15 +1,17 @@
 package flat.events;
 
+import flat.uxml.Controller;
+
 import java.lang.reflect.Method;
 
 public interface ActionListener {
     void handle(ActionEvent event);
 
     final class AutoActionListener implements ActionListener {
-        private final Object object;
-        private final Method method;
+        private Controller object;
+        private Method method;
 
-        public AutoActionListener(Object object, Method method) {
+        public AutoActionListener(Controller object, Method method) {
             this.object = object;
             this.method = method;
         }
@@ -17,7 +19,13 @@ public interface ActionListener {
         @Override
         public void handle(ActionEvent event) {
             try {
-                method.invoke(object, event);
+                if (object != null) {
+                    if (object.isListening()) {
+                        method.invoke(object, event);
+                    } else {
+                        object = null;
+                    }
+                }
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

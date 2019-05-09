@@ -29,7 +29,7 @@ button : label {
     min-height : 36;
     text-size : 14sp;
     background-color : #FFFFFFFF;
-    transition-duration : 100;
+    transition-duration : 10000;
     vertical-align : middle;
 
     enabled {
@@ -40,6 +40,7 @@ button : label {
     }
     pressed {
         elevation : 4;
+        background-color : #00FFFFFF;
     }
 }
 

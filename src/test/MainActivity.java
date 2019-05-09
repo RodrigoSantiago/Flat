@@ -1,6 +1,7 @@
 package test;
 
 import flat.Flat;
+import flat.animations.ActivityTransition;
 import flat.events.ActionEvent;
 import flat.events.DragEvent;
 import flat.events.PointerEvent;
@@ -12,64 +13,73 @@ import flat.widget.Activity;
 import flat.resources.ResourceStream;
 import flat.widget.Application;
 import flat.widget.layout.Drawer;
+import flat.widget.layout.LinearBox;
+import flat.widget.text.Button;
+import flat.widget.text.Label;
 import flat.widget.text.TextArea;
 
 public class MainActivity extends Activity {
 
-    static int a ;
-    @Flat
-    Drawer nav;
+    int n;
+    @Flat public Button btn1;
+    @Flat public LinearBox box;
+    @Flat public Label label;
 
-    public MainActivity() {
-        a++;
+    public MainActivity(int n) {
+        this.n = n;
         setTheme(new UXTheme(ResourcesManager.getInput("themes/material.uxss")));
-        setStream(new ResourceStream("screen_test"));
+        setSceneStream(new ResourceStream("screen_test"));
     }
 
     @Override
     public void onLoad() {
-
+        label.setText(""+n);
     }
 
     @Override
     public void onDraw(SmartContext context) {
         super.onDraw(context);
-        context.setTransform2D(null);
-
-        if (a % 2 == 0) {
-            context.setColor(0xFF0000FF);
-        } else {
-            context.setColor(0x00FF00FF);
-        }
-        context.drawRect(100, 100, 100, 100, true);
-    }
-
-    TextArea.Style style = new TextArea.Style(Font.CURSIVE, 48, 0x0000FFFF);
-
-    @Flat
-    public void onAction(ActionEvent event) {
-        //nav.setShown(!nav.isShown());
-        //Application.setActivity(new MainActivity());
     }
 
     @Flat
-    public void onPointer(PointerEvent event) {
-        //System.out.println(event);
+    public void onAdd(ActionEvent event) {
+        System.out.println("ADD");
+        Application.showDialog(new MainActivity(n+1), new ActivityTransition());
     }
 
     @Flat
-    public void onDrag1(DragEvent event) {
-        System.out.println(event);
-        if (event.getType() == DragEvent.STARTED) {
-            event.dragStart();
-        }
+    public void onRemove(ActionEvent event) {
+        System.out.println("SUB");
+        Application.hideDialog(new ActivityTransition());
     }
 
     @Flat
-    public void onDrag2(DragEvent event) {
-        System.out.println(event);
-        if (event.getType() == DragEvent.DROPPED) {
-            event.dragComplete(true);
-        }
+    public void onSet(ActionEvent event) {
+        System.out.println("SET");
+        Application.setActivity(new MainActivity(0),  new ActivityTransition());
+    }
+
+    @Override
+    public void onShow() {
+        super.onShow();
+        System.out.println(n+" : Show");
+    }
+
+    @Override
+    public void onHide() {
+        super.onHide();
+        System.out.println(n+" : Hide");
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        System.out.println(n+" : Pause");
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        System.out.println(n+" : Start");
     }
 }

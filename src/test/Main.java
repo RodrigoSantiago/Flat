@@ -8,6 +8,6 @@ public class Main {
         settings.vsync = 0;
         settings.multsamples = 4;
         Application.init(settings);
-        Application.launch(new MainActivity());
+        Application.launch(new MainActivity(0));
     }
 }

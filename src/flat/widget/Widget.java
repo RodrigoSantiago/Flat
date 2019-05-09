@@ -478,38 +478,36 @@ public class Widget implements Gadget {
     }
 
     void setParent(Parent parent) {
+        if (parent == this) parent = null;
+
         if (this.parent != null && parent != null) {
             this.parent.remove(this);
         }
+
         if (parent != null && parent.isChildOf(this)) {
             parent.getParent().remove(parent);
         }
 
-        if (parent == this) {
-            setParent(null);
-        } else {
+        Scene sceneA = getScene();
+        Activity activityA = sceneA == null ? null : sceneA.getActivity();
 
-            Scene sceneA = getScene();
-            Activity activityA = sceneA == null ? null : sceneA.getActivity();
+        this.parent = parent;
 
-            this.parent = parent;
+        Scene sceneB = getScene();
+        Activity activityB = sceneB == null ? null : sceneB.getActivity();
 
-            Scene sceneB = getScene();
-            Activity activityB = sceneB == null ? null : sceneB.getActivity();
-
-            if (sceneA != sceneB) {
-                if (sceneA != null) {
-                    sceneA.deassign(this);
-                }
-                if (sceneB != null) {
-                    sceneB.assign(this);
-                }
-                onSceneChange();
+        if (sceneA != sceneB) {
+            if (sceneA != null) {
+                sceneA.deassign(this);
             }
-
-            if (activityA != activityB) {
-                onActivityChange(activityA, activityB);
+            if (sceneB != null) {
+                sceneB.assign(this);
             }
+            onSceneChange();
+        }
+
+        if (activityA != activityB) {
+            onActivityChange(activityA, activityB);
         }
     }
 
@@ -526,15 +524,15 @@ public class Widget implements Gadget {
             for (Widget widget : children) {
                 widget.onActivityChange(prev, activity);
             }
+        }
 
-            if (ripple != null) {
-                ripple.onActivityChange(prev, activity);
-            }
+        if (ripple != null) {
+            ripple.onActivityChange(prev, activity);
+        }
 
-            if (stateAnimation != null && stateAnimation.isPlaying()) {
-                if (prev != null) prev.removeAnimation(stateAnimation);
-                if (activity != null) activity.addAnimation(stateAnimation);
-            }
+        if (stateAnimation != null && stateAnimation.isPlaying()) {
+            if (prev != null) prev.removeAnimation(stateAnimation);
+            if (activity != null) activity.addAnimation(stateAnimation);
         }
     }
 
@@ -1275,6 +1273,10 @@ public class Widget implements Gadget {
         }
     }
 
+    public Cursor getShowCursor() {
+        return cursor == null ? parent == null ? null : parent.getShowCursor() : cursor;
+    }
+
     public Cursor getCursor() {
         return cursor;
     }
@@ -1598,10 +1600,6 @@ public class Widget implements Gadget {
         }
         if (parent != null && hoverEvent.isRecyclable(parent)) {
             parent.fireHover(hoverEvent);
-        }
-        // TODO - REMOVE CURSOR
-        if (cursor != null) {
-            Application.setCursor(cursor);
         }
     }
 

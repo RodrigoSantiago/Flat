@@ -92,8 +92,9 @@ public final class Application {
 
     }
 
-    public static void launch(Activity activity) {
-        setActivity(activity);
+    public static void launch(Activity startActivity) {
+        dialogs.add(startActivity);
+        activity = startActivity;
 
         try {
             show();
@@ -121,6 +122,8 @@ public final class Application {
     static void loop() {
         long t = System.currentTimeMillis();
 
+        activity.onShow();
+        activity.onStart();
         while (!WL.IsClosed()) {
 
             // Timer
@@ -128,46 +131,73 @@ public final class Application {
             loopTime = now - t;
             t = now;
 
-            // Transitions Calls
+            // Transitions
             while (transition == null && activityChanges.size() > 0) {
                 activityChanges.remove(0).run();
             }
 
-            if (transition != null) {
-                // Transitions
+            SmartContext smartContext = context.getSmartContext();
+            boolean draw = false;
 
+            if (transition != null) {
                 transition.handle(loopTime);
 
-                processDraws(transition);
+                draw = transition.draw(smartContext);
 
                 if (!transition.isPlaying()) {
-                    transition.getPrev().onHide();
-                    transition.getNext().onStart();
+                    Activity prev = transition.getPrev();
+                    if (prev != null) prev.onHide();
+                    Activity next = transition.getNext();
+                    if (next != null) next.onStart();
+
                     transition = null;
                 }
-            } else if (activity != null) {
+            }
+
+            // Events
+            WL.HandleEvents();
+
+            if (transition == null && activity != null) {
                 // Activity
 
                 processEvents(activity);
 
-                processAnimations(activity);
+                activity.animate(loopTime);
 
-                processLayout(activity);
+                activity.layout(getClientWidth(), getClientHeight(), getDpi());
 
-                processDraws(activity);
+                draw = activity.draw(smartContext);
             }
 
+            // Syncronization
             processSyncCalls();
 
+            // Cursor
             if (cursor != currentCursor) {
                 currentCursor = cursor;
                 WL.SetCursor(currentCursor.getInternalCursor());
+            }
+
+            // GL Draw
+            if (draw) {
+                smartContext.softFlush();
+                WL.SwapBuffers();
+                GL.Finish();
+            }
+
+            // Loop Wait
+            if (!draw || vsync == 0) {
+                if (loopTime < 15) {
+                    try {
+                        Thread.sleep(15 - loopTime);
+                    } catch (InterruptedException ignored) {
+                    }
+                }
             }
         }
     }
 
     static void processEvents(Activity activity) {
-        WL.HandleEvents();
         ArrayList<EventData> swap = eventsCp;
         eventsCp = events;
         events = swap;
@@ -312,13 +342,13 @@ public final class Application {
             PointerData pointer = getPointer(-1, -1, null);
             if (pointer.hover == null) pointer.hover = widget;
             if (pointer.hover != widget) {
-                // TODO - CURSOR HERE
                 if (!widget.isChildOf(pointer.hover)) {
                     pointer.hover.fireHover(new HoverEvent(pointer.hover, HoverEvent.EXITED, widget, x, y));
                 }
                 if (!pointer.hover.isChildOf(widget)) {
                     widget.fireHover(new HoverEvent(widget, HoverEvent.ENTERED, pointer.hover, x, y));
                 }
+                Application.setCursor(widget.getShowCursor());
             }
             widget.fireHover(new HoverEvent(widget, HoverEvent.MOVED, widget, x, y));
             pointer.hover = widget;
@@ -397,72 +427,6 @@ public final class Application {
         }
     }
 
-    static void processAnimations(Activity activity) {
-        activity.onAnimate(loopTime);
-    }
-
-    static void processLayout(Activity activity) {
-        if (activity.layout()) {
-            activity.onLayout(getClientWidth(), getClientHeight(), (float) getDpi());
-        }
-    }
-
-    static void processDraws(Activity activity) {
-        SmartContext smartContext = context.getSmartContext();
-
-        if (activity.draw(smartContext)) {
-            smartContext.softFlush();
-            WL.SwapBuffers();
-            GL.Finish();
-
-            if (vsync == 0) {
-                long time = System.currentTimeMillis() - loopTime;
-                if (time < 15) {
-                    try {
-                        Thread.sleep(15 - time);
-                    } catch (InterruptedException ignored) {
-                    }
-                }
-            }
-        } else {
-            long time = System.currentTimeMillis() - loopTime;
-            if (time < 15) {
-                try {
-                    Thread.sleep(15 - time);
-                } catch (InterruptedException ignored) {
-                }
-            }
-        }
-    }
-
-    static void processDraws(ActivityTransition transition) {
-        SmartContext smartContext = context.getSmartContext();
-
-        if (transition.draw(smartContext)) {
-            smartContext.softFlush();
-            WL.SwapBuffers();
-            GL.Finish();
-
-            if (vsync == 0) {
-                long time = System.currentTimeMillis() - loopTime;
-                if (time < 15) {
-                    try {
-                        Thread.sleep(15 - time);
-                    } catch (InterruptedException ignored) {
-                    }
-                }
-            }
-        } else {
-            long time = System.currentTimeMillis() - loopTime;
-            if (time < 15) {
-                try {
-                    Thread.sleep(15 - time);
-                } catch (InterruptedException ignored) {
-                }
-            }
-        }
-    }
-
     static void processSyncCalls() {
         synchronized (Application.class) {
             ArrayList<FutureTask<?>> swap = runSyncCp;
@@ -497,57 +461,71 @@ public final class Application {
         return activity;
     }
 
-    public static void setActivity(final Activity activity) {
+    public static void setActivity(final Activity next) {
+        setActivity(next, new ActivityTransition());
+    }
+
+    public static void setActivity(final Activity next, final ActivityTransition activityTransition) {
         activityChanges.add(() -> {
-            if (Application.activity != activity) {
-
-                if (Application.activity != null) {
-                    releaseEvents(Application.activity);
-                    Application.activity.onPause();
-                    Application.activity.onHide();
-                }
-
-                Application.activity = activity;
-                Application.activity.onShow();
-                Application.activity.onStart();
-                Application.activity.invalidate(true);
+            for (int i = dialogs.size() - 2; i >= 0; i--) {
+                Activity act = dialogs.get(i);
+                act.onHide();
             }
+            dialogs.clear();
+            dialogs.add(next);
+
+            if (activity != null) activity.onPause();
+            next.onShow();
+
+            transition = activityTransition;
+            transition.setActivities(activity, next);
+
+            activity = next;
         });
     }
 
-    public static void setActivity(final Activity next, final ActivityTransition transition) {
+    public static void showDialog(final Activity next) {
+        showDialog(next, new ActivityTransition());
+    }
+
+    public static void showDialog(final Activity next, final ActivityTransition activityTransition) {
         activityChanges.add(() -> {
-            if (Application.activity != next) {
-                final Activity prev = Application.activity;
+            if (!dialogs.contains(next)) {
+                dialogs.add(next);
 
-                releaseEvents(Application.activity);
-
-                Application.activity = next;
-                Application.transition = transition;
-
-
-                if (prev != null) {
-                    prev.onPause();
+                if (activity != null) {
+                    releaseEvents(activity);
+                    activity.onPause();
                 }
                 next.onShow();
 
-                transition.setActivities(prev, next);
-            }
-        });
-    }
+                transition = activityTransition;
+                transition.setActivities(activity, next);
 
-    public static void showDialog(Activity dialog) {
-        activityChanges.add(() -> {
-            if (!dialogs.contains(dialog)) {
-                dialogs.add(dialog);
-                dialog.onShow();
+                activity = next;
             }
         });
     }
 
     public static void hideDialog() {
-        Activity dialog = dialogs.remove(dialogs.size() - 1);
-        dialog.onHide();
+        hideDialog(new ActivityTransition());
+    }
+
+    public static void hideDialog(final ActivityTransition activityTransition) {
+        activityChanges.add(() -> {
+            if (activity != null) {
+                dialogs.remove(activity);
+                final Activity next = dialogs.size() > 0 ? dialogs.get(dialogs.size() - 1) : null;
+
+                releaseEvents(activity);
+                activity.onPause();
+
+                transition = activityTransition;
+                transition.setActivities(activity, next);
+
+                activity = next;
+            }
+        });
     }
 
     public static void setVsync(int vsync) {
@@ -645,7 +623,7 @@ public final class Application {
         return (float) WL.GetPhysicalHeight();
     }
 
-    public static double getDpi() {
+    public static float getDpi() {
         return dpi;
     }
 

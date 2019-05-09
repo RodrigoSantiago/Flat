@@ -1,18 +1,20 @@
 <Scene next-focus-id="text">
-    <LinearBox padding-left="32" padding-top="32">
-        <Button id="btn1" text="Ola" on-action="onAction" on-pointer="onPointer" on-drag="onDrag1">
+    <LinearBox id="box" padding-left="32" padding-top="32">
+        <Label id="label" text="A"/>
+        <Button id="btn1" text="ADD" on-action="onAdd">
             <Menu width="200" background-color="#FFFFFF">
-                <MenuItem id="01" text="Item 01" icon-image="url(icons/radiobox-marked.svg)" icon-spacing="8"></MenuItem>
+                <MenuItem id="01" text="Item 01" icon-image="url(icons/radiobox-marked.svg)" icon-spacing="8"/>
                 <MenuItem id="02" text="Item 02" action-image="url(icons/radiobox-marked.svg)">
                     <Menu width="200" background-color="#FFFFFF">
-                        <MenuItem id="10" text="Item 10"></MenuItem>
-                        <MenuItem id="11" text="Item 11"></MenuItem>
-                        <MenuItem id="12" text="Item 12"></MenuItem>
+                        <MenuItem id="10" text="Item 10"/>
+                        <MenuItem id="11" text="Item 11"/>
+                        <MenuItem id="12" text="Item 12"/>
                     </Menu>
                 </MenuItem>
-                <MenuItem id="03" text="Item 03"></MenuItem>
+                <MenuItem id="03" text="Item 03"/>
             </Menu>
         </Button>
-        <Button id="btn2" text="Ola" on-action="onAction" on-pointer="onPointer" on-drag="onDrag2"/>
+        <Button id="btn2" text="SUB" on-action="onRemove"/>
+        <Button id="btn3" text="SET" on-action="onSet"/>
     </LinearBox>
 </Scene>
