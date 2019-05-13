@@ -89,7 +89,6 @@ public final class Application {
         WL.SetKeyCallback((key, scancode, action, mods) -> events.add(KeyData.get(key, scancode, action, mods)));
         WL.SetCharModsCallback((codepoint, mods) -> events.add(CharModsData.get(codepoint, mods)));
         WL.SetWindowSizeCallback((width, height) -> events.add(SizeData.get(width, height)));
-
     }
 
     public static void launch(Activity startActivity) {

@@ -89,8 +89,12 @@ public class Scene extends Parent {
 
     @Override
     public void invalidate(boolean layout) {
-        if (activity != null) {
-            activity.invalidate(layout);
+        if (getParent() == null) {
+            if (activity != null) {
+                activity.invalidate(layout);
+            }
+        } else {
+            super.invalidate(layout);
         }
     }
 

@@ -100,47 +100,53 @@ public class MenuItem extends Parent {
     }
 
     @Override
+    protected void onActivityChange(Activity prev, Activity activity) {
+        super.onActivityChange(prev, activity);
+        showSubMenu = false;
+    }
+
+    @Override
     public void onDraw(SmartContext context) {
         backgroundDraw(getBackgroundColor(), getBorderColor(), getRippleColor(), context);
+        if (subMenu == null || !showSubMenu || desktop) {
+            final float x = getInX();
+            final float y = getInY();
+            final float width = getInWidth();
+            final float height = getInHeight();
 
-        final float x = getInX();
-        final float y = getInY();
-        final float width = getInWidth();
-        final float height = getInHeight();
+            context.setColor(getTextColor());
+            context.setTextFont(getFont());
+            context.setTextSize(getTextSize());
+            context.setTextVerticalAlign(Align.Vertical.TOP);
+            context.setTextHorizontalAlign(Align.Horizontal.LEFT);
 
-        context.setColor(getTextColor());
-        context.setTextFont(getFont());
-        context.setTextSize(getTextSize());
-        context.setTextVerticalAlign(Align.Vertical.TOP);
-        context.setTextHorizontalAlign(Align.Horizontal.LEFT);
+            float is = iconSpacing + (iconImage != null ? iconImage.getWidth() : 0);
+            float as = actionSpacing + (actionImage != null ? actionImage.getWidth() : 0);
 
-        float is = iconSpacing + (iconImage != null ? iconImage.getWidth() : 0);
-        float as = actionSpacing + (actionImage != null ? actionImage.getWidth() : 0);
+            float tw = Math.min(getTextWidth() + (is + as), width);
+            float xoff = xOff(x, x + width, tw);
 
-        float tw = Math.min(getTextWidth() + (is + as), width);
-        float xoff = xOff(x, x + width, tw);
+            if (getShowText() != null && !getShowText().isEmpty()) {
+                context.setTransform2D(getTransform());
+                context.drawTextSlice(xoff + is,
+                        yOff(y, y + height, getTextHeight()),
+                        width - (is + as), getShowText());
+            }
 
-        if (getShowText() != null && !getShowText().isEmpty()) {
-            context.setTransform2D(getTransform());
-            context.drawTextSlice(xoff + is,
-                    yOff(y, y + height, getTextHeight()),
-                    width - (is + as), getShowText());
+            if (iconImage != null) {
+                context.setTransform2D(getTransform());
+                iconImage.draw(context, xoff,
+                        yOff(y, y + height, iconImage.getHeight()),
+                        iconImage.getWidth(), iconImage.getHeight(), 0);
+            }
+
+            if (actionImage != null) {
+                context.setTransform2D(getTransform());
+                actionImage.draw(context, getInX() + getInWidth() - actionImage.getWidth(),
+                        yOff(y, y + height, actionImage.getHeight()),
+                        actionImage.getWidth(), actionImage.getHeight(), 0);
+            }
         }
-
-        if (iconImage != null) {
-            context.setTransform2D(getTransform());
-            iconImage.draw(context, xoff,
-                    yOff(y, y + height, iconImage.getHeight()),
-                    iconImage.getWidth(), iconImage.getHeight(), 0);
-        }
-
-        if (actionImage != null) {
-            context.setTransform2D(getTransform());
-            actionImage.draw(context, getInX() + getInWidth() - actionImage.getWidth(),
-                    yOff(y, y + height, actionImage.getHeight()),
-                    actionImage.getWidth(), actionImage.getHeight(), 0);
-        }
-
         if (subMenu != null && showSubMenu) {
             subMenu.onDraw(context);
         }
@@ -170,7 +176,11 @@ public class MenuItem extends Parent {
         super.onLayout(width, height);
         if (subMenu != null) {
             subMenu.onLayout(Math.min(width, subMenu.getMeasureWidth()), Math.max(height, subMenu.getMeasureHeight()));
-            subMenu.setPosition(getOutX() + getOutWidth(), getOutY());
+            if (desktop) {
+                subMenu.setPosition(getOutX() + getOutWidth(), getOutY());
+            } else {
+                subMenu.setPosition(-getX(), -getY());
+            }
         }
     }
 
@@ -198,6 +208,8 @@ public class MenuItem extends Parent {
         }
     }
 
+    boolean desktop = true;
+
     @Override
     public void firePointer(PointerEvent pointerEvent) {
         super.firePointer(pointerEvent);
@@ -205,7 +217,11 @@ public class MenuItem extends Parent {
             Vector2 point = new Vector2(pointerEvent.getX(), pointerEvent.getY());
             screenToLocal(point);
 
-            if (point.x >= getInX() + getTextWidth() + (iconImage != null ? iconImage.getWidth() + iconSpacing : 0)) {
+            if (pointerEvent.getSource() == this && !desktop && subMenu != null) {
+                showSubMenu = !showSubMenu;
+                if (parentMenu != null) parentMenu.choose = showSubMenu ? this : null;
+                invalidate(true);
+            } else {
                 fire();
             }
         }
@@ -214,13 +230,15 @@ public class MenuItem extends Parent {
     @Override
     public void fireHover(HoverEvent hoverEvent) {
         super.fireHover(hoverEvent);
-        if (hoverEvent.getType() == HoverEvent.ENTERED) {
-            showSubMenu = true;
-            invalidate(true);
-        }
-        if (hoverEvent.getType() == HoverEvent.EXITED) {
-            showSubMenu = false;
-            invalidate(true);
+        if (desktop) {
+            if (hoverEvent.getType() == HoverEvent.ENTERED) {
+                showSubMenu = true;
+                invalidate(true);
+            }
+            if (hoverEvent.getType() == HoverEvent.EXITED) {
+                showSubMenu = false;
+                invalidate(true);
+            }
         }
     }
 

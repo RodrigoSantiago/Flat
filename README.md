@@ -69,3 +69,15 @@ The main purpose is to work similar to the "Activities" system with the ability 
  - [ ] Activity Transitions
  - [ ] Add Animations to all drawables containers
  - [ ] Add "paint" to all "color" css-like styles
+ - [ ] Tests
+   - [ ] Cycle Parents
+   - [ ] Add and remove random children
+   - [ ] Add and Remove Widgets to parents inside foreach events
+   - [ ] Create Widgets manualy
+   - [ ] Set Layout parameters with random values
+   - [ ] Insert null parameters everwhere
+   - [ ] Show same context menu multiples times
+   - [ ] Add widget to multiples parents
+   - [ ] Test widget outside activity or scene
+   - [ ] Test event order and consistency
+   - [ ] Test event consume

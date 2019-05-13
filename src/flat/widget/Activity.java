@@ -18,7 +18,7 @@ import java.util.Objects;
 public class Activity extends Controller {
 
     private Scene scene;
-    private ArrayList<Menu> menus;
+    private ArrayList<Scene> menus;
     private LinkedList<Weak<Animation>> animations;
     private Widget focus;
 
@@ -31,6 +31,8 @@ public class Activity extends Controller {
     private DimensionStream stream;
     private UXTheme theme;
     private boolean invalided, layoutInvalided, streamInvalided;
+
+    private boolean hide;
 
     public Activity() {
         menus = new ArrayList<>();
@@ -48,7 +50,7 @@ public class Activity extends Controller {
 
     @Override
     public boolean isListening() {
-        return true;
+        return !hide;
     }
 
     public Scene getScene() {
@@ -138,7 +140,7 @@ public class Activity extends Controller {
      * Called when the activity is deatached from Application
      */
     public void onHide() {
-
+        hide = true;
     }
 
     /**
@@ -208,12 +210,12 @@ public class Activity extends Controller {
         }
 
         scene.onMeasure();
-        for (Menu menu : menus) {
+        for (Scene menu : menus) {
             menu.onMeasure();
         }
 
         scene.onLayout(width, height);
-        for (Menu menu : menus) {
+        for (Scene menu : menus) {
             menu.onLayout(Math.min(width, menu.getMeasureWidth()), Math.max(height, menu.getMeasureHeight()));
         }
     }
@@ -230,7 +232,7 @@ public class Activity extends Controller {
         context.clearClip(false);
 
         scene.onDraw(context);
-        for (Menu menu : menus) {
+        for (Scene menu : menus) {
             menu.onDraw(context);
         }
     }
@@ -289,24 +291,27 @@ public class Activity extends Controller {
         return focus;
     }
 
-    public void showMenu(Menu menu, float x, float y) {
+    public void showMenu(Scene menu, float x, float y) {
         if (menu.activity != this) {
+            Activity prev = menu.activity;
             if (menu.activity != null) {
                 menu.activity.hideMenu(menu);
             }
 
             menu.setParent(null);
             menus.add(menu);
-            menu.activity = this;
             menu.setPosition(x, y);
+            menu.activity = this;
+            menu.onActivityChange(prev, this);
         }
         invalidate(true);
     }
 
-    public void hideMenu(Menu menu) {
+    public void hideMenu(Scene menu) {
         if (menu.activity == this) {
             menus.remove(menu);
             menu.activity = null;
+            menu.onActivityChange(this, null);
         }
         invalidate(false);
     }

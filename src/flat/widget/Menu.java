@@ -1,36 +1,53 @@
 package flat.widget;
 
 import flat.events.PointerEvent;
+import flat.graphics.SmartContext;
 import flat.graphics.text.Align;
 import flat.uxml.UXChildren;
 import flat.widget.enuns.Visibility;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
-public class Menu extends Parent {
+public class Menu extends Scene {
 
     private Align.Horizontal halign = Align.Horizontal.LEFT;
-    private ArrayList<MenuItem> children;
-    private List<MenuItem> unmodifiableChildren;
-
-    Activity activity;
+    private ArrayList<Widget> orderedList;
+    MenuItem choose;
 
     public Menu() {
-        children = new ArrayList<>();
-        unmodifiableChildren = Collections.unmodifiableList(children);
+        orderedList = new ArrayList<>();
+        unmodifiableChildren = Collections.unmodifiableList(orderedList);
     }
 
     @Override
     public void applyChildren(UXChildren children) {
         super.applyChildren(children);
         Gadget child;
-        while ((child = children.next()) != null ) {
+        while ((child = children.next()) != null) {
             Widget widget = child.getWidget();
-            if (widget instanceof MenuItem) {
-                add((MenuItem) widget);
+            if (widget != null) {
+                add(widget);
+            }
+        }
+    }
+
+    @Override
+    protected void onActivityChange(Activity prev, Activity activity) {
+        super.onActivityChange(prev, activity);
+        choose = null;
+    }
+
+    @Override
+    public void onDraw(SmartContext context) {
+        if (choose == null) {
+            backgroundDraw(getBackgroundColor(), getBorderColor(), getRippleColor(), context);
+        }
+        for (int i = orderedList.size() - 1; i >= 0; i--) {
+            Widget child = orderedList.get(i);
+            if ((choose == null || choose == child) && child.getVisibility() == Visibility.Visible) {
+                child.onDraw(context);
             }
         }
     }
@@ -38,7 +55,7 @@ public class Menu extends Parent {
     @Override
     public void onLayout(float width, float height) {
         setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
-        layoutHelperVertical(children, getInX(), getInY(), getInWidth(), getInHeight(), halign);
+        layoutHelperVertical(orderedList, getInX(), getInY(), getInWidth(), getInHeight(), halign);
     }
 
     @Override
@@ -50,7 +67,7 @@ public class Menu extends Parent {
 
         float childrenWidth = 0, childrenMinWidth = 0;
         float childrenHeight = 0, childrenMinHeight = 0;
-        for (Widget child : children) {
+        for (Widget child : orderedList) {
             child.onMeasure();
             if (child.getVisibility() == Visibility.Gone) continue;
 
@@ -77,33 +94,31 @@ public class Menu extends Parent {
         setMeasure(mWidth + getMarginLeft() + getMarginRight(), mHeight + getMarginTop() + getMarginBottom());
     }
 
-    public void add(MenuItem child) {
-        attachChildren(child);
-        getChildren().add(child);
-
-        this.children.add(child);
-        child.parentMenu = this;
-
-        invalidateChildrenOrder();
-        invalidate(true);
+    @Override
+    public void add(Widget child) {
+        this.orderedList.add(child);
+        super.add(child);
+        if (child.getParent() == this && child instanceof MenuItem) {
+            ((MenuItem) child).parentMenu = this;
+        }
     }
 
-    public void add(MenuItem... children) {
-        for (MenuItem child : children) {
+    @Override
+    public void add(Widget... children) {
+        for (Widget child : children) {
             add(child);
         }
     }
 
     @Override
     public void remove(Widget widget) {
-        if (widget != null && widget.getParent() == this) {
-            ((MenuItem)widget).parentMenu = null;
-            children.remove(widget);
-
-            getChildren().remove(widget);
-            detachChildren(widget);
-            invalidateChildrenOrder();
-            invalidate(true);
+        this.orderedList.remove(widget);
+        super.remove(widget);
+        if (widget instanceof MenuItem) {
+            MenuItem item = (MenuItem) widget;
+            if (item.parentMenu == this) {
+                item.parentMenu = null;
+            }
         }
     }
 
@@ -112,10 +127,15 @@ public class Menu extends Parent {
         if (getParent() == null) {
             if ((includeDisabled || isEnabled()) &&
                     (getVisibility() == Visibility.Visible || getVisibility() == Visibility.Invisible)) {
-                for (int i = children.size() - 1; i >= 0; i--) {
-                    Widget child = children.get(i);
-                    Widget found = child.findByPosition(x, y, includeDisabled);
+                if (choose != null) {
+                    Widget found = choose.findByPosition(x, y, includeDisabled);
                     if (found != null) return found;
+                } else {
+                    for (int i = orderedList.size() - 1; i >= 0; i--) {
+                        Widget child = orderedList.get(i);
+                        Widget found = child.findByPosition(x, y, includeDisabled);
+                        if (found != null) return found;
+                    }
                 }
                 return this;
             } else {
@@ -178,10 +198,6 @@ public class Menu extends Parent {
         if (activity != null) {
             activity.hideMenu(this);
         }
-    }
-
-    public List<MenuItem> getItens() {
-        return unmodifiableChildren;
     }
 
     public Align.Horizontal getHorizontalAlign() {

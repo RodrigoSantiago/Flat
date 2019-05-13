@@ -1,20 +1,27 @@
 <Scene next-focus-id="text">
     <LinearBox id="box" padding-left="32" padding-top="32">
         <Label id="label" text="A"/>
-        <Button id="btn1" text="ADD" on-action="onAdd">
+        <Button id="btn1" text="ADD">
             <Menu width="200" background-color="#FFFFFF">
                 <MenuItem id="01" text="Item 01" icon-image="url(icons/radiobox-marked.svg)" icon-spacing="8"/>
                 <MenuItem id="02" text="Item 02" action-image="url(icons/radiobox-marked.svg)">
                     <Menu width="200" background-color="#FFFFFF">
+                        <MenuItem id="11" text="Item 11" action-image="url(icons/radiobox-marked.svg)">
+                            <Menu width="200" background-color="#FFFFFF">
+                                <MenuItem id="30" text="Item 30"/>
+                                <MenuItem id="31" text="Item 31"/>
+                                <MenuItem id="32" text="Item 32"/>
+                                <MenuItem id="33" text="Item 33"/>
+                                <MenuItem id="34" text="Item 34"/>
+                                <MenuItem id="35" text="Item 35"/>
+                            </Menu>
+                        </MenuItem>
                         <MenuItem id="10" text="Item 10"/>
-                        <MenuItem id="11" text="Item 11"/>
                         <MenuItem id="12" text="Item 12"/>
                     </Menu>
                 </MenuItem>
                 <MenuItem id="03" text="Item 03"/>
             </Menu>
         </Button>
-        <Button id="btn2" text="SUB" on-action="onRemove"/>
-        <Button id="btn3" text="SET" on-action="onSet"/>
     </LinearBox>
 </Scene>

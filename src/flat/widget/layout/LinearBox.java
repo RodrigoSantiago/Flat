@@ -1,6 +1,7 @@
 package flat.widget.layout;
 
 import flat.animations.StateInfo;
+import flat.graphics.SmartContext;
 import flat.graphics.text.Align;
 import flat.widget.Widget;
 import flat.widget.enuns.Direction;
@@ -27,6 +28,17 @@ public class LinearBox extends Box {
         setDirection(getStyle().asConstant("direction", info, getDirection()));
         setVerticalAlign(getStyle().asConstant("v-align", info, getVerticalAlign()));
         setHorizontalAlign(getStyle().asConstant("h-align", info, getHorizontalAlign()));
+    }
+
+    @Override
+    public void onDraw(SmartContext context) {
+        backgroundDraw(getBackgroundColor(), getBorderColor(), getRippleColor(), context);
+        for (int i = orderedList.size() - 1; i >= 0; i--) {
+            Widget child = orderedList.get(i);
+            if (child.getVisibility() == Visibility.Visible) {
+                child.onDraw(context);
+            }
+        }
     }
 
     @Override
