@@ -62,6 +62,7 @@ public class RippleEffect {
 
     public void onActivityChange(Activity prev, Activity activity) {
         if (animation.isPlaying()) {
+            animation.stop();
             if (prev != null) prev.removeAnimation(animation);
             if (activity != null) activity.addAnimation(animation);
         }

@@ -13,10 +13,14 @@ import flat.math.shapes.Rectangle;
 import flat.math.shapes.Shape;
 import flat.resources.Resource;
 import flat.uxml.Controller;
+import flat.uxml.UXChildren;
 import flat.uxml.UXStyle;
 import flat.uxml.UXStyleAttrs;
 import flat.widget.Application;
+import flat.widget.Menu;
 import flat.widget.Widget;
+import flat.widget.dialogs.DropdownListener;
+import flat.widget.dialogs.DropdownMenu;
 import flat.widget.effects.RippleEffect;
 
 import java.lang.reflect.Method;
@@ -85,6 +89,14 @@ public class TextField extends Widget {
     private ByteBuffer buffer;
     private SpanManager spanManager = new SpanManager();
 
+    private DropdownMenu dropDownMenu;
+    private DropdownListener listener = item -> {
+        setText(item.getText());
+        if (dropDownMenu != null) {
+            dropDownMenu.hide();
+        }
+    };
+
     public TextField() {
         size = 0;
         capacity = 64;
@@ -110,6 +122,21 @@ public class TextField extends Widget {
         Method handle = style.asListener("on-action", ActionEvent.class, controller);
         if (handle != null) {
             setActionListener(new ActionListener.AutoActionListener(controller, handle));
+        }
+    }
+
+    @Override
+    public void applyChildren(UXChildren children) {
+        Menu menu;
+        while ((menu = children.nextMenu()) != null) {
+            if (dropDownMenu == null && menu instanceof DropdownMenu) {
+                setDropDownMenu((DropdownMenu) menu);
+            } else if (getContextMenu() == null) {
+                setContextMenu(menu);
+            }
+            if (getDropDownMenu() != null && getContextMenu() != null) {
+                break;
+            }
         }
     }
 
@@ -365,6 +392,10 @@ public class TextField extends Widget {
     public void fireAction(ActionEvent actionEvent) {
         if (actionListener != null) {
             actionListener.handle(actionEvent);
+        }
+        if (dropDownMenu != null) {
+            Vector2 p = localToScreen( getOutX(), getOutY() + getOutHeight());
+            dropDownMenu.show(getActivity(), p.x, p.y);
         }
     }
 
@@ -923,6 +954,24 @@ public class TextField extends Widget {
         replace(0, size, text);
         setCursorPos(0, 0);
         invalidate(true);
+    }
+
+    public void setDropDownMenu(DropdownMenu dropDownMenu) {
+        if (this.dropDownMenu != dropDownMenu) {
+            if (this.dropDownMenu != null && this.dropDownMenu.getListener() == listener) {
+                this.dropDownMenu.setListener(null);
+            }
+
+            this.dropDownMenu = dropDownMenu;
+
+            if (this.dropDownMenu != null) {
+                this.dropDownMenu.setListener(listener);
+            }
+        }
+    }
+
+    public Menu getDropDownMenu() {
+        return dropDownMenu;
     }
 
     public boolean isSingleLine() {

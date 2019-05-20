@@ -1,4 +1,4 @@
-package flat.widget;
+package flat.widget.dialogs;
 
 import flat.animations.StateInfo;
 import flat.events.*;
@@ -12,6 +12,10 @@ import flat.resources.Resource;
 import flat.uxml.Controller;
 import flat.uxml.UXChildren;
 import flat.uxml.UXStyleAttrs;
+import flat.widget.Activity;
+import flat.widget.Menu;
+import flat.widget.Parent;
+import flat.widget.Widget;
 import flat.widget.enuns.Visibility;
 
 import java.lang.reflect.Method;
@@ -57,7 +61,10 @@ public class MenuItem extends Parent {
 
     @Override
     public void applyChildren(UXChildren children) {
-        setSubMenu(children.getContextMenu());
+        Menu menu = children.nextMenu();
+        if (menu != null) {
+            setSubMenu(menu);
+        }
     }
 
     @Override
@@ -227,7 +234,7 @@ public class MenuItem extends Parent {
     public static boolean desktop = true;
 
     private Menu getParentMenu() {
-        Parent parent = this.parent;
+        Parent parent = getParent();
         while (parent != null) {
             if (parent instanceof Menu) {
                 return (Menu) parent;
@@ -288,8 +295,8 @@ public class MenuItem extends Parent {
     }
 
     @Override
-    public void invalidate(boolean layout) {
-        super.invalidate(layout);
+    public void setContextMenu(Menu contextMenu) {
+        super.setContextMenu(null);
     }
 
     public String getText() {

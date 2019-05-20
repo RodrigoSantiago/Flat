@@ -4,6 +4,7 @@ import flat.resources.Dimension;
 import flat.resources.DimensionStream;
 import flat.resources.StringBundle;
 import flat.widget.*;
+import flat.widget.dialogs.*;
 import flat.widget.image.*;
 import flat.widget.layout.*;
 import flat.widget.selection.*;
@@ -62,6 +63,7 @@ public final class UXLoader {
         UXLoader.install("Drawer", Drawer::new);
         UXLoader.install("Menu", Menu::new);
         UXLoader.install("MenuItem", MenuItem::new);
+        UXLoader.install("DropdownMenu", DropdownMenu::new);
     }
 
     private DimensionStream dimensionStream;
@@ -246,8 +248,8 @@ public final class UXLoader {
                     Node childNode = nList.item(i);
                     Gadget child = recursive(controller, childNode);
                     if (child != null) {
-                        if ("Menu".equals(childNode.getNodeName())) {
-                            children.setContextMenu((Menu) child.getWidget());
+                        if (child instanceof Menu) {
+                            children.addMenu((Menu) child.getWidget());
                         } else {
                             children.add(child);
                         }

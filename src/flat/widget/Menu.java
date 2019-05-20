@@ -4,6 +4,7 @@ import flat.events.PointerEvent;
 import flat.graphics.SmartContext;
 import flat.graphics.text.Align;
 import flat.uxml.UXChildren;
+import flat.widget.dialogs.MenuItem;
 import flat.widget.enuns.Visibility;
 
 import java.util.ArrayList;

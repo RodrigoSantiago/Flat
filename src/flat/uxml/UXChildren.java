@@ -8,9 +8,10 @@ import java.util.ArrayList;
 public class UXChildren {
 
     private final ArrayList<Gadget> children = new ArrayList<>();
+    private final ArrayList<Menu> menus = new ArrayList<>();
     private final UXLoader loader;
     private int pos;
-    private Menu contextMenu;
+    private int posMenu;
 
     public UXChildren(UXLoader loader) {
         this.loader = loader;
@@ -20,12 +21,8 @@ public class UXChildren {
         return loader;
     }
 
-    public void setContextMenu(Menu contextMenu) {
-        this.contextMenu = contextMenu;
-    }
-
-    public Menu getContextMenu() {
-        return contextMenu;
+    public void addMenu(Menu menu) {
+        this.menus.add(menu);
     }
 
     public void add(Gadget child) {
@@ -34,5 +31,9 @@ public class UXChildren {
 
     public Gadget next() {
         return pos >= children.size() ? null : children.get(pos++);
+    }
+
+    public Menu nextMenu() {
+        return posMenu >= menus.size() ? null : menus.get(posMenu++);
     }
 }

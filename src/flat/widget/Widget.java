@@ -258,7 +258,7 @@ public class Widget implements Gadget {
 
     @Override
     public void applyChildren(UXChildren children) {
-        Menu menu = children.getContextMenu();
+        Menu menu = children.nextMenu();
         if (menu != null) {
             setContextMenu(menu);
         }
@@ -839,6 +839,12 @@ public class Widget implements Gadget {
 
     public void setPrevFocusId(String prevFocusId) {
         this.prevFocusId = prevFocusId;
+    }
+
+    public Vector2 localToScreen(float x, float y) {
+        Vector2 point = new Vector2(x, y);
+        localToScreen(point);
+        return point;
     }
 
     public void localToScreen(Vector2 point) {

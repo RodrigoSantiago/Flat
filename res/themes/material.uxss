@@ -500,6 +500,7 @@ menu {
     padding-top : 8;
     padding-bottom : 8;
     margin-bottom : 32;
+    background-color : #FFFFFF;
 }
 
 menuitem : label {
@@ -522,4 +523,8 @@ menuitem : label {
         elevation : 1;
         background-color : #DDDDDD;
     }
+}
+
+dropdownmenu : menu {
+
 }
