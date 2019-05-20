@@ -8,13 +8,14 @@ import flat.widget.enuns.Visibility;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 public class Menu extends Scene {
 
     private Align.Horizontal halign = Align.Horizontal.LEFT;
     private ArrayList<Widget> orderedList;
-    MenuItem choose;
+    private MenuItem chooseItem;
 
     public Menu() {
         orderedList = new ArrayList<>();
@@ -36,18 +37,23 @@ public class Menu extends Scene {
     @Override
     protected void onActivityChange(Activity prev, Activity activity) {
         super.onActivityChange(prev, activity);
-        choose = null;
+        setChooseItem(null);
     }
 
     @Override
     public void onDraw(SmartContext context) {
-        if (choose == null) {
+        if (!MenuItem.desktop
+                && chooseItem != null
+                && chooseItem.getVisibility() == Visibility.Visible
+                && chooseItem.isActivated()) {
+
+            chooseItem.onDraw(context);
+        } else {
             backgroundDraw(getBackgroundColor(), getBorderColor(), getRippleColor(), context);
-        }
-        for (int i = orderedList.size() - 1; i >= 0; i--) {
-            Widget child = orderedList.get(i);
-            if ((choose == null || choose == child) && child.getVisibility() == Visibility.Visible) {
-                child.onDraw(context);
+            for (Widget child : getChildren()) {
+                if (child.getVisibility() == Visibility.Visible) {
+                    child.onDraw(context);
+                }
             }
         }
     }
@@ -98,9 +104,6 @@ public class Menu extends Scene {
     public void add(Widget child) {
         this.orderedList.add(child);
         super.add(child);
-        if (child.getParent() == this && child instanceof MenuItem) {
-            ((MenuItem) child).parentMenu = this;
-        }
     }
 
     @Override
@@ -114,35 +117,32 @@ public class Menu extends Scene {
     public void remove(Widget widget) {
         this.orderedList.remove(widget);
         super.remove(widget);
-        if (widget instanceof MenuItem) {
-            MenuItem item = (MenuItem) widget;
-            if (item.parentMenu == this) {
-                item.parentMenu = null;
-            }
-        }
     }
 
     @Override
     public Widget findByPosition(float x, float y, boolean includeDisabled) {
-        if (getParent() == null) {
-            if ((includeDisabled || isEnabled()) &&
-                    (getVisibility() == Visibility.Visible || getVisibility() == Visibility.Invisible)) {
-                if (choose != null) {
-                    Widget found = choose.findByPosition(x, y, includeDisabled);
+        if (chooseItem != null && chooseItem.isActivated()) {
+            Widget found = chooseItem.findByPosition(x, y, includeDisabled);
+            if (found != null) return found;
+        }
+
+        if ((includeDisabled || isEnabled()) &&
+                (getVisibility() == Visibility.Visible || getVisibility() == Visibility.Invisible)) {
+            List<Widget> children = getChildren();
+            if (children != null) {
+                for (int i = children.size() - 1; i >= 0; i--) {
+                    Widget child = children.get(i);
+                    Widget found = child.findByPosition(x, y, includeDisabled);
                     if (found != null) return found;
-                } else {
-                    for (int i = orderedList.size() - 1; i >= 0; i--) {
-                        Widget child = orderedList.get(i);
-                        Widget found = child.findByPosition(x, y, includeDisabled);
-                        if (found != null) return found;
-                    }
                 }
+            }
+            if (getParent() == null) {
                 return this;
             } else {
-                return null;
+                return isClickable() && contains(x, y) ? this : null;
             }
         } else {
-            return super.findByPosition(x, y, includeDisabled);
+            return getParent() == null ? this : null;
         }
     }
 
@@ -197,6 +197,29 @@ public class Menu extends Scene {
     public void hide() {
         if (activity != null) {
             activity.hideMenu(this);
+        }
+    }
+
+    public MenuItem getChooseItem() {
+        return chooseItem;
+    }
+
+    public void setChooseItem(MenuItem chooseItem) {
+        if (this.chooseItem != chooseItem) {
+            if (this.chooseItem != null) {
+                this.chooseItem.setActivated(false);
+            }
+
+            if (chooseItem != null && chooseItem.isChildOf(this)) {
+                this.chooseItem = chooseItem;
+            } else {
+                this.chooseItem = null;
+            }
+
+            if (this.chooseItem != null) {
+                this.chooseItem.setActivated(true);
+            }
+            invalidate(true);
         }
     }
 

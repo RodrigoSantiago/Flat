@@ -1,15 +1,13 @@
 package flat.widget;
 
 import flat.animations.StateInfo;
-import flat.events.ActionEvent;
-import flat.events.ActionListener;
-import flat.events.HoverEvent;
-import flat.events.PointerEvent;
+import flat.events.*;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Font;
 import flat.graphics.image.Drawable;
 import flat.graphics.text.Align;
 import flat.math.Vector2;
+import flat.math.shapes.Shape;
 import flat.resources.Resource;
 import flat.uxml.Controller;
 import flat.uxml.UXChildren;
@@ -43,9 +41,7 @@ public class MenuItem extends Parent {
     private Drawable actionImage;
     private float actionSpacing;
 
-    Menu parentMenu;
     private Menu subMenu;
-    private boolean showSubMenu;
 
     @Override
     public void applyAttributes(UXStyleAttrs style, Controller controller) {
@@ -102,13 +98,14 @@ public class MenuItem extends Parent {
     @Override
     protected void onActivityChange(Activity prev, Activity activity) {
         super.onActivityChange(prev, activity);
-        showSubMenu = false;
     }
 
     @Override
     public void onDraw(SmartContext context) {
-        backgroundDraw(getBackgroundColor(), getBorderColor(), getRippleColor(), context);
-        if (subMenu == null || !showSubMenu || desktop) {
+
+        if (subMenu == null || desktop || !isActivated()) {
+            backgroundDraw(getBackgroundColor(), getBorderColor(), getRippleColor(), context);
+
             final float x = getInX();
             final float y = getInY();
             final float width = getInWidth();
@@ -147,8 +144,12 @@ public class MenuItem extends Parent {
                         actionImage.getWidth(), actionImage.getHeight(), 0);
             }
         }
-        if (subMenu != null && showSubMenu) {
+        if (subMenu != null && isActivated()) {
+            Shape shape = context.getClip();
+            context.clearClip(false);
             subMenu.onDraw(context);
+            context.setTransform2D(null);
+            context.setClip(shape);
         }
     }
 
@@ -166,7 +167,7 @@ public class MenuItem extends Parent {
         mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
         setMeasure(mWidth, mHeight);
 
-        if (subMenu != null) {
+        if (subMenu != null && isActivated()) {
             subMenu.onMeasure();
         }
     }
@@ -174,10 +175,24 @@ public class MenuItem extends Parent {
     @Override
     public void onLayout(float width, float height) {
         super.onLayout(width, height);
-        if (subMenu != null) {
+        if (subMenu != null && isActivated()) {
             subMenu.onLayout(Math.min(width, subMenu.getMeasureWidth()), Math.max(height, subMenu.getMeasureHeight()));
+
             if (desktop) {
-                subMenu.setPosition(getOutX() + getOutWidth(), getOutY());
+                float x, y;
+                Vector2 p = new Vector2(getOutX() + getOutWidth(), getOutY());
+                localToScreen(p);
+                if (p.x + subMenu.getWidth() > getActivity().getWidth()) {
+                    x = getOutX() - subMenu.getWidth();
+                } else {
+                    x = getOutX() + getOutWidth();
+                }
+                if (p.y + subMenu.getHeight() > getActivity().getHeight()) {
+                    y = screenToLocal(0, getActivity().getHeight() - subMenu.getHeight() - subMenu.getMarginBottom()).y;
+                } else {
+                    y = getOutY();
+                }
+                subMenu.setPosition(x, y);
             } else {
                 subMenu.setPosition(-getX(), -getY());
             }
@@ -196,7 +211,8 @@ public class MenuItem extends Parent {
     public Widget findByPosition(float x, float y, boolean includeDisabled) {
         if ((includeDisabled || isEnabled()) &&
                 (getVisibility() == Visibility.Visible || getVisibility() == Visibility.Invisible)) {
-            if (subMenu != null && showSubMenu) {
+
+            if (subMenu != null && isActivated()) {
                 Widget widget = subMenu.findByPosition(x, y, includeDisabled);
                 if (widget != null) {
                     return widget;
@@ -208,7 +224,18 @@ public class MenuItem extends Parent {
         }
     }
 
-    boolean desktop = true;
+    public static boolean desktop = true;
+
+    private Menu getParentMenu() {
+        Parent parent = this.parent;
+        while (parent != null) {
+            if (parent instanceof Menu) {
+                return (Menu) parent;
+            }
+            parent = parent.getParent();
+        }
+        return null;
+    }
 
     @Override
     public void firePointer(PointerEvent pointerEvent) {
@@ -218,12 +245,13 @@ public class MenuItem extends Parent {
             screenToLocal(point);
 
             if (pointerEvent.getSource() == this && !desktop && subMenu != null) {
-                showSubMenu = !showSubMenu;
-                if (parentMenu != null) parentMenu.choose = showSubMenu ? this : null;
+                Menu parent = getParentMenu();
+                if (parent != null) {
+                    parent.setChooseItem(this);
+                }
                 invalidate(true);
-            } else {
-                fire();
             }
+            fire();
         }
     }
 
@@ -232,19 +260,31 @@ public class MenuItem extends Parent {
         super.fireHover(hoverEvent);
         if (desktop) {
             if (hoverEvent.getType() == HoverEvent.ENTERED) {
-                showSubMenu = true;
-                invalidate(true);
-            }
-            if (hoverEvent.getType() == HoverEvent.EXITED) {
-                showSubMenu = false;
+                Menu parent = getParentMenu();
+                if (parent != null) {
+                    parent.setChooseItem(this);
+                }
                 invalidate(true);
             }
         }
     }
 
     @Override
+    public void fireScroll(ScrollEvent scrollEvent) {
+        if (subMenu != null && isActivated()) {
+            scrollEvent.consume();
+        }
+        super.fireScroll(scrollEvent);
+    }
+
+    @Override
     public void setActivated(boolean actived) {
         super.setActivated(actived);
+        if (!isActivated()) {
+            if (subMenu != null) {
+                subMenu.setChooseItem(null);
+            }
+        }
     }
 
     @Override

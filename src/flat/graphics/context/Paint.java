@@ -1,6 +1,7 @@
 package flat.graphics.context;
 
 import flat.math.Affine;
+import flat.math.Mathf;
 
 public final class Paint {
     public enum CycleMethod {CLAMP, REPEATE, REFLECT}
@@ -85,6 +86,8 @@ public final class Paint {
     }
 
     public static Paint shadow(float x1, float y1, float x2, float y2, float corners, float blur, float alpha, Affine transform) {
+        alpha = Mathf.clamp(alpha, 0, 1);
+
         Paint paint = new Paint(3);
         paint.x1 = Math.min(x1, x2);
         paint.y1 = Math.min(y1, y2);
@@ -92,8 +95,8 @@ public final class Paint {
         paint.y2 = Math.abs(y1 - y2);
         paint.corners = corners;
         paint.blur = blur;
-        paint.stops = new float[]{0.0f, 1.0f};
-        paint.colors = new int[]{0x000000FF & (int) ((alpha > 1 ? 1 : alpha < 0 ? 0 : alpha) * 255), 0};
+        paint.stops = new float[]{0.0f, 0.6f, 1.0f};
+        paint.colors = new int[]{0x000000FF & (int) (alpha * 255), 0x000000FF & (int) (alpha * 24), 0};
         paint.cycleMethod = CycleMethod.CLAMP;
         paint.transform = transform == null ? identity :
                 new float[]{

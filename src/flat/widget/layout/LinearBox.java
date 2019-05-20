@@ -31,17 +31,6 @@ public class LinearBox extends Box {
     }
 
     @Override
-    public void onDraw(SmartContext context) {
-        backgroundDraw(getBackgroundColor(), getBorderColor(), getRippleColor(), context);
-        for (int i = orderedList.size() - 1; i >= 0; i--) {
-            Widget child = orderedList.get(i);
-            if (child.getVisibility() == Visibility.Visible) {
-                child.onDraw(context);
-            }
-        }
-    }
-
-    @Override
     public void onMeasure() {
         final float offWidth = getPaddingLeft() + getPaddingRight();
         final float offHeight = getPaddingTop() + getPaddingBottom();

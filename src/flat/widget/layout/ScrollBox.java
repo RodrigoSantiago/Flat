@@ -217,8 +217,6 @@ public class ScrollBox extends Parent {
 
     @Override
     public void fireScroll(ScrollEvent scrollEvent) {
-        super.fireScroll(scrollEvent);
-
         if (!scrollEvent.isConsumed() && content != null && verticalBar != null
                 && verticalBar.getVisibility() == Visibility.Visible) {
 
@@ -229,6 +227,7 @@ public class ScrollBox extends Parent {
             }
             scrollEvent.consume();
         }
+        super.fireScroll(scrollEvent);
     }
 
     @Override

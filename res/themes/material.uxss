@@ -29,7 +29,7 @@ button : label {
     min-height : 36;
     text-size : 14sp;
     background-color : #FFFFFFFF;
-    transition-duration : 10000;
+    transition-duration : 100;
     vertical-align : middle;
 
     enabled {
@@ -499,6 +499,7 @@ menu {
     radius-bottom : 4;
     padding-top : 8;
     padding-bottom : 8;
+    margin-bottom : 32;
 }
 
 menuitem : label {
@@ -512,7 +513,12 @@ menuitem : label {
 
     elevation : 0;
     background-color : #FFFFFF;
+    transition-duration : 100;
     hovered {
+        elevation : 1;
+        background-color : #DDDDDD;
+    }
+    activated {
         elevation : 1;
         background-color : #DDDDDD;
     }

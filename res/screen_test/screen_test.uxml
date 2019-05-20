@@ -8,12 +8,33 @@
                     <Menu width="200" background-color="#FFFFFF">
                         <MenuItem id="11" text="Item 11" action-image="url(icons/radiobox-marked.svg)">
                             <Menu width="200" background-color="#FFFFFF">
-                                <MenuItem id="30" text="Item 30"/>
-                                <MenuItem id="31" text="Item 31"/>
-                                <MenuItem id="32" text="Item 32"/>
-                                <MenuItem id="33" text="Item 33"/>
-                                <MenuItem id="34" text="Item 34"/>
-                                <MenuItem id="35" text="Item 35"/>
+                                <ScrollBox background-color="#FF00FF" width="200" height="200">
+                                    <LinearBox direction="vertical" width="200">
+                                        <MenuItem id="32" text="Item 32" action-image="url(icons/radiobox-marked.svg)">
+                                            <Menu width="200" background-color="#FFFFFF">
+                                                <ScrollBox background-color="#FF00FF" width="200" height="200">
+                                                <LinearBox direction="vertical" width="200">
+                                                    <MenuItem id="300" text="Item 30"/>
+                                                    <MenuItem id="311" text="Item 31"/>
+                                                    <MenuItem id="322" text="Item 32"/>
+                                                    <MenuItem id="333" text="Item 33"/>
+                                                    <MenuItem id="344" text="Item 34"/>
+                                                    <MenuItem id="355" text="Item 35"/>
+                                                </LinearBox>
+                                                    <ScrollBar direction="horizontal" height="4" width="MATCH_PARENT"></ScrollBar>
+                                                    <ScrollBar direction="vertical" width="4" height="MATCH_PARENT"></ScrollBar>
+                                                </ScrollBox>
+                                            </Menu>
+                                        </MenuItem>
+                                        <MenuItem id="30" text="Item 30"/>
+                                        <MenuItem id="31" text="Item 31"/>
+                                        <MenuItem id="33" text="Item 33"/>
+                                        <MenuItem id="34" text="Item 34"/>
+                                        <MenuItem id="35" text="Item 35"/>
+                                    </LinearBox>
+                                    <ScrollBar direction="horizontal" height="4" width="MATCH_PARENT"></ScrollBar>
+                                    <ScrollBar direction="vertical" width="4" height="MATCH_PARENT"></ScrollBar>
+                                </ScrollBox>
                             </Menu>
                         </MenuItem>
                         <MenuItem id="10" text="Item 10"/>

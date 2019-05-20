@@ -279,7 +279,7 @@ public class Widget implements Gadget {
                 context.drawRoundRectShadow(
                         bg.x - b, bg.y - b, bg.width + b * 2, bg.height + b * 2,
                         bg.arcTop + b, bg.arcRight + b, bg.arcBottom + b, bg.arcLeft + b,
-                        elevation * 2, 0.28f * ((backgroundColor & 0xFF) / 255f));
+                        elevation * 2, 0.55f * ((backgroundColor & 0xFF) / 255f));
             }
 
             context.setTransform2D(getTransform());
@@ -541,6 +541,7 @@ public class Widget implements Gadget {
     }
 
     protected ArrayList<Widget> getChildren() {
+        childSort();
         return children;
     }
 
