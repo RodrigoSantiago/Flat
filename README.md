@@ -47,14 +47,14 @@ The main purpose is to work similar to the "Activities" system with the ability 
  - Drawer
  
 ### Todo - List
- - [ ] Default Widgets
+ - [ ] Extended Widgets
     - [ ] Backdrop
     - [ ] Toolbar
     - [ ] BottomNav
     - [ ] ListView
     - [ ] TreeView
     - [ ] Table
- - [ ] Menus
+ - [x] Menus
  - [ ] Tooltips
  - [ ] Dialogs
    - [ ] DialogActivity
