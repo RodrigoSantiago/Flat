@@ -1,30 +1,29 @@
 package flat.widget.bars;
 
-import flat.uxml.Controller;
-import flat.uxml.UXChildren;
-import flat.uxml.UXStyleAttrs;
-import flat.widget.Gadget;
-import flat.widget.Widget;
+import flat.uxml.UXStyle;
+import flat.widget.text.Label;
 
-public class ToolItem implements Gadget {
+public class ToolItem extends Label {
+
+    private boolean showAction = true;
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
+    public void applyStyle() {
+        super.applyStyle();
+        UXStyle style = getStyle();
+        if (style == null) return;
 
+        setShowAction(style.asBool("show-action", isShowAction()));
     }
 
-    @Override
-    public void applyChildren(UXChildren children) {
-
+    public boolean isShowAction() {
+        return showAction;
     }
 
-    @Override
-    public String getId() {
-        return null;
-    }
-
-    @Override
-    public Widget getWidget() {
-        return null;
+    public void setShowAction(boolean showAction) {
+        if (this.showAction != showAction) {
+            this.showAction = showAction;
+            invalidate(true);
+        }
     }
 }

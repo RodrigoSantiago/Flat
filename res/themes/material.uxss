@@ -491,6 +491,7 @@ treeview {
 */
 
 menu {
+    width : 200;
     shadow : true;
     elevation : 8;
     radius-top : 4;
@@ -527,4 +528,32 @@ menuitem : label {
 
 dropdownmenu : menu {
 
+}
+
+toolbar : widget {
+    title-font : font("Roboto", "bold");
+    title-text-size : 24sp;
+    title-text-color : #000000FF;
+    subtitle-font : font("Roboto");
+    subtitle-text-size : 24sp;
+    subtitle-text-color : #000000FF;
+}
+
+toolitem : button {
+    show-action : true;
+}
+
+toolbar-right-button : button {
+
+}
+
+toolbar-menu : menu {
+    width : 200;
+}
+
+toolbar-menuitem : menuitem {
+    min-width : 32;
+}
+
+overflowmenu : button {
 }

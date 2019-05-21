@@ -69,6 +69,11 @@ public final class UXStyleAttrs extends UXStyle {
         }
     }
 
+    @Override
+    public UXTheme getTheme() {
+        return theme;
+    }
+
     public void link(String name, UXGadgetLinker linker) {
         if (this.loader != null) {
             UXLoader loader = this.loader.get();

@@ -23,7 +23,6 @@ public class MainActivity extends Activity {
     int n;
     @Flat public Button btn1;
     @Flat public LinearBox box;
-    @Flat public Label label;
 
     public MainActivity(int n) {
         this.n = n;
@@ -33,7 +32,7 @@ public class MainActivity extends Activity {
 
     @Override
     public void onLoad() {
-        label.setText(""+n);
+
     }
 
     @Override

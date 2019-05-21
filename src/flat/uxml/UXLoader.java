@@ -4,6 +4,7 @@ import flat.resources.Dimension;
 import flat.resources.DimensionStream;
 import flat.resources.StringBundle;
 import flat.widget.*;
+import flat.widget.bars.*;
 import flat.widget.dialogs.*;
 import flat.widget.image.*;
 import flat.widget.layout.*;
@@ -64,6 +65,9 @@ public final class UXLoader {
         UXLoader.install("Menu", Menu::new);
         UXLoader.install("MenuItem", MenuItem::new);
         UXLoader.install("DropdownMenu", DropdownMenu::new);
+        UXLoader.install("ToolBar", ToolBar::new);
+        UXLoader.install("ToolItem", ToolItem::new);
+        UXLoader.install("OverflowMenu", OverflowMenu::new);
     }
 
     private DimensionStream dimensionStream;

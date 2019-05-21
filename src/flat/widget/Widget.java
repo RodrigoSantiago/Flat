@@ -625,7 +625,15 @@ public class Widget implements Gadget {
 
     public void showContextMenu(float x, float y) {
         if (contextMenu != null) {
-            contextMenu.show(getActivity(), x, y);
+            Activity act = getActivity();
+            if (act != null) {
+                contextMenu.onMeasure();
+                boolean reverseX = contextMenu.getMeasureWidth() + x > act.getWidth();
+                boolean reverseY = contextMenu.getMeasureHeight() + y > act.getHeight();
+                contextMenu.show(act,
+                        reverseX ? x - contextMenu.getMeasureWidth() : x,
+                        reverseY ? y - contextMenu.getMeasureHeight() : y);
+            }
         }
     }
 
@@ -1575,10 +1583,7 @@ public class Widget implements Gadget {
         // -- Pressed -- //
         if (pointerEvent.getType() == PointerEvent.RELEASED) {
             if (pointerEvent.getPointerID() == 2 && contextMenu != null) {
-                Activity act = getActivity();
-                if (act != null) {
-                    act.showMenu(contextMenu, pointerEvent.getX(), pointerEvent.getY());
-                }
+                showContextMenu(pointerEvent.getX(), pointerEvent.getY());
             }
             if (!pointerEvent.isFocusConsumed() && isFocusable()) {
                 pointerEvent.consumeFocus(true);

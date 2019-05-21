@@ -53,6 +53,21 @@ public abstract class Parent extends Widget {
         invalidate(true);
     }
 
+    public void removeAll() {
+        List<Widget> children = getChildren();
+        if (children != null) {
+            int size;
+            while ((size = children.size()) > 0) {
+                remove(children.get(children.size() - 1));
+
+                if (children.size() >= size) {
+                    // UNEXPECTED ADDITION
+                    break;
+                }
+            }
+        }
+    }
+
     protected static void layoutHelperBox(List<? extends Widget> children, float x, float y, float w, float h) {
         for (Widget child : children) {
             if (child.getVisibility() == Visibility.Gone) continue;
@@ -209,7 +224,7 @@ public abstract class Parent extends Widget {
         }
     }
 
-    private static float xOff(float childWidth, float sx, float ex, Align.Horizontal halign) {
+    protected static float xOff(float childWidth, float sx, float ex, Align.Horizontal halign) {
         float start = sx;
         float end = ex;
         if (end < start) return (start + end) / 2f;
@@ -218,7 +233,7 @@ public abstract class Parent extends Widget {
         return start;
     }
 
-    private static float yOff(float childHeight, float sy, float ey, Align.Vertical valign) {
+    protected static float yOff(float childHeight, float sy, float ey, Align.Vertical valign) {
         float start = sy;
         float end = ey;
         if (end < start) return (start + end) / 2f;

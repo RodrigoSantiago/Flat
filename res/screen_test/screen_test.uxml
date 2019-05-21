@@ -1,48 +1,17 @@
 <Scene next-focus-id="text">
-    <LinearBox id="box" padding-left="32" padding-top="32">
-        <Label id="label" text="A"/>
-        <Button id="btn1" text="ADD">
-            <Menu width="200" background-color="#FFFFFF">
-                <MenuItem id="01" text="Item 01" icon-image="url(icons/radiobox-marked.svg)" icon-spacing="8"/>
-                <MenuItem id="02" text="Item 02" action-image="url(icons/radiobox-marked.svg)">
-                    <Menu width="200" background-color="#FFFFFF">
-                        <MenuItem id="11" text="Item 11" action-image="url(icons/radiobox-marked.svg)">
-                            <Menu width="200" background-color="#FFFFFF">
-                                <ScrollBox background-color="#FF00FF" width="200" height="200">
-                                    <LinearBox direction="vertical" width="200">
-                                        <MenuItem id="32" text="Item 32" action-image="url(icons/radiobox-marked.svg)">
-                                            <Menu width="200" background-color="#FFFFFF">
-                                                <ScrollBox background-color="#FF00FF" width="200" height="200">
-                                                <LinearBox direction="vertical" width="200">
-                                                    <MenuItem id="300" text="Item 30"/>
-                                                    <MenuItem id="311" text="Item 31"/>
-                                                    <MenuItem id="322" text="Item 32"/>
-                                                    <MenuItem id="333" text="Item 33"/>
-                                                    <MenuItem id="344" text="Item 34"/>
-                                                    <MenuItem id="355" text="Item 35"/>
-                                                </LinearBox>
-                                                    <ScrollBar direction="horizontal" height="4" width="MATCH_PARENT"></ScrollBar>
-                                                    <ScrollBar direction="vertical" width="4" height="MATCH_PARENT"></ScrollBar>
-                                                </ScrollBox>
-                                            </Menu>
-                                        </MenuItem>
-                                        <MenuItem id="30" text="Item 30"/>
-                                        <MenuItem id="31" text="Item 31"/>
-                                        <MenuItem id="33" text="Item 33"/>
-                                        <MenuItem id="34" text="Item 34"/>
-                                        <MenuItem id="35" text="Item 35"/>
-                                    </LinearBox>
-                                    <ScrollBar direction="horizontal" height="4" width="MATCH_PARENT"></ScrollBar>
-                                    <ScrollBar direction="vertical" width="4" height="MATCH_PARENT"></ScrollBar>
-                                </ScrollBox>
-                            </Menu>
-                        </MenuItem>
-                        <MenuItem id="10" text="Item 10"/>
-                        <MenuItem id="12" text="Item 12"/>
-                    </Menu>
-                </MenuItem>
-                <MenuItem id="03" text="Item 03"/>
-            </Menu>
-        </Button>
+    <LinearBox id="box" padding-right="32" padding-left="32" padding-top="32">
+        <ToolBar width="MATCH_PARENT" height="32" background-color="#00FF00" title="Ola Mundo"
+            padding-top="32" padding-left="32" padding-bottom="16" padding-right="24">
+            <Button text="+"></Button>
+            <ToolItem text="Item 1"></ToolItem>
+            <ToolItem text="Item 2"></ToolItem>
+            <ToolItem text="Item 3"></ToolItem>
+            <ToolItem text="Item 4"></ToolItem>
+            <ToolItem text="Item 5" show-action="false"></ToolItem>
+            <ToolItem text="Item 6" show-action="false"></ToolItem>
+            <OverflowMenu>
+                <Menu width="200"></Menu>
+            </OverflowMenu>
+        </ToolBar>
     </LinearBox>
 </Scene>

@@ -88,7 +88,10 @@ public final class Application {
         WL.SetDropCallback(names -> events.add(MouseDropData.get(names)));
         WL.SetKeyCallback((key, scancode, action, mods) -> events.add(KeyData.get(key, scancode, action, mods)));
         WL.SetCharModsCallback((codepoint, mods) -> events.add(CharModsData.get(codepoint, mods)));
-        WL.SetWindowSizeCallback((width, height) -> events.add(SizeData.get(width, height)));
+        WL.SetWindowSizeCallback((width, height) -> {
+            events.add(SizeData.get(width, height));
+            doLoop();
+        });
     }
 
     public static void launch(Activity startActivity) {
@@ -118,74 +121,16 @@ public final class Application {
         return context;
     }
 
+    private static long t;
+
     static void loop() {
-        long t = System.currentTimeMillis();
+        t = System.currentTimeMillis();
 
         activity.onShow();
         activity.onStart();
         while (!WL.IsClosed()) {
-
-            // Timer
-            long now = System.currentTimeMillis();
-            loopTime = now - t;
-            t = now;
-
-            // Transitions
-            while (transition == null && activityChanges.size() > 0) {
-                activityChanges.remove(0).run();
-            }
-
-            SmartContext smartContext = context.getSmartContext();
-            boolean draw = false;
-
-            if (transition != null) {
-                transition.handle(loopTime);
-
-                draw = transition.draw(smartContext);
-
-                if (!transition.isPlaying()) {
-                    Activity prev = transition.getPrev();
-                    if (prev != null) prev.onHide();
-                    Activity next = transition.getNext();
-                    if (next != null) next.onStart();
-
-                    transition = null;
-                }
-            }
-
-            // Events
-            WL.HandleEvents();
-
-            if (transition == null && activity != null) {
-                // Activity
-
-                processEvents(activity);
-
-                activity.animate(loopTime);
-
-                activity.layout(getClientWidth(), getClientHeight(), getDpi());
-
-                draw = activity.draw(smartContext);
-            }
-
-            // Syncronization
-            processSyncCalls();
-
-            // Cursor
-            if (cursor != currentCursor) {
-                currentCursor = cursor;
-                WL.SetCursor(currentCursor.getInternalCursor());
-            }
-
-            // GL Draw
-            if (draw) {
-                smartContext.softFlush();
-                WL.SwapBuffers();
-                GL.Finish();
-            }
-
             // Loop Wait
-            if (!draw || vsync == 0) {
+            if (!doLoop() || vsync == 0) {
                 if (loopTime < 15) {
                     try {
                         Thread.sleep(15 - loopTime);
@@ -194,6 +139,69 @@ public final class Application {
                 }
             }
         }
+    }
+
+    static boolean doLoop() {
+        // Timer
+        long now = System.currentTimeMillis();
+        loopTime = now - t;
+        t = now;
+
+        // Transitions
+        while (transition == null && activityChanges.size() > 0) {
+            activityChanges.remove(0).run();
+        }
+
+        SmartContext smartContext = context.getSmartContext();
+        boolean draw = false;
+
+        if (transition != null) {
+            transition.handle(loopTime);
+
+            draw = transition.draw(smartContext);
+
+            if (!transition.isPlaying()) {
+                Activity prev = transition.getPrev();
+                if (prev != null) prev.onHide();
+                Activity next = transition.getNext();
+                if (next != null) next.onStart();
+
+                transition = null;
+            }
+        }
+
+        // Events
+        WL.HandleEvents();
+
+        if (transition == null && activity != null) {
+            // Activity
+
+            processEvents(activity);
+
+            activity.animate(loopTime);
+
+            activity.layout(getClientWidth(), getClientHeight(), getDpi());
+
+            draw = activity.draw(smartContext);
+        }
+
+        // Syncronization
+        processSyncCalls();
+
+        // Cursor
+        if (cursor != currentCursor) {
+            currentCursor = cursor;
+            WL.SetCursor(currentCursor.getInternalCursor());
+        }
+
+        // GL Draw
+        if (draw) {
+            smartContext.softFlush();
+            WL.SwapBuffers();
+            GL.Finish();
+        }
+
+        return draw;
     }
 
     static void processEvents(Activity activity) {
