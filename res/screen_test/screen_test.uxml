@@ -1,15 +1,14 @@
 <Scene next-focus-id="text">
-    <LinearBox id="box" padding-right="32" padding-left="32" padding-top="32">
-        <ToolBar width="MATCH_PARENT" height="32" background-color="#00FF00" title="Ola Mundo"
-            padding-top="32" padding-left="32" padding-bottom="16" padding-right="24">
-            <Button text="+"></Button>
-            <ToolItem text="Item 1"></ToolItem>
-            <ToolItem text="Item 2"></ToolItem>
-            <ToolItem text="Item 3"></ToolItem>
-            <ToolItem text="Item 4"></ToolItem>
+    <LinearBox id="box">
+        <ToolBar width="MATCH_PARENT" background-color="#6200eeff" text="Ola Mundo" height="128">
+            <Button margin-right="32" icon-image="url(icons/radiobox-blank.svg)" style="icon"></Button>
+            <ToolItem text="Item 1" icon-image="url(icons/radiobox-blank.svg)"></ToolItem>
+            <ToolItem text="Item 2" icon-image="url(icons/radiobox-blank.svg)"></ToolItem>
+            <ToolItem text="Item 3" icon-image="url(icons/radiobox-blank.svg)"></ToolItem>
+            <ToolItem text="Item 4" icon-image="url(icons/radiobox-blank.svg)"></ToolItem>
             <ToolItem text="Item 5" show-action="false"></ToolItem>
             <ToolItem text="Item 6" show-action="false"></ToolItem>
-            <OverflowMenu>
+            <OverflowMenu icon-image="url(icons/baseline-more_vert.svg)" style="icon">
                 <Menu width="200"></Menu>
             </OverflowMenu>
         </ToolBar>

@@ -12,8 +12,6 @@ import flat.widget.Gadget;
 import flat.widget.Menu;
 import flat.widget.Parent;
 import flat.widget.Widget;
-import flat.widget.dialogs.MenuItem;
-import flat.widget.enuns.Direction;
 import flat.widget.enuns.Visibility;
 import flat.widget.text.Button;
 import flat.widget.text.TextField;
@@ -22,20 +20,13 @@ import java.util.*;
 
 public class ToolBar extends Parent {
 
-    private String title;
-    private Font titleFont = Font.DEFAULT;
-    private float titleTextSize;
-    private int titleTextColor;
+    private String text;
+    private Font font = Font.DEFAULT;
+    private float textSize;
+    private int textColor;
     private float tWidth, tLayX, tLayWidth;
 
-    private String subtitle;
-    private Font subtitleFont = Font.DEFAULT;
-    private float subtitleTextSize;
-    private int subtitleTextColor;
-    private float sWidth;
-
     private boolean invalidTitleSize;
-    private boolean invalidSubtitleSize;
 
     private float growHeight;
 
@@ -51,8 +42,7 @@ public class ToolBar extends Parent {
     public void applyAttributes(UXStyleAttrs style, Controller controller) {
         super.applyAttributes(style, controller);
 
-        setTitle(style.asString("title", getTitle()));
-        setSubtitle(style.asString("subtitle", getSubtitle()));
+        setText(style.asString("text", getText()));
     }
 
     @Override
@@ -63,12 +53,9 @@ public class ToolBar extends Parent {
 
         StateInfo info = getStateInfo();
 
-        setTitleFont(style.asFont("title-font", info, getTitleFont()));
-        setTitleTextColor(style.asColor("title-text-color", info, getTitleTextColor()));
-        setTitleTextSize(style.asSize("title-text-size", info, getTitleTextSize()));
-        setSubtitleFont(style.asFont("subtitle-font", info, getSubtitleFont()));
-        setSubtitleTextColor(style.asColor("subtitle-text-color", info, getSubtitleTextColor()));
-        setSubtitleTextSize(style.asSize("subtitle-text-size", info, getSubtitleTextSize()));
+        setFont(style.asFont("font", info, getFont()));
+        setTextColor(style.asColor("text-color", info, getTextColor()));
+        setTextSize(style.asSize("text-size", info, getTextSize()));
     }
 
     @Override
@@ -108,7 +95,7 @@ public class ToolBar extends Parent {
                 childrenHeight = navButton.getMeasureHeight();
             }
             if (navButton.getLayoutMinHeight() > childrenMinHeight) {
-                childrenMinHeight += navButton.getLayoutMinHeight();
+                childrenMinHeight = navButton.getLayoutMinHeight();
             }
         }
 
@@ -121,11 +108,14 @@ public class ToolBar extends Parent {
                 childrenHeight = rightButton.getMeasureHeight();
             }
             if (rightButton.getLayoutMinHeight() > childrenMinHeight) {
-                childrenMinHeight += rightButton.getLayoutMinHeight();
+                childrenMinHeight = rightButton.getLayoutMinHeight();
             }
         }
 
         childrenWidth += getTitleWidth();
+        if (font.getHeight(textSize) > childrenHeight) {
+            childrenHeight = font.getHeight(textSize);
+        }
 
         for (ToolItem child : items) {
             child.onMeasure();
@@ -137,7 +127,7 @@ public class ToolBar extends Parent {
                 childrenHeight = child.getMeasureHeight();
             }
             if (child.getLayoutMinHeight() > childrenMinHeight) {
-                childrenMinHeight += child.getLayoutMinHeight();
+                childrenMinHeight = child.getLayoutMinHeight();
             }
         }
 
@@ -258,14 +248,14 @@ public class ToolBar extends Parent {
     public void onDraw(SmartContext context) {
         backgroundDraw(getBackgroundColor(), getBorderColor(), getRippleColor(), context);
 
-        if (title != null && tLayWidth > 0) {
+        if (text != null && tLayWidth > 0) {
             context.setTransform2D(getTransform());
-            context.setTextFont(titleFont);
-            context.setTextSize(titleTextSize);
-            context.setColor(titleTextColor);
+            context.setTextFont(font);
+            context.setTextSize(textSize);
+            context.setColor(textColor);
             context.setTextHorizontalAlign(Align.Horizontal.LEFT);
             context.setTextVerticalAlign(Align.Vertical.TOP);
-            context.drawTextSlice(tLayX, getInY(), tLayWidth, title);
+            context.drawTextSlice(tLayX, getInY() + getInHeight() - font.getHeight(textSize), tLayWidth, text);
         }
 
         for (Widget widget : getChildren()) {
@@ -367,116 +357,58 @@ public class ToolBar extends Parent {
 
     protected float getTitleWidth() {
         if (invalidTitleSize) {
-            if (title == null) {
+            if (text == null) {
                 return tWidth = 0;
             }
-            tWidth = titleFont.getWidth(title, titleTextSize, 1);
+            tWidth = font.getWidth(text, textSize, 1);
             invalidTitleSize = false;
         }
         return tWidth;
     }
 
-    protected float getSubtitleWidth() {
-        if (invalidSubtitleSize) {
-            if (subtitle == null) {
-                return sWidth = 0;
-            }
-            sWidth = subtitleFont.getWidth(subtitle, subtitleTextSize, 1);
-            invalidSubtitleSize = false;
-        }
-        return sWidth;
+    public String getText() {
+        return text;
     }
 
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        if (!Objects.equals(this.title, title)) {
-            this.title = title;
+    public void setText(String text) {
+        if (!Objects.equals(this.text, text)) {
+            this.text = text;
             invalidTitleSize = true;
             invalidate(true);
         }
     }
 
-    public Font getTitleFont() {
-        return titleFont;
+    public Font getFont() {
+        return font;
     }
 
-    public void setTitleFont(Font titleFont) {
-        if (this.titleFont != titleFont) {
-            this.titleFont = titleFont;
+    public void setFont(Font font) {
+        if (this.font != font) {
+            this.font = font;
             invalidTitleSize = true;
             invalidate(true);
         }
     }
 
-    public float getTitleTextSize() {
-        return titleTextSize;
+    public float getTextSize() {
+        return textSize;
     }
 
-    public void setTitleTextSize(float titleTextSize) {
-        if (this.titleTextSize != titleTextSize) {
-            this.titleTextSize = titleTextSize;
+    public void setTextSize(float textSize) {
+        if (this.textSize != textSize) {
+            this.textSize = textSize;
             invalidTitleSize = true;
             invalidate(true);
         }
     }
 
-    public int getTitleTextColor() {
-        return titleTextColor;
+    public int getTextColor() {
+        return textColor;
     }
 
-    public void setTitleTextColor(int titleTextColor) {
-        if (this.titleTextColor != titleTextColor) {
-            this.titleTextColor = titleTextColor;
-            invalidate(false);
-        }
-    }
-
-    public String getSubtitle() {
-        return subtitle;
-    }
-
-    public void setSubtitle(String subtitle) {
-        if (!Objects.equals(this.subtitle, subtitle)) {
-            this.subtitle = subtitle;
-            invalidSubtitleSize = true;
-            invalidate(true);
-        }
-    }
-
-    public Font getSubtitleFont() {
-        return subtitleFont;
-    }
-
-    public void setSubtitleFont(Font subtitleFont) {
-        if (this.subtitleFont != subtitleFont) {
-            this.subtitleFont = subtitleFont;
-            invalidSubtitleSize = true;
-            invalidate(true);
-        }
-    }
-
-    public float getSubtitleTextSize() {
-        return subtitleTextSize;
-    }
-
-    public void setSubtitleTextSize(float subtitleTextSize) {
-        if (this.subtitleTextSize != subtitleTextSize) {
-            this.subtitleTextSize = subtitleTextSize;
-            invalidSubtitleSize = true;
-            invalidate(true);
-        }
-    }
-
-    public int getSubtitleTextColor() {
-        return subtitleTextColor;
-    }
-
-    public void setSubtitleTextColor(int subtitleTextColor) {
-        if (this.subtitleTextColor != subtitleTextColor) {
-            this.subtitleTextColor = subtitleTextColor;
+    public void setTextColor(int textColor) {
+        if (this.textColor != textColor) {
+            this.textColor = textColor;
             invalidate(false);
         }
     }

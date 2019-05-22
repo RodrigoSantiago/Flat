@@ -102,6 +102,7 @@ public class Widget implements Gadget {
 
     private RippleEffect ripple;
     private int rippleColor;
+    private boolean rippleOverflow;
 
     private boolean shadowEnabled;
     private boolean rippleEnabled;
@@ -232,8 +233,9 @@ public class Widget implements Gadget {
         setElevation(style.asSize("elevation", info, getElevation()));
         setShadowEnabled(style.asBool("shadow", info, isShadowEnabled()));
 
-        setRippleColor(style.asColor("ripple-color", info, getRippleColor()));
         setRippleEnabled(style.asBool("ripple", info, isRippleEnabled()));
+        setRippleColor(style.asColor("ripple-color", info, getRippleColor()));
+        setRippleOverflow(style.asBool("ripple-overflow", info, isRippleOverflow()));
 
         setMarginTop(style.asSize("margin-top", info, getMarginTop()));
         setMarginRight(style.asSize("margin-right", info, getMarginRight()));
@@ -299,7 +301,7 @@ public class Widget implements Gadget {
             }
 
             if ((rippleColor & 0xFF) > 0 && rippleEnabled && ripple.isVisible()) {
-                ripple.drawRipple(context, bg, rippleColor);
+                ripple.drawRipple(context, isRippleOverflow() ? null : bg, rippleColor);
             }
 
             context.setTransform2D(null);
@@ -1508,6 +1510,17 @@ public class Widget implements Gadget {
         if (this.rippleColor != rippleColor) {
             this.rippleColor = rippleColor;
 
+            invalidate(false);
+        }
+    }
+
+    public boolean isRippleOverflow() {
+        return rippleOverflow;
+    }
+
+    public void setRippleOverflow(boolean rippleOverflow) {
+        if (this.rippleOverflow != rippleOverflow) {
+            this.rippleOverflow = rippleOverflow;
             invalidate(false);
         }
     }

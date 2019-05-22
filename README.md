@@ -60,7 +60,7 @@ The main purpose is to work similar to the "Activities" system with the ability 
    - [ ] DialogActivity
    - [ ] Dialogs Presets
    - [ ] SnackBar
-   - [ ] Context Menu
+   - [x] Context Menu
  - [ ] Pickers
    - [ ] Date Picker
    - [ ] Time Picker
@@ -81,3 +81,5 @@ The main purpose is to work similar to the "Activities" system with the ability 
    - [ ] Test widget outside activity or scene
    - [ ] Test event order and consistency
    - [ ] Test event consume
+ - [ ] Fixes
+   - [ ] Correct Measurement Behavior

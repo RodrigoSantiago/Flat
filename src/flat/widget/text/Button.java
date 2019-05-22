@@ -7,6 +7,7 @@ import flat.events.PointerEvent;
 import flat.graphics.SmartContext;
 import flat.graphics.image.Drawable;
 import flat.graphics.text.Align;
+import flat.math.Vector2;
 import flat.resources.Resource;
 import flat.uxml.Controller;
 import flat.uxml.UXStyleAttrs;
@@ -127,6 +128,17 @@ public class Button extends Label {
         super.firePointer(pointerEvent);
         if (!pointerEvent.isConsumed() && pointerEvent.getType() == PointerEvent.RELEASED) {
             fire();
+        }
+    }
+
+    @Override
+    public void fireRipple(float x, float y) {
+        if (isRippleOverflow() && (getText() == null || getText().isEmpty()) && iconImage != null) {
+            Vector2 p = localToScreen(getInX() + getInWidth() / 2, getInY() + getHeight() / 2);
+            getRipple().setSize(getInWidth());
+            super.fireRipple(p.x, p.y);
+        } else {
+            super.fireRipple(x, y);
         }
     }
 

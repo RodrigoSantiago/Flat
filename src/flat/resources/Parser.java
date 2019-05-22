@@ -84,7 +84,9 @@ public final class Parser {
     }
 
     public static int color(String color) {
-        if (color.length() == 7) {
+        if ("none".equals(color)) {
+            return 0;
+        } else if (color.length() == 7) {
             return ((int) Long.parseLong(color.substring(1), 16) << 8) | 0x000000FF;
         } else {
             return (int) Long.parseLong(color.substring(1), 16);

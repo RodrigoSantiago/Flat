@@ -40,7 +40,6 @@ button : label {
     }
     pressed {
         elevation : 4;
-        background-color : #00FFFFFF;
     }
 }
 
@@ -182,6 +181,21 @@ divider {
 /*
   Buttons Styles
 */
+icon : button {
+    ripple-overflow : true;
+    background-color : #00000000;
+    shadow : false;
+    min-width : 24;
+    min-height : 24;
+    vertical-align : middle;
+    horizontal-align : center;
+    radius-top : 12;
+    radius-left : 12;
+    radius-right : 12;
+    radius-bottom : 12;
+    padding-left : 0;
+    padding-right : 0;
+}
 
 flat : button {
 
@@ -530,16 +544,33 @@ dropdownmenu : menu {
 
 }
 
-toolbar : widget {
-    title-font : font("Roboto", "bold");
-    title-text-size : 24sp;
-    title-text-color : #000000FF;
-    subtitle-font : font("Roboto");
-    subtitle-text-size : 24sp;
-    subtitle-text-color : #000000FF;
+toolbar {
+    font : font("Roboto", "bold");
+    text-size : 20sp;
+    text-color : #000000FF;
+    padding-left : 16;
+    padding-right : 16;
+    padding-top : 16;
+    padding-bottom : 16;
+    shadow : true;
+    elevation : 4;
 }
 
-toolitem : button {
+toolitem {
+    ripple : true;
+    ripple-color : #00000080;
+    ripple-overflow : true;
+    shadow : false;
+    radius-top : 12;
+    radius-left : 12;
+    radius-right : 12;
+    radius-bottom : 12;
+    margin-right : 24;
+    min-width : 24;
+    min-height : 24;
+    transition-duration : 100;
+    vertical-align : middle;
+    horizontal-align : center;
     show-action : true;
 }
 
@@ -556,4 +587,16 @@ toolbar-menuitem : menuitem {
 }
 
 overflowmenu : button {
+    ripple : true;
+    ripple-color : #00000080;
+    shadow : false;
+    radius-top : 12;
+    radius-left : 12;
+    radius-right : 12;
+    radius-bottom : 12;
+    max-width : 16;
+    min-height : 24;
+    transition-duration : 100;
+    vertical-align : middle;
+    horizontal-align : center;
 }

@@ -77,7 +77,7 @@ public class RippleEffect {
         public void compute(float t) {
             float w = widget.getWidth() - widget.getMarginLeft() - widget.getMarginRight();
             float h = widget.getHeight() - widget.getMarginTop() - widget.getMarginBottom();
-            float s = size <= 0 ? (float) Math.min(Dimension.dpPx(300), Math.sqrt(w * w + h * h)) : size;
+            float s = size <= 0 ? (float) Math.min(Dimension.dpPx(300), Math.max(w, h)) : size;
             ripple.radius = Interpolation.mix(s / 10f,  s, t);
 
             widget.invalidate(false);
