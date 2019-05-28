@@ -31,7 +31,7 @@ public class OverflowMenu extends Button {
 
     @Override
     public void showContextMenu(float x, float y) {
-        Vector2 p = localToScreen(getOutX() + getOutWidth(), getInY());
+        Vector2 p = localToScreen(getOutX() + getOutWidth(), getOutY());
         super.showContextMenu(p.x, p.y);
     }
 

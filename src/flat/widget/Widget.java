@@ -49,6 +49,7 @@ public class Widget implements Gadget {
     private float width, height;
     private float minWidth, minHeight, maxWidth = MATCH_PARENT, maxHeight = MATCH_PARENT, prefWidth, prefHeight;
     private float measureWidth, measureHeight;
+    private float layoutWidth, layoutHeight;
 
     private int visibility = Visibility.Visible.ordinal();
     private Cursor cursor;
@@ -330,16 +331,8 @@ public class Widget implements Gadget {
      * Equation : minsize < ([preferedSize || computedSize] + padding + margins) < maxsize
      */
     public void onMeasure() {
-        setMeasure(Math.max(prefWidth + marginLeft + marginRight, getLayoutMinWidth()),
-                Math.max(prefHeight + marginTop + marginBottom, getLayoutMinHeight()));
-    }
-
-    public float getMeasureWidth()  {
-        return measureWidth;
-    }
-
-    public float getMeasureHeight()  {
-        return measureHeight;
+        setMeasure(Math.max(prefWidth + marginLeft + marginRight, lMinWidth()),
+                Math.max(prefHeight + marginTop + marginBottom, lMinHeight()));
     }
 
     /**
@@ -349,8 +342,16 @@ public class Widget implements Gadget {
      * @param height
      */
     public final void setMeasure(float width, float height) {
-        measureWidth = Math.max(width, getLayoutMinWidth());
-        measureHeight = Math.max(height, getLayoutMinHeight());
+        measureWidth = Math.max(width, lMinWidth());
+        measureHeight = Math.max(height, lMinHeight());
+    }
+
+    public float mWidth()  {
+        return measureWidth;
+    }
+
+    public float mHeight()  {
+        return measureHeight;
     }
 
     /**
@@ -359,7 +360,7 @@ public class Widget implements Gadget {
      * @param height
      */
     public void onLayout(float width, float height) {
-        setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
+        setLayout(width, height);
     }
 
     /**
@@ -368,29 +369,35 @@ public class Widget implements Gadget {
      * @param height
      */
     public final void setLayout(float width, float height) {
-        if (parent != null) {
-            if (width == MATCH_PARENT && (maxWidth == MATCH_PARENT || maxWidth == WRAP_CONTENT)) {
-                setWidth(parent.getWidth());
-            } else {
-                setWidth(Math.min(width, getLayoutMaxWidth()));
-            }
-            if (height == MATCH_PARENT && (maxHeight == MATCH_PARENT || maxHeight == WRAP_CONTENT)) {
-                setHeight(parent.getHeight());
-            } else {
-                setHeight(Math.min(height, getLayoutMaxHeight()));
-            }
-        } else {
-            if (maxWidth != MATCH_PARENT && maxWidth != WRAP_CONTENT) {
-                setWidth(Math.min(width, getLayoutMaxWidth()));
-            } else {
-                setWidth(width);
-            }
-            if (maxHeight != MATCH_PARENT && maxHeight != WRAP_CONTENT) {
-                setHeight(Math.min(height, getLayoutMaxHeight()));
-            } else {
-                setHeight(height);
-            }
-        }
+        this.layoutWidth = width;
+        this.layoutHeight = height;
+
+        setWidth(width);
+        setHeight(height);
+    }
+
+    public float lWidth() {
+        return layoutWidth;
+    }
+
+    public float lHeight() {
+        return layoutHeight;
+    }
+
+    public float lMinWidth() {
+        return Math.max(minWidth, paddingLeft + paddingRight) + marginLeft + marginRight;
+    }
+
+    public float lMinHeight() {
+        return Math.max(minHeight, paddingTop + paddingBottom) + marginTop + marginBottom;
+    }
+
+    public float lMaxWidth() {
+        return maxWidth + marginLeft + marginRight;
+    }
+
+    public float lMaxHeight() {
+        return maxHeight + marginTop + marginBottom;
     }
 
     /**
@@ -630,11 +637,11 @@ public class Widget implements Gadget {
             Activity act = getActivity();
             if (act != null) {
                 contextMenu.onMeasure();
-                boolean reverseX = contextMenu.getMeasureWidth() + x > act.getWidth();
-                boolean reverseY = contextMenu.getMeasureHeight() + y > act.getHeight();
+                boolean reverseX = contextMenu.mWidth() + x > act.getWidth();
+                boolean reverseY = contextMenu.mHeight() + y > act.getHeight();
                 contextMenu.show(act,
-                        reverseX ? x - contextMenu.getMeasureWidth() : x,
-                        reverseY ? y - contextMenu.getMeasureHeight() : y);
+                        reverseX ? x - contextMenu.mWidth() : x,
+                        reverseY ? y - contextMenu.mHeight() : y);
             }
         }
     }
@@ -1148,22 +1155,6 @@ public class Widget implements Gadget {
     public void setPrefSize(float width, float height) {
         setPrefWidth(width);
         setPrefHeight(height);
-    }
-
-    public float getLayoutMinWidth() {
-        return Math.max(minWidth, paddingLeft + paddingRight) + marginLeft + marginRight;
-    }
-
-    public float getLayoutMinHeight() {
-        return Math.max(minHeight, paddingTop + paddingBottom) + marginTop + marginBottom;
-    }
-
-    public float getLayoutMaxWidth() {
-        return maxWidth + marginLeft + marginRight;
-    }
-
-    public float getLayoutMaxHeight() {
-        return maxHeight + marginTop + marginBottom;
     }
 
     public float getCenterX() {

@@ -1,7 +1,6 @@
 package flat.animations;
 
 import flat.widget.Activity;
-import flat.widget.Application;
 
 public abstract class NormalizedAnimation implements Animation {
 

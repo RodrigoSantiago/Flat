@@ -32,6 +32,7 @@ public final class Application {
     private static ArrayList<FutureTask<?>> runSyncCp = new ArrayList<>();
 
     private static ArrayList<Animation> anims = new ArrayList<>();
+    private static ArrayList<Animation> animsCp = new ArrayList<>();
 
     private static ArrayList<EventData> events = new ArrayList<>();
     private static ArrayList<EventData> eventsCp = new ArrayList<>();

@@ -61,7 +61,7 @@ public class Menu extends Scene {
 
     @Override
     public void onLayout(float width, float height) {
-        setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
+        setLayout(Math.min(width, mWidth()), Math.min(mHeight(), height));
         layoutHelperVertical(orderedList, getInX(), getInY(), getInWidth(), getInHeight(), halign);
     }
 
@@ -78,14 +78,14 @@ public class Menu extends Scene {
             child.onMeasure();
             if (child.getVisibility() == Visibility.Gone) continue;
 
-            if (child.getMeasureWidth() > childrenWidth) {
-                childrenWidth = child.getMeasureWidth();
+            if (child.mWidth() > childrenWidth) {
+                childrenWidth = child.mWidth();
             }
-            if (child.getLayoutMinWidth() > childrenMinWidth) {
-                childrenMinWidth += child.getLayoutMinWidth();
+            if (child.lMinWidth() > childrenMinWidth) {
+                childrenMinWidth += child.lMinWidth();
             }
-            childrenHeight += child.getMeasureHeight();
-            childrenMinHeight += child.getLayoutMinHeight();
+            childrenHeight += child.mHeight();
+            childrenMinHeight += child.lMinHeight();
         }
         if (getPrefWidth() == WRAP_CONTENT) {
             mWidth = childrenWidth + offWidth;

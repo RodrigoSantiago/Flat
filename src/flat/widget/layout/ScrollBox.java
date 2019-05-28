@@ -22,8 +22,6 @@ public class ScrollBox extends Parent {
     private ScrollBar verticalBar, horizontalBar;
     private Policy verticalPolicy = Policy.AS_NEEDED, horizontalPolicy = Policy.AS_NEEDED;
 
-    private RoundRectangle clipper = new RoundRectangle();
-
     public ScrollBox() {
 
     }
@@ -83,13 +81,6 @@ public class ScrollBox extends Parent {
 
     @Override
     public void onDraw(SmartContext context) {
-        final float x = getMarginLeft() + getMarginRight() > getWidth() ? (getMarginLeft() + getWidth() - getMarginRight()) / 2f : getMarginLeft();
-        final float y = getMarginTop() + getMarginBottom() > getHeight() ? (getMarginTop() + getHeight() - getMarginBottom()) / 2f : getMarginTop();
-        final float width = Math.max(0, getWidth() - getMarginLeft() - getMarginRight());
-        final float height = Math.max(0, getHeight() - getMarginTop() - getMarginBottom());
-
-        clipper.set(x, y, width, height, getRadiusTop(), getRadiusRight(), getRadiusBottom(), getRadiusLeft());
-
         context.setTransform2D(getTransform());
         Shape clip = backgroundClip(context);
 
@@ -111,6 +102,11 @@ public class ScrollBox extends Parent {
 
     @Override
     public void onMeasure() {
+        final float offWidth = getPaddingLeft() + getPaddingRight();
+        final float offHeight = getPaddingTop() + getPaddingBottom();
+        float mWidth = Math.max(getPrefWidth(), Math.max(getMinWidth(), offWidth));
+        float mHeight = Math.max(getPrefHeight(), Math.max(getMinHeight(), offHeight));
+
         if (content != null) {
             content.onMeasure();
         }
@@ -121,22 +117,17 @@ public class ScrollBox extends Parent {
             horizontalBar.onMeasure();
         }
 
-        final float offWidth = getPaddingLeft() + getPaddingRight();
-        final float offHeight = getPaddingTop() + getPaddingBottom();
-        float mWidth = Math.max(getPrefWidth(), Math.max(getMinWidth(), offWidth));
-        float mHeight = Math.max(getPrefHeight(), Math.max(getMinHeight(), offHeight));
-
         if (content != null && content.getVisibility() != Visibility.Gone) {
             if (getPrefWidth() == WRAP_CONTENT) {
-                mWidth = content.getMeasureWidth() + offWidth;
+                mWidth = content.mWidth() + offWidth;
                 if (verticalBar != null && verticalPolicy == Policy.AWAYS) {
-                    mWidth += verticalBar.getMeasureWidth();
+                    mWidth += verticalBar.mWidth();
                 }
             }
             if (getPrefHeight() == WRAP_CONTENT) {
-                mHeight = content.getMeasureHeight() + offHeight;
+                mHeight = content.mHeight() + offHeight;
                 if (horizontalBar != null && horizontalPolicy == Policy.AWAYS) {
-                    mHeight += horizontalBar.getHeight();
+                    mHeight += horizontalBar.mHeight();
                 }
             }
         }
@@ -145,15 +136,16 @@ public class ScrollBox extends Parent {
 
     @Override
     public void onLayout(float width, float height) {
-        setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
+        setLayout(width, height);
+
         if (content != null && content.getVisibility() != Visibility.Gone) {
-            float cw = content.getMeasureWidth();
-            float ch = content.getMeasureHeight();;
-            if (content.getMeasureWidth() == MATCH_PARENT) {
-                cw = width - (verticalBar != null && verticalPolicy == Policy.AWAYS ? verticalBar.getMeasureWidth() : 0);
+            float cw = content.mWidth();
+            float ch = content.mHeight();;
+            if (content.mWidth() == MATCH_PARENT) {
+                cw = width - (verticalBar != null && verticalPolicy == Policy.AWAYS ? verticalBar.mWidth() : 0);
             }
-            if (content.getMeasureHeight() == MATCH_PARENT) {
-                ch = height - (horizontalBar != null && horizontalPolicy == Policy.AWAYS ? horizontalBar.getMeasureHeight() : 0);
+            if (content.mHeight() == MATCH_PARENT) {
+                ch = height - (horizontalBar != null && horizontalPolicy == Policy.AWAYS ? horizontalBar.mHeight() : 0);
             }
 
             content.onLayout(cw, ch);
@@ -161,15 +153,15 @@ public class ScrollBox extends Parent {
                 if (horizontalPolicy == Policy.AWAYS) {
                     horizontalBar.setVisibility(Visibility.Visible);
                 }
-                if (getWidth() >= content.getWidth()) {
+                if (getInWidth() >= content.lWidth()) {
                     horizontalBar.setMaxRange(1);
                     horizontalBar.setRange(1);
                     if (horizontalPolicy == Policy.AS_NEEDED) {
                         horizontalBar.setVisibility(Visibility.Gone);
                     }
                 } else {
-                    horizontalBar.setMaxRange(content.getWidth());
-                    horizontalBar.setRange(getWidth());
+                    horizontalBar.setMaxRange(content.lWidth());
+                    horizontalBar.setRange(getInWidth());
                     if (horizontalPolicy != Policy.NEVER) {
                         horizontalBar.setVisibility(Visibility.Visible);
                     }
@@ -179,15 +171,15 @@ public class ScrollBox extends Parent {
                 if (verticalPolicy == Policy.AWAYS) {
                     verticalBar.setVisibility(Visibility.Visible);
                 }
-                if (getHeight() >= content.getHeight()) {
+                if (getInHeight() >= content.lHeight()) {
                     verticalBar.setMaxRange(1);
                     verticalBar.setRange(1);
                     if (verticalPolicy == Policy.AS_NEEDED) {
                         verticalBar.setVisibility(Visibility.Gone);
                     }
                 } else {
-                    verticalBar.setMaxRange(content.getHeight());
-                    verticalBar.setRange(getHeight());
+                    verticalBar.setMaxRange(content.lHeight());
+                    verticalBar.setRange(getInHeight());
                     if (verticalPolicy != Policy.NEVER) {
                         verticalBar.setVisibility(Visibility.Visible);
                     }
@@ -195,22 +187,30 @@ public class ScrollBox extends Parent {
             }
             boolean hbar = horizontalBar != null && horizontalBar.getVisibility() != Visibility.Gone;
             boolean vbar = verticalBar != null && verticalBar.getVisibility() != Visibility.Gone;
+            float v = 0, h = 0;
+
             // VERTICAL PRIORITY
             if (vbar) {
-                verticalBar.onLayout(getWidth(), getHeight());
+                verticalBar.onLayout(
+                        Math.min(verticalBar.mWidth(), width),
+                        Math.min(verticalBar.mHeight(), height));
+                v = verticalBar.lWidth();
             }
             if (hbar) {
-                horizontalBar.onLayout(getWidth() - (vbar ? verticalBar.getWidth() : 0), getHeight());
+                horizontalBar.onLayout(
+                        Math.min(horizontalBar.mWidth(), width - v),
+                        Math.min(horizontalBar.mHeight(), height));
+                h = horizontalBar.lHeight();
             }
             if (vbar) {
-                verticalBar.setPosition(getWidth() - verticalBar.getWidth(), 0);
+                verticalBar.setPosition(width - v, 0);
             }
             if (hbar) {
-                horizontalBar.setPosition(0, getHeight() - horizontalBar.getHeight());
+                horizontalBar.setPosition(0, height - h);
             }
 
-            float mx = Math.max(0, (content.getWidth() + getPaddingLeft() + getPaddingRight() + (vbar ? verticalBar.getWidth() : 0)) - getWidth());
-            float my = Math.max(0, (content.getHeight() + getPaddingTop() + getPaddingBottom() + (hbar ? horizontalBar.getHeight() : 0)) - getHeight());
+            float mx = Math.max(0, (content.lWidth() + getPaddingLeft() + getPaddingRight() + v) - getInWidth());
+            float my = Math.max(0, (content.lHeight() + getPaddingTop() + getPaddingBottom() + h) - getInHeight());
             content.setPosition(-(scrollX * mx) + getPaddingLeft(), -(scrollY * my) + getPaddingTop());
         }
     }

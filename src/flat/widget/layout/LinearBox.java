@@ -1,7 +1,6 @@
 package flat.widget.layout;
 
 import flat.animations.StateInfo;
-import flat.graphics.SmartContext;
 import flat.graphics.text.Align;
 import flat.widget.Widget;
 import flat.widget.enuns.Direction;
@@ -47,22 +46,22 @@ public class LinearBox extends Box {
             if (child.getVisibility() == Visibility.Gone) continue;
 
             if (vertical) {
-                if (child.getMeasureWidth() > childrenWidth) {
-                    childrenWidth = child.getMeasureWidth();
+                if (child.mWidth() > childrenWidth) {
+                    childrenWidth = child.mWidth();
                 }
-                if (child.getLayoutMinWidth() > childrenMinWidth) {
-                    childrenMinWidth += child.getLayoutMinWidth();
+                if (child.lMinWidth() > childrenMinWidth) {
+                    childrenMinWidth += child.lMinWidth();
                 }
-                childrenHeight += child.getMeasureHeight();
-                childrenMinHeight += child.getLayoutMinHeight();
+                childrenHeight += child.mHeight();
+                childrenMinHeight += child.lMinHeight();
             } else {
-                childrenWidth += child.getMeasureWidth();
-                childrenMinWidth += child.getLayoutMinWidth();
-                if (child.getMeasureHeight() > childrenHeight) {
-                    childrenHeight = child.getMeasureHeight();
+                childrenWidth += child.mWidth();
+                childrenMinWidth += child.lMinWidth();
+                if (child.mHeight() > childrenHeight) {
+                    childrenHeight = child.mHeight();
                 }
-                if (child.getLayoutMinHeight() > childrenMinHeight) {
-                    childrenMinHeight += child.getLayoutMinHeight();
+                if (child.lMinHeight() > childrenMinHeight) {
+                    childrenMinHeight += child.lMinHeight();
                 }
             }
         }
@@ -82,7 +81,7 @@ public class LinearBox extends Box {
 
     @Override
     public void onLayout(float width, float height) {
-        setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
+        setLayout(width, height);
         if (this.direction == Direction.VERTICAL || this.direction == Direction.IVERTICAL) {
             layoutHelperVertical(orderedList, getInX(), getInY(), getInWidth(), getInHeight(), halign);
         } else {

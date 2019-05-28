@@ -137,17 +137,17 @@ public class Drawer extends Parent {
         if (back != null) {
             back.onMeasure();
             if (back.getVisibility() != Visibility.Gone) {
-                if (back.getMeasureWidth() > childrenWidth) {
-                    childrenWidth = back.getMeasureWidth();
+                if (back.mWidth() > childrenWidth) {
+                    childrenWidth = back.mWidth();
                 }
-                if (back.getLayoutMinWidth() > childrenMinWidth) {
-                    childrenMinWidth = back.getLayoutMinWidth();
+                if (back.lMinWidth() > childrenMinWidth) {
+                    childrenMinWidth = back.lMinWidth();
                 }
-                if (back.getMeasureHeight() > childrenHeight) {
-                    childrenHeight = back.getMeasureHeight();
+                if (back.mHeight() > childrenHeight) {
+                    childrenHeight = back.mHeight();
                 }
-                if (back.getLayoutMinHeight() > childrenMinHeight) {
-                    childrenMinHeight = back.getLayoutMinHeight();
+                if (back.lMinHeight() > childrenMinHeight) {
+                    childrenMinHeight = back.lMinHeight();
                 }
             }
         }
@@ -170,7 +170,7 @@ public class Drawer extends Parent {
 
     @Override
     public void onLayout(float width, float height) {
-        setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
+        setLayout(width, height);
         setHideEffect((getInWidth() <= hideWidth));
 
         if (hideEffect) {

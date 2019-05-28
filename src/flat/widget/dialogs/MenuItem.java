@@ -183,7 +183,7 @@ public class MenuItem extends Parent {
     public void onLayout(float width, float height) {
         super.onLayout(width, height);
         if (subMenu != null && isActivated()) {
-            subMenu.onLayout(Math.min(width, subMenu.getMeasureWidth()), Math.max(height, subMenu.getMeasureHeight()));
+            subMenu.onLayout(Math.min(width, subMenu.mWidth()), Math.max(height, subMenu.mHeight()));
 
             if (desktop) {
                 float x, y;

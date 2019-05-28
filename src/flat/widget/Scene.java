@@ -46,19 +46,19 @@ public class Scene extends Parent {
             if (child.getVisibility() == Visibility.Gone) continue;
 
             if (mWidth != MATCH_PARENT) {
-                if (child.getMeasureWidth() == MATCH_PARENT) {
+                if (child.mWidth() == MATCH_PARENT) {
                     if (getPrefWidth() == WRAP_CONTENT)
                         mWidth = MATCH_PARENT;
-                } else if (child.getMeasureWidth() > mWidth) {
-                    mWidth = child.getMeasureWidth();
+                } else if (child.mWidth() > mWidth) {
+                    mWidth = child.mWidth();
                 }
             }
             if (mHeight != MATCH_PARENT) {
-                if (child.getMeasureHeight() == MATCH_PARENT) {
+                if (child.mHeight() == MATCH_PARENT) {
                     if (getPrefHeight() == WRAP_CONTENT)
                         mHeight = MATCH_PARENT;
-                } else if (child.getMeasureHeight() > mHeight) {
-                    mHeight = child.getMeasureHeight();
+                } else if (child.mHeight() > mHeight) {
+                    mHeight = child.mHeight();
                 }
             }
         }
@@ -69,12 +69,8 @@ public class Scene extends Parent {
 
     @Override
     public void onLayout(float width, float height) {
-        setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
-        for (Widget child : getChildren()) {
-            if (child.getVisibility() == Visibility.Gone) continue;
-
-            child.onLayout(getWidth(), getHeight());
-        }
+        setLayout(width, height);
+        layoutHelperBox(getChildren(), getInX(), getInY(), getInWidth(), getInHeight());
     }
 
     @Override

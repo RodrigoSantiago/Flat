@@ -20,6 +20,7 @@ public class Activity extends Controller {
     private Scene scene;
     private ArrayList<Scene> menus;
     private LinkedList<Weak<Animation>> animations;
+    private LinkedList<Weak<Animation>> animationsCp;
     private Widget focus;
 
     private float width;
@@ -37,6 +38,7 @@ public class Activity extends Controller {
     public Activity() {
         menus = new ArrayList<>();
         animations = new LinkedList<>();
+        animationsCp = new LinkedList<>();
 
         scene = new Scene();
         scene.activity = this;
@@ -216,7 +218,7 @@ public class Activity extends Controller {
 
         scene.onLayout(width, height);
         for (Scene menu : menus) {
-            menu.onLayout(Math.min(width, menu.getMeasureWidth()), Math.max(height, menu.getMeasureHeight()));
+            menu.onLayout(Math.min(width, menu.mWidth()), Math.max(height, menu.mHeight()));
         }
     }
 
@@ -317,20 +319,23 @@ public class Activity extends Controller {
     }
 
     final void animate(long loopTime) {
-        for (Iterator<Weak<Animation>> iterator = animations.iterator(); iterator.hasNext(); ) {
-            Weak<Animation> w = iterator.next();
+        ArrayList<Weak<Animation>> list = new ArrayList<>();
+
+        for (Weak<Animation> w : animations) {
             Animation anim = w.get();
             if (anim != null) {
                 if (anim.isPlaying()) {
                     anim.handle(loopTime);
                 }
                 if (!anim.isPlaying()) {
-                    iterator.remove();
+                    list.add(w);
                 }
             } else {
-                iterator.remove();
+                list.add(w);
             }
         }
+
+        animations.removeAll(list);
     }
 
     final void layout(float width, float height, float dpi) {

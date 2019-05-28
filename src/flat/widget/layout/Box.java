@@ -6,8 +6,6 @@ import flat.widget.Parent;
 import flat.widget.Widget;
 import flat.widget.enuns.Visibility;
 
-import java.util.Collections;
-
 public class Box extends Parent {
 
     public Box() {
@@ -41,17 +39,17 @@ public class Box extends Parent {
             if (child.getVisibility() == Visibility.Gone) continue;
 
 
-            if (child.getMeasureWidth() > childrenWidth) {
-                childrenWidth = child.getMeasureWidth();
+            if (child.mWidth() > childrenWidth) {
+                childrenWidth = child.mWidth();
             }
-            if (child.getLayoutMinWidth() > childrenMinWidth) {
-                childrenMinWidth = child.getLayoutMinWidth();
+            if (child.lMinWidth() > childrenMinWidth) {
+                childrenMinWidth = child.lMinWidth();
             }
-            if (child.getMeasureHeight() > childrenHeight) {
-                childrenHeight = child.getMeasureHeight();
+            if (child.mHeight() > childrenHeight) {
+                childrenHeight = child.mHeight();
             }
-            if (child.getLayoutMinHeight() > childrenMinHeight) {
-                childrenMinHeight = child.getLayoutMinHeight();
+            if (child.lMinHeight() > childrenMinHeight) {
+                childrenMinHeight = child.lMinHeight();
             }
         }
         if (getPrefWidth() == WRAP_CONTENT) {
@@ -69,7 +67,7 @@ public class Box extends Parent {
 
     @Override
     public void onLayout(float width, float height) {
-        setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
+        setLayout(width, height);
         layoutHelperBox(getChildren(), getInX(), getInY(), getInWidth(), getInHeight());
     }
 

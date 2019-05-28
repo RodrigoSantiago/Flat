@@ -86,7 +86,7 @@ public class Grid extends Parent {
 
     @Override
     public void onLayout(float width, float height) {
-        setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
+        setLayout(width, height);
 
         // Defined Width Math
         int match_parent_count = 0;
@@ -147,7 +147,7 @@ public class Grid extends Parent {
             for (int i = row; i < row2; i++) {
                 h += rowSizeLayout[i];
             }
-            child.onLayout(w, h);
+            child.onLayout(Math.min(child.mWidth(), w), Math.min(child.mHeight(), h));
             child.setPosition(x, y);
         }
     }
@@ -174,14 +174,14 @@ public class Grid extends Parent {
 
             int col = cell.getColumn();
             if (colSize[col] == WRAP_CONTENT) {
-                if (child.getMeasureWidth() > colSizeLayout[col]) {
-                    colSizeLayout[col] = child.getMeasureWidth();
+                if (child.mWidth() > colSizeLayout[col]) {
+                    colSizeLayout[col] = child.mWidth();
                 }
             }
             int row = cell.getRow();
             if (rowSize[row] == WRAP_CONTENT) {
-                if (child.getMeasureHeight() > rowSizeLayout[row]) {
-                    rowSizeLayout[row] = child.getMeasureHeight();
+                if (child.mHeight() > rowSizeLayout[row]) {
+                    rowSizeLayout[row] = child.mHeight();
                 }
             }
         }

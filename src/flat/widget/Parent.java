@@ -72,155 +72,162 @@ public abstract class Parent extends Widget {
         for (Widget child : children) {
             if (child.getVisibility() == Visibility.Gone) continue;
 
-            child.onLayout(w, h);
+            child.onLayout(Math.min(child.mWidth(), w), Math.min(child.mHeight(), h));
             child.setPosition(x, y);
         }
     }
 
-    protected static void layoutHelperHorizontal(List<? extends Widget> children, float x, float y, float w, float h,
-                                                 Align.Vertical valign) {
+    protected static void layoutHelperHorizontal(List<? extends Widget> children,
+                                                 float x, float y, float w, float h, Align.Vertical valign) {
 
-        float definedSpace = 0, definedMinSpace = 0;
+        float defSpace = 0, defMinSpace = 0;
         for (Widget child : children) {
             if (child.getVisibility() == Visibility.Gone) continue;
 
-            float mes = child.getMeasureWidth();
-            float min = child.getLayoutMinWidth();
-            if (mes != MATCH_PARENT) definedSpace += mes;
-            if (min != MATCH_PARENT) definedMinSpace += min;
+            float mes = child.mWidth();
+            float min = child.lMinWidth();
+            if (mes != MATCH_PARENT) defSpace += mes;
+            if (min != MATCH_PARENT) defMinSpace += min;
         }
-        if (definedMinSpace >= w) {
-            // Divide Space
+        if (defMinSpace >= w) {
+            float mul = w / defMinSpace;
+
             for (Widget child : children) {
                 if (child.getVisibility() == Visibility.Gone) continue;
 
-                float min = child.getLayoutMinWidth();
+                float min = child.lMinWidth();
                 if (min == MATCH_PARENT) min = 0;
 
-                child.onLayout(min * w / definedMinSpace, h);
+                child.onLayout(min * mul, Math.min(child.mHeight(), h));
             }
-        } else if (definedSpace >= w) {
-            // Divide Space
+        } else if (defSpace >= w) {
+            float mul = (w - defMinSpace) / (defSpace - defMinSpace);
+
             for (Widget child : children) {
                 if (child.getVisibility() == Visibility.Gone) continue;
 
-                float mes = child.getMeasureWidth();
-                float min = child.getLayoutMinWidth();
+                float mes = child.mWidth();
+                float min = child.lMinWidth();
                 if (mes == MATCH_PARENT) mes = 0;
                 if (min == MATCH_PARENT) min = 0;
 
-                child.onLayout(min + Math.max(0, mes - min) / (definedSpace - definedMinSpace) * (w - definedMinSpace), h);
+                child.onLayout(min + Math.max(0, mes - min) * mul, Math.min(child.mHeight(), h));
             }
         } else {
-            // Defined Space
-            int match_parent_count = 0;
-            float undefinedMinSpace = 0;
+            int undefCount = 0;
+            float undefMinSpace = 0;
             float reamingW = w;
+
+            // Defined Space
             for (Widget child : children) {
                 if (child.getVisibility() == Visibility.Gone) continue;
 
-                if (child.getMeasureWidth() == MATCH_PARENT) {
-                    match_parent_count++;
-                    float min = child.getLayoutMinWidth();
-                    if (min != MATCH_PARENT) undefinedMinSpace += min;
+                if (child.mWidth() == MATCH_PARENT) {
+                    undefCount++;
+                    float min = child.lMinWidth();
+                    if (min != MATCH_PARENT) undefMinSpace += min;
                 } else {
-                    child.onLayout(child.getMeasureWidth(), h);
-                    reamingW -= child.getWidth();
+                    child.onLayout(child.mWidth(), Math.min(child.mHeight(), h));
+                    reamingW -= child.lWidth();
                 }
             }
+
             // Undefined Space
             for (Widget child : children) {
                 if (child.getVisibility() == Visibility.Gone) continue;
 
-                if (child.getMeasureWidth() == MATCH_PARENT) {
-                    float min = child.getLayoutMinWidth();
+                if (child.mWidth() == MATCH_PARENT) {
+                    float min = child.lMinWidth();
                     if (min == MATCH_PARENT) min = 0;
 
-                    child.onLayout(min + (reamingW - undefinedMinSpace) / match_parent_count, h);
-                    undefinedMinSpace -= min;
-                    reamingW -= child.getWidth();
-                    match_parent_count--;
+                    child.onLayout(min + (reamingW - undefMinSpace) / undefCount, Math.min(child.mHeight(), h));
+                    reamingW -= child.lWidth();
+                    undefMinSpace -= min;
+                    undefCount--;
                 }
             }
         }
-        float xoff = x;
+
         for (Widget child : children) {
-            child.setPosition(xoff, yOff(child.getHeight(), y, y + h, valign));
-            xoff += child.getWidth();
+            child.setPosition(x, yOff(child.lHeight(), y, y + h, valign));
+            x += child.lWidth();
         }
     }
 
-    protected static void layoutHelperVertical(List<? extends Widget> children, float x, float y, float w, float h,
-                                               Align.Horizontal halign) {
+    protected static void layoutHelperVertical(List<? extends Widget> children,
+                                               float x, float y, float w, float h, Align.Horizontal halign) {
 
-        float definedSpace = 0, definedMinSpace = 0;
+        float defSpace = 0, defMinSpace = 0;
         for (Widget child : children) {
             if (child.getVisibility() == Visibility.Gone) continue;
 
-            float mes = child.getMeasureHeight();
-            float min = child.getLayoutMinHeight();
-            if (mes != MATCH_PARENT) definedSpace += mes;
-            else if (min != MATCH_PARENT) definedSpace += min;
-            if (min != MATCH_PARENT) definedMinSpace += min;
+            float mes = child.mHeight();
+            float min = child.lMinHeight();
+            if (mes != MATCH_PARENT) defSpace += mes;
+            if (min != MATCH_PARENT) defMinSpace += min;
         }
-        if (definedMinSpace > h) {
-            // Divide Space
+        if (defMinSpace >= h) {
+            float mul = h / defMinSpace;
+
             for (Widget child : children) {
                 if (child.getVisibility() == Visibility.Gone) continue;
 
-                float min = child.getLayoutMinHeight();
+                float min = child.lMinHeight();
                 if (min == MATCH_PARENT) min = 0;
 
-                child.onLayout(w, min * h / definedMinSpace);
+                child.onLayout(Math.min(child.mWidth(), w), min * mul);
             }
-        } else if (definedSpace > h) {
-            // Divide Space
+        } else if (defSpace >= h) {
+            float mul = (h - defMinSpace) / (defSpace - defMinSpace);
+
             for (Widget child : children) {
                 if (child.getVisibility() == Visibility.Gone) continue;
 
-                float mes = child.getMeasureHeight();
-                float min = child.getLayoutMinHeight();
+                float mes = child.mHeight();
+                float min = child.lMinHeight();
                 if (mes == MATCH_PARENT) mes = 0;
                 if (min == MATCH_PARENT) min = 0;
 
-                child.onLayout(w, min + Math.max(0, mes - min) / (definedSpace - definedMinSpace) * (h - definedMinSpace));
+                child.onLayout(Math.min(child.mWidth(), w), min + Math.max(0, mes - min) * mul);
             }
         } else {
-            // Defined Space
-            int match_parent_count = 0;
-            float undefinedMinSpace = 0;
+            int undefCount = 0;
+            float undefMinSpace = 0;
             float reamingH = h;
+
+            // Defined Space
             for (Widget child : children) {
                 if (child.getVisibility() == Visibility.Gone) continue;
 
-                if (child.getMeasureHeight() == MATCH_PARENT) {
-                    match_parent_count++;
-                    float min = child.getLayoutMinHeight();
-                    if (min != MATCH_PARENT) undefinedMinSpace += min;
+                if (child.mHeight() == MATCH_PARENT) {
+                    undefCount++;
+                    float min = child.lMinHeight();
+                    if (min != MATCH_PARENT) undefMinSpace += min;
                 } else {
-                    child.onLayout(w, child.getMeasureHeight());
-                    reamingH -= child.getHeight();
+                    child.onLayout(Math.min(child.mWidth(), w), child.mHeight());
+                    reamingH -= child.lHeight();
                 }
             }
+
             // Undefined Space
             for (Widget child : children) {
                 if (child.getVisibility() == Visibility.Gone) continue;
 
-                if (child.getMeasureHeight() == MATCH_PARENT) {
-                    float min = child.getLayoutMinHeight();
+                if (child.mHeight() == MATCH_PARENT) {
+                    float min = child.lMinHeight();
                     if (min == MATCH_PARENT) min = 0;
 
-                    child.onLayout(w, min + (reamingH - undefinedMinSpace) / match_parent_count);
-                    undefinedMinSpace -= min;
-                    reamingH -= child.getHeight();
-                    match_parent_count--;
+                    child.onLayout(Math.min(child.mWidth(), w), min + (reamingH - undefMinSpace) / undefCount);
+                    reamingH -= child.lHeight();
+                    undefMinSpace -= min;
+                    undefCount--;
                 }
             }
         }
-        float yoff = y;
+
         for (Widget child : children) {
-            child.setPosition(xOff(child.getWidth(), x, x + w, halign), yoff);
-            yoff += child.getHeight();
+            child.setPosition(xOff(child.lWidth(), x, x + w, halign), y);
+            y += child.lHeight();
         }
     }
 

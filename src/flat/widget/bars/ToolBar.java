@@ -89,26 +89,26 @@ public class ToolBar extends Parent {
         if (navButton != null) {
             navButton.onMeasure();
 
-            childrenWidth += navButton.getMeasureWidth();
-            childrenMinWidth += navButton.getLayoutMinWidth();
-            if (navButton.getMeasureHeight() > childrenHeight) {
-                childrenHeight = navButton.getMeasureHeight();
+            childrenWidth += navButton.mWidth();
+            childrenMinWidth += navButton.lMinWidth();
+            if (navButton.mHeight() > childrenHeight) {
+                childrenHeight = navButton.mHeight();
             }
-            if (navButton.getLayoutMinHeight() > childrenMinHeight) {
-                childrenMinHeight = navButton.getLayoutMinHeight();
+            if (navButton.lMinHeight() > childrenMinHeight) {
+                childrenMinHeight = navButton.lMinHeight();
             }
         }
 
         if (rightButton != null) {
             rightButton.onMeasure();
 
-            childrenWidth += rightButton.getMeasureWidth();
-            childrenMinWidth += rightButton.getLayoutMinWidth();
-            if (rightButton.getMeasureHeight() > childrenHeight) {
-                childrenHeight = rightButton.getMeasureHeight();
+            childrenWidth += rightButton.mWidth();
+            childrenMinWidth += rightButton.lMinWidth();
+            if (rightButton.mHeight() > childrenHeight) {
+                childrenHeight = rightButton.mHeight();
             }
-            if (rightButton.getLayoutMinHeight() > childrenMinHeight) {
-                childrenMinHeight = rightButton.getLayoutMinHeight();
+            if (rightButton.lMinHeight() > childrenMinHeight) {
+                childrenMinHeight = rightButton.lMinHeight();
             }
         }
 
@@ -121,13 +121,13 @@ public class ToolBar extends Parent {
             child.onMeasure();
             if (child.getVisibility() == Visibility.Gone) continue;
 
-            childrenWidth += child.getMeasureWidth();
-            childrenMinWidth += child.getLayoutMinWidth();
-            if (child.getMeasureHeight() > childrenHeight) {
-                childrenHeight = child.getMeasureHeight();
+            childrenWidth += child.mWidth();
+            childrenMinWidth += child.lMinWidth();
+            if (child.mHeight() > childrenHeight) {
+                childrenHeight = child.mHeight();
             }
-            if (child.getLayoutMinHeight() > childrenMinHeight) {
-                childrenMinHeight = child.getLayoutMinHeight();
+            if (child.lMinHeight() > childrenMinHeight) {
+                childrenMinHeight = child.lMinHeight();
             }
         }
 
@@ -147,21 +147,21 @@ public class ToolBar extends Parent {
 
     @Override
     public void onLayout(float width, float height) {
-        setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
+        setLayout(Math.min(width, mWidth()), Math.min(mHeight(), height));
         float x = getInX();
         float w = getInWidth();
         width = getInWidth();
 
         float rWidth = 0;
         if (items.size() == 1) {
-            rWidth = Math.min(w, items.get(0).getMeasureWidth());
+            rWidth = Math.min(w, items.get(0).mWidth());
         } else if (rightButton != null) {
-            rWidth = Math.min(w, rightButton.getMeasureWidth());
+            rWidth = Math.min(w, rightButton.mWidth());
         }
 
         float nWidth = 0;
         if (navButton != null) {
-            navButton.onLayout(Math.min(w - rWidth, navButton.getMeasureWidth()), navButton.getMeasureHeight());
+            navButton.onLayout(Math.min(w - rWidth, navButton.mWidth()), navButton.mHeight());
             navButton.setPosition(x, getInY());
 
             nWidth = navButton.getWidth();
@@ -177,12 +177,12 @@ public class ToolBar extends Parent {
         float reaming = width - nWidth - tWidth;
         if (items.size() == 1) {
             ToolItem item = items.get(0);
-            item.onLayout(Math.min(reaming, item.getMeasureWidth()), item.getMeasureHeight());
+            item.onLayout(Math.min(reaming, item.mWidth()), item.mHeight());
         } else {
 
             boolean hide = false;
             for (ToolItem item : items) {
-                item.onLayout(Math.min(width - nWidth - tWidth, item.getMeasureWidth()), item.getMeasureHeight());
+                item.onLayout(Math.min(width - nWidth - tWidth, item.mWidth()), item.mHeight());
                 reaming -= item.getWidth();
                 if (reaming < 0 || !item.isShowAction()) {
                     hide = true;
@@ -208,7 +208,7 @@ public class ToolBar extends Parent {
                 }
 
                 if (rightButton != null) {
-                    rightButton.onLayout(rWidth, rightButton.getMeasureHeight());
+                    rightButton.onLayout(rWidth, rightButton.mHeight());
                     rightButton.setPosition(x + w - rightButton.getWidth(), getInY());
                     rightButton.setVisibility(Visibility.Visible);
                 }

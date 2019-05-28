@@ -62,17 +62,17 @@ public class Tab extends Parent {
             TabLabel act = labels.get(activePage);
 
             // Padding is for beauty !
-            if ((headerWidth - getWidth()) > 0 &&
-                    act.getX() < getInX() || act.getX() + act.getWidth() > getInX() + getInWidth()) {
+            if ((headerWidth - getInWidth()) > 0 &&
+                    act.getX() < getInX() || act.getX() + act.lWidth() > getInX() + getInWidth()) {
                 float minX = getPaddingLeft();
                 for (TabLabel label : labels) {
                     if (label != act) {
-                        minX += label.getWidth();
+                        minX += label.lWidth();
                     } else {
                         break;
                     }
                 }
-                float maxX = minX + act.getWidth();
+                float maxX = minX + act.lWidth();
                 minX = (minX - getPaddingLeft()) / (headerWidth - getOutWidth());
                 maxX = ((maxX + getPaddingRight()) - getOutWidth()) / (headerWidth - getOutWidth());
                 if (headerScroll > minX) setHeaderScroll(headerScroll * (1 - anim.getT()) + minX * anim.getT());
@@ -146,15 +146,6 @@ public class Tab extends Parent {
 
     @Override
     public void onDraw(SmartContext context) {
-
-        final float cx = getMarginLeft() + getMarginRight() > getWidth() ? (getMarginLeft() + getWidth() - getMarginRight()) / 2f : getMarginLeft();
-        final float cy = getMarginTop() + getMarginBottom() > getHeight() ? (getMarginTop() + getHeight() - getMarginBottom()) / 2f : getMarginTop();
-        final float cwidth = Math.max(0, getWidth() - getMarginLeft() - getMarginRight());
-        final float cheight = Math.max(0, getHeight() - getMarginTop() - getMarginBottom());
-
-        context.setTransform2D(getTransform());
-        context.drawRoundRect(cx, cy, cwidth, cheight, getRadiusTop(), getRadiusRight(), getRadiusBottom(), getRadiusLeft(), true);
-
         Shape clip = backgroundClip(context);
         backgroundDraw(getBackgroundColor(), getBorderColor(), getRippleColor(), context);
 
@@ -191,13 +182,13 @@ public class Tab extends Parent {
             context.setTransform2D(getTransform());
             context.setColor(headerIndicatorColor);
             float x = Interpolation.mix(labelA.getX(), labelB.getX(), anim.getT());
-            float w = Interpolation.mix(labelA.getWidth(), labelB.getWidth(), anim.getT());
+            float w = Interpolation.mix(labelA.lWidth(), labelB.lWidth(), anim.getT());
             context.drawRect(x, getInY() + headerHeight - headerIndicatorHeight, w, headerIndicatorHeight, true);
         } else {
             TabLabel label = labels.get(activePage);
             context.setTransform2D(getTransform());
             context.setColor(headerIndicatorColor);
-            context.drawRect(label.getX(), getInY() + headerHeight - headerIndicatorHeight, label.getWidth(), headerIndicatorHeight, true);
+            context.drawRect(label.getX(), getInY() + headerHeight - headerIndicatorHeight, label.lWidth(), headerIndicatorHeight, true);
         }
 
         context.setTransform2D(null);
@@ -249,28 +240,28 @@ public class Tab extends Parent {
 
     @Override
     public void onLayout(float width, float height) {
-        setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
+        setLayout(Math.min(width, mWidth()), Math.min(mHeight(), height));
 
         if (isHeaderScrollable()) {
             // Defined Width
             int match_parent_count = 0;
             float maxW = 0;
             for (TabLabel child : labels) {
-                float w = child.getMeasureWidth();
+                float w = child.mWidth();
                 if (w == MATCH_PARENT) {
                     match_parent_count += 1;
                 } else {
                     child.onLayout(w, headerHeight);
-                    maxW += child.getWidth();
+                    maxW += child.lWidth();
                 }
             }
             // Undefined Width (divide)
             float reamingW = getInWidth() - maxW;
             for (TabLabel child : labels) {
-                float w = child.getMeasureWidth();
+                float w = child.mWidth();
                 if (w == MATCH_PARENT) {
-                    child.onLayout(Math.max(child.getLayoutMinWidth(), reamingW / match_parent_count), headerHeight);
-                    maxW += child.getWidth();
+                    child.onLayout(Math.max(child.lMinWidth(), reamingW / match_parent_count), headerHeight);
+                    maxW += child.lWidth();
                 }
             }
             // Positions
@@ -278,7 +269,7 @@ public class Tab extends Parent {
             float x = -(headerScroll * mx) + getPaddingLeft() + getMarginLeft();
             for (TabLabel child : labels) {
                 child.setPosition(x, getInY());
-                x += child.getWidth();
+                x += child.lWidth();
             }
             headerWidth = maxW + getPaddingLeft() + getPaddingRight();
         } else {
@@ -376,8 +367,8 @@ public class Tab extends Parent {
     public void fireScroll(ScrollEvent scrollEvent) {
         if (!scrollEvent.isConsumed() && headerHovered) {
             float prev = headerScroll;
-            if (headerWidth > 0 && getWidth() > 0) {
-                setHeaderScroll(headerScroll - (scrollEvent.getDeltaY() * getWidth() / headerWidth) / 6f);
+            if (headerWidth > 0 && getInWidth() > 0) {
+                setHeaderScroll(headerScroll - (scrollEvent.getDeltaY() * getInWidth() / headerWidth) / 6f);
             } else {
                 setHeaderScroll(headerScroll - (scrollEvent.getDeltaY() * 0.1f));
             }
