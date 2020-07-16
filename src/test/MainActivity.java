@@ -37,6 +37,7 @@ public class MainActivity extends Activity {
     @Flat
     public void onAction(ActionEvent event) {
         Hide hide = new Hide(event.getSource());
+        event.getSource().setClickable(false);
         hide.setDuration(1000);
         hide.play(this);
     }

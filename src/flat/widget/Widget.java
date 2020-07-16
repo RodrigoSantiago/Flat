@@ -50,6 +50,7 @@ public class Widget implements Gadget {
     private float minWidth, minHeight, maxWidth = MATCH_PARENT, maxHeight = MATCH_PARENT, prefWidth, prefHeight;
     private float measureWidth, measureHeight;
     private float layoutWidth, layoutHeight;
+    private float offsetWidth, offsetHeight;
 
     private int visibility = Visibility.Visible.ordinal();
     private Cursor cursor;
@@ -372,8 +373,8 @@ public class Widget implements Gadget {
         this.layoutWidth = width;
         this.layoutHeight = height;
 
-        setWidth(width);
-        setHeight(height);
+        setWidth(Math.max(0, width + offsetWidth));
+        setHeight(Math.max(0, height + offsetHeight));
     }
 
     public float lWidth() {
@@ -901,11 +902,11 @@ public class Widget implements Gadget {
         return iny;
     }
 
-    protected float getInWidth() {
+    public float getInWidth() {
         return inw;
     }
 
-    protected float getInHeight() {
+    public float getInHeight() {
         return inh;
     }
 
@@ -917,11 +918,11 @@ public class Widget implements Gadget {
         return bg.y;
     }
 
-    protected float getOutWidth() {
+    public float getOutWidth() {
         return bg.width;
     }
 
-    protected float getOutHeight() {
+    public float getOutHeight() {
         return bg.height;
     }
 
@@ -952,6 +953,28 @@ public class Widget implements Gadget {
         if (this.height != height) {
             this.height = height;
             updateRect();
+        }
+    }
+
+    public float getOffsetWidth() {
+        return offsetWidth;
+    }
+
+    public void setOffsetWidth(float offsetWidth) {
+        if (this.offsetWidth != offsetWidth) {
+            this.offsetWidth = offsetWidth;
+            invalidate(true);
+        }
+    }
+
+    public float getOffsetHeight() {
+        return offsetHeight;
+    }
+
+    public void setOffsetHeight(float offsetHeight) {
+        if (this.offsetHeight != offsetHeight) {
+            this.offsetHeight = offsetHeight;
+            invalidate(true);
         }
     }
 

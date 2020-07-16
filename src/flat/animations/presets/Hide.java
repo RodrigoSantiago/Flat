@@ -17,17 +17,18 @@ public class Hide extends NormalizedAnimation {
     protected void evaluate() {
         super.evaluate();
         if (isStopped()) {
-            _dimension = widget.getWidth();
+            _dimension = widget.getInHeight();
         }
     }
 
     @Override
     protected void compute(float t) {
-        float nDimension = Interpolation.mix(_dimension, 0, t);
-        widget.setPrefWidth(nDimension);
-        widget.setMaxWidth(nDimension);
-        widget.setMinWidth(nDimension);
-
+        float nDimension = Interpolation.mix(1, 0, t);
+        widget.setPrefHeight(_dimension * nDimension);
+        widget.setMaxHeight(_dimension * nDimension);
+        widget.setMinHeight(_dimension * nDimension);
+        widget.setTranslateY(-_dimension * (1 - nDimension));
+        widget.setOffsetHeight(_dimension - (_dimension * nDimension));
         if (t == 1) {
             if (widget.getParent() != null) {
                 widget.getParent().remove(widget);

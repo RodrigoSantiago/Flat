@@ -45,16 +45,16 @@ The main purpose is to work similar to the "Activities" system with the ability 
  - ProgressCircle
  - Chip
  - Drawer
+ - Toolbar
+ - Menus
  
 ### Todo - List
  - [ ] Extended Widgets
     - [ ] Backdrop
-    - [ ] Toolbar
     - [ ] BottomNav
     - [ ] ListView
     - [ ] TreeView
     - [ ] Table
- - [x] Menus
  - [ ] Tooltips
  - [ ] Dialogs
    - [ ] DialogActivity
