@@ -2,7 +2,6 @@ package flat.math.shapes;
 
 import flat.math.*;
 import flat.math.util.FlatteningPathIterator;
-import flat.math.util.Platform;
 
 import java.io.Serializable;
 import java.util.NoSuchElementException;
@@ -156,7 +155,7 @@ public final class Circle implements Shape, Serializable {
 
     @Override
     public int hashCode() {
-        return Platform.hashCode(x) ^ Platform.hashCode(y) ^ Platform.hashCode(radius);
+        return Float.hashCode(x) ^ Float.hashCode(y) ^ Float.hashCode(radius);
     }
 
     @Override

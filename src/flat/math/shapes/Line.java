@@ -1,7 +1,6 @@
 package flat.math.shapes;
 
 import flat.math.*;
-import flat.math.util.Platform;
 
 import java.io.Serializable;
 import java.util.NoSuchElementException;
@@ -204,7 +203,7 @@ public final class Line implements Shape, Serializable {
 
     @Override
     public int hashCode() {
-        return Platform.hashCode(x1) ^ Platform.hashCode(y1) ^ Platform.hashCode(x2) ^ Platform.hashCode(y2);
+        return Float.hashCode(x1) ^ Float.hashCode(y1) ^ Float.hashCode(x2) ^ Float.hashCode(y2);
     }
 
     @Override

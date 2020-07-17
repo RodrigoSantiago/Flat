@@ -2,8 +2,6 @@ package flat.math;
 
 import java.io.Serializable;
 
-import flat.math.util.Platform;
-
 /**
  * A 4D point class; useful for Matrices and 3D transforms
  */
@@ -276,6 +274,6 @@ public final class Vector4 implements Serializable {
 
     @Override
     public int hashCode() {
-        return Platform.hashCode(x) ^ Platform.hashCode(y) ^ Platform.hashCode(z) ^ Platform.hashCode(w);
+        return Float.hashCode(x) ^ Float.hashCode(y) ^ Float.hashCode(z) ^ Float.hashCode(w);
     }
 }

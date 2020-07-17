@@ -1,7 +1,5 @@
 package flat.math;
 
-import flat.math.util.Platform;
-
 import java.io.Serializable;
 
 /**
@@ -523,9 +521,9 @@ public final class Vector3 implements Serializable {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + Platform.hashCode(x);
-        result = prime * result + Platform.hashCode(y);
-        result = prime * result + Platform.hashCode(z);
+        result = prime * result + Float.hashCode(x);
+        result = prime * result + Float.hashCode(y);
+        result = prime * result + Float.hashCode(z);
         return result;
     }
 

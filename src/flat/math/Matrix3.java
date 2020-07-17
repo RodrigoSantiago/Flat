@@ -1,7 +1,6 @@
 package flat.math;
 
 import flat.math.util.NoninvertibleTransformException;
-import flat.math.util.Platform;
 
 import java.io.Serializable;
 
@@ -564,7 +563,7 @@ public final class Matrix3 implements Serializable {
 
     @Override
     public int hashCode() {
-        return Platform.hashCode(val[M00] + val[M01] + val[M02] + val[M10] + val[M11] + val[M12] + val[M20] + val[M21] + val[M22]);
+        return Float.hashCode(val[M00] + val[M01] + val[M02] + val[M10] + val[M11] + val[M12] + val[M20] + val[M21] + val[M22]);
     }
 
     /**

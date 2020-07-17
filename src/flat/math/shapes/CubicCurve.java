@@ -2,7 +2,6 @@ package flat.math.shapes;
 
 import flat.math.*;
 import flat.math.util.FlatteningPathIterator;
-import flat.math.util.Platform;
 
 import java.io.Serializable;
 import java.util.NoSuchElementException;
@@ -223,8 +222,8 @@ public final class CubicCurve implements Shape, Serializable {
 
     @Override
     public int hashCode() {
-        return Platform.hashCode(x1) ^ Platform.hashCode(y1) ^ Platform.hashCode(x2) ^ Platform.hashCode(y2) ^
-                Platform.hashCode(ctrlx1) ^ Platform.hashCode(ctrly1) ^ Platform.hashCode(ctrlx2) ^ Platform.hashCode(ctrly2);
+        return Float.hashCode(x1) ^ Float.hashCode(y1) ^ Float.hashCode(x2) ^ Float.hashCode(y2) ^
+                Float.hashCode(ctrlx1) ^ Float.hashCode(ctrly1) ^ Float.hashCode(ctrlx2) ^ Float.hashCode(ctrly2);
     }
 
     @Override

@@ -466,14 +466,14 @@ public final class BasicStroke implements Stroke {
      */
     @Override
     public int hashCode() {
-        int hash = Float.floatToIntBits(width);
+        int hash = Float.hashCode(width);
         hash = hash * 31 + join;
         hash = hash * 31 + cap;
-        hash = hash * 31 + Float.floatToIntBits(miterLimit);
+        hash = hash * 31 + Float.hashCode(miterLimit);
         if (dash != null) {
-            hash = hash * 31 + Float.floatToIntBits(dashPhase);
+            hash = hash * 31 + Float.hashCode(dashPhase);
             for (int i = 0; i < dash.length; i++) {
-                hash = hash * 31 + Float.floatToIntBits(dash[i]);
+                hash = hash * 31 + Float.hashCode(dash[i]);
             }
         }
         return hash;

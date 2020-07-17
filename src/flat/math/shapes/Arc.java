@@ -2,7 +2,6 @@ package flat.math.shapes;
 
 import flat.math.*;
 import flat.math.util.FlatteningPathIterator;
-import flat.math.util.Platform;
 
 import java.io.Serializable;
 import java.util.NoSuchElementException;
@@ -387,8 +386,8 @@ public final class Arc implements Shape, Serializable {
 
     @Override
     public int hashCode() {
-        return Platform.hashCode(x) ^ Platform.hashCode(y) ^ Platform.hashCode(width) ^ Platform.hashCode(height) ^
-                Platform.hashCode(start) ^ Platform.hashCode(extent);
+        return Float.hashCode(x) ^ Float.hashCode(y) ^ Float.hashCode(width) ^ Float.hashCode(height) ^
+                Float.hashCode(start) ^ Float.hashCode(extent);
     }
 
     @Override

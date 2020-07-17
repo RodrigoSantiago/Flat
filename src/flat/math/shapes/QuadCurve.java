@@ -2,7 +2,6 @@ package flat.math.shapes;
 
 import flat.math.*;
 import flat.math.util.FlatteningPathIterator;
-import flat.math.util.Platform;
 
 import java.io.Serializable;
 import java.util.NoSuchElementException;
@@ -210,8 +209,8 @@ public final class QuadCurve implements Shape, Serializable {
 
     @Override
     public int hashCode() {
-        return Platform.hashCode(x1) ^ Platform.hashCode(y1) ^ Platform.hashCode(x2) ^ Platform.hashCode(y2) ^
-                Platform.hashCode(ctrlx) ^ Platform.hashCode(ctrly);
+        return Float.hashCode(x1) ^ Float.hashCode(y1) ^ Float.hashCode(x2) ^ Float.hashCode(y2) ^
+                Float.hashCode(ctrlx) ^ Float.hashCode(ctrly);
     }
 
     @Override

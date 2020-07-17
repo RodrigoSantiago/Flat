@@ -4,7 +4,6 @@ import flat.math.Affine;
 import flat.math.Mathf;
 import flat.math.Vector2;
 import flat.math.util.FlatteningPathIterator;
-import flat.math.util.Platform;
 
 import java.io.Serializable;
 import java.util.NoSuchElementException;
@@ -218,7 +217,7 @@ public final class RoundRectangle implements Shape, Serializable {
 
     @Override
     public int hashCode () {
-        return Platform.hashCode(x) ^ Platform.hashCode(y) ^ Platform.hashCode(width) ^ Platform.hashCode(height);
+        return Float.hashCode(x) ^ Float.hashCode(y) ^ Float.hashCode(width) ^ Float.hashCode(height);
     }
 
     @Override

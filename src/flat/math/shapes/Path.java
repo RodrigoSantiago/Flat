@@ -6,7 +6,6 @@ import flat.math.*;
 import flat.math.operations.Area;
 import flat.math.util.FlatteningPathIterator;
 import flat.math.util.IllegalPathStateException;
-import flat.math.util.Platform;
 
 /**
  * Represents a path constructed from lines and curves and which can contain subpaths.
@@ -46,7 +45,7 @@ public final class Path implements PathConsumer, Shape, Cloneable {
 
     @Override
     public Path clone() {
-        return new Path(rule, Platform.clone(types), Platform.clone(points), typeSize, pointSize);
+        return new Path(rule, types.clone(), points.clone(), typeSize, pointSize);
     }
 
     public void setWindingRule(int rule) {

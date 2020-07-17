@@ -1,8 +1,5 @@
 package flat.math;
 
-import flat.math.util.NoninvertibleTransformException;
-import flat.math.util.Platform;
-
 /**
  * Implements an affine (3x2 matrix) transform. The transformation matrix has the form:
  * [ m00, m10, m02 ]
@@ -489,7 +486,7 @@ public final class Affine {
 
     @Override
     public int hashCode() {
-        return Platform.hashCode(m00 + m01 + m02 + m10 + m11 + m12);
+        return Float.hashCode(m00 + m01 + m02 + m10 + m11 + m12);
     }
 
     /**
