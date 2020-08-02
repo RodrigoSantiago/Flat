@@ -10,7 +10,7 @@ import flat.math.util.IllegalPathStateException;
 /**
  * Represents a path constructed from lines and curves and which can contain subpaths.
  */
-public final class Path implements PathConsumer, Shape, Cloneable {
+public class Path implements PathConsumer, Shape, Cloneable {
 
     /**
      * Specifies the even/odd rule for determining the interior of a path.

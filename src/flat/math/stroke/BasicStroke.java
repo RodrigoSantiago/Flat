@@ -1,530 +1,1810 @@
 package flat.math.stroke;
 
-import flat.math.operations.Area;
-import flat.math.shapes.*;
+/*
+ *  Licensed to the Apache Software Foundation (ASF) under one or more
+ *  contributor license agreements.  See the NOTICE file distributed with
+ *  this work for additional information regarding copyright ownership.
+ *  The ASF licenses this file to You under the Apache License, Version 2.0
+ *  (the "License"); you may not use this file except in compliance with
+ *  the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+/**
+ * @author Denis M. Kishenko
+ */
 
-public final class BasicStroke implements Stroke {
-    public static final int CAP_BUTT = Stroker.CAP_BUTT;
-    public static final int CAP_ROUND = Stroker.CAP_ROUND;
-    public static final int CAP_SQUARE = Stroker.CAP_SQUARE;
+import flat.math.shapes.Path;
+import flat.math.shapes.PathIterator;
+import flat.math.shapes.Shape;
+import flat.math.shapes.Stroke;
 
-    public static final int JOIN_MITER = Stroker.JOIN_MITER;
-    public static final int JOIN_ROUND = Stroker.JOIN_ROUND;
-    public static final int JOIN_BEVEL = Stroker.JOIN_BEVEL;
+public class BasicStroke implements Stroke {
 
-    public static final int TYPE_CENTERED = 0;
-    public static final int TYPE_INNER = 1;
-    public static final int TYPE_OUTER = 2;
+    public static final int CAP_BUTT = 0;
+    public static final int CAP_ROUND = 1;
+    public static final int CAP_SQUARE = 2;
 
-    public static final BasicStroke line = new BasicStroke(1f);
+    public static final int JOIN_MITER = 0;
+    public static final int JOIN_ROUND = 1;
+    public static final int JOIN_BEVEL = 2;
 
-    private final float width;
-    private final int type;
-    private final int cap;
-    private final int join;
-    private final float miterLimit;
-    private final float dash[];
-    private final float dashPhase;
+    /**
+     * Constants for calculating
+     */
+    static final int MAX_LEVEL = 20;        // Maximal deepness of curve subdivision
+    static final double CURVE_DELTA = 2.0;  // Width tolerance
+    static final double CORNER_ANGLE = 4.0; // Minimum corner angel
+    static final double CORNER_ZERO = 0.01; // Zero angle
+    static final double CUBIC_ARC = 4.0 / 3.0 * (Math.sqrt(2.0) - 1);
+
+    /**
+     * Stroke width
+     */
+    float width;
+
+    /**
+     * Stroke cap type
+     */
+    int cap;
+
+    /**
+     * Stroke join type
+     */
+    int join;
+
+    /**
+     * Stroke miter limit
+     */
+    float miterLimit;
+
+    /**
+     * Stroke dashes array
+     */
+    float dash[];
+
+    /**
+     * Stroke dash phase
+     */
+    float dashPhase;
+
+    /**
+     * The temporary pre-calculated values
+     */
+    double curveDelta;
+    double cornerDelta;
+    double zeroDelta;
+
+    double w2;
+    double fmx, fmy;
+    double scx, scy, smx, smy;
+    double mx, my, cx, cy;
+
+    /**
+     * The temporary indicators
+     */
+    boolean isMove;
+    boolean isFirst;
+    boolean checkMove;
+
+    /**
+     * The temporary and destination work paths
+     */
+    BufferedPath dst, lp, rp, sp;
+
+    /**
+     * Stroke dasher class
+     */
+    Dasher dasher;
 
     public BasicStroke() {
-        this(1.0f);
-    }
-
-    public BasicStroke(BasicStroke other) {
-        this(other.width, other.cap, other.join, other.miterLimit, other.dash, other.dashPhase, other.type);
-    }
-
-    public BasicStroke(float width) {
-        this(width, CAP_SQUARE, JOIN_MITER);
-    }
-
-    public BasicStroke(float width, int cap, int join) {
-        this(width, cap, join, 10.0f);
-    }
-
-    public BasicStroke(float width, int cap, int join, float miterLimit) {
-        this(width, cap, join, miterLimit, null, 0);
+        this(1.0f, CAP_SQUARE, JOIN_MITER, 10.0f, null, 0.0f);
     }
 
     public BasicStroke(float width, int cap, int join, float miterLimit, float[] dash, float dashPhase) {
-        this(width, cap, join, miterLimit, dash, dashPhase, TYPE_CENTERED);
-    }
-
-    public BasicStroke(float width, int cap, int join, float miterLimit, float[] dash, float dashPhase, int type) {
-        if (type != TYPE_CENTERED && type != TYPE_INNER && type != TYPE_OUTER) {
-            throw new IllegalArgumentException("illegal type");
-        }
         if (width < 0.0f) {
-            throw new IllegalArgumentException("negative width");
+            // awt.133=Negative width
+            throw new IllegalArgumentException(("awt.133")); //$NON-NLS-1$
         }
         if (cap != CAP_BUTT && cap != CAP_ROUND && cap != CAP_SQUARE) {
-            throw new IllegalArgumentException("illegal end cap value");
+            // awt.134=Illegal cap
+            throw new IllegalArgumentException(("awt.134")); //$NON-NLS-1$
         }
-        if (join == JOIN_MITER) {
-            if (miterLimit < 1.0f) {
-                throw new IllegalArgumentException("miter limit < 1");
+        if (join != JOIN_MITER && join != JOIN_ROUND && join != JOIN_BEVEL) {
+            // awt.135=Illegal join
+            throw new IllegalArgumentException(("awt.135")); //$NON-NLS-1$
+        }
+        if (join == JOIN_MITER && miterLimit < 1.0f) {
+            // awt.136=miterLimit less than 1.0f
+            throw new IllegalArgumentException(("awt.136")); //$NON-NLS-1$
+        }
+        if (dash != null) {
+            if (dashPhase < 0.0f) {
+                // awt.137=Negative dashPhase
+                throw new IllegalArgumentException(("awt.137")); //$NON-NLS-1$
             }
-        } else if (join != JOIN_ROUND && join != JOIN_BEVEL) {
-            throw new IllegalArgumentException("illegal line join value");
+            if (dash.length == 0) {
+                // awt.138=Zero dash length
+                throw new IllegalArgumentException(("awt.138")); //$NON-NLS-1$
+            }
+            ZERO: {
+                for(int i = 0; i < dash.length; i++) {
+                    if (dash[i] < 0.0) {
+                        // awt.139=Negative dash[{0}]
+                        throw new IllegalArgumentException(("awt.139")); //$NON-NLS-1$
+                    }
+                    if (dash[i] > 0.0) {
+                        break ZERO;
+                    }
+                }
+                // awt.13A=All dash lengths zero
+                throw new IllegalArgumentException(("awt.13A")); //$NON-NLS-1$
+            }
         }
-        this.type = type;
         this.width = width;
         this.cap = cap;
         this.join = join;
         this.miterLimit = miterLimit;
-
-        if (dash != null) {
-            if (dashPhase < 0.0f) {
-                throw new IllegalArgumentException("negative dash phase");
-            }
-            boolean allzero = true;
-            for (int i = 0; i < dash.length; i++) {
-                float d = dash[i];
-                if (d > 0.0) {
-                    allzero = false;
-                } else if (d < 0.0) {
-                    throw new IllegalArgumentException("negative dash length");
-                }
-            }
-            if (allzero) {
-                throw new IllegalArgumentException("dash lengths all zero");
-            }
-        }
-        this.dash = dash == null ? null : dash.clone();
+        this.dash = dash;
         this.dashPhase = dashPhase;
     }
 
-    /**
-     * Returns the stroke type, one of {@code TYPE_CENTERED},
-     * {@code TYPE_INNER}, or {@code TYPE_OUTER}.
-     * @return the stroke type
-     */
-    public int getType() {
-        return type;
+    public BasicStroke(float width, int cap, int join, float miterLimit) {
+        this(width, cap, join, miterLimit, null, 0.0f);
     }
 
-    /**
-     * Returns the line width.  Line width is represented in user space,
-     * which is the default-coordinate space used by Java 2D.  See the
-     * <code>Graphics2D</code> class comments for more information on
-     * the user space coordinate system.
-     * @return the line width of this <code>BasicStroke</code>.
-     */
+    public BasicStroke(float width, int cap, int join) {
+        this(width, cap, join, 10.0f, null, 0.0f);
+    }
+
+    public BasicStroke(float width) {
+        this(width, CAP_SQUARE, JOIN_MITER, 10.0f, null, 0.0f);
+    }
+
     public float getLineWidth() {
         return width;
     }
 
-    /**
-     * Returns the end cap style.
-     * @return the end cap style of this <code>BasicStroke</code> as one
-     * of the static <code>int</code> values that define possible end cap
-     * styles.
-     */
     public int getEndCap() {
         return cap;
     }
 
-    /**
-     * Returns the line join style.
-     * @return the line join style of the <code>BasicStroke</code> as one
-     * of the static <code>int</code> values that define possible line
-     * join styles.
-     */
     public int getLineJoin() {
         return join;
     }
 
-    /**
-     * Returns the limit of miter joins.
-     * @return the limit of miter joins of the <code>BasicStroke</code>.
-     */
     public float getMiterLimit() {
         return miterLimit;
     }
 
-    /**
-     * Returns true if this stroke object will apply dashing attributes
-     * to the path.
-     * @return whether the stroke has dashes
-     */
-    public boolean isDashed() {
-        return (dash != null);
-    }
-
-    /**
-     * Returns the array representing the lengths of the dash segments.
-     * Alternate entries in the array represent the user space lengths
-     * of the opaque and transparent segments of the dashes.
-     * As the pen moves along the outline of the <code>Shape</code>
-     * to be stroked, the user space
-     * distance that the pen travels is accumulated.  The distance
-     * value is used to index into the dash array.
-     * The pen is opaque when its current cumulative distance maps
-     * to an even element of the dash array and transparent otherwise.
-     * @return the dash array.
-     */
     public float[] getDashArray() {
-        return dash.clone();
+        return dash;
     }
 
-    /**
-     * Returns the current dash phase.
-     * The dash phase is a distance specified in user coordinates that
-     * represents an offset into the dashing pattern. In other words, the dash
-     * phase defines the point in the dashing pattern that will correspond to
-     * the beginning of the stroke.
-     * @return the dash phase as a <code>float</code> value.
-     */
     public float getDashPhase() {
         return dashPhase;
     }
 
-    public Shape createStrokedShape(Shape s) {
-        Shape ret = createCenteredStrokedShape(s);
-
-        if (type == TYPE_INNER) {
-            ret = makeIntersectedShape(ret, s);
-        } else if (type == TYPE_OUTER) {
-            ret = makeSubtractedShape(ret, s);
-        }
-        return ret;
-    }
-
-    private boolean isCW(final float dx1, final float dy1,
-                         final float dx2, final float dy2)
-    {
-        return dx1 * dy2 <= dy1 * dx2;
-    }
-
-    private void computeOffset(final float lx, final float ly,
-                               final float w, final float[] m, int off) {
-        final float len = (float) Math.sqrt(lx * lx + ly * ly);
-        if (len == 0) {
-            m[off + 0] = m[off + 1] = 0;
-        } else {
-            m[off + 0] = (ly * w) / len;
-            m[off + 1] = -(lx * w) / len;
-        }
-    }
-
-    private void computeMiter(final float x0, final float y0,
-                              final float x1, final float y1,
-                              final float x0p, final float y0p,
-                              final float x1p, final float y1p,
-                              final float[] m, int off)
-    {
-        float x10 = x1 - x0;
-        float y10 = y1 - y0;
-        float x10p = x1p - x0p;
-        float y10p = y1p - y0p;
-
-        // if this is 0, the lines are parallel. If they go in the
-        // same direction, there is no intersection so m[off] and
-        // m[off+1] will contain infinity, so no miter will be drawn.
-        // If they go in the same direction that means that the start of the
-        // current segment and the end of the previous segment have the same
-        // tangent, in which case this method won't even be involved in
-        // miter drawing because it won't be called by drawMiter (because
-        // (mx == omx && my == omy) will be true, and drawMiter will return
-        // immediately).
-        float den = x10*y10p - x10p*y10;
-        float t = x10p*(y0-y0p) - y10p*(x0-x0p);
-        t /= den;
-        m[off++] = x0 + t*x10;
-        m[off] = y0 + t*y10;
-    }
-
-    private void accumulateQuad(float bbox[], int off,
-                               float v0, float vc, float v1, float w)
-    {
-        // Breaking this quad down into a polynomial:
-        // eqn[0] = v0;
-        // eqn[1] = vc + vc - v0 - v0;
-        // eqn[2] = v0 - vc - vc + v1;
-        // Deriving the polynomial:
-        // eqn'[0] = 1*eqn[1] = 2*(vc-v0)
-        // eqn'[1] = 2*eqn[2] = 2*((v1-vc)-(vc-v0))
-        // Solving for zeroes on the derivative:
-        // e1*t + e0 = 0
-        // t = -e0/e1;
-        // t = -2(vc-v0) / 2((v1-vc)-(vc-v0))
-        // t = (v0-vc) / (v1-vc+v0-vc)
-        float num = v0 - vc;
-        float den = v1 - vc + num;
-        if (den != 0f) {
-            float t = num / den;
-            if (t > 0 && t < 1) {
-                float u = 1f - t;
-                float v = v0 * u * u + 2 * vc * t * u + v1 * t * t;
-                if (bbox[off] > v - w) bbox[off] = v - w;
-                if (bbox[off+2] < v + w) bbox[off+2] = v + w;
-            }
-        }
-    }
-
-    private void accumulateCubic(float bbox[], int off, float t,
-                                float v0, float vc0, float vc1, float v1, float w)
-    {
-        if (t > 0 && t < 1) {
-            float u = 1f - t;
-            float v =        v0 * u * u * u
-                      + 3 * vc0 * t * u * u
-                      + 3 * vc1 * t * t * u
-                      +      v1 * t * t * t;
-            if (bbox[off] > v - w) bbox[off] = v - w;
-            if (bbox[off+2] < v + w) bbox[off+2] = v + w;
-        }
-    }
-
-    private void accumulateCubic(float bbox[], int off,
-                                float v0, float vc0, float vc1, float v1, float w)
-    {
-        // Breaking this cubic down into a polynomial:
-        // eqn[0] = v0;
-        // eqn[1] = (vc0 - v0) * 3f;
-        // eqn[2] = (vc1 - vc0 - vc0 + v0) * 3f;
-        // eqn[3] = v1 + (vc0 - vc1) * 3f - v0;
-        // Deriving the polynomial:
-        // eqn'[0] = 1*eqn[1] = 3(vc0-v0)
-        // eqn'[1] = 2*eqn[2] = 6((vc1-vc0)-(vc0-v0))
-        // eqn'[2] = 3*eqn[3] = 3((v1-vc1)-2(vc1-vc0)+(vc0-v0))
-        // Solving for zeroes on the derivative:
-        // e2*t*t + e1*t + e0 = a*t*t + b*t + c = 0
-        // Note that in solving for 0 we can divide all e0,e1,e2 by 3
-        // t = (-b +/- sqrt(b*b-4ac))/2a
-        float c = vc0 - v0;
-        float b = 2f * ((vc1 - vc0) - c);
-        float a = (v1 - vc1) - b - c;
-        if (a == 0f) {
-            // The quadratic parabola has degenerated to a line.
-            if (b == 0f) {
-                // The line has degenerated to a constant.
-                return;
-            }
-            accumulateCubic(bbox, off, -c/b, v0, vc0, vc1, v1, w);
-        } else {
-            // From Numerical Recipes, 5.6, Quadratic and Cubic Equations
-            float d = b * b - 4f * a * c;
-            if (d < 0f) {
-                // If d < 0.0, then there are no roots
-                return;
-            }
-            d = (float) Math.sqrt(d);
-            // For accuracy, calculate one root using:
-            //     (-b +/- d) / 2a
-            // and the other using:
-            //     2c / (-b +/- d)
-            // Choose the sign of the +/- so that b+d gets larger in magnitude
-            if (b < 0f) {
-                d = -d;
-            }
-            float q = (b + d) / -2f;
-            // We already tested a for being 0 above
-            accumulateCubic(bbox, off, q/a, v0, vc0, vc1, v1, w);
-            if (q != 0f) {
-                accumulateCubic(bbox, off, c/q, v0, vc0, vc1, v1, w);
-            }
-        }
-    }
-
-    private void accumulate(float o0, float o1, float o2, float o3, float[] bbox) {
-        if (o0 <= o2) {
-            if (o0 < bbox[0]) bbox[0] = o0;
-            if (o2 > bbox[2]) bbox[2] = o2;
-        } else {
-            if (o2 < bbox[0]) bbox[0] = o2;
-            if (o0 > bbox[2]) bbox[2] = o0;
-        }
-        if (o1 <= o3) {
-            if (o1 < bbox[1]) bbox[1] = o1;
-            if (o3 > bbox[3]) bbox[3] = o3;
-        } else {
-            if (o3 < bbox[1]) bbox[1] = o3;
-            if (o1 > bbox[3]) bbox[3] = o1;
-        }
-    }
-
-    private void accumulateOrdered(float o0, float o1, float o2, float o3, float[] bbox) {
-        if (o0 < bbox[0]) bbox[0] = o0;
-        if (o2 > bbox[2]) bbox[2] = o2;
-        if (o1 < bbox[1]) bbox[1] = o1;
-        if (o3 > bbox[3]) bbox[3] = o3;
-    }
-
-
-    private void accumulateJoin(float pdx, float pdy, float dx, float dy, float x0, float y0,
-                                float pox, float poy, float ox, float oy, float[] bbox, float w) {
-
-        if (join == JOIN_BEVEL) {
-            accumulateBevel(x0, y0, pox, poy, ox, oy, bbox);
-        } else if (join == JOIN_MITER) {
-            accumulateMiter(pdx, pdy, dx, dy, pox, poy, ox, oy, x0, y0, bbox, w);
-        } else { // JOIN_ROUND
-            accumulateOrdered(x0 - w, y0 - w, x0 + w, y0 + w, bbox);
-        }
-
-
-    }
-
-    private void accumulateCap(float dx, float dy, float x0, float y0,
-                               float ox, float oy, float[] bbox, float w) {
-        if (cap == CAP_SQUARE) {
-            accumulate(x0 + ox - oy, y0 + oy + ox, x0 - ox - oy, y0 - oy + ox, bbox);
-        } else if (cap == CAP_BUTT) {
-            accumulate(x0 + ox, y0 + oy, x0 - ox, y0 - oy, bbox);
-        } else { //cap == CAP_ROUND
-            accumulateOrdered(x0 - w, y0 - w, x0 + w, y0 + w, bbox);
-        }
-
-    }
-
-    private float[] tmpMiter = new float[2];
-
-    private void accumulateMiter(float pdx, float pdy, float dx, float dy,
-                                    float pox, float poy, float ox, float oy,
-                                    float x0, float y0, float[] bbox, float w) {
-        // Always accumulate bevel for cases of degenerate miters...
-        accumulateBevel(x0, y0, pox, poy, ox, oy, bbox);
-
-        boolean cw = isCW(pdx, pdy, dx, dy);
-
-        if (cw) {
-            pox = -pox;
-            poy = -poy;
-            ox = -ox;
-            oy = -oy;
-        }
-
-        computeMiter((x0 - pdx) + pox, (y0 - pdy) + poy, x0 + pox, y0 + poy,
-                     (x0 + dx) + ox, (y0 + dy) + oy, x0 + ox, y0 + oy,
-                     tmpMiter, 0);
-        float lenSq = (tmpMiter[0] - x0) * (tmpMiter[0] - x0) + (tmpMiter[1] - y0) * (tmpMiter[1] - y0);
-
-        float miterLimitWidth = miterLimit * w;
-        if (lenSq < miterLimitWidth * miterLimitWidth) {
-            accumulateOrdered(tmpMiter[0], tmpMiter[1], tmpMiter[0], tmpMiter[1], bbox);
-        }
-    }
-
-
-    private void accumulateBevel(float x0, float y0, float pox, float poy, float ox, float oy, float[] bbox) {
-        accumulate(x0 + pox, y0 + poy, x0 - pox, y0 - poy, bbox);
-        accumulate(x0 + ox, y0 + oy, x0 - ox, y0 - oy, bbox);
-    }
-
-    public Shape createCenteredStrokedShape(Shape s) {
-        Path p2d = new Path(Path.WIND_NON_ZERO);
-        float lw = (type == TYPE_CENTERED) ? width : width * 2.0f;
-        PathConsumer pc2d = new Stroker(p2d, lw, cap, join, miterLimit);
-        if (dash != null) {
-            pc2d = new Dasher(pc2d, dash, dashPhase);
-        }
-        feedConsumer(s.pathIterator(null), pc2d);
-        return p2d;
-    }
-
-    public static void feedConsumer(PathIterator pi, PathConsumer pc) {
-        float[] coords = new float[6];
-        while (!pi.isDone()) {
-            int type = pi.currentSegment(coords);
-            switch (type) {
-                case PathIterator.SEG_MOVETO:
-                    pc.moveTo(coords[0], coords[1]);
-                    break;
-                case PathIterator.SEG_LINETO:
-                    pc.lineTo(coords[0], coords[1]);
-                    break;
-                case PathIterator.SEG_QUADTO:
-                    pc.quadTo(coords[0], coords[1],
-                            coords[2], coords[3]);
-                    break;
-                case PathIterator.SEG_CUBICTO:
-                    pc.curveTo(coords[0], coords[1],
-                            coords[2], coords[3],
-                            coords[4], coords[5]);
-                    break;
-                case PathIterator.SEG_CLOSE:
-                    pc.closePath();
-                    break;
-            }
-            pi.next();
-        }
-        pc.pathDone();
-    }
-
-    protected Shape makeIntersectedShape(Shape outer, Shape inner) {
-        return new Area(outer).intersect(new Area(inner));
-    }
-
-    protected Shape makeSubtractedShape(Shape outer, Shape inner) {
-        return new Area(outer).subtract(new Area(inner));
-    }
-
-    /**
-     * Returns the hashcode for this stroke.
-     * @return      a hash code for this stroke.
-     */
     @Override
     public int hashCode() {
-        int hash = Float.hashCode(width);
-        hash = hash * 31 + join;
-        hash = hash * 31 + cap;
-        hash = hash * 31 + Float.hashCode(miterLimit);
+        /*HashCode hash = new HashCode();
+        hash.append(width);
+        hash.append(cap);
+        hash.append(join);
+        hash.append(miterLimit);
         if (dash != null) {
-            hash = hash * 31 + Float.hashCode(dashPhase);
-            for (int i = 0; i < dash.length; i++) {
-                hash = hash * 31 + Float.hashCode(dash[i]);
+            hash.append(dashPhase);
+            for (float element : dash) {
+                hash.append(element);
             }
         }
-        return hash;
+        return hash.hashCode();*/
+        return 0;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj instanceof BasicStroke) {
+            BasicStroke bs = (BasicStroke)obj;
+            return
+                    bs.width == width &&
+                            bs.cap == cap &&
+                            bs.join == join &&
+                            bs.miterLimit == miterLimit &&
+                            bs.dashPhase == dashPhase &&
+                            java.util.Arrays.equals(bs.dash, dash);
+        }
+        return false;
     }
 
     /**
-     * Tests if a specified object is equal to this <code>BasicStroke</code>
-     * by first testing if it is a <code>BasicStroke</code> and then comparing
-     * its width, join, cap, miter limit, dash, and dash phase attributes with
-     * those of this <code>BasicStroke</code>.
-     * @param  obj the specified object to compare to this
-     *              <code>BasicStroke</code>
-     * @return <code>true</code> if the width, join, cap, miter limit, dash, and
-     *            dash phase are the same for both objects;
-     *            <code>false</code> otherwise.
+     * Calculates allowable curve derivation
      */
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof BasicStroke)) {
-            return false;
+    double getCurveDelta(double width) {
+        double a = width + CURVE_DELTA;
+        double cos = 1.0 - 2.0 * width * width / (a * a);
+        double sin = Math.sqrt(1.0 - cos * cos);
+        return Math.abs(sin / cos);
+    }
+
+    /**
+     * Calculates value to detect small angle
+     */
+    double getCornerDelta(double width) {
+        return width * width * Math.sin(Math.PI * CORNER_ANGLE / 180.0);
+    }
+
+    /**
+     * Calculates value to detect zero angle
+     */
+    double getZeroDelta(double width) {
+        return width * width * Math.sin(Math.PI * CORNER_ZERO / 180.0);
+    }
+
+    public Shape createStrokedShape(Shape s) {
+        w2 = width / 2.0;
+        curveDelta = getCurveDelta(w2);
+        cornerDelta = getCornerDelta(w2);
+        zeroDelta = getZeroDelta(w2);
+
+        dst = new BufferedPath();
+        lp = new BufferedPath();
+        rp = new BufferedPath();
+
+        if (dash == null) {
+            createSolidShape(s.pathIterator(null));
+        } else {
+            createDashedShape(s.pathIterator(null));
         }
-        BasicStroke bs = (BasicStroke) obj;
-        if (width != bs.width) {
-            return false;
-        }
-        if (join != bs.join) {
-            return false;
-        }
-        if (cap != bs.cap) {
-            return false;
-        }
-        if (miterLimit != bs.miterLimit) {
-            return false;
-        }
-        if (dash != null) {
-            if (dashPhase != bs.dashPhase) {
-                return false;
+
+        return dst.createGeneralPath();
+    }
+
+    /**
+     * Generates solid stroked shape without dash
+     * @param p - the PathIterator of source shape
+     */
+    void createSolidShape(PathIterator p) {
+        double coords[] = new double[6];
+        mx = my = cx = cy = 0.0;
+        isMove = false;
+        isFirst = false;
+        checkMove = true;
+        boolean isClosed = true;
+
+        while(!p.isDone()) {
+            switch(p.currentSegment(coords)) {
+                case PathIterator.SEG_MOVETO:
+                    if (!isClosed) {
+                        closeSolidShape();
+                    }
+                    rp.clean();
+                    mx = cx = coords[0];
+                    my = cy = coords[1];
+                    isMove = true;
+                    isClosed = false;
+                    break;
+                case PathIterator.SEG_LINETO:
+                    addLine(cx, cy, cx = coords[0], cy = coords[1], true);
+                    break;
+                case PathIterator.SEG_QUADTO:
+                    addQuad(cx, cy, coords[0], coords[1], cx = coords[2], cy = coords[3]);
+                    break;
+                case PathIterator.SEG_CUBICTO:
+                    addCubic(cx, cy, coords[0], coords[1], coords[2], coords[3], cx = coords[4], cy = coords[5]);
+                    break;
+                case PathIterator.SEG_CLOSE:
+                    addLine(cx, cy, mx, my, false);
+                    addJoin(lp, mx, my, lp.xMove, lp.yMove, true);
+                    addJoin(rp, mx, my, rp.xMove, rp.yMove, false);
+                    lp.closePath();
+                    rp.closePath();
+                    lp.appendReverse(rp);
+                    isClosed = true;
+                    break;
             }
-            if (!java.util.Arrays.equals(dash, bs.dash)) {
-                return false;
+            p.next();
+        }
+        if (!isClosed) {
+            closeSolidShape();
+        }
+
+        dst = lp;
+    }
+
+    /**
+     * Closes solid shape path
+     */
+    void closeSolidShape() {
+        addCap(lp, cx, cy, rp.xLast, rp.yLast);
+        lp.combine(rp);
+        addCap(lp, mx, my, lp.xMove, lp.yMove);
+        lp.closePath();
+    }
+
+    /**
+     * Generates dashed stroked shape
+     * @param p - the PathIterator of source shape
+     */
+    void createDashedShape(PathIterator p) {
+        double coords[] = new double[6];
+        mx = my = cx = cy = 0.0;
+        smx = smy = scx = scy = 0.0;
+        isMove = false;
+        checkMove = false;
+        boolean isClosed = true;
+
+        while(!p.isDone()) {
+            switch(p.currentSegment(coords)) {
+                case PathIterator.SEG_MOVETO:
+
+                    if (!isClosed) {
+                        closeDashedShape();
+                    }
+
+                    dasher = new Dasher(dash, dashPhase);
+                    lp.clean();
+                    rp.clean();
+                    sp = null;
+                    isFirst = true;
+                    isMove = true;
+                    isClosed = false;
+                    mx = cx = coords[0];
+                    my = cy = coords[1];
+                    break;
+                case PathIterator.SEG_LINETO:
+                    addDashLine(cx, cy, cx = coords[0], cy = coords[1]);
+                    break;
+                case PathIterator.SEG_QUADTO:
+                    addDashQuad(cx, cy, coords[0], coords[1], cx = coords[2], cy = coords[3]);
+                    break;
+                case PathIterator.SEG_CUBICTO:
+                    addDashCubic(cx, cy, coords[0], coords[1], coords[2], coords[3], cx = coords[4], cy = coords[5]);
+                    break;
+                case PathIterator.SEG_CLOSE:
+                    addDashLine(cx, cy, cx = mx, cy = my);
+
+                    if (dasher.isConnected()) {
+                        // Connect current and head segments
+                        addJoin(lp, fmx, fmy, sp.xMove, sp.yMove, true);
+                        lp.join(sp);
+                        addJoin(lp, fmx, fmy, rp.xLast, rp.yLast, true);
+                        lp.combine(rp);
+                        addCap(lp, smx, smy, lp.xMove, lp.yMove);
+                        lp.closePath();
+                        dst.append(lp);
+                        sp = null;
+                    } else {
+                        closeDashedShape();
+                    }
+
+                    isClosed = true;
+                    break;
+            }
+            p.next();
+        }
+
+        if (!isClosed) {
+            closeDashedShape();
+        }
+
+    }
+
+    /**
+     * Closes dashed shape path
+     */
+    void closeDashedShape() {
+        // Add head segment
+        if (sp != null) {
+            addCap(sp, fmx, fmy, sp.xMove, sp.yMove);
+            sp.closePath();
+            dst.append(sp);
+        }
+        if (lp.typeSize > 0) {
+            // Close current segment
+            if (!dasher.isClosed()) {
+                addCap(lp, scx, scy, rp.xLast, rp.yLast);
+                lp.combine(rp);
+                addCap(lp, smx, smy, lp.xMove, lp.yMove);
+                lp.closePath();
+            }
+            dst.append(lp);
+        }
+    }
+
+    /**
+     * Adds cap to the work path
+     * @param p - the BufferedPath object of work path
+     * @param x0 - the x coordinate of the source path
+     * @param y0 - the y coordinate on the source path
+     * @param x2 - the x coordinate of the next point on the work path
+     * @param y2 - the y coordinate of the next point on the work path
+     */
+    void addCap(BufferedPath p, double x0, double y0, double x2, double y2) {
+        double x1 = p.xLast;
+        double y1 = p.yLast;
+        double x10 = x1 - x0;
+        double y10 = y1 - y0;
+        double x20 = x2 - x0;
+        double y20 = y2 - y0;
+
+        switch(cap) {
+            case CAP_BUTT:
+                p.lineTo(x2, y2);
+                break;
+            case CAP_ROUND:
+                double mx = x10 * CUBIC_ARC;
+                double my = y10 * CUBIC_ARC;
+
+                double x3 = x0 + y10;
+                double y3 = y0 - x10;
+
+                x10 *= CUBIC_ARC;
+                y10 *= CUBIC_ARC;
+                x20 *= CUBIC_ARC;
+                y20 *= CUBIC_ARC;
+
+                p.cubicTo(x1 + y10, y1 - x10, x3 + mx, y3 + my, x3, y3);
+                p.cubicTo(x3 - mx, y3 - my, x2 - y20, y2 + x20, x2, y2);
+                break;
+            case CAP_SQUARE:
+                p.lineTo(x1 + y10, y1 - x10);
+                p.lineTo(x2 - y20, y2 + x20);
+                p.lineTo(x2, y2);
+                break;
+        }
+    }
+
+    /**
+     * Adds bevel and miter join to the work path
+     * @param p - the BufferedPath object of work path
+     * @param x0 - the x coordinate of the source path
+     * @param y0 - the y coordinate on the source path
+     * @param x2 - the x coordinate of the next point on the work path
+     * @param y2 - the y coordinate of the next point on the work path
+     * @param isLeft - the orientation of work path, true if work path lies to the left from source path, false otherwise
+     */
+    void addJoin(BufferedPath p, double x0, double y0, double x2, double y2, boolean isLeft) {
+        double x1 = p.xLast;
+        double y1 = p.yLast;
+        double x10 = x1 - x0;
+        double y10 = y1 - y0;
+        double x20 = x2 - x0;
+        double y20 = y2 - y0;
+        double sin0 = x10 * y20 - y10 * x20;
+
+        // Small corner
+        if (-cornerDelta < sin0 && sin0 < cornerDelta) {
+            double cos0 = x10 * x20 + y10 * y20;
+            if (cos0 > 0.0) {
+                // if zero corner do nothing
+                if (-zeroDelta > sin0 || sin0 > zeroDelta) {
+                    double x3 = x0 + w2 * w2 * (y20 - y10) / sin0;
+                    double y3 = y0 + w2 * w2 * (x10 - x20) / sin0;
+                    p.setLast(x3, y3);
+                }
+                return;
+            }
+            // Zero corner
+            if (-zeroDelta < sin0 && sin0 < zeroDelta) {
+                p.lineTo(x2, y2);
+            }
+            return;
+        }
+
+        if (isLeft ^ (sin0 < 0.0)) {
+            // Twisted corner
+            p.lineTo(x0, y0);
+            p.lineTo(x2, y2);
+        } else {
+            switch(join) {
+                case JOIN_BEVEL:
+                    p.lineTo(x2, y2);
+                    break;
+                case JOIN_MITER:
+                    double s1 = x1 * x10 + y1 * y10;
+                    double s2 = x2 * x20 + y2 * y20;
+                    double x3 = (s1 * y20 - s2 * y10) / sin0;
+                    double y3 = (s2 * x10 - s1 * x20) / sin0;
+                    double x30 = x3 - x0;
+                    double y30 = y3 - y0;
+                    double miterLength = Math.sqrt(x30 * x30 + y30 * y30);
+                    if (miterLength < miterLimit * w2) {
+                        p.lineTo(x3, y3);
+                    }
+                    p.lineTo(x2, y2);
+                    break;
+                case JOIN_ROUND:
+                    addRoundJoin(p, x0, y0, x2, y2, isLeft);
+                    break;
             }
         }
-        else if (bs.dash != null) {
+    }
+
+    /**
+     * Adds round join to the work path
+     * @param p - the BufferedPath object of work path
+     * @param x0 - the x coordinate of the source path
+     * @param y0 - the y coordinate on the source path
+     * @param x2 - the x coordinate of the next point on the work path
+     * @param y2 - the y coordinate of the next point on the work path
+     * @param isLeft - the orientation of work path, true if work path lies to the left from source path, false otherwise
+     */
+    void addRoundJoin(BufferedPath p, double x0, double y0, double x2, double y2, boolean isLeft) {
+        double x1 = p.xLast;
+        double y1 = p.yLast;
+        double x10 = x1 - x0;
+        double y10 = y1 - y0;
+        double x20 = x2 - x0;
+        double y20 = y2 - y0;
+
+        double x30 = x10 + x20;
+        double y30 = y10 + y20;
+
+        double l30 = Math.sqrt(x30 * x30 + y30 * y30);
+
+        if (l30 < 1E-5) {
+            p.lineTo(x2, y2);
+            return;
+        }
+
+        double w = w2 / l30;
+
+        x30 *= w;
+        y30 *= w;
+
+        double x3 = x0 + x30;
+        double y3 = y0 + y30;
+
+        double cos = x10 * x20 + y10 * y20;
+        double a = Math.acos(cos / (w2 * w2));
+        if (cos >= 0.0) {
+            double k = 4.0 / 3.0 * Math.tan(a / 4.0);
+            if (isLeft) {
+                k = -k;
+            }
+
+            x10 *= k;
+            y10 *= k;
+            x20 *= k;
+            y20 *= k;
+
+            p.cubicTo(x1 - y10, y1 + x10, x2 + y20, y2 - x20, x2, y2);
+        } else {
+            double k = 4.0 / 3.0 * Math.tan(a / 8.0);
+            if (isLeft) {
+                k = -k;
+            }
+
+            x10 *= k;
+            y10 *= k;
+            x20 *= k;
+            y20 *= k;
+            x30 *= k;
+            y30 *= k;
+
+            p.cubicTo(x1 - y10, y1 + x10, x3 + y30, y3 - x30, x3, y3);
+            p.cubicTo(x3 - y30, y3 + x30, x2 + y20, y2 - x20, x2, y2);
+        }
+
+    }
+
+    /**
+     * Adds solid line segment to the work path
+     * @param x1 - the x coordinate of the start line point
+     * @param y1 - the y coordinate of the start line point
+     * @param x2 - the x coordinate of the end line point
+     * @param y2 - the y coordinate of the end line point
+     * @param zero - if true it's allowable to add zero length line segment
+     */
+    void addLine(double x1, double y1, double x2, double y2, boolean zero) {
+        double dx = x2 - x1;
+        double dy = y2 - y1;
+
+        if (dx == 0.0 && dy == 0.0) {
+            if (!zero) {
+                return;
+            }
+            dx = w2;
+            dy = 0;
+        } else {
+            double w = w2 / Math.sqrt(dx * dx + dy * dy);
+            dx *= w;
+            dy *= w;
+        }
+
+        double lx1 = x1 - dy;
+        double ly1 = y1 + dx;
+        double rx1 = x1 + dy;
+        double ry1 = y1 - dx;
+
+        if (checkMove) {
+            if (isMove) {
+                isMove = false;
+                lp.moveTo(lx1, ly1);
+                rp.moveTo(rx1, ry1);
+            } else {
+                addJoin(lp, x1, y1, lx1, ly1, true);
+                addJoin(rp, x1, y1, rx1, ry1, false);
+            }
+        }
+
+        lp.lineTo(x2 - dy, y2 + dx);
+        rp.lineTo(x2 + dy, y2 - dx);
+    }
+
+    /**
+     * Adds solid quad segment to the work path
+     * @param x1 - the x coordinate of the first control point
+     * @param y1 - the y coordinate of the first control point
+     * @param x2 - the x coordinate of the second control point
+     * @param y2 - the y coordinate of the second control point
+     * @param x3 - the x coordinate of the third control point
+     * @param y3 - the y coordinate of the third control point
+     */
+    void addQuad(double x1, double y1, double x2, double y2, double x3, double y3) {
+        double x21 = x2 - x1;
+        double y21 = y2 - y1;
+        double x23 = x2 - x3;
+        double y23 = y2 - y3;
+
+        double l21 = Math.sqrt(x21 * x21 + y21 * y21);
+        double l23 = Math.sqrt(x23 * x23 + y23 * y23);
+
+        if (l21 == 0.0 && l23 == 0.0) {
+            addLine(x1, y1, x3, y3, false);
+            return;
+        }
+
+        if (l21 == 0.0) {
+            addLine(x2, y2, x3, y3, false);
+            return;
+        }
+
+        if (l23 == 0.0) {
+            addLine(x1, y1, x2, y2, false);
+            return;
+        }
+
+        double w;
+        w = w2 / l21;
+        double mx1 = - y21 * w;
+        double my1 =   x21 * w;
+        w = w2 / l23;
+        double mx3 =   y23 * w;
+        double my3 = - x23 * w;
+
+        double lx1 = x1 + mx1;
+        double ly1 = y1 + my1;
+        double rx1 = x1 - mx1;
+        double ry1 = y1 - my1;
+
+        if (checkMove) {
+            if (isMove) {
+                isMove = false;
+                lp.moveTo(lx1, ly1);
+                rp.moveTo(rx1, ry1);
+            } else {
+                addJoin(lp, x1, y1, lx1, ly1, true);
+                addJoin(rp, x1, y1, rx1, ry1, false);
+            }
+        }
+
+        if (x21 * y23 - y21 * x23 == 0.0) {
+            // On line curve
+            if (x21 * x23 + y21 * y23 > 0.0) {
+                // Twisted curve
+                if (l21 == l23) {
+                    double px = x1 + (x21 + x23) / 4.0;
+                    double py = y1 + (y21 + y23) / 4.0;
+                    lp.lineTo(px + mx1, py + my1);
+                    rp.lineTo(px - mx1, py - my1);
+                    lp.lineTo(px - mx1, py - my1);
+                    rp.lineTo(px + mx1, py + my1);
+                    lp.lineTo(x3 - mx1, y3 - my1);
+                    rp.lineTo(x3 + mx1, y3 + my1);
+                } else {
+                    double px1, py1;
+                    double k = l21 / (l21 + l23);
+                    double px = x1 + (x21 + x23) * k * k;
+                    double py = y1 + (y21 + y23) * k * k;
+                    px1 = (x1 + px) / 2.0;
+                    py1 = (y1 + py) / 2.0;
+                    lp.quadTo(px1 + mx1, py1 + my1, px + mx1, py + my1);
+                    rp.quadTo(px1 - mx1, py1 - my1, px - mx1, py - my1);
+                    lp.lineTo(px - mx1, py - my1);
+                    rp.lineTo(px + mx1, py + my1);
+                    px1 = (x3 + px) / 2.0;
+                    py1 = (y3 + py) / 2.0;
+                    lp.quadTo(px1 - mx1, py1 - my1, x3 - mx1, y3 - my1);
+                    rp.quadTo(px1 + mx1, py1 + my1, x3 + mx1, y3 + my1);
+                }
+            } else {
+                // Simple curve
+                lp.quadTo(x2 + mx1, y2 + my1, x3 + mx3, y3 + my3);
+                rp.quadTo(x2 - mx1, y2 - my1, x3 - mx3, y3 - my3);
+            }
+        } else {
+            addSubQuad(x1, y1, x2, y2, x3, y3, 0);
+        }
+    }
+
+    /**
+     * Subdivides solid quad curve to make outline for source quad segment and adds it to work path
+     * @param x1 - the x coordinate of the first control point
+     * @param y1 - the y coordinate of the first control point
+     * @param x2 - the x coordinate of the second control point
+     * @param y2 - the y coordinate of the second control point
+     * @param x3 - the x coordinate of the third control point
+     * @param y3 - the y coordinate of the third control point
+     * @param level - the maximum level of subdivision deepness
+     */
+    void addSubQuad(double x1, double y1, double x2, double y2, double x3, double y3, int level) {
+        double x21 = x2 - x1;
+        double y21 = y2 - y1;
+        double x23 = x2 - x3;
+        double y23 = y2 - y3;
+
+        double cos = x21 * x23 + y21 * y23;
+        double sin = x21 * y23 - y21 * x23;
+
+        if (level < MAX_LEVEL && (cos >= 0.0 || (Math.abs(sin / cos) > curveDelta))) {
+            double c1x = (x2 + x1) / 2.0;
+            double c1y = (y2 + y1) / 2.0;
+            double c2x = (x2 + x3) / 2.0;
+            double c2y = (y2 + y3) / 2.0;
+            double c3x = (c1x + c2x) / 2.0;
+            double c3y = (c1y + c2y) / 2.0;
+            addSubQuad(x1, y1, c1x, c1y, c3x, c3y, level + 1);
+            addSubQuad(c3x, c3y, c2x, c2y, x3, y3, level + 1);
+        } else {
+            double w;
+            double l21 = Math.sqrt(x21 * x21 + y21 * y21);
+            double l23 = Math.sqrt(x23 * x23 + y23 * y23);
+            w = w2 / sin;
+            double mx2 = (x21 * l23 + x23 * l21) * w;
+            double my2 = (y21 * l23 + y23 * l21) * w;
+            w = w2 / l23;
+            double mx3 =   y23 * w;
+            double my3 = - x23 * w;
+            lp.quadTo(x2 + mx2, y2 + my2, x3 + mx3, y3 + my3);
+            rp.quadTo(x2 - mx2, y2 - my2, x3 - mx3, y3 - my3);
+        }
+    }
+
+    /**
+     * Adds solid cubic segment to the work path
+     * @param x1 - the x coordinate of the first control point
+     * @param y1 - the y coordinate of the first control point
+     * @param x2 - the x coordinate of the second control point
+     * @param y2 - the y coordinate of the second control point
+     * @param x3 - the x coordinate of the third control point
+     * @param y3 - the y coordinate of the third control point
+     * @param x4 - the x coordinate of the fours control point
+     * @param y4 - the y coordinate of the fours control point
+     */
+    void addCubic(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4) {
+        double x12 = x1 - x2;
+        double y12 = y1 - y2;
+        double x23 = x2 - x3;
+        double y23 = y2 - y3;
+        double x34 = x3 - x4;
+        double y34 = y3 - y4;
+
+        double l12 = Math.sqrt(x12 * x12 + y12 * y12);
+        double l23 = Math.sqrt(x23 * x23 + y23 * y23);
+        double l34 = Math.sqrt(x34 * x34 + y34 * y34);
+
+        // All edges are zero
+        if (l12 == 0.0 && l23 == 0.0 && l34 == 0.0) {
+            addLine(x1, y1, x4, y4, false);
+            return;
+        }
+
+        // One zero edge
+        if (l12 == 0.0 && l23 == 0.0) {
+            addLine(x3, y3, x4, y4, false);
+            return;
+        }
+
+        if (l23 == 0.0 && l34 == 0.0) {
+            addLine(x1, y1, x2, y2, false);
+            return;
+        }
+
+        if (l12 == 0.0 && l34 == 0.0) {
+            addLine(x2, y2, x3, y3, false);
+            return;
+        }
+
+        double w, mx1, my1, mx4, my4;
+        boolean onLine;
+
+        if (l12 == 0.0) {
+            w = w2 / l23;
+            mx1 =   y23 * w;
+            my1 = - x23 * w;
+            w = w2 / l34;
+            mx4 =   y34 * w;
+            my4 = - x34 * w;
+            onLine = - x23 * y34 + y23 * x34 == 0.0; // sin3
+        } else
+        if (l34 == 0.0) {
+            w = w2 / l12;
+            mx1 =   y12 * w;
+            my1 = - x12 * w;
+            w = w2 / l23;
+            mx4 =   y23 * w;
+            my4 = - x23 * w;
+            onLine = - x12 * y23 + y12 * x23 == 0.0; // sin2
+        } else {
+            w = w2 / l12;
+            mx1 =   y12 * w;
+            my1 = - x12 * w;
+            w = w2 / l34;
+            mx4 =   y34 * w;
+            my4 = - x34 * w;
+            if (l23 == 0.0) {
+                onLine = - x12 * y34 + y12 * x34 == 0.0;
+            } else {
+                onLine =
+                        - x12 * y34 + y12 * x34 == 0.0 &&
+                                - x12 * y23 + y12 * x23 == 0.0 && // sin2
+                                - x23 * y34 + y23 * x34 == 0.0;   // sin3
+            }
+        }
+
+        double lx1 = x1 + mx1;
+        double ly1 = y1 + my1;
+        double rx1 = x1 - mx1;
+        double ry1 = y1 - my1;
+
+        if (checkMove) {
+            if (isMove) {
+                isMove = false;
+                lp.moveTo(lx1, ly1);
+                rp.moveTo(rx1, ry1);
+            } else {
+                addJoin(lp, x1, y1, lx1, ly1, true);
+                addJoin(rp, x1, y1, rx1, ry1, false);
+            }
+        }
+
+        if (onLine) {
+            if ((x1 == x2 && y1 < y2) || x1 < x2) {
+                l12 = -l12;
+            }
+            if ((x2 == x3 && y2 < y3) || x2 < x3) {
+                l23 = -l23;
+            }
+            if ((x3 == x4 && y3 < y4) || x3 < x4) {
+                l34 = -l34;
+            }
+            double d = l23 * l23 - l12 * l34;
+            double roots[] = new double[3];
+            int rc = 0;
+            if (d == 0.0) {
+                double t = (l12 - l23) / (l12 + l34 - l23 - l23);
+                if (0.0 < t && t < 1.0) {
+                    roots[rc++] = t;
+                }
+            } else
+            if (d > 0.0) {
+                d = Math.sqrt(d);
+                double z = l12 + l34 - l23 - l23;
+                double t;
+                t = (l12 - l23 + d) / z;
+                if (0.0 < t && t < 1.0) {
+                    roots[rc++] = t;
+                }
+                t = (l12 - l23 - d) / z;
+                if (0.0 < t && t < 1.0) {
+                    roots[rc++] = t;
+                }
+            }
+
+            if (rc > 0) {
+                // Sort roots
+                if (rc == 2 && roots[0] > roots[1]) {
+                    double tmp = roots[0];
+                    roots[0] = roots[1];
+                    roots[1] = tmp;
+                }
+                roots[rc++] = 1.0;
+
+                double ax = - x34 - x12 + x23 + x23;
+                double ay = - y34 - y12 + y23 + y23;
+                double bx = 3.0 * (- x23 + x12);
+                double by = 3.0 * (- y23 + y12);
+                double cx = 3.0 * (- x12);
+                double cy = 3.0 * (- y12);
+                double xPrev = x1;
+                double yPrev = y1;
+                for(int i = 0; i < rc; i++) {
+                    double t = roots[i];
+                    double px = t * (t * (t * ax + bx) + cx) + x1;
+                    double py = t * (t * (t * ay + by) + cy) + y1;
+                    double px1 = (xPrev + px) / 2.0;
+                    double py1 = (yPrev + py) / 2.0;
+                    lp.cubicTo(px1 + mx1, py1 + my1, px1 + mx1, py1 + my1, px + mx1, py + my1);
+                    rp.cubicTo(px1 - mx1, py1 - my1, px1 - mx1, py1 - my1, px - mx1, py - my1);
+                    if (i < rc - 1) {
+                        lp.lineTo(px - mx1, py - my1);
+                        rp.lineTo(px + mx1, py + my1);
+                    }
+                    xPrev = px;
+                    yPrev = py;
+                    mx1 = - mx1;
+                    my1 = - my1;
+                }
+            } else {
+                lp.cubicTo(x2 + mx1, y2 + my1, x3 + mx4, y3 + my4, x4 + mx4, y4 + my4);
+                rp.cubicTo(x2 - mx1, y2 - my1, x3 - mx4, y3 - my4, x4 - mx4, y4 - my4);
+            }
+        } else {
+            addSubCubic(x1, y1, x2, y2, x3, y3, x4, y4, 0);
+        }
+    }
+
+    /**
+     * Subdivides solid cubic curve to make outline for source quad segment and adds it to work path
+     * @param x1 - the x coordinate of the first control point
+     * @param y1 - the y coordinate of the first control point
+     * @param x2 - the x coordinate of the second control point
+     * @param y2 - the y coordinate of the second control point
+     * @param x3 - the x coordinate of the third control point
+     * @param y3 - the y coordinate of the third control point
+     * @param x4 - the x coordinate of the fours control point
+     * @param y4 - the y coordinate of the fours control point
+     * @param level - the maximum level of subdivision deepness
+     */
+    void addSubCubic(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4, int level) {
+        double x12 = x1 - x2;
+        double y12 = y1 - y2;
+        double x23 = x2 - x3;
+        double y23 = y2 - y3;
+        double x34 = x3 - x4;
+        double y34 = y3 - y4;
+
+        double cos2 = - x12 * x23 - y12 * y23;
+        double cos3 = - x23 * x34 - y23 * y34;
+        double sin2 = - x12 * y23 + y12 * x23;
+        double sin3 = - x23 * y34 + y23 * x34;
+        double sin0 = - x12 * y34 + y12 * x34;
+        double cos0 = - x12 * x34 - y12 * y34;
+
+        if (level < MAX_LEVEL && (sin2 != 0.0 || sin3 != 0.0 || sin0 != 0.0) &&
+                (cos2 >= 0.0 || cos3 >= 0.0 || cos0 >= 0.0 ||
+                        (Math.abs(sin2 / cos2) > curveDelta) ||
+                        (Math.abs(sin3 / cos3) > curveDelta) ||
+                        (Math.abs(sin0 / cos0) > curveDelta)))
+        {
+            double cx = (x2 + x3) / 2.0;
+            double cy = (y2 + y3) / 2.0;
+            double lx2 = (x2 + x1) / 2.0;
+            double ly2 = (y2 + y1) / 2.0;
+            double rx3 = (x3 + x4) / 2.0;
+            double ry3 = (y3 + y4) / 2.0;
+            double lx3 = (cx + lx2) / 2.0;
+            double ly3 = (cy + ly2) / 2.0;
+            double rx2 = (cx + rx3) / 2.0;
+            double ry2 = (cy + ry3) / 2.0;
+            cx = (lx3 + rx2) / 2.0;
+            cy = (ly3 + ry2) / 2.0;
+            addSubCubic(x1, y1, lx2, ly2, lx3, ly3, cx, cy, level + 1);
+            addSubCubic(cx, cy, rx2, ry2, rx3, ry3, x4, y4, level + 1);
+        } else {
+            double w, mx1, my1, mx2, my2, mx3, my3, mx4, my4;
+            double l12 = Math.sqrt(x12 * x12 + y12 * y12);
+            double l23 = Math.sqrt(x23 * x23 + y23 * y23);
+            double l34 = Math.sqrt(x34 * x34 + y34 * y34);
+
+            if (l12 == 0.0) {
+                w = w2 / l23;
+                mx1 =   y23 * w;
+                my1 = - x23 * w;
+                w = w2 / l34;
+                mx4 =   y34 * w;
+                my4 = - x34 * w;
+            } else
+            if (l34 == 0.0) {
+                w = w2 / l12;
+                mx1 =   y12 * w;
+                my1 = - x12 * w;
+                w = w2 / l23;
+                mx4 =   y23 * w;
+                my4 = - x23 * w;
+            } else {
+                // Common case
+                w = w2 / l12;
+                mx1 =   y12 * w;
+                my1 = - x12 * w;
+                w = w2 / l34;
+                mx4 =   y34 * w;
+                my4 = - x34 * w;
+            }
+
+            if (sin2 == 0.0) {
+                mx2 = mx1;
+                my2 = my1;
+            } else {
+                w = w2 / sin2;
+                mx2 = -(x12 * l23 - x23 * l12) * w;
+                my2 = -(y12 * l23 - y23 * l12) * w;
+            }
+            if (sin3 == 0.0) {
+                mx3 = mx4;
+                my3 = my4;
+            } else {
+                w = w2 / sin3;
+                mx3 = -(x23 * l34 - x34 * l23) * w;
+                my3 = -(y23 * l34 - y34 * l23) * w;
+            }
+
+            lp.cubicTo(x2 + mx2, y2 + my2, x3 + mx3, y3 + my3, x4 + mx4, y4 + my4);
+            rp.cubicTo(x2 - mx2, y2 - my2, x3 - mx3, y3 - my3, x4 - mx4, y4 - my4);
+        }
+    }
+
+    /**
+     * Adds dashed line segment to the work path
+     * @param x1 - the x coordinate of the start line point
+     * @param y1 - the y coordinate of the start line point
+     * @param x2 - the x coordinate of the end line point
+     * @param y2 - the y coordinate of the end line point
+     */
+    void addDashLine(double x1, double y1, double x2, double y2) {
+        double x21 = x2 - x1;
+        double y21 = y2 - y1;
+
+        double l21 = Math.sqrt(x21 * x21 + y21 * y21);
+
+        if (l21 == 0.0) {
+            return;
+        }
+
+        double px1, py1;
+        px1 = py1 = 0.0;
+        double w = w2 / l21;
+        double mx = - y21 * w;
+        double my =   x21 * w;
+
+        dasher.init(new DashIterator.Line(l21));
+
+        while(!dasher.eof()) {
+            double t = dasher.getValue();
+            scx = x1 + t * x21;
+            scy = y1 + t * y21;
+
+            if (dasher.isOpen()) {
+                px1 = scx;
+                py1 = scy;
+                double lx1 = px1 + mx;
+                double ly1 = py1 + my;
+                double rx1 = px1 - mx;
+                double ry1 = py1 - my;
+                if (isMove) {
+                    isMove = false;
+                    smx = px1;
+                    smy = py1;
+                    rp.clean();
+                    lp.moveTo(lx1, ly1);
+                    rp.moveTo(rx1, ry1);
+                } else {
+                    addJoin(lp, x1, y1, lx1, ly1, true);
+                    addJoin(rp, x1, y1, rx1, ry1, false);
+                }
+            } else
+            if (dasher.isContinue()) {
+                double px2 = scx;
+                double py2 = scy;
+                lp.lineTo(px2 + mx, py2 + my);
+                rp.lineTo(px2 - mx, py2 - my);
+                if (dasher.close) {
+                    addCap(lp, px2, py2, rp.xLast, rp.yLast);
+                    lp.combine(rp);
+                    if (isFirst) {
+                        isFirst = false;
+                        fmx = smx;
+                        fmy = smy;
+                        sp = lp;
+                        lp = new BufferedPath();
+                    } else {
+                        addCap(lp, smx, smy, lp.xMove, lp.yMove);
+                        lp.closePath();
+                    }
+                    isMove = true;
+                }
+            }
+
+            dasher.next();
+        }
+    }
+
+    /**
+     * Adds dashed quad segment to the work path
+     * @param x1 - the x coordinate of the first control point
+     * @param y1 - the y coordinate of the first control point
+     * @param x2 - the x coordinate of the second control point
+     * @param y2 - the y coordinate of the second control point
+     * @param x3 - the x coordinate of the third control point
+     * @param y3 - the y coordinate of the third control point
+     */
+    void addDashQuad(double x1, double y1, double x2, double y2, double x3, double y3) {
+
+        double x21 = x2 - x1;
+        double y21 = y2 - y1;
+        double x23 = x2 - x3;
+        double y23 = y2 - y3;
+
+        double l21 = Math.sqrt(x21 * x21 + y21 * y21);
+        double l23 = Math.sqrt(x23 * x23 + y23 * y23);
+
+        if (l21 == 0.0 && l23 == 0.0) {
+            return;
+        }
+
+        if (l21 == 0.0) {
+            addDashLine(x2, y2, x3, y3);
+            return;
+        }
+
+        if (l23 == 0.0) {
+            addDashLine(x1, y1, x2, y2);
+            return;
+        }
+
+        double ax = x1 + x3 - x2 - x2;
+        double ay = y1 + y3 - y2 - y2;
+        double bx = x2 - x1;
+        double by = y2 - y1;
+        double cx = x1;
+        double cy = y1;
+
+        double px1, py1, dx1, dy1;
+        px1 = py1 = dx1 = dy1 = 0.0;
+        double prev = 0.0;
+
+        dasher.init(new DashIterator.Quad(x1, y1, x2, y2, x3, y3));
+
+        while(!dasher.eof()) {
+            double t = dasher.getValue();
+            double dx = t * ax + bx;
+            double dy = t * ay + by;
+            scx = t * (dx + bx) + cx; // t^2 * ax + 2.0 * t * bx + cx
+            scy = t * (dy + by) + cy; // t^2 * ay + 2.0 * t * by + cy
+            if (dasher.isOpen()) {
+                px1 = scx;
+                py1 = scy;
+                dx1 = dx;
+                dy1 = dy;
+                double w = w2 / Math.sqrt(dx1 * dx1 + dy1 * dy1);
+                double mx1 = - dy1 * w;
+                double my1 =   dx1 * w;
+                double lx1 = px1 + mx1;
+                double ly1 = py1 + my1;
+                double rx1 = px1 - mx1;
+                double ry1 = py1 - my1;
+                if (isMove) {
+                    isMove = false;
+                    smx = px1;
+                    smy = py1;
+                    rp.clean();
+                    lp.moveTo(lx1, ly1);
+                    rp.moveTo(rx1, ry1);
+                } else {
+                    addJoin(lp, x1, y1, lx1, ly1, true);
+                    addJoin(rp, x1, y1, rx1, ry1, false);
+                }
+            } else
+            if (dasher.isContinue()) {
+                double px3 = scx;
+                double py3 = scy;
+                double sx = x2 - x23 * prev;
+                double sy = y2 - y23 * prev;
+                double t2 = (t - prev) / (1 - prev);
+                double px2 = px1 + (sx - px1) * t2;
+                double py2 = py1 + (sy - py1) * t2;
+
+                addQuad(px1, py1, px2, py2, px3, py3);
+                if (dasher.isClosed()) {
+                    addCap(lp, px3, py3, rp.xLast, rp.yLast);
+                    lp.combine(rp);
+                    if (isFirst) {
+                        isFirst = false;
+                        fmx = smx;
+                        fmy = smy;
+                        sp = lp;
+                        lp = new BufferedPath();
+                    } else {
+                        addCap(lp, smx, smy, lp.xMove, lp.yMove);
+                        lp.closePath();
+                    }
+                    isMove = true;
+                }
+            }
+
+            prev = t;
+            dasher.next();
+        }
+    }
+
+    /**
+     * Adds dashed cubic segment to the work path
+     * @param x1 - the x coordinate of the first control point
+     * @param y1 - the y coordinate of the first control point
+     * @param x2 - the x coordinate of the second control point
+     * @param y2 - the y coordinate of the second control point
+     * @param x3 - the x coordinate of the third control point
+     * @param y3 - the y coordinate of the third control point
+     * @param x4 - the x coordinate of the fours control point
+     * @param y4 - the y coordinate of the fours control point
+     */
+    void addDashCubic(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4) {
+
+        double x12 = x1 - x2;
+        double y12 = y1 - y2;
+        double x23 = x2 - x3;
+        double y23 = y2 - y3;
+        double x34 = x3 - x4;
+        double y34 = y3 - y4;
+
+        double l12 = Math.sqrt(x12 * x12 + y12 * y12);
+        double l23 = Math.sqrt(x23 * x23 + y23 * y23);
+        double l34 = Math.sqrt(x34 * x34 + y34 * y34);
+
+        // All edges are zero
+        if (l12 == 0.0 && l23 == 0.0 && l34 == 0.0) {
+            // NOTHING
+            return;
+        }
+
+        // One zero edge
+        if (l12 == 0.0 && l23 == 0.0) {
+            addDashLine(x3, y3, x4, y4);
+            return;
+        }
+
+        if (l23 == 0.0 && l34 == 0.0) {
+            addDashLine(x1, y1, x2, y2);
+            return;
+        }
+
+        if (l12 == 0.0 && l34 == 0.0) {
+            addDashLine(x2, y2, x3, y3);
+            return;
+        }
+
+        double ax = x4 - x1 + 3.0 * (x2 - x3);
+        double ay = y4 - y1 + 3.0 * (y2 - y3);
+        double bx = 3.0 * (x1 + x3 - x2 - x2);
+        double by = 3.0 * (y1 + y3 - y2 - y2);
+        double cx = 3.0 * (x2 - x1);
+        double cy = 3.0 * (y2 - y1);
+        double dx = x1;
+        double dy = y1;
+
+        double px1 = 0.0;
+        double py1 = 0.0;
+        double prev = 0.0;
+
+        dasher.init(new DashIterator.Cubic(x1, y1, x2, y2, x3, y3, x4, y4));
+
+        while(!dasher.eof()) {
+
+            double t = dasher.getValue();
+            scx = t * (t * (t * ax + bx) + cx) + dx;
+            scy = t * (t * (t * ay + by) + cy) + dy;
+            if (dasher.isOpen()) {
+                px1 = scx;
+                py1 = scy;
+                double dx1 = t * (t * (ax + ax + ax) + bx + bx) + cx;
+                double dy1 = t * (t * (ay + ay + ay) + by + by) + cy;
+                double w = w2 / Math.sqrt(dx1 * dx1 + dy1 * dy1);
+                double mx1 = - dy1 * w;
+                double my1 =   dx1 * w;
+                double lx1 = px1 + mx1;
+                double ly1 = py1 + my1;
+                double rx1 = px1 - mx1;
+                double ry1 = py1 - my1;
+                if (isMove) {
+                    isMove = false;
+                    smx = px1;
+                    smy = py1;
+                    rp.clean();
+                    lp.moveTo(lx1, ly1);
+                    rp.moveTo(rx1, ry1);
+                } else {
+                    addJoin(lp, x1, y1, lx1, ly1, true);
+                    addJoin(rp, x1, y1, rx1, ry1, false);
+                }
+            } else
+            if (dasher.isContinue()) {
+                double sx1 = x2 - x23 * prev;
+                double sy1 = y2 - y23 * prev;
+                double sx2 = x3 - x34 * prev;
+                double sy2 = y3 - y34 * prev;
+                double sx3 = sx1 + (sx2 - sx1) * prev;
+                double sy3 = sy1 + (sy2 - sy1) * prev;
+                double t2 = (t - prev) / (1 - prev);
+                double sx4 = sx3 + (sx2 - sx3) * t2;
+                double sy4 = sy3 + (sy2 - sy3) * t2;
+
+                double px4 = scx;
+                double py4 = scy;
+                double px2 = px1 + (sx3 - px1) * t2;
+                double py2 = py1 + (sy3 - py1) * t2;
+                double px3 = px2 + (sx4 - px2) * t2;
+                double py3 = py2 + (sy4 - py2) * t2;
+
+                addCubic(px1, py1, px2, py2, px3, py3, px4, py4);
+                if (dasher.isClosed()) {
+                    addCap(lp, px4, py4, rp.xLast, rp.yLast);
+                    lp.combine(rp);
+                    if (isFirst) {
+                        isFirst = false;
+                        fmx = smx;
+                        fmy = smy;
+                        sp = lp;
+                        lp = new BufferedPath();
+                    } else {
+                        addCap(lp, smx, smy, lp.xMove, lp.yMove);
+                        lp.closePath();
+                    }
+                    isMove = true;
+                }
+            }
+
+            prev = t;
+            dasher.next();
+        }
+    }
+
+    /**
+     *  Dasher class provides dashing for particular dash style
+     */
+    class Dasher {
+
+        double pos;
+        boolean close, visible, first;
+        float dash[];
+        float phase;
+        int index;
+        DashIterator iter;
+
+        Dasher(float dash[], float phase) {
+            this.dash = dash;
+            this.phase = phase;
+            index = 0;
+            pos = phase;
+            visible = true;
+            while (pos >= dash[index]) {
+                visible = !visible;
+                pos -= dash[index];
+                index = (index + 1) % dash.length;
+            }
+            pos = -pos;
+            first = visible;
+        }
+
+        void init(DashIterator iter) {
+            this.iter = iter;
+            close = true;
+        }
+
+        boolean isOpen() {
+            return visible && pos < iter.length;
+        }
+
+        boolean isContinue() {
+            return !visible && pos > 0;
+        }
+
+        boolean isClosed() {
+            return close;
+        }
+
+        boolean isConnected() {
+            return first && !close;
+        }
+
+        boolean eof() {
+            if (!close) {
+                pos -= iter.length;
+                return true;
+            }
+            if (pos >= iter.length) {
+                if (visible) {
+                    pos -= iter.length;
+                    return true;
+                }
+                close = pos == iter.length;
+            }
             return false;
         }
 
-        return true;
+        void next() {
+            if (close) {
+                pos += dash[index];
+                index = (index + 1) % dash.length;
+            } else {
+                // Go back
+                index = (index + dash.length - 1) % dash.length;
+                pos -= dash[index];
+            }
+            visible = !visible;
+        }
+
+        double getValue() {
+            double t = iter.getNext(pos);
+            return t < 0 ? 0 : (t > 1 ? 1 : t);
+        }
+
     }
 
-    @Override
-    public BasicStroke clone() {
-        return new BasicStroke(width, cap, join, miterLimit, dash, dashPhase, type);
+    /**
+     * DashIterator class provides dashing for particular segment type
+     */
+    static abstract class DashIterator {
+
+        static final double FLATNESS = 1.0;
+
+        static class Line extends DashIterator {
+
+            Line(double len) {
+                length = len;
+            }
+
+            @Override
+            double getNext(double dashPos) {
+                return dashPos / length;
+            }
+
+        }
+
+        static class Quad extends DashIterator {
+
+            int valSize;
+            int valPos;
+            double curLen;
+            double prevLen;
+            double lastLen;
+            double[] values;
+            double step;
+
+            Quad(double x1, double y1, double x2, double y2, double x3, double y3) {
+
+                double nx = x1 + x3 - x2 - x2;
+                double ny = y1 + y3 - y2 - y2;
+
+                int n = (int)(1 + Math.sqrt(0.75 * (Math.abs(nx) + Math.abs(ny)) * FLATNESS));
+                step = 1.0 / n;
+
+                double ax = x1 + x3 - x2 - x2;
+                double ay = y1 + y3 - y2 - y2;
+                double bx = 2.0 * (x2 - x1);
+                double by = 2.0 * (y2 - y1);
+
+                double dx1 = step * (step * ax + bx);
+                double dy1 = step * (step * ay + by);
+                double dx2 = step * (step * ax * 2.0);
+                double dy2 = step * (step * ay * 2.0);
+                double vx = x1;
+                double vy = y1;
+
+                valSize = n;
+                values = new double[valSize];
+                double pvx = vx;
+                double pvy = vy;
+                length = 0.0;
+                for(int i = 0; i < n; i++) {
+                    vx += dx1;
+                    vy += dy1;
+                    dx1 += dx2;
+                    dy1 += dy2;
+                    double lx = vx - pvx;
+                    double ly = vy - pvy;
+                    values[i] = Math.sqrt(lx * lx + ly * ly);
+                    length += values[i];
+                    pvx = vx;
+                    pvy = vy;
+                }
+
+                valPos = 0;
+                curLen = 0.0;
+                prevLen = 0.0;
+            }
+
+            @Override
+            double getNext(double dashPos) {
+                double t = 2.0;
+                while (curLen <= dashPos && valPos < valSize) {
+                    prevLen = curLen;
+                    curLen += lastLen = values[valPos++];
+                }
+                if (curLen > dashPos) {
+                    t = (valPos - 1 + (dashPos - prevLen) / lastLen) * step;
+                }
+                return t;
+            }
+
+        }
+
+        static class Cubic extends DashIterator {
+
+            int valSize;
+            int valPos;
+            double curLen;
+            double prevLen;
+            double lastLen;
+            double[] values;
+            double step;
+
+            Cubic(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4) {
+
+                double nx1 = x1 + x3 - x2 - x2;
+                double ny1 = y1 + y3 - y2 - y2;
+                double nx2 = x2 + x4 - x3 - x3;
+                double ny2 = y2 + y4 - y3 - y3;
+
+                double max = Math.max(Math.abs(nx1) + Math.abs(ny1), Math.abs(nx2) + Math.abs(ny2));
+                int n = (int)(1 + Math.sqrt(0.75 * max) * FLATNESS);
+                step = 1.0 / n;
+
+                double ax = x4 - x1 + 3.0 * (x2 - x3);
+                double ay = y4 - y1 + 3.0 * (y2 - y3);
+                double bx = 3.0 * (x1 + x3 - x2 - x2);
+                double by = 3.0 * (y1 + y3 - y2 - y2);
+                double cx = 3.0 * (x2 - x1);
+                double cy = 3.0 * (y2 - y1);
+
+                double dx1 = step * (step * (step * ax + bx) + cx);
+                double dy1 = step * (step * (step * ay + by) + cy);
+                double dx2 = step * (step * (step * ax * 6.0 + bx * 2.0));
+                double dy2 = step * (step * (step * ay * 6.0 + by * 2.0));
+                double dx3 = step * (step * (step * ax * 6.0));
+                double dy3 = step * (step * (step * ay * 6.0));
+                double vx = x1;
+                double vy = y1;
+
+                valSize = n;
+                values = new double[valSize];
+                double pvx = vx;
+                double pvy = vy;
+                length = 0.0;
+                for(int i = 0; i < n; i++) {
+                    vx += dx1;
+                    vy += dy1;
+                    dx1 += dx2;
+                    dy1 += dy2;
+                    dx2 += dx3;
+                    dy2 += dy3;
+                    double lx = vx - pvx;
+                    double ly = vy - pvy;
+                    values[i] = Math.sqrt(lx * lx + ly * ly);
+                    length += values[i];
+                    pvx = vx;
+                    pvy = vy;
+                }
+
+                valPos = 0;
+                curLen = 0.0;
+                prevLen = 0.0;
+            }
+
+            @Override
+            double getNext(double dashPos) {
+                double t = 2.0;
+                while (curLen <= dashPos && valPos < valSize) {
+                    prevLen = curLen;
+                    curLen += lastLen = values[valPos++];
+                }
+                if (curLen > dashPos) {
+                    t = (valPos - 1 + (dashPos - prevLen) / lastLen) * step;
+                }
+                return t;
+            }
+
+        }
+
+        double length;
+
+        abstract double getNext(double dashPos);
+
     }
+
+    /**
+     * BufferedPath class provides work path storing and processing
+     */
+    static class BufferedPath {
+
+        private static final int bufCapacity = 10;
+
+        static int pointShift[] = {
+                2,  // MOVETO
+                2,  // LINETO
+                4,  // QUADTO
+                6,  // CUBICTO
+                0}; // CLOSE
+
+        byte[] types;
+        float[] points;
+        int typeSize;
+        int pointSize;
+
+        float xLast;
+        float yLast;
+        float xMove;
+        float yMove;
+
+        public BufferedPath() {
+            types = new byte[bufCapacity];
+            points = new float[bufCapacity * 2];
+        }
+
+        void checkBuf(int typeCount, int pointCount) {
+            if (typeSize + typeCount > types.length) {
+                byte tmp[] = new byte[typeSize + Math.max(bufCapacity, typeCount)];
+                System.arraycopy(types, 0, tmp, 0, typeSize);
+                types = tmp;
+            }
+            if (pointSize + pointCount > points.length) {
+                float tmp[] = new float[pointSize + Math.max(bufCapacity * 2, pointCount)];
+                System.arraycopy(points, 0, tmp, 0, pointSize);
+                points = tmp;
+            }
+        }
+
+        boolean isEmpty() {
+            return typeSize == 0;
+        }
+
+        void clean() {
+            typeSize = 0;
+            pointSize = 0;
+        }
+
+        void moveTo(double x, double y) {
+            checkBuf(1, 2);
+            types[typeSize++] = PathIterator.SEG_MOVETO;
+            points[pointSize++] = xMove = (float)x;
+            points[pointSize++] = yMove = (float)y;
+        }
+
+        void lineTo(double x, double y) {
+            checkBuf(1, 2);
+            types[typeSize++] = PathIterator.SEG_LINETO;
+            points[pointSize++] = xLast = (float)x;
+            points[pointSize++] = yLast = (float)y;
+        }
+
+        void quadTo(double x1, double y1, double x2, double y2) {
+            checkBuf(1, 4);
+            types[typeSize++] = PathIterator.SEG_QUADTO;
+            points[pointSize++] = (float)x1;
+            points[pointSize++] = (float)y1;
+            points[pointSize++] = xLast = (float)x2;
+            points[pointSize++] = yLast = (float)y2;
+        }
+
+        void cubicTo(double x1, double y1, double x2, double y2, double x3, double y3) {
+            checkBuf(1, 6);
+            types[typeSize++] = PathIterator.SEG_CUBICTO;
+            points[pointSize++] = (float)x1;
+            points[pointSize++] = (float)y1;
+            points[pointSize++] = (float)x2;
+            points[pointSize++] = (float)y2;
+            points[pointSize++] = xLast = (float)x3;
+            points[pointSize++] = yLast = (float)y3;
+        }
+
+        void closePath() {
+            checkBuf(1, 0);
+            types[typeSize++] = PathIterator.SEG_CLOSE;
+        }
+
+        void setLast(double x, double y) {
+            points[pointSize - 2] = xLast = (float)x;
+            points[pointSize - 1] = yLast = (float)y;
+        }
+
+        void append(BufferedPath p) {
+            checkBuf(p.typeSize, p.pointSize);
+            System.arraycopy(p.points, 0, points, pointSize, p.pointSize);
+            System.arraycopy(p.types, 0, types, typeSize, p.typeSize);
+            pointSize += p.pointSize;
+            typeSize += p.typeSize;
+            xLast = points[pointSize - 2];
+            yLast = points[pointSize - 1];
+        }
+
+        void appendReverse(BufferedPath p) {
+            checkBuf(p.typeSize, p.pointSize);
+            // Skip last point, beacause it's the first point of the second path
+            for(int i = p.pointSize - 2; i >= 0; i -= 2) {
+                points[pointSize++] = p.points[i + 0];
+                points[pointSize++] = p.points[i + 1];
+            }
+            // Skip first type, beacuse it's always MOVETO
+            int closeIndex = 0;
+            for(int i = p.typeSize - 1; i >= 0; i--) {
+                byte type = p.types[i];
+                if (type == PathIterator.SEG_MOVETO) {
+                    types[closeIndex] = PathIterator.SEG_MOVETO;
+                    types[typeSize++] = PathIterator.SEG_CLOSE;
+                } else {
+                    if (type == PathIterator.SEG_CLOSE) {
+                        closeIndex = typeSize;
+                    }
+                    types[typeSize++] = type;
+                }
+            }
+            xLast = points[pointSize - 2];
+            yLast = points[pointSize - 1];
+        }
+
+        void join(BufferedPath p) {
+            // Skip MOVETO
+            checkBuf(p.typeSize - 1, p.pointSize - 2);
+            System.arraycopy(p.points, 2, points, pointSize, p.pointSize - 2);
+            System.arraycopy(p.types, 1, types, typeSize, p.typeSize - 1);
+            pointSize += p.pointSize - 2;
+            typeSize += p.typeSize - 1;
+            xLast = points[pointSize - 2];
+            yLast = points[pointSize - 1];
+        }
+
+        void combine(BufferedPath p) {
+            checkBuf(p.typeSize - 1, p.pointSize - 2);
+            // Skip last point, beacause it's the first point of the second path
+            for(int i = p.pointSize - 4; i >= 0; i -= 2) {
+                points[pointSize++] = p.points[i + 0];
+                points[pointSize++] = p.points[i + 1];
+            }
+            // Skip first type, beacuse it's always MOVETO
+            for(int i = p.typeSize - 1; i >= 1; i--) {
+                types[typeSize++] = p.types[i];
+            }
+            xLast = points[pointSize - 2];
+            yLast = points[pointSize - 1];
+        }
+
+        Path createGeneralPath() {
+            Path p = new Path();
+            int j = 0;
+            for(int i = 0; i < typeSize; i++) {
+                int type = types[i];
+                switch(type){
+                    case PathIterator.SEG_MOVETO:
+                        p.moveTo(points[j], points[j + 1]);
+                        break;
+                    case PathIterator.SEG_LINETO:
+                        p.lineTo(points[j], points[j + 1]);
+                        break;
+                    case PathIterator.SEG_QUADTO:
+                        p.quadTo(points[j], points[j + 1], points[j + 2], points[j + 3]);
+                        break;
+                    case PathIterator.SEG_CUBICTO:
+                        p.curveTo(points[j], points[j + 1], points[j + 2], points[j + 3], points[j + 4], points[j + 5]);
+                        break;
+                    case PathIterator.SEG_CLOSE:
+                        p.closePath();
+                        break;
+                }
+                j += pointShift[type];
+            }
+            return p;
+        }
+
+    }
+
 }

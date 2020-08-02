@@ -56,4 +56,13 @@ public interface PathIterator {
      * @return the path segment type, e.g. {@link #SEG_MOVETO}.
      */
     int currentSegment (float[] coords);
+
+    default int currentSegment (double[] coords) {
+        float[] removeMe = new float[6];
+        int f = currentSegment(removeMe);
+        for (int i = 0; i < 6; i++) {
+            coords[i] = removeMe[i];
+        }
+        return f;
+    }
 }
