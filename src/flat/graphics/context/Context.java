@@ -7,12 +7,13 @@ import flat.graphics.context.enuns.*;
 import flat.graphics.SmartContext;
 import flat.graphics.text.*;
 import flat.math.*;
-import flat.math.shapes.Path;
 import flat.math.shapes.PathIterator;
 import flat.math.shapes.Shape;
+import flat.math.shapes.Stroke;
 
 import java.lang.ref.WeakReference;
 import java.nio.Buffer;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import static flat.backend.GLEnuns.*;
@@ -85,6 +86,8 @@ public final class Context {
     private LineCap svgLineCap;
     private LineJoin svgLineJoin;
     private float svgMiterLimit;
+    private float svgDashPhase;
+    private float[] svgDash;
 
     private Font svgTextFont;
     private float svgTextScale, svgTextSpacing;
@@ -206,6 +209,8 @@ public final class Context {
         svgLineCap = LineCap.BUTT;
         svgLineJoin = LineJoin.ROUND;
         svgMiterLimit = 10.0f;
+        svgDashPhase = 0;
+        svgDash = null;
 
         svgTextFont = Font.DEFAULT;
         svgTextScale = 1.0f;
@@ -993,8 +998,7 @@ public final class Context {
     }
 
     // ---- SVG ---- //
-
-    protected void svgBegin() {
+    public void svgBegin() {
         if (!svgMode) {
             refreshBinds();
 
@@ -1007,7 +1011,7 @@ public final class Context {
 
             SVG.SetStroke(svgId, svgStrokeWidth,
                     svgLineCap.getInternalEnum(),
-                    svgLineJoin.getInternalEnum(), svgMiterLimit);
+                    svgLineJoin.getInternalEnum(), svgMiterLimit, svgDash, svgDashPhase);
 
             SVG.SetFont(svgId, svgTextFont.getInternalID());
             SVG.SetFontScale(svgId, svgTextScale);
@@ -1050,7 +1054,6 @@ public final class Context {
 
         GL.SetColorMask(rMask, gMask, bMask, aMask);
 
-        //TODO - Nanovg doesn't unbind !?
         BufferObejct uniformBuffer = buffers[BufferType.Uniform.ordinal()];
         GL.BufferBind(BufferType.Uniform.getInternalEnum(), uniformBuffer == null ? 0 : uniformBuffer.getInternalID());
 
@@ -1129,7 +1132,7 @@ public final class Context {
             if (svgMode) {
                 SVG.SetStroke(svgId, svgStrokeWidth,
                         svgLineCap.getInternalEnum(),
-                        svgLineJoin.getInternalEnum(), svgMiterLimit);
+                        svgLineJoin.getInternalEnum(), svgMiterLimit, svgDash, svgDashPhase);
             }
         }
     }
@@ -1144,7 +1147,7 @@ public final class Context {
             if (svgMode) {
                 SVG.SetStroke(svgId, svgStrokeWidth,
                         svgLineCap.getInternalEnum(),
-                        svgLineJoin.getInternalEnum(), svgMiterLimit);
+                        svgLineJoin.getInternalEnum(), svgMiterLimit, svgDash, svgDashPhase);
             }
         }
     }
@@ -1159,7 +1162,7 @@ public final class Context {
             if (svgMode) {
                 SVG.SetStroke(svgId, svgStrokeWidth,
                         svgLineCap.getInternalEnum(),
-                        svgLineJoin.getInternalEnum(), svgMiterLimit);
+                        svgLineJoin.getInternalEnum(), svgMiterLimit, svgDash, svgDashPhase);
             }
         }
     }
@@ -1174,13 +1177,66 @@ public final class Context {
             if (svgMode) {
                 SVG.SetStroke(svgId, svgStrokeWidth,
                         svgLineCap.getInternalEnum(),
-                        svgLineJoin.getInternalEnum(), svgMiterLimit);
+                        svgLineJoin.getInternalEnum(), svgMiterLimit, svgDash, svgDashPhase);
             }
         }
     }
 
     public float svgMiterLimit() {
         return svgMiterLimit;
+    }
+
+    public void svgDash(float[] dash) {
+        if (!Arrays.equals(svgDash, dash)) {
+            svgDash = dash;
+            if (svgMode) {
+                SVG.SetStroke(svgId, svgStrokeWidth,
+                        svgLineCap.getInternalEnum(),
+                        svgLineJoin.getInternalEnum(), svgMiterLimit, svgDash, svgDashPhase);
+            }
+        }
+    }
+
+    public float[] svgDash() {
+        return svgDash.clone();
+    }
+
+    public void svgDashPhase(float dashPhase) {
+        if (svgDashPhase != dashPhase) {
+            svgDashPhase = dashPhase;
+            if (svgMode) {
+                SVG.SetStroke(svgId, svgStrokeWidth,
+                        svgLineCap.getInternalEnum(),
+                        svgLineJoin.getInternalEnum(), svgMiterLimit, svgDash, svgDashPhase);
+            }
+        }
+    }
+
+    public float svgDashPhase() {
+        return svgDashPhase;
+    }
+
+    public void svgStroke(Stroke stroker) {
+        if (svgStrokeWidth != stroker.getLineWidth() ||
+                svgLineCap != LineCap.values()[stroker.getEndCap()] ||
+                svgLineJoin != LineJoin.values()[stroker.getLineJoin()] ||
+                svgMiterLimit != stroker.getMiterLimit() ||
+                svgDashPhase != stroker.getDashPhase() ||
+                !Arrays.equals(svgDash, stroker.getDashArray())) {
+
+            svgStrokeWidth = stroker.getLineWidth();
+            svgLineCap = LineCap.values()[stroker.getEndCap()];
+            svgLineJoin = LineJoin.values()[stroker.getLineJoin()];
+            svgMiterLimit = stroker.getMiterLimit();
+            svgDashPhase = stroker.getDashPhase();
+            svgDash = stroker.getDashArray();
+
+            if (svgMode) {
+                SVG.SetStroke(svgId, svgStrokeWidth,
+                        svgLineCap.getInternalEnum(),
+                        svgLineJoin.getInternalEnum(), svgMiterLimit, svgDash, svgDashPhase);
+            }
+        }
     }
 
     public void svgTransform(Affine transform) {
@@ -1206,15 +1262,17 @@ public final class Context {
 
     public void svgClearClip(boolean clip) {
         svgFlush();
+        svgBegin();
         SVG.ClearClip(svgId, clip ? 1 : 0);
     }
 
     public void svgClip(Shape shape, boolean clip) {
         if (shape.isEmpty()) return;
 
-        svgBegin();
-        SVG.PathBegin(svgId, clip ? SVG_CLIP : SVG_UNCLIP);
         PathIterator pi = shape.pathIterator(null);
+
+        svgBegin();
+        SVG.PathBegin(svgId, SVG_CLIP, pi.windingRule());
         while (!pi.isDone()) {
             switch (pi.currentSegment(data)) {
                 case PathIterator.SEG_MOVETO:
@@ -1241,9 +1299,9 @@ public final class Context {
     public void svgDrawShape(Shape shape, boolean fill) {
         if (shape.isEmpty()) return;
 
-        svgBegin();
-        SVG.PathBegin(svgId, fill ? SVG_FILL : SVG_STROKE);
         PathIterator pi = shape.pathIterator(null);
+        svgBegin();
+        SVG.PathBegin(svgId, fill ? SVG_FILL : SVG_STROKE, pi.windingRule());
         while (!pi.isDone()) {
             switch (pi.currentSegment(data)) {
                 case PathIterator.SEG_MOVETO:
@@ -1274,7 +1332,7 @@ public final class Context {
         if (fill) {
             SVG.Rect(svgId, x, y, width, height);
         } else {
-            SVG.PathBegin(svgId, SVG_STROKE);
+            SVG.PathBegin(svgId, SVG_STROKE, 0);
             SVG.MoveTo(svgId, x, y);
             SVG.LineTo(svgId, x, y + height);
             SVG.LineTo(svgId, x + width, y + height);
@@ -1297,7 +1355,7 @@ public final class Context {
             float cy = y + height / 2f;
             float rx = width / 2f;
             float ry = height / 2f;
-            SVG.PathBegin(svgId, SVG_STROKE);
+            SVG.PathBegin(svgId, SVG_STROKE, 0);
             SVG.MoveTo(svgId, cx - rx, cy);
             SVG.CubicTo(svgId, cx - rx, cy + ry * _el90, cx - rx * _el90, cy + ry, cx, cy + ry);
             SVG.CubicTo(svgId, cx + rx * _el90, cy + ry, cx + rx, cy + ry * _el90, cx + rx, cy);
@@ -1332,7 +1390,7 @@ public final class Context {
             float rxBR = Math.min(cBottom, halfw) * Math.signum(width), ryBR = Math.min(cBottom, halfh) * Math.signum(height);
             float rxTR = Math.min(cRight, halfw) * Math.signum(width), ryTR = Math.min(cRight, halfh) * Math.signum(height);
             float rxTL = Math.min(cTop, halfw) * Math.signum(width), ryTL = Math.min(cTop, halfh) * Math.signum(height);
-            SVG.PathBegin(svgId, SVG_STROKE);
+            SVG.PathBegin(svgId, SVG_STROKE, 0);
             SVG.MoveTo(svgId, x, y + ryTL);
             SVG.CubicTo(svgId, x, y + ryTL * (1 - _el90), x + rxTL * (1 - _el90), y, x + rxTL, y);
             SVG.LineTo(svgId, x + width - rxTR, y);
@@ -1348,7 +1406,7 @@ public final class Context {
 
     public void svgDrawLine(float x1, float y1, float x2, float y2) {
         svgBegin();
-        SVG.PathBegin(svgId, SVG_STROKE);
+        SVG.PathBegin(svgId, SVG_STROKE, 0);
         SVG.MoveTo(svgId, x1, y1);
         SVG.LineTo(svgId, x2, y2);
         SVG.PathEnd(svgId);
@@ -1356,7 +1414,7 @@ public final class Context {
 
     public void svgDrawQuadCurve(float x1, float y1, float cx, float cy, float x2, float y2) {
         svgBegin();
-        SVG.PathBegin(svgId, SVG_STROKE);
+        SVG.PathBegin(svgId, SVG_STROKE, 0);
         SVG.MoveTo(svgId, x1, y1);
         SVG.QuadTo(svgId, cx, cy, x2, y2);
         SVG.PathEnd(svgId);
@@ -1364,7 +1422,7 @@ public final class Context {
 
     public void svgDrawBezierCurve(float x1, float y1, float cx1, float cy1, float cx2, float cy2, float x2, float y2) {
         svgBegin();
-        SVG.PathBegin(svgId, SVG_STROKE);
+        SVG.PathBegin(svgId, SVG_STROKE, 0);
         SVG.MoveTo(svgId, x1, y1);
         SVG.CubicTo(svgId, cx1, cy1, cx2, cy2, x2, y2);
         SVG.PathEnd(svgId);
@@ -1439,7 +1497,7 @@ public final class Context {
         int w = 0;
         if (text != null) {
             svgBegin();
-            SVG.PathBegin(svgId, SVG_TEXT);
+            SVG.PathBegin(svgId, SVG_TEXT, 0);
             w = SVG.DrawText(svgId, x, y, text, maxWidth, svgTextHorizontalAlign.getInternalEnum(), svgTextVerticalAlign.getInternalEnum());
             SVG.PathEnd(svgId);
         }
@@ -1450,7 +1508,7 @@ public final class Context {
         int w = 0;
         if (text != null && offset >= 0 && offset + length <= text.limit()) {
             svgBegin();
-            SVG.PathBegin(svgId, SVG_TEXT);
+            SVG.PathBegin(svgId, SVG_TEXT, 0);
             w = SVG.DrawTextBuffer(svgId, x, y, text, offset, length, maxWidth, svgTextHorizontalAlign.getInternalEnum(), svgTextVerticalAlign.getInternalEnum());
             SVG.PathEnd(svgId);
         }

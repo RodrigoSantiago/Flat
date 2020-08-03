@@ -62,6 +62,16 @@ public class SmartContext {
         context.softFlush();
     }
 
+    public void hardFlush() {
+        clearMode();
+        context.hardFlush();
+    }
+
+    public void svgFlush() {
+        clearMode();
+        context.svgFlush();
+    }
+
     public void clear(int color) {
         clearMode();
         context.setClearColor(color);
@@ -149,28 +159,11 @@ public class SmartContext {
     }
 
     /**
-     * Clear the clipping, or, clip everthing !
-     *
-     * @param clip True for clip everthing(STENCIL BUFFER TO 0), False for draw anywhere(STENCIL BUFFER TO 1)
+     * Clear the clipping
      */
-    public void clearClip(boolean clip) {
-        if (clip) {
-            clipArea.reset();
-        } else {
-            clipArea.set(getView());
-        }
-        context.svgClearClip(clip);
-    }
-
-    // TODO - BOUNDING BOX CHECK FOR CLIP
-    public void setClip(Shape shape) {
-        clipArea.set(shape.pathIterator(transform2D));
-        context.svgClearClip(true);
-        if (!clipArea.isEmpty()) {
-            context.svgTransform(null);
-            context.svgClip(clipArea, false);
-            context.svgTransform(transform2D);
-        }
+    public void clearClip() {
+        clipArea.set(getView());
+        context.svgClearClip(false);
     }
 
     public Area intersectClip(Shape shape) {
@@ -183,6 +176,16 @@ public class SmartContext {
             context.svgTransform(transform2D);
         }
         return old;
+    }
+
+    public void setClip(Shape shape) {
+        clipArea.set(shape.pathIterator(transform2D));
+        context.svgClearClip(true);
+        if (!clipArea.isEmpty()) {
+            context.svgTransform(null);
+            context.svgClip(clipArea, false);
+            context.svgTransform(transform2D);
+        }
     }
 
     public Area getClip() {
@@ -211,10 +214,7 @@ public class SmartContext {
 
     public void setStroker(Stroke stroker) {
         this.stroker = stroker;
-        context.svgStrokeWidth(stroker.getLineWidth());
-        context.svgLineCap(LineCap.values()[stroker.getEndCap()]);
-        context.svgLineJoin(LineJoin.values()[stroker.getLineJoin()]);
-        context.svgMiterLimit(stroker.getMiterLimit());
+        context.svgStroke(stroker);
     }
 
     public Stroke getStroker() {

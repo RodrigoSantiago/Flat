@@ -31,7 +31,7 @@ public class Canvas extends Widget {
         if (drawListener != null) {
             Shape shape = context.getClip();
 
-            context.clearClip(false);
+            context.clearClip();
             context.setTransform2D(getTransform());
             context.softFlush();
 

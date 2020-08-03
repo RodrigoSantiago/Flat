@@ -6,8 +6,11 @@ public class SVGEnuns {
     public static final int SVG_FILL = 0;
     public static final int SVG_STROKE = 1;
     public static final int SVG_CLIP = 2;
-    public static final int SVG_UNCLIP = 3;
-    public static final int SVG_TEXT = 4;
+    public static final int SVG_TEXT = 3;
+
+    // winding rules
+    public static final int SVG_EVEN_ODD = 0;
+    public static final int SVG_NON_ZERO = 1;
 
     // Cap
     public static final int SVG_BUTT = 0;

@@ -1779,7 +1779,7 @@ public class BasicStroke implements Stroke {
         }
 
         Path createGeneralPath() {
-            Path p = new Path();
+            Path p = new Path(Path.WIND_NON_ZERO);
             int j = 0;
             for(int i = 0; i < typeSize; i++) {
                 int type = types[i];

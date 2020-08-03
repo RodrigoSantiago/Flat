@@ -245,7 +245,7 @@ public class GLEnuns {
     public static final int ST_VERTEX_SHADER = 0x8B31;
     public static final int _ST_GEOMETRY_SHADER = 0x8DD9;
 
-    //----Attribute Type
+    //----ATTRIBUTE TYPE
     public static final int AT_FLOAT = 0x1406;
     public static final int AT_FLOAT_VEC2 = 0x8B50;
     public static final int AT_FLOAT_VEC3 = 0x8B51;

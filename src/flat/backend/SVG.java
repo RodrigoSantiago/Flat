@@ -21,7 +21,7 @@ public class SVG {
     //      Render styles
     //---------------------------
     public static native void SetAntiAlias(long context, boolean aa);
-    public static native void SetStroke(long context, float width, int cap, int join, float mitter);
+    public static native void SetStroke(long context, float width, int cap, int join, float mitter, float[] dash, float dashPhase);
     public static native void SetPaintColor(long context, int color);
     public static native void SetPaintLinearGradient(long context, float[] affine, float x1, float y1, float x2, float y2, int count, float[] stops, int[] colors, int cycleMethod);
     public static native void SetPaintRadialGradient(long context, float[] affine, float x1, float y1, float radiusIn, float radiusOut, int count, float[] stops, int[] colors, int cycleMethod);
@@ -45,7 +45,7 @@ public class SVG {
     //---------------------------
     //           Paths
     //---------------------------
-    public static native void PathBegin(long context, int type);
+    public static native void PathBegin(long context, int type, int rule);
     public static native void MoveTo(long context, float x, float y);
     public static native void LineTo(long context, float x, float y);
     public static native void QuadTo(long context, float cx, float cy, float x, float y);

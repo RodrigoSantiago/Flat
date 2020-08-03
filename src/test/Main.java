@@ -2,6 +2,8 @@ package test;
 
 import flat.widget.Application;
 
+import java.awt.geom.Area;
+
 public class Main {
     public static void main(String[] args) {
         Application.Settings settings = new Application.Settings(null);

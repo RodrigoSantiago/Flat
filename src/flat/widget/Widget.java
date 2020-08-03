@@ -729,7 +729,7 @@ public class Widget implements Gadget {
                     stateAnimation = new StateAnimation(this);
                     stateAnimation.set(states);
                 }
-                stateAnimation.setDuration((long) (transitionDuration));
+                stateAnimation.setDuration(transitionDuration);
             }
         }
     }

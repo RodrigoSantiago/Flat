@@ -231,7 +231,7 @@ public class Activity extends Controller {
         context.setAntialiasEnabled(true);
         context.setView(0, 0, (int) getWidth(), (int) getHeight());
         context.clear(color, 1, 0);
-        context.clearClip(false);
+        context.clearClip();
 
         scene.onDraw(context);
         for (Scene menu : menus) {

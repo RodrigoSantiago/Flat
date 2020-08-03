@@ -153,7 +153,7 @@ public class MenuItem extends Parent {
         }
         if (subMenu != null && isActivated()) {
             Shape shape = context.getClip();
-            context.clearClip(false);
+            context.clearClip();
             subMenu.onDraw(context);
             context.setTransform2D(null);
             context.setClip(shape);

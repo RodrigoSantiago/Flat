@@ -11,4 +11,8 @@ public interface Stroke {
     float getMiterLimit();
 
     Shape createStrokedShape(Shape s);
+
+    float getDashPhase();
+
+    float[] getDashArray();
 }
