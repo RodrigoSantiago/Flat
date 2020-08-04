@@ -1266,7 +1266,7 @@ public final class Context {
         SVG.ClearClip(svgId, clip ? 1 : 0);
     }
 
-    public void svgClip(Shape shape, boolean clip) {
+    public void svgClip(Shape shape) {
         if (shape.isEmpty()) return;
 
         PathIterator pi = shape.pathIterator(null);

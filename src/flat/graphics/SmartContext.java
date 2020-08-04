@@ -172,7 +172,7 @@ public class SmartContext {
         context.svgClearClip(true);
         if (!clipArea.isEmpty()) {
             context.svgTransform(null);
-            context.svgClip(clipArea, false);
+            context.svgClip(clipArea);
             context.svgTransform(transform2D);
         }
         return old;
@@ -183,7 +183,7 @@ public class SmartContext {
         context.svgClearClip(true);
         if (!clipArea.isEmpty()) {
             context.svgTransform(null);
-            context.svgClip(clipArea, false);
+            context.svgClip(clipArea);
             context.svgTransform(transform2D);
         }
     }
