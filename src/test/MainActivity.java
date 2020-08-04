@@ -36,9 +36,8 @@ public class MainActivity extends Activity {
         getScene().setPointerListener(event -> {
             mx = event.getX();
             my = event.getY();
-            //if (event.getType() == PointerEvent.PRESSED)
-                invalidate(true);
-                f += 1;
+            if (event.getPointerID() == 1) f += 1;
+            else f -= 1;
         });
     }
 
@@ -83,15 +82,11 @@ public class MainActivity extends Activity {
         /*context.setColor(0x0000FF80);
         context.drawRect(mx, my, 100, 100, true);*/
         Path star = new Path(Path.WIND_NON_ZERO);
-        /*star.moveTo(100, 100);
+        star.moveTo(100, 100);
         star.lineTo(200, 100);
         star.lineTo(100, 200);
         star.lineTo(150, 50);
-        star.lineTo(200, 200);*/
-        star.moveTo(100, 100);
-        star.lineTo(200, 100);
         star.lineTo(200, 200);
-        star.lineTo(100, 200);
         star.closePath();
         star.transform(new Affine().translate(200, 0));
 
@@ -102,8 +97,8 @@ public class MainActivity extends Activity {
                 test.stroke.BasicStroke.CAP_BUTT,
                 test.stroke.BasicStroke.JOIN_MITER, 10);*/
 
-        BasicStroke bs = new BasicStroke(4, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10.0f,
-                new float[]{10,10}, 0);
+        BasicStroke bs = new BasicStroke(8, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10.0f,
+                new float[]{30,50,30}, f);
         Shape shape = bs.createStrokedShape(star);
         context.setColor(0xFF000080);
         context.setStroker(new BasicStroke(1));

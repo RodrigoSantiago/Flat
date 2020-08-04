@@ -1,5 +1,5 @@
 <Scene next-focus-id="text">
-    <LinearBox id="box" direction="vertical">
+    <!--<LinearBox id="box" direction="vertical">
         <ToolBar width="MATCH_PARENT" background-color="#6200eeff" text="Ola Mundo" height="128">
             <Button margin-right="32" icon-image="url(icons/radiobox-blank.svg)" style="icon"></Button>
             <ToolItem text="Item 1" icon-image="url(icons/radiobox-blank.svg)"></ToolItem>
@@ -17,5 +17,8 @@
         <Button text="click-me" on-action="onAction"></Button>
         <Button text="click-me" on-action="onAction"></Button>
         <Button text="click-me" on-action="onAdd"></Button>
+    </LinearBox>-->
+    <LinearBox id="box" direction="vertical">
+
     </LinearBox>
 </Scene>

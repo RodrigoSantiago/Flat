@@ -125,10 +125,10 @@ public class BasicStroke implements Stroke {
             throw new IllegalArgumentException(("awt.136")); //$NON-NLS-1$
         }
         if (dash != null) {
-            if (dashPhase < 0.0f) {
+            /*if (dashPhase < 0.0f) {
                 // awt.137=Negative dashPhase
                 throw new IllegalArgumentException(("awt.137")); //$NON-NLS-1$
-            }
+            }*/
             if (dash.length == 0) {
                 // awt.138=Zero dash length
                 throw new IllegalArgumentException(("awt.138")); //$NON-NLS-1$
@@ -145,6 +145,16 @@ public class BasicStroke implements Stroke {
                 }
                 // awt.13A=All dash lengths zero
                 throw new IllegalArgumentException(("awt.13A")); //$NON-NLS-1$
+            }
+            float limit = 0;
+            for(int i = 0; i < dash.length; i++) {
+                limit += dash[i];
+            }
+            if (dash.length % 2 == 1) limit *= 2;
+            if (dashPhase > 0) {
+                dashPhase = dashPhase - ((int)(dashPhase / limit) * limit);
+            } else {
+                dashPhase = limit - ((-dashPhase) - ((int)((-dashPhase) / limit) * limit));
             }
         }
         this.width = width;
