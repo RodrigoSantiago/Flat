@@ -270,14 +270,21 @@ public class SmartContext {
         context.softFlush();
     }
 
-    public void drawShapeOptimized(Shape path, boolean fill) {
+    public void drawShape(Shape shape, boolean fill) {
         svgMode();
-        context.svgDrawShape(path, fill);
-    }
-
-    public void drawShape(Shape path, boolean fill) {
-        svgMode();
-        context.svgDrawShape(path.isOptimized() ? path : new Area(path), fill);
+        if (shape instanceof Path) {
+            context.svgDrawShape(shape, fill);
+        }
+        else if (shape instanceof Circle) drawCircle((Circle) shape, fill);
+        else if (shape instanceof Rectangle) drawRect((Rectangle) shape, fill);
+        else if (shape instanceof RoundRectangle) drawRoundRect((RoundRectangle) shape, fill);
+        else if (shape instanceof Ellipse) drawEllipse((Ellipse) shape, fill);
+        else if (shape instanceof Line) drawLine((Line) shape);
+        else if (shape instanceof QuadCurve) drawQuadCurve((QuadCurve) shape);
+        else if (shape instanceof CubicCurve) drawCubicCurve((CubicCurve) shape);
+        else {
+            context.svgDrawShape(shape, fill);
+        }
     }
 
     public void drawCircle(float x, float y, float radius, boolean fill) {
@@ -340,14 +347,14 @@ public class SmartContext {
         context.svgDrawQuadCurve(x1, y1, cx, cy, x2, y2);
     }
 
-    public void drawBezierCurve(CubicCurve curve) {
+    public void drawCubicCurve(CubicCurve curve) {
         svgMode();
-        context.svgDrawBezierCurve(curve.x1, curve.y1, curve.ctrlx1, curve.ctrly1,  curve.ctrlx2, curve.ctrly2, curve.x2, curve.y2);
+        context.svgDrawCubicCurve(curve.x1, curve.y1, curve.ctrlx1, curve.ctrly1,  curve.ctrlx2, curve.ctrly2, curve.x2, curve.y2);
     }
 
-    public void drawBezierCurve(float x1, float y1, float cx1, float cy1, float cx2, float cy2, float x2, float y2) {
+    public void drawCubicCurve(float x1, float y1, float cx1, float cy1, float cx2, float cy2, float x2, float y2) {
         svgMode();
-        context.svgDrawBezierCurve(x1, y1, cx1, cy1, cx2, cy2, x2, y2);
+        context.svgDrawCubicCurve(x1, y1, cx1, cy1, cx2, cy2, x2, y2);
     }
 
     public void drawText(float x, float y, String text) {

@@ -83,11 +83,6 @@ public final class Circle implements Shape, Serializable {
     }
 
     @Override
-    public boolean isOptimized() {
-        return true;
-    }
-
-    @Override
     public boolean isEmpty() {
         return radius <= 0;
     }

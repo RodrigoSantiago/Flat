@@ -65,11 +65,6 @@ public class Area implements Shape, Cloneable {
      */
     private boolean isPolygonal = true;
 
-    @Override
-    public boolean isOptimized() {
-        return true;
-    }
-
     public Area() {
     }
 

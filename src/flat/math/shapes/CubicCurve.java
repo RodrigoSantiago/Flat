@@ -148,11 +148,6 @@ public final class CubicCurve implements Shape, Serializable {
     }
 
     @Override
-    public boolean isOptimized() {
-        return true;
-    }
-
-    @Override
     public boolean isEmpty() {
         return true; // curves contain no space
     }

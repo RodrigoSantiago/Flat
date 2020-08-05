@@ -223,11 +223,6 @@ public final class Arc implements Shape, Serializable {
     }
 
     @Override
-    public boolean isOptimized() {
-        return true;
-    }
-
-    @Override
     public boolean isEmpty () {
         return extent == 0 || width <= 0 || height <= 0;
     }

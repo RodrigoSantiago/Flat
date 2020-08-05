@@ -1420,7 +1420,7 @@ public final class Context {
         SVG.PathEnd(svgId);
     }
 
-    public void svgDrawBezierCurve(float x1, float y1, float cx1, float cy1, float cx2, float cy2, float x2, float y2) {
+    public void svgDrawCubicCurve(float x1, float y1, float cx1, float cy1, float cx2, float cy2, float x2, float y2) {
         svgBegin();
         SVG.PathBegin(svgId, SVG_STROKE, 0);
         SVG.MoveTo(svgId, x1, y1);
@@ -1497,9 +1497,9 @@ public final class Context {
         int w = 0;
         if (text != null) {
             svgBegin();
-            SVG.PathBegin(svgId, SVG_TEXT, 0);
+            // SVG.PathBegin(svgId, SVG_TEXT, 0);
             w = SVG.DrawText(svgId, x, y, text, maxWidth, svgTextHorizontalAlign.getInternalEnum(), svgTextVerticalAlign.getInternalEnum());
-            SVG.PathEnd(svgId);
+            // SVG.PathEnd(svgId);
         }
         return w;
     }
@@ -1508,9 +1508,9 @@ public final class Context {
         int w = 0;
         if (text != null && offset >= 0 && offset + length <= text.limit()) {
             svgBegin();
-            SVG.PathBegin(svgId, SVG_TEXT, 0);
+            // SVG.PathBegin(svgId, SVG_TEXT, 0);
             w = SVG.DrawTextBuffer(svgId, x, y, text, offset, length, maxWidth, svgTextHorizontalAlign.getInternalEnum(), svgTextVerticalAlign.getInternalEnum());
-            SVG.PathEnd(svgId);
+            // SVG.PathEnd(svgId);
         }
         return w;
     }

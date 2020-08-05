@@ -360,11 +360,6 @@ public class Path implements PathConsumer, Shape, Cloneable {
     }
 
     @Override
-    public boolean isOptimized() {
-        return optimized;
-    }
-
-    @Override
     public Rectangle bounds() {
         float rx1, ry1, rx2, ry2;
         if (pointSize == 0) {

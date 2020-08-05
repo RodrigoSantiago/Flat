@@ -101,11 +101,6 @@ public final class RoundRectangle implements Shape, Serializable {
     }
 
     @Override
-    public boolean isOptimized() {
-        return true;
-    }
-
-    @Override
     public boolean isEmpty() {
         return width <= 0 || height <= 0;
     }

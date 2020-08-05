@@ -6,7 +6,6 @@ public class SVGEnuns {
     public static final int SVG_FILL = 0;
     public static final int SVG_STROKE = 1;
     public static final int SVG_CLIP = 2;
-    public static final int SVG_TEXT = 3;
 
     // winding rules
     public static final int SVG_EVEN_ODD = 0;
@@ -20,7 +19,7 @@ public class SVGEnuns {
     // Join
     public static final int SVG_BEVEL = 0;
     public static final int SVG_MITER = 1;
-    //public static final int SVG_ROUND = 2;
+    // [repeated] public static final int SVG_ROUND = 2;
 
     // Horizontal Align
     public static final int SVG_LEFT = 0;

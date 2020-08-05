@@ -9,10 +9,8 @@ import flat.graphics.SmartContext;
 import flat.math.Affine;
 import flat.math.shapes.Circle;
 import flat.math.shapes.Path;
-import flat.math.shapes.PathIterator;
 import flat.math.shapes.Shape;
 import flat.math.stroke.BasicStroke;
-import flat.math.stroke.Dasher;
 import flat.resources.Dimension;
 import flat.resources.ResourcesManager;
 import flat.uxml.UXTheme;
@@ -45,13 +43,17 @@ public class MainActivity extends Activity {
 
     @Override
     public void onDraw(SmartContext context) {
-        context.setAntialiasEnabled(true);
+        super.onDraw(context);
+        /*context.setAntialiasEnabled(true);
         context.setView(0, 0, (int) getWidth(), (int) getHeight());
         context.clear(0xFFFFFFFF, 1, 1);
 
         //context.getContext().svgBegin();
         context.clearClip();
         context.intersectClip(new Circle(200, 200, 100));
+
+        context.setColor(0x000000FF);
+        context.drawText(100, 100, "Ola Mundão");
         context.setColor(0x0000FF64);
         context.drawCircle(200, 200, 100, true);
 
@@ -75,11 +77,11 @@ public class MainActivity extends Activity {
         context.setColor(0xFF000080);
         context.setStroker(new BasicStroke(1));
         //context.drawShapeOptimized(shape, true);
-        context.drawShapeOptimized(star, true);
+        context.drawShape(star, true);
 
         context.setStroker(bs);
-        context.drawShapeOptimized(star, false);
-        invalidate(true);
+        context.drawShape(star, false);
+        invalidate(true);*/
     }
     float f = 0.1f;
 
