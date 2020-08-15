@@ -28,6 +28,7 @@ public class SmartContext {
     private Area clipArea = new Area();
     private Stroke stroker;
     private float textSize;
+    private float textBlur;
 
     // -- 3D
     private Matrix4 projection3D = new Matrix4();
@@ -237,6 +238,15 @@ public class SmartContext {
 
     public float getTextSize() {
         return textSize;
+    }
+
+    public void setTextBlur(float blur) {
+        textBlur = Math.min(1, Math.max(0, blur));
+        context.svgTextBlur(textBlur);
+    }
+
+    public float getTextBlur() {
+        return textBlur;
     }
 
     public void setTextVerticalAlign(Align.Vertical align) {

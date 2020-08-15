@@ -90,7 +90,7 @@ public final class Context {
     private float[] svgDash;
 
     private Font svgTextFont;
-    private float svgTextScale, svgTextSpacing;
+    private float svgTextScale, svgTextSpacing, svgTextBlur;
     private Align.Vertical svgTextVerticalAlign;
     private Align.Horizontal svgTextHorizontalAlign;
 
@@ -215,6 +215,7 @@ public final class Context {
         svgTextFont = Font.DEFAULT;
         svgTextScale = 1.0f;
         svgTextSpacing = 1.0f;
+        svgTextBlur = 1f;
         svgTextVerticalAlign = Align.Vertical.TOP;
         svgTextHorizontalAlign = Align.Horizontal.LEFT;
 
@@ -1016,6 +1017,7 @@ public final class Context {
             SVG.SetFont(svgId, svgTextFont.getInternalID());
             SVG.SetFontScale(svgId, svgTextScale);
             SVG.SetFontSpacing(svgId, svgTextSpacing);
+            SVG.SetFontBlur(svgId, svgTextBlur);
         }
     }
 
@@ -1476,6 +1478,19 @@ public final class Context {
     public void svgTextVerticalAlign(Align.Vertical align) {
         if (svgTextVerticalAlign != align) {
             svgTextVerticalAlign = align;
+        }
+    }
+
+    public float svgTextBlur() {
+        return svgTextBlur;
+    }
+
+    public void svgTextBlur(float blur) {
+        if (svgTextBlur != blur) {
+            svgTextBlur = blur;
+            if (svgMode) {
+                SVG.SetFontBlur(svgId, blur);
+            }
         }
     }
 

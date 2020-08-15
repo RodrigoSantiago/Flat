@@ -80,10 +80,10 @@ public class SVG {
     public static native void FontDestroy(long font);
     // Todo - Unificar Width e Offset
 
-
     public static native void SetFont(long context, long font);
     public static native void SetFontScale(long context, float size);
     public static native void SetFontSpacing(long context, float spacing);
+    public static native void SetFontBlur(long context, float blur);
 
     public static native int DrawText(long context, float x, float y, String string, float maxWidth, int hAlign, int vAlign);
     public static native int DrawTextBuffer(long context, float x, float y, Buffer string, int offset, int length, float maxWidth, int hAlign, int vAlign);
