@@ -18,7 +18,7 @@ public final class Paint {
     protected float[] stops;
     protected int[] colors;
 
-    protected float x1, y1, x2, y2;
+    protected float x1, y1, x2, y2, fx, fy;
 
     protected float corners, blur;
 
@@ -57,19 +57,21 @@ public final class Paint {
     }
 
     public static Paint radial(float x1, float y1, float radiusIn, float radiusOut, float[] stops, int[] colors) {
-        return radial(x1, y1, radiusIn, radiusOut, stops, colors, CycleMethod.CLAMP);
+        return radial(x1, y1, radiusIn, radiusOut, 0, 0, stops, colors, CycleMethod.CLAMP);
     }
 
-    public static Paint radial(float x1, float y1, float radiusIn, float radiusOut, float[] stops, int[] colors, CycleMethod cycleMethod) {
-        return radial(x1, y1, radiusIn, radiusOut, stops, colors, cycleMethod, null);
+    public static Paint radial(float x1, float y1, float radiusIn, float radiusOut, float fx, float fy, float[] stops, int[] colors, CycleMethod cycleMethod) {
+        return radial(x1, y1, radiusIn, radiusOut, fx, fy, stops, colors, cycleMethod, null);
     }
 
-    public static Paint radial(float x1, float y1, float radiusIn, float radiusOut, float[] stops, int[] colors, CycleMethod cycleMethod, Affine transform) {
+    public static Paint radial(float x1, float y1, float radiusIn, float radiusOut, float fx, float fy, float[] stops, int[] colors, CycleMethod cycleMethod, Affine transform) {
         Paint paint = new Paint(2);
         paint.x1 = x1;
         paint.y1 = y1;
         paint.x2 = radiusIn;
         paint.y2 = radiusOut;
+        paint.fx = fx;
+        paint.fy = fy;
         paint.stops = stops.clone();
         paint.colors = colors.clone();
         paint.cycleMethod = cycleMethod;

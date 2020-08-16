@@ -6,6 +6,7 @@ import flat.animations.presets.Show;
 import flat.animations.property.Property;
 import flat.events.ActionEvent;
 import flat.graphics.SmartContext;
+import flat.graphics.context.Paint;
 import flat.math.Affine;
 import flat.math.shapes.Circle;
 import flat.math.shapes.Path;
@@ -33,57 +34,42 @@ public class MainActivity extends Activity {
     @Override
     public void onLoad() {
         getScene().setPointerListener(event -> {
-            mx = event.getX();
-            my = event.getY();
-            if (event.getPointerID() == 1) f += 0.2f;
-            else f -= 1;
+            mx = (event.getX()-100) / 100;
+            my = (event.getY()-100) / 100;
+            if (event.getPointerID() == 1) f += 0.01f;
+            else f -= 0.01;
             invalidate(true);
         });
     }
 
     @Override
     public void onDraw(SmartContext context) {
-        super.onDraw(context);
-        /*context.setAntialiasEnabled(true);
+        //super.onDraw(context);
+        context.setAntialiasEnabled(true);
         context.setView(0, 0, (int) getWidth(), (int) getHeight());
         context.clear(0xFFFFFFFF, 1, 1);
 
         //context.getContext().svgBegin();
         context.clearClip();
-        context.intersectClip(new Circle(200, 200, 100));
 
-        context.setColor(0x000000FF);
-        context.drawText(100, 100, "Ola Mundão");
+        context.setColor(0x00000080);
+        context.setTextBlur(0.1f);
+        context.setTextSize(64);
+        context.drawText(104, 104, "Ola Mundão" + f);
+        context.setColor(0xEEEEEEFF);
+        context.setTextBlur(1);
+        context.setTextSize(64);
+        context.drawText(100, 100, "Ola Mundão" + f);
         context.setColor(0x0000FF64);
-        context.drawCircle(200, 200, 100, true);
 
-        Path star = new Path(Path.WIND_EVEN_ODD);
-        star.moveTo(100, 100);
-        star.lineTo(200, 100);
-        star.lineTo(100, 200);
-        star.lineTo(150, 50);
-        star.lineTo(200, 200);
-        star.closePath();
-        star.transform(new Affine().translate(-150, -100));
-        star.transform(new Affine().translate(mx, my));
+        Paint radial = Paint.radial(100, 100, 0, 100, mx, my,
+                new float[]{0, 1}, new int[]{0xFF0000FF, 0x00FF00FF}, Paint.CycleMethod.REFLECT);
+        Paint linear = Paint.linear(0, 0, 200, 200, new float[]{0, 1}, new int[]{0xFF0000FF, 0x0000FFFF}, Paint.CycleMethod.REFLECT);
+        context.setPaint(radial);
+        context.drawCircle(100, 100, 100, true);
 
-        Path p = new Path();
-        p.moveTo(100, 100);
-        p.curveTo(mx, my, 200, 100,  100, 200);
-
-        BasicStroke bs = new BasicStroke(8, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 10.0f,
-                new float[]{30,50,30}, f);
-        Shape shape = bs.createStrokedShape(star);
-        context.setColor(0xFF000080);
-        context.setStroker(new BasicStroke(1));
-        //context.drawShapeOptimized(shape, true);
-        context.drawShape(star, true);
-
-        context.setStroker(bs);
-        context.drawShape(star, false);
-        invalidate(true);*/
     }
-    float f = 0.1f;
+    float f = 1;
 
     @Flat
     public void onAction(ActionEvent event) {

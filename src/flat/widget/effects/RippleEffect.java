@@ -47,7 +47,7 @@ public class RippleEffect {
         colors[0] = (color & 0xFFFFFF00) | ((int) (a * 255));
         colors[1] = (color & 0xFFFFFF00);
 
-        context.setPaint(Paint.radial(ripple.x, ripple.y, ripple.radius, ripple.radius,
+        context.setPaint(Paint.radial(ripple.x, ripple.y, ripple.radius, ripple.radius, 0, 0,
                 stops, colors, Paint.CycleMethod.CLAMP));
 
         context.drawShape(clip == null ? ripple : clip, true);
