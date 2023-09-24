@@ -82,28 +82,28 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_ReadPixels(JNIEnv * jEnv, jclass jCl
     glReadPixels(x, y, width, height, GL_RGBA, typeDT, (void *) offset);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_ReadPixelsB(JNIEnv * jEnv, jclass jClass, jint x, jint y, jint width, jint height, jbyteArray data, jint offset) {
-    void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pointer + (offset * sizeof(jbyte)));
+    jbyte * pointer = (jbyte *) jEnv->GetPrimitiveArrayCritical(data, 0);
+    glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pointer + offset);
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_ReadPixelsS(JNIEnv * jEnv, jclass jClass, jint x, jint y, jint width, jint height, jshortArray data, jint offset) {
-    void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pointer + (offset * sizeof(jshort)));
+    jshort * pointer = (jshort *) jEnv->GetPrimitiveArrayCritical(data, 0);
+    glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pointer + offset);
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_ReadPixelsI(JNIEnv * jEnv, jclass jClass, jint x, jint y, jint width, jint height, jintArray data, jint offset) {
-    void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pointer + (offset * sizeof(jint)));
+    jint * pointer = (jint *) jEnv->GetPrimitiveArrayCritical(data, 0);
+    glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pointer + offset);
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_ReadPixelsF(JNIEnv * jEnv, jclass jClass, jint x, jint y, jint width, jint height, jfloatArray data, jint offset) {
-    void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pointer + (offset * sizeof(jfloat)));
+    jfloat * pointer = (jfloat *) jEnv->GetPrimitiveArrayCritical(data, 0);
+    glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pointer + offset);
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 
 JNIEXPORT void JNICALL Java_flat_backend_GL_ReadPixelsBuffer(JNIEnv * jEnv, jclass jClass, jint x, jint y, jint width, jint height, jint typeDT, jobject buffer, jint offset) {
-    void * pointer = jEnv->GetDirectBufferAddress(buffer);
+    char * pointer = (char *) jEnv->GetDirectBufferAddress(buffer);
     glReadPixels(x, y, width, height, GL_RGBA, typeDT, pointer + offset);
 }
 //---------------------------
@@ -426,36 +426,36 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_DrawElements(JNIEnv * jEnv, jclass j
     }
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_DrawElementsB(JNIEnv * jEnv, jclass jClass, jint vertexModeVM, jint count, jint instances, jbyteArray indices, jint offset) {
-    void * pointer = jEnv->GetPrimitiveArrayCritical(indices, 0);
+    jbyte * pointer = (jbyte *) jEnv->GetPrimitiveArrayCritical(indices, 0);
     if (instances > 1) {
-        glDrawElementsInstanced(vertexModeVM, count, GL_UNSIGNED_BYTE, pointer + (offset * sizeof(jbyte)), instances);
+        glDrawElementsInstanced(vertexModeVM, count, GL_UNSIGNED_BYTE, pointer + offset, instances);
     } else {
-        glDrawElements(vertexModeVM, count, GL_UNSIGNED_BYTE, pointer + (offset * sizeof(jbyte)));
+        glDrawElements(vertexModeVM, count, GL_UNSIGNED_BYTE, pointer + offset);
     }
     jEnv->ReleasePrimitiveArrayCritical(indices, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_DrawElementsS(JNIEnv * jEnv, jclass jClass, jint vertexModeVM, jint count, jint instances, jshortArray indices, jint offset) {
-    void * pointer = jEnv->GetPrimitiveArrayCritical(indices, 0);
+    jshort * pointer = (jshort *) jEnv->GetPrimitiveArrayCritical(indices, 0);
     if (instances > 1) {
-        glDrawElementsInstanced(vertexModeVM, count, GL_UNSIGNED_SHORT, pointer + (offset * sizeof(jshort)), instances);
+        glDrawElementsInstanced(vertexModeVM, count, GL_UNSIGNED_SHORT, pointer + offset, instances);
     } else {
-        glDrawElements(vertexModeVM, count, GL_UNSIGNED_SHORT, pointer + (offset * sizeof(jshort)));
+        glDrawElements(vertexModeVM, count, GL_UNSIGNED_SHORT, pointer + offset);
     }
     jEnv->ReleasePrimitiveArrayCritical(indices, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_DrawElementsI(JNIEnv * jEnv, jclass jClass, jint vertexModeVM, jint count, jint instances, jintArray indices, jint offset) {
-    void * pointer = jEnv->GetPrimitiveArrayCritical(indices, 0);
+    jint * pointer = (jint *) jEnv->GetPrimitiveArrayCritical(indices, 0);
     if (instances > 1) {
-        glDrawElementsInstanced(vertexModeVM, count, GL_UNSIGNED_INT, pointer + (offset * sizeof(jint)), instances);
+        glDrawElementsInstanced(vertexModeVM, count, GL_UNSIGNED_INT, pointer + offset, instances);
     } else {
-        glDrawElements(vertexModeVM, count, GL_UNSIGNED_INT, pointer + (offset * sizeof(jint)));
+        glDrawElements(vertexModeVM, count, GL_UNSIGNED_INT, pointer + offset);
     }
     jEnv->ReleasePrimitiveArrayCritical(indices, pointer, 0);
 }
 
 JNIEXPORT void JNICALL Java_flat_backend_GL_DrawElementsBuffer(JNIEnv * jEnv, jclass jClass, jint vertexModeVM, jint count, jint instances, jint typeDT, jobject buffer, jint offset) {
     convertElementsType(typeDT);
-    void * pointer = jEnv->GetDirectBufferAddress(buffer);
+    char * pointer = (char *) jEnv->GetDirectBufferAddress(buffer);
     if (instances > 1) {
         glDrawElementsInstanced(vertexModeVM, count, typeDT, pointer + offset, instances);
     } else {
@@ -540,7 +540,9 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_FrameBufferGetPixelDataSize(JNIEnv *
 JNIEXPORT void JNICALL Java_flat_backend_GL_FrameBufferSetTargets(JNIEnv *jEnv, jclass jClass, jint c0FA, jint c1FA, jint c2FA, jint c3FA, jint c4FA, jint c5FA, jint c6FA, jint c7FA) {
     GLint id;
     glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &id);
-    GLuint arr[8] = {id == 0 && c0FA != 0 ? GL_BACK_LEFT : c0FA, c1FA, c2FA, c3FA, c4FA, c5FA, c6FA, c7FA };
+    GLuint arr[8] = {(GLuint)(id == 0 && c0FA != 0 ? GL_BACK_LEFT : c0FA),
+                     (GLuint)c1FA, (GLuint)c2FA, (GLuint)c3FA,
+                     (GLuint)c4FA, (GLuint)c5FA, (GLuint)c6FA, (GLuint)c7FA };
     glDrawBuffers(8, arr);
 }
 
@@ -664,32 +666,32 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_TextureData(JNIEnv * jEnv, jclass jC
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureDataB(JNIEnv * jEnv, jclass jClass, jint trgTT, jint level, jint formatTF, jint width, jint height, jint border, jbyteArray data, jint offset) {
     GLenum dafaFormat, dataType;
     convertImageType(formatTF, dafaFormat, dataType);
-    void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glTexImage2D(trgTT, level, formatTF, width, height, border, dafaFormat, dataType, pointer + (offset * sizeof(jbyte)) );
+    jbyte * pointer = (jbyte *) jEnv->GetPrimitiveArrayCritical(data, 0);
+    glTexImage2D(trgTT, level, formatTF, width, height, border, dafaFormat, dataType, pointer + offset);
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureDataS(JNIEnv * jEnv, jclass jClass, jint trgTT, jint level, jint formatTF, jint width, jint height, jint border, jshortArray data, jint offset) {
     GLenum dafaFormat, dataType;
     convertImageType(formatTF, dafaFormat, dataType);
 
-    void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glTexImage2D(trgTT, level, formatTF, width, height, border, dafaFormat, dataType, pointer + (offset * sizeof(jshort)));
+    jshort * pointer = (jshort *) jEnv->GetPrimitiveArrayCritical(data, 0);
+    glTexImage2D(trgTT, level, formatTF, width, height, border, dafaFormat, dataType, pointer + offset);
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureDataI(JNIEnv * jEnv, jclass jClass, jint trgTT, jint level, jint formatTF, jint width, jint height, jint border, jintArray data, jint offset) {
     GLenum dafaFormat, dataType;
     convertImageType(formatTF, dafaFormat, dataType);
 
-    void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glTexImage2D(trgTT, level, formatTF, width, height, border, dafaFormat, dataType, pointer + (offset * sizeof(jint)));
+    jint * pointer = (jint *) jEnv->GetPrimitiveArrayCritical(data, 0);
+    glTexImage2D(trgTT, level, formatTF, width, height, border, dafaFormat, dataType, pointer + offset);
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureDataF(JNIEnv * jEnv, jclass jClass, jint trgTT, jint level, jint formatTF, jint width, jint height, jint border, jfloatArray data, jint offset) {
     GLenum dafaFormat, dataType;
     convertImageType(formatTF, dafaFormat, dataType);
 
-    void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glTexImage2D(trgTT, level, formatTF, width, height, border, dafaFormat, dataType, pointer + (offset * sizeof(jfloat)));
+    jfloat * pointer = (jfloat *) jEnv->GetPrimitiveArrayCritical(data, 0);
+    glTexImage2D(trgTT, level, formatTF, width, height, border, dafaFormat, dataType, pointer + offset);
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureDataBuffer(JNIEnv * jEnv, jclass jClass, jint trgTT, jint level, jint formatTF, jint width, jint height, jint border, jobject buffer, jint offset) {
@@ -699,7 +701,7 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_TextureDataBuffer(JNIEnv * jEnv, jcl
     if (buffer == nullptr) {
         glTexImage2D(trgTT, level, formatTF, width, height, border, dafaFormat, dataType, nullptr);
     } else {
-        void *pointer = jEnv->GetDirectBufferAddress(buffer);
+        char *pointer = (char *) jEnv->GetDirectBufferAddress(buffer);
         glTexImage2D(trgTT, level, formatTF, width, height, border, dafaFormat, dataType, pointer + offset);
     }
 }
@@ -714,39 +716,39 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSubDataB(JNIEnv * jEnv, jclas
     GLenum dafaFormat, dataType;
     convertImageType(dataFormatTF, dafaFormat, dataType);
 
-    void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glTexSubImage2D(trgTT, level, x, y, width, height, dafaFormat, dataType, pointer + (offset * sizeof(jbyte)));
+    jbyte * pointer = (jbyte *) jEnv->GetPrimitiveArrayCritical(data, 0);
+    glTexSubImage2D(trgTT, level, x, y, width, height, dafaFormat, dataType, pointer + offset);
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSubDataS(JNIEnv * jEnv, jclass jClass, jint trgTT, jint level, jint x, jint y, jint width, jint height, jint dataFormatTF, jshortArray data, jint offset) {
     GLenum dafaFormat, dataType;
     convertImageType(dataFormatTF, dafaFormat, dataType);
 
-    void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glTexSubImage2D(trgTT, level, x, y, width, height, dafaFormat, dataType, pointer + (offset * sizeof(jshort)));
+    jshort * pointer = (jshort *) jEnv->GetPrimitiveArrayCritical(data, 0);
+    glTexSubImage2D(trgTT, level, x, y, width, height, dafaFormat, dataType, pointer + offset);
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSubDataI(JNIEnv * jEnv, jclass jClass, jint trgTT, jint level, jint x, jint y, jint width, jint height, jint dataFormatTF, jintArray data, jint offset) {
     GLenum dafaFormat, dataType;
     convertImageType(dataFormatTF, dafaFormat, dataType);
 
-    void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glTexSubImage2D(trgTT, level, x, y, width, height, dafaFormat, dataType, pointer + (offset * sizeof(jint)));
+    jint * pointer = (jint *) jEnv->GetPrimitiveArrayCritical(data, 0);
+    glTexSubImage2D(trgTT, level, x, y, width, height, dafaFormat, dataType, pointer + offset);
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSubDataF(JNIEnv * jEnv, jclass jClass, jint trgTT, jint level, jint x, jint y, jint width, jint height, jint dataFormatTF, jfloatArray data, jint offset) {
     GLenum dafaFormat, dataType;
     convertImageType(dataFormatTF, dafaFormat, dataType);
 
-    void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glTexSubImage2D(trgTT, level, x, y, width, height, dafaFormat, dataType, pointer + (offset * sizeof(jfloat)));
+    jfloat * pointer = (jfloat *) jEnv->GetPrimitiveArrayCritical(data, 0);
+    glTexSubImage2D(trgTT, level, x, y, width, height, dafaFormat, dataType, pointer + offset);
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_TextureSubDataBuffer(JNIEnv * jEnv, jclass jClass, jint trgTT, jint level, jint x, jint y, jint width, jint height, jint dataFormatTF, jobject buffer, jint offset) {
     GLenum dafaFormat, dataType;
     convertImageType(dataFormatTF, dafaFormat, dataType);
 
-    void * pointer = jEnv->GetDirectBufferAddress(buffer);
+    char * pointer = (char *) jEnv->GetDirectBufferAddress(buffer);
     glTexSubImage2D(trgTT, level, x, y, width, height, dafaFormat, dataType, pointer + offset);
 }
 
@@ -922,81 +924,81 @@ JNIEXPORT jint JNICALL Java_flat_backend_GL_BufferGetBound(JNIEnv *jEnv, jclass 
     return id;
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_BufferDataB(JNIEnv * jEnv, jclass jClass, jint trgBB, jbyteArray data, jint offset, jint length, jint usageTypeUT) {
-    void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glBufferData(trgBB, (length * sizeof(jbyte)), pointer + (offset * sizeof(jbyte)), usageTypeUT);
+    jbyte * pointer = (jbyte *) jEnv->GetPrimitiveArrayCritical(data, 0);
+    glBufferData(trgBB, (length * sizeof(jbyte)), pointer + offset, usageTypeUT);
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_BufferDataS(JNIEnv * jEnv, jclass jClass, jint trgBB, jshortArray data, jint offset, jint length, jint usageTypeUT) {
-    void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glBufferData(trgBB, (length * sizeof(jshort)), pointer + (offset * sizeof(jshort)), usageTypeUT);
+    jshort * pointer = (jshort *) jEnv->GetPrimitiveArrayCritical(data, 0);
+    glBufferData(trgBB, (length * sizeof(jshort)), pointer + offset, usageTypeUT);
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_BufferDataI(JNIEnv * jEnv, jclass jClass, jint trgBB, jintArray data, jint offset, jint length, jint usageTypeUT) {
-    void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glBufferData(trgBB, (length * sizeof(jint)), pointer + (offset * sizeof(jint)), usageTypeUT);
+    jint * pointer = (jint *) jEnv->GetPrimitiveArrayCritical(data, 0);
+    glBufferData(trgBB, (length * sizeof(jint)), pointer + offset, usageTypeUT);
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_BufferDataF(JNIEnv * jEnv, jclass jClass, jint trgBB, jfloatArray data, jint offset, jint length, jint usageTypeUT) {
-    void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glBufferData(trgBB, (length * sizeof(jfloat)), pointer + (offset * sizeof(jfloat)), usageTypeUT);
+    jfloat * pointer = (jfloat *) jEnv->GetPrimitiveArrayCritical(data, 0);
+    glBufferData(trgBB, (length * sizeof(jfloat)), pointer + offset, usageTypeUT);
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_BufferDataBuffer(JNIEnv * jEnv, jclass jClass, jint trgBB, jobject buffer, jint offset, jint length, jint usageTypeUT) {
     if (buffer == nullptr) {
         glBufferData(trgBB, length, nullptr, usageTypeUT);
     } else {
-        void *pointer = jEnv->GetDirectBufferAddress(buffer);
+        char *pointer = (char *) jEnv->GetDirectBufferAddress(buffer);
         glBufferData(trgBB, length, pointer + offset, usageTypeUT);
     }
 }
 
 JNIEXPORT void JNICALL Java_flat_backend_GL_BufferSubDataB(JNIEnv * jEnv, jclass jClass, jint trgBB, jbyteArray data, jint offset, jint length, jlong buffOffset) {
-    void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glBufferSubData(trgBB, buffOffset, (length * sizeof(jbyte)), pointer + (offset * sizeof(jbyte)));
+    jbyte * pointer = (jbyte *) jEnv->GetPrimitiveArrayCritical(data, 0);
+    glBufferSubData(trgBB, buffOffset, (length * sizeof(jbyte)), pointer + offset);
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_BufferSubDataS(JNIEnv * jEnv, jclass jClass, jint trgBB, jshortArray data, jint offset, jint length, jlong buffOffset) {
-    void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glBufferSubData(trgBB, buffOffset, (length * sizeof(jshort)), pointer + (offset * sizeof(jshort)));
+    jshort * pointer = (jshort *) jEnv->GetPrimitiveArrayCritical(data, 0);
+    glBufferSubData(trgBB, buffOffset, (length * sizeof(jshort)), pointer + offset);
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_BufferSubDataI(JNIEnv * jEnv, jclass jClass, jint trgBB, jintArray data, jint offset, jint length, jlong buffOffset) {
-    void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glBufferSubData(trgBB, buffOffset, (length * sizeof(jint)), pointer + (offset * sizeof(jint)));
+    jint * pointer = (jint *) jEnv->GetPrimitiveArrayCritical(data, 0);
+    glBufferSubData(trgBB, buffOffset, (length * sizeof(jint)), pointer + offset);
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_BufferSubDataF(JNIEnv * jEnv, jclass jClass, jint trgBB, jfloatArray data, jint offset, jint length, jlong buffOffset) {
-    void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glBufferSubData(trgBB, buffOffset, (length * sizeof(jfloat)), pointer + (offset * sizeof(jfloat)));
+    jfloat * pointer = (jfloat *) jEnv->GetPrimitiveArrayCritical(data, 0);
+    glBufferSubData(trgBB, buffOffset, (length * sizeof(jfloat)), pointer + offset);
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_BufferSubDataBuffer(JNIEnv * jEnv, jclass jClass, jint trgBB, jobject buffer, jint offset, jint length, jlong buffOffset) {
-    void * pointer = jEnv->GetDirectBufferAddress(buffer);
+    char * pointer = (char *) jEnv->GetDirectBufferAddress(buffer);
     glBufferSubData(trgBB, buffOffset, length, pointer + offset);
 }
 
 JNIEXPORT void JNICALL Java_flat_backend_GL_BufferReadDataB(JNIEnv * jEnv, jclass jClass, jint trgBB, jbyteArray data, jint offset, jint length, jlong buffOffset) {
-    void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glGetBufferSubData(trgBB, buffOffset, (length * sizeof(jbyte)), pointer + (offset * sizeof(jbyte)));
+    jbyte * pointer = (jbyte *) jEnv->GetPrimitiveArrayCritical(data, 0);
+    glGetBufferSubData(trgBB, buffOffset, (length * sizeof(jbyte)), pointer + offset);
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_BufferReadDataS(JNIEnv * jEnv, jclass jClass, jint trgBB, jshortArray data, jint offset, jint length, jlong buffOffset) {
-    void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glGetBufferSubData(trgBB, buffOffset, (length * sizeof(jshort)), pointer + (offset * sizeof(jshort)));
+    jshort * pointer = (jshort *) jEnv->GetPrimitiveArrayCritical(data, 0);
+    glGetBufferSubData(trgBB, buffOffset, (length * sizeof(jshort)), pointer + offset);
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_BufferReadDataI(JNIEnv * jEnv, jclass jClass, jint trgBB, jintArray data, jint offset, jint length, jlong buffOffset) {
-    void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glGetBufferSubData(trgBB, buffOffset, (length * sizeof(jint)), pointer + (offset * sizeof(jint)));
+    jint * pointer = (jint *) jEnv->GetPrimitiveArrayCritical(data, 0);
+    glGetBufferSubData(trgBB, buffOffset, (length * sizeof(jint)), pointer + offset);
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_BufferReadDataF(JNIEnv * jEnv, jclass jClass, jint trgBB, jfloatArray data, jint offset, jint length, jlong buffOffset) {
-    void * pointer = jEnv->GetPrimitiveArrayCritical(data, 0);
-    glGetBufferSubData(trgBB, buffOffset, (length * sizeof(jfloat)), pointer + (offset * sizeof(jfloat)));
+    jfloat * pointer = (jfloat *) jEnv->GetPrimitiveArrayCritical(data, 0);
+    glGetBufferSubData(trgBB, buffOffset, (length * sizeof(jfloat)), pointer + offset);
     jEnv->ReleasePrimitiveArrayCritical(data, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_BufferReadDataBuffer(JNIEnv * jEnv, jclass jClass, jint trgBB, jobject buffer, jint offset, jint length, jlong buffOffset) {
-    void * pointer = jEnv->GetDirectBufferAddress(buffer);
+    char * pointer = (char *) jEnv->GetDirectBufferAddress(buffer);
     glGetBufferSubData(trgBB, buffOffset, length, pointer + offset);
 }
 
@@ -1264,40 +1266,40 @@ JNIEXPORT jint JNICALL Java_flat_backend_GL_ProgramGetTFVarId(JNIEnv * jEnv, jcl
 //JNIEXPORT jint JNICALL Java_flat_backend_GL_ProgramGetGeometryOutputType(JNIEnv * jEnv, jclass jClass, jint id)
 
 JNIEXPORT void JNICALL Java_flat_backend_GL_ProgramSetUniformI(JNIEnv * jEnv, jclass jClass, jint uniformId, jint attSize, jint arrSize, jintArray value, jint offset) {
-    void * pointer = jEnv->GetPrimitiveArrayCritical(value, 0);
-    if (attSize == 1) glUniform1iv(uniformId, arrSize, (const GLint *) (pointer + (offset * sizeof(jint))));
-    else if (attSize == 2) glUniform2iv(uniformId, arrSize, (const GLint *) (pointer + (offset * sizeof(jint))));
-    else if (attSize == 3) glUniform3iv(uniformId, arrSize, (const GLint *) (pointer + (offset * sizeof(jint))));
-    else if (attSize == 4) glUniform4iv(uniformId, arrSize, (const GLint *) (pointer + (offset * sizeof(jint))));
+    jint * pointer = (jint *) jEnv->GetPrimitiveArrayCritical(value, 0);
+    if (attSize == 1) glUniform1iv(uniformId, arrSize, (const GLint *) (pointer + offset));
+    else if (attSize == 2) glUniform2iv(uniformId, arrSize, (const GLint *) (pointer + offset));
+    else if (attSize == 3) glUniform3iv(uniformId, arrSize, (const GLint *) (pointer + offset));
+    else if (attSize == 4) glUniform4iv(uniformId, arrSize, (const GLint *) (pointer + offset));
     jEnv->ReleasePrimitiveArrayCritical(value, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_ProgramSetUniformF(JNIEnv * jEnv, jclass jClass, jint uniformId, jint attSize, jint arrSize, jfloatArray value, jint offset) {
-    void * pointer = jEnv->GetPrimitiveArrayCritical(value, 0);
-    if (attSize == 1) glUniform1fv(uniformId, arrSize, (const GLfloat *) (pointer + (offset * sizeof(jfloat))));
-    else if (attSize == 2) glUniform2fv(uniformId, arrSize, (const GLfloat *) (pointer + (offset * sizeof(jfloat))));
-    else if (attSize == 3) glUniform3fv(uniformId, arrSize, (const GLfloat *) (pointer + (offset * sizeof(jfloat))));
-    else if (attSize == 4) glUniform4fv(uniformId, arrSize, (const GLfloat *) (pointer + (offset * sizeof(jfloat))));
+    jfloat * pointer = (jfloat *) jEnv->GetPrimitiveArrayCritical(value, 0);
+    if (attSize == 1) glUniform1fv(uniformId, arrSize, (const GLfloat *) (pointer + offset));
+    else if (attSize == 2) glUniform2fv(uniformId, arrSize, (const GLfloat *) (pointer + offset));
+    else if (attSize == 3) glUniform3fv(uniformId, arrSize, (const GLfloat *) (pointer + offset));
+    else if (attSize == 4) glUniform4fv(uniformId, arrSize, (const GLfloat *) (pointer + offset));
     jEnv->ReleasePrimitiveArrayCritical(value, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_ProgramSetUniformMatrix(JNIEnv * jEnv, jclass jClass, jint uniformId, jint w, jint h, jint arrSize, jboolean transpose, jfloatArray value, jint offset) {
-    void * pointer = jEnv->GetPrimitiveArrayCritical(value, 0);
+    jfloat * pointer = (jfloat *) jEnv->GetPrimitiveArrayCritical(value, 0);
     if (w == 2) {
-        if (h == 2) glUniformMatrix2fv(uniformId, arrSize, transpose, (const GLfloat *) (pointer + (offset * sizeof(jfloat))));
-        if (h == 3) glUniformMatrix2x3fv(uniformId, arrSize, transpose, (const GLfloat *) (pointer + (offset * sizeof(jfloat))));
-        if (h == 4) glUniformMatrix2x4fv(uniformId, arrSize, transpose, (const GLfloat *) (pointer + (offset * sizeof(jfloat))));
+        if (h == 2) glUniformMatrix2fv(uniformId, arrSize, transpose, (const GLfloat *) (pointer + offset));
+        if (h == 3) glUniformMatrix2x3fv(uniformId, arrSize, transpose, (const GLfloat *) (pointer + offset));
+        if (h == 4) glUniformMatrix2x4fv(uniformId, arrSize, transpose, (const GLfloat *) (pointer + offset));
     } else if (w == 3) {
-        if (h == 2) glUniformMatrix3x2fv(uniformId, arrSize, transpose, (const GLfloat *) (pointer + (offset * sizeof(jfloat))));
-        if (h == 3) glUniformMatrix3fv(uniformId, arrSize, transpose, (const GLfloat *) (pointer + (offset * sizeof(jfloat))));
-        if (h == 4) glUniformMatrix3x4fv(uniformId, arrSize, transpose, (const GLfloat *) (pointer + (offset * sizeof(jfloat))));
+        if (h == 2) glUniformMatrix3x2fv(uniformId, arrSize, transpose, (const GLfloat *) (pointer + offset));
+        if (h == 3) glUniformMatrix3fv(uniformId, arrSize, transpose, (const GLfloat *) (pointer + offset));
+        if (h == 4) glUniformMatrix3x4fv(uniformId, arrSize, transpose, (const GLfloat *) (pointer + offset));
     } else if (w == 4) {
-        if (h == 2) glUniformMatrix4x2fv(uniformId, arrSize, transpose, (const GLfloat *) (pointer + (offset * sizeof(jfloat))));
-        if (h == 3) glUniformMatrix4x3fv(uniformId, arrSize, transpose, (const GLfloat *) (pointer + (offset * sizeof(jfloat))));
-        if (h == 4) glUniformMatrix4fv(uniformId, arrSize, transpose, (const GLfloat *) (pointer + (offset * sizeof(jfloat))));
+        if (h == 2) glUniformMatrix4x2fv(uniformId, arrSize, transpose, (const GLfloat *) (pointer + offset));
+        if (h == 3) glUniformMatrix4x3fv(uniformId, arrSize, transpose, (const GLfloat *) (pointer + offset));
+        if (h == 4) glUniformMatrix4fv(uniformId, arrSize, transpose, (const GLfloat *) (pointer + offset));
     }
     jEnv->ReleasePrimitiveArrayCritical(value, pointer, 0);
 }
 JNIEXPORT void JNICALL Java_flat_backend_GL_ProgramSetUniformBuffer(JNIEnv * jEnv, jclass jClass, jint uniformId, jint attSize, jint arrSize, jint typeDT, jobject buffer, jint offset) {
-    void * pointer = jEnv->GetDirectBufferAddress(buffer);
+    char * pointer = (char *) jEnv->GetDirectBufferAddress(buffer);
     if (typeDT == GL_INT) {
         if (attSize == 1) glUniform1iv(uniformId, attSize, (const GLint *) (pointer + offset));
         else if (attSize == 2) glUniform2iv(uniformId, attSize, (const GLint *) (pointer + offset));
@@ -1378,37 +1380,37 @@ JNIEXPORT void JNICALL Java_flat_backend_GL_VertexArrayAttribPointer(JNIEnv * jE
 }
 
 JNIEXPORT void JNICALL Java_flat_backend_GL_VertexArrayAttribPointerB(JNIEnv * jEnv, jclass jClass, jint attrId, jint attSize, jboolean normalized, jint stride, jbyteArray value, jint offset) {
-    void * pointer = jEnv->GetPrimitiveArrayCritical(value, 0);
-    glVertexAttribPointer(attrId, attSize, GL_BYTE, normalized, (stride * sizeof(jbyte)), (pointer + (offset * sizeof(jbyte))));
+    jbyte * pointer = (jbyte *) jEnv->GetPrimitiveArrayCritical(value, 0);
+    glVertexAttribPointer(attrId, attSize, GL_BYTE, normalized, (stride * sizeof(jbyte)), (pointer + offset));
     jEnv->ReleasePrimitiveArrayCritical(value, pointer, 0);
 }
 
 JNIEXPORT void JNICALL Java_flat_backend_GL_VertexArrayAttribPointerS(JNIEnv * jEnv, jclass jClass, jint attrId, jint attSize, jboolean normalized, jint stride, jshortArray value, jint offset) {
-    void * pointer = jEnv->GetPrimitiveArrayCritical(value, 0);
-    glVertexAttribPointer(attrId, attSize, GL_SHORT, normalized, (stride * sizeof(jshort)), (pointer + (offset * sizeof(jshort))));
+    jshort * pointer = (jshort *) jEnv->GetPrimitiveArrayCritical(value, 0);
+    glVertexAttribPointer(attrId, attSize, GL_SHORT, normalized, (stride * sizeof(jshort)), (pointer + offset));
     jEnv->ReleasePrimitiveArrayCritical(value, pointer, 0);
 }
 
 JNIEXPORT void JNICALL Java_flat_backend_GL_VertexArrayAttribPointerI(JNIEnv * jEnv, jclass jClass, jint attrId, jint attSize, jboolean normalized, jint stride, jintArray value, jint offset) {
-    void * pointer = jEnv->GetPrimitiveArrayCritical(value, 0);
-    glVertexAttribPointer(attrId, attSize, GL_INT, normalized, (stride * sizeof(jint)), (pointer + (offset * sizeof(jint))));
+    jint * pointer = (jint *) jEnv->GetPrimitiveArrayCritical(value, 0);
+    glVertexAttribPointer(attrId, attSize, GL_INT, normalized, (stride * sizeof(jint)), (pointer + offset));
     jEnv->ReleasePrimitiveArrayCritical(value, pointer, 0);
 }
 
 JNIEXPORT void JNICALL Java_flat_backend_GL_VertexArrayAttribPointerF(JNIEnv * jEnv, jclass jClass, jint attrId, jint attSize, jboolean normalized, jint stride, jfloatArray value, jint offset) {
-    void * pointer = jEnv->GetPrimitiveArrayCritical(value, 0);
-    glVertexAttribPointer(attrId, attSize, GL_FLOAT, normalized, (stride * sizeof(jfloat)), (pointer + (offset * sizeof(jfloat))));
+    jfloat * pointer = (jfloat *) jEnv->GetPrimitiveArrayCritical(value, 0);
+    glVertexAttribPointer(attrId, attSize, GL_FLOAT, normalized, (stride * sizeof(jfloat)), (pointer + offset));
     jEnv->ReleasePrimitiveArrayCritical(value, pointer, 0);
 }
 
 JNIEXPORT void JNICALL Java_flat_backend_GL_VertexArrayAttribPointerD(JNIEnv * jEnv, jclass jClass, jint attrId, jint attSize, jboolean normalized, jint stride, jdoubleArray value, jint offset) {
-    void * pointer = jEnv->GetPrimitiveArrayCritical(value, 0);
-    glVertexAttribPointer(attrId, attSize, GL_DOUBLE, normalized, (stride * sizeof(jdouble)), (pointer + (offset * sizeof(jdouble))));
+    jdouble * pointer = (jdouble *) jEnv->GetPrimitiveArrayCritical(value, 0);
+    glVertexAttribPointer(attrId, attSize, GL_DOUBLE, normalized, (stride * sizeof(jdouble)), (pointer + offset));
     jEnv->ReleasePrimitiveArrayCritical(value, pointer, 0);
 }
 
 JNIEXPORT void JNICALL Java_flat_backend_GL_VertexArrayAttribPointerBuffer(JNIEnv * jEnv, jclass jClass, jint attrId, jint attSize, jboolean normalized, jint stride, jint _type, jobject buffer, jint offset) {
-    void * pointer = jEnv->GetDirectBufferAddress(buffer);
+    char * pointer = (char *) jEnv->GetDirectBufferAddress(buffer);
     glVertexAttribPointer(attrId, attSize, _type, normalized, stride, pointer + offset);
 }
 //---------------------------

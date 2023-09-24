@@ -1,0 +1,4 @@
+g++ -shared -fPIC -static -o flat.dll src/glad.c src/wl/flat_backend_WL.cpp src/gl/flat_backend_GL.cpp src/ml/flat_backend_ML.cpp src/svg/flat_backend_SVG.cpp src/flatvectors/curves.cpp src/flatvectors/flatvectors.cpp src/flatvectors/font.cpp src/flatvectors/render.cpp src/flatvectors/triangulate.cpp src/flatvectors/utf8.cpp -Iinclude -Isrc/gl -Isrc/ml -Isrc/wl -Isrc/svg -Isrc/flatvectors -I"C:/Program Files/Java/jdk1.8.0_251/include" -I"C:/Program Files/Java/jdk1.8.0_251/include/win32" -Llib -lglfw3 -lopengl32 -lgdi32
+
+
+The Library order matter

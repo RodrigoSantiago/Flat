@@ -4,7 +4,6 @@
 #include "flatvectors.h"
 #include "render.h"
 #include "curves.h"
-#include "triangulate.h"
 #include "utf8.h"
 #include "font.h"
 #include <string.h>
@@ -94,6 +93,7 @@ int fv__realloc(fvContext* ctx, int paint, int shape, int element, int vertex) {
         while (n < paint) n *= 2;
         ctx->MPAINT = n;
         ctx->paints = (fvPaint *) realloc(ctx->paints, n * sizeof(fvPaint));
+        ctx->uniforms = (char *) realloc(ctx->uniforms, n * renderAlign());
     }
     if (ctx->MSHAPE < shape) {
         int n = ctx->MSHAPE == 0 ? 1 : ctx->MSHAPE;
@@ -105,7 +105,7 @@ int fv__realloc(fvContext* ctx, int paint, int shape, int element, int vertex) {
         int n = ctx->MELEMENT == 0 ? 1 : ctx->MELEMENT;
         while (n < element) n *= 2;
         ctx->MELEMENT = n;
-        ctx->elements = (short *) realloc(ctx->elements, n * sizeof(short));
+        ctx->elements = (int *) realloc(ctx->elements, n * sizeof(int));
     }
     if (ctx->MVERTEX < vertex) {
         int n = ctx->MVERTEX == 0 ? 1 : ctx->MVERTEX;
@@ -115,7 +115,19 @@ int fv__realloc(fvContext* ctx, int paint, int shape, int element, int vertex) {
         ctx->uvs = (float *) realloc(ctx->uvs, n * sizeof(float));
     }
 
-    if (ctx->paints == 0 || ctx->shapes == 0 || ctx->elements == 0 || ctx->vtx == 0 || ctx->uvs == 0) {
+    if (ctx->paints == 0 || ctx->uniforms == 0 || ctx->shapes == 0 ||
+            ctx->elements == 0 || ctx->vtx == 0 || ctx->uvs == 0) {
+        free(ctx->paints);
+        free(ctx->uniforms);
+        free(ctx->shapes);
+        free(ctx->elements);
+        free(ctx->vtx);
+        free(ctx->uvs);
+        ctx->paints = 0;
+        ctx->shapes = 0;
+        ctx->elements = 0;
+        ctx->vtx = 0;
+        ctx->uvs = 0;
         return 0;
     } else {
         renderAlloc(ctx->rCtx, paint, element, vertex);
@@ -125,11 +137,12 @@ int fv__realloc(fvContext* ctx, int paint, int shape, int element, int vertex) {
 
 int fv__flush(fvContext* ctx) {
     if (ctx->pInd > 0) {
-        renderFlush(ctx->rCtx, ctx->paints, ctx->pInd, ctx->elements, ctx->_eInd, ctx->vtx, ctx->uvs, ctx->_vInd);
+        renderFlush(ctx->rCtx, ctx->paints, ctx->uniforms, ctx->pInd,
+                ctx->elements, ctx->_eInd, ctx->vtx, ctx->uvs, ctx->_vInd);
 
         int offSet = (ctx->_vInd) / 2;
         for (int i = ctx->_eInd; i < ctx->eInd; i++) {
-            ctx->elements[i - ctx->_eInd] = (short) (ctx->elements[i] - offSet);
+            ctx->elements[i - ctx->_eInd] = (ctx->elements[i] - offSet);
         }
         memmove(&ctx->vtx[0], &ctx->vtx[ctx->_vInd], (ctx->vInd - ctx->_vInd) * sizeof(float));
         memmove(&ctx->uvs[0], &ctx->uvs[ctx->_vInd], (ctx->vInd - ctx->_vInd) * sizeof(float));
@@ -143,49 +156,58 @@ int fv__flush(fvContext* ctx) {
         ctx->bInd = 0;
         return offSet;
     } else {
-        return 0;
+        return -1;
     }
 }
 
 void fv__commit(fvContext* ctx) {
-    for (int i = ctx->bInd; i < ctx->vInd; i += 2) {
-        float x = ctx->vtx[i], y = ctx->vtx[i + 1];
-        ctx->vtx[i] = x * ctx->transform[0] + y * ctx->transform[2] + ctx->transform[4];
-        ctx->vtx[i + 1] = x * ctx->transform[1] + y * ctx->transform[3] + ctx->transform[5];
-    }
-
     if (ctx->pInd + 1 >= ctx->MPAINT) {
         fv__flush(ctx);
     }
 
     fvPaint drawpaint = ctx->paint;
 
-    drawpaint.size = (unsigned  long) ctx->eInd;
+    drawpaint.size = (unsigned long) ctx->eInd;
 
     if (ctx->op == TEXT) {
-        drawpaint.edgeAA = (ctx->op << 2u) | ((ctx->font->sdf ? 1u : 0u) << 1u) | 0u;//(ctx->aa ? 1u : 0u);
+        drawpaint.paintOp = ctx->op;
+        drawpaint.winding = ctx->wr;
+        drawpaint.convex = ctx->convex;
+        drawpaint.sdf = ctx->font->sdf;
+        drawpaint.aa = 0;
+        drawpaint.uniform.extra[3] = ctx->fontBlur;
 
-        if (drawpaint.type == 0) {
-            drawpaint.type = 3;
-        }
-        if (drawpaint.type == 1) {
-            drawpaint.type = 2;
+        if (drawpaint.uniform.type == 0) {
+            drawpaint.uniform.type = 2;
+        } else if (drawpaint.uniform.type == 1) {
+            drawpaint.uniform.type = 3;
         }
         drawpaint.image1 = ctx->font->imageID;
     } else {
-        drawpaint.edgeAA = (ctx->op << 2u) | (0u << 1u) | (ctx->aa ? 1u : 0u);
+        drawpaint.paintOp = ctx->op;
+        drawpaint.winding = ctx->wr;
+        drawpaint.convex = ctx->convex;
+        drawpaint.sdf = 0;
+        drawpaint.aa = ctx->aa;
+        drawpaint.uniform.extra[3] = 1;
         drawpaint.image1 = 0;
     }
 
-    fv__multiply(drawpaint.colorMat, ctx->transform);
-    fv__inverse(drawpaint.colorMat, drawpaint.colorMat);
-    fv__affineToMat4(drawpaint.colorMat, drawpaint.colorMat);
+    for (int i = 0; i < 6; i++) {
+        drawpaint.mat[i] = ctx->transform[i];
+    }
 
-    fv__multiply(drawpaint.imageMat, ctx->transform);
-    fv__inverse(drawpaint.imageMat, drawpaint.imageMat);
-    fv__affineToMat4(drawpaint.imageMat, drawpaint.imageMat);
+    fv__multiply(drawpaint.uniform.colorMat, ctx->transform);
+    fv__inverse(drawpaint.uniform.colorMat, drawpaint.uniform.colorMat);
+    fv__affineToMat4(drawpaint.uniform.colorMat, drawpaint.uniform.colorMat);
+
+    fv__multiply(drawpaint.uniform.imageMat, ctx->transform);
+    fv__inverse(drawpaint.uniform.imageMat, drawpaint.uniform.imageMat);
+    fv__affineToMat4(drawpaint.uniform.imageMat, drawpaint.uniform.imageMat);
 
     ctx->paints[ctx->pInd] = drawpaint;
+    memcpy(&ctx->uniforms[ctx->pInd * renderAlign()], &drawpaint.uniform, sizeof(fvUniform));
+
     ctx->pInd++;
     ctx->_vInd = ctx->vInd;
     ctx->_eInd = ctx->eInd;
@@ -195,7 +217,13 @@ void fv__commit(fvContext* ctx) {
 
 int fv__assert(fvContext* ctx, int vertex, int element) {
     if (ctx->vInd + vertex * 2 >= ctx->MVERTEX || ctx->eInd + element * 3 >= ctx->MELEMENT) {
-        return fv__flush(ctx);
+        int offSet = fv__flush(ctx);
+        if (offSet == -1) {
+            fv__realloc(ctx, ctx->MPAINT, ctx->MSHAPE, ctx->MELEMENT + element, ctx->MVERTEX + vertex);
+            return 0;
+        } else {
+            return offSet;
+        }
     } else {
         return 0;
     }
@@ -203,8 +231,9 @@ int fv__assert(fvContext* ctx, int vertex, int element) {
 
 int fv__vertex(fvContext* ctx, float x, float y) {
     if (ctx->vInd + 2 >= ctx->MVERTEX) {
-        fv__flush(ctx);
-        std::cout << "flat:invalid flush vertex" << std::endl;
+        if (fv__flush(ctx) == -1) {
+            fv__realloc(ctx, ctx->MPAINT, ctx->MSHAPE, ctx->MELEMENT, ctx->MVERTEX + 2);
+        }
     }
 
     ctx->vtx[ctx->vInd] = x;
@@ -216,8 +245,9 @@ int fv__vertex(fvContext* ctx, float x, float y) {
 
 void fv__text_vertex(fvContext* ctx, float x, float y, float u, float v) {
     if (ctx->vInd + 2 >= ctx->MVERTEX) {
-        fv__flush(ctx);
-        std::cout << "flat:invalid flush text vertex" << std::endl;
+        if (fv__flush(ctx) == -1) {
+            fv__realloc(ctx, ctx->MPAINT, ctx->MSHAPE, ctx->MELEMENT, ctx->MVERTEX + 2);
+        }
     }
 
     ctx->vtx[ctx->vInd] = x;
@@ -230,15 +260,18 @@ void fv__text_vertex(fvContext* ctx, float x, float y, float u, float v) {
 void fv__triangle(fvContext* ctx, int e01, int e02, int e03) {
     if (ctx->eInd + 3 >= ctx->MELEMENT) {
         int offSet = fv__flush(ctx);
-        e01 -= offSet;
-        e02 -= offSet;
-        e03 -= offSet;
-        std::cout << "flat:invalid flush elements" << std::endl;
+        if (offSet == -1) {
+            fv__realloc(ctx, ctx->MPAINT, ctx->MSHAPE, ctx->MELEMENT + 3, ctx->MVERTEX);
+        } else {
+            e01 -= offSet;
+            e02 -= offSet;
+            e03 -= offSet;
+        }
     }
 
-    ctx->elements[ctx->eInd] = (short) e01;
-    ctx->elements[ctx->eInd + 1] = (short) e02;
-    ctx->elements[ctx->eInd + 2] = (short) e03;
+    ctx->elements[ctx->eInd] = e01;
+    ctx->elements[ctx->eInd + 1] = e02;
+    ctx->elements[ctx->eInd + 2] = e03;
     ctx->eInd += 3;
 }
 
@@ -436,8 +469,6 @@ void fv__linecap(fvContext* ctx) {
                        _px1, _py1, _px2, _py2, _sx1, _sy1, _sx2, _sy2);
         fv__expandline(ctx->stroker.width, _px1, _py1, _px2, _py2,
                        _px1, _py1, _px2, _py2, _sx1, _sy1, _sx2, _sy2);
-        fv__transform(ctx->transform, _px2, _py2, &_px2, &_py2);
-        fv__transform(ctx->transform, _sx2, _sy2, &_sx2, &_sy2);
         ctx->vtx[ctx->mInd + 2] = _px2;
         ctx->vtx[ctx->mInd + 3] = _py2;
         ctx->vtx[ctx->mInd + 4] = _sx2;
@@ -445,8 +476,6 @@ void fv__linecap(fvContext* ctx) {
 
         fv__expandline(ctx->stroker.width, ctx->sx1, ctx->sy1, ctx->sx2, ctx->sy2,
                        _px1, _py1, _px2, _py2, _sx1, _sy1, _sx2, _sy2);
-        fv__transform(ctx->transform, _px1, _py1, &_px1, &_py1);
-        fv__transform(ctx->transform, _sx1, _sy1, &_sx1, &_sy1);
         ctx->vtx[ctx->vInd - 4] = _px1;
         ctx->vtx[ctx->vInd - 3] = _py1;
         ctx->vtx[ctx->vInd - 2] = _sx1;
@@ -468,12 +497,16 @@ void fv__curvestroke(void* data, double x, double y) {
     if (fv__equals(x, y, ctx->cx, ctx->cy)) {
         ctx->cp = 3;
     } else {
-        fv__linestroke(ctx, ctx->cp == 0, ctx->cx, ctx->cy, (float) x, (float) y,
-                       ctx->cp == 3 ? JOIN_ROUND :
-                       (ctx->cp == 2 ? JOIN_ROUND : ctx->stroker.join));
-        ctx->cp = 2;
-        ctx->cx = (float) x;
-        ctx->cy = (float) y;
+        if (ctx->stroker.dash != 0) {
+
+        } else {
+            fv__linestroke(ctx, ctx->cp == 0, ctx->cx, ctx->cy, (float) x, (float) y,
+                           ctx->cp == 3 ? JOIN_ROUND :
+                           (ctx->cp == 2 ? JOIN_ROUND : ctx->stroker.join));
+            ctx->cp = 2;
+            ctx->cx = (float) x;
+            ctx->cy = (float) y;
+        }
     }
 }
 
@@ -488,6 +521,122 @@ void fv__curvepoint(void* data, double x, double y) {
     ctx->cy = (float) y;
 }
 
+void fv__dashmove(fvContext* ctx, float x, float y) {
+    ctx->phaseFill = 1;
+    ctx->phaseIndex = 0;
+
+    float amount = ctx->stroker.dashPhase;
+    while(amount > ctx->stroker.dash[ctx->phaseIndex]) {
+        amount -= ctx->stroker.dash[ctx->phaseIndex];
+        if (++ctx->phaseIndex >= ctx->stroker.dashCount) ctx->phaseIndex = 0;
+        ctx->phaseFill = !ctx->phaseFill;
+    }
+    ctx->phaseNext = ctx->stroker.dash[ctx->phaseIndex] - amount;
+
+    ctx->open = false;
+    ctx->sft = 0;
+    ctx->px = x;
+    ctx->py = y;
+    ctx->dSx = x;
+    ctx->dSy = y;
+    ctx->startFill = ctx->phaseFill;
+}
+
+void fv__dashline(fvContext* ctx, float x, float y) {
+    if (ctx->sft == 0) {
+        ctx->sft = 1;
+        ctx->sfx = x;
+        ctx->sfy = y;
+    }
+
+    double vx = x - ctx->px;
+    double vy = y - ctx->py;
+    double len = sqrt(vx * vx + vy * vy);
+    if (len < 0.001) {
+        ctx->dashCommand = 0;
+        if (!ctx->open) fvPathMoveTo(ctx, ctx->px, ctx->py);
+        fvPathLineTo(ctx, x, y);
+        ctx->open = true;
+        ctx->dashCommand = 1;
+        return;
+    }
+    vx /= len;
+    vy /= len;
+
+    float prevX = ctx->px;
+    float prevY = ctx->py;
+    double cLen = 0;
+    while (len > ctx->phaseNext) {
+        cLen += ctx->phaseNext;
+        float nx = (float) (ctx->px + vx * cLen);
+        float ny = (float) (ctx->py + vy * cLen);
+        if (ctx->phaseFill) {
+            ctx->dashCommand = 0;
+            if (!ctx->open) fvPathMoveTo(ctx, prevX, prevY);
+            fvPathLineTo(ctx, nx, ny);
+
+            if (ctx->lt != -1 && ctx->mInd != ctx->vInd) {
+                fv__linecap(ctx);
+            }
+            ctx->ft = 0;
+            ctx->lt = -1;
+            ctx->bInd = ctx->vInd;
+            ctx->mInd = ctx->vInd;
+
+            ctx->open = false;
+            ctx->dashCommand = 1;
+        }
+        prevX = nx;
+        prevY = ny;
+        len -= ctx->phaseNext;
+
+        if (++ctx->phaseIndex >= ctx->stroker.dashCount) ctx->phaseIndex = 0;
+        ctx->phaseNext = ctx->stroker.dash[ctx->phaseIndex];
+        ctx->phaseFill = !ctx->phaseFill;
+    }
+    if (len > 0.001) {
+        ctx->phaseNext -= len;
+        if (ctx->phaseFill) {
+            ctx->dashCommand = 0;
+            if (!ctx->open) fvPathMoveTo(ctx, prevX, prevY);
+            fvPathLineTo(ctx, x, y);
+            ctx->open = true;
+            ctx->dashCommand = 1;
+        }
+    }
+    ctx->px = x;
+    ctx->py = y;
+}
+
+void fv__dashclose(fvContext* ctx) {
+    fv__dashline(ctx, ctx->dSx, ctx->dSy);
+    if (ctx->phaseFill && ctx->startFill) {
+        // fv__linejoincap(ctx, ctx->dSx, ctx->dSy);
+
+        if (ctx->lt != -1 && ctx->mInd != ctx->vInd) {
+            fv__linecap(ctx);
+        }
+        float _px1, _sx1, _py1, _sy1, _px2, _sx2, _py2, _sy2;
+        fv__expandline(ctx->stroker.width, ctx->dSx, ctx->dSy, ctx->sfx, ctx->sfy, _px1, _py1, _px2, _py2, _sx1, _sy1, _sx2, _sy2);
+        fv__linejoin(ctx, ctx->dSx, ctx->dSy, _px1, _sx1, _py1, _sy1, _px2, _sx2, _py2, _sy2, ctx->stroker.join);
+    }
+    ctx->ft = 0;
+    ctx->lt = -1;
+    ctx->bInd = ctx->vInd;
+    ctx->mInd = ctx->vInd;
+    ctx->open = false;
+}
+
+void fv__dashend(fvContext* ctx) {
+    if (ctx->open) {
+        ctx->dashCommand = 0;
+        fvPathEnd(ctx);
+        ctx->dashCommand = 1;
+    } else {
+        fv__commit(ctx);
+    }
+}
+
 fvContext* fvCreate() {
     fvContext *ctx = (fvContext *) malloc(sizeof(fvContext));
     memset(ctx, 0, sizeof(fvContext));
@@ -496,8 +645,12 @@ fvContext* fvCreate() {
     ctx->font = NULL;
     ctx->fontScale = 1;
     ctx->fontSpacing = 1;
+    ctx->fontBlur = 1;
     ctx->paint = {};
     ctx->op = NOONE;
+    ctx->wr = EVEN_ODD;
+    ctx->aa = 1;
+    ctx->convex = 0;
     ctx->transform[0] = 1.0f;
     ctx->transform[1] = 0.0f;
     ctx->transform[2] = 0.0f;
@@ -505,7 +658,7 @@ fvContext* fvCreate() {
     ctx->transform[4] = 0.0f;
     ctx->transform[5] = 0.0f;
 
-    ctx->stroker = {1, CAP_BUTT, JOIN_MITER, 10};
+    ctx->stroker = {1, CAP_BUTT, JOIN_MITER, 10, 0, 0, 0};
     ctx->mt2 = (ctx->stroker.width * ctx->stroker.miterLimit / 2) * (ctx->stroker.width * ctx->stroker.miterLimit / 2);
 
     ctx->lt = -1;
@@ -573,6 +726,9 @@ void fvSetPaint(fvContext* ctx, fvPaint paint) {
 }
 
 void fvSetStroker(fvContext* ctx, fvStroker stroker) {
+    if (ctx->stroker.dash != 0) {
+        free(ctx->stroker.dash);
+    }
     ctx->stroker = stroker;
     ctx->mt2 = (ctx->stroker.width * ctx->stroker.miterLimit / 2) * (ctx->stroker.width * ctx->stroker.miterLimit / 2);
 }
@@ -590,18 +746,31 @@ void fvClearClip(fvContext* ctx, int clip) {
     renderClearClip(ctx->rCtx, clip);
 }
 
-void fvPathBegin(fvContext* ctx, fvPathOp op) {
+void fvPathBegin(fvContext* ctx, fvPathOp op, fvWindingRule wr) {
     ctx->op = op;
+    ctx->wr = wr;
     ctx->lt = -1;
     ctx->bInd = ctx->vInd;
+    ctx->mInd = ctx->vInd;
     ctx->sInd = 0;
+    ctx->convex = 0;
+
+    if (ctx->op == STROKE) {
+        ctx->dashCommand = ctx->stroker.dash != 0;
+        ctx->phaseIndex = 0;
+        ctx->phaseNext = 0;
+        ctx->phaseFill = 1;
+        ctx->open = false;
+    }
 }
 
 void fvPathMoveTo(fvContext* ctx, float x, float y) {
     ctx->mx = x;
     ctx->my = y;
-    if (ctx->op == STROKE) {
-        if (ctx->lt != -1) {
+    if (ctx->op == STROKE && ctx->dashCommand) {
+        fv__dashmove(ctx, x, y);
+    } else if (ctx->op == STROKE) {
+        if (ctx->lt != -1 && ctx->mInd != ctx->vInd) {
             fv__linecap(ctx);
         }
         ctx->ft = 0;
@@ -625,7 +794,9 @@ void fvPathMoveTo(fvContext* ctx, float x, float y) {
 void fvPathLineTo(fvContext* ctx, float x, float y) {
     if (fv__equals(x, y, ctx->lx, ctx->ly)) return;
 
-    if (ctx->op == STROKE) {
+    if (ctx->op == STROKE && ctx->dashCommand) {
+        fv__dashline(ctx, x, y);
+    } else if (ctx->op == STROKE) {
         fv__linestroke(ctx, ctx->lt == 0, ctx->lx, ctx->ly, x, y, ctx->stroker.join);
     } else {
         fv__assert(ctx, 1, 0);
@@ -670,9 +841,13 @@ void fvPathCubicTo(fvContext* ctx, float cx1, float cy1, float cx2, float cy2, f
 }
 
 void fvPathClose(fvContext* ctx) {
-    if (ctx->op == STROKE) {
+    if (ctx->op == STROKE && ctx->dashCommand) {
+        fv__dashclose(ctx);
+    } else if (ctx->op == STROKE) {
         fvPathLineTo(ctx, ctx->mx, ctx->my);
-        fv__linejoincap(ctx, ctx->mx, ctx->my);
+        if (ctx->mInd != ctx->vInd) {
+            fv__linejoincap(ctx, ctx->mx, ctx->my);
+        }
     } else {
         if (fv__equals(ctx->lx, ctx->ly, ctx->mx, ctx->my)) {
             ctx->vInd -= 2;
@@ -686,25 +861,48 @@ void fvPathClose(fvContext* ctx) {
 void fvPathEnd(fvContext* ctx) {
     if (ctx->op == TEXT) {
 
+    } else if (ctx->op == STROKE && ctx->dashCommand) {
+        fv__dashend(ctx);
     } else if (ctx->op == STROKE) {
-        if (ctx->lt != -1) {
+        if (ctx->lt != -1 && ctx->mInd != ctx->vInd) {
             fv__linecap(ctx);
         }
     } else {
-        if (ctx->lt != -1) {
+        if (ctx->lt != -1 && ctx->mInd != ctx->vInd) {
             fvPathClose(ctx);
         }
 
         fv__assert(ctx, 0, (ctx->vInd - ctx->bInd) / 2);
 
-        ctx->eInd += triangulate(ctx->vtx, ctx->bInd, ctx->shapes, ctx->sInd, ctx->elements, ctx->eInd);
+        // ctx->eInd += triangulate(ctx->vtx, ctx->bInd, ctx->shapes, ctx->sInd, ctx->elements, ctx->eInd);
+
+        int src = ctx->bInd / 2;
+        int pid = src;
+        int shapesCount = ctx->sInd;
+        for (int i = 0; i < shapesCount; i++) {
+            int len = ctx->shapes[i] / 2;
+            /*if (i == 0) {
+                for (int j = 1; j < len - 1; j++) {
+                    fv__triangle(ctx, src, pid + j, j == len - 1 ? pid : pid + j + 1);
+                }
+            } else {
+                for (int j = 0; j < len; j++) {
+                    fv__triangle(ctx, src, pid + j, j == len - 1 ? pid : pid + j + 1);
+                }
+            }*/
+            for (int j = 1; j < len - 1; j++) {
+                fv__triangle(ctx, pid, pid + j, pid + j + 1);
+            }
+            pid += len;
+        }
     }
 
     fv__commit(ctx);
 }
 
 void fvRect(fvContext* ctx, float x, float y, float width, float height) {
-    fvPathBegin(ctx, fvPathOp::FILL);
+    fvPathBegin(ctx, fvPathOp::FILL, fvWindingRule::EVEN_ODD);
+    ctx->convex = 1;
 
     fv__assert(ctx, 4, 2);
 
@@ -721,7 +919,9 @@ void fvRect(fvContext* ctx, float x, float y, float width, float height) {
 }
 
 void fvEllipse(fvContext* ctx, float x, float y, float width, float height) {
-    fvPathBegin(ctx, fvPathOp::FILL);
+    fvPathBegin(ctx, fvPathOp::FILL, fvWindingRule::EVEN_ODD);
+    ctx->convex = 1;
+
     float points = fv__maxscale(ctx->transform) * sqrt(width*width + height*height);
     points = (ceil)((points < 64 ? 64 : points > 256 ? 256 : points) / 4.0f);
     int n = (int) points;
@@ -744,7 +944,9 @@ void fvEllipse(fvContext* ctx, float x, float y, float width, float height) {
 }
 
 void fvRoundRect(fvContext* ctx, float x, float y, float width, float height, float c1, float c2, float c3, float c4) {
-    fvPathBegin(ctx, fvPathOp::FILL);
+    fvPathBegin(ctx, fvPathOp::FILL, fvWindingRule::EVEN_ODD);
+    ctx->convex = 1;
+
     fv__assert(ctx, 40, 39);
 
     int el = (ctx->vInd / 2);
@@ -818,10 +1020,11 @@ int fvFontGetGlyphs(fvFont* font, const char* str, int strLen, float* info) {
     return count;
 }
 
-void fvFontGetMetrics(fvFont* font, float* ascender, float* descender, float* height) {
+void fvFontGetMetrics(fvFont* font, float* ascender, float* descender, float* height, float* lineGap) {
     if (ascender != 0) *ascender = font->ascent;
     if (descender != 0) *descender = font->descent;
     if (height != 0) *height = font->height;
+    if (lineGap != 0) *lineGap = font->lineGap;
 }
 
 float fvFontGetTextWidth(fvFont* font, const char* str, int strLen, float scale, float spacing) {
@@ -834,13 +1037,13 @@ float fvFontGetTextWidth(fvFont* font, const char* str, int strLen, float scale,
         if (chr != '\n') {
             fvGlyph &glyph = fontGlyph(font, chr);
             if (glyph.enabled) {
-                w += (glyph.advance + (f ? fontKerning(font, prev, chr) : 0));
+                w += ceil((glyph.advance + (f ? fontKerning(font, prev, chr) : 0)) * scl);
                 prev = chr;
                 f = 1;
             }
         }
     }
-    return w * scl;
+    return w;
 }
 
 int fvFontGetOffset(fvFont* font, const char* str, int strLen, float scale, float spacing, float x, int half) {
@@ -853,7 +1056,7 @@ int fvFontGetOffset(fvFont* font, const char* str, int strLen, float scale, floa
         if (chr != '\n') {
             fvGlyph &glyph = fontGlyph(font, chr);
             if (glyph.enabled) {
-                float advance = (glyph.advance + (f ? fontKerning(font, pchr, chr) : 0)) * scl;
+                float advance = ceil((glyph.advance + (f ? fontKerning(font, pchr, chr) : 0)) * scl);
                 if (!half && w + advance > x) {
                     return pi;
                 } else if (w + advance / 2 > x) {
@@ -886,7 +1089,13 @@ void fvSetFontSpacing(fvContext* ctx, float spacing) {
     ctx->fontSpacing = spacing;
 }
 
+void fvSetFontBlur(fvContext* ctx, float blur) {
+    ctx->fontBlur = blur;
+}
+
 int fvText(fvContext* ctx, const char* str, int strLen, float x, float y, float maxWidth, fvHAlign hAlign, fvVAlign vAlign) {
+    fvPathBegin(ctx, fvPathOp::TEXT, fvWindingRule::EVEN_ODD);
+
     fvFont *font = ctx->font;
     maxWidth = ceil(maxWidth);
 
@@ -911,15 +1120,15 @@ int fvText(fvContext* ctx, const char* str, int strLen, float x, float y, float 
         if (chr != '\n') {
             fvGlyph &glyph = fontGlyphRendered(font, chr);
             if (glyph.enabled) {
-                float kern = (f ? fontKerning(font, prev, chr) * scl * spc : 0);
-                float advance = glyph.advance * scl * spc;
-                if (maxWidth > 0 && floor(x + kern + advance - start) > maxWidth) {
+                float kern = (f ? fontKerning(font, prev, chr) : 0);
+                float advance = ceil((glyph.advance + kern) * (scl * spc));
+                if (maxWidth > 0 && floor(x + advance - start) > maxWidth) {
                     break;
                 }
-                x += kern;
+                float px = x + kern * scl * spc;
                 if (glyph.u > -1) {
-                    float x1 = x + glyph.x * scl, y1 = y + glyph.y * scl;
-                    float x2 = x1 + (glyph.w * scl), y2 = y1 + (glyph.h * scl);
+                    float x1 = round(px + glyph.x * scl), y1 = y + glyph.y * scl;
+                    float x2 = x1 + glyph.w * scl, y2 = y1 + glyph.h * scl;
 
                     if (ctx->vInd + 8 >= ctx->MVERTEX || ctx->eInd + 6 >= ctx->MELEMENT) {
                         break;
@@ -955,6 +1164,8 @@ int fvText(fvContext* ctx, const char* str, int strLen, float x, float y, float 
             ctx->vtx[j * 2] -= offset;
         }
     }
+
+    fvPathEnd(ctx);
     return p;
 }
 
@@ -970,73 +1181,78 @@ void fv__identity(float* t) {
 }
 
 fvPaint fvColorPaint(long color) {
-    fvPaint p = fvImagePaint(0, 0, color);
-    p.type = 0;
+    fvPaint p{};
+    p.uniform.type = 0;
+    p.image0 = 0;
+    p.image1 = 0;
+    fv__identity(p.uniform.imageMat);
+    fv__identity(p.uniform.colorMat);
+
+    p.uniform.shape[0] = 0;
+    p.uniform.shape[1] = 0;
+    p.uniform.shape[2] = 0;
+    p.uniform.shape[3] = 0;
+
+    p.uniform.stopCount = 0;
+    p.uniform.joinType = 0;
+    p.uniform.colors[0] = ((color >> 24) & 0xFF) / 255.f;
+    p.uniform.colors[1] = ((color >> 16) & 0xFF) / 255.f;
+    p.uniform.colors[2] = ((color >> 8) & 0xFF) / 255.f;
+    p.uniform.colors[3] = ((color >> 0) & 0xFF) / 255.f;
+    p.uniform.cycleType = 0;
+
+    p.paintOp = fvPathOp::NOONE;
+    p.winding = fvWindingRule::EVEN_ODD;
+    p.convex = 0;
+    p.sdf = 0;
+    p.aa = 0;
+
     return p;
 }
 
 fvPaint fvImagePaint(unsigned long imageID, float* affineImg, long color) {
     fvPaint p{};
-    p.type = 1;
+    p.uniform.type = 1;
     p.image0 = imageID;
     p.image1 = 0;
     if (affineImg != 0) {
         for (int i = 0; i < 6; i++) {
-            p.imageMat[i] = affineImg[i];
+            p.uniform.imageMat[i] = affineImg[i];
         }
     } else {
-        fv__identity(p.imageMat);
+        fv__identity(p.uniform.imageMat);
     }
 
-    fv__identity(p.colorMat);
+    fv__identity(p.uniform.colorMat);
 
-    p.shape[0] = 0;
-    p.shape[1] = 0;
-    p.shape[2] = 0;
-    p.shape[3] = 0;
+    p.uniform.shape[0] = 0;
+    p.uniform.shape[1] = 0;
+    p.uniform.shape[2] = 0;
+    p.uniform.shape[3] = 0;
 
-    p.stopCount = 0;
-    p.joinType = 0;
-    p.colors[0] = ((color >> 24) & 0xFF) / 255.f;
-    p.colors[1] = ((color >> 16) & 0xFF) / 255.f;
-    p.colors[2] = ((color >> 8) & 0xFF) / 255.f;
-    p.colors[3] = ((color >> 0) & 0xFF) / 255.f;
-    p.cycleType = 0;
-    p.edgeAA = 0;
+    p.uniform.stopCount = 0;
+    p.uniform.joinType = 0;
+    p.uniform.colors[0] = ((color >> 24) & 0xFF) / 255.f;
+    p.uniform.colors[1] = ((color >> 16) & 0xFF) / 255.f;
+    p.uniform.colors[2] = ((color >> 8) & 0xFF) / 255.f;
+    p.uniform.colors[3] = ((color >> 0) & 0xFF) / 255.f;
+    p.uniform.cycleType = 0;
+
+    p.paintOp = fvPathOp::NOONE;
+    p.winding = fvWindingRule::EVEN_ODD;
+    p.convex = 0;
+    p.sdf = 0;
+    p.aa = 0;
 
     return p;
 }
 
 fvPaint fvLinearGradientPaint(float* affine, float x1, float y1, float x2, float y2, int count, float* stops, long* colors, int cycleMethod) {
-    fvPaint p = fvLinearGradientImagePaint(0, 0, affine, x1, y1, x2, y2, count, stops, colors, cycleMethod);
-    p.type = 0;
-    return p;
-}
-
-fvPaint fvRadialGradientPaint(float* affine, float x, float y, float rIn, float rOut, int count, float* stops, long* colors, int cycleMethod) {
-    fvPaint p = fvRadialGradientImagePaint(0, 0, affine, x, y, rIn, rOut, count, stops, colors, cycleMethod);
-    p.type = 0;
-    return p;
-}
-
-fvPaint fvBoxGradientPaint(float* affine, float x, float y, float w, float h, float r, float f, int count, float* stops, long* colors, int cycleMethod) {
-    fvPaint p = fvBoxGradientImagePaint(0, 0, affine, x, y, w, h, r, f, count, stops, colors, cycleMethod);
-    p.type = 0;
-    return p;
-}
-
-fvPaint fvLinearGradientImagePaint(unsigned long imageID, float* affineImg, float* affine, float x1, float y1, float x2, float y2, int count, float* stops, long* colors, int cycleMethod) {
     fvPaint p{};
-    p.type = 1;
-    p.image0 = imageID;
+    p.uniform.type = 0;
+    p.image0 = 0;
     p.image1 = 0;
-    if (affineImg != 0) {
-        for (int i = 0; i < 6; i++) {
-            p.imageMat[i] = affineImg[i];
-        }
-    } else {
-        fv__identity(p.imageMat);
-    }
+    fv__identity(p.uniform.imageMat);
 
     float dx, dy, d;
     const float large = 1e5;
@@ -1052,115 +1268,124 @@ fvPaint fvLinearGradientImagePaint(unsigned long imageID, float* affineImg, floa
         dy = 1;
     }
 
-    p.colorMat[0] = dy;
-    p.colorMat[1] = -dx;
-    p.colorMat[2] = dx;
-    p.colorMat[3] = dy;
-    p.colorMat[4] = x1 - dx * large;
-    p.colorMat[5] = y1 - dy * large;
-    fv__multiply(p.colorMat, affine);
+    p.uniform.colorMat[0] = dy;
+    p.uniform.colorMat[1] = -dx;
+    p.uniform.colorMat[2] = dx;
+    p.uniform.colorMat[3] = dy;
+    p.uniform.colorMat[4] = x1 - dx * large;
+    p.uniform.colorMat[5] = y1 - dy * large;
+    fv__multiply(p.uniform.colorMat, affine);
 
-    p.shape[0] = large;
-    p.shape[1] = large + d * 0.5f;
-    p.shape[2] = 0.0f;
-    p.shape[3] = d < 1.0f ? 1.0f : d;
+    p.uniform.shape[0] = large;
+    p.uniform.shape[1] = large + d * 0.5f;
+    p.uniform.shape[2] = 0.0f;
+    p.uniform.shape[3] = d < 1.0f ? 1.0f : d;
 
-    p.stopCount = count - 1;
-    p.joinType = 0;
+    p.uniform.stopCount = count - 1;
+    p.uniform.joinType = 0;
     for (int i = 0; i < count; i++) {
-        p.stops[i] = stops[i];
-        p.colors[i * 4] = ((colors[i] >> 24) & 0xFF) / 255.f;
-        p.colors[i * 4 + 1] = ((colors[i] >> 16) & 0xFF) / 255.f;
-        p.colors[i * 4 + 2] = ((colors[i] >> 8) & 0xFF) / 255.f;
-        p.colors[i * 4 + 3] = ((colors[i] >> 0) & 0xFF) / 255.f;
+        p.uniform.stops[i] = stops[i];
+        p.uniform.colors[i * 4] = ((colors[i] >> 24) & 0xFF) / 255.f;
+        p.uniform.colors[i * 4 + 1] = ((colors[i] >> 16) & 0xFF) / 255.f;
+        p.uniform.colors[i * 4 + 2] = ((colors[i] >> 8) & 0xFF) / 255.f;
+        p.uniform.colors[i * 4 + 3] = ((colors[i] >> 0) & 0xFF) / 255.f;
     }
-    p.cycleType = cycleMethod;
-    p.edgeAA = 0;
+    p.uniform.cycleType = cycleMethod;
+
+    p.paintOp = fvPathOp::NOONE;
+    p.winding = fvWindingRule::EVEN_ODD;
+    p.convex = 0;
+    p.sdf = 0;
+    p.aa = 0;
 
     return p;
 }
 
-fvPaint fvRadialGradientImagePaint(unsigned long imageID, float* affineImg, float* affine, float x, float y, float rIn, float rOut, int count, float* stops, long* colors, int cycleMethod) {
+fvPaint fvRadialGradientPaint(float* affine, float x, float y, float rIn, float rOut, float fx, float fy, int count, float* stops, long* colors, int cycleMethod) {
     fvPaint p{};
-    p.type = 1;
-    p.image0 = imageID;
+    p.uniform.type = 0;
+    p.image0 = 0;
     p.image1 = 0;
-    if (affineImg != 0) {
-        for (int i = 0; i < 6; i++) {
-            p.imageMat[i] = affineImg[i];
-        }
-    } else {
-        fv__identity(p.imageMat);
-    }
+    fv__identity(p.uniform.imageMat);
 
     float r = (rIn+rOut)*0.5f;
     float f = (rOut-rIn);
 
-    p.colorMat[0] = 1.0f;
-    p.colorMat[1] = 0.0f;
-    p.colorMat[2] = 0.0f;
-    p.colorMat[3] = 1.0f;
-    p.colorMat[4] = x;
-    p.colorMat[5] = y;
-    fv__multiply(p.colorMat, affine);
+    p.uniform.colorMat[0] = 1.0f;
+    p.uniform.colorMat[1] = 0.0f;
+    p.uniform.colorMat[2] = 0.0f;
+    p.uniform.colorMat[3] = 1.0f;
+    p.uniform.colorMat[4] = x;
+    p.uniform.colorMat[5] = y;
+    fv__multiply(p.uniform.colorMat, affine);
 
-    p.shape[0] = r;
-    p.shape[1] = r;
-    p.shape[2] = r;
-    p.shape[3] = f < 1.0f ? 1.0f : f;
+    p.uniform.shape[0] = r;
+    p.uniform.shape[1] = r;
+    p.uniform.shape[2] = r;
+    p.uniform.shape[3] = f < 1.0f ? 1.0f : f;
 
-    p.stopCount = count - 1;
-    p.joinType = 0;
+    p.uniform.stopCount = count - 1;
+    p.uniform.joinType = 0;
     for (int i = 0; i < count; i++) {
-        p.stops[i] = stops[i];
-        p.colors[i * 4] = ((colors[i] >> 24) & 0xFF) / 255.f;
-        p.colors[i * 4 + 1] = ((colors[i] >> 16) & 0xFF) / 255.f;
-        p.colors[i * 4 + 2] = ((colors[i] >> 8) & 0xFF) / 255.f;
-        p.colors[i * 4 + 3] = ((colors[i] >> 0) & 0xFF) / 255.f;
+        p.uniform.stops[i] = stops[i];
+        p.uniform.colors[i * 4] = ((colors[i] >> 24) & 0xFF) / 255.f;
+        p.uniform.colors[i * 4 + 1] = ((colors[i] >> 16) & 0xFF) / 255.f;
+        p.uniform.colors[i * 4 + 2] = ((colors[i] >> 8) & 0xFF) / 255.f;
+        p.uniform.colors[i * 4 + 3] = ((colors[i] >> 0) & 0xFF) / 255.f;
     }
-    p.cycleType = cycleMethod;
-    p.edgeAA = 0;
+    p.uniform.cycleType = cycleMethod;
+
+    p.paintOp = fvPathOp::NOONE;
+    p.winding = fvWindingRule::EVEN_ODD;
+    p.convex = 0;
+    p.sdf = 0;
+    p.aa = 0;
+
+    p.uniform.extra[0] = fx;
+    p.uniform.extra[1] = fy;
+    if (fx < -0.0001 || fx > 0.0001 || fy < -0.0001 || fy > 0.0001) {
+        p.uniform.extra[2] = 1;
+    }
 
     return p;
 }
 
-fvPaint fvBoxGradientImagePaint(unsigned long imageID, float* affineImg, float* affine, float x, float y, float w, float h, float r, float f, int count, float* stops, long* colors, int cycleMethod) {
+fvPaint fvBoxGradientPaint(float* affine, float x, float y, float w, float h, float r, float f, int count, float* stops, long* colors, int cycleMethod) {
     fvPaint p{};
-    p.type = 1;
-    p.image0 = imageID;
+    p.uniform.type = 0;
+    p.image0 = 0;
     p.image1 = 0;
-    if (affineImg != 0) {
-        for (int i = 0; i < 6; i++) {
-            p.imageMat[i] = affineImg[i];
-        }
-    } else {
-        fv__identity(p.imageMat);
-    }
+    fv__identity(p.uniform.imageMat);
 
-    p.colorMat[0] = 1.0f;
-    p.colorMat[1] = 0.0f;
-    p.colorMat[2] = 0.0f;
-    p.colorMat[3] = 1.0f;
-    p.colorMat[4] = x + w * 0.5f;
-    p.colorMat[5] = y + h * 0.5f;
-    fv__multiply(p.colorMat, affine);
+    p.uniform.colorMat[0] = 1.0f;
+    p.uniform.colorMat[1] = 0.0f;
+    p.uniform.colorMat[2] = 0.0f;
+    p.uniform.colorMat[3] = 1.0f;
+    p.uniform.colorMat[4] = x + w * 0.5f;
+    p.uniform.colorMat[5] = y + h * 0.5f;
+    fv__multiply(p.uniform.colorMat, affine);
 
-    p.shape[0] = w * 0.5f;
-    p.shape[1] = h * 0.5f;
-    p.shape[2] = r;
-    p.shape[3] = f < 1.0f ? 1.0f : f;
+    p.uniform.shape[0] = w * 0.5f;
+    p.uniform.shape[1] = h * 0.5f;
+    p.uniform.shape[2] = r;
+    p.uniform.shape[3] = f < 1.0f ? 1.0f : f;
 
-    p.stopCount = count - 1;
-    p.joinType = 0;
+    p.uniform.stopCount = count - 1;
+    p.uniform.joinType = 0;
     for (int i = 0; i < count; i++) {
-        p.stops[i] = stops[i];
-        p.colors[i * 4] = ((colors[i] >> 24) & 0xFF) / 255.f;
-        p.colors[i * 4 + 1] = ((colors[i] >> 16) & 0xFF) / 255.f;
-        p.colors[i * 4 + 2] = ((colors[i] >> 8) & 0xFF) / 255.f;
-        p.colors[i * 4 + 3] = ((colors[i] >> 0) & 0xFF) / 255.f;
+        p.uniform.stops[i] = stops[i];
+        p.uniform.colors[i * 4] = ((colors[i] >> 24) & 0xFF) / 255.f;
+        p.uniform.colors[i * 4 + 1] = ((colors[i] >> 16) & 0xFF) / 255.f;
+        p.uniform.colors[i * 4 + 2] = ((colors[i] >> 8) & 0xFF) / 255.f;
+        p.uniform.colors[i * 4 + 3] = ((colors[i] >> 0) & 0xFF) / 255.f;
     }
-    p.cycleType = cycleMethod;
-    p.edgeAA = 0;
+    p.uniform.cycleType = cycleMethod;
+
+    p.paintOp = fvPathOp::NOONE;
+    p.winding = fvWindingRule::EVEN_ODD;
+    p.convex = 0;
+    p.sdf = 0;
+    p.aa = 0;
 
     return p;
 }

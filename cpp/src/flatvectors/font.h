@@ -7,7 +7,7 @@
 
 #include <flatvectors.h>
 
-fvFont* fontCreate(const void* data, long int length, float height, int sdf);
+fvFont* fontCreate(const void* data, long int length, float size, int sdf);
 
 void fontDestroy(fvFont* data);
 
