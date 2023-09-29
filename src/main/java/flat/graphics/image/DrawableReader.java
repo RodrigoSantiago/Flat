@@ -1,14 +1,14 @@
 package flat.graphics.image;
 
 import flat.graphics.context.Paint;
-import flat.graphics.context.Texture2D;
+import flat.graphics.context.enums.LineCap;
+import flat.graphics.context.enums.LineJoin;
 import flat.math.shapes.Path;
 import flat.math.shapes.Rectangle;
 import flat.math.shapes.Shape;
 import flat.math.shapes.Stroke;
 import flat.math.stroke.BasicStroke;
 import flat.resources.Parser;
-import flat.graphics.context.enuns.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -17,7 +17,7 @@ import org.w3c.dom.NodeList;
 import javax.imageio.ImageIO;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import java.awt.Graphics2D;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.io.IOException;
@@ -42,15 +42,7 @@ public class DrawableReader {
                     (((argb >> 16) & 0xff)) |
                     (((argb >> 24) & 0xff) << 24);
         }
-        Texture2D texture = new Texture2D();
-        texture.begin(0);
-        texture.setSize(pimg.getWidth(), pimg.getHeight(), PixelFormat.RGBA);
-        texture.setData(0, data, 0, 0, 0, pimg.getWidth(), pimg.getHeight());
-        texture.setLevels(0);
-        texture.generatMipmapLevels();
-        texture.setScaleFilters(MagFilter.NEAREST, MinFilter.NEAREST);
-        texture.end();
-        return new PixelMap(texture, 0, 0, pimg.getWidth(), pimg.getHeight());
+        return new PixelMap(data, pimg.getWidth(), pimg.getHeight());
     }
 
 
@@ -173,9 +165,5 @@ public class DrawableReader {
         }
 
         return new LineMap.SVGPath(id, shape, stroke, fillPaint, strokePaint, true, false);
-    }
-
-    static void disposeImage(PixelMap image) {
-
     }
 }

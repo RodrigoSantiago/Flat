@@ -3,6 +3,7 @@ package flat.widget.selection;
 import flat.uxml.Controller;
 import flat.uxml.UXChildren;
 import flat.uxml.UXStyleAttrs;
+import flat.widget.Children;
 import flat.widget.Gadget;
 import flat.widget.Widget;
 
@@ -89,7 +90,7 @@ public final class CheckGroup implements Gadget {
 
     void checkboxSetActive(CheckBox checkbox, boolean active) {
         if (checkbox == root) {
-            for (CheckBox child : children) {
+            for (CheckBox child : new Children<>(children)) {
                 child.setActivated(active);
             }
             checkbox._setActivated(active);

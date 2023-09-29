@@ -5,8 +5,8 @@ import flat.widget.Activity;
 
 public class ActivityTransition {
 
-    Activity prev;
-    Activity next;
+    protected Activity prev;
+    protected Activity next;
 
     public ActivityTransition() {
 
@@ -20,17 +20,34 @@ public class ActivityTransition {
         return prev;
     }
 
-    public void setActivities(Activity prev, Activity next) {
+    public void start(Activity prev, Activity next) {
         this.prev = prev;
         this.next = next;
+
+        if (prev != null) {
+            prev.onPause();
+        }
+        if (next != null) {
+            next.onShow();
+        }
     }
 
     public void handle(long time) {
 
     }
 
+    public void end() {
+        if (prev != null) {
+            prev.onHide();
+        }
+        if (next != null) {
+            next.onStart();
+            next.invalidate(true);
+        }
+    }
+
     public boolean draw(SmartContext context) {
-        return true;
+        return false;
     }
 
     public void stop() {

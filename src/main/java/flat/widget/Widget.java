@@ -3,6 +3,7 @@ package flat.widget;
 import flat.animations.StateAnimation;
 import flat.animations.StateBitset;
 import flat.animations.StateInfo;
+import flat.events.*;
 import flat.graphics.SmartContext;
 import flat.graphics.cursor.Cursor;
 import flat.math.Affine;
@@ -10,10 +11,9 @@ import flat.math.Vector2;
 import flat.math.shapes.RoundRectangle;
 import flat.math.shapes.Shape;
 import flat.math.stroke.BasicStroke;
+import flat.uxml.*;
 import flat.widget.effects.RippleEffect;
 import flat.widget.enuns.Visibility;
-import flat.events.*;
-import flat.uxml.*;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -53,7 +53,7 @@ public class Widget implements Gadget {
     private float layoutWidth, layoutHeight;
     private float offsetWidth, offsetHeight;
 
-    private int visibility = Visibility.Visible.ordinal();
+    private int visibility = Visibility.VISIBLE.ordinal();
     private Cursor cursor;
     private UXTheme theme;
 
@@ -112,7 +112,6 @@ public class Widget implements Gadget {
     private long transitionDuration;
 
     public Widget() {
-
     }
 
     public Widget(UXStyleAttrs style) {
@@ -192,7 +191,7 @@ public class Widget implements Gadget {
         if (isDisabled()) {
             if (children != null) {
                 childSort();
-                for (Widget child : children) {
+                for (Widget child : getChildrenIterable()) {
                     child.applyStyle();
                 }
             }
@@ -314,8 +313,8 @@ public class Widget implements Gadget {
     protected void childrenDraw(SmartContext context) {
         if (children != null) {
             childSort();
-            for (Widget child : children) {
-                if (child.getVisibility() == Visibility.Visible) {
+            for (Widget child : getChildrenIterable()) {
+                if (child.getVisibility() == Visibility.VISIBLE) {
                     child.onDraw(context);
                 }
             }
@@ -423,7 +422,7 @@ public class Widget implements Gadget {
 
     protected void invalidateTransform() {
         if (children != null) {
-            for (Widget child : children) {
+            for (Widget child : getChildrenIterable()) {
                 child.invalidateTransform();
             }
         }
@@ -524,7 +523,7 @@ public class Widget implements Gadget {
 
     protected void onSceneChange() {
         if (children != null) {
-            for (Widget widget : children) {
+            for (Widget widget : getChildrenIterable()) {
                 widget.onSceneChange();
             }
         }
@@ -532,7 +531,7 @@ public class Widget implements Gadget {
 
     protected void onActivityChange(Activity prev, Activity activity) {
         if (children != null) {
-            for (Widget widget : children) {
+            for (Widget widget : getChildrenIterable()) {
                 widget.onActivityChange(prev, activity);
             }
         }
@@ -556,6 +555,16 @@ public class Widget implements Gadget {
         return children;
     }
 
+    public Children<Widget> getChildrenIterable() {
+        childSort();
+        return new Children<>(children);
+    }
+
+    public Children<Widget> getChildrenIterableReverse() {
+        childSort();
+        return new Children<>(children, true);
+    }
+
     public Widget findById(String id) {
         if (id == null) return null;
 
@@ -564,7 +573,7 @@ public class Widget implements Gadget {
             return scene.findById(id);
         } else {
             if (children != null) {
-                for (Widget child : children) {
+                for (Widget child : getChildrenIterable()) {
                     Widget found = child.findById(id);
                     if (found != null) return found;
                 }
@@ -577,11 +586,10 @@ public class Widget implements Gadget {
         // TODO - reverse order {child -> contains to contains -> child on cliping }
 
         if ((includeDisabled || isEnabled()) &&
-                (getVisibility() == Visibility.Visible || getVisibility() == Visibility.Invisible)) {
+                (getVisibility() == Visibility.VISIBLE || getVisibility() == Visibility.INVISIBLE)) {
             if (children != null) {
                 childSort();
-                for (int i = children.size() - 1; i >= 0; i--) {
-                    Widget child = children.get(i);
+                for (Widget child : getChildrenIterableReverse()) {
                     Widget found = child.findByPosition(x, y, includeDisabled);
                     if (found != null) return found;
                 }
@@ -595,7 +603,7 @@ public class Widget implements Gadget {
     public Widget findFocused() {
         if (isFocused()) {
             if (children != null) {
-                for (Widget child : children) {
+                for (Widget child : getChildrenIterable()) {
                     Widget focus = child.findFocused();
                     if (focus != null) return focus;
                 }
@@ -826,7 +834,9 @@ public class Widget implements Gadget {
 
     public void requestFocus(boolean focus) {
         if (focusable) {
-            Application.runSync(() -> setFocused(focus));
+            if (getActivity() != null) {
+                getActivity().getWindow().runSync(() -> setFocused(focus));
+            }
         }
     }
 
@@ -1295,7 +1305,7 @@ public class Widget implements Gadget {
 
     public void setVisibility(Visibility visibility) {
         if (visibility == null) {
-            visibility = Visibility.Visible;
+            visibility = Visibility.VISIBLE;
         }
 
         if (this.visibility != visibility.ordinal()) {

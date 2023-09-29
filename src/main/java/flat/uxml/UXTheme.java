@@ -3,7 +3,8 @@ package flat.uxml;
 import flat.animations.StateInfo;
 import flat.resources.Dimension;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 
 public class UXTheme {

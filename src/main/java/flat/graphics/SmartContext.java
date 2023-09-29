@@ -1,7 +1,7 @@
 package flat.graphics;
 
 import flat.graphics.context.*;
-import flat.graphics.context.enuns.BlendFunction;
+import flat.graphics.context.enums.BlendFunction;
 import flat.graphics.image.PixelMap;
 import flat.graphics.material.Material;
 import flat.graphics.material.MaterialValue;
@@ -49,6 +49,18 @@ public class SmartContext {
         return context;
     }
 
+    public int getWidth() {
+        return context.getWidth();
+    }
+
+    public int getHeight() {
+        return context.getHeight();
+    }
+
+    public float getDensity() {
+        return context.getHeight();
+    }
+
     // ---- CLEAR ---- //
     private void clearMode() {
         if (mode != 0) {
@@ -66,11 +78,6 @@ public class SmartContext {
     public void hardFlush() {
         clearMode();
         context.hardFlush();
-    }
-
-    public void svgFlush() {
-        clearMode();
-        context.svgFlush();
     }
 
     public void clear(int color) {
@@ -449,11 +456,8 @@ public class SmartContext {
     public void drawImage(PixelMap image, Affine transform, float x, float y, float width, float height) {
         svgMode();
         drawImage(
-                image.getAtlas(),
-                image.getSrcx(),
-                image.getSrcy(),
-                image.getSrcx() + image.getWidth(),
-                image.getSrcy() + image.getHeight(),
+                image.readTexture(context),
+                0, 0, image.getWidth(), image.getHeight(),
                 x, y, x + width, y + height, transform);
     }
 

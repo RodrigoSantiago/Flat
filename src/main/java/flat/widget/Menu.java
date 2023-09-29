@@ -45,14 +45,14 @@ public class Menu extends Scene {
     public void onDraw(SmartContext context) {
         if (!MenuItem.desktop
                 && chooseItem != null
-                && chooseItem.getVisibility() == Visibility.Visible
+                && chooseItem.getVisibility() == Visibility.VISIBLE
                 && chooseItem.isActivated()) {
 
             chooseItem.onDraw(context);
         } else {
             backgroundDraw(getBackgroundColor(), getBorderColor(), getRippleColor(), context);
-            for (Widget child : getChildren()) {
-                if (child.getVisibility() == Visibility.Visible) {
+            for (Widget child : getChildrenIterable()) {
+                if (child.getVisibility() == Visibility.VISIBLE) {
                     child.onDraw(context);
                 }
             }
@@ -62,7 +62,7 @@ public class Menu extends Scene {
     @Override
     public void onLayout(float width, float height) {
         setLayout(Math.min(width, mWidth()), Math.min(mHeight(), height));
-        layoutHelperVertical(orderedList, getInX(), getInY(), getInWidth(), getInHeight(), halign);
+        layoutHelperVertical(new Children(orderedList), getInX(), getInY(), getInWidth(), getInHeight(), halign);
     }
 
     @Override
@@ -76,7 +76,7 @@ public class Menu extends Scene {
         float childrenHeight = 0, childrenMinHeight = 0;
         for (Widget child : orderedList) {
             child.onMeasure();
-            if (child.getVisibility() == Visibility.Gone) continue;
+            if (child.getVisibility() == Visibility.GONE) continue;
 
             if (child.mWidth() > childrenWidth) {
                 childrenWidth = child.mWidth();
@@ -128,11 +128,9 @@ public class Menu extends Scene {
         }
 
         if ((includeDisabled || isEnabled()) &&
-                (getVisibility() == Visibility.Visible || getVisibility() == Visibility.Invisible)) {
-            List<Widget> children = getChildren();
-            if (children != null) {
-                for (int i = children.size() - 1; i >= 0; i--) {
-                    Widget child = children.get(i);
+                (getVisibility() == Visibility.VISIBLE || getVisibility() == Visibility.INVISIBLE)) {
+            if (getChildren() != null) {
+                for (Widget child : getChildrenIterableReverse()) {
                     Widget found = child.findByPosition(x, y, includeDisabled);
                     if (found != null) return found;
                 }

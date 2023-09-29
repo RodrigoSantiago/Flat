@@ -2,6 +2,7 @@ package flat.widget.text;
 
 import flat.animations.Interpolation;
 import flat.animations.StateInfo;
+import flat.events.*;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Font;
 import flat.graphics.cursor.Cursor;
@@ -21,7 +22,6 @@ import flat.widget.Widget;
 import flat.widget.dialogs.DropdownListener;
 import flat.widget.dialogs.DropdownMenu;
 import flat.widget.effects.RippleEffect;
-import flat.events.*;
 
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
@@ -35,6 +35,7 @@ public class TextField extends Widget {
     private String string;
     private int size, capacity;
 
+    private Cursor textCursor;
     private int cursorPos, cursorStart, selStart, selEnd; //UTF-8 Positions
     private int cursorLine, cursorStartLine, selStartLine, selEndLine;
     private float cursorMoveAdvance = -1;
@@ -400,8 +401,15 @@ public class TextField extends Widget {
     }
 
     @Override
+    public Cursor getCursor() {
+        return textCursor == null ? super.getCursor() : textCursor;
+    }
+
+    @Override
     public void fireHover(HoverEvent hoverEvent) {
         super.fireHover(hoverEvent);
+
+        textCursor = null;
         if (getActIcon() != null) {
             float x1 = getTextInX() + getTextInWidth() + getActSpacing();
             float x2 = x1 + getActIcon().getWidth();
@@ -411,7 +419,7 @@ public class TextField extends Widget {
             screenToLocal(point);
             if (point.x >= x1 && point.x <= x2 && point.y >= y1 && point.y <= y2) {
                 if (actPress == -1) {
-                    Application.setCursor(Cursor.HAND);
+                    textCursor = Cursor.HAND;
                 }
             }
         }

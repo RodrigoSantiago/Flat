@@ -1,13 +1,13 @@
 package flat.math.shapes;
 
-import java.util.NoSuchElementException;
-
 import flat.math.Affine;
 import flat.math.Mathf;
 import flat.math.Vector2;
+import flat.math.operations.Area;
 import flat.math.util.FlatteningPathIterator;
 import flat.math.util.IllegalPathStateException;
-import flat.math.operations.Area;
+
+import java.util.NoSuchElementException;
 
 /**
  * Represents a path constructed from lines and curves and which can contain subpaths.

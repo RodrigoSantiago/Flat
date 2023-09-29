@@ -1,14 +1,14 @@
 package flat.graphics.text;
 
-import flat.backend.SVGEnuns;
+import flat.backend.SVGEnums;
 
 public final class Align {
 
     public enum Vertical {
-        TOP(SVGEnuns.SVG_TOP),
-        MIDDLE(SVGEnuns.SVG_MIDDLE),
-        BOTTOM(SVGEnuns.SVG_BASELINE),
-        BASELINE(SVGEnuns.SVG_BOTTOM);
+        TOP(SVGEnums.SVG_TOP),
+        MIDDLE(SVGEnums.SVG_MIDDLE),
+        BOTTOM(SVGEnums.SVG_BASELINE),
+        BASELINE(SVGEnums.SVG_BOTTOM);
 
         private final int svgEnum;
 
@@ -22,9 +22,9 @@ public final class Align {
     }
 
     public enum Horizontal {
-        LEFT(SVGEnuns.SVG_LEFT),
-        CENTER(SVGEnuns.SVG_CENTER),
-        RIGHT(SVGEnuns.SVG_RIGHT);
+        LEFT(SVGEnums.SVG_LEFT),
+        CENTER(SVGEnums.SVG_CENTER),
+        RIGHT(SVGEnums.SVG_RIGHT);
 
         private final int svgEnum;
 

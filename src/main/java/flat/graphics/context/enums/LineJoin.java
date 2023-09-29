@@ -1,11 +1,11 @@
-package flat.graphics.context.enuns;
+package flat.graphics.context.enums;
 
-import flat.backend.SVGEnuns;
+import flat.backend.SVGEnums;
 
 public enum LineJoin {
-    MITER(SVGEnuns.SVG_MITER),
-    ROUND(SVGEnuns.SVG_ROUND),
-    BEVEL(SVGEnuns.SVG_BEVEL);
+    MITER(SVGEnums.SVG_MITER),
+    ROUND(SVGEnums.SVG_ROUND),
+    BEVEL(SVGEnums.SVG_BEVEL);
 
     private final int svgEnum;
     LineJoin(int svgEnum) {

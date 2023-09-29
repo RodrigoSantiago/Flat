@@ -4,7 +4,7 @@ import flat.graphics.context.Context;
 import flat.graphics.context.Frame;
 import flat.graphics.context.Render;
 import flat.graphics.context.Texture2D;
-import flat.graphics.context.enuns.PixelFormat;
+import flat.graphics.context.enums.PixelFormat;
 
 public class Surface {
     Frame frame;
@@ -32,7 +32,7 @@ public class Surface {
         frame.attach(0, texture);
 
         if (render == null) {
-            render = new Render();
+            render = new Render(context);
             render.begin();
             render.setSize(texture.getWidth(), texture.getHeight(), PixelFormat.DEPTH24_STENCIL8);
             render.end();

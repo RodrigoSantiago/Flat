@@ -1,10 +1,10 @@
-package flat.graphics.context.enuns;
+package flat.graphics.context.enums;
 
-import flat.backend.GLEnuns;
+import flat.backend.GLEnums;
 
 public enum MagFilter {
-    NEAREST(GLEnuns.IF_NEAREST),
-    LINEAR(GLEnuns.IF_LINEAR);
+    NEAREST(GLEnums.IF_NEAREST),
+    LINEAR(GLEnums.IF_LINEAR);
 
     private final int glEnum;
 

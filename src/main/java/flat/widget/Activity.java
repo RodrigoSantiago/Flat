@@ -6,6 +6,7 @@ import flat.events.FocusEvent;
 import flat.events.KeyCode;
 import flat.events.KeyEvent;
 import flat.graphics.SmartContext;
+import flat.graphics.context.Context;
 import flat.resources.Dimension;
 import flat.resources.DimensionStream;
 import flat.uxml.*;
@@ -17,10 +18,12 @@ import java.util.Objects;
 
 public class Activity extends Controller {
 
+    private final Context context;
     private Scene scene;
-    private ArrayList<Scene> menus;
-    private LinkedList<Weak<Animation>> animations;
-    private LinkedList<Weak<Animation>> animationsCp;
+    private ArrayList<Scene> menus = new ArrayList<>();
+    private ArrayList<Animation> animations = new ArrayList<>();
+    private ArrayList<Animation> animationsAdd = new ArrayList<>();
+    private ArrayList<Animation> animationsRemove = new ArrayList<>();
     private Widget focus;
 
     private float width;
@@ -35,10 +38,8 @@ public class Activity extends Controller {
 
     private boolean hide;
 
-    public Activity() {
-        menus = new ArrayList<>();
-        animations = new LinkedList<>();
-        animationsCp = new LinkedList<>();
+    public Activity(Context context) {
+        this.context = context;
 
         scene = new Scene();
         scene.activity = this;
@@ -48,6 +49,14 @@ public class Activity extends Controller {
         scene.setMaxSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
 
         color = 0xDDDDDDFF;
+    }
+
+    public Context getContext() {
+        return context;
+    }
+
+    public Window getWindow() {
+        return context.getWindow();
     }
 
     @Override
@@ -101,20 +110,14 @@ public class Activity extends Controller {
         }
     }
 
-    public void addAnimation(final Animation animation) {
-        Weak<Animation> w = new Weak<>(animation);
-        if (!animations.contains(w)) {
-            animations.add(w);
-        }
+    public void addAnimation(Animation animation) {
+        animationsAdd.add(animation);
+        animationsRemove.remove(animation);
     }
 
-    public void removeAnimation(final Animation animation) {
-        for (Iterator<Weak<Animation>> iterator = animations.iterator(); iterator.hasNext(); ) {
-            if (iterator.next().get() == animation) {
-                iterator.remove();
-                break;
-            }
-        }
+    public void removeAnimation(Animation animation) {
+        animationsRemove.add(animation);
+        animationsAdd.remove(animation);
     }
 
     /**
@@ -319,23 +322,21 @@ public class Activity extends Controller {
     }
 
     final void animate(long loopTime) {
-        ArrayList<Weak<Animation>> list = new ArrayList<>();
+        animations.removeAll(animationsRemove);
+        animationsRemove.clear();
 
-        for (Weak<Animation> w : animations) {
-            Animation anim = w.get();
-            if (anim != null) {
-                if (anim.isPlaying()) {
-                    anim.handle(loopTime);
-                }
-                if (!anim.isPlaying()) {
-                    list.add(w);
-                }
-            } else {
-                list.add(w);
+        animations.addAll(animationsAdd);
+        animationsAdd.clear();
+
+        for (int i = 0; i < animations.size(); i++) {
+            Animation anim = animations.get(i);
+            if (anim.isPlaying()) {
+                anim.handle(loopTime);
+            }
+            if (!anim.isPlaying()) {
+                animations.remove(i--);
             }
         }
-
-        animations.removeAll(list);
     }
 
     final void layout(float width, float height, float dpi) {

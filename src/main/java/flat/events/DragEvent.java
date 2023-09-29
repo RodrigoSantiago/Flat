@@ -13,8 +13,8 @@ public class DragEvent extends Event {
     private Widget widget;
     private Object data;
     private float x, y;
-    private boolean dragAccpet;
-    private int dragSucess;
+    private boolean dragAccept;
+    private int dragSuccess;
     private boolean started;
 
     public DragEvent(Widget source, int type, Object data, float x, float y) {
@@ -53,24 +53,24 @@ public class DragEvent extends Event {
         started = true;
     }
 
-    public void dragAccept(boolean accpet) {
-        dragAccpet = accpet;
+    public void dragAccept(boolean accept) {
+        dragAccept = accept;
     }
 
-    public boolean isDragAccpeted() {
-        return dragAccpet;
+    public boolean isDragAccepted() {
+        return dragAccept;
     }
 
-    public void dragComplete(boolean sucess) {
-        dragSucess = sucess ? 1 : 2;
+    public void dragComplete(boolean success) {
+        dragSuccess = success ? 1 : 2;
     }
 
     public boolean isDragCompleted() {
-        return dragSucess != 0;
+        return dragSuccess != 0;
     }
 
-    public boolean getDragSucess() {
-        return dragSucess == 1;
+    public boolean getDragSuccess() {
+        return dragSuccess == 1;
     }
 
     public boolean isStarted() {

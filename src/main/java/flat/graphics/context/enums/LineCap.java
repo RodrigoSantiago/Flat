@@ -1,11 +1,11 @@
-package flat.graphics.context.enuns;
+package flat.graphics.context.enums;
 
-import flat.backend.SVGEnuns;
+import flat.backend.SVGEnums;
 
 public enum LineCap {
-    BUTT(SVGEnuns.SVG_BUTT),
-    ROUND(SVGEnuns.SVG_ROUND),
-    SQUARE(SVGEnuns.SVG_SQUARE);
+    BUTT(SVGEnums.SVG_BUTT),
+    ROUND(SVGEnums.SVG_ROUND),
+    SQUARE(SVGEnums.SVG_SQUARE);
 
     private final int svgEnum;
     LineCap(int svgEnum) {

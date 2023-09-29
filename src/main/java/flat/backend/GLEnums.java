@@ -1,6 +1,6 @@
 package flat.backend;
 
-public class GLEnuns {
+public class GLEnums {
     //----CLEAR BITMASK
     public static final int CB_COLOR_BUFFER_BIT = 0x00004000;
     public static final int CB_DEPTH_BUFFER_BIT = 0x00000100;

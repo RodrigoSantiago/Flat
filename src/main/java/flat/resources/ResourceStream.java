@@ -1,7 +1,10 @@
 package flat.resources;
 
-import java.io.*;
-import java.util.*;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
 public class ResourceStream extends DimensionStream {
 

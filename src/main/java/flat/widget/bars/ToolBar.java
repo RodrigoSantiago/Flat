@@ -16,7 +16,9 @@ import flat.widget.enuns.Visibility;
 import flat.widget.text.Button;
 import flat.widget.text.TextField;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 public class ToolBar extends Parent {
 
@@ -119,7 +121,7 @@ public class ToolBar extends Parent {
 
         for (ToolItem child : items) {
             child.onMeasure();
-            if (child.getVisibility() == Visibility.Gone) continue;
+            if (child.getVisibility() == Visibility.GONE) continue;
 
             childrenWidth += child.mWidth();
             childrenMinWidth += child.lMinWidth();
@@ -210,7 +212,7 @@ public class ToolBar extends Parent {
                 if (rightButton != null) {
                     rightButton.onLayout(rWidth, rightButton.mHeight());
                     rightButton.setPosition(x + w - rightButton.getWidth(), getInY());
-                    rightButton.setVisibility(Visibility.Visible);
+                    rightButton.setVisibility(Visibility.VISIBLE);
                 }
 
                 float off = (rightButton == null ? x + w : rightButton.getX()) - m;
@@ -232,7 +234,7 @@ public class ToolBar extends Parent {
                     off += item.getWidth();
                 }
                 if (rightButton != null) {
-                    rightButton.setVisibility(Visibility.Gone);
+                    rightButton.setVisibility(Visibility.GONE);
                 }
             }
         }
@@ -258,8 +260,8 @@ public class ToolBar extends Parent {
             context.drawTextSlice(tLayX, getInY() + getInHeight() - font.getHeight(textSize), tLayWidth, text);
         }
 
-        for (Widget widget : getChildren()) {
-            if (widget.getVisibility() == Visibility.Visible) {
+        for (Widget widget : getChildrenIterable()) {
+            if (widget.getVisibility() == Visibility.VISIBLE) {
                 if (items.indexOf(widget) < itensShown) {
                     widget.onDraw(context);
                 }
@@ -287,10 +289,8 @@ public class ToolBar extends Parent {
     @Override
     public Widget findByPosition(float x, float y, boolean includeDisabled) {
         if ((includeDisabled || isEnabled()) &&
-                (getVisibility() == Visibility.Visible || getVisibility() == Visibility.Invisible)) {
-            List<Widget> children = getChildren();
-            for (int i = children.size() - 1; i >= 0; i--) {
-                Widget child = children.get(i);
+                (getVisibility() == Visibility.VISIBLE || getVisibility() == Visibility.INVISIBLE)) {
+            for (Widget child : getChildrenIterableReverse()) {
                 if (items.indexOf(child) < itensShown) {
                     Widget found = child.findByPosition(x, y, includeDisabled);
                     if (found != null) return found;

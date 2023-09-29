@@ -124,7 +124,7 @@ public class Grid extends Parent {
         }
         for (Cell cell : cells.values()) {
             Widget child = cell.widget;
-            if (child.getVisibility() == Visibility.Gone) continue;
+            if (child.getVisibility() == Visibility.GONE) continue;
 
             int col = cell.getColumn();
             int col2 = cell.getColumn() + cell.getColSpan();
@@ -170,7 +170,7 @@ public class Grid extends Parent {
         for (Cell cell : cells.values()) {
             Widget child = cell.widget;
             child.onMeasure();
-            if (child.getVisibility() == Visibility.Gone) continue;
+            if (child.getVisibility() == Visibility.GONE) continue;
 
             int col = cell.getColumn();
             if (colSize[col] == WRAP_CONTENT) {

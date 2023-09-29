@@ -2,10 +2,11 @@ package flat.widget.layout;
 
 import flat.animations.StateInfo;
 import flat.graphics.text.Align;
+import flat.widget.Children;
+import flat.widget.Parent;
 import flat.widget.Widget;
 import flat.widget.enuns.Direction;
 import flat.widget.enuns.Visibility;
-import flat.widget.Parent;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,9 +43,9 @@ public class LinearBox extends Box {
 
         float childrenWidth = 0, childrenMinWidth = 0;
         float childrenHeight = 0, childrenMinHeight = 0;
-        for (Widget child : children) {
+        for (Widget child : getChildrenIterable()) {
             child.onMeasure();
-            if (child.getVisibility() == Visibility.Gone) continue;
+            if (child.getVisibility() == Visibility.GONE) continue;
 
             if (vertical) {
                 if (child.mWidth() > childrenWidth) {
@@ -84,9 +85,9 @@ public class LinearBox extends Box {
     public void onLayout(float width, float height) {
         setLayout(width, height);
         if (this.direction == Direction.VERTICAL || this.direction == Direction.IVERTICAL) {
-            Parent.layoutHelperVertical(orderedList, getInX(), getInY(), getInWidth(), getInHeight(), halign);
+            layoutHelperVertical(new Children<>(orderedList), getInX(), getInY(), getInWidth(), getInHeight(), halign);
         } else {
-            Parent.layoutHelperHorizontal(orderedList, getInX(), getInY(), getInWidth(), getInHeight(), valign);
+            layoutHelperHorizontal(new Children<>(orderedList), getInX(), getInY(), getInWidth(), getInHeight(), valign);
         }
     }
 

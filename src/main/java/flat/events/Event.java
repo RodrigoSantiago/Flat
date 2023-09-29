@@ -4,8 +4,8 @@ import flat.widget.Widget;
 
 public abstract class Event {
 
-    private Widget source;
-    private int type;
+    private final Widget source;
+    private final int type;
     private boolean consumed;
     private boolean focusConsumed;
 

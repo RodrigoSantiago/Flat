@@ -4,7 +4,7 @@ import flat.math.shapes.CubicCurves;
 import flat.math.shapes.PathIterator;
 import flat.math.shapes.QuadCurves;
 
-import java.util.*;
+import java.util.NoSuchElementException;
 
 /**
  * The <code>FlatteningPathIterator</code> class returns a flattened view of

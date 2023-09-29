@@ -1,5 +1,6 @@
 package flat.resources;
 
+import flat.graphics.context.Context;
 import flat.widget.Application;
 
 public class Dimension {
@@ -138,15 +139,15 @@ public class Dimension {
         return super.toString()+"["+size + ":" + density + ":" + orientation+"]";
     }
 
-    public static float dpPx(float dp) {
-        return (float) Math.ceil(dp * (getDensity((float) Application.getDpi()).dpi / 160f));
+    public static float dpPx(Context context, float dp) {
+        return (float) Math.ceil(dp * (getDensity(context.getWindow().getDpi()).dpi / 160f));
     }
 
-    public static float pxDp(float px) {
-        return (float) Math.ceil(px / (getDensity((float) Application.getDpi()).dpi / 160f));
+    public static float pxDp(Context context, float px) {
+        return (float) Math.ceil(px / (getDensity(context.getWindow().getDpi()).dpi / 160f));
     }
 
-    public static float ptPx(int pt) {
-        return (float) Math.ceil(pt * (Application.getDpi() / 160) * 2f);
+    public static float ptPx(Context context, int pt) {
+        return (float) Math.ceil(pt * (context.getWindow().getDpi() / 160) * 2f);
     }
 }

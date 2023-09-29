@@ -1,29 +1,25 @@
 package flat.graphics.context;
 
 import flat.backend.GL;
-import flat.graphics.context.enuns.PixelFormat;
-import flat.widget.Application;
+import flat.graphics.context.enums.PixelFormat;
 
 public final class Render extends ContextObject {
 
-    private int renderBufferId;
+    private final int renderBufferId;
     private PixelFormat format;
 
     private int width, height;
 
-    public Render() {
-        init();
+    public Render(Context context) {
+        super(context);
+        final int renderBufferId = GL.RenderBufferCreate();
+        this.renderBufferId = renderBufferId;
+        assignDispose(() -> GL.RenderBufferDestroy(renderBufferId));
     }
 
     @Override
-    protected void onInitialize() {
-        this.renderBufferId = GL.RenderBufferCreate();
-    }
-
-    @Override
-    protected void onDispose() {
-        final int renderBufferId = this.renderBufferId;
-        Application.runSync(() -> GL.RenderBufferDestroy(renderBufferId));
+    protected boolean isBound() {
+        return getContext().isRenderBound(this);
     }
 
     int getInternalID() {
@@ -31,14 +27,16 @@ public final class Render extends ContextObject {
     }
 
     public void begin() {
-        Application.getContext().bindRender(this);
+        getContext().bindRender(this);
     }
 
     public void end() {
-        Application.getContext().unbindRender();
+        getContext().unbindRender();
     }
 
     public void setSize(int width, int height, PixelFormat format) {
+        boundCheck();
+
         this.width = width;
         this.height = height;
         this.format = format;

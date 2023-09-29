@@ -1,6 +1,6 @@
 package flat.backend;
 
-public class SVGEnuns {
+public class SVGEnums {
 
     // create flags
     public static final int SVG_FILL = 0;

@@ -6,11 +6,13 @@ import flat.animations.presets.Show;
 import flat.animations.property.Property;
 import flat.events.ActionEvent;
 import flat.graphics.SmartContext;
+import flat.graphics.context.Context;
 import flat.resources.Dimension;
+import flat.resources.ResourceStream;
 import flat.resources.ResourcesManager;
 import flat.uxml.UXTheme;
 import flat.widget.Activity;
-import flat.resources.ResourceStream;
+import flat.widget.Application;
 import flat.widget.layout.LinearBox;
 import flat.widget.text.Button;
 
@@ -19,7 +21,9 @@ public class MainActivity extends Activity {
     @Flat public LinearBox box;
     @Flat public Button btn1;
 
-    public MainActivity(int n) {
+    public MainActivity(Context context) {
+        super(context);
+
         setTheme(new UXTheme(ResourcesManager.getInput("themes/material.uxss")));
         setSceneStream(new ResourceStream("screen_test"));
     }
@@ -83,7 +87,7 @@ public class MainActivity extends Activity {
         box.add(btn);
 
         Show show = new Show(btn);
-        show.setDimension(Dimension.dpPx(64));
+        show.setDimension(64);
         show.setDuration(1000);
         show.play(this);
 

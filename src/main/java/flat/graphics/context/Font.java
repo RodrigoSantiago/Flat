@@ -10,17 +10,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public final class Font {
+
     private final String family;
     private final FontPosture posture;
     private final FontWeight weight;
-    private float size, height, ascent, descent, lineGap;
-    private boolean sdf;
-    private boolean loaded;
-    private byte[] data;
 
-    private long fontID;
+    private final long fontID;
+    private final float size, height, ascent, descent, lineGap;
+    private final boolean sdf;
+    private final byte[] data;
+
+    private HashMap<Context, Long> contextInternal = new HashMap<>();
+
 
     private static final ArrayList<Font> fonts = new ArrayList<>();
 
@@ -122,6 +126,17 @@ public final class Font {
         this.size = size;
         this.sdf = sdf;
         this.data = data.clone();
+
+        this.fontID = SVG.FontCreate(data, size, sdf ? 1 : 0);
+        if (this.fontID == 0) {
+            throw new RuntimeException("Invalid font data");
+        }
+
+        this.height = SVG.FontGetHeight(fontID);
+        this.ascent = SVG.FontGetAscent(fontID);
+        this.descent = SVG.FontGetDescent(fontID);
+        this.lineGap = SVG.FontGetLineGap(fontID);
+        SVG.FontLoadAllGlyphs(fontID);
     }
 
     public String getFamily() {
@@ -149,12 +164,10 @@ public final class Font {
     }
 
     public float getWidth(String text, float size, float spacing) {
-        load();
         return SVG.FontGetTextWidth(fontID, text, size / this.size, spacing);
     }
 
     public float getWidth(ByteBuffer text, int offset, int length, float size, float spacing) {
-        load();
         return SVG.FontGetTextWidthBuffer(fontID, text, offset, length, size / this.size, spacing);
     }
 
@@ -163,63 +176,43 @@ public final class Font {
     }
 
     public float getHeight(float size) {
-        load();
         return size * height / this.size;
     }
 
     public float getLineGap(float size) {
-        load();
         return size * lineGap / this.size;
     }
 
     public float getAscent(float size) {
-        load();
         return size * ascent / this.size;
     }
 
     public float getDescent(float size) {
-        load();
         return size * descent / this.size;
     }
 
     public int getOffset(String text, float size, float spacing, float x, boolean half) {
-        load();
         return SVG.FontGetOffset(fontID, text, size / this.size, spacing, x, half);
     }
 
     public int getOffset(ByteBuffer text, int offset, int length, float size, float spacing, float x, boolean half) {
-        load();
         return SVG.FontGetOffsetBuffer(fontID, text, offset, length, size / this.size, spacing, x, half);
     }
 
-    public long getInternalID() {
-        load();
-        return fontID;
-    }
+    public long getInternalID(Context context) {
+        Long internalId = contextInternal.get(context);
+        if (internalId == null) {
+            final long id = SVG.FontCreate(data, size, sdf ? 1 : 0);
+            SVG.FontLoadAllGlyphs(id);
 
-    private void load() {
-        synchronized (Font.class) {
-            if (!loaded) {
-                this.fontID = SVG.FontCreate(data, size, sdf ? 1 : 0);
-                this.height = SVG.FontGetHeight(fontID);
-                this.ascent = SVG.FontGetAscent(fontID);
-                this.descent = SVG.FontGetDescent(fontID);
-                this.lineGap = SVG.FontGetLineGap(fontID);
-                SVG.FontLoadAllGlyphs(fontID);
-
-                this.data = null;
-                loaded = true;
-            }
+            contextInternal.put(context, id);
+            context.createSyncDestroyTask(() -> {
+                SVG.FontDestroy(id);
+                contextInternal.remove(context);
+            });
+            return id;
         }
-    }
-
-    @Override
-    protected void finalize() {
-        if (loaded) {
-            final long fontID = this.fontID;
-
-            Application.runSync(() -> SVG.FontDestroy(fontID));
-        }
+        return internalId;
     }
 
     @Override

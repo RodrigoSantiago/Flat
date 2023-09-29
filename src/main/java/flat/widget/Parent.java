@@ -68,21 +68,19 @@ public abstract class Parent extends Widget {
         }
     }
 
-    protected static void layoutHelperBox(List<? extends Widget> children, float x, float y, float w, float h) {
-        for (Widget child : children) {
-            if (child.getVisibility() == Visibility.Gone) continue;
+    protected void layoutHelperBox(float x, float y, float w, float h) {
+        for (Widget child : getChildrenIterable()) {
+            if (child.getVisibility() == Visibility.GONE) continue;
 
             child.onLayout(Math.min(child.mWidth(), w), Math.min(child.mHeight(), h));
             child.setPosition(x, y);
         }
     }
 
-    protected static void layoutHelperHorizontal(List<? extends Widget> children,
-                                                 float x, float y, float w, float h, Align.Vertical valign) {
-
+    protected void layoutHelperHorizontal(Children<?> children, float x, float y, float w, float h, Align.Vertical valign) {
         float defSpace = 0, defMinSpace = 0;
         for (Widget child : children) {
-            if (child.getVisibility() == Visibility.Gone) continue;
+            if (child.getVisibility() == Visibility.GONE) continue;
 
             float mes = child.mWidth();
             float min = child.lMinWidth();
@@ -93,7 +91,7 @@ public abstract class Parent extends Widget {
             float mul = w / defMinSpace;
 
             for (Widget child : children) {
-                if (child.getVisibility() == Visibility.Gone) continue;
+                if (child.getVisibility() == Visibility.GONE) continue;
 
                 float min = child.lMinWidth();
                 if (min == MATCH_PARENT) min = 0;
@@ -104,7 +102,7 @@ public abstract class Parent extends Widget {
             float mul = (w - defMinSpace) / (defSpace - defMinSpace);
 
             for (Widget child : children) {
-                if (child.getVisibility() == Visibility.Gone) continue;
+                if (child.getVisibility() == Visibility.GONE) continue;
 
                 float mes = child.mWidth();
                 float min = child.lMinWidth();
@@ -120,7 +118,7 @@ public abstract class Parent extends Widget {
 
             // Defined Space
             for (Widget child : children) {
-                if (child.getVisibility() == Visibility.Gone) continue;
+                if (child.getVisibility() == Visibility.GONE) continue;
 
                 if (child.mWidth() == MATCH_PARENT) {
                     undefCount++;
@@ -134,7 +132,7 @@ public abstract class Parent extends Widget {
 
             // Undefined Space
             for (Widget child : children) {
-                if (child.getVisibility() == Visibility.Gone) continue;
+                if (child.getVisibility() == Visibility.GONE) continue;
 
                 if (child.mWidth() == MATCH_PARENT) {
                     float min = child.lMinWidth();
@@ -154,12 +152,11 @@ public abstract class Parent extends Widget {
         }
     }
 
-    protected static void layoutHelperVertical(List<? extends Widget> children,
-                                               float x, float y, float w, float h, Align.Horizontal halign) {
+    protected void layoutHelperVertical(Children<Widget> children, float x, float y, float w, float h, Align.Horizontal halign) {
 
         float defSpace = 0, defMinSpace = 0;
         for (Widget child : children) {
-            if (child.getVisibility() == Visibility.Gone) continue;
+            if (child.getVisibility() == Visibility.GONE) continue;
 
             float mes = child.mHeight();
             float min = child.lMinHeight();
@@ -170,7 +167,7 @@ public abstract class Parent extends Widget {
             float mul = h / defMinSpace;
 
             for (Widget child : children) {
-                if (child.getVisibility() == Visibility.Gone) continue;
+                if (child.getVisibility() == Visibility.GONE) continue;
 
                 float min = child.lMinHeight();
                 if (min == MATCH_PARENT) min = 0;
@@ -181,7 +178,7 @@ public abstract class Parent extends Widget {
             float mul = (h - defMinSpace) / (defSpace - defMinSpace);
 
             for (Widget child : children) {
-                if (child.getVisibility() == Visibility.Gone) continue;
+                if (child.getVisibility() == Visibility.GONE) continue;
 
                 float mes = child.mHeight();
                 float min = child.lMinHeight();
@@ -197,7 +194,7 @@ public abstract class Parent extends Widget {
 
             // Defined Space
             for (Widget child : children) {
-                if (child.getVisibility() == Visibility.Gone) continue;
+                if (child.getVisibility() == Visibility.GONE) continue;
 
                 if (child.mHeight() == MATCH_PARENT) {
                     undefCount++;
@@ -211,7 +208,7 @@ public abstract class Parent extends Widget {
 
             // Undefined Space
             for (Widget child : children) {
-                if (child.getVisibility() == Visibility.Gone) continue;
+                if (child.getVisibility() == Visibility.GONE) continue;
 
                 if (child.mHeight() == MATCH_PARENT) {
                     float min = child.lMinHeight();

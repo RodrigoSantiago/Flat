@@ -14,10 +14,7 @@ import flat.uxml.Controller;
 import flat.uxml.UXChildren;
 import flat.uxml.UXStyleAttrs;
 import flat.uxml.UXTheme;
-import flat.widget.Activity;
-import flat.widget.Gadget;
-import flat.widget.Parent;
-import flat.widget.Widget;
+import flat.widget.*;
 import flat.widget.enuns.Visibility;
 import flat.widget.text.Button;
 
@@ -203,7 +200,7 @@ public class Tab extends Parent {
         if (!contains(x, y)) return null;
 
         if ((includeDisabled || isEnabled()) &&
-                (getVisibility() == Visibility.Visible || getVisibility() == Visibility.Invisible)) {
+                (getVisibility() == Visibility.VISIBLE || getVisibility() == Visibility.INVISIBLE)) {
             for (TabLabel label : labels) {
                 Widget found = label.findByPosition(x, y, includeDisabled);
                 if (found != null) {
@@ -276,7 +273,7 @@ public class Tab extends Parent {
             }
             headerWidth = maxW + getPaddingLeft() + getPaddingRight();
         } else {
-            layoutHelperHorizontal(labels, getInX(), getInY(), getInWidth(), headerHeight, Align.Vertical.BOTTOM);
+            layoutHelperHorizontal(new Children<>(labels), getInX(), getInY(), getInWidth(), headerHeight, Align.Vertical.BOTTOM);
             headerWidth = getInWidth();
         }
 

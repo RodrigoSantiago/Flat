@@ -110,6 +110,7 @@ public final class StateAnimation implements Animation, StateInfo {
         disabledOverlayed = true;
         disabledOverlay = disable;
     }
+
     public void unsetDisabledOverlay() {
         disabledOverlayed = false;
     }

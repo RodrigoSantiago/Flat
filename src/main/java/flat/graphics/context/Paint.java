@@ -4,7 +4,7 @@ import flat.math.Affine;
 import flat.math.Mathf;
 
 public final class Paint {
-    public enum CycleMethod {CLAMP, REPEATE, REFLECT}
+    public enum CycleMethod {CLAMP, REPEAT, REFLECT}
 
     private static final float[] identity = new float[]{1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f};
 

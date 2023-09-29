@@ -1,10 +1,10 @@
-package flat.graphics.context.enuns;
+package flat.graphics.context.enums;
 
-import flat.backend.GLEnuns;
+import flat.backend.GLEnums;
 
 public enum ShaderType {
-    Vertex(GLEnuns.ST_VERTEX_SHADER),
-    Fragment(GLEnuns.ST_FRAGMENT_SHADER)/*,
+    Vertex(GLEnums.ST_VERTEX_SHADER),
+    Fragment(GLEnums.ST_FRAGMENT_SHADER)/*,
     GeometricFragment(ST_GEOMETRIC_SHADER)*/;
 
     private int glEnum;

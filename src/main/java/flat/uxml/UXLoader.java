@@ -21,7 +21,6 @@ import flat.widget.value.ProgressBar;
 import flat.widget.value.ProgressCircle;
 import flat.widget.value.ScrollBar;
 import flat.widget.value.Slider;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;

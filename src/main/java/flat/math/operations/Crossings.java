@@ -2,8 +2,8 @@ package flat.math.operations;
 
 import flat.math.shapes.PathIterator;
 
-import java.util.Vector;
 import java.util.Enumeration;
+import java.util.Vector;
 
 abstract class Crossings {
     int limit = 0;

@@ -7,9 +7,9 @@ import flat.math.shapes.Rectangle;
 import flat.math.shapes.Shape;
 import flat.math.util.FlatteningPathIterator;
 
-import java.util.Vector;
 import java.util.Enumeration;
 import java.util.NoSuchElementException;
+import java.util.Vector;
 
 public class Area implements Shape, Cloneable {
     private static Vector<Curve> EmptyCurves = new Vector<>();

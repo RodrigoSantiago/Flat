@@ -75,7 +75,7 @@ public class SVG {
     public static native int FontGetOffset(long font, String string, float size, float spacing, float x, boolean half);
     public static native int FontGetOffsetBuffer(long font, Buffer string, int offset, int length, float size, float spacing, float x, boolean half);
     public static native void FontDestroy(long font);
-    // Todo - Unificar Width e Offset
+    // TODO - Unificar Width e Offset
 
     public static native void SetFont(long context, long font);
     public static native void SetFontScale(long context, float size);

@@ -31,6 +31,7 @@ button : label {
     background-color : #FFFFFFFF;
     transition-duration : 100;
     vertical-align : middle;
+    cursor : hand;
 
     enabled {
         elevation : 1;

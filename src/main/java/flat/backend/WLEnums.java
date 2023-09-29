@@ -1,6 +1,6 @@
 package flat.backend;
 
-public class WLEnuns {
+public class WLEnums {
 
     public static final int CURSOR = 0x00033001;
     public static final int STICKY_KEYS = 0x00033002;
@@ -223,53 +223,57 @@ public class WLEnuns {
 
 
     public interface WindowPosCallback {
-        void handle(int x, int y);
+        void handle(long window, int x, int y);
     }
     public interface WindowSizeCallback {
-        void handle(int width, int height);
+        void handle(long window, int width, int height);
     }
     public interface WindowCloseCallback {
-        boolean handle();
+        boolean handle(long window);
     }
     public interface WindowRefreshCallback {
-        void handle();
+        void handle(long window);
     }
     public interface WindowFocusCallback {
-        void handle(boolean focus);
+        void handle(long window, boolean focus);
     }
     public interface WindowIconifyCallback {
-        void handle(boolean minimized);
+        void handle(long window, boolean minimized);
     }
     public interface WindowBufferSizeCallback {
-        void handle(int width, int height);
+        void handle(long window, int width, int height);
     }
 
     public interface MouseButtonCallback {
-        void handle(int button, int action, int mods);
+        void handle(long window, int button, int action, int mods);
     }
     public interface CursorPosCallback {
-        void handle(double x, double y);
+        void handle(long window, double x, double y);
     }
     public interface CursorEnterCallback {
-        void handle(boolean entered);
+        void handle(long window, boolean entered);
     }
     public interface KeyCallback {
-        void handle(int key, int scancode, int action, int mods);
+        void handle(long window, int key, int scancode, int action, int mods);
     }
     public interface CharCallback {
-        void handle(int codepoint);
+        void handle(long window, int codepoint);
     }
     public interface CharModsCallback {
-        void handle(int codepoint, int mods);
+        void handle(long window, int codepoint, int mods);
     }
     public interface DropCallback {
-        void handle(String[] names);
+        void handle(long window, String[] names);
     }
     public interface ScrollCallback {
-        void handle(double x, double y);
+        void handle(long window, double x, double y);
     }
 
     public interface JoyCallback {
-        void handle(int joy, boolean connected);
+        void handle(long window, int joy, boolean connected);
+    }
+
+    public interface ErrorCallback {
+        void handle(String error);
     }
 }

@@ -136,7 +136,7 @@ public class Drawer extends Parent {
         float childrenHeight = 0, childrenMinHeight = 0;
         if (back != null) {
             back.onMeasure();
-            if (back.getVisibility() != Visibility.Gone) {
+            if (back.getVisibility() != Visibility.GONE) {
                 if (back.mWidth() > childrenWidth) {
                     childrenWidth = back.mWidth();
                 }
@@ -174,20 +174,20 @@ public class Drawer extends Parent {
         setHideEffect((getInWidth() <= hideWidth));
 
         if (hideEffect) {
-            if (back != null && back.getVisibility() != Visibility.Gone) {
+            if (back != null && back.getVisibility() != Visibility.GONE) {
                 back.onLayout(getInWidth(), getInHeight());
                 back.setPosition(0, 0);
             }
-            if (front != null && front.getVisibility() != Visibility.Gone) {
+            if (front != null && front.getVisibility() != Visibility.GONE) {
                 front.onLayout(frontWidth, getInHeight());
                 front.setPosition(Mathf.clamp(frontPos + gesOffset, -frontWidth, 0), 0);
             }
         } else {
-            if (front != null && front.getVisibility() != Visibility.Gone) {
+            if (front != null && front.getVisibility() != Visibility.GONE) {
                 front.onLayout(frontWidth, getInHeight());
                 front.setPosition(0, 0);
             }
-            if (back != null && back.getVisibility() != Visibility.Gone) {
+            if (back != null && back.getVisibility() != Visibility.GONE) {
                 back.onLayout(getInWidth() - frontWidth, getInHeight());
                 back.setPosition(frontWidth, 0);
             }
@@ -199,11 +199,11 @@ public class Drawer extends Parent {
         backgroundDraw(getBackgroundColor(), getBorderColor(), getRippleColor(), context);
 
         context.setTransform2D(getTransform());
-        if (back != null && back.getVisibility() == Visibility.Visible) {
+        if (back != null && back.getVisibility() == Visibility.VISIBLE) {
             back.onDraw(context);
         }
         if (hideEffect) {
-            if ((shown || anim.isPlaying() || gesOffset != 0) && front != null && front.getVisibility() == Visibility.Visible) {
+            if ((shown || anim.isPlaying() || gesOffset != 0) && front != null && front.getVisibility() == Visibility.VISIBLE) {
                 int alpha = (int) ((color & 0xFF) * (1 + Mathf.clamp(frontPos + gesOffset, -frontWidth, 0) / frontWidth));
 
                 context.setTransform2D(getTransform());
@@ -213,7 +213,7 @@ public class Drawer extends Parent {
                 front.onDraw(context);
             }
         } else {
-            if (front != null && front.getVisibility() == Visibility.Visible) {
+            if (front != null && front.getVisibility() == Visibility.VISIBLE) {
                 front.onDraw(context);
             }
         }
@@ -222,7 +222,7 @@ public class Drawer extends Parent {
     @Override
     public Widget findByPosition(float x, float y, boolean includeDisabled) {
         if ((includeDisabled || isEnabled()) &&
-                (getVisibility() == Visibility.Visible || getVisibility() == Visibility.Invisible)) {
+                (getVisibility() == Visibility.VISIBLE || getVisibility() == Visibility.INVISIBLE)) {
             if (hideEffect) {
                 if (isShown()) {
                     if (front != null) {

@@ -2,9 +2,8 @@ package flat.widget.layout;
 
 import flat.animations.StateInfo;
 import flat.events.ScrollEvent;
-import flat.math.shapes.Shape;
-import flat.widget.value.ScrollBar;
 import flat.graphics.SmartContext;
+import flat.math.shapes.Shape;
 import flat.uxml.Controller;
 import flat.uxml.UXChildren;
 import flat.uxml.UXStyleAttrs;
@@ -14,6 +13,7 @@ import flat.widget.Widget;
 import flat.widget.enuns.Direction;
 import flat.widget.enuns.Policy;
 import flat.widget.enuns.Visibility;
+import flat.widget.value.ScrollBar;
 
 public class ScrollBox extends Parent {
 
@@ -89,10 +89,10 @@ public class ScrollBox extends Parent {
         if (content != null) {
             content.onDraw(context);
         }
-        if (verticalBar != null && verticalBar.getVisibility() == Visibility.Visible) {
+        if (verticalBar != null && verticalBar.getVisibility() == Visibility.VISIBLE) {
             verticalBar.onDraw(context);
         }
-        if (horizontalBar != null && horizontalBar.getVisibility() == Visibility.Visible) {
+        if (horizontalBar != null && horizontalBar.getVisibility() == Visibility.VISIBLE) {
             horizontalBar.onDraw(context);
         }
 
@@ -117,16 +117,16 @@ public class ScrollBox extends Parent {
             horizontalBar.onMeasure();
         }
 
-        if (content != null && content.getVisibility() != Visibility.Gone) {
+        if (content != null && content.getVisibility() != Visibility.GONE) {
             if (getPrefWidth() == WRAP_CONTENT) {
                 mWidth = content.mWidth() + offWidth;
-                if (verticalBar != null && verticalPolicy == Policy.AWAYS) {
+                if (verticalBar != null && verticalPolicy == Policy.ALWAYS) {
                     mWidth += verticalBar.mWidth();
                 }
             }
             if (getPrefHeight() == WRAP_CONTENT) {
                 mHeight = content.mHeight() + offHeight;
-                if (horizontalBar != null && horizontalPolicy == Policy.AWAYS) {
+                if (horizontalBar != null && horizontalPolicy == Policy.ALWAYS) {
                     mHeight += horizontalBar.mHeight();
                 }
             }
@@ -138,55 +138,55 @@ public class ScrollBox extends Parent {
     public void onLayout(float width, float height) {
         setLayout(width, height);
 
-        if (content != null && content.getVisibility() != Visibility.Gone) {
+        if (content != null && content.getVisibility() != Visibility.GONE) {
             float cw = content.mWidth();
             float ch = content.mHeight();;
             if (content.mWidth() == MATCH_PARENT) {
-                cw = width - (verticalBar != null && verticalPolicy == Policy.AWAYS ? verticalBar.mWidth() : 0);
+                cw = width - (verticalBar != null && verticalPolicy == Policy.ALWAYS ? verticalBar.mWidth() : 0);
             }
             if (content.mHeight() == MATCH_PARENT) {
-                ch = height - (horizontalBar != null && horizontalPolicy == Policy.AWAYS ? horizontalBar.mHeight() : 0);
+                ch = height - (horizontalBar != null && horizontalPolicy == Policy.ALWAYS ? horizontalBar.mHeight() : 0);
             }
 
             content.onLayout(cw, ch);
             if (horizontalBar != null) {
-                if (horizontalPolicy == Policy.AWAYS) {
-                    horizontalBar.setVisibility(Visibility.Visible);
+                if (horizontalPolicy == Policy.ALWAYS) {
+                    horizontalBar.setVisibility(Visibility.VISIBLE);
                 }
                 if (getInWidth() >= content.lWidth()) {
                     horizontalBar.setMaxRange(1);
                     horizontalBar.setRange(1);
                     if (horizontalPolicy == Policy.AS_NEEDED) {
-                        horizontalBar.setVisibility(Visibility.Gone);
+                        horizontalBar.setVisibility(Visibility.GONE);
                     }
                 } else {
                     horizontalBar.setMaxRange(content.lWidth());
                     horizontalBar.setRange(getInWidth());
                     if (horizontalPolicy != Policy.NEVER) {
-                        horizontalBar.setVisibility(Visibility.Visible);
+                        horizontalBar.setVisibility(Visibility.VISIBLE);
                     }
                 }
             }
             if (verticalBar != null) {
-                if (verticalPolicy == Policy.AWAYS) {
-                    verticalBar.setVisibility(Visibility.Visible);
+                if (verticalPolicy == Policy.ALWAYS) {
+                    verticalBar.setVisibility(Visibility.VISIBLE);
                 }
                 if (getInHeight() >= content.lHeight()) {
                     verticalBar.setMaxRange(1);
                     verticalBar.setRange(1);
                     if (verticalPolicy == Policy.AS_NEEDED) {
-                        verticalBar.setVisibility(Visibility.Gone);
+                        verticalBar.setVisibility(Visibility.GONE);
                     }
                 } else {
                     verticalBar.setMaxRange(content.lHeight());
                     verticalBar.setRange(getInHeight());
                     if (verticalPolicy != Policy.NEVER) {
-                        verticalBar.setVisibility(Visibility.Visible);
+                        verticalBar.setVisibility(Visibility.VISIBLE);
                     }
                 }
             }
-            boolean hbar = horizontalBar != null && horizontalBar.getVisibility() != Visibility.Gone;
-            boolean vbar = verticalBar != null && verticalBar.getVisibility() != Visibility.Gone;
+            boolean hbar = horizontalBar != null && horizontalBar.getVisibility() != Visibility.GONE;
+            boolean vbar = verticalBar != null && verticalBar.getVisibility() != Visibility.GONE;
             float v = 0, h = 0;
 
             // VERTICAL PRIORITY
@@ -218,7 +218,7 @@ public class ScrollBox extends Parent {
     @Override
     public void fireScroll(ScrollEvent scrollEvent) {
         if (!scrollEvent.isConsumed() && content != null && verticalBar != null
-                && verticalBar.getVisibility() == Visibility.Visible) {
+                && verticalBar.getVisibility() == Visibility.VISIBLE) {
 
             if (content.getHeight() > 0 && getHeight() > 0) {
                 verticalBar.setValue(getScrollY() - (scrollEvent.getDeltaY() * getHeight() / content.getHeight()) / 6f);

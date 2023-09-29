@@ -1,31 +1,37 @@
 package flat.graphics.image;
 
 import flat.graphics.SmartContext;
+import flat.graphics.context.Context;
 import flat.graphics.context.Texture2D;
+import flat.graphics.context.enums.MagFilter;
+import flat.graphics.context.enums.MinFilter;
+import flat.graphics.context.enums.PixelFormat;
 
 public class PixelMap implements Drawable {
 
-    private Texture2D atlas;
-    private float srcx, srcy, width, height;
+    private Texture2D texture;
+    private int width, height;
+    private int[] data;
 
-    public PixelMap(Texture2D atlas, float srcx, float srcy, float width, float height) {
-        this.atlas = atlas;
-        this.srcx = srcx;
-        this.srcy = srcy;
+    PixelMap(int[] data, int width, int height) {
         this.width = width;
         this.height = height;
+        this.data = data;
     }
 
-    public Texture2D getAtlas() {
-        return atlas;
-    }
-
-    public float getSrcx() {
-        return srcx;
-    }
-
-    public float getSrcy() {
-        return srcy;
+    public Texture2D readTexture(Context context) {
+        if (texture == null) {
+            texture = new Texture2D(context);
+            texture.begin(0);
+            texture.setSize(width, height, PixelFormat.RGBA);
+            texture.setData(0, data, 0, 0, 0, width, height);
+            texture.setLevels(0);
+            texture.generateMipmapLevels();
+            texture.setScaleFilters(MagFilter.NEAREST, MinFilter.NEAREST);
+            texture.end();
+            data = null;
+        }
+        return texture;
     }
 
     @Override
@@ -51,11 +57,5 @@ public class PixelMap implements Drawable {
     @Override
     public void draw(SmartContext context, float x, float y, float frame) {
         draw(context, x, y, getWidth(), getHeight(), frame);
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-        DrawableReader.disposeImage(this);
     }
 }

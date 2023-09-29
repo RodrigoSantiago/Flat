@@ -1,20 +1,24 @@
 package flat.graphics.context;
 
-import flat.widget.Application;
-
 public abstract class Texture extends ContextObject {
 
     protected int activePos;
 
-    Texture() {
+    Texture(Context context) {
+        super(context);
+    }
+
+    @Override
+    protected boolean isBound() {
+        return getContext().isTextureBound(this);
     }
 
     public void begin(int index) {
-        Application.getContext().bindTexture(this, index);
+        getContext().bindTexture(this, index);
     }
 
     public void end() {
-        Application.getContext().unbindTexture(activePos);
+        getContext().unbindTexture(activePos);
     }
 
     void setActivePos(int activePos) {

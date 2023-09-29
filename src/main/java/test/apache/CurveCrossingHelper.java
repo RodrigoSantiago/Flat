@@ -19,9 +19,9 @@ package test.apache;
 
 import flat.math.shapes.PathIterator;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ArrayList;
 
 public class CurveCrossingHelper {
     private double[][] coords;

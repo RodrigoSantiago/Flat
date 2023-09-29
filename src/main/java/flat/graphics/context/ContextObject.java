@@ -1,47 +1,43 @@
 package flat.graphics.context;
 
-import java.util.concurrent.atomic.AtomicLong;
+import java.lang.ref.Cleaner;
 
-public abstract class ContextObject {
+abstract class ContextObject {
+    protected final static Cleaner cleaner = Cleaner.create();
 
-    private static AtomicLong id = new AtomicLong();
-    private final long unicID = id.getAndIncrement();
+    private final Context context;
+    private boolean disposed;
 
-    private boolean initialized;
-
-    ContextObject() {
+    public ContextObject(Context context) {
+        this.context = context;
     }
 
-    public long getUnicID() {
-        return unicID;
+    public Context getContext() {
+        return context;
     }
 
-    public final void init() {
-        if (!initialized) {
-            initialized = true;
-            Context.assign(this);
-            onInitialize();
+    protected final void assignDispose(Runnable task) {
+        cleaner.register(this, context.createSyncDestroyTask(task));
+    }
+
+    protected boolean isBound() {
+        return true;
+    }
+
+    protected void boundCheck() {
+        if (isDisposed()) {
+            throw new RuntimeException("The " + getClass().getSimpleName() + " is disposed.");
+        }
+        if (!isBound()) {
+            throw new RuntimeException("The " + getClass().getSimpleName() + " must be between begin and end for writing values.");
         }
     }
 
-    public final void dispose() {
-        if (initialized) {
-            initialized = false;
-            Context.deassign(this);
-            onDispose();
-        }
+    public boolean isDisposed() {
+        return disposed;
     }
 
-    public final boolean isInitialized() {
-        return this.initialized;
-    }
-
-    protected abstract void onInitialize();
-
-    protected abstract void onDispose();
-
-    @Override
-    protected void finalize() throws Throwable {
-        dispose();
+    void dispose() {
+        this.disposed = true;
     }
 }

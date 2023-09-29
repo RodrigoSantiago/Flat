@@ -217,7 +217,7 @@ public class MenuItem extends Parent {
     @Override
     public Widget findByPosition(float x, float y, boolean includeDisabled) {
         if ((includeDisabled || isEnabled()) &&
-                (getVisibility() == Visibility.Visible || getVisibility() == Visibility.Invisible)) {
+                (getVisibility() == Visibility.VISIBLE || getVisibility() == Visibility.INVISIBLE)) {
 
             if (subMenu != null && isActivated()) {
                 Widget widget = subMenu.findByPosition(x, y, includeDisabled);

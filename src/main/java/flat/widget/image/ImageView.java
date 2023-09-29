@@ -5,8 +5,8 @@ import flat.graphics.SmartContext;
 import flat.graphics.image.Drawable;
 import flat.graphics.text.Align;
 import flat.resources.Resource;
-import flat.widget.enuns.ImageScale;
 import flat.widget.Widget;
+import flat.widget.enuns.ImageScale;
 
 public class ImageView extends Widget {
 
@@ -36,7 +36,7 @@ public class ImageView extends Widget {
 
         setFrame(getStyle().asNumber("frame", info, getFrame()));
         setSpeed(getStyle().asNumber("speed", info, getSpeed()));
-        setImageScale(getStyle().asConstant("image-scale", ImageScale.NOONE));
+        setImageScale(getStyle().asConstant("image-scale", ImageScale.NONE));
         setVerticalAlign(getStyle().asConstant("v-align", Align.Vertical.MIDDLE));
         setHorizontalAlign(getStyle().asConstant("h-align", Align.Horizontal.CENTER));
     }

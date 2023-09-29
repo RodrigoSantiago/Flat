@@ -34,9 +34,9 @@ public class Box extends Parent {
 
         float childrenWidth = 0, childrenMinWidth = 0;
         float childrenHeight = 0, childrenMinHeight = 0;
-        for (Widget child : getChildren()) {
+        for (Widget child : getChildrenIterable()) {
             child.onMeasure();
-            if (child.getVisibility() == Visibility.Gone) continue;
+            if (child.getVisibility() == Visibility.GONE) continue;
 
 
             if (child.mWidth() > childrenWidth) {
@@ -68,7 +68,7 @@ public class Box extends Parent {
     @Override
     public void onLayout(float width, float height) {
         setLayout(width, height);
-        layoutHelperBox(getChildren(), getInX(), getInY(), getInWidth(), getInHeight());
+        layoutHelperBox(getInX(), getInY(), getInWidth(), getInHeight());
     }
 
     @Override

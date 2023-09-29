@@ -1,65 +1,60 @@
 package flat.graphics.context;
 
 import flat.backend.GL;
-import flat.graphics.context.enuns.AttributeType;
-import flat.widget.Application;
+import flat.graphics.context.enums.AttributeType;
 
 public final class VertexArray extends ContextObject {
 
     private int vertexArrayId;
-    private Context context;
-    private BufferObejct elementBuffer;
+    private BufferObject elementBuffer;
 
     public VertexArray(Context context) {
-        this.context = context;
-        init();
+        super(context);
+        final int vertexArrayId = GL.VertexArrayCreate();
+        this.vertexArrayId = vertexArrayId;
+        assignDispose(() -> GL.VertexArrayDestroy(vertexArrayId));
     }
 
     @Override
-    protected void onInitialize() {
-        this.vertexArrayId = GL.VertexArrayCreate();
-    }
-
-    @Override
-    protected void onDispose() {
-        final int vertexArrayId = this.vertexArrayId;
-        Application.runSync(() -> GL.VertexArrayDestroy(vertexArrayId));
+    protected boolean isBound() {
+        return getContext().isVertexArrayBound(this);
     }
 
     int getInternalID() {
         return vertexArrayId;
     }
 
-    void setElementBuffer(BufferObejct elementBuffer) {
+    void setElementBuffer(BufferObject elementBuffer) {
         this.elementBuffer = elementBuffer;
     }
 
-    BufferObejct getElementBuffer() {
+    BufferObject getElementBuffer() {
         return elementBuffer;
     }
 
     public void begin() {
-        context.refreshBufferBinds();
-        context.bindVertexArray(this);
+        getContext().bindVertexArray(this);
     }
 
     public void end() {
-        context.refreshBufferBinds();
-        context.unbindVertexArray();
+        getContext().unbindVertexArray();
     }
 
     public void setAttributeEnabled(int att, boolean enabled) {
-        context.refreshBufferBinds();
+        boundCheck();
+
         GL.VertexArrayAttribEnable(att, enabled);
     }
 
     public void setAttributePointer(int att, boolean normalized, int size, int stride, AttributeType type, int offset) {
-        context.refreshBufferBinds();
+        boundCheck();
+
         GL.VertexArrayAttribPointer(att, size, normalized, stride, type.getInternalEnum(), offset);
     }
 
     public void setAttributeDivisor(int att, int instanceCount) {
-        context.refreshBufferBinds();
+        boundCheck();
+
         GL.VertexArrayAttribSetDivisor(att, instanceCount);
     }
 }

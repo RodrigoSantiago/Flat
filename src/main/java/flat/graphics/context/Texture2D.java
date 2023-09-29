@@ -1,39 +1,29 @@
 package flat.graphics.context;
 
 import flat.backend.GL;
-
-import flat.backend.GLEnuns;
-import flat.graphics.context.enuns.MagFilter;
-import flat.graphics.context.enuns.MinFilter;
-import flat.graphics.context.enuns.WrapMode;
-import flat.graphics.context.enuns.PixelFormat;
-import flat.widget.Application;
+import flat.backend.GLEnums;
+import flat.graphics.context.enums.MagFilter;
+import flat.graphics.context.enums.MinFilter;
+import flat.graphics.context.enums.PixelFormat;
+import flat.graphics.context.enums.WrapMode;
 
 import java.nio.Buffer;
 
 public final class Texture2D extends Texture {
 
-    private int textureId;
-    private PixelFormat format;
+    private final int textureId;
 
+    private PixelFormat format;
     private int width, height, levels;
     private MinFilter minFilter;
     private MagFilter magFilter;
     private WrapMode wrapModeX, wrapModeY;
 
-    public Texture2D() {
-        init();
-    }
-
-    @Override
-    protected void onInitialize() {
-        this.textureId = GL.TextureCreate();
-    }
-
-    @Override
-    protected void onDispose() {
-        final int textureId = this.textureId;
-        Application.runSync(() -> GL.TextureDestroy(textureId));
+    public Texture2D(Context context) {
+        super(context);
+        final int textureId = GL.TextureCreate();
+        this.textureId = textureId;
+        assignDispose(() -> GL.TextureDestroy(textureId));
     }
 
     int getInternalID() {
@@ -41,15 +31,17 @@ public final class Texture2D extends Texture {
     }
 
     int getInternalType() {
-        return GLEnuns.TB_TEXTURE_2D;
+        return GLEnums.TB_TEXTURE_2D;
     }
 
     public void setSize(int width, int height, PixelFormat format) {
+        boundCheck();
+
         this.width = width;
         this.height = height;
         this.format = format;
-        GL.TextureDataBuffer(GLEnuns.TT_TEXTURE_2D, 0, format.getInternalEnum(), width, height, 0, null, 0);
-        generatMipmapLevels();
+        GL.TextureDataBuffer(GLEnums.TT_TEXTURE_2D, 0, format.getInternalEnum(), width, height, 0, null, 0);
+        generateMipmapLevels();
     }
 
     public int getWidth() {
@@ -69,37 +61,46 @@ public final class Texture2D extends Texture {
     }
 
     public void setData(int level, Buffer buffer, int offset, int x, int y, int width, int height) {
-        Application.getContext().refreshBufferBinds();
-        GL.TextureSubDataBuffer(GLEnuns.TT_TEXTURE_2D, level, x, y, width, height, format.getInternalEnum(), buffer, offset);
+        boundCheck();
+
+        GL.TextureSubDataBuffer(GLEnums.TT_TEXTURE_2D, level, x, y, width, height, format.getInternalEnum(), buffer, offset);
     }
 
     public void setData(int level, int[] data, int offset, int x, int y, int width, int height) {
-        Application.getContext().refreshBufferBinds();
-        GL.TextureSubDataI(GLEnuns.TT_TEXTURE_2D, level, x, y, width, height, format.getInternalEnum(), data, offset);
+        boundCheck();
+
+        GL.TextureSubDataI(GLEnums.TT_TEXTURE_2D, level, x, y, width, height, format.getInternalEnum(), data, offset);
     }
 
     public void setData(int level, byte[] data, int offset, int x, int y, int width, int height) {
-        Application.getContext().refreshBufferBinds();
-        GL.TextureSubDataB(GLEnuns.TT_TEXTURE_2D, level, x, y, width, height, format.getInternalEnum(), data, offset);
+        boundCheck();
+
+        GL.TextureSubDataB(GLEnums.TT_TEXTURE_2D, level, x, y, width, height, format.getInternalEnum(), data, offset);
     }
 
     public void setLevels(int levels) {
+        boundCheck();
+
         this.levels = levels;
-        GL.TextureSetLevels(GLEnuns.TT_TEXTURE_2D, levels);
+        GL.TextureSetLevels(GLEnums.TT_TEXTURE_2D, levels);
     }
 
     public int getLevels() {
         return levels;
     }
 
-    public void generatMipmapLevels() {
-        GL.TextureGenerateMipmap(GLEnuns.TT_TEXTURE_2D);
+    public void generateMipmapLevels() {
+        boundCheck();
+
+        GL.TextureGenerateMipmap(GLEnums.TT_TEXTURE_2D);
     }
 
     public void setScaleFilters(MagFilter magFilter, MinFilter minFilter) {
+        boundCheck();
+
         this.magFilter = magFilter;
         this.minFilter = minFilter;
-        GL.TextureSetFilter(GLEnuns.TT_TEXTURE_2D, magFilter.getInternalEnum(), minFilter.getInternalEnum());
+        GL.TextureSetFilter(GLEnums.TT_TEXTURE_2D, magFilter.getInternalEnum(), minFilter.getInternalEnum());
     }
 
     public MagFilter getMagFilter() {
@@ -111,9 +112,11 @@ public final class Texture2D extends Texture {
     }
 
     public void setWrapModes(WrapMode wrapModeX, WrapMode wrapModeY) {
+        boundCheck();
+
         this.wrapModeX = wrapModeX;
         this.wrapModeY = wrapModeY;
-        GL.TextureSetWrap(GLEnuns.TT_TEXTURE_2D, wrapModeX.getInternalEnum(), wrapModeY.getInternalEnum());
+        GL.TextureSetWrap(GLEnums.TT_TEXTURE_2D, wrapModeX.getInternalEnum(), wrapModeY.getInternalEnum());
     }
 
     public WrapMode getWrapModeX() {

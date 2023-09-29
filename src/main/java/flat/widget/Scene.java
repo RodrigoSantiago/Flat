@@ -41,9 +41,9 @@ public class Scene extends Parent {
     public void onMeasure() {
         float mWidth = getPrefWidth(), mHeight = getPrefHeight();
 
-        for (Widget child : getChildren()) {
+        for (Widget child : getChildrenIterable()) {
             child.onMeasure();
-            if (child.getVisibility() == Visibility.Gone) continue;
+            if (child.getVisibility() == Visibility.GONE) continue;
 
             if (mWidth != MATCH_PARENT) {
                 if (child.mWidth() == MATCH_PARENT) {
@@ -70,7 +70,7 @@ public class Scene extends Parent {
     @Override
     public void onLayout(float width, float height) {
         setLayout(width, height);
-        layoutHelperBox(getChildren(), getInX(), getInY(), getInWidth(), getInHeight());
+        layoutHelperBox(getInX(), getInY(), getInWidth(), getInHeight());
     }
 
     @Override
@@ -96,7 +96,7 @@ public class Scene extends Parent {
 
     @Override
     public void onDraw(SmartContext context) {
-        if (getVisibility() == Visibility.Visible) {
+        if (getVisibility() == Visibility.VISIBLE) {
             super.onDraw(context);
         }
     }
@@ -133,7 +133,7 @@ public class Scene extends Parent {
             }
         }
         if (!widget.isScene() && widget.children != null) {
-            for (Widget child : widget.children) {
+            for (Widget child : widget.getChildrenIterable()) {
                 assign(child);
             }
         }
@@ -143,7 +143,7 @@ public class Scene extends Parent {
         String id = widget.getId();
         if (id != null) {
             if (!idMap.remove(id, widget)) {
-                System.out.println("The id \'"+ id+"\' wasn't assigned");
+                System.out.println("The id '"+ id+"' wasn't assigned");
             }
         }
         if (!widget.isScene() && widget.children != null) {

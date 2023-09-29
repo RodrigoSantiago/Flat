@@ -1,45 +1,43 @@
 package flat.graphics.context;
 
 import flat.backend.GL;
-import flat.graphics.context.enuns.BufferType;
-import flat.graphics.context.enuns.UsageType;
-import flat.widget.Application;
+import flat.graphics.context.enums.BufferType;
+import flat.graphics.context.enums.UsageType;
 
 import java.nio.Buffer;
 
-public final class BufferObejct extends ContextObject {
+public final class BufferObject extends ContextObject {
 
-    private int bufferId;
+    private final int bufferId;
 
     private int size;
     private BufferType type;
     private UsageType usageType;
 
-    public BufferObejct() {
-        init();
-    }
+    public BufferObject(Context context) {
+        super(context);
 
-    @Override
-    protected void onInitialize() {
-        this.bufferId = GL.BufferCreate();
-    }
+        final int bufferId = GL.BufferCreate();
 
-    @Override
-    protected void onDispose() {
-        final int bufferId = this.bufferId;
-        Application.runSync(() -> GL.BufferDestroy(bufferId));
+        this.bufferId = bufferId;
+        assignDispose(() -> GL.BufferDestroy(bufferId));
     }
 
     int getInternalID() {
         return bufferId;
     }
 
+    @Override
+    protected boolean isBound() {
+        return getContext().isBufferBound(this);
+    }
+
     public void begin(BufferType bufferType) {
-        Application.getContext().bindBuffer(this, bufferType);
+        getContext().bindBuffer(this, bufferType);
     }
 
     public void end() {
-        Application.getContext().unbindBuffer(type);
+        getContext().unbindBuffer(type);
     }
 
     void setBindType(BufferType type) {
@@ -47,6 +45,8 @@ public final class BufferObejct extends ContextObject {
     }
 
     public void setSize(int size, UsageType usageType) {
+        boundCheck();
+
         this.usageType = usageType;
         this.size = size;
         GL.BufferDataBuffer(type.getInternalEnum(), null, 0, size, usageType.getGlEnum());
@@ -61,34 +61,50 @@ public final class BufferObejct extends ContextObject {
     }
 
     public void setData(int internalOffset, byte[] data, int offset, int length) {
+        boundCheck();
+
         GL.BufferSubDataB(type.getInternalEnum(), data, offset, length, internalOffset);
     }
 
     public void getData(int internalOffset, byte[] data, int offset, int length) {
+        boundCheck();
+
         GL.BufferReadDataB(type.getInternalEnum(), data, offset, length, internalOffset);
     }
 
     public void setData(int internalOffset, int[] data, int offset, int length) {
+        boundCheck();
+
         GL.BufferSubDataI(type.getInternalEnum(), data, offset, length, internalOffset);
     }
 
     public void getData(int internalOffset, int[] data, int offset, int length) {
+        boundCheck();
+
         GL.BufferReadDataI(type.getInternalEnum(), data, offset, length, internalOffset);
     }
 
     public void setData(int internalOffset, float[] data, int offset, int length) {
+        boundCheck();
+
         GL.BufferSubDataF(type.getInternalEnum(), data, offset, length, internalOffset);
     }
 
     public void getData(int internalOffset, float[] data, int offset, int length) {
+        boundCheck();
+
         GL.BufferReadDataF(type.getInternalEnum(), data, offset, length, internalOffset);
     }
 
     public void setData(int internalOffset, Buffer data, int offset, int length) {
+        boundCheck();
+
         GL.BufferSubDataBuffer(type.getInternalEnum(), data, offset, length, internalOffset);
     }
 
     public void getData(int internalOffset, Buffer data, int offset, int length) {
+        boundCheck();
+
         GL.BufferReadDataBuffer(type.getInternalEnum(), data, offset, length, internalOffset);
     }
 }
