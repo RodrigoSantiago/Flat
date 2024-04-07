@@ -4,7 +4,7 @@ import flat.graphics.SmartContext;
 import flat.widget.Widget;
 
 public class DrawEvent extends Event {
-    public static final int DRAW = 21;
+    public static final EventType DRAW = new EventType();
 
     private final SmartContext smartContext;
 

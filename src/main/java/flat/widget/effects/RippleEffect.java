@@ -6,8 +6,7 @@ import flat.graphics.SmartContext;
 import flat.graphics.context.Paint;
 import flat.math.shapes.Circle;
 import flat.math.shapes.Shape;
-import flat.resources.Dimension;
-import flat.widget.Activity;
+import flat.window.Activity;
 import flat.widget.Widget;
 
 public class RippleEffect {

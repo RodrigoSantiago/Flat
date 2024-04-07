@@ -4,7 +4,7 @@ import flat.widget.Widget;
 
 public class ActionEvent extends Event {
 
-    public static final int ACTION = 1;
+    public static final EventType ACTION = new EventType();
 
     public ActionEvent(Widget source) {
         super(source, ACTION);

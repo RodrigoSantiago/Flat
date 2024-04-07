@@ -1,15 +1,15 @@
 package flat.animations;
 
 import flat.graphics.SmartContext;
-import flat.widget.Activity;
+import flat.window.Activity;
 
 public class ActivityTransition {
 
-    protected Activity prev;
-    protected Activity next;
+    private Activity prev;
+    private Activity next;
 
-    public ActivityTransition() {
-
+    public ActivityTransition(Activity next) {
+        this.next = next;
     }
 
     public Activity getNext() {
@@ -20,9 +20,8 @@ public class ActivityTransition {
         return prev;
     }
 
-    public void start(Activity prev, Activity next) {
-        this.prev = prev;
-        this.next = next;
+    public void start(Activity current) {
+        this.prev = current;
 
         if (prev != null) {
             prev.onPause();
@@ -32,18 +31,12 @@ public class ActivityTransition {
         }
     }
 
-    public void handle(long time) {
+    public void handle(float time) {
 
     }
 
     public void end() {
-        if (prev != null) {
-            prev.onHide();
-        }
-        if (next != null) {
-            next.onStart();
-            next.invalidate(true);
-        }
+
     }
 
     public boolean draw(SmartContext context) {

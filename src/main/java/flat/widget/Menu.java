@@ -6,10 +6,10 @@ import flat.graphics.text.Align;
 import flat.uxml.UXChildren;
 import flat.widget.dialogs.MenuItem;
 import flat.widget.enuns.Visibility;
+import flat.window.Activity;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 public class Menu extends Scene {

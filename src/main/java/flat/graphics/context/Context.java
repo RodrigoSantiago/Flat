@@ -9,13 +9,13 @@ import flat.math.Mathf;
 import flat.math.shapes.PathIterator;
 import flat.math.shapes.Shape;
 import flat.math.shapes.Stroke;
-import flat.widget.Window;
+import flat.window.Window;
 
 import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public final class Context {
+public class Context {
 
     public final long id;
     public final long svgId;
@@ -93,7 +93,15 @@ public final class Context {
     private Affine svgTransform;
     private ArrayList<Runnable> disposeTasks = new ArrayList<>();
 
-    public Context(Window window, long id, long svgId) {
+    public static Context create(Window window, long id, long svgId) {
+        if (window.getContext() != null) {
+            throw new RuntimeException("The Window already have a context");
+        } else {
+            return new Context(window, id, svgId);
+        }
+    }
+
+    private Context(Window window, long id, long svgId) {
         this.window = window;
         this.id = id;
         this.svgId = svgId;

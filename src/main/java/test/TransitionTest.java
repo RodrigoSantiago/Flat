@@ -2,14 +2,20 @@ package test;
 
 import flat.animations.ActivityTransition;
 import flat.graphics.SmartContext;
+import flat.window.Activity;
 
 public class TransitionTest extends ActivityTransition {
 
     float t = 1;
+
+    public TransitionTest(Activity next) {
+        super(next);
+    }
+
     @Override
-    public void handle(long time) {
+    public void handle(float time) {
         super.handle(time);
-        t -= time / 2000f;
+        t -= time * 0.5f;
         t = Math.min(1, t);
     }
 

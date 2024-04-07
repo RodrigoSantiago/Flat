@@ -3,8 +3,8 @@ package flat.events;
 import flat.widget.Widget;
 
 public class FocusEvent extends Event {
-    public static final int OWNED = 8;
-    public static final int LOST = 9;
+    public static final EventType OWNED = new EventType();
+    public static final EventType LOST = new EventType();
 
     private Widget target;
 

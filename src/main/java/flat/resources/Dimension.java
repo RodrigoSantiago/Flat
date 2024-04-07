@@ -1,7 +1,6 @@
 package flat.resources;
 
 import flat.graphics.context.Context;
-import flat.widget.Application;
 
 public class Dimension {
 

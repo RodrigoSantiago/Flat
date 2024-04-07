@@ -1,25 +1,26 @@
-package flat.widget.window;
+package flat.window.event;
 
 import flat.backend.WLEnums;
+import flat.events.EventType;
 import flat.events.KeyEvent;
-import flat.widget.Activity;
+import flat.window.Activity;
 import flat.widget.Widget;
-import flat.widget.Window;
+import flat.window.Window;
 
 import java.util.ArrayList;
 
-public class KeyData extends EventData {
-    private static final ArrayList<KeyData> list = new ArrayList<>();
+public class EventDataKey extends EventData {
+    private static final ArrayList<EventDataKey> list = new ArrayList<>();
 
-    static KeyData get(int key, int scancode, int action, int mods) {
-        KeyData data = list.size() > 0 ? list.remove(list.size() - 1) : new KeyData();
+    static EventDataKey get(int key, int scancode, int action, int mods) {
+        EventDataKey data = list.size() > 0 ? list.remove(list.size() - 1) : new EventDataKey();
         data.set(key, scancode, action, mods);
         return data;
     }
 
     private int key, scancode, action, mods;
 
-    private KeyData() {
+    private EventDataKey() {
 
     }
 
@@ -36,11 +37,11 @@ public class KeyData extends EventData {
     }
 
     @Override
-    void handle(Window window) {
+    public void handle(Window window) {
         Activity activity = window.getActivity();
         Widget widget = activity.getFocus();
         if (widget != null) {
-            int eventType =
+            EventType eventType =
                     (action == WLEnums.PRESS) ? KeyEvent.PRESSED :
                     (action == WLEnums.RELEASE) ? KeyEvent.RELEASED : KeyEvent.REPEATED;
 

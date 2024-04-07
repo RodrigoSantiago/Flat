@@ -3,34 +3,37 @@ package flat.events;
 import flat.widget.Widget;
 
 public class DragEvent extends Event {
-    public static final int STARTED = 2;
-    public static final int DONE    = 3;
-    public static final int DROPPED = 4;
-    public static final int ENTERED = 5;
-    public static final int EXITED  = 6;
-    public static final int OVER    = 7;
+    public static final EventType STARTED = new EventType();
+    public static final EventType DONE    = new EventType();
+    public static final EventType DROPPED = new EventType();
+    public static final EventType ENTERED = new EventType();
+    public static final EventType EXITED  = new EventType();
+    public static final EventType OVER    = new EventType();
 
-    private Widget widget;
     private Object data;
     private float x, y;
-    private boolean dragAccept;
-    private int dragSuccess;
-    private boolean started;
+    private Widget dragHandler;
+    private Widget dragAccepted;
+    private boolean canceled;
 
-    public DragEvent(Widget source, int type, Object data, float x, float y) {
-        this(source, type, source, data, x, y);
-    }
-
-    public DragEvent(Widget source, int type, Widget widget, Object data, float x, float y) {
+    public DragEvent(Widget source, EventType type, Object data, float x, float y) {
         super(source, type);
-        this.widget = widget;
         this.data = data;
         this.x = x;
         this.y = y;
     }
 
+    public DragEvent(Widget source, EventType type, Object data, float x, float y, Widget dragHandler, Widget dragAccepted) {
+        super(source, type);
+        this.data = data;
+        this.x = x;
+        this.y = y;
+        this.dragHandler = dragHandler;
+        this.dragAccepted = dragAccepted;
+    }
+
     public boolean isRecyclable(Widget source) {
-        return (getType() != EXITED && getType() != ENTERED) || source != widget;
+        return !isAccepted() && !isCanceled();
     }
 
     public Object getData() {
@@ -49,32 +52,36 @@ public class DragEvent extends Event {
         return y;
     }
 
-    public void dragStart() {
-        started = true;
+    public void accept(Widget source) {
+        if (getType() == STARTED) {
+            dragHandler = source;
+        } else {
+            dragAccepted = source;
+        }
     }
 
-    public void dragAccept(boolean accept) {
-        dragAccept = accept;
+    public boolean isAccepted() {
+        if (getType() == STARTED) {
+            return dragHandler != null;
+        } else {
+            return dragAccepted != null;
+        }
     }
 
-    public boolean isDragAccepted() {
-        return dragAccept;
+    public Widget getDragHandler() {
+        return dragHandler;
     }
 
-    public void dragComplete(boolean success) {
-        dragSuccess = success ? 1 : 2;
+    public Widget getDragAccepted() {
+        return dragAccepted;
     }
 
-    public boolean isDragCompleted() {
-        return dragSuccess != 0;
+    public void cancel() {
+        this.canceled = true;
     }
 
-    public boolean getDragSuccess() {
-        return dragSuccess == 1;
-    }
-
-    public boolean isStarted() {
-        return started;
+    public boolean isCanceled() {
+        return canceled;
     }
 
     @Override

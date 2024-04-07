@@ -1,6 +1,5 @@
-package flat.widget;
+package flat.window;
 
-import flat.Weak;
 import flat.animations.Animation;
 import flat.events.FocusEvent;
 import flat.events.KeyCode;
@@ -10,10 +9,10 @@ import flat.graphics.context.Context;
 import flat.resources.Dimension;
 import flat.resources.DimensionStream;
 import flat.uxml.*;
+import flat.widget.Scene;
+import flat.widget.Widget;
 
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Objects;
 
 public class Activity extends Controller {
@@ -42,7 +41,8 @@ public class Activity extends Controller {
         this.context = context;
 
         scene = new Scene();
-        scene.activity = this;
+        scene.setActivity(this);
+
         scene.applyAttributes(new UXStyleAttrs("attributes", (UXStyle)null), this);
         scene.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
         scene.setMinSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
@@ -69,7 +69,7 @@ public class Activity extends Controller {
     }
 
     public void setScene(Scene scene) {
-        if (this.stream != null || this.nextScene != scene) {
+        if (this.scene != scene && (this.stream != null || this.nextScene != scene)) {
             this.stream = null;
             this.nextScene = scene;
             invalidate(true);
@@ -128,7 +128,7 @@ public class Activity extends Controller {
     }
 
     /**
-     * Called after activity transition, or, imediatily when no animations is required
+     * Called after activity transition
      */
     public void onStart() {
 
@@ -162,6 +162,11 @@ public class Activity extends Controller {
 
     }
 
+    public boolean onCloseRequest(boolean systemRequest) {
+
+        return true;
+    }
+
     /**
      * Called when the size or dpi changes. Called when a member has a significative size change
      *
@@ -178,10 +183,14 @@ public class Activity extends Controller {
 
                 Scene newScene = nextScene;
                 onSave();
-                this.scene.onActivityChange(this, null);
+
+                Scene oldScene = this.scene;
+                this.scene = null;
+                oldScene.setActivity(null);
+
                 this.scene = newScene;
-                this.scene.activity = this;
-                this.scene.onActivityChange(null, this);
+                newScene.setActivity(this);
+
                 onLoad();
             } else if (stream != null) {
                 dm = stream.getCloserDimension(width, height, dpi);
@@ -198,10 +207,12 @@ public class Activity extends Controller {
                     }
                     if (newScene != null) {
                         onSave();
-                        this.scene.onActivityChange(this, null);
+                        Scene oldScene = this.scene;
+                        this.scene = null;
+                        oldScene.setActivity(null);
+
                         this.scene = newScene;
-                        this.scene.activity = this;
-                        this.scene.onActivityChange(null, this);
+                        newScene.setActivity(this);
                         onLoad();
                     }
                 }
@@ -278,10 +289,10 @@ public class Activity extends Controller {
         this.focus = widget;
 
         if (oldFocus != null) {
-            oldFocus.setFocused(false);
+            oldFocus.refreshFocus();
         }
         if (focus != null) {
-            focus.setFocused(true);
+            focus.refreshFocus();
         }
 
         if (oldFocus != null) {
@@ -297,36 +308,23 @@ public class Activity extends Controller {
     }
 
     public void showMenu(Scene menu, float x, float y) {
-        if (menu.activity != this) {
-            Activity prev = menu.activity;
-            if (menu.activity != null) {
-                menu.activity.hideMenu(menu);
-            }
-
-            menu.setParent(null);
-            menus.add(menu);
-            menu.setPosition(x, y);
-            menu.activity = this;
-            menu.onActivityChange(prev, this);
-        }
+        // TODO - IMPLEMENT
         invalidate(true);
     }
 
     public void hideMenu(Scene menu) {
-        if (menu.activity == this) {
-            menus.remove(menu);
-            menu.activity = null;
-            menu.onActivityChange(this, null);
-        }
+        // TODO - IMPLEMENT
         invalidate(false);
     }
 
-    final void animate(long loopTime) {
+    final boolean animate(float loopTime) {
         animations.removeAll(animationsRemove);
         animationsRemove.clear();
 
         animations.addAll(animationsAdd);
         animationsAdd.clear();
+
+        boolean wasAnimated = !animations.isEmpty();
 
         for (int i = 0; i < animations.size(); i++) {
             Animation anim = animations.get(i);
@@ -337,6 +335,8 @@ public class Activity extends Controller {
                 animations.remove(i--);
             }
         }
+
+        return wasAnimated;
     }
 
     final void layout(float width, float height, float dpi) {
@@ -357,7 +357,7 @@ public class Activity extends Controller {
         }
     }
 
-    public final void invalidate(boolean layout) {
+    public void invalidate(boolean layout) {
         invalided = true;
         if (layout) {
             layoutInvalided = true;

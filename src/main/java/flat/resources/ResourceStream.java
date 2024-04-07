@@ -1,5 +1,7 @@
 package flat.resources;
 
+import flat.window.Application;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,7 +21,7 @@ public class ResourceStream extends DimensionStream {
     public ResourceStream(String name) {
         super(name);
         try {
-            String[] files = ResourcesManager.listFiles(name);
+            String[] files = Application.getResourcesManager().listFiles(name);
             for (String fileName : files) {
                 if (fileName.startsWith(name)) {
                     if (fileName.matches(name + regex + "\\.uxml")) {
@@ -54,7 +56,7 @@ public class ResourceStream extends DimensionStream {
 
     @Override
     public InputStream getStream(Dimension dimension) {
-        return ResourcesManager.getInput(getName() + "/" + map.get(dimension));
+        return Application.getResourcesManager().getInput(getName() + "/" + map.get(dimension));
     }
 
 }

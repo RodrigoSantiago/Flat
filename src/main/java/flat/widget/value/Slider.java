@@ -13,7 +13,7 @@ import flat.math.shapes.Rectangle;
 import flat.resources.Resource;
 import flat.uxml.Controller;
 import flat.uxml.UXStyleAttrs;
-import flat.widget.Activity;
+import flat.window.Activity;
 import flat.widget.Widget;
 
 public class Slider extends Widget {
@@ -33,7 +33,7 @@ public class Slider extends Widget {
     private float labelTextSize;
     private int labelTextColor;
     private float labelPosition;
-    private long labelTimeOut;
+    private float labelTimeOut;
     private Drawable labelIcon;
 
     // Animation
@@ -96,7 +96,7 @@ public class Slider extends Widget {
         setLabelTextColor(getStyle().asColor("label-text-color", info, getLabelTextColor()));
         setLabelEnabled(getStyle().asBool("label-enabled", info, isLabelEnabled()));
         setLabelPosition(getStyle().asSize("label-position", info, getLabelPosition()));
-        setLabelTimeOut((long) getStyle().asSize("label-time-out", info, getLabelTimeOut()));
+        setLabelTimeOut(getStyle().asNumber("label-time-out", info, getLabelTimeOut()));
 
         Resource res = getStyle().asResource("icon", info);
         if (res != null) {
@@ -526,11 +526,11 @@ public class Slider extends Widget {
         }
     }
 
-    public long getLabelTimeOut() {
+    public float getLabelTimeOut() {
         return labelTimeOut;
     }
 
-    public void setLabelTimeOut(long labelTimeOut) {
+    public void setLabelTimeOut(float labelTimeOut) {
         if (this.labelTimeOut != labelTimeOut) {
             this.labelTimeOut = labelTimeOut;
             invalidate(false);

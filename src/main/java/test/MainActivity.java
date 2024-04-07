@@ -7,12 +7,10 @@ import flat.animations.property.Property;
 import flat.events.ActionEvent;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Context;
-import flat.resources.Dimension;
 import flat.resources.ResourceStream;
-import flat.resources.ResourcesManager;
 import flat.uxml.UXTheme;
-import flat.widget.Activity;
-import flat.widget.Application;
+import flat.window.Activity;
+import flat.window.Application;
 import flat.widget.layout.LinearBox;
 import flat.widget.text.Button;
 
@@ -24,7 +22,7 @@ public class MainActivity extends Activity {
     public MainActivity(Context context) {
         super(context);
 
-        setTheme(new UXTheme(ResourcesManager.getInput("themes/material.uxss")));
+        setTheme(new UXTheme(Application.getResourcesManager().getInput("themes/material.uxss")));
         setSceneStream(new ResourceStream("screen_test"));
     }
 

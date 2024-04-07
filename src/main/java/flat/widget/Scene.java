@@ -3,6 +3,7 @@ package flat.widget;
 import flat.graphics.SmartContext;
 import flat.uxml.UXChildren;
 import flat.widget.enuns.Visibility;
+import flat.window.Activity;
 
 import java.util.HashMap;
 
@@ -13,6 +14,14 @@ public class Scene extends Parent {
 
     public Scene() {
 
+    }
+
+    public void setActivity(Activity activity) {
+        if (this.activity != activity) {
+            Activity prev = this.activity;
+            this.activity = activity;
+            onActivityChange(prev, activity);
+        }
     }
 
     @Override
@@ -139,7 +148,7 @@ public class Scene extends Parent {
         }
     }
 
-    final void deassign(Widget widget) {
+    final void unassign(Widget widget) {
         String id = widget.getId();
         if (id != null) {
             if (!idMap.remove(id, widget)) {
@@ -147,8 +156,8 @@ public class Scene extends Parent {
             }
         }
         if (!widget.isScene() && widget.children != null) {
-            for (Widget child : widget.children) {
-                deassign(child);
+            for (Widget child : widget.getChildrenIterable()) {
+                unassign(child);
             }
         }
     }

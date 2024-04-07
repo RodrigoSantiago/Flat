@@ -1,6 +1,6 @@
 package flat.animations;
 
-import flat.widget.Activity;
+import flat.window.Activity;
 import flat.widget.Widget;
 
 public final class StateAnimation implements Animation, StateInfo {
@@ -13,7 +13,7 @@ public final class StateAnimation implements Animation, StateInfo {
     float disabledOverlay;
     boolean disabledOverlayed;
 
-    long duration;
+    float duration;
 
     public StateAnimation(Widget widget) {
         this.widget = widget;
@@ -27,8 +27,8 @@ public final class StateAnimation implements Animation, StateInfo {
     }
 
     @Override
-    public void handle(long milis) {
-        float pass = milis / (float) duration;
+    public void handle(float time) {
+        float pass = time / duration;
 
         if (tEnabled == 0) fEnabled = Math.max(0, fEnabled - pass);
         else fEnabled = Math.min(1, fEnabled + pass);
@@ -50,11 +50,11 @@ public final class StateAnimation implements Animation, StateInfo {
         widget.applyStyle();
     }
 
-    public void setDuration(long milis) {
-        this.duration = milis;
+    public void setDuration(float time) {
+        this.duration = time;
     }
 
-    public long getDuration() {
+    public float getDuration() {
         return duration;
     }
 

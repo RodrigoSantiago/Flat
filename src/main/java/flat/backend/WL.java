@@ -17,6 +17,7 @@ public class WL {
     public static native void SwapBuffers(long window);
     public static native void HandleEvents(double wait);
     public static native void SetVsync(int vsync);
+    public static native void PostEmptyEvent();
 
     //---------------------------
     //       Properties

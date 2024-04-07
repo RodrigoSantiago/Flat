@@ -3,15 +3,15 @@ package flat.events;
 import flat.widget.Widget;
 
 public class PointerEvent extends Event {
-    public static final int PRESSED     = 14;
-    public static final int RELEASED    = 15;
-    public static final int DRAGGED     = 16;
+    public static final EventType PRESSED = new EventType();
+    public static final EventType RELEASED = new EventType();
+    public static final EventType DRAGGED = new EventType();
 
     private float x, y;
     private final int buttonID;
     private final boolean mouseEvent;
 
-    public PointerEvent(Widget source, int type, boolean mouseEvent, int buttonID, float x, float y) {
+    public PointerEvent(Widget source, EventType type, boolean mouseEvent, int buttonID, float x, float y) {
         super(source, type);
         this.mouseEvent = mouseEvent;
         this.buttonID = buttonID;
@@ -19,7 +19,7 @@ public class PointerEvent extends Event {
         this.y = y;
     }
 
-    public PointerEvent(Widget source, int type, int buttonID, float x, float y) {
+    public PointerEvent(Widget source, EventType type, int buttonID, float x, float y) {
         this(source, type, true, buttonID, x, y);
     }
 

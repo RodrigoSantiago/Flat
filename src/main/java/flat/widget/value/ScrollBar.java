@@ -12,7 +12,7 @@ import flat.graphics.text.Align;
 import flat.math.Vector2;
 import flat.uxml.Controller;
 import flat.uxml.UXStyleAttrs;
-import flat.widget.Activity;
+import flat.window.Activity;
 import flat.widget.Widget;
 import flat.widget.enuns.Direction;
 
@@ -26,7 +26,7 @@ public class ScrollBar extends Widget {
     private boolean popupEnabled;
     private float popupX, popupY, popupWidth, popupHeight;
     private float popupRadiusTop, popupRadiusRight, popupRadiusBottom, popupRadiusLeft;
-    private long popupTimeOut;
+    private float popupTimeOut;
 
     private String labelText;
     private int labelTextColor;
@@ -76,7 +76,7 @@ public class ScrollBar extends Widget {
         setPopupRadiusRight(getStyle().asSize("popup-radius-right", info, getPopupRadiusRight()));
         setPopupRadiusBottom(getStyle().asSize("popup-radius-bottom", info, getPopupRadiusBottom()));
         setPopupRadiusLeft(getStyle().asSize("popup-radius-left", info, getPopupRadiusLeft()));
-        setPopupTimeOut((long) getStyle().asSize("popup-time-out", info, getPopupTimeOut()));
+        setPopupTimeOut(getStyle().asNumber("popup-time-out", info, getPopupTimeOut()));
     }
 
     @Override
@@ -401,11 +401,11 @@ public class ScrollBar extends Widget {
         }
     }
 
-    public long getPopupTimeOut() {
+    public float getPopupTimeOut() {
         return popupTimeOut;
     }
 
-    public void setPopupTimeOut(long popupTimeOut) {
+    public void setPopupTimeOut(float popupTimeOut) {
         if (this.popupTimeOut != popupTimeOut) {
             this.popupTimeOut = popupTimeOut;
             anim2.setDuration(popupTimeOut);

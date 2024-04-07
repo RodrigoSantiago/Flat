@@ -1,14 +1,13 @@
-package flat.widget;
+package flat.window;
 
 import flat.animations.ActivityTransition;
 import flat.backend.SVG;
 import flat.backend.WL;
-import flat.backend.WLEnums;
-import flat.graphics.SmartContext;
 import flat.graphics.context.Context;
 import flat.graphics.cursor.Cursor;
 import flat.graphics.image.PixelMap;
-import flat.widget.window.*;
+import flat.window.event.EventData;
+import flat.window.event.EventDataPointer;
 
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
@@ -17,25 +16,25 @@ import java.util.concurrent.FutureTask;
 
 public class Window {
 
-    private Context context;
+    private final Context context;
+    private final long windowId;
+    private final long svgId;
     private boolean disposed;
-    long windowId;
-    long svgId;
+    private boolean closed;
 
     // Application
     private ActivityFactory factory;
     private Activity activity;
     private ActivityTransition transition;
-    private final ArrayList<Activity> transitionsTarget = new ArrayList<>();
     private final ArrayList<ActivityTransition> transitions = new ArrayList<>();
 
     // Events
     private ArrayList<EventData> events = new ArrayList<>();
     private ArrayList<EventData> eventsCp = new ArrayList<>();
 
-    private PointerData mouse;
+    private EventDataPointer mouse;
     private float outMouseX, outMouseY;
-    private ArrayList<PointerData> pointersData;
+    private ArrayList<EventDataPointer> pointersData;
 
     private ArrayList<FutureTask<?>> runSync = new ArrayList<>();
     private ArrayList<FutureTask<?>> runSyncCp = new ArrayList<>();
@@ -47,7 +46,18 @@ public class Window {
     private Cursor currentCursor;
     private int minWidth, minHeight, maxWidth, maxHeight;
 
-    Window(ActivityFactory factory, int width, int height, int multiSamples, boolean transparent) {
+    private float loopTime;
+    private boolean started, loopAnim, loopDraw;
+    private boolean releaseEventDelayed, eventConsume;
+
+    public Window(ActivityFactory factory, int width, int height, int multiSamples, boolean transparent) {
+        if (width <= 0 || height <= 0) {
+            throw new RuntimeException("Invalid application settings (Negative Screen Size)");
+        }
+        if (multiSamples < 0) {
+            throw new RuntimeException("Invalid application settings (Negative Multi Samples)");
+        }
+
         windowId = WL.WindowCreate(width, height, multiSamples, transparent);
         if (windowId == 0) {
             throw new RuntimeException("Invalid context creation");
@@ -58,18 +68,14 @@ public class Window {
             throw new RuntimeException("Invalid context creation");
         }
 
-        context = new Context(this, windowId, svgId);
-
         outMouseX = (float) WL.GetCursorX(windowId);
         outMouseY = (float) WL.GetCursorY(windowId);
 
-        WL.SetInputMode(windowId, WLEnums.STICKY_KEYS, 1);
-        WL.SetInputMode(windowId, WLEnums.STICKY_MOUSE_BUTTONS, 1);
-
         this.factory = factory;
+        this.context = Application.createContext(this);
     }
 
-    void checkDisposed() {
+    private void checkDisposed() {
         if (disposed) {
             throw new RuntimeException("Window is disposed.");
         }
@@ -78,6 +84,7 @@ public class Window {
     void dispose() {
         if (!disposed) {
             context.dispose();
+            WL.Close(windowId);
 
             SVG.Destroy(svgId);
             WL.WindowDestroy(windowId);
@@ -86,49 +93,27 @@ public class Window {
         }
     }
 
-    boolean loop(long loopTime) {
-        if (activity == null) {
-            activity = factory.build(context);
-            show();
-        }
+    boolean loop(float loopTime) {
+        this.loopTime = loopTime;
+        this.loopAnim = false;
+        this.loopDraw = false;
 
-        Application.assignWindow(this);
-        Application.assignVsync();
+        processStartup();
 
-        SmartContext smartContext = context.getSmartContext();
-        boolean draw = false;
-
-        // Synchronization
         processSyncCalls();
 
-        // Transitions
-        if (transition == null && transitions.size() > 0) {
-            transition = transitions.remove(0);
-            transition.start(activity, transitionsTarget.remove(0));
-        }
+        processTransitions();
 
-        if (transition != null) {
-            transition.handle(loopTime);
+        // Activity
+        if (transition == null) {
 
-            if (transition.isPlaying()) {
-                draw = transition.draw(smartContext);
+            processEvents();
 
-            } else {
-                transition.end();
-                transition = null;
-            }
-        }
-
-        if (transition == null && activity != null) {
-            // Activity
-
-            processEvents(activity);
-
-            activity.animate(loopTime);
+            loopAnim = activity.animate(loopTime) || loopAnim;
 
             activity.layout(getClientWidth(), getClientHeight(), getDpi());
 
-            draw = activity.draw(smartContext);
+            loopDraw = activity.draw(context.getSmartContext()) || loopDraw;
         }
 
         // Cursor
@@ -138,34 +123,81 @@ public class Window {
         }
 
         // GL Draw
-        if (draw) {
-            smartContext.softFlush();
+        if (loopDraw) {
+            context.getSmartContext().softFlush();
             WL.SwapBuffers(windowId);
-            return true;
         }
-        return false;
+        return loopAnim;
     }
 
     void addEvent(EventData eventData) {
-        events.add(eventData);
-        // TODO - LOOP ON SIZE EVENTS
+        if (!closed && transition == null) {
+            events.add(eventData);
+        }
     }
 
     void addEvent(EventData eventData, float mouseX, float mouseY) {
-        outMouseX = mouseX;
-        outMouseY = mouseY;
-        events.add(eventData);
+        if (!closed && transition == null) {
+            outMouseX = mouseX;
+            outMouseY = mouseY;
+            events.add(eventData);
+        }
     }
 
-    void processEvents(Activity activity) {
-        ArrayList<EventData> swap = eventsCp;
-        eventsCp = events;
-        events = swap;
+    public void releaseEvents() {
+        if (eventConsume) {
+            releaseEventDelayed = true;
+        } else {
+            getPointer().reset(outMouseX, outMouseY);
+            events.clear();
+            eventsCp.clear();
+        }
+    }
+
+    void processStartup() {
+        if (!started) {
+            started = true;
+            show();
+
+            activity = factory.build(context);
+            activity.onShow();
+            activity.onStart();
+        }
+    }
+
+    void processTransitions() {
+        if (transition == null && transitions.size() > 0) {
+            releaseEvents();
+
+            transition = transitions.remove(0);
+            transition.start(activity);
+        }
+
+        if (transition != null) {
+            loopAnim = true;
+            transition.handle(loopTime);
+
+            if (transition.isPlaying()) {
+                loopDraw = transition.draw(context.getSmartContext()) || loopDraw;
+
+            } else {
+                transition.end();
+                activity.onHide();
+
+                activity = transition.getNext();
+                activity.onStart();
+
+                transition = null;
+            }
+        }
+    }
+
+    void processEvents() {
 
         // DPI Change Listener
         if (dpi != (float) Math.ceil(WL.GetDpi(windowId))) {
             dpi = (float) Math.ceil(WL.GetDpi(windowId));
-            eventsCp.add(EventData.getSize(getWidth(), getHeight()));
+            addEvent(EventData.getSize(getWidth(), getHeight()));
         }
 
         // Mouse Outside Move Listener
@@ -174,17 +206,28 @@ public class Window {
         if (outMouseX != currentX || outMouseY != currentY) {
             outMouseX = currentX;
             outMouseY = currentY;
-            eventsCp.add(EventData.getMouseMove(outMouseX, outMouseY));
+            addEvent(EventData.getMouseMove(outMouseX, outMouseY), currentX, currentY);
         }
 
+        ArrayList<EventData> swap = eventsCp;
+        eventsCp = events;
+        events = swap;
+
+        eventConsume = true;
         for (EventData eData : eventsCp) {
-            EventData.consume(this, eData);
-        }
-        eventsCp.clear();
-    }
+            eData.handle(this);
 
-    void releaseEvents(Activity activity) {
-        // TODO - FORCE MOUSE RELEASING to remove widget pointers memory leak!
+            if (releaseEventDelayed) {
+                break;
+            }
+        }
+        eventConsume = false;
+        eventsCp.clear();
+
+        if (releaseEventDelayed) {
+            releaseEvents();
+            releaseEventDelayed = false;
+        }
     }
 
     void processSyncCalls() {
@@ -199,9 +242,20 @@ public class Window {
         runSyncCp.clear();
     }
 
+    long getWindowId() {
+        return windowId;
+    }
+
+    long getSvgId() {
+        return svgId;
+    }
+
     public void runSync(FutureTask<?> task) {
+        checkDisposed();
+
         synchronized (Application.class) {
             runSync.add(task);
+            WL.PostEmptyEvent();
         }
     }
 
@@ -226,19 +280,20 @@ public class Window {
     }
 
     public void setActivity(Activity next) {
-        setActivity(next, new ActivityTransition());
+        setActivity(new ActivityTransition(next));
     }
 
-    public void setActivity(Activity next, ActivityTransition activityTransition) {
-        transitionsTarget.add(next);
+    public void setActivity(ActivityTransition activityTransition) {
         transitions.add(activityTransition);
     }
 
     public boolean isClosed() {
-        return disposed || WL.IsClosed(windowId);
+        return disposed || closed || WL.IsClosed(windowId);
     }
 
     public boolean isTransparent() {
+        checkDisposed();
+
         return WL.IsTransparent(windowId);
     }
 
@@ -261,6 +316,8 @@ public class Window {
     }
 
     public boolean isResizable() {
+        checkDisposed();
+
         return WL.IsResizable(windowId);
     }
 
@@ -271,10 +328,14 @@ public class Window {
     }
 
     public boolean isDecorated() {
+        checkDisposed();
+
         return WL.IsDecorated(windowId);
     }
 
     public String getTitle() {
+        checkDisposed();
+
         return title;
     }
 
@@ -300,6 +361,8 @@ public class Window {
     }
 
     public Cursor getCursor() {
+        checkDisposed();
+
         return cursor;
     }
 
@@ -319,40 +382,26 @@ public class Window {
         return 0;
     }
 
-    public PointerData getPointer() {
+    public EventDataPointer getPointer() {
+        checkDisposed();
+
         if (pointersData == null) {
             pointersData = new ArrayList<>();
-            pointersData.add(new PointerData(-1));
+            pointersData.add(new EventDataPointer(-1));
         }
         return pointersData.get(0);
     }
 
-    public PointerData getPointer(int pointerId) {
-        return getPointer();
-    }
-
-    public int getX() {
+    public int getPositionX() {
         checkDisposed();
 
         return WL.GetX(windowId);
     }
 
-    public void setX(int x) {
-        checkDisposed();
-
-        WL.SetPosition(windowId, x, WL.GetY(windowId));
-    }
-
-    public int getY() {
+    public int getPositionY() {
         checkDisposed();
 
         return WL.GetY(windowId);
-    }
-
-    public void setY(int y) {
-        checkDisposed();
-
-        WL.SetPosition(windowId, WL.GetX(windowId), y);
     }
 
     public void setPosition(int x, int y) {
@@ -368,6 +417,8 @@ public class Window {
     }
 
     public int getClientHeight() {
+        checkDisposed();
+
         return WL.GetClientHeight(windowId);
     }
 
@@ -395,22 +446,10 @@ public class Window {
         return WL.GetWidth(windowId);
     }
 
-    public void setWidth(int width) {
-        checkDisposed();
-
-        WL.SetSize(windowId, width, WL.GetHeight(windowId));
-    }
-
     public int getHeight() {
         checkDisposed();
 
         return WL.GetHeight(windowId);
-    }
-
-    public void setHeight(int height) {
-        checkDisposed();
-
-        WL.SetSize(windowId, WL.GetWidth(windowId), height);
     }
 
     public void setSize(int width, int height) {
@@ -420,43 +459,27 @@ public class Window {
     }
 
     public int getMinWidth() {
+        checkDisposed();
+
         return minWidth;
     }
 
-    public void setMinWidth(int minWidth) {
+    public int getMinHeight() {
         checkDisposed();
 
-        WL.SetSizeLimits(windowId, this.minWidth = minWidth, minHeight, maxWidth, maxHeight);
-    }
-
-    public int getMinHeight() {
         return minHeight;
     }
 
-    public void setMinHeight(int minHeight) {
+    public int getMaxWidth() {
         checkDisposed();
 
-        WL.SetSizeLimits(windowId, minWidth, this.minHeight = minHeight, maxWidth, maxHeight);
-    }
-
-    public int getMaxWidth() {
         return maxWidth;
     }
 
-    public void setMaxWidth(int maxWidth) {
-        checkDisposed();
-
-        WL.SetSizeLimits(windowId, minWidth, minHeight, this.maxWidth = maxWidth, maxHeight);
-    }
-
     public int getMaxHeight() {
-        return maxHeight;
-    }
-
-    public void setMaxHeight(int maxHeight) {
         checkDisposed();
 
-        WL.SetSizeLimits(windowId, minWidth, minHeight, maxWidth, this.maxHeight = maxHeight);
+        return maxHeight;
     }
 
     public void setSizeLimits(int minWidth, int minHeight, int maxWidth, int maxHeight) {
@@ -505,8 +528,26 @@ public class Window {
         WL.Focus(windowId);
     }
 
-    boolean requestClose() {
-        System.out.println("CLOSED");
-        return true;
+    public boolean requestClose() {
+        return onRequestClose(false);
+    }
+
+    boolean onRequestClose(boolean system) {
+        if (activity == null || closed) {
+            return true;
+
+        } else if (transition != null) {
+            return false;
+
+        } else if (activity.onCloseRequest(system)) {
+            closed = true;
+            releaseEvents();
+
+            activity.onPause();
+            activity.onHide();
+            return true;
+
+        }
+        return false;
     }
 }

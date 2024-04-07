@@ -14,7 +14,7 @@ import flat.uxml.Controller;
 import flat.uxml.UXChildren;
 import flat.uxml.UXStyle;
 import flat.uxml.UXStyleAttrs;
-import flat.widget.Activity;
+import flat.window.Activity;
 import flat.widget.Gadget;
 import flat.widget.Parent;
 import flat.widget.Widget;
@@ -31,7 +31,7 @@ public class Drawer extends Parent {
     private float hideWidth;
 
     private float slideGestureArea;
-    private long slideAnimDuration;
+    private float slideAnimDuration;
 
     private int color;
     private boolean shown;
@@ -64,7 +64,7 @@ public class Drawer extends Parent {
         setFrontHeight(style.asSize("front-height", getFrontHeight()));
         setHideWidth(style.asSize("hide-width", getHideWidth()));
         setSlideGestureArea(style.asSize("slide-gesture-area", getSlideGestureArea()));
-        setSlideAnimDuration((long) style.asNumber("slide-anim-duration", getSlideAnimDuration()));
+        setSlideAnimDuration(style.asNumber("slide-anim-duration", getSlideAnimDuration()));
 
         style.link("toogle-button", (gadget) -> setToggleButton((Button) gadget.getWidget()));
     }
@@ -414,11 +414,11 @@ public class Drawer extends Parent {
         }
     }
 
-    public long getSlideAnimDuration() {
+    public float getSlideAnimDuration() {
         return slideAnimDuration;
     }
 
-    public void setSlideAnimDuration(long milis) {
+    public void setSlideAnimDuration(float milis) {
         if (this.slideAnimDuration != milis) {
             this.slideAnimDuration = milis;
             anim.setDuration(slideAnimDuration);

@@ -57,7 +57,7 @@ public class ProgressBar extends Widget {
             context.drawRect(x, y, w * progress, h, true);
         } else if (animationDuration > 0) {
             long t = System.currentTimeMillis();
-            long pass = t - time;
+            float pass = (t - time) / 1000f;
             time = t;
 
             anim += pass / Math.abs(animationDuration);
@@ -119,9 +119,9 @@ public class ProgressBar extends Widget {
         return animationDuration;
     }
 
-    public void setAnimationDuration(float milis) {
-        if (this.animationDuration != milis) {
-            this.animationDuration = milis;
+    public void setAnimationDuration(float time) {
+        if (this.animationDuration != time) {
+            this.animationDuration = time;
         }
     }
 }

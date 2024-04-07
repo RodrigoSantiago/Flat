@@ -29,7 +29,7 @@ button : label {
     min-height : 36;
     text-size : 14sp;
     background-color : #FFFFFFFF;
-    transition-duration : 100;
+    transition-duration : 0.1;
     vertical-align : middle;
     cursor : hand;
 
@@ -80,7 +80,7 @@ textfield {
 
     background-color : #CCCCCCFF;
     selection-color : #60A0FF;
-    transition-duration : 100;
+    transition-duration : 0.1;
     border-color : #000000AC;
     border-width : 1;
 
@@ -159,7 +159,7 @@ chip : label {
     min-height : 36;
     text-size : 14sp;
     background-color : #FFFFFFFF;
-    transition-duration : 100;
+    transition-duration : 0.1;
     vertical-align : middle;
 
     enabled {
@@ -300,7 +300,7 @@ switch {
     background-color : #CA5050;
     icon : url(icons/switch-shape.svg);
 
-    transition-duration : 100;
+    transition-duration : 0.1;
 
     enabled {
         color : #FFFFFF;
@@ -341,10 +341,10 @@ slider {
     label-text-color : #FFFFFF;
     label-position : 32;
     label-decimal : 0;
-    label-time-out : 400;
+    label-time-out : 0.4;
     label-icon : url(icons/slider-label.svg);
 
-    transition-duration : 100;
+    transition-duration : 0.1;
 
     enabled {
         expansion : 0;
@@ -369,7 +369,7 @@ scrollbar {
     background-color : #ACACAC;
 
     min-range-display : 24;
-    transition-duration : 100;
+    transition-duration : 0.1;
 
     label-font : font("Roboto", bold);
     label-text-color : #FFFFFF;
@@ -382,7 +382,7 @@ scrollbar {
     popup-radius-right : 32;
     popup-radius-bottom : 0;
     popup-radius-left : 32;
-    popup-time-out : 300;
+    popup-time-out : 0.3;
 
     linear-flow : ihorizontal;
 }
@@ -392,14 +392,14 @@ progressbar {
     width : 240;
     color : #FFFFFF;
     background-color : #EEEEEE;
-    animation-duration : 3000;
+    animation-duration : 3.0;
 }
 
 progresscircle {
     height : 48;
     width : 48;
     indicator-size : 4;
-    animation-duration : 8000;
+    animation-duration : 8.0;
     color-0 : #FFFFFF;
     color-1 : #FFFFFF;
     color-2 : #FFFFFF;
@@ -450,7 +450,7 @@ tab {
     margin-right : 32;
     margin-top : 64;
     margin-bottom : 2;
-    transition-duration : 100;
+    transition-duration : 0.1;
     header-height : 64;
     header-elevation : 2;
     header-indicator-height : 2;
@@ -464,7 +464,7 @@ tab-header : label {
     ripple : true;
     ripple-color : #00000080;
     shadow : true;
-    transition-duration : 100;
+    transition-duration : 0.1;
 
     height : match_parent;
     max-width : 160;
@@ -489,7 +489,7 @@ drawer {
     front-height : MATCH_PARENT;
     height : MATCH_PARENT;
     width : MATCH_PARENT;
-    slide-anim-duration : 200;
+    slide-anim-duration : 0.2;
     slide-gesture-area : 16;
 }
 
@@ -530,7 +530,7 @@ menuitem : label {
 
     elevation : 0;
     background-color : #FFFFFF;
-    transition-duration : 100;
+    transition-duration : 0.1;
     hovered {
         elevation : 1;
         background-color : #DDDDDD;
@@ -569,7 +569,7 @@ toolitem {
     margin-right : 24;
     min-width : 24;
     min-height : 24;
-    transition-duration : 100;
+    transition-duration : 0.1;
     vertical-align : middle;
     horizontal-align : center;
     show-action : true;
@@ -597,7 +597,7 @@ overflowmenu : button {
     radius-bottom : 12;
     max-width : 16;
     min-height : 24;
-    transition-duration : 100;
+    transition-duration : 0.1;
     vertical-align : middle;
     horizontal-align : center;
 }

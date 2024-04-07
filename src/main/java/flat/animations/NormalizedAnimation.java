@@ -1,6 +1,6 @@
 package flat.animations;
 
-import flat.widget.Activity;
+import flat.window.Activity;
 
 public abstract class NormalizedAnimation implements Animation {
 
@@ -11,9 +11,9 @@ public abstract class NormalizedAnimation implements Animation {
     private int loops;
     private Interpolation interpolation = Interpolation.linear;
 
-    private long duration;
-    private long _duration;
-    private long _reaming;
+    private float duration;
+    private float _duration;
+    private float _reaming;
     private int _loops;
     private Interpolation _interpolation;
 
@@ -35,12 +35,12 @@ public abstract class NormalizedAnimation implements Animation {
         this.onStop = onStop;
     }
 
-    public long getDuration() {
+    public float getDuration() {
         return duration;
     }
 
-    public void setDuration(long milis) {
-        this.duration = milis;
+    public void setDuration(float time) {
+        this.duration = time;
     }
 
     public int getLoops() {
@@ -133,14 +133,15 @@ public abstract class NormalizedAnimation implements Animation {
         return playing || paused ? (1 - (_reaming / (float) _duration)) : 0;
     }
 
-    public void handle(long time) {
+    @Override
+    public void handle(float time) {
         if (playing) {
             if (_reaming <= 0) {
                 if (_reaming == 0 || _loops == 0) {
                     compute(_interpolation.apply(1));
                 } else {
                     _reaming = _reaming % duration;
-                    compute(_interpolation.apply(1 - (_reaming / (float) _duration)));
+                    compute(_interpolation.apply(1 - (_reaming / _duration)));
                 }
                 if (_loops == 0) {
                     stop();
@@ -148,7 +149,7 @@ public abstract class NormalizedAnimation implements Animation {
                     _loops -= 1;
                 }
             } else {
-                compute(_interpolation.apply(1 - (_reaming / (float) _duration)));
+                compute(_interpolation.apply(1 - (_reaming / _duration)));
             }
             _reaming -= time * delta;
         }

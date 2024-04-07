@@ -1,4 +1,4 @@
-package flat.widget;
+package flat.window;
 
 import flat.graphics.context.Context;
 

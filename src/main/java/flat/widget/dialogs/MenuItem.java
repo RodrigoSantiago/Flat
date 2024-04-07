@@ -12,7 +12,7 @@ import flat.resources.Resource;
 import flat.uxml.Controller;
 import flat.uxml.UXChildren;
 import flat.uxml.UXStyleAttrs;
-import flat.widget.Activity;
+import flat.window.Activity;
 import flat.widget.Menu;
 import flat.widget.Parent;
 import flat.widget.Widget;

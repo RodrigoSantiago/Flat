@@ -1,5 +1,6 @@
 <Scene next-focus-id="text">
     <LinearBox id="box" direction="vertical">
         <Button text="click-me"/>
+        <Label text="Lavel" text-size="16sp"></Label>
     </LinearBox>
 </Scene>

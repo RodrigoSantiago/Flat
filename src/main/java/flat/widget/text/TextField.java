@@ -16,7 +16,6 @@ import flat.uxml.Controller;
 import flat.uxml.UXChildren;
 import flat.uxml.UXStyle;
 import flat.uxml.UXStyleAttrs;
-import flat.widget.Application;
 import flat.widget.Menu;
 import flat.widget.Widget;
 import flat.widget.dialogs.DropdownListener;

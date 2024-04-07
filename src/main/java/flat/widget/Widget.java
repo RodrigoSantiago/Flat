@@ -14,6 +14,7 @@ import flat.math.stroke.BasicStroke;
 import flat.uxml.*;
 import flat.widget.effects.RippleEffect;
 import flat.widget.enuns.Visibility;
+import flat.window.Activity;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -62,6 +63,7 @@ public class Widget implements Gadget {
     //---------------------
     //    Family
     //---------------------
+    Activity activity;
     Parent parent;
     ArrayList<Widget> children;
     List<Widget> unmodifiableChildren;
@@ -74,7 +76,7 @@ public class Widget implements Gadget {
 
     private final Affine transform = new Affine();
     private final Affine inverseTransform = new Affine();
-    boolean invalidTransform;
+    private boolean invalidTransform;
 
     //---------------------
     //    Events
@@ -109,7 +111,7 @@ public class Widget implements Gadget {
 
     private boolean shadowEnabled;
     private boolean rippleEnabled;
-    private long transitionDuration;
+    private float transitionDuration;
 
     public Widget() {
     }
@@ -167,7 +169,7 @@ public class Widget implements Gadget {
     public void applyStyle() {
         if (style == null) return;
 
-        setTransitionDuration((long) style.asNumber("transition-duration", getTransitionDuration()));
+        setTransitionDuration(style.asNumber("transition-duration", getTransitionDuration()));
 
         // Disabled State Overlay
         if (parent != null) {
@@ -508,7 +510,7 @@ public class Widget implements Gadget {
 
         if (sceneA != sceneB) {
             if (sceneA != null) {
-                sceneA.deassign(this);
+                sceneA.unassign(this);
             }
             if (sceneB != null) {
                 sceneB.assign(this);
@@ -530,6 +532,8 @@ public class Widget implements Gadget {
     }
 
     protected void onActivityChange(Activity prev, Activity activity) {
+        refreshFocus();
+
         if (children != null) {
             for (Widget widget : getChildrenIterable()) {
                 widget.onActivityChange(prev, activity);
@@ -719,11 +723,11 @@ public class Widget implements Gadget {
         }
     }
 
-    public long getTransitionDuration() {
+    public float getTransitionDuration() {
         return transitionDuration;
     }
 
-    public void setTransitionDuration(long transitionDuration) {
+    public void setTransitionDuration(float transitionDuration) {
         transitionDuration = Math.max(transitionDuration, 0);
 
         if (this.transitionDuration != transitionDuration) {
@@ -807,6 +811,11 @@ public class Widget implements Gadget {
         }
     }
 
+    public void refreshFocus() {
+        Activity activity = getActivity();
+        setFocused(activity != null && activity.getFocus() == this);
+    }
+
     public boolean isFocused() {
         return (states & FOCUSED) == FOCUSED;
     }
@@ -834,8 +843,9 @@ public class Widget implements Gadget {
 
     public void requestFocus(boolean focus) {
         if (focusable) {
-            if (getActivity() != null) {
-                getActivity().getWindow().runSync(() -> setFocused(focus));
+            Activity activity = getActivity();
+            if (activity != null && activity.getWindow() != null) {
+                activity.getWindow().runSync(() -> setFocused(focus));
             }
         }
     }
@@ -1619,7 +1629,12 @@ public class Widget implements Gadget {
 
     public void firePointer(PointerEvent pointerEvent) {
         // -- Pressed -- //
+        if (pointerEvent.getType() == PointerEvent.PRESSED) {
+            fireRipple(pointerEvent.getX(), pointerEvent.getY());
+        }
         if (pointerEvent.getType() == PointerEvent.RELEASED) {
+            releaseRipple();
+
             if (pointerEvent.getPointerID() == 2 && contextMenu != null) {
                 showContextMenu(pointerEvent.getX(), pointerEvent.getY());
             }

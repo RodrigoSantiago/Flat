@@ -8,7 +8,7 @@ import flat.graphics.text.FontWeight;
 import flat.resources.Dimension;
 import flat.resources.Parser;
 import flat.resources.Resource;
-import flat.resources.ResourcesManager;
+import flat.window.Application;
 import flat.widget.Widget;
 
 import java.lang.reflect.Method;
@@ -215,7 +215,7 @@ public class UXValue {
 
     public Resource asResource() {
         if (value instanceof String) {
-            return ResourcesManager.getResource((String) value);
+            return Application.getResourcesManager().getResource((String) value);
         } else {
             return (Resource) value;
         }

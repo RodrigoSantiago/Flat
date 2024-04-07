@@ -17,6 +17,7 @@ import flat.uxml.UXTheme;
 import flat.widget.*;
 import flat.widget.enuns.Visibility;
 import flat.widget.text.Button;
+import flat.window.Activity;
 
 import java.util.ArrayList;
 import java.util.Collections;

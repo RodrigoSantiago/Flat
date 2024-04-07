@@ -70,7 +70,7 @@ public class ProgressCircle extends Widget {
             context.drawShape(arc, false);
         } else if (animationDuration > 0) {
             long t = System.currentTimeMillis();
-            long pass = t - time;
+            float pass = (t - time) / 1000f;
             time = t;
 
             anim += pass / Math.abs(animationDuration);
@@ -205,9 +205,9 @@ public class ProgressCircle extends Widget {
         return animationDuration;
     }
 
-    public void setAnimationDuration(float milis) {
-        if (this.animationDuration != milis) {
-            this.animationDuration = milis;
+    public void setAnimationDuration(float time) {
+        if (this.animationDuration != time) {
+            this.animationDuration = time;
         }
     }
 }

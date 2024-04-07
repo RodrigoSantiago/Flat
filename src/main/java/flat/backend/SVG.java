@@ -60,6 +60,7 @@ public class SVG {
     //---------------------------
     //           Text
     //---------------------------
+    // TODO - LOAD AS USE
     public static native long FontCreate(byte[] data, float size, int sdf);
     public static native void FontLoadAllGlyphs(long font);
     public static native void FontLoadGlyphs(long font, String characters);

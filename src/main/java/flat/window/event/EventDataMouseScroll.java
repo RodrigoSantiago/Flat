@@ -1,24 +1,24 @@
-package flat.widget.window;
+package flat.window.event;
 
 import flat.events.ScrollEvent;
-import flat.widget.Activity;
+import flat.window.Activity;
 import flat.widget.Widget;
-import flat.widget.Window;
+import flat.window.Window;
 
 import java.util.ArrayList;
 
-public class MouseScrollData extends EventData {
-    static ArrayList<MouseScrollData> list = new ArrayList<>();
+public class EventDataMouseScroll extends EventData {
+    static ArrayList<EventDataMouseScroll> list = new ArrayList<>();
 
-    static MouseScrollData get(double x, double y) {
-        MouseScrollData data = list.size() > 0 ? list.remove(list.size() - 1) : new MouseScrollData();
+    static EventDataMouseScroll get(double x, double y) {
+        EventDataMouseScroll data = list.size() > 0 ? list.remove(list.size() - 1) : new EventDataMouseScroll();
         data.set((float) x, (float) y);
         return data;
     }
 
     private float x, y;
 
-    private MouseScrollData() {
+    private EventDataMouseScroll() {
 
     }
 
@@ -33,7 +33,7 @@ public class MouseScrollData extends EventData {
     }
 
     @Override
-    void handle(Window window) {
+    public void handle(Window window) {
         Activity activity = window.getActivity();
         Widget widget = activity.findByPosition(window.getPointerX(), window.getPointerY(), false);
         widget.fireScroll(new ScrollEvent(widget, ScrollEvent.SCROLL, x, y));

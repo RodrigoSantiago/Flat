@@ -1,25 +1,25 @@
-package flat.widget.window;
+package flat.window.event;
 
 import flat.backend.WLEnums;
 import flat.events.KeyEvent;
-import flat.widget.Activity;
+import flat.window.Activity;
 import flat.widget.Widget;
-import flat.widget.Window;
+import flat.window.Window;
 
 import java.util.ArrayList;
 
-public class CharModsData extends EventData {
-    private static final ArrayList<CharModsData> list = new ArrayList<>();
+public class EventDataCharMods extends EventData {
+    private static final ArrayList<EventDataCharMods> list = new ArrayList<>();
 
-    static CharModsData get(int codepoint, int mods) {
-        CharModsData data = list.size() > 0 ? list.remove(list.size() - 1) : new CharModsData();
+    static EventDataCharMods get(int codepoint, int mods) {
+        EventDataCharMods data = list.size() > 0 ? list.remove(list.size() - 1) : new EventDataCharMods();
         data.set(codepoint, mods);
         return data;
     }
 
     private int codepoint, mods;
 
-    private CharModsData() {
+    private EventDataCharMods() {
 
     }
 
@@ -34,7 +34,7 @@ public class CharModsData extends EventData {
     }
 
     @Override
-    void handle(Window window) {
+    public void handle(Window window) {
         Activity activity = window.getActivity();
         Widget widget = activity.getFocus();
         if (widget != null) {

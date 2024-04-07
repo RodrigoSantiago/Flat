@@ -3,16 +3,16 @@ package flat.events;
 import flat.widget.Widget;
 
 public class KeyEvent extends Event {
-    public static final int PRESSED = 10;
-    public static final int REPEATED = 11;
-    public static final int RELEASED = 12;
-    public static final int TYPED = 13;
+    public static final EventType PRESSED = new EventType();
+    public static final EventType REPEATED = new EventType();
+    public static final EventType RELEASED = new EventType();
+    public static final EventType TYPED = new EventType();
 
     private boolean shift, ctrl, alt, spr;
     private String chr;
     private int keycode;
 
-    public KeyEvent(Widget source, int type, boolean shift, boolean ctrl, boolean alt, boolean spr, String chr, int keycode) {
+    public KeyEvent(Widget source, EventType type, boolean shift, boolean ctrl, boolean alt, boolean spr, String chr, int keycode) {
         super(source, type);
         this.shift = shift;
         this.ctrl = ctrl;
