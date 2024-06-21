@@ -3,13 +3,15 @@ package flat.graphics.cursor;
 import flat.backend.WL;
 import flat.backend.WLEnums;
 
-public class Cursor {
-    public static final Cursor ARROW = new Cursor(WLEnums.STANDARD_ARROW_CURSOR);
-    public static final Cursor IBEAM = new Cursor(WLEnums.STANDARD_IBEAM_CURSOR);
-    public static final Cursor CROSSHAIR = new Cursor(WLEnums.STANDARD_CROSSHAIR_CURSOR);
-    public static final Cursor HAND = new Cursor(WLEnums.STANDARD_HAND_CURSOR);
-    public static final Cursor HRESIZE = new Cursor(WLEnums.STANDARD_HRESIZE_CURSOR);
-    public static final Cursor VRESIZE = new Cursor(WLEnums.STANDARD_VRESIZE_CURSOR);
+public enum Cursor {
+    UNSET(0),
+    NONE(0),
+    ARROW(WLEnums.STANDARD_ARROW_CURSOR),
+    IBEAM(WLEnums.STANDARD_IBEAM_CURSOR),
+    CROSSHAIR(WLEnums.STANDARD_CROSSHAIR_CURSOR),
+    HAND (WLEnums.STANDARD_HAND_CURSOR),
+    HRESIZE(WLEnums.STANDARD_HRESIZE_CURSOR),
+    VRESIZE(WLEnums.STANDARD_VRESIZE_CURSOR);
 
     private final int shape;
     private long cursor = 0;
@@ -18,13 +20,8 @@ public class Cursor {
         this.shape = shape;
     }
 
-    public Cursor(int width, int height, int xCenter, int yCenter, byte[] image) {
-        this.shape = 0;
-        this.cursor = WL.CreateCursor(image, width, height, xCenter, yCenter);
-    }
-
     public long getInternalCursor() {
-        if (this.cursor == 0) {
+        if (this.cursor == 0 && this.shape != 0) {
             this.cursor = WL.CreateStandardCursor(shape);
         }
         return cursor;

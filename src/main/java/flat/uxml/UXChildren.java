@@ -9,15 +9,15 @@ public class UXChildren {
 
     private final ArrayList<Gadget> children = new ArrayList<>();
     private final ArrayList<Menu> menus = new ArrayList<>();
-    private final UXLoader loader;
+    private final UXBuilder loader;
     private int pos;
     private int posMenu;
 
-    public UXChildren(UXLoader loader) {
+    public UXChildren(UXBuilder loader) {
         this.loader = loader;
     }
 
-    public UXLoader getLoader() {
+    public UXBuilder getLoader() {
         return loader;
     }
 

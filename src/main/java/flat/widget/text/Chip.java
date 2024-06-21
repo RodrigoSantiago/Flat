@@ -10,7 +10,8 @@ import flat.graphics.text.Align;
 import flat.math.Vector2;
 import flat.resources.Resource;
 import flat.uxml.Controller;
-import flat.uxml.UXStyleAttrs;
+import flat.uxml.UXBuilder;
+import flat.uxml.UXTheme;
 
 import java.lang.reflect.Method;
 
@@ -25,22 +26,22 @@ public class Chip extends Label {
     private float actionSpacing;
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        super.applyAttributes(style, controller);
+    public void applyAttributes(UXTheme theme, Controller controller, UXBuilder builder) {
+        super.applyAttributes(theme, controller, builder);
 
-        Method handle = style.asListener("on-action", ActionEvent.class, controller);
+        /*Method handle = theme.linkListener("on-action", ActionEvent.class, controller);
         if (handle != null) {
             setActionListener(new ActionListener.AutoActionListener(controller, handle));
-        }
+        }*/
     }
 
     public void applyStyle() {
         super.applyStyle();
-        if (getStyle() == null) return;
+       /* if (getAttrs() == null) return;
 
         StateInfo info = getStateInfo();
 
-        Resource res = getStyle().asResource("icon-image", info);
+        Resource res = getAttrs().asResource("icon-image", info);
         if (res != null) {
             Drawable drawable = res.getDrawable();
             if (drawable != null) {
@@ -48,16 +49,16 @@ public class Chip extends Label {
             }
         }
 
-        setIconSpacing(getStyle().asSize("icon-spacing", info, getIconSpacing()));
+        setIconSpacing(getAttrs().asSize("icon-spacing", info, getIconSpacing()));
 
-        res = getStyle().asResource("action-image", info);
+        res = getAttrs().asResource("action-image", info);
         if (res != null) {
             Drawable drawable = res.getDrawable();
             if (drawable != null) {
                 setActionImage(drawable);
             }
         }
-        setActionSpacing(getStyle().asSize("action-spacing", info, getIconSpacing()));
+        setActionSpacing(getAttrs().asSize("action-spacing", info, getIconSpacing()));*/
     }
 
     @Override

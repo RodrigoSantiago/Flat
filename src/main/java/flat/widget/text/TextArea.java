@@ -12,9 +12,7 @@ import flat.math.Vector2;
 import flat.math.Vector3;
 import flat.math.shapes.Rectangle;
 import flat.math.shapes.Shape;
-import flat.uxml.Controller;
-import flat.uxml.UXStyle;
-import flat.uxml.UXStyleAttrs;
+import flat.uxml.*;
 import flat.widget.Widget;
 
 import java.lang.reflect.Method;
@@ -63,21 +61,21 @@ public class TextArea extends Widget {
     }
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        super.applyAttributes(style, controller);
+    public void applyAttributes(UXTheme theme, Controller controller, UXBuilder builder) {
+        super.applyAttributes(theme, controller, builder);
 
-        setText(style.asString("text", getText()));
+        /*setText(theme.asString("text", getText()));
 
-        Method handle = style.asListener("on-act-pointer", PointerEvent.class, controller);
+        Method handle = theme.linkListener("on-act-pointer", PointerEvent.class, controller);
         if (handle != null) {
             setActPointerListener(new PointerListener.AutoPointerListener(controller, handle));
-        }
+        }*/
     }
 
     @Override
     public void applyStyle() {
         super.applyStyle();
-        UXStyle style = getStyle();
+        /*UXStyle style = getAttrs();
         if (style == null) return;
 
         StateInfo info = getStateInfo();
@@ -90,7 +88,7 @@ public class TextArea extends Widget {
         setTextSize(style.asSize("text-size", info, getTextSize()));
         setTextColor(style.asColor("text-color", info, getTextColor()));
         setSelectionColor(style.asColor("selection-color", info, getSelectionColor()));
-        setCursorColor(style.asColor("cursor-color", info, getCursorColor()));
+        setCursorColor(style.asColor("cursor-color", info, getCursorColor()));*/
     }
 
     @Override

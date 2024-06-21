@@ -1,6 +1,7 @@
 package flat.uxml;
 
 import flat.Flat;
+import org.tinylog.Logger;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -16,10 +17,12 @@ public class Controller {
                     && !Modifier.isFinal(field.getModifiers())) {
                 field.set(this, object);
             }
-        } catch (NoSuchFieldException ignored) {
+        } catch (NoSuchFieldException e) {
+            Logger.info(e);
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            Logger.error(e);
+
         }
     }
 

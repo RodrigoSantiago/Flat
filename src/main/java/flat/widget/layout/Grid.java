@@ -2,9 +2,7 @@ package flat.widget.layout;
 
 import flat.animations.StateInfo;
 import flat.graphics.SmartContext;
-import flat.uxml.Controller;
-import flat.uxml.UXChildren;
-import flat.uxml.UXStyleAttrs;
+import flat.uxml.*;
 import flat.widget.Gadget;
 import flat.widget.Parent;
 import flat.widget.Widget;
@@ -24,25 +22,25 @@ public class Grid extends Parent {
     private float[] rowSizeLayout, colSizeLayout;
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        int w = (int) style.asNumber("columns", getColumns());
-        int h = (int) style.asNumber("rows", getRows());
-        setDimension(w, h);
+    public void applyAttributes(UXTheme theme, Controller controller, UXBuilder builder) {
+        /*int w = (int) theme.asNumber("columns", getColumns());
+        int h = (int) theme.asNumber("rows", getRows());
+        setDimension(w, h);*/
 
-        super.applyAttributes(style, controller);
+        super.applyAttributes(theme, controller, builder);
     }
 
     @Override
     public void applyStyle() {
         super.applyStyle();
-        if (getStyle() == null) return;
+        /*if (getAttrs() == null) return;
 
         StateInfo info = getStateInfo();
 
-        setColumnGap(getStyle().asNumber("column-gap", info, getColumnGap()));
-        setRowGap(getStyle().asNumber("row-gap", info, getRowGap()));
+        setColumnGap(getAttrs().asNumber("column-gap", info, getColumnGap()));
+        setRowGap(getAttrs().asNumber("row-gap", info, getRowGap()));
 
-        ArrayList<String> cSizes = getStyle().dynamicFinder("column-size-");
+        ArrayList<String> cSizes = getAttrs().dynamicFinder("column-size-");
         for (String size : cSizes) {
             String number = size.substring(12);
             int n;
@@ -52,10 +50,10 @@ public class Grid extends Parent {
                 n = -1;
             }
             if (n >= 0 && n < columns) {
-                setColumnSize(n, getStyle().asSize(size, info, getColumnSize(n)));
+                setColumnSize(n, getAttrs().asSize(size, info, getColumnSize(n)));
             }
         }
-        ArrayList<String> rSizes = getStyle().dynamicFinder("row-size-");
+        ArrayList<String> rSizes = getAttrs().dynamicFinder("row-size-");
         for (String size : rSizes) {
             String number = size.substring(9);
             int n;
@@ -65,9 +63,9 @@ public class Grid extends Parent {
                 n = -1;
             }
             if (n >= 0 && n < rows) {
-                setRowSize(n, getStyle().asSize(size,  info, getRowSize(n)));
+                setRowSize(n, getAttrs().asSize(size,  info, getRowSize(n)));
             }
-        }
+        }*/
     }
 
     @Override

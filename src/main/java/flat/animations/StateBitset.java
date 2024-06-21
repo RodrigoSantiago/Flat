@@ -1,5 +1,7 @@
 package flat.animations;
 
+import flat.widget.State;
+
 public final class StateBitset implements StateInfo {
     private static StateBitset[] states = new StateBitset[256];
 
@@ -20,8 +22,8 @@ public final class StateBitset implements StateInfo {
     }
 
     @Override
-    public float get(int index) {
-        return (bitset & (1 << index)) == (1 << index) ? 1 : 0;
+    public float get(State state) {
+        return (bitset & state.bitset()) != 0 ? 1 : 0;
     }
 
 }

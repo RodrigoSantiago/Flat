@@ -11,7 +11,8 @@ import flat.graphics.context.Font;
 import flat.graphics.text.Align;
 import flat.math.Vector2;
 import flat.uxml.Controller;
-import flat.uxml.UXStyleAttrs;
+import flat.uxml.UXBuilder;
+import flat.uxml.UXTheme;
 import flat.window.Activity;
 import flat.widget.Widget;
 import flat.widget.enuns.Direction;
@@ -42,41 +43,41 @@ public class ScrollBar extends Widget {
     private final SlideAnim anim2 = new SlideAnim();
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        super.applyAttributes(style, controller);
+    public void applyAttributes(UXTheme theme, Controller controller, UXBuilder builder) {
+        super.applyAttributes(theme, controller, builder);
 
-        setDirection(style.asConstant("direction", getDirection()));
-        setPopupEnabled(style.asBool("popup-enabled", isPopupEnabled()));
-        setMaxRange(style.asNumber("max-range", getMaxRange()));
-        setRange(style.asNumber("range", getMaxRange()));
-        setValueDirect(style.asNumber("value", getValue()));
-        setMinRangeDisplay(style.asSize("min-range-display", getMinRangeDisplay()));
-        setLabelText(style.asString("label-text", getLabelText()));
+        /*setDirection(theme.asConstant("direction", getDirection()));
+        setPopupEnabled(theme.asBool("popup-enabled", isPopupEnabled()));
+        setMaxRange(theme.asNumber("max-range", getMaxRange()));
+        setRange(theme.asNumber("range", getMaxRange()));
+        setValueDirect(theme.asNumber("value", getValue()));
+        setMinRangeDisplay(theme.asSize("min-range-display", getMinRangeDisplay()));
+        setLabelText(theme.asString("label-text", getLabelText()));*/
     }
 
     @Override
     public void applyStyle() {
         super.applyStyle();
-        if (getStyle() == null) return;
+        /*if (getAttrs() == null) return;
 
         StateInfo info = getStateInfo();
 
-        setColor(getStyle().asColor("color", info, getColor()));
+        setColor(getAttrs().asColor("color", info, getColor()));
 
-        setLabelFont(getStyle().asFont("label-font", info, getLabelFont()));
-        setLabelTextColor(getStyle().asColor("label-text-color", info, getLabelTextColor()));
-        setLabelTextSize(getStyle().asSize("label-text-size", info, getLabelTextSize()));
+        setLabelFont(getAttrs().asFont("label-font", info, getLabelFont()));
+        setLabelTextColor(getAttrs().asColor("label-text-color", info, getLabelTextColor()));
+        setLabelTextSize(getAttrs().asSize("label-text-size", info, getLabelTextSize()));
 
-        setPopupColor(getStyle().asColor("popup-color", info, getPopupColor()));
-        setPopupX(getStyle().asSize("popup-x", info, getPopupX()));
-        setPopupY(getStyle().asSize("popup-y", info, getPopupY()));
-        setPopupWidth(getStyle().asSize("popup-width", info, getPopupWidth()));
-        setPopupHeight(getStyle().asSize("popup-height", info, getPopupHeight()));
-        setPopupRadiusTop(getStyle().asSize("popup-radius-top", info, getPopupRadiusTop()));
-        setPopupRadiusRight(getStyle().asSize("popup-radius-right", info, getPopupRadiusRight()));
-        setPopupRadiusBottom(getStyle().asSize("popup-radius-bottom", info, getPopupRadiusBottom()));
-        setPopupRadiusLeft(getStyle().asSize("popup-radius-left", info, getPopupRadiusLeft()));
-        setPopupTimeOut(getStyle().asNumber("popup-time-out", info, getPopupTimeOut()));
+        setPopupColor(getAttrs().asColor("popup-color", info, getPopupColor()));
+        setPopupX(getAttrs().asSize("popup-x", info, getPopupX()));
+        setPopupY(getAttrs().asSize("popup-y", info, getPopupY()));
+        setPopupWidth(getAttrs().asSize("popup-width", info, getPopupWidth()));
+        setPopupHeight(getAttrs().asSize("popup-height", info, getPopupHeight()));
+        setPopupRadiusTop(getAttrs().asSize("popup-radius-top", info, getPopupRadiusTop()));
+        setPopupRadiusRight(getAttrs().asSize("popup-radius-right", info, getPopupRadiusRight()));
+        setPopupRadiusBottom(getAttrs().asSize("popup-radius-bottom", info, getPopupRadiusBottom()));
+        setPopupRadiusLeft(getAttrs().asSize("popup-radius-left", info, getPopupRadiusLeft()));
+        setPopupTimeOut(getAttrs().asNumber("popup-time-out", info, getPopupTimeOut()));*/
     }
 
     @Override

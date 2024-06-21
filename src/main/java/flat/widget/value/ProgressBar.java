@@ -5,9 +5,7 @@ import flat.animations.StateInfo;
 import flat.graphics.SmartContext;
 import flat.math.Mathf;
 import flat.math.shapes.Shape;
-import flat.uxml.Controller;
-import flat.uxml.UXStyle;
-import flat.uxml.UXStyleAttrs;
+import flat.uxml.*;
 import flat.widget.Widget;
 
 public class ProgressBar extends Widget {
@@ -19,22 +17,22 @@ public class ProgressBar extends Widget {
     private long time;
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        super.applyAttributes(style, controller);
+    public void applyAttributes(UXTheme theme, Controller controller, UXBuilder builder) {
+        super.applyAttributes(theme, controller, builder);
 
-        setProgress(style.asNumber("progress", getProgress()));
-        setAnimationDuration(style.asNumber("animation-duration", getAnimationDuration()));
+        /*setProgress(theme.asNumber("progress", getProgress()));
+        setAnimationDuration(theme.asNumber("animation-duration", getAnimationDuration()));*/
     }
 
     @Override
     public void applyStyle() {
         super.applyStyle();
-        UXStyle style = getStyle();
+        /*UXStyle style = getAttrs();
         if (style == null) return;
 
         StateInfo info = getStateInfo();
 
-        setColor(style.asColor("color", info, getColor()));
+        setColor(style.asColor("color", info, getColor()));*/
     }
 
     @Override

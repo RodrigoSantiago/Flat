@@ -3,60 +3,62 @@ package flat.resources;
 import flat.window.Application;
 
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-public class ResourceStream extends DimensionStream {
+public class ResourceStream {
 
-    private HashMap<Dimension, String> map = new HashMap<>();
-    private ArrayList<Dimension> dimensions = new ArrayList<>();
-
-    private static final String sizeRegex = "(small)|(normal)|(large)|(xlarge)";
-    private static final String densityRegex = "(ldpi)|(mdpi)|(hdpi)|(xhdpi)|(xxhdpi)|(xxxhdpi)";
-    private static final String orientationRegex = "(port)|(land)";
-    private static final String regex = "(-(" + orientationRegex + "|" + sizeRegex + "|" + densityRegex + "))*";
+    private String name;
+    private String resourceName;
 
     public ResourceStream(String name) {
-        super(name);
-        try {
+        this.name = name;
+
+        if (Application.getResourcesManager().exists(name)) {
+            this.resourceName = name;
+
+        } else if (name.matches(".*\\.[a-zA-Z_0-9]+")) {
             String[] files = Application.getResourcesManager().listFiles(name);
             for (String fileName : files) {
-                if (fileName.startsWith(name)) {
-                    if (fileName.matches(name + regex + "\\.uxml")) {
-                        String[] modifiers = fileName.substring(name.length()).split("(-)|(\\.)");
-                        Dimension.Size size = Dimension.Size.any;
-                        Dimension.Density density = Dimension.Density.any;
-                        Dimension.Orientation orientation = Dimension.Orientation.any;
-                        for (int i = 1; i < modifiers.length; i++) {
-                            String modifier = modifiers[i];
-                            if (modifier.matches(sizeRegex)) {
-                                size = Dimension.Size.valueOf(modifier);
-                            } else if (modifier.matches(densityRegex)) {
-                                density = Dimension.Density.valueOf(modifier);
-                            } else if (modifier.matches(orientationRegex)) {
-                                orientation = Dimension.Orientation.valueOf(modifier);
-                            }
-                        }
-                        Dimension d = new Dimension(size, density, orientation);
-                        dimensions.add(d);
-                        map.put(d, fileName);
-                    }
+                if (fileName.matches(name)) {
+                    this.resourceName = fileName;
+                    break;
                 }
             }
-        } catch (Exception ignored) {
+
+        } else {
+            String regex = ".*\\Q" + name +"\\E\\.[a-zA-Z_0-9]+";
+            String[] files = Application.getResourcesManager().listFiles(name);
+            for (String fileName : files) {
+                if (fileName.endsWith(name)) {
+                    this.resourceName = fileName;
+                    break;
+                }
+            }
         }
     }
 
-    @Override
-    public List<Dimension> getDimensions() {
-        return Collections.unmodifiableList(dimensions);
+    public String getName() {
+        return name;
     }
 
-    @Override
-    public InputStream getStream(Dimension dimension) {
-        return Application.getResourcesManager().getInput(getName() + "/" + map.get(dimension));
+    public String getResourceName() {
+        return resourceName;
+    }
+
+    public InputStream getStream() {
+        return Application.getResourcesManager().getInput(resourceName);
+    }
+
+    public void putCache(Object cache) {
+        Application.getResourcesManager().putResourceCache(resourceName, cache);
+    }
+
+    public Object getCache() {
+        return Application.getResourcesManager().getResourceCache(resourceName);
     }
 
 }

@@ -10,7 +10,9 @@ import flat.graphics.text.Align;
 import flat.math.Vector2;
 import flat.resources.Resource;
 import flat.uxml.Controller;
-import flat.uxml.UXStyleAttrs;
+import flat.uxml.UXAttrs;
+import flat.uxml.UXBuilder;
+import flat.uxml.UXTheme;
 
 import java.lang.reflect.Method;
 
@@ -23,10 +25,11 @@ public class Button extends Label {
     private Align.Horizontal iconAlign = Align.Horizontal.LEFT;
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        super.applyAttributes(style, controller);
+    public void applyAttributes(UXTheme theme, Controller controller, UXBuilder builder) {
+        super.applyAttributes(theme, controller, builder);
 
-        Method handle = style.asListener("on-action", ActionEvent.class, controller);
+        UXAttrs attrs = getAttrs();
+        Method handle = attrs.linkListener("on-action", ActionEvent.class, controller);
         if (handle != null) {
             setActionListener(new ActionListener.AutoActionListener(controller, handle));
         }
@@ -34,11 +37,11 @@ public class Button extends Label {
 
     public void applyStyle() {
         super.applyStyle();
-        if (getStyle() == null) return;
+        /*if (getAttrs() == null) return;
 
         StateInfo info = getStateInfo();
 
-        Resource res = getStyle().asResource("icon-image", info);
+        Resource res = getAttrs().asResource("icon-image", info);
         if (res != null) {
             Drawable drawable = res.getDrawable();
             if (drawable != null) {
@@ -46,8 +49,8 @@ public class Button extends Label {
             }
         }
 
-        setIconAlign(getStyle().asConstant("icon-align", info, getIconAlign()));
-        setIconSpacing(getStyle().asSize("icon-spacing", info, getIconSpacing()));
+        setIconAlign(getAttrs().asConstant("icon-align", info, getIconAlign()));
+        setIconSpacing(getAttrs().asSize("icon-spacing", info, getIconSpacing()));*/
     }
 
     @Override

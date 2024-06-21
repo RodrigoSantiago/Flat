@@ -10,7 +10,8 @@ import flat.graphics.text.Align;
 import flat.math.Vector2;
 import flat.resources.Resource;
 import flat.uxml.Controller;
-import flat.uxml.UXStyleAttrs;
+import flat.uxml.UXBuilder;
+import flat.uxml.UXTheme;
 import flat.widget.Widget;
 
 import java.lang.reflect.Method;
@@ -31,28 +32,28 @@ public class ToolItem extends Widget {
     private boolean invalidText = true;
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        super.applyAttributes(style, controller);
+    public void applyAttributes(UXTheme theme, Controller controller, UXBuilder builder) {
+        super.applyAttributes(theme, controller, builder);
 
-        setText(style.asString("text", getText()));
-        setShowAction(style.asBool("show-action", isShowAction()));
+        /*setText(theme.asString("text", getText()));
+        setShowAction(theme.asBool("show-action", isShowAction()));
 
-        Method handle = style.asListener("on-action", ActionEvent.class, controller);
+        Method handle = theme.linkListener("on-action", ActionEvent.class, controller);
         if (handle != null) {
             setActionListener(new ActionListener.AutoActionListener(controller, handle));
-        }
+        }*/
     }
 
     public void applyStyle() {
         super.applyStyle();
-        if (getStyle() == null) return;
+        /*if (getAttrs() == null) return;
 
         StateInfo info = getStateInfo();
 
-        setVerticalAlign(getStyle().asConstant("vertical-align", info, getVerticalAlign()));
-        setHorizontalAlign(getStyle().asConstant("horizontal-align", info, getHorizontalAlign()));
+        setVerticalAlign(getAttrs().asConstant("vertical-align", info, getVerticalAlign()));
+        setHorizontalAlign(getAttrs().asConstant("horizontal-align", info, getHorizontalAlign()));
 
-        Resource res = getStyle().asResource("icon-image", info);
+        Resource res = getAttrs().asResource("icon-image", info);
         if (res != null) {
             Drawable drawable = res.getDrawable();
             if (drawable != null) {
@@ -60,7 +61,7 @@ public class ToolItem extends Widget {
             }
         }
 
-        setIconSpacing(getStyle().asSize("icon-spacing", info, getIconSpacing()));
+        setIconSpacing(getAttrs().asSize("icon-spacing", info, getIconSpacing()));*/
     }
 
     @Override

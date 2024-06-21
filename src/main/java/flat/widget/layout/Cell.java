@@ -1,10 +1,10 @@
 package flat.widget.layout;
 
-import flat.uxml.Controller;
-import flat.uxml.UXChildren;
-import flat.uxml.UXStyleAttrs;
+import flat.uxml.*;
 import flat.widget.Gadget;
 import flat.widget.Widget;
+
+import java.util.HashMap;
 
 public final class Cell implements Gadget {
 
@@ -26,13 +26,18 @@ public final class Cell implements Gadget {
     }
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        if (style == null) return;
+    public void setAttributes(HashMap<Integer, UXValue> attributes, String style) {
+        // TODO
+    }
 
-        c = (int) style.asNumber("column", getColumn());
-        r = (int) style.asNumber("row", getRow());
-        cSpan = (int) style.asNumber("colspan", getColSpan());
-        rSpan = (int) style.asNumber("rowspan", getRowSpan());
+    @Override
+    public void applyAttributes(UXTheme theme, Controller controller, UXBuilder builder) {
+        if (theme == null) return;
+
+        /*c = (int) theme.asNumber("column", getColumn());
+        r = (int) theme.asNumber("row", getRow());
+        cSpan = (int) theme.asNumber("colspan", getColSpan());
+        rSpan = (int) theme.asNumber("rowspan", getRowSpan());*/
     }
 
     @Override

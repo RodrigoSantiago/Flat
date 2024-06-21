@@ -5,7 +5,8 @@ import flat.events.ActionListener;
 import flat.graphics.SmartContext;
 import flat.graphics.image.Drawable;
 import flat.uxml.Controller;
-import flat.uxml.UXStyleAttrs;
+import flat.uxml.UXBuilder;
+import flat.uxml.UXTheme;
 import flat.widget.Widget;
 
 import java.util.Objects;
@@ -19,10 +20,10 @@ public class Page extends Box {
     private ActionListener onActivated, onDeactivated;
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        super.applyAttributes(style, controller);
+    public void applyAttributes(UXTheme theme, Controller controller, UXBuilder builder) {
+        super.applyAttributes(theme, controller, builder);
 
-        setName(style.asString("name", getName()));
+        //setName(theme.asString("name", getName()));
     }
 
     @Override

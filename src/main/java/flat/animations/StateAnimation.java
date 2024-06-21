@@ -1,5 +1,6 @@
 package flat.animations;
 
+import flat.widget.State;
 import flat.window.Activity;
 import flat.widget.Widget;
 
@@ -60,14 +61,14 @@ public final class StateAnimation implements Animation, StateInfo {
 
     public void play(int bitmask) {
         boolean play = isPlaying();
-        tEnabled = (byte) ((bitmask & (1 << ENABLED)) == (1 << ENABLED) ? 1 : 0);
-        tFocused = (byte) ((bitmask & (1 << FOCUSED)) == (1 << FOCUSED) ? 1 : 0);
-        tActivated = (byte) ((bitmask & (1 << ACTIVATED)) == (1 << ACTIVATED) ? 1 : 0);
-        tHovered = (byte) ((bitmask & (1 << HOVERED)) == (1 << HOVERED) ? 1 : 0);
-        tPressed = (byte) ((bitmask & (1 << PRESSED)) == (1 << PRESSED) ? 1 : 0);
-        tDragged = (byte) ((bitmask & (1 << DRAGGED)) == (1 << DRAGGED) ? 1 : 0);
-        tError = (byte) ((bitmask & (1 << ERROR)) == (1 << ERROR) ? 1 : 0);
-        tDisabled = (byte) ((bitmask & (1 << DISABLED)) == (1 << DISABLED) ? 1 : 0);
+        tEnabled    = (byte) ((bitmask & (State.ENABLED.bitset())) != 0 ? 1 : 0);
+        tFocused    = (byte) ((bitmask & (State.FOCUSED.bitset())) != 0 ? 1 : 0);
+        tActivated  = (byte) ((bitmask & (State.ACTIVATED.bitset())) != 0 ? 1 : 0);
+        tHovered    = (byte) ((bitmask & (State.HOVERED.bitset())) != 0 ? 1 : 0);
+        tPressed    = (byte) ((bitmask & (State.PRESSED.bitset())) != 0 ? 1 : 0);
+        tDragged    = (byte) ((bitmask & (State.DRAGGED.bitset())) != 0 ? 1 : 0);
+        tError      = (byte) ((bitmask & (State.ERROR.bitset())) != 0 ? 1 : 0);
+        tDisabled   = (byte) ((bitmask & (State.DISABLED.bitset())) != 0 ? 1 : 0);
         if (!play && isPlaying()) {
             Activity activity = widget.getActivity();
             if (activity != null) {
@@ -93,7 +94,7 @@ public final class StateAnimation implements Animation, StateInfo {
     }
 
     @Override
-    public float get(int stateIndex) {
+    public float get(State stateIndex) {
         switch (stateIndex) {
             case ENABLED: return fEnabled;
             case FOCUSED: return fFocused;

@@ -7,9 +7,10 @@ import flat.events.PointerEvent;
 import flat.graphics.SmartContext;
 import flat.graphics.image.Drawable;
 import flat.math.Mathf;
-import flat.resources.Resource;
 import flat.uxml.Controller;
-import flat.uxml.UXStyleAttrs;
+import flat.uxml.UXBuilder;
+import flat.uxml.UXTheme;
+import flat.widget.State;
 import flat.widget.Widget;
 
 public class RadioButton extends Widget {
@@ -22,30 +23,30 @@ public class RadioButton extends Widget {
     private int color;
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        super.applyAttributes(style, controller);
+    public void applyAttributes(UXTheme theme, Controller controller, UXBuilder builder) {
+        super.applyAttributes(theme, controller, builder);
 
-        setActivated(getStyle().asBool("activated", isActivated()));
+        /*setActivated(getAttrs().asBool("activated", isActivated()));
 
-        style.link("group", (gadget) -> setRadioGroup((RadioGroup) gadget));
+        theme.link("group", (gadget) -> setRadioGroup((RadioGroup) gadget));*/
     }
 
     @Override
     public void applyStyle() {
         super.applyStyle();
-        if (getStyle() == null) return;
+        /*if (getAttrs() == null) return;
 
         StateInfo info = getStateInfo();
 
-        setColor(getStyle().asColor("color", info, getColor()));
+        setColor(getAttrs().asColor("color", info, getColor()));
 
-        Resource res = getStyle().asResource("icon", info);
+        Resource res = getAttrs().asResource("icon", info);
         if (res != null) {
             Drawable drawable = res.getDrawable();
             if (drawable != null) {
                 setIcon(drawable);
             }
-        }
+        }*/
     }
 
     @Override
@@ -60,7 +61,7 @@ public class RadioButton extends Widget {
 
         if (icon != null) {
             StateInfo info = getStateInfo();
-            icon.draw(context, x, y, width, height, info.get(StateInfo.ACTIVATED));
+            icon.draw(context, x, y, width, height, info.get(State.ACTIVATED));
         }
 
         if (isRippleEnabled() && getRipple().isVisible()) {

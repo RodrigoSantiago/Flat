@@ -8,6 +8,7 @@ import flat.events.ActionEvent;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Context;
 import flat.resources.ResourceStream;
+import flat.uxml.UXSheet;
 import flat.uxml.UXTheme;
 import flat.window.Activity;
 import flat.window.Application;
@@ -22,13 +23,13 @@ public class MainActivity extends Activity {
     public MainActivity(Context context) {
         super(context);
 
-        setTheme(new UXTheme(Application.getResourcesManager().getInput("themes/material.uxss")));
-        setSceneStream(new ResourceStream("screen_test"));
+        //setTheme(new UXTheme(Application.getResourcesManager().getInput("themes/material.uxss")));
+        //setBuilder(new ResourceStream("screen_test"));
     }
 
     float mx, my;
     @Override
-    public void onLoad() {
+    public void onShow() {
         getScene().setPointerListener(event -> {
             mx = (event.getX()-100) / 100;
             my = (event.getY()-100) / 100;
@@ -78,7 +79,7 @@ public class MainActivity extends Activity {
     @Flat
     public void onAdd(ActionEvent event) {
         Button btn = new Button();
-        btn.setStyle(getTheme().getStyle("button"));
+        //btn.setStyle(getTheme().getStyle("button"));
         btn.applyStyle();
         btn.setText("ola");
         btn.setActionListener(this::onAction);

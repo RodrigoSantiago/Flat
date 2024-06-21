@@ -24,7 +24,7 @@ public class ResourcesManager {
     private final Class<?> resourceClass;
     private final ZipFile zip;
     private final File dir;
-    private final HashMap<String, SoftReference<Resource>> resources = new HashMap<>();
+    private final HashMap<String, SoftReference<Object>> resources = new HashMap<>();
 
     public ResourcesManager() {
         this.dir = null;
@@ -80,53 +80,22 @@ public class ResourcesManager {
         resources.clear();
     }
 
-    public Resource getResource(String pathName) {
-        SoftReference<Resource> resRef = resources.get(pathName);
-        if (resRef != null) {
-            Resource res = resRef.get();
-            if (res != null) {
-                return res;
+    public void putResourceCache(String pathName, Object cache) {
+        resources.put(pathName, new SoftReference<>(cache));
+    }
+
+    public Object getResourceCache(String pathName) {
+        SoftReference<Object> reference = resources.get(pathName);
+        if (reference != null) {
+            Object obj = reference.get();
+            if (obj == null) {
+                resources.remove(pathName);
+            } else {
+                return obj;
             }
         }
 
-        Resource res;
-        if (pathName.endsWith(".png")) {
-            res = new Resource() {
-                Drawable drawable;
-
-                @Override
-                public Drawable getDrawable() {
-                    if (drawable == null) {
-                        try {
-                            drawable = DrawableReader.loadPixelMap(getInput(pathName));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    return drawable;
-                }
-            };
-        } else if (pathName.endsWith(".svg")) {
-            res = new Resource() {
-                Drawable drawable;
-
-                @Override
-                public Drawable getDrawable() {
-                    if (drawable == null) {
-                        try {
-                            drawable = DrawableReader.loadLineMap(getInput(pathName));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    return drawable;
-                }
-            };
-        } else {
-            return null;
-        }
-        resources.put(pathName, new SoftReference<>(res));
-        return res;
+        return null;
     }
 
     public InputStream getInput(String pathName) {
@@ -427,5 +396,12 @@ public class ResourcesManager {
                 }
             }
         }
+    }
+
+    public ResourceStream getResource(String value) {
+        if (exists(value)) {
+            return new ResourceStream(value);
+        }
+        return null;
     }
 }

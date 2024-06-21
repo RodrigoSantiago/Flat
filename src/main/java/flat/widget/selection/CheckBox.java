@@ -7,9 +7,10 @@ import flat.events.PointerEvent;
 import flat.graphics.SmartContext;
 import flat.graphics.image.Drawable;
 import flat.math.Mathf;
-import flat.resources.Resource;
 import flat.uxml.Controller;
-import flat.uxml.UXStyleAttrs;
+import flat.uxml.UXBuilder;
+import flat.uxml.UXTheme;
+import flat.widget.State;
 import flat.widget.Widget;
 
 public class CheckBox extends Widget {
@@ -25,38 +26,38 @@ public class CheckBox extends Widget {
     private int color;
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        super.applyAttributes(style, controller);
+    public void applyAttributes(UXTheme theme, Controller controller, UXBuilder builder) {
+        super.applyAttributes(theme, controller, builder);
 
-        setActivated(getStyle().asBool("activated", isActivated()));
-        setIndeterminate(getStyle().asBool("indeterminate", isIndeterminate()));
+        /*setActivated(getAttrs().asBool("activated", isActivated()));
+        setIndeterminate(getAttrs().asBool("indeterminate", isIndeterminate()));
 
-        style.link("group", (gadget) -> setGroup((CheckGroup) gadget));
+        theme.link("group", (gadget) -> setGroup((CheckGroup) gadget));*/
     }
 
     @Override
     public void applyStyle() {
         super.applyStyle();
-        if (getStyle() == null) return;
+        /*if (getAttrs() == null) return;
 
         StateInfo info = getStateInfo();
 
-        setColor(getStyle().asColor("color", info, getColor()));
+        setColor(getAttrs().asColor("color", info, getColor()));
 
-        Resource res = getStyle().asResource("icon", info);
+        Resource res = getAttrs().asResource("icon", info);
         if (res != null) {
             Drawable drawable = res.getDrawable();
             if (drawable != null) {
                 setIcon(drawable);
             }
         }
-        res = getStyle().asResource("icon-indeterminate", info);
+        res = getAttrs().asResource("icon-indeterminate", info);
         if (res != null) {
             Drawable drawable = res.getDrawable();
             if (drawable != null) {
                 setIndeterminateIcon(drawable);
             }
-        }
+        }*/
     }
 
     @Override
@@ -72,7 +73,7 @@ public class CheckBox extends Widget {
 
         StateInfo info = getStateInfo();
         Drawable ic = indeterminate && indeterminateIcon != null ? indeterminateIcon : icon;
-        ic.draw(context, x, y, width, height, info.get(StateInfo.ACTIVATED));
+        ic.draw(context, x, y, width, height, info.get(State.ACTIVATED));
 
         if (isRippleEnabled() && getRipple().isVisible()) {
             context.setTransform2D(getTransform());

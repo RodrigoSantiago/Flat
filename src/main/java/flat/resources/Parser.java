@@ -2,9 +2,30 @@ package flat.resources;
 
 import flat.math.shapes.Path;
 
+import java.util.PrimitiveIterator;
+
 public final class Parser {
 
     private static final double[] pow10 = new double[128];
+    private static final ColorPair[] colors = {
+        new ColorPair("black", 0x000000FF),
+        new ColorPair("silver", 0xC0C0C0FF),
+        new ColorPair("gray", 0x808080FF),
+        new ColorPair("white", 0xFFFFFFFF),
+        new ColorPair("maroon", 0x800000FF),
+        new ColorPair("red", 0xFF0000FF),
+        new ColorPair("purple", 0x800080FF),
+        new ColorPair("fuchsia", 0xFF00FFFF),
+        new ColorPair("green", 0x008000FF),
+        new ColorPair("lime", 0x00FF00FF),
+        new ColorPair("olive", 0x808000FF),
+        new ColorPair("yellow", 0xFFFF00FF),
+        new ColorPair("navy", 0x000080FF),
+        new ColorPair("blue", 0x0000FFFF),
+        new ColorPair("teal", 0x008080FF),
+        new ColorPair("aqua", 0x00FFFFFF),
+        new ColorPair("transparent", 0x00FFFFFF)
+    };
 
     static {
         for (int i = 0; i < pow10.length; i++) {
@@ -36,41 +57,24 @@ public final class Parser {
                     continue;
                 }
                 switch (nextChar) {
-                    case '\\':
-                        ch = '\\';
-                        break;
-                    case 'b':
-                        ch = '\b';
-                        break;
-                    case 'f':
-                        ch = '\f';
-                        break;
-                    case 'n':
-                        ch = '\n';
-                        break;
-                    case 'r':
-                        ch = '\r';
-                        break;
-                    case 't':
-                        ch = '\t';
-                        break;
-                    case '\"':
-                        ch = '\"';
-                        break;
-                    case '\'':
-                        ch = '\'';
-                        break;
-                    case 'u':
+                    case '\\' -> ch = '\\';
+                    case 'b' -> ch = '\b';
+                    case 'f' -> ch = '\f';
+                    case 'n' -> ch = '\n';
+                    case 'r' -> ch = '\r';
+                    case 't' -> ch = '\t';
+                    case '\"' -> ch = '\"';
+                    case '\'' -> ch = '\'';
+                    case 'u' -> {
                         if (i >= st.length() - 5) {
                             ch = 'u';
                             break;
                         }
-                        int code = Integer.parseInt(
-                                "" + st.charAt(i + 2) + st.charAt(i + 3)
-                                        + st.charAt(i + 4) + st.charAt(i + 5), 16);
+                        int code = Integer.parseInt(st.substring(i + 2, i + 6), 16);
                         sb.append(Character.toChars(code));
                         i += 5;
                         continue;
+                    }
                 }
                 i++;
             }
@@ -84,13 +88,20 @@ public final class Parser {
     }
 
     public static int color(String color) {
-        if ("none".equals(color)) {
+        if ("transparent".equals(color)) {
             return 0;
         } else if (color.length() == 7) {
             return ((int) Long.parseLong(color.substring(1), 16) << 8) | 0x000000FF;
         } else {
             return (int) Long.parseLong(color.substring(1), 16);
         }
+    }
+
+    public static int colorByName(String color) {
+        for (int i = 0; i < colors.length; i++) {
+            if (color.equalsIgnoreCase(colors[i].name)) return colors[i].color;
+        }
+        return 0;
     }
 
     private static class SVGParser {
@@ -654,6 +665,16 @@ public final class Parser {
             current = read();
             skipNumberSeparator();
             return flag;
+        }
+    }
+
+    private static class ColorPair {
+        public final String name;
+        public final int color;
+
+        public ColorPair(String name, int color) {
+            this.name = name;
+            this.color = color;
         }
     }
 }

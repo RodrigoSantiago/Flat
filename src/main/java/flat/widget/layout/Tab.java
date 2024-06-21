@@ -10,10 +10,7 @@ import flat.graphics.SmartContext;
 import flat.graphics.text.Align;
 import flat.math.Vector2;
 import flat.math.shapes.Shape;
-import flat.uxml.Controller;
-import flat.uxml.UXChildren;
-import flat.uxml.UXStyleAttrs;
-import flat.uxml.UXTheme;
+import flat.uxml.*;
 import flat.widget.*;
 import flat.widget.enuns.Visibility;
 import flat.widget.text.Button;
@@ -98,27 +95,27 @@ public class Tab extends Parent {
     }
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        super.applyAttributes(style, controller);
+    public void applyAttributes(UXTheme theme, Controller controller, UXBuilder builder) {
+        super.applyAttributes(theme, controller, builder);
 
-        activePage = (int) style.asNumber("active-page", -1);
-        setHeaderScrollable(style.asBool("header-scrollable", isHeaderScrollable()));
-        setHeaderScroll(style.asNumber("header-scroll", getHeaderScroll()));
+       /* activePage = (int) theme.asNumber("active-page", -1);
+        setHeaderScrollable(theme.asBool("header-scrollable", isHeaderScrollable()));
+        setHeaderScroll(theme.asNumber("header-scroll", getHeaderScroll()));*/
     }
 
     @Override
     public void applyStyle() {
         super.applyStyle();
-        if (getStyle() == null) return;
+        /*if (getAttrs() == null) return;
 
         StateInfo info = getStateInfo();
 
-        setHeaderHeight(getStyle().asSize("header-height", info, getHeaderHeight()));
-        setHeaderColor(getStyle().asColor("header-color", info, getHeaderColor()));
-        setHeaderIndicatorHeight(getStyle().asSize("header-indicator-height", info, getHeaderIndicatorHeight()));
-        setHeaderElevation(getStyle().asSize("header-elevation", info, getHeaderElevation()));
-        setHeaderIndicatorColor(getStyle().asColor("header-indicator-color", info, getHeaderColor()));
-        setHeaderOffset(getStyle().asNumber("header-offset", getHeaderOffset()));
+        setHeaderHeight(getAttrs().asSize("header-height", info, getHeaderHeight()));
+        setHeaderColor(getAttrs().asColor("header-color", info, getHeaderColor()));
+        setHeaderIndicatorHeight(getAttrs().asSize("header-indicator-height", info, getHeaderIndicatorHeight()));
+        setHeaderElevation(getAttrs().asSize("header-elevation", info, getHeaderElevation()));
+        setHeaderIndicatorColor(getAttrs().asColor("header-indicator-color", info, getHeaderColor()));
+        setHeaderOffset(getAttrs().asNumber("header-offset", getHeaderOffset()));*/
     }
 
     @Override
@@ -304,11 +301,11 @@ public class Tab extends Parent {
     }
 
     public void add(Page child) {
-        child.setTab(this);
+        /*child.setTab(this);
         TabLabel label = new TabLabel(this, pages.size());
-        UXTheme theme = getStyle().getTheme();
+        UXSheet theme = getAttrs().getTheme();
         if (theme != null) {
-            label.applyAttributes(new UXStyleAttrs("attributes", theme.getStyle("tab-header")), null);
+            label.applyAttributes(new UXAttrs(theme.getStyle("tab-header")), null, null);
         }
         label.setText(child.getName());
 
@@ -316,7 +313,7 @@ public class Tab extends Parent {
         labels.add(label);
 
         super.add(child);
-        super.add(label);
+        super.add(label);*/
     }
 
     public void add(Page... children) {

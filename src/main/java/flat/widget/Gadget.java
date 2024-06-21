@@ -1,12 +1,14 @@
 package flat.widget;
 
-import flat.uxml.Controller;
-import flat.uxml.UXChildren;
-import flat.uxml.UXStyleAttrs;
+import flat.uxml.*;
+
+import java.util.HashMap;
 
 public interface Gadget {
 
-    void applyAttributes(UXStyleAttrs style, Controller controller);
+    void setAttributes(HashMap<Integer, UXValue> attributes, String style);
+
+    void applyAttributes(UXTheme theme, Controller controller, UXBuilder builder);
 
     void applyChildren(UXChildren children);
 

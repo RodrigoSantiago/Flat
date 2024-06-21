@@ -1,10 +1,9 @@
 package test;
 
-import flat.animations.ActivityTransition;
 import flat.graphics.SmartContext;
 import flat.window.Activity;
 
-public class TransitionTest extends ActivityTransition {
+public class TransitionTest extends Activity.Transition {
 
     float t = 1;
 

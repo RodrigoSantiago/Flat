@@ -5,7 +5,8 @@ import flat.graphics.SmartContext;
 import flat.graphics.context.Font;
 import flat.graphics.text.Align;
 import flat.uxml.Controller;
-import flat.uxml.UXStyleAttrs;
+import flat.uxml.UXBuilder;
+import flat.uxml.UXTheme;
 import flat.widget.Widget;
 
 import java.util.Objects;
@@ -27,26 +28,26 @@ public class Label extends Widget {
     private float textWidth;
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        super.applyAttributes(style, controller);
+    public void applyAttributes(UXTheme theme, Controller controller, UXBuilder builder) {
+        super.applyAttributes(theme, controller, builder);
 
-        setText(style.asString("text", getText()));
+        /*setText(theme.asString("text", getText()));*/
     }
 
     @Override
     public void applyStyle() {
         super.applyStyle();
-        if (getStyle() == null) return;
+        /*if (getAttrs() == null) return;
 
         StateInfo info = getStateInfo();
 
-        setFont(getStyle().asFont("font", info, getFont()));
-        setTextSize(getStyle().asSize("text-size", info, getTextSize()));
-        setTextColor(getStyle().asColor("text-color", info, getTextColor()));
-        setTextAllCaps(getStyle().asBool("text-all-caps", info, isTextAllCaps()));
+        setFont(getAttrs().asFont("font", info, getFont()));
+        setTextSize(getAttrs().asSize("text-size", info, getTextSize()));
+        setTextColor(getAttrs().asColor("text-color", info, getTextColor()));
+        setTextAllCaps(getAttrs().asBool("text-all-caps", info, isTextAllCaps()));
 
-        setVerticalAlign(getStyle().asConstant("vertical-align", info, getVerticalAlign()));
-        setHorizontalAlign(getStyle().asConstant("horizontal-align", info, getHorizontalAlign()));
+        setVerticalAlign(getAttrs().asConstant("vertical-align", info, getVerticalAlign()));
+        setHorizontalAlign(getAttrs().asConstant("horizontal-align", info, getHorizontalAlign()));*/
     }
 
     @Override

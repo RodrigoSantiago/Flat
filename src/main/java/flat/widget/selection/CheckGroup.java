@@ -1,14 +1,13 @@
 package flat.widget.selection;
 
-import flat.uxml.Controller;
-import flat.uxml.UXChildren;
-import flat.uxml.UXStyleAttrs;
+import flat.uxml.*;
 import flat.widget.Children;
 import flat.widget.Gadget;
 import flat.widget.Widget;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 public final class CheckGroup implements Gadget {
@@ -18,10 +17,15 @@ public final class CheckGroup implements Gadget {
     private ArrayList<CheckBox> children = new ArrayList<>();
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        if (style == null) return;
+    public void setAttributes(HashMap<Integer, UXValue> attributes, String style) {
+        //
+    }
 
-        String id = style.asString("id");
+    @Override
+    public void applyAttributes(UXTheme theme, Controller controller, UXBuilder builder) {
+        if (theme == null) return;
+
+        /*String id = theme.asString("id");
         if (id != null) {
             this.id = id;
             if (controller != null) {
@@ -29,7 +33,7 @@ public final class CheckGroup implements Gadget {
             }
         }
 
-        style.link("root", (gadget) -> setRoot((CheckBox) gadget));
+        theme.link("root", (gadget) -> setRoot((CheckBox) gadget));*/
     }
 
     @Override

@@ -10,10 +10,7 @@ import flat.graphics.image.Drawable;
 import flat.math.Mathf;
 import flat.math.Vector2;
 import flat.resources.Resource;
-import flat.uxml.Controller;
-import flat.uxml.UXChildren;
-import flat.uxml.UXStyle;
-import flat.uxml.UXStyleAttrs;
+import flat.uxml.*;
 import flat.window.Activity;
 import flat.widget.Gadget;
 import flat.widget.Parent;
@@ -57,42 +54,42 @@ public class Drawer extends Parent {
     }
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        super.applyAttributes(style, controller);
+    public void applyAttributes(UXTheme theme, Controller controller, UXBuilder builder) {
+        super.applyAttributes(theme, controller, builder);
 
-        setFrontWidth(style.asSize("front-width", getFrontWidth()));
-        setFrontHeight(style.asSize("front-height", getFrontHeight()));
-        setHideWidth(style.asSize("hide-width", getHideWidth()));
-        setSlideGestureArea(style.asSize("slide-gesture-area", getSlideGestureArea()));
-        setSlideAnimDuration(style.asNumber("slide-anim-duration", getSlideAnimDuration()));
+        /*setFrontWidth(theme.asSize("front-width", getFrontWidth()));
+        setFrontHeight(theme.asSize("front-height", getFrontHeight()));
+        setHideWidth(theme.asSize("hide-width", getHideWidth()));
+        setSlideGestureArea(theme.asSize("slide-gesture-area", getSlideGestureArea()));
+        setSlideAnimDuration(theme.asNumber("slide-anim-duration", getSlideAnimDuration()));
 
-        style.link("toogle-button", (gadget) -> setToggleButton((Button) gadget.getWidget()));
+        theme.link("toogle-button", builder, (gadget) -> setToggleButton((Button) gadget.getWidget()));*/
     }
 
     @Override
     public void applyStyle() {
         super.applyStyle();
-        UXStyle style = getStyle();
+        /*UXStyle style = getAttrs();
         if (style == null) return;
 
         StateInfo info = getStateInfo();
 
         setColor(style.asColor("color", info, getColor()));
 
-        Resource res = getStyle().asResource("show-icon-image", info);
+        Resource res = getAttrs().asResource("show-icon-image", info);
         if (res != null) {
             Drawable drawable = res.getDrawable();
             if (drawable != null) {
                 setShowIconImage(drawable);
             }
         }
-        res = getStyle().asResource("hide-icon-image", info);
+        res = getAttrs().asResource("hide-icon-image", info);
         if (res != null) {
             Drawable drawable = res.getDrawable();
             if (drawable != null) {
                 setHideIconImage(drawable);
             }
-        }
+        }*/
     }
 
     @Override

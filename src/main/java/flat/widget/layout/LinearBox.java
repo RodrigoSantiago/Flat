@@ -2,8 +2,8 @@ package flat.widget.layout;
 
 import flat.animations.StateInfo;
 import flat.graphics.text.Align;
+import flat.uxml.UXAttrs;
 import flat.widget.Children;
-import flat.widget.Parent;
 import flat.widget.Widget;
 import flat.widget.enuns.Direction;
 import flat.widget.enuns.Visibility;
@@ -22,13 +22,12 @@ public class LinearBox extends Box {
     @Override
     public void applyStyle() {
         super.applyStyle();
-        if (getStyle() == null) return;
-
+        UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
 
-        setDirection(getStyle().asConstant("direction", info, getDirection()));
-        setVerticalAlign(getStyle().asConstant("v-align", info, getVerticalAlign()));
-        setHorizontalAlign(getStyle().asConstant("h-align", info, getHorizontalAlign()));
+        setDirection(attrs.value("direction").asConstant(info, getDirection()));
+        setVerticalAlign(attrs.value("v-align").asConstant(info, getVerticalAlign()));
+        setHorizontalAlign(attrs.value("h-align").asConstant(info, getHorizontalAlign()));
     }
 
     @Override

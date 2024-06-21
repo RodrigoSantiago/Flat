@@ -5,7 +5,8 @@ import flat.events.DrawListener;
 import flat.graphics.SmartContext;
 import flat.math.shapes.Shape;
 import flat.uxml.Controller;
-import flat.uxml.UXStyleAttrs;
+import flat.uxml.UXBuilder;
+import flat.uxml.UXTheme;
 import flat.widget.Widget;
 
 import java.lang.reflect.Method;
@@ -16,14 +17,14 @@ public class Canvas extends Widget {
     private boolean autorefresh;
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        super.applyAttributes(style, controller);
+    public void applyAttributes(UXTheme theme, Controller controller, UXBuilder builder) {
+        super.applyAttributes(theme, controller, builder);
 
-        setAutorefresh(style.asBool("autorefresh", isAutorefresh()));
-        Method handle = style.asListener("on-draw", DrawEvent.class, controller);
+        /*setAutorefresh(theme.asBool("autorefresh", isAutorefresh()));
+        Method handle = theme.linkListener("on-draw", DrawEvent.class, controller);
         if (handle != null) {
             setDrawListener(new DrawListener.AutoDrawListener(controller, handle));
-        }
+        }*/
     }
 
     @Override

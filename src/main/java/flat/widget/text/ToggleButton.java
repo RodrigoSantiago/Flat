@@ -3,17 +3,18 @@ package flat.widget.text;
 import flat.events.ActionEvent;
 import flat.events.ActionListener;
 import flat.uxml.Controller;
-import flat.uxml.UXStyleAttrs;
+import flat.uxml.UXBuilder;
+import flat.uxml.UXTheme;
 
 public class ToggleButton extends Button {
 
     private ActionListener toggleListener;
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        super.applyAttributes(style, controller);
+    public void applyAttributes(UXTheme theme, Controller controller, UXBuilder builder) {
+        super.applyAttributes(theme, controller, builder);
 
-        setActivated(style.asBool("activated", isActivated()));
+        /*setActivated(theme.asBool("activated", isActivated()));*/
     }
 
     @Override

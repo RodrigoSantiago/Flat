@@ -24,9 +24,9 @@ public class ImageView extends Widget {
     public void applyStyle() {
         super.applyStyle();
 
-        StateInfo info = getStateInfo();
+        /*StateInfo info = getStateInfo();
 
-        Resource res = getStyle().asResource("image", info);
+        Resource res = getAttrs().asResource("image", info);
         if (res != null) {
             Drawable drawable = res.getDrawable();
             if (drawable != null) {
@@ -34,11 +34,11 @@ public class ImageView extends Widget {
             }
         }
 
-        setFrame(getStyle().asNumber("frame", info, getFrame()));
-        setSpeed(getStyle().asNumber("speed", info, getSpeed()));
-        setImageScale(getStyle().asConstant("image-scale", ImageScale.NONE));
-        setVerticalAlign(getStyle().asConstant("v-align", Align.Vertical.MIDDLE));
-        setHorizontalAlign(getStyle().asConstant("h-align", Align.Horizontal.CENTER));
+        setFrame(getAttrs().asNumber("frame", info, getFrame()));
+        setSpeed(getAttrs().asNumber("speed", info, getSpeed()));
+        setImageScale(getAttrs().asConstant("image-scale", ImageScale.NONE));
+        setVerticalAlign(getAttrs().asConstant("v-align", Align.Vertical.MIDDLE));
+        setHorizontalAlign(getAttrs().asConstant("h-align", Align.Horizontal.CENTER));*/
     }
 
     @Override

@@ -1,8 +1,9 @@
 package flat.window;
 
-import flat.animations.ActivityTransition;
 import flat.backend.SVG;
 import flat.backend.WL;
+import flat.backend.WLEnums;
+import flat.exception.FlatException;
 import flat.graphics.context.Context;
 import flat.graphics.cursor.Cursor;
 import flat.graphics.image.PixelMap;
@@ -25,8 +26,8 @@ public class Window {
     // Application
     private ActivityFactory factory;
     private Activity activity;
-    private ActivityTransition transition;
-    private final ArrayList<ActivityTransition> transitions = new ArrayList<>();
+    private Activity.Transition transition;
+    private final ArrayList<Activity.Transition> transitions = new ArrayList<>();
 
     // Events
     private ArrayList<EventData> events = new ArrayList<>();
@@ -52,20 +53,20 @@ public class Window {
 
     public Window(ActivityFactory factory, int width, int height, int multiSamples, boolean transparent) {
         if (width <= 0 || height <= 0) {
-            throw new RuntimeException("Invalid application settings (Negative Screen Size)");
+            throw new FlatException("Invalid application settings (Negative Screen Size)");
         }
         if (multiSamples < 0) {
-            throw new RuntimeException("Invalid application settings (Negative Multi Samples)");
+            throw new FlatException("Invalid application settings (Negative Multi Samples)");
         }
 
         windowId = WL.WindowCreate(width, height, multiSamples, transparent);
         if (windowId == 0) {
-            throw new RuntimeException("Invalid context creation");
+            throw new FlatException("Invalid context creation");
         }
         svgId = SVG.Create();
         if (svgId == 0) {
             WL.WindowDestroy(windowId);
-            throw new RuntimeException("Invalid context creation");
+            throw new FlatException("Invalid context creation");
         }
 
         outMouseX = (float) WL.GetCursorX(windowId);
@@ -109,17 +110,30 @@ public class Window {
 
             processEvents();
 
+            activity.refreshScene(getDpi());
+
             loopAnim = activity.animate(loopTime) || loopAnim;
 
-            activity.layout(getClientWidth(), getClientHeight(), getDpi());
+            activity.layout(getClientWidth(), getClientHeight());
 
             loopDraw = activity.draw(context.getSmartContext()) || loopDraw;
         }
 
         // Cursor
         if (cursor != currentCursor) {
+            if (currentCursor == Cursor.NONE) {
+                WL.SetInputMode(windowId, WLEnums.CURSOR, WLEnums.CURSOR_NORMAL);
+            }
             currentCursor = cursor;
-            WL.SetCursor(windowId, currentCursor.getInternalCursor());
+            if (currentCursor == Cursor.NONE) {
+                WL.SetInputMode(windowId, WLEnums.CURSOR, WLEnums.CURSOR_HIDDEN);
+
+            } else if (currentCursor == Cursor.UNSET) {
+                WL.SetCursor(windowId, Cursor.ARROW.getInternalCursor());
+
+            } else {
+                WL.SetCursor(windowId, currentCursor.getInternalCursor());
+            }
         }
 
         // GL Draw
@@ -160,8 +174,8 @@ public class Window {
             show();
 
             activity = factory.build(context);
-            activity.onShow();
-            activity.onStart();
+            activity.show();
+            activity.start();
         }
     }
 
@@ -182,10 +196,10 @@ public class Window {
 
             } else {
                 transition.end();
-                activity.onHide();
+                activity.hide();
 
                 activity = transition.getNext();
-                activity.onStart();
+                activity.start();
 
                 transition = null;
             }
@@ -280,10 +294,10 @@ public class Window {
     }
 
     public void setActivity(Activity next) {
-        setActivity(new ActivityTransition(next));
+        setActivity(new Activity.Transition(next));
     }
 
-    public void setActivity(ActivityTransition activityTransition) {
+    public void setActivity(Activity.Transition activityTransition) {
         transitions.add(activityTransition);
     }
 
@@ -539,12 +553,12 @@ public class Window {
         } else if (transition != null) {
             return false;
 
-        } else if (activity.onCloseRequest(system)) {
+        } else if (activity.closeRequest(system)) {
             closed = true;
             releaseEvents();
 
-            activity.onPause();
-            activity.onHide();
+            activity.pause();
+            activity.hide();
             return true;
 
         }

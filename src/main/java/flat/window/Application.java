@@ -2,6 +2,7 @@ package flat.window;
 
 import flat.backend.FlatLibrary;
 import flat.backend.WL;
+import flat.exception.FlatException;
 import flat.graphics.context.Context;
 import flat.resources.ResourcesManager;
 import flat.window.event.EventData;
@@ -32,11 +33,11 @@ public class Application {
         try {
             FlatLibrary.load(resources.getFlatLibraryFile());
         } catch (Throwable e) {
-            throw new RuntimeException("Failed to load Flat Library");
+            throw new FlatException("Failed to load Flat Library");
         }
 
         if (!WL.Init()) {
-            throw new RuntimeException("Invalid context creation");
+            throw new FlatException("Invalid context creation");
         }
 
         assignedWindow = null;

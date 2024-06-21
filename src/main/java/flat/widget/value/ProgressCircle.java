@@ -5,9 +5,7 @@ import flat.graphics.SmartContext;
 import flat.math.Mathf;
 import flat.math.shapes.Arc;
 import flat.math.stroke.BasicStroke;
-import flat.uxml.Controller;
-import flat.uxml.UXStyle;
-import flat.uxml.UXStyleAttrs;
+import flat.uxml.*;
 import flat.widget.Widget;
 
 public class ProgressCircle extends Widget {
@@ -24,20 +22,20 @@ public class ProgressCircle extends Widget {
     private Arc arc = new Arc(Arc.Type.OPEN);
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        super.applyAttributes(style, controller);
+    public void applyAttributes(UXTheme theme, Controller controller, UXBuilder builder) {
+        super.applyAttributes(theme, controller, builder);
 
-        setProgress(style.asNumber("progress", getProgress()));
-        setAnimationDuration(style.asNumber("animation-duration", getAnimationDuration()));
-        if (style.contains("color")) {
-            setColor(style.asColor("color", getColor0()));
-        }
+        /*setProgress(theme.asNumber("progress", getProgress()));
+        setAnimationDuration(theme.asNumber("animation-duration", getAnimationDuration()));
+        if (theme.contains("color")) {
+            setColor(theme.asColor("color", getColor0()));
+        }*/
     }
 
     @Override
     public void applyStyle() {
         super.applyStyle();
-        UXStyle style = getStyle();
+        /*UXStyle style = getAttrs();
         if (style == null) return;
 
         StateInfo info = getStateInfo();
@@ -47,7 +45,7 @@ public class ProgressCircle extends Widget {
         setColor2(style.asColor("color-2", info, getColor2()));
         setColor3(style.asColor("color-3", info, getColor3()));
 
-        setIndicatorSize(style.asSize("indicator-size", info, getIndicatorSize()));
+        setIndicatorSize(style.asSize("indicator-size", info, getIndicatorSize()));*/
     }
 
     @Override

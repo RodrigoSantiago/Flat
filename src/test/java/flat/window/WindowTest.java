@@ -1,6 +1,5 @@
 package flat.window;
 
-import flat.animations.ActivityTransition;
 import flat.backend.FlatLibrary;
 import flat.backend.GL;
 import flat.backend.SVG;
@@ -180,13 +179,13 @@ public class WindowTest {
         window.processTransitions();
         assertEquals(activityB, window.getActivity());
 
-        verify(activityA, times(1)).onShow();
-        verify(activityA, times(1)).onStart();
-        verify(activityA, times(1)).onPause();
-        verify(activityA, times(1)).onHide();
+        verify(activityA, times(1)).show();
+        verify(activityA, times(1)).start();
+        verify(activityA, times(1)).pause();
+        verify(activityA, times(1)).hide();
 
-        verify(activityB, times(1)).onShow();
-        verify(activityB, times(1)).onStart();
+        verify(activityB, times(1)).show();
+        verify(activityB, times(1)).start();
     }
 
     @Test
@@ -222,8 +221,8 @@ public class WindowTest {
         when(WL.WindowCreate(anyInt(), anyInt(), anyInt(), anyBoolean())).thenReturn(1L);
         when(SVG.Create()).thenReturn(1L);
         when(activityFactory.build(any())).thenReturn(activityA);
-        when(activityA.onCloseRequest(true)).thenReturn(true);
-        when(activityA.onCloseRequest(false)).thenReturn(false);
+        when(activityA.closeRequest(true)).thenReturn(true);
+        when(activityA.closeRequest(false)).thenReturn(false);
 
         Window window = new Window(activityFactory, 800, 600, 1, false);
         window.processStartup();
@@ -234,8 +233,8 @@ public class WindowTest {
         boolean closeC = window.requestClose();
 
         // Assertion
-        verify(activityA, times(1)).onCloseRequest(true);
-        verify(activityA, times(1)).onCloseRequest(false);
+        verify(activityA, times(1)).closeRequest(true);
+        verify(activityA, times(1)).closeRequest(false);
 
         assertFalse(closeA);
         assertTrue(closeB);
@@ -248,14 +247,14 @@ public class WindowTest {
         ActivityFactory activityFactory = mock(ActivityFactory.class);
         Activity activityA = mock(Activity.class);
         Activity activityB = mock(Activity.class);
-        ActivityTransition transition = mock(ActivityTransition.class);
+        Activity.Transition transition = mock(Activity.Transition.class);
         Context context = mock(Context.class);
 
         when(WL.WindowCreate(anyInt(), anyInt(), anyInt(), anyBoolean())).thenReturn(1L);
         when(SVG.Create()).thenReturn(1L);
         when(activityFactory.build(any())).thenReturn(activityA);
-        when(activityA.onCloseRequest(true)).thenReturn(true);
-        when(activityA.onCloseRequest(false)).thenReturn(false);
+        when(activityA.closeRequest(true)).thenReturn(true);
+        when(activityA.closeRequest(false)).thenReturn(false);
         when(transition.isPlaying()).thenReturn(true);
 
         when(Application.createContext(any())).thenReturn(context);
@@ -270,7 +269,7 @@ public class WindowTest {
         boolean closeB = window.onRequestClose(true);
 
         // Assertion
-        verify(activityA, times(0)).onCloseRequest(anyBoolean());
+        verify(activityA, times(0)).closeRequest(anyBoolean());
 
         assertFalse(closeA);
         assertFalse(closeB);

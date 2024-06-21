@@ -7,9 +7,10 @@ import flat.events.PointerEvent;
 import flat.graphics.SmartContext;
 import flat.graphics.image.Drawable;
 import flat.math.Mathf;
-import flat.resources.Resource;
 import flat.uxml.Controller;
-import flat.uxml.UXStyleAttrs;
+import flat.uxml.UXBuilder;
+import flat.uxml.UXTheme;
+import flat.widget.State;
 import flat.widget.Widget;
 
 public class Switch extends Widget {
@@ -22,34 +23,34 @@ public class Switch extends Widget {
     private Drawable icon;
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        super.applyAttributes(style, controller);
+    public void applyAttributes(UXTheme theme, Controller controller, UXBuilder builder) {
+        super.applyAttributes(theme, controller, builder);
 
-        setActivated(style.asBool("activated", isActivated()));
+        /*setActivated(theme.asBool("activated", isActivated()));*/
     }
 
     @Override
     public void applyStyle() {
         super.applyStyle();
-        if (getStyle() == null) return;
+        /*if (getAttrs() == null) return;
 
         StateInfo info = getStateInfo();
 
-        setColor(getStyle().asColor("color", info, getColor()));
+        setColor(getAttrs().asColor("color", info, getColor()));
 
-        float slideAnimation = getStyle().asNumber("slide-animation", info, this.slideAnimation);
+        float slideAnimation = getAttrs().asNumber("slide-animation", info, this.slideAnimation);
         if (slideAnimation != this.slideAnimation) {
             this.slideAnimation = slideAnimation;
             invalidate(false);
         }
 
-        Resource res = getStyle().asResource("icon", info);
+        Resource res = getAttrs().asResource("icon", info);
         if (res != null) {
             Drawable drawable = res.getDrawable();
             if (drawable != null) {
                 setIcon(drawable);
             }
-        }
+        }*/
     }
 
     @Override
@@ -65,7 +66,7 @@ public class Switch extends Widget {
                 getRadiusTop(), getRadiusRight(), getRadiusBottom(), getRadiusLeft(), true);
 
         StateInfo info = getStateInfo();
-        float anim = info.get(StateInfo.ACTIVATED);
+        float anim = info.get(State.ACTIVATED);
 
         Drawable ic = icon;
         if (ic != null) {

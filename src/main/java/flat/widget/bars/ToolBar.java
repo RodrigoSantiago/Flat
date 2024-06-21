@@ -4,10 +4,7 @@ import flat.animations.StateInfo;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Font;
 import flat.graphics.text.Align;
-import flat.uxml.Controller;
-import flat.uxml.UXChildren;
-import flat.uxml.UXStyle;
-import flat.uxml.UXStyleAttrs;
+import flat.uxml.*;
 import flat.widget.Gadget;
 import flat.widget.Menu;
 import flat.widget.Parent;
@@ -17,7 +14,6 @@ import flat.widget.text.Button;
 import flat.widget.text.TextField;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 public class ToolBar extends Parent {
@@ -41,23 +37,23 @@ public class ToolBar extends Parent {
     private int itensShown;
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        super.applyAttributes(style, controller);
+    public void applyAttributes(UXTheme theme, Controller controller, UXBuilder builder) {
+        super.applyAttributes(theme, controller, builder);
 
-        setText(style.asString("text", getText()));
+        /*setText(theme.asString("text", getText()));*/
     }
 
     @Override
     public void applyStyle() {
         super.applyStyle();
-        UXStyle style = getStyle();
+        /*UXStyle style = getAttrs();
         if (style == null) return;
 
         StateInfo info = getStateInfo();
 
         setFont(style.asFont("font", info, getFont()));
         setTextColor(style.asColor("text-color", info, getTextColor()));
-        setTextSize(style.asSize("text-size", info, getTextSize()));
+        setTextSize(style.asSize("text-size", info, getTextSize()));*/
     }
 
     @Override

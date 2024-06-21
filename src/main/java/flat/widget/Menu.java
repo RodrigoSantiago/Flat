@@ -183,19 +183,19 @@ public class Menu extends Scene {
         super.firePointer(pointerEvent);
 
         if (pointerEvent.getSource() == this && pointerEvent.getType() == PointerEvent.RELEASED) {
-            if (activity != null) {
-                activity.hideMenu(this);
-            }
+            hide();
         }
     }
 
     public void show(Activity activity, float x, float y) {
-        activity.showMenu(this, x, y);
+        if (activity.getScene() != null) {
+            activity.getScene().add(this);
+        }
     }
 
     public void hide() {
-        if (activity != null) {
-            activity.hideMenu(this);
+        if (getParent() != null) {
+            getParent().remove(this);
         }
     }
 

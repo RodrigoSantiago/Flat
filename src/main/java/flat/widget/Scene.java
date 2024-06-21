@@ -1,11 +1,14 @@
 package flat.widget;
 
+import flat.exception.FlatException;
 import flat.graphics.SmartContext;
 import flat.uxml.UXChildren;
 import flat.widget.enuns.Visibility;
 import flat.window.Activity;
+import org.tinylog.Logger;
 
 import java.util.HashMap;
+import java.util.List;
 
 public class Scene extends Parent {
 
@@ -13,14 +16,27 @@ public class Scene extends Parent {
     HashMap<String, Widget> idMap = new HashMap<>();
 
     public Scene() {
-
     }
 
     public void setActivity(Activity activity) {
         if (this.activity != activity) {
             Activity prev = this.activity;
-            this.activity = activity;
-            onActivityChange(prev, activity);
+
+            if (activity != null) {
+                if (this.activity == null && activity.getScene() == this) {
+                    this.activity = activity;
+                    onActivityChange(null, activity);
+                } else {
+                    throw new FlatException("The activity cannot be assigned");
+                }
+            } else {
+                if (this.activity.getScene() != this) {
+                    this.activity = null;
+                    onActivityChange(prev, null);
+                } else {
+                    throw new FlatException("The activity cannot be released");
+                }
+            }
         }
     }
 
@@ -93,6 +109,11 @@ public class Scene extends Parent {
     }
 
     @Override
+    public void add(List<Widget> children) {
+        super.add(children);
+    }
+
+    @Override
     public void invalidate(boolean layout) {
         if (getParent() == null) {
             if (activity != null) {
@@ -138,7 +159,7 @@ public class Scene extends Parent {
         if (id != null) {
             Widget old = idMap.put(id, widget);
             if (old != null && old != widget) {
-                System.out.println("ID Overflow");
+                Logger.info("Id override {}", id);
             }
         }
         if (!widget.isScene() && widget.children != null) {
@@ -152,7 +173,7 @@ public class Scene extends Parent {
         String id = widget.getId();
         if (id != null) {
             if (!idMap.remove(id, widget)) {
-                System.out.println("The id '"+ id+"' wasn't assigned");
+                Logger.info("Id {} not assigned", id);
             }
         }
         if (!widget.isScene() && widget.children != null) {
@@ -171,7 +192,7 @@ public class Scene extends Parent {
         if (newID != null) {
             Widget old = idMap.put(newID, widget);
             if (old != null && old != widget) {
-                System.out.println("ID Overflow");
+                Logger.info("Id override {}", newID);
             }
         }
     }

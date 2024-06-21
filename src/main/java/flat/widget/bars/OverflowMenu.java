@@ -2,7 +2,7 @@ package flat.widget.bars;
 
 import flat.events.PointerEvent;
 import flat.math.Vector2;
-import flat.uxml.UXStyleAttrs;
+import flat.uxml.UXAttrs;
 import flat.widget.Menu;
 import flat.widget.dialogs.MenuItem;
 import flat.widget.text.Button;
@@ -15,14 +15,14 @@ public class OverflowMenu extends Button {
         Menu menu = getContextMenu();
         if (menu == null) {
             menu = new Menu();
-            menu.applyAttributes(new UXStyleAttrs("", getStyle().getTheme().getStyle("menu")), null);
+            menu.applyAttributes(getAttrs().getTheme(), null, null);
             setContextMenu(menu);
         }
 
         menu.removeAll();
         for (ToolItem item : items) {
             MenuItem menuItem = new MenuItem();
-            menuItem.applyAttributes(new UXStyleAttrs("", item.getStyle().getTheme().getStyle("menuitem")), null);
+            menuItem.applyAttributes(getAttrs().getTheme(), null, null);
             menuItem.setText(item.getText());
             menu.add(menuItem);
         }

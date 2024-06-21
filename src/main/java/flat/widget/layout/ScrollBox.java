@@ -4,9 +4,7 @@ import flat.animations.StateInfo;
 import flat.events.ScrollEvent;
 import flat.graphics.SmartContext;
 import flat.math.shapes.Shape;
-import flat.uxml.Controller;
-import flat.uxml.UXChildren;
-import flat.uxml.UXStyleAttrs;
+import flat.uxml.*;
 import flat.widget.Gadget;
 import flat.widget.Parent;
 import flat.widget.Widget;
@@ -27,22 +25,22 @@ public class ScrollBox extends Parent {
     }
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        super.applyAttributes(style, controller);
+    public void applyAttributes(UXTheme theme, Controller controller, UXBuilder builder) {
+        super.applyAttributes(theme, controller, builder);
 
-        setScrollX(style.asNumber("scroll-x", getScrollX()));
-        setScrollY(style.asNumber("scroll-y", getScrollY()));
+        /*setScrollX(theme.asNumber("scroll-x", getScrollX()));
+        setScrollY(theme.asNumber("scroll-y", getScrollY()));*/
     }
 
     @Override
     public void applyStyle() {
         super.applyStyle();
-        if (getStyle() == null) return;
+        /*if (getAttrs() == null) return;
 
         StateInfo info = getStateInfo();
 
-        setHorizontalPolicy(getStyle().asConstant("horizontal-policy", info, getHorizontalPolicy()));
-        setVerticalPolicy(getStyle().asConstant("vertical-policy", info, getVerticalPolicy()));
+        setHorizontalPolicy(getAttrs().asConstant("horizontal-policy", info, getHorizontalPolicy()));
+        setVerticalPolicy(getAttrs().asConstant("vertical-policy", info, getVerticalPolicy()));*/
     }
 
     @Override

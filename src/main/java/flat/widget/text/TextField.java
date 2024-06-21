@@ -11,18 +11,14 @@ import flat.graphics.text.Align;
 import flat.math.Vector2;
 import flat.math.shapes.Rectangle;
 import flat.math.shapes.Shape;
-import flat.resources.Resource;
-import flat.uxml.Controller;
-import flat.uxml.UXChildren;
-import flat.uxml.UXStyle;
-import flat.uxml.UXStyleAttrs;
+import flat.uxml.*;
 import flat.widget.Menu;
+import flat.widget.State;
 import flat.widget.Widget;
 import flat.widget.dialogs.DropdownListener;
 import flat.widget.dialogs.DropdownMenu;
 import flat.widget.effects.RippleEffect;
 
-import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -105,24 +101,24 @@ public class TextField extends Widget {
     }
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        super.applyAttributes(style, controller);
+    public void applyAttributes(UXTheme theme, Controller controller, UXBuilder builder) {
+        super.applyAttributes(theme, controller, builder);
 
-        setLabelText(style.asString("label-text", getLabelText()));
-        setHelpText(style.asString("help-text", getHelpText()));
-        setSingleLine(style.asBool("single-line", isSingleLine()));
-        setWrapText(style.asBool("wrap-text", isWrapText()));
+        /*setLabelText(theme.asString("label-text", getLabelText()));
+        setHelpText(theme.asString("help-text", getHelpText()));
+        setSingleLine(theme.asBool("single-line", isSingleLine()));
+        setWrapText(theme.asBool("wrap-text", isWrapText()));
 
-        setMinLines((int) style.asNumber("min-lines", getMinLines()));
-        setMaxLines((int) style.asNumber("max-lines", getMaxLines()));
+        setMinLines((int) theme.asNumber("min-lines", getMinLines()));
+        setMaxLines((int) theme.asNumber("max-lines", getMaxLines()));
 
-        setText(style.asString("text", getText()));
-        setPlaceholder(style.asString("placeholder", getPlaceholder()));
+        setText(theme.asString("text", getText()));
+        setPlaceholder(theme.asString("placeholder", getPlaceholder()));
 
-        Method handle = style.asListener("on-action", ActionEvent.class, controller);
+        Method handle = theme.linkListener("on-action", ActionEvent.class, controller);
         if (handle != null) {
             setActionListener(new ActionListener.AutoActionListener(controller, handle));
-        }
+        }*/
     }
 
     @Override
@@ -143,7 +139,7 @@ public class TextField extends Widget {
     @Override
     public void applyStyle() {
         super.applyStyle();
-        UXStyle style = getStyle();
+        /*UXStyle style = getAttrs();
         if (style == null) return;
 
         StateInfo info = getStateInfo();
@@ -175,14 +171,14 @@ public class TextField extends Widget {
         setActRippleEnabled(style.asBool("act-ripple", info, isActRippleEnabled()));
         setActRippleColor(style.asColor("act-ripple-color", info, getActRippleColor()));
 
-        Resource res = getStyle().asResource("leading-icon", info);
+        Resource res = getAttrs().asResource("leading-icon", info);
         if (res != null) {
             Drawable drawable = res.getDrawable();
             if (drawable != null) {
                 setLeadingIcon(drawable);
             }
         }
-        res = getStyle().asResource("act-icon", info);
+        res = getAttrs().asResource("act-icon", info);
         if (res != null) {
             Drawable drawable = res.getDrawable();
             if (drawable != null) {
@@ -190,7 +186,7 @@ public class TextField extends Widget {
             }
         }
         setLeadingSpacing(style.asSize("leading-spacing", info, getLeadingSpacing()));
-        setActSpacing(style.asSize("act-spacing", info, getActSpacing()));
+        setActSpacing(style.asSize("act-spacing", info, getActSpacing()));*/
     }
 
     @Override
@@ -211,7 +207,7 @@ public class TextField extends Widget {
         }
 
         StateInfo info = getStateInfo();
-        float focusTime = info.get(StateInfo.FOCUSED);
+        float focusTime = info.get(State.FOCUSED);
         if (labelText != null) {
             float hLabel = labelFont.getHeight(highLabelTextSize);
             if (size == 0 && focusTime < 1 && !highLabelFixed) {

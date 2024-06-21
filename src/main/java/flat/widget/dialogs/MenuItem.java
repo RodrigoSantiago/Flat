@@ -9,9 +9,7 @@ import flat.graphics.text.Align;
 import flat.math.Vector2;
 import flat.math.shapes.Shape;
 import flat.resources.Resource;
-import flat.uxml.Controller;
-import flat.uxml.UXChildren;
-import flat.uxml.UXStyleAttrs;
+import flat.uxml.*;
 import flat.window.Activity;
 import flat.widget.Menu;
 import flat.widget.Parent;
@@ -48,15 +46,15 @@ public class MenuItem extends Parent {
     private Menu subMenu;
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        super.applyAttributes(style, controller);
+    public void applyAttributes(UXTheme theme, Controller controller, UXBuilder builder) {
+        super.applyAttributes(theme, controller, builder);
 
-        setText(style.asString("text", getText()));
+        /*setText(theme.asString("text", getText()));
 
-        Method handle = style.asListener("on-action", ActionEvent.class, controller);
+        Method handle = theme.linkListener("on-action", ActionEvent.class, controller);
         if (handle != null) {
             setActionListener(new ActionListener.AutoActionListener(controller, handle));
-        }
+        }*/
     }
 
     @Override
@@ -70,19 +68,19 @@ public class MenuItem extends Parent {
     @Override
     public void applyStyle() {
         super.applyStyle();
-        if (getStyle() == null) return;
+        /*if (getAttrs() == null) return;
 
         StateInfo info = getStateInfo();
 
-        setFont(getStyle().asFont("font", info, getFont()));
-        setTextSize(getStyle().asSize("text-size", info, getTextSize()));
-        setTextColor(getStyle().asColor("text-color", info, getTextColor()));
-        setTextAllCaps(getStyle().asBool("text-all-caps", info, isTextAllCaps()));
+        setFont(getAttrs().asFont("font", info, getFont()));
+        setTextSize(getAttrs().asSize("text-size", info, getTextSize()));
+        setTextColor(getAttrs().asColor("text-color", info, getTextColor()));
+        setTextAllCaps(getAttrs().asBool("text-all-caps", info, isTextAllCaps()));
 
-        setVerticalAlign(getStyle().asConstant("vertical-align", info, getVerticalAlign()));
-        setHorizontalAlign(getStyle().asConstant("horizontal-align", info, getHorizontalAlign()));
+        setVerticalAlign(getAttrs().asConstant("vertical-align", info, getVerticalAlign()));
+        setHorizontalAlign(getAttrs().asConstant("horizontal-align", info, getHorizontalAlign()));
 
-        Resource res = getStyle().asResource("icon-image", info);
+        Resource res = getAttrs().asResource("icon-image", info);
         if (res != null) {
             Drawable drawable = res.getDrawable();
             if (drawable != null) {
@@ -90,16 +88,16 @@ public class MenuItem extends Parent {
             }
         }
 
-        setIconSpacing(getStyle().asSize("icon-spacing", info, getIconSpacing()));
+        setIconSpacing(getAttrs().asSize("icon-spacing", info, getIconSpacing()));
 
-        res = getStyle().asResource("action-image", info);
+        res = getAttrs().asResource("action-image", info);
         if (res != null) {
             Drawable drawable = res.getDrawable();
             if (drawable != null) {
                 setActionImage(drawable);
             }
         }
-        setActionSpacing(getStyle().asSize("action-spacing", info, getIconSpacing()));
+        setActionSpacing(getAttrs().asSize("action-spacing", info, getIconSpacing()));*/
     }
 
     @Override

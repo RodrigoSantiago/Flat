@@ -44,6 +44,12 @@ public abstract class Parent extends Widget {
         }
     }
 
+    protected void add(List<Widget> children) {
+        for (Widget child : children) {
+            add(child);
+        }
+    }
+
     public void remove(Widget widget) {
         children.remove(widget);
         if (widget.parent == this) {

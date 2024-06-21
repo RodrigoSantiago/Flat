@@ -55,8 +55,7 @@ public class Widget implements Gadget {
     private float offsetWidth, offsetHeight;
 
     private int visibility = Visibility.VISIBLE.ordinal();
-    private Cursor cursor;
-    private UXTheme theme;
+    private Cursor cursor = Cursor.UNSET;
 
     private Menu contextMenu;
 
@@ -92,7 +91,8 @@ public class Widget implements Gadget {
     //---------------------
     //    Style
     //---------------------
-    private UXStyle style;
+    private UXAttrs attrs;
+    private UXTheme theme;
     private byte states = 1;
     private StateAnimation stateAnimation;
 
@@ -114,62 +114,62 @@ public class Widget implements Gadget {
     private float transitionDuration;
 
     public Widget() {
-    }
-
-    public Widget(UXStyleAttrs style) {
-        this(style, null);
-    }
-
-    public Widget(UXStyleAttrs style, Controller controller) {
-        applyAttributes(style, controller);
+        attrs = new UXAttrs(getClass().getSimpleName().toLowerCase());
     }
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        if (style == null) return;
+    public void setAttributes(HashMap<Integer, UXValue> attributes, String style) {
+        attrs.setAttributes(attributes);
+        attrs.setName(style);
+    }
 
-        String id = style.asString("id");
+    @Override
+    public void applyAttributes(UXTheme theme, Controller controller, UXBuilder builder) {
+        UXAttrs attrs = getAttrs();
+        attrs.setTheme(theme);
+
+        String id = attrs.att("id").asString();
         if (id != null) {
             setId(id);
             if (controller != null) {
                 controller.assign(id, this);
             }
         }
+        setEnabled(attrs.att("enabled").asBool(null, isEnabled()));
 
-        Method handle = style.asListener("on-pointer", PointerEvent.class, controller);
+        Method handle = attrs.linkListener("on-pointer", PointerEvent.class, controller);
         if (handle != null) {
             setPointerListener(new PointerListener.AutoPointerListener(controller, handle));
         }
-        handle = style.asListener("on-hover", HoverEvent.class, controller);
+        handle = attrs.linkListener("on-hover", HoverEvent.class, controller);
         if (handle != null) {
             setHoverListener(new HoverListener.AutoHoverListener(controller, handle));
         }
-        handle = style.asListener("on-scroll", ScrollEvent.class, controller);
+        handle = attrs.linkListener("on-scroll", ScrollEvent.class, controller);
         if (handle != null) {
             setScrollListener(new ScrollListener.AutoScrollListener(controller, handle));
         }
-        handle = style.asListener("on-key", KeyEvent.class, controller);
+        handle = attrs.linkListener("on-key", KeyEvent.class, controller);
         if (handle != null) {
             setKeyListener(new KeyListener.AutoKeyListener(controller, handle));
         }
-        handle = style.asListener("on-drag", DragEvent.class, controller);
+        handle = attrs.linkListener("on-drag", DragEvent.class, controller);
         if (handle != null) {
             setDragListener(new DragListener.AutoDragListener(controller, handle));
         }
-        handle = style.asListener("on-focus", FocusEvent.class, controller);
+        handle = attrs.linkListener("on-focus", FocusEvent.class, controller);
         if (handle != null) {
             setFocusListener(new FocusListener.AutoFocusListener(controller, handle));
         }
 
-        setNextFocusId(style.asString("next-focus-id", getNextFocusId()));
-        setPrevFocusId(style.asString("prev-focus-id", getPrevFocusId()));
-        setStyle(style);
+        setNextFocusId(attrs.att("next-focus-id").asString(null, getNextFocusId()));
+        setPrevFocusId(attrs.att("prev-focus-id").asString(null, getPrevFocusId()));
     }
 
     public void applyStyle() {
-        if (style == null) return;
+        UXAttrs attrs = getAttrs();
 
-        setTransitionDuration(style.asNumber("transition-duration", getTransitionDuration()));
+        setTransitionDuration(attrs.value("transition-duration").asNumber(null, getTransitionDuration()));
 
         // Disabled State Overlay
         if (parent != null) {
@@ -201,65 +201,55 @@ public class Widget implements Gadget {
 
         StateInfo info = getStateInfo();
 
-        setEnabled(style.asBool("enabled", info, isEnabled()));
-        setVisibility(style.asConstant("visibility", info, getVisibility()));
+        setVisibility(attrs.value("visibility").asConstant(info, getVisibility()));
+        setCursor(attrs.value("cursor").asConstant(info, getCursor()));
 
-        switch (style.asString("cursor", info, String.valueOf(getCursor())).toLowerCase()) {
-            case "arrow": setCursor(Cursor.ARROW); break;
-            case "crosshair": setCursor(Cursor.CROSSHAIR);break;
-            case "hand": setCursor(Cursor.HAND);break;
-            case "ibeam": setCursor(Cursor.IBEAM);break;
-            case "hresize": setCursor(Cursor.HRESIZE);break;
-            case "vresize": setCursor(Cursor.VRESIZE);break;
-            default: setCursor(null);
-        }
+        setFocusable(attrs.value("focusable").asBool(info, isFocusable()));
+        setClickable(attrs.value("clickable").asBool(info, isClickable()));
 
-        setFocusable(style.asBool("focusable", info, isFocusable()));
-        setClickable(style.asBool("clickable", info, isClickable()));
+        setPrefWidth(attrs.value("width").asSize(info, getPrefWidth()));
+        setPrefHeight(attrs.value("height").asSize(info, getPrefHeight()));
+        setMaxWidth(attrs.value("max-width").asSize(info, getMaxWidth()));
+        setMaxHeight(attrs.value("max-height").asSize(info, getMaxHeight()));
+        setMinWidth(attrs.value("min-width").asSize(info, getMinWidth()));
+        setMinHeight(attrs.value("min-height").asSize(info, getMinHeight()));
 
-        setPrefWidth(style.asSize("width", info, getPrefWidth()));
-        setPrefHeight(style.asSize("height", info, getPrefHeight()));
-        setMaxWidth(style.asSize("max-width", info, getMaxWidth()));
-        setMaxHeight(style.asSize("max-height", info, getMaxHeight()));
-        setMinWidth(style.asSize("min-width", info, getMinWidth()));
-        setMinHeight(style.asSize("min-height", info, getMinHeight()));
+        setTranslateX(attrs.value("x").asSize(info, getTranslateX()));
+        setTranslateY(attrs.value("y").asSize(info, getTranslateY()));
+        setCenterX(attrs.value("center-x").asNumber(info, getCenterX()));
+        setCenterY(attrs.value("center-y").asNumber(info, getCenterY()));
+        setScaleX(attrs.value("scale-x").asNumber(info, getScaleX()));
+        setScaleY(attrs.value("scale-y").asNumber(info, getScaleY()));
+        setOpacity(attrs.value("opacity").asNumber(info, getOpacity()));
 
-        setTranslateX(style.asSize("x", info, getTranslateX()));
-        setTranslateY(style.asSize("y", info, getTranslateY()));
-        setCenterX(style.asNumber("centre-x", info, getCenterX()));
-        setCenterY(style.asNumber("centre-y", info, getCenterY()));
-        setScaleX(style.asNumber("scale-x", info, getScaleX()));
-        setScaleY(style.asNumber("scale-y", info, getScaleY()));
-        setOpacity(style.asNumber("opacity", info, getOpacity()));
+        setRotate(attrs.value("rotate").asAngle(info, getRotate()));
 
-        setRotate(style.asAngle("rotate", info, getRotate()));
+        setElevation(attrs.value("elevation").asSize(info, getElevation()));
+        setShadowEnabled(attrs.value("shadow").asBool(info, isShadowEnabled()));
 
-        setElevation(style.asSize("elevation", info, getElevation()));
-        setShadowEnabled(style.asBool("shadow", info, isShadowEnabled()));
+        setRippleEnabled(attrs.value("ripple").asBool(info, isRippleEnabled()));
+        setRippleColor(attrs.value("ripple-color").asColor(info, getRippleColor()));
+        setRippleOverflow(attrs.value("ripple-overflow").asBool(info, isRippleOverflow()));
 
-        setRippleEnabled(style.asBool("ripple", info, isRippleEnabled()));
-        setRippleColor(style.asColor("ripple-color", info, getRippleColor()));
-        setRippleOverflow(style.asBool("ripple-overflow", info, isRippleOverflow()));
+        setMarginTop(attrs.value("margin-top").asSize(info, getMarginTop()));
+        setMarginRight(attrs.value("margin-right").asSize(info, getMarginRight()));
+        setMarginBottom(attrs.value("margin-bottom").asSize(info, getMarginBottom()));
+        setMarginLeft(attrs.value("margin-left").asSize(info, getMarginLeft()));
 
-        setMarginTop(style.asSize("margin-top", info, getMarginTop()));
-        setMarginRight(style.asSize("margin-right", info, getMarginRight()));
-        setMarginBottom(style.asSize("margin-bottom", info, getMarginBottom()));
-        setMarginLeft(style.asSize("margin-left", info, getMarginLeft()));
+        setPaddingTop(attrs.value("padding-top").asSize(info, getPaddingTop()));
+        setPaddingRight(attrs.value("padding-right").asSize(info, getPaddingRight()));
+        setPaddingBottom(attrs.value("padding-bottom").asSize(info, getPaddingBottom()));
+        setPaddingLeft(attrs.value("padding-left").asSize(info, getPaddingLeft()));
 
-        setPaddingTop(style.asSize("padding-top", info, getPaddingTop()));
-        setPaddingRight(style.asSize("padding-right", info, getPaddingRight()));
-        setPaddingBottom(style.asSize("padding-bottom", info, getPaddingBottom()));
-        setPaddingLeft(style.asSize("padding-left", info, getPaddingLeft()));
+        setRadiusTop(attrs.value("radius-top").asSize(info, getRadiusTop()));
+        setRadiusRight(attrs.value("radius-right").asSize(info, getRadiusRight()));
+        setRadiusBottom(attrs.value("radius-bottom").asSize(info, getRadiusBottom()));
+        setRadiusLeft(attrs.value("radius-left").asSize(info, getRadiusLeft()));
 
-        setRadiusTop(style.asSize("radius-top", info, getRadiusTop()));
-        setRadiusRight(style.asSize("radius-right", info, getRadiusRight()));
-        setRadiusBottom(style.asSize("radius-bottom", info, getRadiusBottom()));
-        setRadiusLeft(style.asSize("radius-left", info, getRadiusLeft()));
-
-        setBackgroundColor(style.asColor("background-color", info, getBackgroundColor()));
-        setBorderRound(style.asBool("border-round", info, isBorderRound()));
-        setBorderColor(style.asColor("border-color", info, getBorderColor()));
-        setBorderWidth(style.asSize("border-width", info, getBorderWidth()));
+        setBackgroundColor(attrs.value("background-color").asColor(info, getBackgroundColor()));
+        setBorderRound(attrs.value("border-round").asBool(info, isBorderRound()));
+        setBorderColor(attrs.value("border-color").asColor(info, getBorderColor()));
+        setBorderWidth(attrs.value("border-width").asSize(info, getBorderWidth()));
     }
 
     @Override
@@ -267,6 +257,18 @@ public class Widget implements Gadget {
         Menu menu = children.nextMenu();
         if (menu != null) {
             setContextMenu(menu);
+        }
+    }
+
+    public void applyTheme() {
+        attrs.setTheme(getTheme());
+        applyStyle();
+
+        for (Widget child : getChildrenIterable()) {
+            child.applyTheme();
+        }
+        if (contextMenu != null) {
+            contextMenu.applyTheme();
         }
     }
 
@@ -464,6 +466,18 @@ public class Widget implements Gadget {
         }
     }
 
+    public void setTheme(UXTheme theme) {
+        if (this.theme != theme) {
+            this.theme = theme;
+
+            invalidate(true);
+        }
+    }
+
+    public UXTheme getTheme() {
+        return this.theme != null ? this.theme : parent != null ? parent.getTheme() : null;
+    }
+
     /**
      * Return the top-most scene, direct assigned to an activity
      *
@@ -635,7 +649,10 @@ public class Widget implements Gadget {
     }
 
     public void setClickable(boolean clickable) {
-        this.clickable = clickable;
+        if (this.clickable != clickable) {
+            this.clickable = clickable;
+            attrs.unfollow("clickable", clickable);
+        }
     }
 
     public Menu getContextMenu() {
@@ -669,7 +686,7 @@ public class Widget implements Gadget {
     // ---- STATES ---- //
     protected void setStates(byte bitmask) {
         if (states != bitmask) {
-            boolean applyStyle = getStyle() != null && getStyle().containsChange(states, bitmask);
+            boolean applyStyle = getAttrs() != null && getAttrs().containsChange(states, bitmask);
             states = bitmask;
 
             if (transitionDuration > 0) {
@@ -698,28 +715,24 @@ public class Widget implements Gadget {
         return stateAnimation != null ? stateAnimation : StateBitset.getState(states);
     }
 
-    public UXStyle getStyle() {
-        return this.style;
+    protected UXAttrs getAttrs() {
+        return this.attrs;
     }
 
-    public void setStyle(UXStyle style) {
-        if (this.style != style) {
-            if (style == null) {
-                this.style = null;
-            } else {
-                this.style = style instanceof UXStyleAttrs ?
-                        (UXStyleAttrs) style : new UXStyleAttrs("attributes", style, null);
-                applyStyle();
-            }
+    public String getStyle() {
+        return this.attrs.getName();
+    }
+
+    public void setStyle(String style) {
+        if (!Objects.equals(this.attrs.getName(), style)) {
+            attrs.setName(style);
+            applyStyle();
         }
     }
 
     public void unfollowStyleProperty(String name) {
-        if (style != null) {
-            if (style.getClass() == UXStyle.class) {
-                style = new UXStyleAttrs("attributes", style, null);
-            }
-            ((UXStyleAttrs) style).unfollow(name);
+        if (attrs != null) {
+            attrs.unfollow(name);
         }
     }
 
@@ -732,6 +745,7 @@ public class Widget implements Gadget {
 
         if (this.transitionDuration != transitionDuration) {
             this.transitionDuration = transitionDuration;
+            attrs.unfollow("transition-duration", transitionDuration);
 
             if (transitionDuration == 0) {
                 if (stateAnimation != null) {
@@ -857,6 +871,7 @@ public class Widget implements Gadget {
     public void setFocusable(boolean focusable) {
         if (this.focusable != focusable) {
             this.focusable = focusable;
+            attrs.unfollow("focusable", focusable);
 
             if (!focusable) {
                 setFocused(false);
@@ -1006,6 +1021,8 @@ public class Widget implements Gadget {
     public void setMarginTop(float marginTop) {
         if (this.marginTop != marginTop) {
             this.marginTop = marginTop;
+            attrs.unfollow("margin-top", marginTop);
+
             updateRect();
             invalidate(true);
         }
@@ -1018,6 +1035,8 @@ public class Widget implements Gadget {
     public void setMarginRight(float marginRight) {
         if (this.marginRight != marginRight) {
             this.marginRight = marginRight;
+            attrs.unfollow("margin-right", marginRight);
+
             updateRect();
             invalidate(true);
         }
@@ -1030,6 +1049,8 @@ public class Widget implements Gadget {
     public void setMarginBottom(float marginBottom) {
         if (this.marginBottom != marginBottom) {
             this.marginBottom = marginBottom;
+            attrs.unfollow("margin-bottom", marginBottom);
+
             updateRect();
             invalidate(true);
         }
@@ -1042,6 +1063,8 @@ public class Widget implements Gadget {
     public void setMarginLeft(float marginLeft) {
         if (this.marginLeft != marginLeft) {
             this.marginLeft = marginLeft;
+            attrs.unfollow("margin-left", marginLeft);
+
             updateRect();
             invalidate(true);
         }
@@ -1053,6 +1076,10 @@ public class Widget implements Gadget {
             marginRight = right;
             marginBottom = bottom;
             marginLeft = left;
+            attrs.unfollow("margin-top", marginTop);
+            attrs.unfollow("margin-right", marginRight);
+            attrs.unfollow("margin-bottom", marginBottom);
+            attrs.unfollow("margin-left", marginLeft);
 
             updateRect();
             invalidate(true);
@@ -1066,6 +1093,8 @@ public class Widget implements Gadget {
     public void setPaddingTop(float paddingTop) {
         if (this.paddingTop != paddingTop) {
             this.paddingTop = paddingTop;
+            attrs.unfollow("padding-top", paddingTop);
+
             invalidate(true);
         }
     }
@@ -1077,6 +1106,8 @@ public class Widget implements Gadget {
     public void setPaddingRight(float paddingRight) {
         if (this.paddingRight != paddingRight) {
             this.paddingRight = paddingRight;
+            attrs.unfollow("padding-right", paddingRight);
+
             invalidate(true);
         }
     }
@@ -1088,6 +1119,8 @@ public class Widget implements Gadget {
     public void setPaddingBottom(float paddingBottom) {
         if (this.paddingBottom != paddingBottom) {
             this.paddingBottom = paddingBottom;
+            attrs.unfollow("padding-bottom", paddingBottom);
+
             invalidate(true);
         }
     }
@@ -1099,6 +1132,8 @@ public class Widget implements Gadget {
     public void setPaddingLeft(float paddingLeft) {
         if (this.paddingLeft != paddingLeft) {
             this.paddingLeft = paddingLeft;
+            attrs.unfollow("padding-left", paddingLeft);
+
             invalidate(true);
         }
     }
@@ -1109,6 +1144,10 @@ public class Widget implements Gadget {
             paddingRight = right;
             paddingBottom = bottom;
             paddingLeft = left;
+            attrs.unfollow("padding-top", paddingTop);
+            attrs.unfollow("padding-right", paddingRight);
+            attrs.unfollow("padding-bottom", paddingBottom);
+            attrs.unfollow("padding-left", paddingLeft);
 
             invalidate(true);
         }
@@ -1121,6 +1160,7 @@ public class Widget implements Gadget {
     public void setMinWidth(float minWidth) {
         if (this.minWidth != minWidth) {
             this.minWidth = minWidth;
+            attrs.unfollow("min-width", minWidth);
 
             invalidate(true);
         }
@@ -1133,14 +1173,21 @@ public class Widget implements Gadget {
     public void setMinHeight(float minHeight) {
         if (this.minHeight != minHeight) {
             this.minHeight = minHeight;
+            attrs.unfollow("min-height", minHeight);
 
             invalidate(true);
         }
     }
 
-    public void setMinSize(float width, float height) {
-        setMinWidth(width);
-        setMinHeight(height);
+    public void setMinSize(float minWidth, float minHeight) {
+        if (this.minWidth != minWidth || this.minHeight != minHeight) {
+            this.minWidth = minWidth;
+            this.minHeight = minHeight;
+            attrs.unfollow("min-width", minWidth);
+            attrs.unfollow("min-height", minHeight);
+
+            invalidate(true);
+        }
     }
 
     public float getMaxWidth() {
@@ -1150,6 +1197,7 @@ public class Widget implements Gadget {
     public void setMaxWidth(float maxWidth) {
         if (this.maxWidth != maxWidth) {
             this.maxWidth = maxWidth;
+            attrs.unfollow("max-width", maxWidth);
 
             invalidate(true);
         }
@@ -1162,14 +1210,21 @@ public class Widget implements Gadget {
     public void setMaxHeight(float maxHeight) {
         if (this.maxHeight != maxHeight) {
             this.maxHeight = maxHeight;
+            attrs.unfollow("max-height", maxHeight);
 
             invalidate(true);
         }
     }
 
-    public void setMaxSize(float width, float height) {
-        setMaxWidth(width);
-        setMaxHeight(height);
+    public void setMaxSize(float maxWidth, float maxHeight) {
+        if (this.maxWidth != maxWidth || this.maxHeight != maxHeight) {
+            this.maxWidth = maxWidth;
+            this.maxHeight = maxHeight;
+            attrs.unfollow("max-width", maxWidth);
+            attrs.unfollow("max-height", maxHeight);
+
+            invalidate(true);
+        }
     }
 
     public float getPrefWidth() {
@@ -1179,6 +1234,7 @@ public class Widget implements Gadget {
     public void setPrefWidth(float prefWidth) {
         if (this.prefWidth != prefWidth) {
             this.prefWidth = prefWidth;
+            attrs.unfollow("width", prefWidth);
 
             invalidate(true);
         }
@@ -1191,14 +1247,21 @@ public class Widget implements Gadget {
     public void setPrefHeight(float prefHeight) {
         if (this.prefHeight != prefHeight) {
             this.prefHeight = prefHeight;
+            attrs.unfollow("height", prefHeight);
 
             invalidate(true);
         }
     }
 
-    public void setPrefSize(float width, float height) {
-        setPrefWidth(width);
-        setPrefHeight(height);
+    public void setPrefSize(float prefWidth, float prefHeight) {
+        if (this.prefWidth != prefWidth || this.prefHeight != prefHeight) {
+            this.prefWidth = prefWidth;
+            this.prefHeight = prefHeight;
+            attrs.unfollow("width", prefWidth);
+            attrs.unfollow("height", prefHeight);
+
+            invalidate(true);
+        }
     }
 
     public float getCenterX() {
@@ -1208,6 +1271,7 @@ public class Widget implements Gadget {
     public void setCenterX(float centerX) {
         if (this.centerX != centerX) {
             this.centerX = centerX;
+            attrs.unfollow("center-x", centerX);
 
             invalidate(false);
             invalidateTransform();
@@ -1221,6 +1285,7 @@ public class Widget implements Gadget {
     public void setCenterY(float centerY) {
         if (this.centerY != centerY) {
             this.centerY = centerY;
+            attrs.unfollow("center-y", centerY);
 
             invalidate(false);
             invalidateTransform();
@@ -1234,6 +1299,7 @@ public class Widget implements Gadget {
     public void setTranslateX(float translateX) {
         if (this.translateX != translateX) {
             this.translateX = translateX;
+            attrs.unfollow("translate-x", translateX);
 
             invalidate(false);
             invalidateTransform();
@@ -1247,6 +1313,7 @@ public class Widget implements Gadget {
     public void setTranslateY(float translateY) {
         if (this.translateY != translateY) {
             this.translateY = translateY;
+            attrs.unfollow("translate-y", translateY);
 
             invalidate(false);
             invalidateTransform();
@@ -1260,6 +1327,7 @@ public class Widget implements Gadget {
     public void setScaleX(float scaleX) {
         if (this.scaleX != scaleX) {
             this.scaleX = scaleX;
+            attrs.unfollow("scale-x", scaleX);
 
             invalidate(false);
             invalidateTransform();
@@ -1273,6 +1341,7 @@ public class Widget implements Gadget {
     public void setScaleY(float scaleY) {
         if (this.scaleY != scaleY) {
             this.scaleY = scaleY;
+            attrs.unfollow("scale-y", scaleY);
 
             invalidate(false);
             invalidateTransform();
@@ -1288,6 +1357,7 @@ public class Widget implements Gadget {
 
         if (this.rotate != rotate) {
             this.rotate = rotate;
+            attrs.unfollow("rotate", rotate);
 
             invalidate(false);
             invalidateTransform();
@@ -1301,6 +1371,7 @@ public class Widget implements Gadget {
     public void setElevation(float elevation) {
         if (this.elevation != elevation) {
             this.elevation = elevation;
+            attrs.unfollow("elevation", elevation);
 
             invalidate(true);
             if (parent != null) {
@@ -1320,13 +1391,14 @@ public class Widget implements Gadget {
 
         if (this.visibility != visibility.ordinal()) {
             this.visibility = visibility.ordinal();
+            attrs.unfollow("visibility", visibility);
 
             invalidate(true);
         }
     }
 
     public Cursor getShowCursor() {
-        return cursor == null ? parent == null ? null : parent.getShowCursor() : cursor;
+        return cursor == Cursor.UNSET && parent != null ? parent.getShowCursor() : cursor;
     }
 
     public Cursor getCursor() {
@@ -1336,6 +1408,7 @@ public class Widget implements Gadget {
     public void setCursor(Cursor cursor) {
         if (this.cursor != cursor) {
             this.cursor = cursor;
+            attrs.unfollow("cursor", cursor);
         }
     }
 
@@ -1351,6 +1424,7 @@ public class Widget implements Gadget {
         opacity = Math.max(0, Math.min(1, opacity));
         if (this.opacity != opacity) {
             this.opacity = opacity;
+            attrs.unfollow("opacity", opacity);
 
             invalidate(false);
         }
@@ -1413,6 +1487,8 @@ public class Widget implements Gadget {
     public void setRadiusTop(float radiusTop) {
         if (bg.arcTop != radiusTop) {
             bg.arcTop = radiusTop;
+            attrs.unfollow("radius-top", radiusTop);
+
             invalidate(false);
         }
     }
@@ -1424,6 +1500,8 @@ public class Widget implements Gadget {
     public void setRadiusRight(float radiusRight) {
         if (bg.arcRight != radiusRight) {
             bg.arcRight = radiusRight;
+            attrs.unfollow("radius-right", radiusRight);
+
             invalidate(false);
         }
     }
@@ -1435,6 +1513,8 @@ public class Widget implements Gadget {
     public void setRadiusBottom(float radiusBottom) {
         if (bg.arcBottom != radiusBottom) {
             bg.arcBottom = radiusBottom;
+            attrs.unfollow("radius-bottom", radiusBottom);
+
             invalidate(false);
         }
     }
@@ -1446,19 +1526,22 @@ public class Widget implements Gadget {
     public void setRadiusLeft(float radiusLeft) {
         if (bg.arcLeft != radiusLeft) {
             bg.arcLeft = radiusLeft;
+            attrs.unfollow("radius-left", radiusLeft);
+
             invalidate(false);
         }
     }
 
     public void setRadius(float cTop, float cRight, float cBottom, float cLeft) {
-        if (bg.arcTop != cTop ||
-                bg.arcRight != cRight ||
-                bg.arcBottom != cBottom ||
-                bg.arcLeft != cLeft) {
+        if (bg.arcTop != cTop || bg.arcRight != cRight || bg.arcBottom != cBottom || bg.arcLeft != cLeft) {
             bg.arcTop = cTop;
             bg.arcRight = cRight;
             bg.arcBottom = cBottom;
             bg.arcLeft = cLeft;
+            attrs.unfollow("radius-top", cTop);
+            attrs.unfollow("radius-right", cRight);
+            attrs.unfollow("radius-bottom", cBottom);
+            attrs.unfollow("radius-left", cLeft);
 
             invalidate(false);
         }
@@ -1471,6 +1554,7 @@ public class Widget implements Gadget {
     public void setBackgroundColor(int rgba) {
         if (this.backgroundColor != rgba) {
             this.backgroundColor = rgba;
+            attrs.unfollow("background-color", backgroundColor);
 
             invalidate(false);
         }
@@ -1483,6 +1567,7 @@ public class Widget implements Gadget {
     public void setBorderRound(boolean borderRound) {
         if (this.borderRound != borderRound) {
             this.borderRound = borderRound;
+            attrs.unfollow("border-round", borderRound);
 
             invalidate(false);
         }
@@ -1495,6 +1580,7 @@ public class Widget implements Gadget {
     public void setBorderColor(int rgba) {
         if (this.borderColor != rgba) {
             this.borderColor = rgba;
+            attrs.unfollow("border-color", borderColor);
 
             invalidate(false);
         }
@@ -1507,6 +1593,7 @@ public class Widget implements Gadget {
     public void setBorderWidth(float width) {
         if (this.borderWidth != width) {
             this.borderWidth = width;
+            attrs.unfollow("border-width", borderWidth);
 
             invalidate(false);
         }
@@ -1519,6 +1606,7 @@ public class Widget implements Gadget {
     public void setShadowEnabled(boolean enable) {
         if (this.shadowEnabled != enable) {
             this.shadowEnabled = enable;
+            attrs.unfollow("shadow-enabled", shadowEnabled);
 
             invalidate(false);
         }
@@ -1531,6 +1619,7 @@ public class Widget implements Gadget {
     public void setRippleEnabled(boolean enable) {
         if (this.rippleEnabled != enable) {
             this.rippleEnabled = enable;
+            attrs.unfollow("ripple-enabled", rippleEnabled);
 
             ripple = enable ? new RippleEffect(this) : null;
             invalidate(false);
@@ -1541,9 +1630,10 @@ public class Widget implements Gadget {
         return rippleColor;
     }
 
-    public void setRippleColor(int rippleColor) {
-        if (this.rippleColor != rippleColor) {
-            this.rippleColor = rippleColor;
+    public void setRippleColor(int rgba) {
+        if (this.rippleColor != rgba) {
+            this.rippleColor = rgba;
+            attrs.unfollow("ripple-color", rippleColor);
 
             invalidate(false);
         }
@@ -1556,6 +1646,8 @@ public class Widget implements Gadget {
     public void setRippleOverflow(boolean rippleOverflow) {
         if (this.rippleOverflow != rippleOverflow) {
             this.rippleOverflow = rippleOverflow;
+            attrs.unfollow("ripple-overflow", rippleOverflow);
+
             invalidate(false);
         }
     }

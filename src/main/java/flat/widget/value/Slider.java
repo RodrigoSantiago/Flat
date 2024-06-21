@@ -12,7 +12,8 @@ import flat.math.Vector2;
 import flat.math.shapes.Rectangle;
 import flat.resources.Resource;
 import flat.uxml.Controller;
-import flat.uxml.UXStyleAttrs;
+import flat.uxml.UXBuilder;
+import flat.uxml.UXTheme;
 import flat.window.Activity;
 import flat.widget.Widget;
 
@@ -47,15 +48,15 @@ public class Slider extends Widget {
     private ActionListener onValue2Change;
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        super.applyAttributes(style, controller);
+    public void applyAttributes(UXTheme theme, Controller controller, UXBuilder builder) {
+        super.applyAttributes(theme, controller, builder);
 
-        setMin(style.asNumber("min", getMin()));
-        setMax(style.asNumber("max", getMax()));
-        _setValue(style.asNumber("value", getValue2()));
-        _setValue2(style.asNumber("value2", getValue2()));
-        setTicks((int) style.asNumber("ticks", getTicks()));
-        setRangeEnabled(style.asBool("range-enabled", isRangeEnabled()));
+        /*setMin(theme.asNumber("min", getMin()));
+        setMax(theme.asNumber("max", getMax()));
+        _setValue(theme.asNumber("value", getValue2()));
+        _setValue2(theme.asNumber("value2", getValue2()));
+        setTicks((int) theme.asNumber("ticks", getTicks()));
+        setRangeEnabled(theme.asBool("range-enabled", isRangeEnabled()));*/
     }
 
     @Override
@@ -81,37 +82,37 @@ public class Slider extends Widget {
     @Override
     public void applyStyle() {
         super.applyStyle();
-        if (getStyle() == null) return;
+        /*if (getAttrs() == null) return;
 
         StateInfo info = getStateInfo();
 
-        setColor(getStyle().asColor("color", info, getColor()));
+        setColor(getAttrs().asColor("color", info, getColor()));
 
-        setExpansion(getStyle().asNumber("expansion", info, getExpansion()));
-        setExpansionColor(getStyle().asColor("expansion-color", info, getColor()));
+        setExpansion(getAttrs().asNumber("expansion", info, getExpansion()));
+        setExpansionColor(getAttrs().asColor("expansion-color", info, getColor()));
 
-        setLabelDecimal((int) getStyle().asNumber("label-decimal", info, getLabelDecimal()));
-        setLabelFont(getStyle().asFont("label-font", info, getLabelFont()));
-        setLabelTextSize(getStyle().asSize("label-text-size", info, getLabelTextSize()));
-        setLabelTextColor(getStyle().asColor("label-text-color", info, getLabelTextColor()));
-        setLabelEnabled(getStyle().asBool("label-enabled", info, isLabelEnabled()));
-        setLabelPosition(getStyle().asSize("label-position", info, getLabelPosition()));
-        setLabelTimeOut(getStyle().asNumber("label-time-out", info, getLabelTimeOut()));
+        setLabelDecimal((int) getAttrs().asNumber("label-decimal", info, getLabelDecimal()));
+        setLabelFont(getAttrs().asFont("label-font", info, getLabelFont()));
+        setLabelTextSize(getAttrs().asSize("label-text-size", info, getLabelTextSize()));
+        setLabelTextColor(getAttrs().asColor("label-text-color", info, getLabelTextColor()));
+        setLabelEnabled(getAttrs().asBool("label-enabled", info, isLabelEnabled()));
+        setLabelPosition(getAttrs().asSize("label-position", info, getLabelPosition()));
+        setLabelTimeOut(getAttrs().asNumber("label-time-out", info, getLabelTimeOut()));
 
-        Resource res = getStyle().asResource("icon", info);
+        Resource res = getAttrs().asResource("icon", info);
         if (res != null) {
             Drawable drawable = res.getDrawable();
             if (drawable != null) {
                 setIcon(drawable);
             }
         }
-        res = getStyle().asResource("label-icon", info);
+        res = getAttrs().asResource("label-icon", info);
         if (res != null) {
             Drawable drawable = res.getDrawable();
             if (drawable != null) {
                 setLabelIcon(drawable);
             }
-        }
+        }*/
     }
 
     @Override
