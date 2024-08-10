@@ -11,8 +11,7 @@ import java.lang.reflect.Modifier;
 import java.util.Objects;
 
 public class UXValueText extends UXValue {
-
-    private String text;
+    private final String text;
 
     public UXValueText(String text) {
         this.text = text;
@@ -73,5 +72,10 @@ public class UXValueText extends UXValue {
     @Override
     public int hashCode() {
         return Objects.hash(text);
+    }
+
+    @Override
+    public String toString() {
+        return "Text : " + text;
     }
 }

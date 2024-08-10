@@ -35,7 +35,7 @@ public class TextField extends Widget {
     private int cursorLine, cursorStartLine, selStartLine, selEndLine;
     private float cursorMoveAdvance = -1;
 
-    private Font font = Font.DEFAULT;
+    private Font font = Font.getDefault();
     private float textSize;
     private int textColor;
     private int selectionColor;
@@ -47,7 +47,7 @@ public class TextField extends Widget {
     private int minLines = 1, maxLines = Integer.MAX_VALUE;
 
     private String labelText;
-    private Font labelFont = Font.DEFAULT;
+    private Font labelFont = Font.getDefault();
     private float labelTextSize;
     private int labelTextColor;
     private float highLabelTextSize;
@@ -58,7 +58,7 @@ public class TextField extends Widget {
     private int placeholderTextColor;
 
     private String helpText;
-    private Font helpFont = Font.DEFAULT;
+    private Font helpFont = Font.getDefault();
     private float helpTextSize;
     private int helpTextColor;
 

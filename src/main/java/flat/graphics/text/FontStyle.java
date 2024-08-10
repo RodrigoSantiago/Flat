@@ -1,9 +1,9 @@
 package flat.graphics.text;
 
-public enum FontPosture {
-    ITALIC, REGULAR;
+public enum FontStyle {
+    SANS, SERIF, MONO, CURSIVE, FANTASY;
 
-    public static FontPosture parse(String value) {
+    public static FontStyle parse(String value) {
         try {
             return valueOf(value.toUpperCase());
         } catch (Exception e) {

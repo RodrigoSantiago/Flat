@@ -1,6 +1,5 @@
 package flat.widget.text;
 
-import flat.animations.StateInfo;
 import flat.events.KeyCode;
 import flat.events.KeyEvent;
 import flat.events.PointerEvent;
@@ -8,6 +7,7 @@ import flat.events.PointerListener;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Font;
 import flat.graphics.text.Align;
+import flat.graphics.text.FontStyle;
 import flat.math.Vector2;
 import flat.math.Vector3;
 import flat.math.shapes.Rectangle;
@@ -15,7 +15,6 @@ import flat.math.shapes.Shape;
 import flat.uxml.*;
 import flat.widget.Widget;
 
-import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -31,7 +30,7 @@ public class TextArea extends Widget {
     private int cursorPos, cursorStart, selStart, selEnd; //UTF-8 Positions
     private float cMove = -1;
 
-    private Font font = Font.DEFAULT;
+    private Font font = Font.getDefault();
     private float textSize;
     private int textColor;
     private int selectionColor;
@@ -55,8 +54,8 @@ public class TextArea extends Widget {
         text = new byte[capacity];
         buffer = ByteBuffer.allocateDirect(capacity);
         styles = new ArrayList<>();
-        styles.add(new Style(Font.CURSIVE, 24, 0xFF0000FF));
-        styles.add(new Style(Font.CURSIVE, 32, 0x000000FF));
+        styles.add(new Style(Font.findFont(FontStyle.CURSIVE), 24, 0xFF0000FF));
+        styles.add(new Style(Font.findFont(FontStyle.CURSIVE), 32, 0x000000FF));
         spanManager = new SpanManager();
     }
 

@@ -284,7 +284,7 @@ public class UXAttrs {
     }
 
     public Font asFont() {
-        return asFont(null, Font.DEFAULT);
+        return asFont(null, Font.getDefault());
     }
 
     public Font asFont(StateInfo state, Font def) {

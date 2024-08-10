@@ -8,7 +8,7 @@ import flat.window.Application;
 import java.util.Objects;
 
 public class UXValueResource extends UXValue {
-    private String url;
+    private final String url;
 
     public UXValueResource(String url) {
         this.url = url;
@@ -30,5 +30,10 @@ public class UXValueResource extends UXValue {
     @Override
     public int hashCode() {
         return Objects.hash(url);
+    }
+
+    @Override
+    public String toString() {
+        return "Resource : " + url;
     }
 }

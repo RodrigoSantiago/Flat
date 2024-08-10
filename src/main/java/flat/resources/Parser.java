@@ -23,8 +23,7 @@ public final class Parser {
         new ColorPair("navy", 0x000080FF),
         new ColorPair("blue", 0x0000FFFF),
         new ColorPair("teal", 0x008080FF),
-        new ColorPair("aqua", 0x00FFFFFF),
-        new ColorPair("transparent", 0x00FFFFFF)
+        new ColorPair("aqua", 0x00FFFFFF)
     };
 
     static {

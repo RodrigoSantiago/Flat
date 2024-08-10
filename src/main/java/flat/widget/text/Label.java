@@ -1,6 +1,5 @@
 package flat.widget.text;
 
-import flat.animations.StateInfo;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Font;
 import flat.graphics.text.Align;
@@ -16,7 +15,7 @@ public class Label extends Widget {
     private String text;
     private boolean textAllCaps;
 
-    private Font font = Font.DEFAULT;
+    private Font font = Font.getDefault();
     private float textSize;
     private int textColor;
 

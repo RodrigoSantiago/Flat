@@ -1,6 +1,5 @@
 package flat.widget.bars;
 
-import flat.animations.StateInfo;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Font;
 import flat.graphics.text.Align;
@@ -19,7 +18,7 @@ import java.util.Objects;
 public class ToolBar extends Parent {
 
     private String text;
-    private Font font = Font.DEFAULT;
+    private Font font = Font.getDefault();
     private float textSize;
     private int textColor;
     private float tWidth, tLayX, tLayWidth;

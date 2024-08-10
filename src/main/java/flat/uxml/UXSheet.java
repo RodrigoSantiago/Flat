@@ -3,6 +3,7 @@ package flat.uxml;
 import flat.exception.FlatException;
 import flat.graphics.context.Font;
 import flat.graphics.text.FontPosture;
+import flat.graphics.text.FontStyle;
 import flat.graphics.text.FontWeight;
 import flat.math.Mathf;
 import flat.resources.Parser;
@@ -19,6 +20,7 @@ import java.util.HashMap;
 public class UXSheet {
 
     private final HashMap<String, UXStyle> styles = new HashMap<>();
+    private final HashMap<String, UXValue> variableInitialValue = new HashMap<>();
     private final UXSheet parent;
 
     public static UXSheet parse(ResourceStream stream) {
@@ -339,9 +341,9 @@ public class UXSheet {
         }
 
         String family = null;
-        String generic = "Roboto";
-        FontWeight weight = FontWeight.NORMAL;
-        FontPosture posture = FontPosture.REGULAR;
+        FontWeight weight = null;
+        FontPosture posture = null;
+        FontStyle style = null;
         if (start != -1 && end != -1) {
             family = source.substring(start + 1, end);
         }
@@ -359,15 +361,12 @@ public class UXSheet {
                 case "EXTRA_LIGHT" -> weight = FontWeight.EXTRA_LIGHT;
                 case "THIN" -> weight = FontWeight.THIN;
                 case "ITALIC" -> posture = FontPosture.ITALIC;
-                case "SERIF" -> generic = "Serif";
-                case "MONO", "MONOSPACE" -> generic = "Mono";
-                case "SANS", "SANS-SERIF" -> generic = "Sans";
-                case "FANTASY", "CURSIVE" -> generic = "Cursive";
+                case "SERIF" -> style = FontStyle.SERIF;
+                case "MONO", "MONOSPACE" -> style = FontStyle.MONO;
+                case "SANS", "SANS-SERIF" -> style = FontStyle.SANS;
+                case "FANTASY", "CURSIVE" -> style = FontStyle.CURSIVE;
             }
         }
-        if (family == null) {
-            family = generic;
-        }
-        return new UXValueFont(generic, family, weight, posture);
+        return new UXValueFont(family, weight, posture, style);
     }
 }

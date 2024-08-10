@@ -6,7 +6,7 @@ import flat.uxml.UXValue;
 import java.util.Objects;
 
 public class UXValueLocale extends UXValue {
-    private String text;
+    private final String text;
 
     public UXValueLocale(String text) {
         this.text = text;
@@ -28,5 +28,10 @@ public class UXValueLocale extends UXValue {
     @Override
     public int hashCode() {
         return Objects.hash(text);
+    }
+
+    @Override
+    public String toString() {
+        return "Locale : " + text;
     }
 }

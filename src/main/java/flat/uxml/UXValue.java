@@ -57,7 +57,7 @@ public class UXValue {
     }
 
     public Font asFont(UXTheme theme) {
-        return Font.DEFAULT;
+        return Font.getDefault();
     }
 
     public ResourceStream asResource(UXTheme theme) {
@@ -70,5 +70,20 @@ public class UXValue {
 
     public Method asListener(UXTheme theme, Class<?> argument, Controller controller) {
         return null;
+    }
+
+    @Override
+    public String toString() {
+        return "Empty Value";
+    }
+
+    @Override
+    public int hashCode() {
+        return 1;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj != null && obj.getClass() == getClass();
     }
 }

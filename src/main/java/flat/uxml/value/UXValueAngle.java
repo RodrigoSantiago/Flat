@@ -7,7 +7,7 @@ import flat.uxml.UXValue;
 import java.util.Objects;
 
 public class UXValueAngle extends UXValue {
-    private float angle;
+    private final float angle;
 
     public UXValueAngle(float angle) {
         this.angle = angle;
@@ -43,5 +43,10 @@ public class UXValueAngle extends UXValue {
     @Override
     public int hashCode() {
         return Objects.hash(angle);
+    }
+
+    @Override
+    public String toString() {
+        return "Angle : " + angle;
     }
 }

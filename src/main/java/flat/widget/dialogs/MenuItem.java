@@ -1,6 +1,5 @@
 package flat.widget.dialogs;
 
-import flat.animations.StateInfo;
 import flat.events.*;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Font;
@@ -8,7 +7,6 @@ import flat.graphics.image.Drawable;
 import flat.graphics.text.Align;
 import flat.math.Vector2;
 import flat.math.shapes.Shape;
-import flat.resources.Resource;
 import flat.uxml.*;
 import flat.window.Activity;
 import flat.widget.Menu;
@@ -16,7 +14,6 @@ import flat.widget.Parent;
 import flat.widget.Widget;
 import flat.widget.enuns.Visibility;
 
-import java.lang.reflect.Method;
 import java.util.Objects;
 
 public class MenuItem extends Parent {
@@ -26,7 +23,7 @@ public class MenuItem extends Parent {
     private String text;
     private boolean textAllCaps;
 
-    private Font font = Font.DEFAULT;
+    private Font font = Font.getDefault();
     private float textSize;
     private int textColor;
 

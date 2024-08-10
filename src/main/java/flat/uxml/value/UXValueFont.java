@@ -2,32 +2,49 @@ package flat.uxml.value;
 
 import flat.graphics.context.Font;
 import flat.graphics.text.FontPosture;
+import flat.graphics.text.FontStyle;
 import flat.graphics.text.FontWeight;
 import flat.uxml.UXTheme;
 import flat.uxml.UXValue;
 
-public class UXValueFont extends UXValue {
-    private String generic;
-    private String family;
-    private FontWeight weight;
-    private FontPosture posture;
+import java.util.Objects;
 
-    public UXValueFont(String generic, String family, FontWeight weight, FontPosture posture) {
-        this.generic = generic;
+public class UXValueFont extends UXValue {
+    private final String family;
+    private final FontWeight weight;
+    private final FontPosture posture;
+    private final FontStyle style;
+
+    public UXValueFont(String family, FontWeight weight, FontPosture posture, FontStyle style) {
         this.family = family;
         this.weight = weight;
         this.posture = posture;
+        this.style = style;
     }
 
     @Override
     public Font asFont(UXTheme theme) {
-        Font font;
-        if (generic != null) {
-            font = Font.findFont(generic, weight, posture);
-            if (font != null) {
-                return font;
-            }
-        }
-        return Font.findFont(family, weight, posture);
+        return Font.findFont(family, weight, posture, style);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UXValueFont that = (UXValueFont) o;
+        return Objects.equals(family, that.family)
+                && weight == that.weight
+                && posture == that.posture
+                && style == that.style;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(family, weight, posture, style);
+    }
+
+    @Override
+    public String toString() {
+        return "Font : " + family + " " + weight + " " + posture + " " + style;
     }
 }

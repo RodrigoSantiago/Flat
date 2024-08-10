@@ -223,7 +223,7 @@ public class Context {
         svgDashPhase = 0;
         svgDash = null;
 
-        svgTextFont = Font.DEFAULT;
+        svgTextFont = Font.getDefault();
         svgTextScale = 1.0f;
         svgTextSpacing = 1.0f;
         svgTextBlur = 1f;
@@ -1591,7 +1591,7 @@ public class Context {
         checkDisposed();
 
         if (font == null) {
-            font = Font.DEFAULT;
+            font = Font.getDefault();
         }
 
         if (svgTextFont != font) {

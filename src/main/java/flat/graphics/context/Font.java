@@ -2,7 +2,9 @@ package flat.graphics.context;
 
 import flat.backend.SVG;
 import flat.graphics.text.FontPosture;
+import flat.graphics.text.FontStyle;
 import flat.graphics.text.FontWeight;
+import flat.window.Application;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -11,11 +13,12 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public final class Font {
+public class Font {
 
     private final String family;
     private final FontPosture posture;
     private final FontWeight weight;
+    private final FontStyle style;
 
     private final long fontID;
     private final float size, height, ascent, descent, lineGap;
@@ -24,104 +27,19 @@ public final class Font {
 
     private HashMap<Context, Long> contextInternal = new HashMap<>();
 
-
     private static final ArrayList<Font> fonts = new ArrayList<>();
 
-    public static final Font DEFAULT;
-    public static final Font DEFAULT_BOLD;
-    public static final Font DEFAULT_ITALIC;
-    public static final Font SERIF;
-    public static final Font SANS_SERIF;
-    public static final Font MONOSPACE;
-    public static final Font CURSIVE;
-    // CURSIVE
+    private static Font DefaultFont;
 
-    static {
-        DEFAULT = addFont("Roboto", FontWeight.NORMAL, FontPosture.REGULAR, Font.class.getResourceAsStream("/fonts/Roboto-Regular.ttf"));
-        DEFAULT_BOLD = addFont("Roboto", FontWeight.BOLD, FontPosture.REGULAR, Font.class.getResourceAsStream("/fonts/Roboto-Bold.ttf"));
-        DEFAULT_ITALIC = addFont("Roboto", FontWeight.NORMAL, FontPosture.ITALIC, Font.class.getResourceAsStream("/fonts/Roboto-Italic.ttf"));
-        SERIF = addFont("Serif", FontWeight.NORMAL, FontPosture.REGULAR, Font.class.getResourceAsStream("/fonts/DroidSerif-Regular.ttf"));
-        SANS_SERIF = addFont("Sans", FontWeight.NORMAL, FontPosture.REGULAR, Font.class.getResourceAsStream("/fonts/DroidSans-Regular.ttf"));
-        MONOSPACE = addFont("Mono", FontWeight.NORMAL, FontPosture.REGULAR, Font.class.getResourceAsStream("/fonts/DroidSans-Mono.ttf"));
-        CURSIVE = addFont("Cursive", FontWeight.NORMAL, FontPosture.REGULAR, Font.class.getResourceAsStream("/fonts/DancingScript-Regular.ttf"));
+    public Font(String family, FontWeight weight, FontPosture posture, FontStyle style, byte[] data) {
+        this(family, weight, posture, style, data, 48, true);
     }
 
-    public static Font findFont(String family) {
-        return findFont(family, FontWeight.NORMAL);
-    }
-
-    public static Font findFont(String family, FontWeight weight) {
-        return findFont(family,weight, FontPosture.REGULAR);
-    }
-
-    public static synchronized Font findFont(String family, FontWeight weight, FontPosture posture) {
-        Font closer = null;
-        for (Font font : fonts) {
-            if (font.family.equalsIgnoreCase(family)) {
-                if (closer == null) {
-                    closer = font;
-                } else if (closer.posture != posture && font.posture == posture) {
-                    closer = font;
-                } else if (font.posture == posture) {
-                    if (Math.abs(font.weight.getWeight() - weight.getWeight()) <
-                            Math.abs(closer.weight.getWeight() - weight.getWeight())) {
-                        closer = font;
-                    }
-                }
-            }
-        }
-        return closer;
-    }
-
-    public static Font addFont(String family, FontWeight weight, FontPosture posture, InputStream is) {
-        try (ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
-            int nRead;
-            byte[] data = new byte[16384];
-            while ((nRead = is.read(data, 0, data.length)) != -1) {
-                buffer.write(data, 0, nRead);
-            }
-            buffer.flush();
-            return Font.addFont(family, weight, posture, buffer.toByteArray());
-        } catch (IOException e) {
-            e.printStackTrace();
-            // todo - add handler
-        }
-        return null;
-    }
-
-    public static synchronized Font addFont(String family, FontWeight weight, FontPosture posture, byte[] data) {
-        Font found = findFont(family, weight, posture);
-        Font font = new Font(family, weight, posture, data);
-
-        if (found != null && found.weight == weight && found.posture == posture) {
-            fonts.remove(found);
-        }
-
-        fonts.add(font);
-
-        return font;
-    }
-
-    public static synchronized Font addFont(Font font) {
-        Font found = findFont(font.getFamily(), font.getWeight(), font.getPosture());
-
-        if (found != null && found.weight == font.getWeight() && found.posture == font.getPosture()) {
-            fonts.remove(found);
-        }
-
-        fonts.add(font);
-
-        return font;
-    }
-
-    public Font(String family, FontWeight weight, FontPosture posture, byte[] data) {
-        this(family, weight, posture, data, 48, true);
-    }
-
-    public Font(String family, FontWeight weight, FontPosture posture, byte[] data, float size, boolean sdf) {
+    public Font(String family, FontWeight weight, FontPosture posture, FontStyle style, byte[] data, float size, boolean sdf) {
         this.family = family;
         this.weight = weight;
         this.posture = posture;
+        this.style = style;
         this.size = size;
         this.sdf = sdf;
         this.data = data.clone();
@@ -138,6 +56,108 @@ public final class Font {
         SVG.FontLoadAllGlyphs(fontID);
     }
 
+    public static Font findFont(String family) {
+        return findFont(family, null);
+    }
+
+    public static Font findFont(FontWeight weight) {
+        return findFont(null, weight);
+    }
+
+    public static Font findFont(FontPosture posture) {
+        return findFont(null, null, posture);
+    }
+
+    public static Font findFont(FontStyle style) {
+        return findFont(null, null, null, style);
+    }
+
+    public static Font findFont(String family, FontWeight weight) {
+        return findFont(family, weight, null, null);
+    }
+
+    public static Font findFont(String family, FontWeight weight, FontPosture posture) {
+        return findFont(family, weight, posture, null);
+    }
+
+    public static synchronized Font findFont(String family, FontWeight weight, FontPosture posture, FontStyle style) {
+        readDefaultFonts();
+
+        Font closer = null;
+        int minDiff = 0;
+        for (Font font : fonts) {
+            int diff = font.getFontDifference(family, weight, posture, style);
+            if (closer == null || diff < minDiff) {
+                closer = font;
+                minDiff = diff;
+            } else if (diff == minDiff) {
+                // Style
+                if (font.style.ordinal() < closer.style.ordinal()) {
+                    closer = font;
+                } else if (font.style.ordinal() == closer.style.ordinal()) {
+                    // Posture
+                    if (font.posture.ordinal() < closer.posture.ordinal()) {
+                        closer = font;
+                    } else if (font.posture.ordinal() == closer.posture.ordinal()) {
+                        // Weight
+                        if (font.weight.ordinal() < closer.weight.ordinal()) {
+                            closer = font;
+                        } else if (font.weight.ordinal() == closer.weight.ordinal()) {
+                            // Internal random fixed value
+                            if (font.fontID < closer.fontID) {
+                                closer = font;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return closer;
+    }
+
+    private int getFontDifference(String family, FontWeight weight, FontPosture posture, FontStyle style) {
+        int f = family == null ? 0 : this.family.equalsIgnoreCase(family) ? 1 : 0;
+        int s = style == null ? 0 : this.style == style ? 1 : 0;
+        int p = posture == null ? 0 : this.posture == posture ? 1 : 0;
+        int w = weight == null ? 0 : Math.abs(this.weight.getWeight() - weight.getWeight());
+
+        return f * 8000 + s * 4000 + p * 2000 + w;
+    }
+
+    public static synchronized void install(Font font) {
+        fonts.add(font);
+    }
+
+    public static Font getDefault() {
+        readDefaultFonts();
+        return DefaultFont;
+    }
+
+    private static void readDefaultFonts() {
+        if (DefaultFont != null) {
+            return;
+        }
+        var res = Application.getResourcesManager();
+
+        var sans = new Font("Roboto", FontWeight.NORMAL, FontPosture.REGULAR, FontStyle.SANS, res.getData("/fonts/Roboto-Regular.ttf"));
+        install(sans);
+        var bold = new Font("Roboto", FontWeight.BOLD, FontPosture.REGULAR, FontStyle.SANS, res.getData("/fonts/Roboto-Bold.ttf"));
+        install(bold);
+        var italic = new Font("Roboto", FontWeight.NORMAL, FontPosture.ITALIC, FontStyle.SANS, res.getData("/fonts/Roboto-Italic.ttf"));
+        install(italic);
+        var bolditalic = new Font("Roboto", FontWeight.BOLD, FontPosture.ITALIC, FontStyle.SANS, res.getData("/fonts/Roboto-BoldItalic.ttf"));
+        install(bolditalic);
+
+        var serif = new Font("Roboto", FontWeight.NORMAL, FontPosture.REGULAR, FontStyle.SERIF, res.getData("/fonts/RobotoSerif-Regular.ttf"));
+        install(serif);
+        var mono = new Font("Roboto", FontWeight.NORMAL, FontPosture.REGULAR, FontStyle.MONO, res.getData("/fonts/RobotoMono-Regular.ttf"));
+        install(mono);
+        var cursive = new Font("DancingScript", FontWeight.NORMAL, FontPosture.REGULAR, FontStyle.CURSIVE, res.getData("/fonts/DancingScript-Regular.ttf"));
+        install(cursive);
+
+        DefaultFont = sans;
+    }
+
     public String getFamily() {
         return family;
     }
@@ -148,6 +168,10 @@ public final class Font {
 
     public FontWeight getWeight() {
         return weight;
+    }
+
+    public FontStyle getStyle() {
+        return style;
     }
 
     public boolean isSdf() {
@@ -212,22 +236,5 @@ public final class Font {
             return id;
         }
         return internalId;
-    }
-
-    @Override
-    public int hashCode() {
-        return family.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) return false;
-        if (obj == this) return true;
-        if (obj instanceof Font) {
-            Font other = (Font) obj;
-            return other.family.equals(family) && other.weight == weight && other.posture == posture;
-        } else {
-            return false;
-        }
     }
 }

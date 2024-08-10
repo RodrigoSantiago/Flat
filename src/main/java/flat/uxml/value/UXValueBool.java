@@ -6,7 +6,7 @@ import flat.uxml.UXValue;
 import java.util.Objects;
 
 public class UXValueBool extends UXValue {
-    private boolean bool;
+    private final boolean bool;
 
     public UXValueBool(boolean bool) {
         this.bool = bool;
@@ -28,5 +28,10 @@ public class UXValueBool extends UXValue {
     @Override
     public int hashCode() {
         return Objects.hash(bool);
+    }
+
+    @Override
+    public String toString() {
+        return "Boolean : " + bool;
     }
 }

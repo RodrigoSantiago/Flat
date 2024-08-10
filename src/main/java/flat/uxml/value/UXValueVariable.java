@@ -10,7 +10,7 @@ import java.lang.reflect.Method;
 import java.util.Objects;
 
 public class UXValueVariable extends UXValue {
-    private String name;
+    private final String name;
 
     public UXValueVariable(String name) {
         this.name = name;
@@ -152,5 +152,10 @@ public class UXValueVariable extends UXValue {
     @Override
     public int hashCode() {
         return Objects.hash(name);
+    }
+
+    @Override
+    public String toString() {
+        return "Variable : " + name;
     }
 }

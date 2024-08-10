@@ -8,7 +8,7 @@ import flat.uxml.UXValue;
 import java.util.Objects;
 
 public class UXValueSizeSp extends UXValue {
-    private float value;
+    private final float value;
 
     public UXValueSizeSp(float value) {
         this.value = value;
@@ -59,5 +59,10 @@ public class UXValueSizeSp extends UXValue {
     @Override
     public int hashCode() {
         return Objects.hash(value);
+    }
+
+    @Override
+    public String toString() {
+        return "Size SP : " + value;
     }
 }

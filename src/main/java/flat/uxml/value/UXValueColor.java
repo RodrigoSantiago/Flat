@@ -7,7 +7,7 @@ import flat.uxml.UXValue;
 import java.util.Objects;
 
 public class UXValueColor extends UXValue {
-    private int rgba;
+    private final int rgba;
 
     public UXValueColor(int rgba) {
         this.rgba = rgba;
@@ -38,5 +38,10 @@ public class UXValueColor extends UXValue {
     @Override
     public int hashCode() {
         return Objects.hash(rgba);
+    }
+
+    @Override
+    public String toString() {
+        return "Color : " + Integer.toString(rgba, 16);
     }
 }
