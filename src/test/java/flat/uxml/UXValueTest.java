@@ -1,6 +1,7 @@
 package flat.uxml;
 
 import flat.graphics.context.Font;
+import flat.uxml.value.UXValue;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;

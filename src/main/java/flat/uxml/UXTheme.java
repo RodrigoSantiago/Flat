@@ -1,6 +1,7 @@
 package flat.uxml;
 
 import flat.resources.StringBundle;
+import flat.uxml.value.UXValue;
 
 import java.util.HashMap;
 

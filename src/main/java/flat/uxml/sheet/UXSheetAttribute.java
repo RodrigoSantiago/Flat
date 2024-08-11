@@ -1,10 +1,10 @@
 package flat.uxml.sheet;
 
-import flat.uxml.UXValue;
+import flat.uxml.value.UXValue;
 
 public class UXSheetAttribute {
-    private String name;
-    private UXValue value;
+    private final String name;
+    private final UXValue value;
 
     public UXSheetAttribute(String name, UXValue value) {
         this.name = name;

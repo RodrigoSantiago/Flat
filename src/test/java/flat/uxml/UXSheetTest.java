@@ -1,5 +1,7 @@
 package flat.uxml;
 
+import flat.resources.ResourceStream;
+import flat.uxml.value.UXValue;
 import flat.uxml.value.UXValueNumber;
 import flat.uxml.value.UXValueText;
 import flat.widget.State;
@@ -7,20 +9,25 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+
 import static org.junit.Assert.*;
+import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 @RunWith(PowerMockRunner.class)
 public class UXSheetTest {
 
     @Test
     public void empty() {
-        UXSheet sheet = UXSheet.parse("");
+        UXSheet sheet = UXSheet.parse(mockStream(""));
         assertNotNull(sheet);
     }
 
     @Test
     public void emptyStyle() {
-        UXSheet sheet = UXSheet.parse("simple { }");
+        UXSheet sheet = UXSheet.parse(mockStream("simple { }"));
         assertNotNull(sheet);
 
         UXStyle style = sheet.getStyle("simple");
@@ -30,7 +37,7 @@ public class UXSheetTest {
 
     @Test
     public void simpleStyle() {
-        UXSheet sheet = UXSheet.parse("simple { width : 100; }");
+        UXSheet sheet = UXSheet.parse(mockStream("simple { width : 100; }"));
         assertNotNull(sheet);
 
         UXStyle style = sheet.getStyle("simple");
@@ -42,7 +49,7 @@ public class UXSheetTest {
 
     @Test
     public void parentStyle() {
-        UXSheet sheet = UXSheet.parse("simple { width : 100; } complex : simple { height : 200; }");
+        UXSheet sheet = UXSheet.parse(mockStream("simple { width : 100; } complex : simple { height : 200; }"));
         assertNotNull(sheet);
 
         UXStyle simple = sheet.getStyle("simple");
@@ -61,7 +68,7 @@ public class UXSheetTest {
 
     @Test
     public void parentStyleBefore() {
-        UXSheet sheet = UXSheet.parse("complex : simple { height : 200; } simple { width : 100; }");
+        UXSheet sheet = UXSheet.parse(mockStream("complex : simple { height : 200; } simple { width : 100; }"));
         assertNotNull(sheet);
 
         UXStyle simple = sheet.getStyle("simple");
@@ -91,7 +98,7 @@ public class UXSheetTest {
                 "disabled { width : 800; } " +
                 "enabled { width : 900; } " +
                 "}";
-        UXSheet sheet = UXSheet.parse(value);
+        UXSheet sheet = UXSheet.parse(mockStream(value));
         assertNotNull(sheet);
 
         UXStyle style = sheet.getStyle("simple");
@@ -124,7 +131,7 @@ public class UXSheetTest {
 
     @Test
     public void styleValueString() {
-        UXSheet sheet = UXSheet.parse("simple { text : \"open {\\\"}\"; }");
+        UXSheet sheet = UXSheet.parse(mockStream("simple { text : \"open {\\\"}\"; }"));
         assertNotNull(sheet);
 
         UXStyle style = sheet.getStyle("simple");
@@ -132,6 +139,12 @@ public class UXSheetTest {
         assertStyles(style, State.ENABLED,
                 "text", new UXValueText("open {\"}")
         );
+    }
+
+    private static ResourceStream mockStream(String value) {
+        ResourceStream stream = mock(ResourceStream.class);
+        when(stream.getStream()).thenReturn(new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8)));
+        return stream;
     }
 
     public void assertEmptyStyle(UXStyle style) {

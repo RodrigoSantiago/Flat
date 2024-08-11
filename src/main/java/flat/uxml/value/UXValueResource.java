@@ -2,7 +2,6 @@ package flat.uxml.value;
 
 import flat.resources.ResourceStream;
 import flat.uxml.UXTheme;
-import flat.uxml.UXValue;
 import flat.window.Application;
 
 import java.util.Objects;

@@ -1,7 +1,6 @@
 package flat.uxml.value;
 
 import flat.uxml.UXTheme;
-import flat.uxml.UXValue;
 
 import java.util.Objects;
 

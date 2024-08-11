@@ -1,6 +1,7 @@
 package flat.widget.layout;
 
 import flat.uxml.*;
+import flat.uxml.value.UXValue;
 import flat.widget.Gadget;
 import flat.widget.Widget;
 

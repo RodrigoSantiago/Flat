@@ -1,8 +1,7 @@
 package flat.uxml;
 
-import flat.exception.FlatException;
+import flat.uxml.value.UXValue;
 import flat.widget.State;
-import org.tinylog.Logger;
 
 import java.util.HashMap;
 
@@ -70,11 +69,12 @@ public class UXStyle {
         return parent != null && parent.containsChange(stateA, stateB);
     }
 
-    void setParent(UXStyle uxStyle) {
-        if (isChildOf(uxStyle)) {
-            Logger.error("Cyclic reference at style <" + name + "> and <" + uxStyle.name + ">");
-        } else {
+    boolean setParent(UXStyle uxStyle) {
+        if (!isChildOf(uxStyle)) {
             this.parent = uxStyle;
+            return true;
+        } else {
+            return false;
         }
     }
 

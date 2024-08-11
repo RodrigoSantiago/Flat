@@ -3,6 +3,7 @@ package flat.uxml;
 import flat.animations.StateInfo;
 import flat.graphics.context.Font;
 import flat.resources.ResourceStream;
+import flat.uxml.value.UXValue;
 import flat.widget.State;
 
 import java.lang.reflect.Method;

@@ -4,7 +4,6 @@ import flat.Flat;
 import flat.resources.Parser;
 import flat.uxml.Controller;
 import flat.uxml.UXTheme;
-import flat.uxml.UXValue;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;

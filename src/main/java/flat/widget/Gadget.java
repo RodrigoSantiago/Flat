@@ -1,6 +1,7 @@
 package flat.widget;
 
 import flat.uxml.*;
+import flat.uxml.value.UXValue;
 
 import java.util.HashMap;
 

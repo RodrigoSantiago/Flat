@@ -4,7 +4,6 @@ import flat.graphics.context.Font;
 import flat.resources.ResourceStream;
 import flat.uxml.Controller;
 import flat.uxml.UXTheme;
-import flat.uxml.UXValue;
 
 import java.lang.reflect.Method;
 import java.util.Objects;
@@ -17,7 +16,7 @@ public class UXValueVariable extends UXValue {
     }
 
     @Override
-    protected UXValue internalMix(UXValue uxValue, float t, UXTheme theme) {
+    UXValue internalMix(UXValue uxValue, float t, UXTheme theme) {
         UXValue variable = getVariable(theme);
         if (variable != null) {
             return variable.mix(uxValue, t, theme);

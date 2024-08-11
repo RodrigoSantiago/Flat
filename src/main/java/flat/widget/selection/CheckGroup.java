@@ -1,6 +1,7 @@
 package flat.widget.selection;
 
 import flat.uxml.*;
+import flat.uxml.value.UXValue;
 import flat.widget.Children;
 import flat.widget.Gadget;
 import flat.widget.Widget;

@@ -5,7 +5,6 @@ import flat.graphics.text.FontPosture;
 import flat.graphics.text.FontStyle;
 import flat.graphics.text.FontWeight;
 import flat.uxml.UXTheme;
-import flat.uxml.UXValue;
 
 import java.util.Objects;
 

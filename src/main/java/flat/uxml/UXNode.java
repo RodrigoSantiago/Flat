@@ -2,6 +2,9 @@ package flat.uxml;
 
 import flat.exception.FlatException;
 import flat.resources.ResourceStream;
+import flat.uxml.sheet.UXSheetParser;
+import flat.uxml.value.UXValue;
+import flat.uxml.value.UXValueBool;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -107,9 +110,10 @@ public class UXNode {
                 style = value;
             } else {
                 if (value == null) {
-                    value = "true";
+                    values.put(UXHash.getHash(att), new UXValueBool(true));
+                } else {
+                    values.put(UXHash.getHash(att), UXSheetParser.instance(value).parseXML());
                 }
-                values.put(UXHash.getHash(att), UXSheet.readValue(value, false));
             }
         }
 

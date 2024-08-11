@@ -3,7 +3,6 @@ package flat.uxml.value;
 import flat.animations.Interpolation;
 import flat.resources.Dimension;
 import flat.uxml.UXTheme;
-import flat.uxml.UXValue;
 
 import java.util.Objects;
 
@@ -15,7 +14,7 @@ public class UXValueSizeSp extends UXValue {
     }
 
     @Override
-    protected UXValue internalMix(UXValue uxValue, float t, UXTheme theme) {
+    UXValue internalMix(UXValue uxValue, float t, UXTheme theme) {
         if (uxValue.isSize()) {
             float v1 = asSize(theme);
             float v2 = uxValue.asSize(theme);

@@ -1,7 +1,9 @@
-package flat.uxml;
+package flat.uxml.value;
 
 import flat.graphics.context.Font;
 import flat.resources.ResourceStream;
+import flat.uxml.Controller;
+import flat.uxml.UXTheme;
 
 import java.lang.reflect.Method;
 
@@ -20,7 +22,7 @@ public class UXValue {
         return internalMix(uxValue, t, theme);
     }
 
-    protected UXValue internalMix(UXValue uxValue, float t, UXTheme theme) {
+    UXValue internalMix(UXValue uxValue, float t, UXTheme theme) {
         return t < 0.5 ? this : uxValue;
     }
 

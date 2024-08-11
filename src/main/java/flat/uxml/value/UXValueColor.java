@@ -2,7 +2,6 @@ package flat.uxml.value;
 
 import flat.animations.Interpolation;
 import flat.uxml.UXTheme;
-import flat.uxml.UXValue;
 
 import java.util.Objects;
 
@@ -14,7 +13,7 @@ public class UXValueColor extends UXValue {
     }
 
     @Override
-    protected UXValue internalMix(UXValue uxValue, float t, UXTheme theme) {
+    UXValue internalMix(UXValue uxValue, float t, UXTheme theme) {
         if (uxValue.asColor(theme) == 0x0 && getSourceType(theme) != uxValue.getSourceType(theme)) {
             return super.internalMix(uxValue, t, theme);
         } else {

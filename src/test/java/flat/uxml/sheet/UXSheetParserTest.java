@@ -3,25 +3,23 @@ package flat.uxml.sheet;
 import flat.graphics.text.FontPosture;
 import flat.graphics.text.FontStyle;
 import flat.graphics.text.FontWeight;
-import flat.uxml.UXValue;
+import flat.uxml.value.UXValue;
 import flat.uxml.value.*;
 import flat.widget.Widget;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
 @RunWith(PowerMockRunner.class)
-public class UXSheetReaderTest {
+public class UXSheetParserTest {
 
     @Test
     public void empty() {
-        UXSheetReader reader = new UXSheetReader("");
+        UXSheetParser reader = new UXSheetParser("");
         reader.parse();
         assertEquals(0, reader.getStyles().size());
         assertEquals(0, reader.getVariables().size());
@@ -30,7 +28,7 @@ public class UXSheetReaderTest {
 
     @Test
     public void simpleStyle() {
-        UXSheetReader reader = new UXSheetReader("style {}");
+        UXSheetParser reader = new UXSheetParser("style {}");
         reader.parse();
 
         assertEquals(1, reader.getStyles().size());
@@ -42,7 +40,7 @@ public class UXSheetReaderTest {
 
     @Test
     public void parentStyle() {
-        UXSheetReader reader = new UXSheetReader("style : parent {}");
+        UXSheetParser reader = new UXSheetParser("style : parent {}");
         reader.parse();
 
         assertEquals(1, reader.getStyles().size());
@@ -54,18 +52,18 @@ public class UXSheetReaderTest {
 
     @Test
     public void simpleVariable() {
-        UXSheetReader reader = new UXSheetReader("@variable : 10;");
+        UXSheetParser reader = new UXSheetParser("$variable : 10;");
         reader.parse();
 
         assertEquals(0, reader.getStyles().size());
 
-        assertVariables(reader.getVariables(), "@variable", new UXValueNumber(10));
+        assertVariables(reader.getVariables(), "$variable", new UXValueNumber(10));
         assertLog(reader.getLogs());
     }
 
     @Test
     public void styleVariable() {
-        UXSheetReader reader = new UXSheetReader("@variable : 10; style { color : red; }");
+        UXSheetParser reader = new UXSheetParser("$variable : 10; style { color : red; }");
         reader.parse();
 
         assertEquals(1, reader.getStyles().size());
@@ -73,13 +71,13 @@ public class UXSheetReaderTest {
                 "color", new UXValueText("red")
         );
 
-        assertVariables(reader.getVariables(), "@variable", new UXValueNumber(10));
+        assertVariables(reader.getVariables(), "$variable", new UXValueNumber(10));
         assertLog(reader.getLogs());
     }
 
     @Test
     public void styleNumericAttributes() {
-        UXSheetReader reader = new UXSheetReader(
+        UXSheetParser reader = new UXSheetParser(
                 """
                 style {
                     number : 10;
@@ -114,9 +112,31 @@ public class UXSheetReaderTest {
     }
 
     @Test
+    public void styleBooleanAttributes() {
+        UXSheetParser reader = new UXSheetParser(
+                """
+                style {
+                    bool-true : true;
+                    bool-false : false;
+                }
+                """
+        );
+        reader.parse();
+
+        assertEquals(1, reader.getStyles().size());
+        assertStyle(reader.getStyles(), "style", null,
+                "bool-true", new UXValueBool(true),
+                "bool-false", new UXValueBool(false)
+        );
+
+        assertEquals(0, reader.getVariables().size());
+        assertLog(reader.getLogs());
+    }
+
+    @Test
     public void styleTextAttributes() {
-        UXSheetReader reader = new UXSheetReader(
-                "style { string : \"Text\\n\"; enum : ENUM; locale : $locale; }"
+        UXSheetParser reader = new UXSheetParser(
+                "style { string : \"Text\\n\"; enum : ENUM; locale : @locale; }"
         );
         reader.parse();
 
@@ -124,7 +144,7 @@ public class UXSheetReaderTest {
         assertStyle(reader.getStyles(), "style", null, 
                 "string", new UXValueText("Text\n"),
                 "enum", new UXValueText("ENUM"),
-                "locale", new UXValueLocale("$locale")
+                "locale", new UXValueLocale("@locale")
         );
 
         assertEquals(0, reader.getVariables().size());
@@ -133,7 +153,7 @@ public class UXSheetReaderTest {
 
     @Test
     public void styleFunctionAttributes() {
-        UXSheetReader reader = new UXSheetReader(
+        UXSheetParser reader = new UXSheetParser(
                 "style { url : url(\"path\"); color : rgb(0, 128, 255.0); color-alpha : rgba(0, 128, 255.0, 128); }"
         );
         reader.parse();
@@ -151,7 +171,7 @@ public class UXSheetReaderTest {
 
     @Test
     public void styleColorAttributes() {
-        UXSheetReader reader = new UXSheetReader(
+        UXSheetParser reader = new UXSheetParser(
                 "style { color : #123456; color-alpha : #FF00FFA1; }"
         );
         reader.parse();
@@ -168,7 +188,7 @@ public class UXSheetReaderTest {
 
     @Test
     public void styleFontAttributes() {
-        UXSheetReader reader = new UXSheetReader(
+        UXSheetParser reader = new UXSheetParser(
                 """
                 style {
                     font-family : font("Family");
@@ -198,14 +218,14 @@ public class UXSheetReaderTest {
 
     @Test
     public void styleVariableAttributes() {
-        UXSheetReader reader = new UXSheetReader(
-                "style { variable : @variable; }"
+        UXSheetParser reader = new UXSheetParser(
+                "style { variable : $variable; }"
         );
         reader.parse();
 
         assertEquals(1, reader.getStyles().size());
         assertStyle(reader.getStyles(), "style", null, 
-                "variable", new UXValueVariable("@variable")
+                "variable", new UXValueVariable("$variable")
         );
 
         assertEquals(0, reader.getVariables().size());
@@ -214,7 +234,7 @@ public class UXSheetReaderTest {
 
     @Test
     public void styleIgnoreComments() {
-        UXSheetReader reader = new UXSheetReader(
+        UXSheetParser reader = new UXSheetParser(
                 """
                 style {
                     color : /*Comment*/ #123456;
@@ -237,10 +257,10 @@ public class UXSheetReaderTest {
 
     @Test
     public void multipleStyles() {
-        UXSheetReader reader = new UXSheetReader(
+        UXSheetParser reader = new UXSheetParser(
                 """
                 style {
-                    variable : @variable;
+                    variable : $variable;
                 }
                 style-b {
                     number : 100;
@@ -251,7 +271,7 @@ public class UXSheetReaderTest {
 
         assertEquals(2, reader.getStyles().size());
         assertStyle(reader.getStyles(), "style", null,
-                "variable", new UXValueVariable("@variable")
+                "variable", new UXValueVariable("$variable")
         );
         assertStyle(reader.getStyles(), "style-b", null,
                 "number", new UXValueNumber(100)
@@ -263,7 +283,7 @@ public class UXSheetReaderTest {
 
     @Test
     public void parse_FaledMissingParentName() {
-        UXSheetReader reader = new UXSheetReader(
+        UXSheetParser reader = new UXSheetParser(
                 """
                 style : {
                     color : red;
@@ -279,13 +299,13 @@ public class UXSheetReaderTest {
 
         assertEquals(0, reader.getVariables().size());
         assertLog(reader.getLogs(),
-                UXSheetReader.ErroLog.NAME_EXPECTED, 0
+                UXSheetParser.ErroLog.NAME_EXPECTED, 0
         );
     }
 
     @Test
     public void parse_FaledMissingColon() {
-        UXSheetReader reader = new UXSheetReader(
+        UXSheetParser reader = new UXSheetParser(
                 """
                 style parent {
                     color : red;
@@ -301,13 +321,13 @@ public class UXSheetReaderTest {
 
         assertEquals(0, reader.getVariables().size());
         assertLog(reader.getLogs(),
-                UXSheetReader.ErroLog.UNEXPECTED_TOKEN, 0
+                UXSheetParser.ErroLog.UNEXPECTED_TOKEN, 0
         );
     }
 
     @Test
     public void parse_FaledMissingBrace() {
-        UXSheetReader reader = new UXSheetReader(
+        UXSheetParser reader = new UXSheetParser(
                 """
                 style {
                     color : red;
@@ -323,16 +343,101 @@ public class UXSheetReaderTest {
 
         assertEquals(0, reader.getVariables().size());
         assertLog(reader.getLogs(),
-                UXSheetReader.ErroLog.UNEXPECTED_END_OF_TOKENS, 3
+                UXSheetParser.ErroLog.UNEXPECTED_END_OF_TOKENS, 3
+        );
+    }
+
+    @Test
+    public void parse_FailedUnexpectedBrace() {
+        UXSheetParser reader = new UXSheetParser(
+                """
+                style {
+                    color :
+                }
+                """
+        );
+        reader.parse();
+
+        assertEquals(1, reader.getStyles().size());
+        assertStyle(reader.getStyles(), "style", null,
+                "color", new UXValue()
+        );
+
+        assertEquals(0, reader.getVariables().size());
+        assertLog(reader.getLogs(),
+                UXSheetParser.ErroLog.UNEXPECTED_END_OF_TOKENS, 1
+        );
+    }
+
+    @Test
+    public void parse_FailedMissingValue() {
+        UXSheetParser reader = new UXSheetParser(
+                """
+                style {
+                    color;
+                }
+                """
+        );
+        reader.parse();
+
+        assertEquals(1, reader.getStyles().size());
+        assertStyle(reader.getStyles(), "style", null);
+
+        assertEquals(0, reader.getVariables().size());
+        assertLog(reader.getLogs(),
+                UXSheetParser.ErroLog.UNEXPECTED_TOKEN, 1,
+                UXSheetParser.ErroLog.UNEXPECTED_END_OF_TOKENS, 1
+        );
+    }
+
+    @Test
+    public void parse_FailedMissingColonConsecutive() {
+        UXSheetParser reader = new UXSheetParser(
+                """
+                style {
+                    color #FFFFFF;
+                }
+                """
+        );
+        reader.parse();
+
+        assertEquals(1, reader.getStyles().size());
+        assertStyle(reader.getStyles(), "style", null);
+
+        assertEquals(0, reader.getVariables().size());
+        assertLog(reader.getLogs(),
+                UXSheetParser.ErroLog.UNEXPECTED_TOKEN, 1,
+                UXSheetParser.ErroLog.UNEXPECTED_END_OF_TOKENS, 1,
+                UXSheetParser.ErroLog.UNEXPECTED_TOKEN, 1
+        );
+    }
+
+    @Test
+    public void parse_FailedUnexpectedBraceBeforeAttr() {
+        UXSheetParser reader = new UXSheetParser(
+                """
+                style {
+                    color
+                }
+                """
+        );
+        reader.parse();
+
+        assertEquals(1, reader.getStyles().size());
+        assertStyle(reader.getStyles(), "style", null);
+
+        assertEquals(0, reader.getVariables().size());
+        assertLog(reader.getLogs(),
+                UXSheetParser.ErroLog.UNEXPECTED_END_OF_TOKENS, 1
         );
     }
 
     @Test
     public void parse_FaledMissingSemicolon() {
-        UXSheetReader reader = new UXSheetReader(
+        UXSheetParser reader = new UXSheetParser(
                 """
                 style {
-                    variable : @variable
+                    variable : $variable
                 }
                 style-b {
                     number : 100;
@@ -343,7 +448,7 @@ public class UXSheetReaderTest {
 
         assertEquals(2, reader.getStyles().size());
         assertStyle(reader.getStyles(), "style", null,
-                "variable", new UXValueVariable("@variable")
+                "variable", new UXValueVariable("$variable")
         );
         assertStyle(reader.getStyles(), "style-b", null,
                 "number", new UXValueNumber(100)
@@ -351,16 +456,16 @@ public class UXSheetReaderTest {
 
         assertEquals(0, reader.getVariables().size());
         assertLog(reader.getLogs(),
-                UXSheetReader.ErroLog.UNEXPECTED_END_OF_TOKENS, 1
+                UXSheetParser.ErroLog.UNEXPECTED_END_OF_TOKENS, 1
         );
     }
 
     @Test
     public void parse_FailedInvalidCharacter() {
-        UXSheetReader reader = new UXSheetReader(
+        UXSheetParser reader = new UXSheetParser(
                 """
                 style {
-                    variable : ! @variable;
+                    variable : ! $variable;
                     color : #FFFFFF;
                 }
                 style-b {
@@ -372,7 +477,7 @@ public class UXSheetReaderTest {
 
         assertEquals(2, reader.getStyles().size());
         assertStyle(reader.getStyles(), "style", null,
-                "variable", new UXValueVariable("@variable"),
+                "variable", new UXValueVariable("$variable"),
                 "color", new UXValueColor(0xFFFFFFFF)
         );
         assertStyle(reader.getStyles(), "style-b", null,
@@ -381,18 +486,40 @@ public class UXSheetReaderTest {
 
         assertEquals(0, reader.getVariables().size());
         assertLog(reader.getLogs(),
-                UXSheetReader.ErroLog.UNEXPECTED_TOKEN, 1,
-                UXSheetReader.ErroLog.UNEXPECTED_TOKEN, 5
+                UXSheetParser.ErroLog.UNEXPECTED_TOKEN, 1,
+                UXSheetParser.ErroLog.UNEXPECTED_TOKEN, 5
+        );
+    }
+
+    @Test
+    public void parse_FailedInvalidNumber() {
+        UXSheetParser reader = new UXSheetParser(
+                """
+                style {
+                    number : 100pt;
+                }
+                """
+        );
+        reader.parse();
+
+        assertEquals(1, reader.getStyles().size());
+        assertStyle(reader.getStyles(), "style", null,
+                "number", new UXValueNumber(100)
+        );
+
+        assertEquals(0, reader.getVariables().size());
+        assertLog(reader.getLogs(),
+                UXSheetParser.ErroLog.UNEXPECTED_TOKEN, 1
         );
     }
 
     @Test
     public void parse_FailedInvalidFunctions() {
-        UXSheetReader reader = new UXSheetReader(
+        UXSheetParser reader = new UXSheetParser(
                 """
                 style {
                     color-on : rgb(255, 255, 255);
-                    color-off : rgb(255);
+                    color-off : rgb(#FFFFFF, 255);
                 }
                 style-font {
                     font-on : font("Arial");
@@ -440,19 +567,58 @@ public class UXSheetReaderTest {
 
         assertEquals(0, reader.getVariables().size());
         assertLog(reader.getLogs(),
-                UXSheetReader.ErroLog.INVALID_COLOR, 2,
-                UXSheetReader.ErroLog.INVALID_FONT, 6,
-                UXSheetReader.ErroLog.INVALID_FONT, 7,
-                UXSheetReader.ErroLog.INVALID_COLOR, 11,
-                UXSheetReader.ErroLog.INVALID_URL, 15,
-                UXSheetReader.ErroLog.INVALID_FUNCTION, 18,
-                UXSheetReader.ErroLog.UNEXPECTED_END_OF_TOKENS, 19
+                UXSheetParser.ErroLog.UNEXPECTED_TOKEN, 2,
+                UXSheetParser.ErroLog.UNEXPECTED_TOKEN, 2,
+                UXSheetParser.ErroLog.INVALID_COLOR, 2,
+                UXSheetParser.ErroLog.INVALID_FONT, 6,
+                UXSheetParser.ErroLog.INVALID_FONT, 7,
+                UXSheetParser.ErroLog.INVALID_FONT, 7,
+                UXSheetParser.ErroLog.INVALID_COLOR, 11,
+                UXSheetParser.ErroLog.INVALID_URL, 15,
+                UXSheetParser.ErroLog.INVALID_FUNCTION, 18,
+                UXSheetParser.ErroLog.UNEXPECTED_END_OF_TOKENS, 19
+        );
+    }
+
+    @Test
+    public void parse_FailedExtraCharacter() {
+        UXSheetParser reader = new UXSheetParser("$variable : 10; style { color : red; } #FFFFFF");
+        reader.parse();
+
+        assertEquals(1, reader.getStyles().size());
+        assertStyle(reader.getStyles(), "style", null,
+                "color", new UXValueText("red")
+        );
+
+        assertVariables(reader.getVariables(), "$variable", new UXValueNumber(10));
+        assertLog(reader.getLogs(),
+                UXSheetParser.ErroLog.UNEXPECTED_TOKEN, 0
+        );
+    }
+
+    @Test
+    public void parse_FailedNoBody() {
+        UXSheetParser reader = new UXSheetParser(
+                """
+                $variable : 10;
+                style
+                }
+                """);
+        reader.parse();
+
+        assertEquals(1, reader.getStyles().size());
+        assertStyle(reader.getStyles(), "style", null);
+
+        assertVariables(reader.getVariables(), "$variable", new UXValueNumber(10));
+        assertLog(reader.getLogs(),
+                UXSheetParser.ErroLog.UNEXPECTED_TOKEN, 2,
+                UXSheetParser.ErroLog.UNEXPECTED_END_OF_TOKENS, 2
         );
     }
 
     @Test
     public void parse_FailedInvalidColor() {
-        UXSheetReader reader = new UXSheetReader(
+        UXSheetParser reader = new UXSheetParser(
                 """
                 style {
                     color : #FFFFFF;
@@ -470,13 +636,13 @@ public class UXSheetReaderTest {
 
         assertEquals(0, reader.getVariables().size());
         assertLog(reader.getLogs(),
-                UXSheetReader.ErroLog.INVALID_COLOR, 2
+                UXSheetParser.ErroLog.INVALID_COLOR, 2
         );
     }
 
     @Test
     public void matchParent() {
-        UXSheetReader reader = new UXSheetReader(
+        UXSheetParser reader = new UXSheetParser(
                 """
                 style {
                     number-m : MATCH_PARENT;
@@ -498,7 +664,7 @@ public class UXSheetReaderTest {
 
     @Test
     public void pseudoClasses() {
-        UXSheetReader reader = new UXSheetReader(
+        UXSheetParser reader = new UXSheetParser(
                 """
                 style {
                     color : #FFFFFF;
@@ -522,24 +688,85 @@ public class UXSheetReaderTest {
         assertLog(reader.getLogs());
     }
 
-    public void assertLog(List<UXSheetReader.ErroLog> logs, Object... pair) {
+    @Test
+    public void parseXML() {
+        UXSheetParser reader = new UXSheetParser("#FFFFFF");
+        UXValue result = reader.parseXML();
+
+        assertEquals(new UXValueXML("#FFFFFF", new UXValueColor(0xFFFFFFFF)), result);
+
+        assertEquals(0, reader.getStyles().size());
+        assertEquals(0, reader.getVariables().size());
+        assertLog(reader.getLogs());
+    }
+
+    @Test
+    public void parseXMLText() {
+        UXSheetParser reader = new UXSheetParser(" #FFFFFF ");
+        UXValue result = reader.parseXML();
+
+        assertEquals(new UXValueText(" #FFFFFF "), result);
+
+        assertEquals(0, reader.getStyles().size());
+        assertEquals(0, reader.getVariables().size());
+        assertLog(reader.getLogs());
+    }
+
+    @Test
+    public void parseXMLVariable() {
+        UXSheetParser reader = new UXSheetParser("$variable");
+        UXValue result = reader.parseXML();
+
+        assertEquals(new UXValueVariable("$variable"), result);
+
+        assertEquals(0, reader.getStyles().size());
+        assertEquals(0, reader.getVariables().size());
+        assertLog(reader.getLogs());
+    }
+
+    @Test
+    public void parseXMLLocale() {
+        UXSheetParser reader = new UXSheetParser("@locale");
+        UXValue result = reader.parseXML();
+
+        assertEquals(new UXValueLocale("@locale"), result);
+
+        assertEquals(0, reader.getStyles().size());
+        assertEquals(0, reader.getVariables().size());
+        assertLog(reader.getLogs());
+    }
+
+    @Test
+    public void parseXMLFailedFunction() {
+        UXSheetParser reader = new UXSheetParser("rgba(failed)");
+        UXValue result = reader.parseXML();
+
+        assertEquals(new UXValueText("rgba(failed)"), result);
+
+        assertEquals(0, reader.getStyles().size());
+        assertEquals(0, reader.getVariables().size());
+        assertLog(reader.getLogs());
+    }
+
+    public void assertLog(List<UXSheetParser.ErroLog> logs, Object... pair) {
         var list = new ArrayList<>(logs);
         for (int i = 0; i < pair.length; i += 2) {
             String message = (String) pair[i];
             Integer line = (Integer) pair[i + 1];
             boolean found = false;
-            for (var log : logs) {
-                if (log.getMessage().equals(message) && log.getLine() == line) {
+            for (var log : list) {
+                if (log.message().equals(message) && log.line() == line) {
                     found = true;
                     list.remove(log);
+                    break;
                 }
             }
             if (!found) {
-                fail("Error not found : '" + message + "' at line " + line + " in a total of " + logs.size() );
+                fail("Error not found : '" + message + "' at line " + line + " in a total of " + logs.size());
             }
         }
         if (list.size() > 0) {
-            fail("Error not expected : '" + list.get(0).getMessage() + "' at line " + list.get(0).getLine());
+            fail("Error not expected(" + list.size() + ") : '" + list.get(0).message() + "' at line " + list.get(0).line());
         }
     }
 

@@ -4,7 +4,7 @@ import flat.graphics.text.FontPosture;
 import flat.graphics.text.FontStyle;
 import flat.graphics.text.FontWeight;
 import flat.resources.Parser;
-import flat.uxml.UXValue;
+import flat.uxml.value.UXValue;
 import flat.uxml.value.*;
 import flat.widget.Widget;
 
@@ -12,12 +12,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class UXSheetReader {
+public class UXSheetParser {
 
     private static final int INVALID    = 0;   // ?
     private static final int TEXT       = 1;   // [a-zA-Z-_]
     private static final int NUMBER     = 2;   // [+-][0-9].[0-9][dp|sp|cm|mm|in|px]
-    private static final int VARIABLE   = 3;   // @[a-zA-Z]
+    private static final int VARIABLE   = 3;   // $[a-zA-Z]
     private static final int PARAM      = 4;   // (
     private static final int CPARAM     = 5;   // )
     private static final int BRACE      = 6;   // {
@@ -27,7 +27,7 @@ public class UXSheetReader {
     private static final int COLON      = 10;  // :
     private static final int SEMICOLON  = 11;  // ;
     private static final int STRING     = 12;  // "String"|'String'
-    private static final int LOCALE     = 13;  // $[a-zA-Z]
+    private static final int LOCALE     = 13;  // @[a-zA-Z]
 
     private static final List<String> pseudo = List.of("enabled", "focused", "activated", "hovered", "pressed", "dragged", "error", "disabled");
     private static final char[][] measureChar = {{'c', 'm'}, {'d', 'p'}, {'i', 'n'}, {'m', 'm'}, {'p', 'x', 'c'}, {'s', 'p'}};
@@ -39,8 +39,6 @@ public class UXSheetReader {
     private int position;
     private String text;
     private StringBuilder builder = new StringBuilder();
-    private String currentDebugName;
-    private String nextDebugName;
 
     private String currentText = null;
     private int currentType = -1;
@@ -51,12 +49,43 @@ public class UXSheetReader {
     private int currentLine;
     private int currentPosition;
 
-    private HashMap<String, UXSheetStyle> styles = new HashMap<>();
-    private HashMap<String, UXSheetAttribute> variables = new HashMap<>();
-    private List<ErroLog> logs = new ArrayList<>();
+    private HashMap<String, UXSheetStyle> styles;
+    private HashMap<String, UXSheetAttribute> variables;
+    private List<ErroLog> logs;
 
-    public UXSheetReader(String text) {
+    private static UXSheetParser instance;
+
+    public static UXSheetParser instance(String text) {
+        return UXSheetParser.instance.reset(text);
+    }
+
+    public UXSheetParser(String text) {
         this.text = text;
+    }
+
+    public UXSheetParser reset(String text) {
+        this.text = text;
+        pos = 0;
+        current = 0;
+        next = 0;
+        line = 0;
+        position = 0;
+        builder.setLength(0);
+
+        currentText = null;
+        currentType = -1;
+        nextText = null;
+        nextType = -1;
+        nextLine = 0;
+        nextPosition = 0;
+        currentLine = 0;
+        currentPosition = 0;
+
+        if (styles != null) styles.clear();
+        if (variables != null) variables.clear();
+        if (logs != null) logs.clear();
+
+        return this;
     }
 
     public void parse() {
@@ -64,11 +93,13 @@ public class UXSheetReader {
         while (readNext()) {
             if (currentType == VARIABLE) {
                 var variable = parseAttribute();
-                variables.put(variable.getName(), variable);
+                if (variable != null) {
+                    getVariables().put(variable.getName(), variable);
+                }
 
             } else if (currentType == TEXT) {
                 var style = parseStyle();
-                styles.put(style.getName(), style);
+                getStyles().put(style.getName(), style);
 
             } else {
 
@@ -77,19 +108,46 @@ public class UXSheetReader {
         }
     }
 
-    public void load() {
-
+    public UXValue parseXML() {
+        String parsed = Parser.string(text);
+        int init = text.codePointAt(0);
+        if (isCharacter(init) || init == '+' || init == '#' || init == '$' || init == '@') {
+            read();
+            if (readNext()) {
+                UXValue value = parseValue();
+                if (getLogs().size() > 0 || next != -1) {
+                    getLogs().clear();
+                    return new UXValueText(parsed);
+                }
+                if (value instanceof UXValueVariable
+                        || value instanceof UXValueLocale
+                        || value instanceof UXValueText) {
+                    return value;
+                }
+                return new UXValueXML(parsed, value);
+            }
+        }
+        return new UXValueText(parsed);
     }
 
     public HashMap<String, UXSheetAttribute> getVariables() {
+        if (variables == null) {
+            variables = new HashMap<>();
+        }
         return variables;
     }
 
     public HashMap<String, UXSheetStyle> getStyles() {
+        if (styles == null) {
+            styles = new HashMap<>();
+        }
         return styles;
     }
 
     public List<ErroLog> getLogs() {
+        if (logs == null) {
+            logs = new ArrayList<>();
+        }
         return logs;
     }
 
@@ -115,13 +173,19 @@ public class UXSheetReader {
                     style.addState(styleState);
                     state = 4;
                 } else {
-                    style.addAttribute(parseAttribute());
+                    var attr = parseAttribute();
+                    if (attr != null) {
+                        style.addAttribute(attr);
+                    }
                 }
             } else if (state == 4 && currentType == BRACE) {
                 state = 5;
 
             } else if (state == 5 && currentType == TEXT) {
-                styleState.addAttribute(parseAttribute());
+                var attr = parseAttribute();
+                if (attr != null) {
+                    styleState.addAttribute(attr);
+                }
 
             } else if (state == 5 && currentType == CBRACE) {
                 state = 3;
@@ -149,7 +213,7 @@ public class UXSheetReader {
         String name = currentText;
         UXValue value = null;
         int state = 0;
-        while (readNext()) {
+        while (nextType != CBRACE && readNext()) {
             if (state == 0 && currentType == COLON) {
                 state = 1;
             } else if (state == 1 && (value = parseValue()) != null) {
@@ -164,12 +228,12 @@ public class UXSheetReader {
                 log(ErroLog.UNEXPECTED_TOKEN);
                 break;
             }
-            if (nextType == CBRACE) {
-                break;
-            }
         }
         if (state != 3) {
             log(ErroLog.UNEXPECTED_END_OF_TOKENS);
+        }
+        if (state < 1) {
+            return null;
         }
         return new UXSheetAttribute(name, value == null ? new UXValue() : value);
     }
@@ -192,8 +256,19 @@ public class UXSheetReader {
             return parseString(currentText);
 
         } else if (currentType == TEXT && nextType != PARAM) {
+            if (currentText.equalsIgnoreCase("true")) {
+                return new UXValueBool(true);
+            }
+            if (currentText.equalsIgnoreCase("false")) {
+                return new UXValueBool(false);
+            }
+            if (currentText.equalsIgnoreCase("MATCH_PARENT")) {
+                return new UXValueNumber(Widget.MATCH_PARENT);
+            }
+            if (currentText.equalsIgnoreCase("WRAP_CONTENT")) {
+                 return new UXValueNumber(Widget.WRAP_CONTENT);
+            }
             return new UXValueText(currentText);
-
         }
 
         if (currentType == TEXT) {
@@ -201,7 +276,7 @@ public class UXSheetReader {
             List<Object> values =  new ArrayList<>();
 
             int state = 0;
-            while (readNext()) {
+            while (nextType != SEMICOLON && nextType != CBRACE && readNext()) {
                 if (state == 0 && currentType == PARAM) {
                     state = 1;
 
@@ -209,7 +284,7 @@ public class UXSheetReader {
                     state = 2;
                     values.add(currentText);
 
-                } else if (state == 1 && currentType == STRING ) {
+                } else if (state == 1 && currentType == STRING) {
                     state = 2;
                     values.add(parseString(currentText));
 
@@ -225,9 +300,6 @@ public class UXSheetReader {
 
                 } else {
                     log(ErroLog.UNEXPECTED_TOKEN);
-                }
-                if (nextType == SEMICOLON || nextType == CBRACE) {
-                    break;
                 }
             }
             log(ErroLog.UNEXPECTED_END_OF_TOKENS);
@@ -292,9 +364,6 @@ public class UXSheetReader {
         } else {
             position++;
         }
-
-        currentDebugName = current == -1 ? "-1" : new String(Character.toChars(current));
-        nextDebugName = next == -1 ? "-1" : new String(Character.toChars(next));
         return true;
     }
 
@@ -348,11 +417,11 @@ public class UXSheetReader {
             nextText = readString();
             nextType = STRING;
 
-        } else if (current == '$') {
+        } else if (current == '@') {
             nextText = readName();
             nextType = LOCALE;
 
-        } else if (current == '@') {
+        } else if (current == '$') {
             nextText = readName();
             nextType = VARIABLE;
 
@@ -367,9 +436,6 @@ public class UXSheetReader {
         } else if (isCharacter(current)) {
             nextText = readName();
             nextType = TEXT;
-            if (nextText.equalsIgnoreCase("MATCH_PARENT") || nextText.equalsIgnoreCase("WRAP_CONTENT") ) {
-                nextType = NUMBER;
-            }
 
         } else if (current == '(') {
             nextText = "(";
@@ -441,6 +507,7 @@ public class UXSheetReader {
                         readNextChar();
                         builder.appendCodePoint(current);
                     } else {
+                        readNextChar();
                         log(ErroLog.UNEXPECTED_TOKEN);
                     }
                     break;
@@ -459,7 +526,7 @@ public class UXSheetReader {
         boolean scape = false;
         int start = current;
         while ((scape || next != start) && next != '\n' && readNextChar()) {
-            scape = current == start && !scape;
+            scape = current == '\\' && !scape;
             builder.appendCodePoint(current);
         }
         readNextChar();
@@ -483,13 +550,10 @@ public class UXSheetReader {
     }
 
     private void log(String message) {
-        logs.add(new ErroLog(currentLine, currentPosition, message));
+        getLogs().add(new ErroLog(currentLine, currentPosition, message));
     }
 
     private UXValue parseNumber(String source) {
-        if (source.equalsIgnoreCase("MATCH_PARENT")) return new UXValueNumber(Widget.MATCH_PARENT);
-        if (source.equalsIgnoreCase("WRAP_CONTENT")) return new UXValueNumber(Widget.WRAP_CONTENT);
-
         float val;
         try {
             char lastChar = source.charAt(source.length() - 1);
@@ -627,7 +691,7 @@ public class UXSheetReader {
         return new UXValueText(Parser.string(source));
     }
 
-    public static class ErroLog {
+    public record ErroLog(int line, int position, String message) {
         public static final String UNEXPECTED_TOKEN = "Unexpected token";
         public static final String UNEXPECTED_END_OF_TOKENS = "Unexpected end of tokens";
         public static final String INVALID_NUMBER = "Invalid number";
@@ -636,27 +700,8 @@ public class UXSheetReader {
         public static final String INVALID_COLOR = "Invalid color";
         public static final String INVALID_FUNCTION = "Invalid function";
         public static final String NAME_EXPECTED = "Name expected";
-        
-        private final int line;
-        private final int position;
-        private final String message;
-
-        public ErroLog(int line, int position, String message) {
-            this.line = line;
-            this.position = position;
-            this.message = message;
-        }
-
-        public int getLine() {
-            return line;
-        }
-
-        public int getPosition() {
-            return position;
-        }
-
-        public String getMessage() {
-            return message;
-        }
+        public static final String CYCLIC_PARENT = "Cyclic Parent";
+        public static final String INVALID_PROCESSOR = "Invalid processor";
+        public static final String IMPORT_NOT_FOUND = "Import not found for ";
     }
 }

@@ -74,6 +74,7 @@ public final class Parser {
                         i += 5;
                         continue;
                     }
+                    default -> ch = nextChar;
                 }
                 i++;
             }
