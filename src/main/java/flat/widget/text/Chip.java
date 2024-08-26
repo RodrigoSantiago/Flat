@@ -2,7 +2,6 @@ package flat.widget.text;
 
 import flat.animations.StateInfo;
 import flat.events.ActionEvent;
-import flat.events.ActionListener;
 import flat.events.PointerEvent;
 import flat.graphics.SmartContext;
 import flat.graphics.image.Drawable;
@@ -11,13 +10,14 @@ import flat.math.Vector2;
 import flat.resources.Resource;
 import flat.uxml.Controller;
 import flat.uxml.UXBuilder;
+import flat.uxml.UXListener;
 import flat.uxml.UXTheme;
 
 import java.lang.reflect.Method;
 
 public class Chip extends Label {
 
-    private ActionListener actionListener;
+    private UXListener<ActionEvent> actionListener;
 
     private Drawable iconImage;
     private float iconSpacing;
@@ -139,11 +139,11 @@ public class Chip extends Label {
         super.setActivated(actived);
     }
 
-    public ActionListener getActionListener() {
+    public UXListener<ActionEvent> getActionListener() {
         return actionListener;
     }
 
-    public void setActionListener(ActionListener actionListener) {
+    public void setActionListener(UXListener<ActionEvent> actionListener) {
         this.actionListener = actionListener;
     }
 

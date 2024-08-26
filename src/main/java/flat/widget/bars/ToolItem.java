@@ -2,7 +2,6 @@ package flat.widget.bars;
 
 import flat.animations.StateInfo;
 import flat.events.ActionEvent;
-import flat.events.ActionListener;
 import flat.events.PointerEvent;
 import flat.graphics.SmartContext;
 import flat.graphics.image.Drawable;
@@ -11,6 +10,7 @@ import flat.math.Vector2;
 import flat.resources.Resource;
 import flat.uxml.Controller;
 import flat.uxml.UXBuilder;
+import flat.uxml.UXListener;
 import flat.uxml.UXTheme;
 import flat.widget.Widget;
 
@@ -19,7 +19,7 @@ import java.util.Objects;
 
 public class ToolItem extends Widget {
 
-    private ActionListener actionListener;
+    private UXListener<ActionEvent> actionListener;
 
     private Drawable iconImage;
     private float iconSpacing;
@@ -105,11 +105,11 @@ public class ToolItem extends Widget {
         }
     }
 
-    public ActionListener getActionListener() {
+    public UXListener<ActionEvent> getActionListener() {
         return actionListener;
     }
 
-    public void setActionListener(ActionListener actionListener) {
+    public void setActionListener(UXListener<ActionEvent> actionListener) {
         this.actionListener = actionListener;
     }
 

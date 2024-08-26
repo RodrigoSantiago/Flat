@@ -4,10 +4,7 @@ import flat.window.Application;
 
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class ResourceStream {
 
@@ -61,4 +58,15 @@ public class ResourceStream {
         return Application.getResourcesManager().getResourceCache(resourceName);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ResourceStream stream)) return false;
+        return Objects.equals(name, stream.name) && Objects.equals(resourceName, stream.resourceName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, resourceName);
+    }
 }

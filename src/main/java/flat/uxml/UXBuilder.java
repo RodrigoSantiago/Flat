@@ -27,11 +27,17 @@ public class UXBuilder {
 
     private static HashMap<String, UXGadgetFactory> factories = new HashMap<>();
 
+    private UXNode root;
+    private Controller controller;
+
+    private ArrayList<Pair<String, UXGadgetLinker>> linkers = new ArrayList<>();
+    private HashMap<String, Gadget> targets = new HashMap<>();
+
     public static void install(String name, UXGadgetFactory gadgetFactory) {
         factories.put(name, gadgetFactory);
     }
 
-    static {
+    public static void installDefaultWidgets() {
         UXBuilder.install("Scene", Scene::new);
         UXBuilder.install("Box", Box::new);
         UXBuilder.install("LinearBox", LinearBox::new);
@@ -67,12 +73,6 @@ public class UXBuilder {
         UXBuilder.install("ToolItem", ToolItem::new);
         UXBuilder.install("OverflowMenu", OverflowMenu::new);
     }
-
-    private UXNode root;
-    private Controller controller;
-
-    private ArrayList<Pair<String, UXGadgetLinker>> linkers = new ArrayList<>();
-    private HashMap<String, Gadget> targets = new HashMap<>();
 
     public UXBuilder(UXNode root) {
         this(root, null);
@@ -158,35 +158,35 @@ public class UXBuilder {
         }
         return null;
     }
-    
+
     static class Pair<K, V> {
-        private final K Key;
-        private final V Value;
-    
+        private final K key;
+        private final V value;
+
         public Pair(K key, V value) {
-            Key = key;
-            Value = value;
+            this.key = key;
+            this.value = value;
         }
-    
+
         public K getKey() {
-            return Key;
+            return key;
         }
-    
+
         public V getValue() {
-            return Value;
+            return value;
         }
-    
+
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Pair<?, ?> pair = (Pair<?, ?>) o;
-            return Objects.equals(Key, pair.Key) && Objects.equals(Value, pair.Value);
+            return Objects.equals(key, pair.key) && Objects.equals(value, pair.value);
         }
-    
+
         @Override
         public int hashCode() {
-            return Objects.hash(Key, Value);
+            return Objects.hash(key, value);
         }
     }
 }

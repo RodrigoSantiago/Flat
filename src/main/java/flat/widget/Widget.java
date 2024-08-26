@@ -16,8 +16,8 @@ import flat.uxml.value.UXValue;
 import flat.widget.effects.RippleEffect;
 import flat.widget.enuns.Visibility;
 import flat.window.Activity;
+import static flat.widget.State.*;
 
-import java.lang.reflect.Method;
 import java.util.*;
 
 public class Widget implements Gadget {
@@ -27,15 +27,6 @@ public class Widget implements Gadget {
     //---------------------
     public static final float WRAP_CONTENT = 0;
     public static final float MATCH_PARENT = Float.POSITIVE_INFINITY;
-
-    public static final int ENABLED = 1 << 0;
-    public static final int FOCUSED = 1 << 1;
-    public static final int ACTIVATED = 1 << 2;
-    public static final int HOVERED = 1 << 3;
-    public static final int PRESSED = 1 << 4;
-    public static final int DRAGGED = 1 << 5;
-    public static final int ERROR = 1 << 6;
-    public static final int DISABLED = 1 << 7;
 
     private static final Comparator<Widget> childComparator = (o1, o2) -> Float.compare(o1.elevation, o2.elevation);
 
@@ -82,12 +73,12 @@ public class Widget implements Gadget {
     //    Events
     //---------------------
     private boolean clickable = true;
-    private PointerListener pointerListener;
-    private HoverListener hoverListener;
-    private ScrollListener scrollListener;
-    private KeyListener keyListener;
-    private DragListener dragListener;
-    private FocusListener focusListener;
+    private UXListener<PointerEvent> pointerListener;
+    private UXListener<HoverEvent> hoverListener;
+    private UXListener<ScrollEvent> scrollListener;
+    private UXListener<KeyEvent> keyListener;
+    private UXListener<DragEvent> dragListener;
+    private UXListener<FocusEvent> focusListener;
 
     //---------------------
     //    Style
@@ -129,48 +120,30 @@ public class Widget implements Gadget {
         UXAttrs attrs = getAttrs();
         attrs.setTheme(theme);
 
-        String id = attrs.att("id").asString();
+        String id = attrs.getAttributeString("id", null);
         if (id != null) {
             setId(id);
             if (controller != null) {
                 controller.assign(id, this);
             }
         }
-        setEnabled(attrs.att("enabled").asBool(null, isEnabled()));
+        setEnabled(attrs.getAttributeBool("enabled", isEnabled()));
 
-        Method handle = attrs.linkListener("on-pointer", PointerEvent.class, controller);
-        if (handle != null) {
-            setPointerListener(new PointerListener.AutoPointerListener(controller, handle));
-        }
-        handle = attrs.linkListener("on-hover", HoverEvent.class, controller);
-        if (handle != null) {
-            setHoverListener(new HoverListener.AutoHoverListener(controller, handle));
-        }
-        handle = attrs.linkListener("on-scroll", ScrollEvent.class, controller);
-        if (handle != null) {
-            setScrollListener(new ScrollListener.AutoScrollListener(controller, handle));
-        }
-        handle = attrs.linkListener("on-key", KeyEvent.class, controller);
-        if (handle != null) {
-            setKeyListener(new KeyListener.AutoKeyListener(controller, handle));
-        }
-        handle = attrs.linkListener("on-drag", DragEvent.class, controller);
-        if (handle != null) {
-            setDragListener(new DragListener.AutoDragListener(controller, handle));
-        }
-        handle = attrs.linkListener("on-focus", FocusEvent.class, controller);
-        if (handle != null) {
-            setFocusListener(new FocusListener.AutoFocusListener(controller, handle));
-        }
+        setPointerListener(attrs.getAttributeListener("on-pointer", PointerEvent.class, controller));
+        setHoverListener(attrs.getAttributeListener("on-hover", HoverEvent.class, controller));
+        setScrollListener(attrs.getAttributeListener("on-scroll", ScrollEvent.class, controller));
+        setKeyListener(attrs.getAttributeListener("on-key", KeyEvent.class, controller));
+        setDragListener(attrs.getAttributeListener("on-drag", DragEvent.class, controller));
+        setFocusListener(attrs.getAttributeListener("on-focus", FocusEvent.class, controller));
 
-        setNextFocusId(attrs.att("next-focus-id").asString(null, getNextFocusId()));
-        setPrevFocusId(attrs.att("prev-focus-id").asString(null, getPrevFocusId()));
+        setNextFocusId(attrs.getAttributeString("next-focus-id", getNextFocusId()));
+        setPrevFocusId(attrs.getAttributeString("prev-focus-id", getPrevFocusId()));
     }
 
     public void applyStyle() {
         UXAttrs attrs = getAttrs();
 
-        setTransitionDuration(attrs.value("transition-duration").asNumber(null, getTransitionDuration()));
+        setTransitionDuration(attrs.getNumber("transition-duration", null, getTransitionDuration()));
 
         // Disabled State Overlay
         if (parent != null) {
@@ -202,55 +175,55 @@ public class Widget implements Gadget {
 
         StateInfo info = getStateInfo();
 
-        setVisibility(attrs.value("visibility").asConstant(info, getVisibility()));
-        setCursor(attrs.value("cursor").asConstant(info, getCursor()));
+        setVisibility(attrs.getConstant("visibility", info, getVisibility()));
+        setCursor(attrs.getConstant("cursor", info, getCursor()));
 
-        setFocusable(attrs.value("focusable").asBool(info, isFocusable()));
-        setClickable(attrs.value("clickable").asBool(info, isClickable()));
+        setFocusable(attrs.getBool("focusable", info, isFocusable()));
+        setClickable(attrs.getBool("clickable", info, isClickable()));
 
-        setPrefWidth(attrs.value("width").asSize(info, getPrefWidth()));
-        setPrefHeight(attrs.value("height").asSize(info, getPrefHeight()));
-        setMaxWidth(attrs.value("max-width").asSize(info, getMaxWidth()));
-        setMaxHeight(attrs.value("max-height").asSize(info, getMaxHeight()));
-        setMinWidth(attrs.value("min-width").asSize(info, getMinWidth()));
-        setMinHeight(attrs.value("min-height").asSize(info, getMinHeight()));
+        setPrefWidth(attrs.getSize("width", info, getPrefWidth()));
+        setPrefHeight(attrs.getSize("height", info, getPrefHeight()));
+        setMaxWidth(attrs.getSize("max-width", info, getMaxWidth()));
+        setMaxHeight(attrs.getSize("max-height", info, getMaxHeight()));
+        setMinWidth(attrs.getSize("min-width", info, getMinWidth()));
+        setMinHeight(attrs.getSize("min-height", info, getMinHeight()));
 
-        setTranslateX(attrs.value("x").asSize(info, getTranslateX()));
-        setTranslateY(attrs.value("y").asSize(info, getTranslateY()));
-        setCenterX(attrs.value("center-x").asNumber(info, getCenterX()));
-        setCenterY(attrs.value("center-y").asNumber(info, getCenterY()));
-        setScaleX(attrs.value("scale-x").asNumber(info, getScaleX()));
-        setScaleY(attrs.value("scale-y").asNumber(info, getScaleY()));
-        setOpacity(attrs.value("opacity").asNumber(info, getOpacity()));
+        setTranslateX(attrs.getSize("x", info, getTranslateX()));
+        setTranslateY(attrs.getSize("y", info, getTranslateY()));
+        setCenterX(attrs.getNumber("center-x", info, getCenterX()));
+        setCenterY(attrs.getNumber("center-y", info, getCenterY()));
+        setScaleX(attrs.getNumber("scale-x", info, getScaleX()));
+        setScaleY(attrs.getNumber("scale-y", info, getScaleY()));
+        setOpacity(attrs.getNumber("opacity", info, getOpacity()));
 
-        setRotate(attrs.value("rotate").asAngle(info, getRotate()));
+        setRotate(attrs.getAngle("rotate", info, getRotate()));
 
-        setElevation(attrs.value("elevation").asSize(info, getElevation()));
-        setShadowEnabled(attrs.value("shadow").asBool(info, isShadowEnabled()));
+        setElevation(attrs.getSize("elevation", info, getElevation()));
+        setShadowEnabled(attrs.getBool("shadow", info, isShadowEnabled()));
 
-        setRippleEnabled(attrs.value("ripple").asBool(info, isRippleEnabled()));
-        setRippleColor(attrs.value("ripple-color").asColor(info, getRippleColor()));
-        setRippleOverflow(attrs.value("ripple-overflow").asBool(info, isRippleOverflow()));
+        setRippleEnabled(attrs.getBool("ripple", info, isRippleEnabled()));
+        setRippleColor(attrs.getColor("ripple-color", info, getRippleColor()));
+        setRippleOverflow(attrs.getBool("ripple-overflow", info, isRippleOverflow()));
 
-        setMarginTop(attrs.value("margin-top").asSize(info, getMarginTop()));
-        setMarginRight(attrs.value("margin-right").asSize(info, getMarginRight()));
-        setMarginBottom(attrs.value("margin-bottom").asSize(info, getMarginBottom()));
-        setMarginLeft(attrs.value("margin-left").asSize(info, getMarginLeft()));
+        setMarginTop(attrs.getSize("margin-top", info, getMarginTop()));
+        setMarginRight(attrs.getSize("margin-right", info, getMarginRight()));
+        setMarginBottom(attrs.getSize("margin-bottom", info, getMarginBottom()));
+        setMarginLeft(attrs.getSize("margin-left", info, getMarginLeft()));
 
-        setPaddingTop(attrs.value("padding-top").asSize(info, getPaddingTop()));
-        setPaddingRight(attrs.value("padding-right").asSize(info, getPaddingRight()));
-        setPaddingBottom(attrs.value("padding-bottom").asSize(info, getPaddingBottom()));
-        setPaddingLeft(attrs.value("padding-left").asSize(info, getPaddingLeft()));
+        setPaddingTop(attrs.getSize("padding-top", info, getPaddingTop()));
+        setPaddingRight(attrs.getSize("padding-right", info, getPaddingRight()));
+        setPaddingBottom(attrs.getSize("padding-bottom", info, getPaddingBottom()));
+        setPaddingLeft(attrs.getSize("padding-left", info, getPaddingLeft()));
 
-        setRadiusTop(attrs.value("radius-top").asSize(info, getRadiusTop()));
-        setRadiusRight(attrs.value("radius-right").asSize(info, getRadiusRight()));
-        setRadiusBottom(attrs.value("radius-bottom").asSize(info, getRadiusBottom()));
-        setRadiusLeft(attrs.value("radius-left").asSize(info, getRadiusLeft()));
+        setRadiusTop(attrs.getSize("radius-top", info, getRadiusTop()));
+        setRadiusRight(attrs.getSize("radius-right", info, getRadiusRight()));
+        setRadiusBottom(attrs.getSize("radius-bottom", info, getRadiusBottom()));
+        setRadiusLeft(attrs.getSize("radius-left", info, getRadiusLeft()));
 
-        setBackgroundColor(attrs.value("background-color").asColor(info, getBackgroundColor()));
-        setBorderRound(attrs.value("border-round").asBool(info, isBorderRound()));
-        setBorderColor(attrs.value("border-color").asColor(info, getBorderColor()));
-        setBorderWidth(attrs.value("border-width").asSize(info, getBorderWidth()));
+        setBackgroundColor(attrs.getColor("background-color", info, getBackgroundColor()));
+        setBorderRound(attrs.getBool("border-round", info, isBorderRound()));
+        setBorderColor(attrs.getColor("border-color", info, getBorderColor()));
+        setBorderWidth(attrs.getSize("border-width", info, getBorderWidth()));
     }
 
     @Override
@@ -652,7 +625,7 @@ public class Widget implements Gadget {
     public void setClickable(boolean clickable) {
         if (this.clickable != clickable) {
             this.clickable = clickable;
-            attrs.unfollow("clickable", clickable);
+            attrs.checkSetUnfollow("clickable", clickable);
         }
     }
 
@@ -732,9 +705,7 @@ public class Widget implements Gadget {
     }
 
     public void unfollowStyleProperty(String name) {
-        if (attrs != null) {
-            attrs.unfollow(name);
-        }
+        attrs.unfollow(name);
     }
 
     public float getTransitionDuration() {
@@ -746,7 +717,7 @@ public class Widget implements Gadget {
 
         if (this.transitionDuration != transitionDuration) {
             this.transitionDuration = transitionDuration;
-            attrs.unfollow("transition-duration", transitionDuration);
+            attrs.checkSetUnfollow("transition-duration", transitionDuration);
 
             if (transitionDuration == 0) {
                 if (stateAnimation != null) {
@@ -763,66 +734,66 @@ public class Widget implements Gadget {
     }
 
     public boolean isDisabled() {
-        return parent == null ? !isEnabled() : parent.isDisabled() || !isEnabled();
+        return !isEnabled() || (parent != null && parent.isDisabled());
     }
 
     public boolean isEnabled() {
-        return (states & DISABLED) != DISABLED;
+        return !DISABLED.contains(states);
     }
 
     public void setEnabled(boolean enabled) {
         if (isEnabled() != enabled) {
-            setStates((byte) (enabled ? states | DISABLED : states & ~DISABLED));
+            setStates((byte) (enabled ? states | DISABLED.bitset() : states & ~DISABLED.bitset()));
         }
     }
 
     public boolean isActivated() {
-        return (states & ACTIVATED) == ACTIVATED;
+        return ACTIVATED.contains(states);
     }
 
     protected void setActivated(boolean actived) {
         if (isActivated() != actived) {
-            setStates((byte) (actived ? states | ACTIVATED : states & ~ACTIVATED));
+            setStates((byte) (actived ? states | ACTIVATED.bitset() : states & ~ACTIVATED.bitset()));
         }
     }
 
     public boolean isHovered() {
-        return (states & HOVERED) == HOVERED;
+        return HOVERED.contains(states);
     }
 
     protected void setHovered(boolean hovered) {
         if (isHovered() != hovered) {
-            setStates((byte) (hovered ? states | HOVERED : states & ~HOVERED));
+            setStates((byte) (hovered ? states | HOVERED.bitset() : states & ~HOVERED.bitset()));
         }
     }
 
     public boolean isPressed() {
-        return (states & PRESSED) == PRESSED;
+        return PRESSED.contains(states);
     }
 
     protected void setPressed(boolean pressed) {
         if (isPressed() != pressed) {
-            setStates((byte) (pressed ? states | PRESSED : states & ~PRESSED));
+            setStates((byte) (pressed ? states | PRESSED.bitset() : states & ~PRESSED.bitset()));
         }
     }
 
     public boolean isDragged() {
-        return (states & DRAGGED) == DRAGGED;
+        return DRAGGED.contains(states);
     }
 
     protected void setDragged(boolean dragged) {
         if (isDragged() != dragged) {
-            setStates((byte) (dragged ? states | DRAGGED : states & ~DRAGGED));
+            setStates((byte) (dragged ? states | DRAGGED.bitset() : states & ~DRAGGED.bitset()));
         }
     }
 
     public boolean isError() {
-        return (states & ERROR) == ERROR;
+        return ERROR.contains(states);
     }
 
     protected void setError(boolean error) {
         if (isError() != error) {
-            setStates((byte) (error ? states | ERROR : states & ~ERROR));
+            setStates((byte) (error ? states | ERROR.bitset() : states & ~ERROR.bitset()));
         }
     }
 
@@ -832,7 +803,7 @@ public class Widget implements Gadget {
     }
 
     public boolean isFocused() {
-        return (states & FOCUSED) == FOCUSED;
+        return FOCUSED.contains(states);
     }
 
     protected void setFocused(boolean focused) {
@@ -841,13 +812,13 @@ public class Widget implements Gadget {
             if (activity != null) {
                 if (focused) {
                     if (focusable) {
-                        setStates((byte) (states | FOCUSED));
+                        setStates((byte) (states | FOCUSED.bitset()));
                         if (activity.getFocus() != this) {
                             activity.setFocus(this);
                         }
                     }
                 } else {
-                    setStates((byte) (states & ~FOCUSED));
+                    setStates((byte) (states & ~FOCUSED.bitset()));
                     if (activity.getFocus() == this) {
                         activity.setFocus(null);
                     }
@@ -872,7 +843,7 @@ public class Widget implements Gadget {
     public void setFocusable(boolean focusable) {
         if (this.focusable != focusable) {
             this.focusable = focusable;
-            attrs.unfollow("focusable", focusable);
+            attrs.checkSetUnfollow("focusable", focusable);
 
             if (!focusable) {
                 setFocused(false);
@@ -1022,7 +993,7 @@ public class Widget implements Gadget {
     public void setMarginTop(float marginTop) {
         if (this.marginTop != marginTop) {
             this.marginTop = marginTop;
-            attrs.unfollow("margin-top", marginTop);
+            attrs.checkSetUnfollow("margin-top", marginTop);
 
             updateRect();
             invalidate(true);
@@ -1036,7 +1007,7 @@ public class Widget implements Gadget {
     public void setMarginRight(float marginRight) {
         if (this.marginRight != marginRight) {
             this.marginRight = marginRight;
-            attrs.unfollow("margin-right", marginRight);
+            attrs.checkSetUnfollow("margin-right", marginRight);
 
             updateRect();
             invalidate(true);
@@ -1050,7 +1021,7 @@ public class Widget implements Gadget {
     public void setMarginBottom(float marginBottom) {
         if (this.marginBottom != marginBottom) {
             this.marginBottom = marginBottom;
-            attrs.unfollow("margin-bottom", marginBottom);
+            attrs.checkSetUnfollow("margin-bottom", marginBottom);
 
             updateRect();
             invalidate(true);
@@ -1064,7 +1035,7 @@ public class Widget implements Gadget {
     public void setMarginLeft(float marginLeft) {
         if (this.marginLeft != marginLeft) {
             this.marginLeft = marginLeft;
-            attrs.unfollow("margin-left", marginLeft);
+            attrs.checkSetUnfollow("margin-left", marginLeft);
 
             updateRect();
             invalidate(true);
@@ -1077,10 +1048,10 @@ public class Widget implements Gadget {
             marginRight = right;
             marginBottom = bottom;
             marginLeft = left;
-            attrs.unfollow("margin-top", marginTop);
-            attrs.unfollow("margin-right", marginRight);
-            attrs.unfollow("margin-bottom", marginBottom);
-            attrs.unfollow("margin-left", marginLeft);
+            attrs.checkSetUnfollow("margin-top", marginTop);
+            attrs.checkSetUnfollow("margin-right", marginRight);
+            attrs.checkSetUnfollow("margin-bottom", marginBottom);
+            attrs.checkSetUnfollow("margin-left", marginLeft);
 
             updateRect();
             invalidate(true);
@@ -1094,7 +1065,7 @@ public class Widget implements Gadget {
     public void setPaddingTop(float paddingTop) {
         if (this.paddingTop != paddingTop) {
             this.paddingTop = paddingTop;
-            attrs.unfollow("padding-top", paddingTop);
+            attrs.checkSetUnfollow("padding-top", paddingTop);
 
             invalidate(true);
         }
@@ -1107,7 +1078,7 @@ public class Widget implements Gadget {
     public void setPaddingRight(float paddingRight) {
         if (this.paddingRight != paddingRight) {
             this.paddingRight = paddingRight;
-            attrs.unfollow("padding-right", paddingRight);
+            attrs.checkSetUnfollow("padding-right", paddingRight);
 
             invalidate(true);
         }
@@ -1120,7 +1091,7 @@ public class Widget implements Gadget {
     public void setPaddingBottom(float paddingBottom) {
         if (this.paddingBottom != paddingBottom) {
             this.paddingBottom = paddingBottom;
-            attrs.unfollow("padding-bottom", paddingBottom);
+            attrs.checkSetUnfollow("padding-bottom", paddingBottom);
 
             invalidate(true);
         }
@@ -1133,7 +1104,7 @@ public class Widget implements Gadget {
     public void setPaddingLeft(float paddingLeft) {
         if (this.paddingLeft != paddingLeft) {
             this.paddingLeft = paddingLeft;
-            attrs.unfollow("padding-left", paddingLeft);
+            attrs.checkSetUnfollow("padding-left", paddingLeft);
 
             invalidate(true);
         }
@@ -1145,10 +1116,10 @@ public class Widget implements Gadget {
             paddingRight = right;
             paddingBottom = bottom;
             paddingLeft = left;
-            attrs.unfollow("padding-top", paddingTop);
-            attrs.unfollow("padding-right", paddingRight);
-            attrs.unfollow("padding-bottom", paddingBottom);
-            attrs.unfollow("padding-left", paddingLeft);
+            attrs.checkSetUnfollow("padding-top", paddingTop);
+            attrs.checkSetUnfollow("padding-right", paddingRight);
+            attrs.checkSetUnfollow("padding-bottom", paddingBottom);
+            attrs.checkSetUnfollow("padding-left", paddingLeft);
 
             invalidate(true);
         }
@@ -1161,7 +1132,7 @@ public class Widget implements Gadget {
     public void setMinWidth(float minWidth) {
         if (this.minWidth != minWidth) {
             this.minWidth = minWidth;
-            attrs.unfollow("min-width", minWidth);
+            attrs.checkSetUnfollow("min-width", minWidth);
 
             invalidate(true);
         }
@@ -1174,7 +1145,7 @@ public class Widget implements Gadget {
     public void setMinHeight(float minHeight) {
         if (this.minHeight != minHeight) {
             this.minHeight = minHeight;
-            attrs.unfollow("min-height", minHeight);
+            attrs.checkSetUnfollow("min-height", minHeight);
 
             invalidate(true);
         }
@@ -1184,8 +1155,8 @@ public class Widget implements Gadget {
         if (this.minWidth != minWidth || this.minHeight != minHeight) {
             this.minWidth = minWidth;
             this.minHeight = minHeight;
-            attrs.unfollow("min-width", minWidth);
-            attrs.unfollow("min-height", minHeight);
+            attrs.checkSetUnfollow("min-width", minWidth);
+            attrs.checkSetUnfollow("min-height", minHeight);
 
             invalidate(true);
         }
@@ -1198,7 +1169,7 @@ public class Widget implements Gadget {
     public void setMaxWidth(float maxWidth) {
         if (this.maxWidth != maxWidth) {
             this.maxWidth = maxWidth;
-            attrs.unfollow("max-width", maxWidth);
+            attrs.checkSetUnfollow("max-width", maxWidth);
 
             invalidate(true);
         }
@@ -1211,7 +1182,7 @@ public class Widget implements Gadget {
     public void setMaxHeight(float maxHeight) {
         if (this.maxHeight != maxHeight) {
             this.maxHeight = maxHeight;
-            attrs.unfollow("max-height", maxHeight);
+            attrs.checkSetUnfollow("max-height", maxHeight);
 
             invalidate(true);
         }
@@ -1221,8 +1192,8 @@ public class Widget implements Gadget {
         if (this.maxWidth != maxWidth || this.maxHeight != maxHeight) {
             this.maxWidth = maxWidth;
             this.maxHeight = maxHeight;
-            attrs.unfollow("max-width", maxWidth);
-            attrs.unfollow("max-height", maxHeight);
+            attrs.checkSetUnfollow("max-width", maxWidth);
+            attrs.checkSetUnfollow("max-height", maxHeight);
 
             invalidate(true);
         }
@@ -1235,7 +1206,7 @@ public class Widget implements Gadget {
     public void setPrefWidth(float prefWidth) {
         if (this.prefWidth != prefWidth) {
             this.prefWidth = prefWidth;
-            attrs.unfollow("width", prefWidth);
+            attrs.checkSetUnfollow("width", prefWidth);
 
             invalidate(true);
         }
@@ -1248,7 +1219,7 @@ public class Widget implements Gadget {
     public void setPrefHeight(float prefHeight) {
         if (this.prefHeight != prefHeight) {
             this.prefHeight = prefHeight;
-            attrs.unfollow("height", prefHeight);
+            attrs.checkSetUnfollow("height", prefHeight);
 
             invalidate(true);
         }
@@ -1258,8 +1229,8 @@ public class Widget implements Gadget {
         if (this.prefWidth != prefWidth || this.prefHeight != prefHeight) {
             this.prefWidth = prefWidth;
             this.prefHeight = prefHeight;
-            attrs.unfollow("width", prefWidth);
-            attrs.unfollow("height", prefHeight);
+            attrs.checkSetUnfollow("width", prefWidth);
+            attrs.checkSetUnfollow("height", prefHeight);
 
             invalidate(true);
         }
@@ -1272,7 +1243,7 @@ public class Widget implements Gadget {
     public void setCenterX(float centerX) {
         if (this.centerX != centerX) {
             this.centerX = centerX;
-            attrs.unfollow("center-x", centerX);
+            attrs.checkSetUnfollow("center-x", centerX);
 
             invalidate(false);
             invalidateTransform();
@@ -1286,7 +1257,7 @@ public class Widget implements Gadget {
     public void setCenterY(float centerY) {
         if (this.centerY != centerY) {
             this.centerY = centerY;
-            attrs.unfollow("center-y", centerY);
+            attrs.checkSetUnfollow("center-y", centerY);
 
             invalidate(false);
             invalidateTransform();
@@ -1300,7 +1271,7 @@ public class Widget implements Gadget {
     public void setTranslateX(float translateX) {
         if (this.translateX != translateX) {
             this.translateX = translateX;
-            attrs.unfollow("translate-x", translateX);
+            attrs.checkSetUnfollow("translate-x", translateX);
 
             invalidate(false);
             invalidateTransform();
@@ -1314,7 +1285,7 @@ public class Widget implements Gadget {
     public void setTranslateY(float translateY) {
         if (this.translateY != translateY) {
             this.translateY = translateY;
-            attrs.unfollow("translate-y", translateY);
+            attrs.checkSetUnfollow("translate-y", translateY);
 
             invalidate(false);
             invalidateTransform();
@@ -1328,7 +1299,7 @@ public class Widget implements Gadget {
     public void setScaleX(float scaleX) {
         if (this.scaleX != scaleX) {
             this.scaleX = scaleX;
-            attrs.unfollow("scale-x", scaleX);
+            attrs.checkSetUnfollow("scale-x", scaleX);
 
             invalidate(false);
             invalidateTransform();
@@ -1342,7 +1313,7 @@ public class Widget implements Gadget {
     public void setScaleY(float scaleY) {
         if (this.scaleY != scaleY) {
             this.scaleY = scaleY;
-            attrs.unfollow("scale-y", scaleY);
+            attrs.checkSetUnfollow("scale-y", scaleY);
 
             invalidate(false);
             invalidateTransform();
@@ -1358,7 +1329,7 @@ public class Widget implements Gadget {
 
         if (this.rotate != rotate) {
             this.rotate = rotate;
-            attrs.unfollow("rotate", rotate);
+            attrs.checkSetUnfollow("rotate", rotate);
 
             invalidate(false);
             invalidateTransform();
@@ -1372,7 +1343,7 @@ public class Widget implements Gadget {
     public void setElevation(float elevation) {
         if (this.elevation != elevation) {
             this.elevation = elevation;
-            attrs.unfollow("elevation", elevation);
+            attrs.checkSetUnfollow("elevation", elevation);
 
             invalidate(true);
             if (parent != null) {
@@ -1392,7 +1363,7 @@ public class Widget implements Gadget {
 
         if (this.visibility != visibility.ordinal()) {
             this.visibility = visibility.ordinal();
-            attrs.unfollow("visibility", visibility);
+            attrs.checkSetUnfollow("visibility", visibility);
 
             invalidate(true);
         }
@@ -1409,7 +1380,7 @@ public class Widget implements Gadget {
     public void setCursor(Cursor cursor) {
         if (this.cursor != cursor) {
             this.cursor = cursor;
-            attrs.unfollow("cursor", cursor);
+            attrs.checkSetUnfollow("cursor", cursor);
         }
     }
 
@@ -1425,7 +1396,7 @@ public class Widget implements Gadget {
         opacity = Math.max(0, Math.min(1, opacity));
         if (this.opacity != opacity) {
             this.opacity = opacity;
-            attrs.unfollow("opacity", opacity);
+            attrs.checkSetUnfollow("opacity", opacity);
 
             invalidate(false);
         }
@@ -1488,7 +1459,7 @@ public class Widget implements Gadget {
     public void setRadiusTop(float radiusTop) {
         if (bg.arcTop != radiusTop) {
             bg.arcTop = radiusTop;
-            attrs.unfollow("radius-top", radiusTop);
+            attrs.checkSetUnfollow("radius-top", radiusTop);
 
             invalidate(false);
         }
@@ -1501,7 +1472,7 @@ public class Widget implements Gadget {
     public void setRadiusRight(float radiusRight) {
         if (bg.arcRight != radiusRight) {
             bg.arcRight = radiusRight;
-            attrs.unfollow("radius-right", radiusRight);
+            attrs.checkSetUnfollow("radius-right", radiusRight);
 
             invalidate(false);
         }
@@ -1514,7 +1485,7 @@ public class Widget implements Gadget {
     public void setRadiusBottom(float radiusBottom) {
         if (bg.arcBottom != radiusBottom) {
             bg.arcBottom = radiusBottom;
-            attrs.unfollow("radius-bottom", radiusBottom);
+            attrs.checkSetUnfollow("radius-bottom", radiusBottom);
 
             invalidate(false);
         }
@@ -1527,7 +1498,7 @@ public class Widget implements Gadget {
     public void setRadiusLeft(float radiusLeft) {
         if (bg.arcLeft != radiusLeft) {
             bg.arcLeft = radiusLeft;
-            attrs.unfollow("radius-left", radiusLeft);
+            attrs.checkSetUnfollow("radius-left", radiusLeft);
 
             invalidate(false);
         }
@@ -1539,10 +1510,10 @@ public class Widget implements Gadget {
             bg.arcRight = cRight;
             bg.arcBottom = cBottom;
             bg.arcLeft = cLeft;
-            attrs.unfollow("radius-top", cTop);
-            attrs.unfollow("radius-right", cRight);
-            attrs.unfollow("radius-bottom", cBottom);
-            attrs.unfollow("radius-left", cLeft);
+            attrs.checkSetUnfollow("radius-top", cTop);
+            attrs.checkSetUnfollow("radius-right", cRight);
+            attrs.checkSetUnfollow("radius-bottom", cBottom);
+            attrs.checkSetUnfollow("radius-left", cLeft);
 
             invalidate(false);
         }
@@ -1555,7 +1526,7 @@ public class Widget implements Gadget {
     public void setBackgroundColor(int rgba) {
         if (this.backgroundColor != rgba) {
             this.backgroundColor = rgba;
-            attrs.unfollow("background-color", backgroundColor);
+            attrs.checkSetUnfollow("background-color", backgroundColor);
 
             invalidate(false);
         }
@@ -1568,7 +1539,7 @@ public class Widget implements Gadget {
     public void setBorderRound(boolean borderRound) {
         if (this.borderRound != borderRound) {
             this.borderRound = borderRound;
-            attrs.unfollow("border-round", borderRound);
+            attrs.checkSetUnfollow("border-round", borderRound);
 
             invalidate(false);
         }
@@ -1581,7 +1552,7 @@ public class Widget implements Gadget {
     public void setBorderColor(int rgba) {
         if (this.borderColor != rgba) {
             this.borderColor = rgba;
-            attrs.unfollow("border-color", borderColor);
+            attrs.checkSetUnfollow("border-color", borderColor);
 
             invalidate(false);
         }
@@ -1594,7 +1565,7 @@ public class Widget implements Gadget {
     public void setBorderWidth(float width) {
         if (this.borderWidth != width) {
             this.borderWidth = width;
-            attrs.unfollow("border-width", borderWidth);
+            attrs.checkSetUnfollow("border-width", borderWidth);
 
             invalidate(false);
         }
@@ -1607,7 +1578,7 @@ public class Widget implements Gadget {
     public void setShadowEnabled(boolean enable) {
         if (this.shadowEnabled != enable) {
             this.shadowEnabled = enable;
-            attrs.unfollow("shadow-enabled", shadowEnabled);
+            attrs.checkSetUnfollow("shadow-enabled", shadowEnabled);
 
             invalidate(false);
         }
@@ -1620,7 +1591,7 @@ public class Widget implements Gadget {
     public void setRippleEnabled(boolean enable) {
         if (this.rippleEnabled != enable) {
             this.rippleEnabled = enable;
-            attrs.unfollow("ripple-enabled", rippleEnabled);
+            attrs.checkSetUnfollow("ripple-enabled", rippleEnabled);
 
             ripple = enable ? new RippleEffect(this) : null;
             invalidate(false);
@@ -1634,7 +1605,7 @@ public class Widget implements Gadget {
     public void setRippleColor(int rgba) {
         if (this.rippleColor != rgba) {
             this.rippleColor = rgba;
-            attrs.unfollow("ripple-color", rippleColor);
+            attrs.checkSetUnfollow("ripple-color", rippleColor);
 
             invalidate(false);
         }
@@ -1647,7 +1618,7 @@ public class Widget implements Gadget {
     public void setRippleOverflow(boolean rippleOverflow) {
         if (this.rippleOverflow != rippleOverflow) {
             this.rippleOverflow = rippleOverflow;
-            attrs.unfollow("ripple-overflow", rippleOverflow);
+            attrs.checkSetUnfollow("ripple-overflow", rippleOverflow);
 
             invalidate(false);
         }
@@ -1672,51 +1643,51 @@ public class Widget implements Gadget {
         return ripple;
     }
 
-    public void setPointerListener(PointerListener pointerListener) {
+    public void setPointerListener(UXListener<PointerEvent> pointerListener) {
         this.pointerListener = pointerListener;
     }
 
-    public PointerListener getPointerListener() {
+    public UXListener<PointerEvent> getPointerListener() {
         return pointerListener;
     }
 
-    public void setHoverListener(HoverListener hoverListener) {
+    public void setHoverListener(UXListener<HoverEvent> hoverListener) {
         this.hoverListener = hoverListener;
     }
 
-    public HoverListener getHoverListener() {
+    public UXListener<HoverEvent> getHoverListener() {
         return hoverListener;
     }
 
-    public void setScrollListener(ScrollListener scrollListener) {
+    public void setScrollListener(UXListener<ScrollEvent> scrollListener) {
         this.scrollListener = scrollListener;
     }
 
-    public ScrollListener getScrollListener() {
+    public UXListener<ScrollEvent> getScrollListener() {
         return scrollListener;
     }
 
-    public void setKeyListener(KeyListener keyListener) {
+    public void setKeyListener(UXListener<KeyEvent> keyListener) {
         this.keyListener = keyListener;
     }
 
-    public KeyListener getKeyListener() {
+    public UXListener<KeyEvent> getKeyListener() {
         return keyListener;
     }
 
-    public void setDragListener(DragListener dragListener) {
+    public void setDragListener(UXListener<DragEvent> dragListener) {
         this.dragListener = dragListener;
     }
 
-    public DragListener getDragListener() {
+    public UXListener<DragEvent> getDragListener() {
         return dragListener;
     }
 
-    public void setFocusListener(FocusListener focusListener) {
+    public void setFocusListener(UXListener<FocusEvent> focusListener) {
         this.focusListener = focusListener;
     }
 
-    public FocusListener getFocusListener() {
+    public UXListener<FocusEvent> getFocusListener() {
         return focusListener;
     }
 

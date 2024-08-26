@@ -13,7 +13,7 @@ public class UXValueLocale extends UXValue {
 
     @Override
     public String asString(UXTheme theme) {
-        return theme.getText(text);
+        return theme == null ? text : theme.getText(text);
     }
 
     @Override

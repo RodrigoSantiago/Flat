@@ -99,9 +99,9 @@ public class UXSheetParserTest {
                 "number", new UXValueNumber(10),
                 "pixels", new UXValueNumber(20),
                 "inches", new UXValueSizeIn(-30),
-                "centimeter", new UXValueSizeIn(40 * 2.54f),
-                "milimeter", new UXValueSizeIn(50.2f * 25.4f),
-                "picas", new UXValueSizeIn(15 * 6),
+                "centimeter", new UXValueSizeIn(40 / 2.54f),
+                "milimeter", new UXValueSizeIn(50.2f / 25.4f),
+                "picas", new UXValueSizeIn(15.0f / 6.0f),
                 "density", new UXValueSizeDp(10),
                 "angle", new UXValueAngle(45),
                 "font-size", new UXValueSizeSp(15)
@@ -248,6 +248,27 @@ public class UXSheetParserTest {
         assertEquals(1, reader.getStyles().size());
         assertStyle(reader.getStyles(), "style", null,
                 "color", new UXValueColor(0x123456FF),
+                "color-alpha", new UXValueColor(0xFF00FFA1)
+        );
+
+        assertEquals(0, reader.getVariables().size());
+        assertLog(reader.getLogs());
+    }
+
+    @Test
+    public void styleIgnoreOpenComments() {
+        UXSheetParser reader = new UXSheetParser(
+                """
+                style {
+                    color-alpha : #FF00FFA1;
+                }
+                /* Open Comment
+                """
+        );
+        reader.parse();
+
+        assertEquals(1, reader.getStyles().size());
+        assertStyle(reader.getStyles(), "style", null,
                 "color-alpha", new UXValueColor(0xFF00FFA1)
         );
 
@@ -691,7 +712,7 @@ public class UXSheetParserTest {
     @Test
     public void parseXML() {
         UXSheetParser reader = new UXSheetParser("#FFFFFF");
-        UXValue result = reader.parseXML();
+        UXValue result = reader.parseXmlAttribute();
 
         assertEquals(new UXValueXML("#FFFFFF", new UXValueColor(0xFFFFFFFF)), result);
 
@@ -702,10 +723,10 @@ public class UXSheetParserTest {
 
     @Test
     public void parseXMLText() {
-        UXSheetParser reader = new UXSheetParser(" #FFFFFF ");
-        UXValue result = reader.parseXML();
+        UXSheetParser reader = new UXSheetParser("#FFFFFA ");
+        UXValue result = reader.parseXmlAttribute();
 
-        assertEquals(new UXValueText(" #FFFFFF "), result);
+        assertEquals(new UXValueText("#FFFFFA "), result);
 
         assertEquals(0, reader.getStyles().size());
         assertEquals(0, reader.getVariables().size());
@@ -715,7 +736,7 @@ public class UXSheetParserTest {
     @Test
     public void parseXMLVariable() {
         UXSheetParser reader = new UXSheetParser("$variable");
-        UXValue result = reader.parseXML();
+        UXValue result = reader.parseXmlAttribute();
 
         assertEquals(new UXValueVariable("$variable"), result);
 
@@ -727,7 +748,7 @@ public class UXSheetParserTest {
     @Test
     public void parseXMLLocale() {
         UXSheetParser reader = new UXSheetParser("@locale");
-        UXValue result = reader.parseXML();
+        UXValue result = reader.parseXmlAttribute();
 
         assertEquals(new UXValueLocale("@locale"), result);
 
@@ -739,7 +760,7 @@ public class UXSheetParserTest {
     @Test
     public void parseXMLFailedFunction() {
         UXSheetParser reader = new UXSheetParser("rgba(failed)");
-        UXValue result = reader.parseXML();
+        UXValue result = reader.parseXmlAttribute();
 
         assertEquals(new UXValueText("rgba(failed)"), result);
 

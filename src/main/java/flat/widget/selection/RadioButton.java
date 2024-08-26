@@ -2,13 +2,13 @@ package flat.widget.selection;
 
 import flat.animations.StateInfo;
 import flat.events.ActionEvent;
-import flat.events.ActionListener;
 import flat.events.PointerEvent;
 import flat.graphics.SmartContext;
 import flat.graphics.image.Drawable;
 import flat.math.Mathf;
 import flat.uxml.Controller;
 import flat.uxml.UXBuilder;
+import flat.uxml.UXListener;
 import flat.uxml.UXTheme;
 import flat.widget.State;
 import flat.widget.Widget;
@@ -16,7 +16,7 @@ import flat.widget.Widget;
 public class RadioButton extends Widget {
 
     // Properties
-    private ActionListener toggleListener;
+    private UXListener<ActionEvent> toggleListener;
     private RadioGroup radioGroup;
 
     private Drawable icon;
@@ -87,11 +87,11 @@ public class RadioButton extends Widget {
         }
     }
 
-    public ActionListener getToggleListener() {
+    public UXListener<ActionEvent> getToggleListener() {
         return toggleListener;
     }
 
-    public void setToggleListener(ActionListener toggleListener) {
+    public void setToggleListener(UXListener<ActionEvent> toggleListener) {
         this.toggleListener = toggleListener;
     }
 

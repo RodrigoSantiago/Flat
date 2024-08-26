@@ -2,9 +2,13 @@ package flat.uxml;
 
 import flat.exception.FlatException;
 import flat.resources.ResourceStream;
+import flat.uxml.node.UXNodeAttribute;
+import flat.uxml.node.UXNodeElement;
+import flat.uxml.node.UXNodeParser;
 import flat.uxml.sheet.UXSheetParser;
 import flat.uxml.value.UXValue;
 import flat.uxml.value.UXValueBool;
+import flat.uxml.value.UXValueText;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -12,7 +16,9 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,82 +56,67 @@ public class UXNode {
         return children;
     }
 
-    public static UXNode parse(ResourceStream resourceStream) {
-        Object obj = resourceStream.getCache();
+    public static UXNode parse(ResourceStream stream) {
+        Object obj = stream.getCache();
         if (obj != null) {
             if (obj instanceof UXNode) {
                 return (UXNode) obj;
             } else {
-                throw new FlatException("Invalid UXNode at:" + resourceStream.getResourceName());
+                throw new FlatException("Invalid UXNode at:" + stream.getResourceName());
             }
+        }
 
-        } else {
-            try (InputStream inputStream = resourceStream.getStream()) {
-                DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-                DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-                Document doc = dBuilder.parse(inputStream);
-                doc.getDocumentElement().normalize();
-
-                NodeList nList = doc.getChildNodes();
-                List<UXNode> children = new ArrayList<>();
-                for (int i = 0; i < nList.getLength(); i++) {
-                    Node childNode = nList.item(i);
-                    UXNode child = readRecursive(childNode);
-                    if (child != null) {
-                        children.add(child);
-                    }
-                }
-
-                UXNode root;
-                if (children.size() == 1) {
-                    root = children.get(0);
-                } else {
-                    root = new UXNode("scene", "scene", null, children);
-                }
-                resourceStream.putCache(root);
-                return root;
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+        try {
+            UXNode node = read(stream);
+            stream.putCache(node);
+            return node;
+        } catch (IOException e) {
+            throw new FlatException(e);
         }
     }
 
-    private static UXNode readRecursive(Node node) {
-        if (node.getNodeType() != Node.ELEMENT_NODE) {
-            return null;
+    private static UXNode read(ResourceStream stream) throws IOException {
+        String data = new String(stream.getStream().readAllBytes(), StandardCharsets.UTF_8);
+
+        UXNodeParser reader = new UXNodeParser(data);
+        reader.parse();
+
+        UXNodeElement root = reader.getRootElement();
+        if (root == null) {
+            return new UXNode("scene", "scene", null, new ArrayList<>());
+        } else {
+            return readRecursive(root);
         }
 
+    }
+
+    private static UXNode readRecursive(UXNodeElement element) {
         // Name
-        String name = node.getNodeName();
+        String name = element.getName();
         String style = name.toLowerCase();
 
         // Attributes
         HashMap<Integer, UXValue> values = new HashMap<>();
-        NamedNodeMap nnm = node.getAttributes();
-        for (int i = 0; i < nnm.getLength(); i++) {
-            Node item = nnm.item(i);
-            String att = item.getNodeName();
-            String value = item.getNodeValue();
+        HashMap<String, UXNodeAttribute> attrs = element.getAttributes();
+        if (element.getContent() != null) {
+            values.put(UXHash.getHash("content"), new UXValueText(element.getContent()));
+        }
+        for (var item : attrs.values()) {
+            String att = item.getName();
+            UXValue value = item.getValue();
             if (att.equals("style")) {
-                style = value;
+                style = value.asString(null);
+            } else if (value == null) {
+                values.put(UXHash.getHash(att), new UXValueBool(true));
             } else {
-                if (value == null) {
-                    values.put(UXHash.getHash(att), new UXValueBool(true));
-                } else {
-                    values.put(UXHash.getHash(att), UXSheetParser.instance(value).parseXML());
-                }
+                values.put(UXHash.getHash(att), value);
             }
         }
 
         // Children
-        NodeList nList = node.getChildNodes();
         List<UXNode> children = new ArrayList<>();
-        for (int i = 0; i < nList.getLength(); i++) {
-            Node childNode = nList.item(i);
-            UXNode child = readRecursive(childNode);
-            if (child != null) {
-                children.add(child);
-            }
+        for (UXNodeElement childNode : element.getChildren()) {
+            children.add(readRecursive(childNode));
         }
         return new UXNode(name, style, values, children);
     }

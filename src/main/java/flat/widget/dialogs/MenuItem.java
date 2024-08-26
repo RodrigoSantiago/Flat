@@ -18,7 +18,7 @@ import java.util.Objects;
 
 public class MenuItem extends Parent {
 
-    private ActionListener actionListener;
+    private UXListener<ActionEvent> actionListener;
 
     private String text;
     private boolean textAllCaps;
@@ -418,11 +418,11 @@ public class MenuItem extends Parent {
         return start;
     }
 
-    public ActionListener getActionListener() {
+    public UXListener<ActionEvent> getActionListener() {
         return actionListener;
     }
 
-    public void setActionListener(ActionListener actionListener) {
+    public void setActionListener(UXListener<ActionEvent> actionListener) {
         this.actionListener = actionListener;
     }
 

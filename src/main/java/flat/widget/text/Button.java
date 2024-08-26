@@ -2,23 +2,19 @@ package flat.widget.text;
 
 import flat.animations.StateInfo;
 import flat.events.ActionEvent;
-import flat.events.ActionListener;
 import flat.events.PointerEvent;
 import flat.graphics.SmartContext;
 import flat.graphics.image.Drawable;
 import flat.graphics.text.Align;
 import flat.math.Vector2;
 import flat.resources.Resource;
-import flat.uxml.Controller;
-import flat.uxml.UXAttrs;
-import flat.uxml.UXBuilder;
-import flat.uxml.UXTheme;
+import flat.uxml.*;
 
 import java.lang.reflect.Method;
 
 public class Button extends Label {
 
-    private ActionListener actionListener;
+    private UXListener<ActionEvent> actionListener;
 
     private Drawable iconImage;
     private float iconSpacing;
@@ -28,11 +24,11 @@ public class Button extends Label {
     public void applyAttributes(UXTheme theme, Controller controller, UXBuilder builder) {
         super.applyAttributes(theme, controller, builder);
 
-        UXAttrs attrs = getAttrs();
+        /*UXAttrs attrs = getAttrs();
         Method handle = attrs.linkListener("on-action", ActionEvent.class, controller);
         if (handle != null) {
             setActionListener(new ActionListener.AutoActionListener(controller, handle));
-        }
+        }*/
     }
 
     public void applyStyle() {
@@ -145,11 +141,11 @@ public class Button extends Label {
         }
     }
 
-    public ActionListener getActionListener() {
+    public UXListener<ActionEvent> getActionListener() {
         return actionListener;
     }
 
-    public void setActionListener(ActionListener actionListener) {
+    public void setActionListener(UXListener<ActionEvent> actionListener) {
         this.actionListener = actionListener;
     }
 

@@ -22,12 +22,12 @@ public class LinearBox extends Box {
     @Override
     public void applyStyle() {
         super.applyStyle();
-        UXAttrs attrs = getAttrs();
+        /*UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
 
         setDirection(attrs.value("direction").asConstant(info, getDirection()));
         setVerticalAlign(attrs.value("v-align").asConstant(info, getVerticalAlign()));
-        setHorizontalAlign(attrs.value("h-align").asConstant(info, getHorizontalAlign()));
+        setHorizontalAlign(attrs.value("h-align").asConstant(info, getHorizontalAlign()));*/
     }
 
     @Override

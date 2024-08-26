@@ -3,7 +3,6 @@ package flat.widget.text;
 import flat.events.KeyCode;
 import flat.events.KeyEvent;
 import flat.events.PointerEvent;
-import flat.events.PointerListener;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Font;
 import flat.graphics.text.Align;
@@ -38,7 +37,7 @@ public class TextArea extends Widget {
 
     private long timer = 0;
 
-    private PointerListener actPointerListener;
+    private UXListener<PointerEvent> actPointerListener;
 
     private float scrollX, scrollY;
     private boolean invalidTextSize;
@@ -791,11 +790,11 @@ public class TextArea extends Widget {
         }
     }
 
-    public PointerListener getActPointerListener() {
+    public UXListener<PointerEvent> getActPointerListener() {
         return actPointerListener;
     }
 
-    public void setActPointerListener(PointerListener actPointerListener) {
+    public void setActPointerListener(UXListener<PointerEvent> actPointerListener) {
         this.actPointerListener = actPointerListener;
     }
 

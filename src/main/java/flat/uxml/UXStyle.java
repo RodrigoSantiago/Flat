@@ -7,10 +7,10 @@ import java.util.HashMap;
 
 public class UXStyle {
 
-    public final HashMap<Integer, UXValue[]> entries = new HashMap<>();
-    public final String name;
-    public final String parentName;
-    public UXStyle parent;
+    private final HashMap<Integer, UXValue[]> entries = new HashMap<>();
+    private final String name;
+    private final String parentName;
+    private UXStyle parent;
     private byte statePresent;
 
     UXStyle(String name) {
@@ -24,8 +24,8 @@ public class UXStyle {
 
     UXStyle(String name, UXStyle parent) {
         this.name = name;
-        this.parent = parent;
-        this.parentName = parent.name;
+        this.setParent(parent);
+        this.parentName = parent.getName();
     }
 
     public UXValue get(String name, int index) {
@@ -44,8 +44,8 @@ public class UXStyle {
 
     UXValue[] get(Integer hash) {
         UXValue[] value = entries.get(hash);
-        if (value == null && parent != null) {
-            return parent.get(hash);
+        if (value == null && getParent() != null) {
+            return getParent().get(hash);
         }
         return value;
     }
@@ -66,11 +66,11 @@ public class UXStyle {
                 }
             }
         }
-        return parent != null && parent.containsChange(stateA, stateB);
+        return getParent() != null && getParent().containsChange(stateA, stateB);
     }
 
     boolean setParent(UXStyle uxStyle) {
-        if (!isChildOf(uxStyle)) {
+        if (!uxStyle.isChildOf(this)) {
             this.parent = uxStyle;
             return true;
         } else {
@@ -78,9 +78,25 @@ public class UXStyle {
         }
     }
 
+    public UXStyle getParent() {
+        return parent;
+    }
+
     private boolean isChildOf(UXStyle style) {
         if (this == style) return true;
         if (parent != null) return parent.isChildOf(style);
         return false;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getParentName() {
+        return parentName;
+    }
+
+    HashMap<Integer, UXValue[]> getEntries() {
+        return entries;
     }
 }

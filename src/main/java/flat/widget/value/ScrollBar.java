@@ -4,7 +4,6 @@ import flat.animations.Interpolation;
 import flat.animations.NormalizedAnimation;
 import flat.animations.StateInfo;
 import flat.events.ActionEvent;
-import flat.events.ActionListener;
 import flat.events.PointerEvent;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Font;
@@ -12,6 +11,7 @@ import flat.graphics.text.Align;
 import flat.math.Vector2;
 import flat.uxml.Controller;
 import flat.uxml.UXBuilder;
+import flat.uxml.UXListener;
 import flat.uxml.UXTheme;
 import flat.window.Activity;
 import flat.widget.Widget;
@@ -37,7 +37,7 @@ public class ScrollBar extends Widget {
     private float maxRange, range, value, minRangeDisplay;
     private float pOffset;
 
-    private ActionListener onValueChange;
+    private UXListener<ActionEvent> onValueChange;
 
     private final SlideAnim anim = new SlideAnim();
     private final SlideAnim anim2 = new SlideAnim();
@@ -199,11 +199,11 @@ public class ScrollBar extends Widget {
         }
     }
 
-    public ActionListener getOnValueChange() {
+    public UXListener<ActionEvent> getOnValueChange() {
         return onValueChange;
     }
 
-    public void setOnValueChange(ActionListener onValueChange) {
+    public void setOnValueChange(UXListener<ActionEvent> onValueChange) {
         this.onValueChange = onValueChange;
     }
 

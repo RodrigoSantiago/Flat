@@ -38,7 +38,7 @@ public class UXValueSizeIn extends UXValue {
 
     @Override
     public float asSize(UXTheme theme) {
-        return Math.round(value * (theme.getDensity() / 160f));
+        return Math.round(value * theme.getDensity());
     }
 
     @Override

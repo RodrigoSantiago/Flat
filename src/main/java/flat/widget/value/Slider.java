@@ -13,6 +13,7 @@ import flat.math.shapes.Rectangle;
 import flat.resources.Resource;
 import flat.uxml.Controller;
 import flat.uxml.UXBuilder;
+import flat.uxml.UXListener;
 import flat.uxml.UXTheme;
 import flat.window.Activity;
 import flat.widget.Widget;
@@ -44,8 +45,8 @@ public class Slider extends Widget {
     private final SlideAnim anim3 = new SlideAnim();
 
     //Events
-    private ActionListener onValueChange;
-    private ActionListener onValue2Change;
+    private UXListener<ActionEvent> onValueChange;
+    private UXListener<ActionEvent> onValue2Change;
 
     @Override
     public void applyAttributes(UXTheme theme, Controller controller, UXBuilder builder) {
@@ -322,19 +323,19 @@ public class Slider extends Widget {
         return Interpolation.mix(getInX() + getInHeight() / 2f, getInX() + getInWidth() - getInHeight() / 2f, v);
     }
 
-    public ActionListener getOnValueChange() {
+    public UXListener<ActionEvent> getOnValueChange() {
         return onValueChange;
     }
 
-    public void setOnValueChange(ActionListener onValueChange) {
+    public void setOnValueChange(UXListener<ActionEvent> onValueChange) {
         this.onValueChange = onValueChange;
     }
 
-    public ActionListener getOnValue2Change() {
+    public UXListener<ActionEvent> getOnValue2Change() {
         return onValue2Change;
     }
 
-    public void setOnValue2Change(ActionListener onValue2Change) {
+    public void setOnValue2Change(UXListener<ActionEvent> onValue2Change) {
         this.onValue2Change = onValue2Change;
     }
 

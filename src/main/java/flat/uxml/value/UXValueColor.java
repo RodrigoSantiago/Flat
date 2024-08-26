@@ -41,6 +41,6 @@ public class UXValueColor extends UXValue {
 
     @Override
     public String toString() {
-        return "Color : " + Integer.toString(rgba, 16);
+        return "Color : " + Integer.toHexString(rgba).toUpperCase();
     }
 }

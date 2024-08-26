@@ -10,7 +10,11 @@ public enum State {
     ERROR,
     DISABLED;
 
-    public int bitset() {
-        return 1 << ordinal();
+    public byte bitset() {
+        return (byte) (1 << ordinal());
+    }
+
+    public boolean contains(int flag) {
+        return (flag & bitset()) == bitset();
     }
 }

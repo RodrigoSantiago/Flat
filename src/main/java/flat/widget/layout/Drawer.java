@@ -3,7 +3,7 @@ package flat.widget.layout;
 import flat.animations.Interpolation;
 import flat.animations.NormalizedAnimation;
 import flat.animations.StateInfo;
-import flat.events.ActionListener;
+import flat.events.ActionEvent;
 import flat.events.PointerEvent;
 import flat.graphics.SmartContext;
 import flat.graphics.image.Drawable;
@@ -47,7 +47,7 @@ public class Drawer extends Parent {
     private boolean hideEffect;
 
     private SlideAnimation anim = new SlideAnimation(this);
-    private ActionListener actionListener = (event) -> setShown(!isShown());
+    private UXListener<ActionEvent> actionListener = (event) -> setShown(!isShown());
 
     public Drawer() {
         anim.setInterpolation(Interpolation.quadOut);

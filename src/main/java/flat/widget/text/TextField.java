@@ -75,7 +75,7 @@ public class TextField extends Widget {
     private long timer = 0;
     private int actPress = -1;
 
-    private ActionListener actionListener;
+    private UXListener<ActionEvent> actionListener;
 
     private float scrollX, scrollY;
     private boolean invalidTextSize, invalidScroll;
@@ -1330,11 +1330,11 @@ public class TextField extends Widget {
         }
     }
 
-    public ActionListener getActionListener() {
+    public UXListener<ActionEvent> getActionListener() {
         return actionListener;
     }
 
-    public void setActionListener(ActionListener actionListener) {
+    public void setActionListener(UXListener<ActionEvent> actionListener) {
         this.actionListener = actionListener;
     }
 

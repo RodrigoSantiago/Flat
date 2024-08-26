@@ -1,14 +1,14 @@
 package flat.widget.text;
 
 import flat.events.ActionEvent;
-import flat.events.ActionListener;
 import flat.uxml.Controller;
 import flat.uxml.UXBuilder;
+import flat.uxml.UXListener;
 import flat.uxml.UXTheme;
 
 public class ToggleButton extends Button {
 
-    private ActionListener toggleListener;
+    private UXListener<ActionEvent> toggleListener;
 
     @Override
     public void applyAttributes(UXTheme theme, Controller controller, UXBuilder builder) {
@@ -33,11 +33,11 @@ public class ToggleButton extends Button {
         }
     }
 
-    public ActionListener getToggleListener() {
+    public UXListener<ActionEvent> getToggleListener() {
         return toggleListener;
     }
 
-    public void setToggleListener(ActionListener toggleListener) {
+    public void setToggleListener(UXListener<ActionEvent> toggleListener) {
         this.toggleListener = toggleListener;
     }
 

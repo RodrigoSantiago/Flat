@@ -48,22 +48,17 @@ public class UXSheetParser {
     private int nextPosition;
     private int currentLine;
     private int currentPosition;
+    private boolean endsWithWhitespace;
 
     private HashMap<String, UXSheetStyle> styles;
     private HashMap<String, UXSheetAttribute> variables;
     private List<ErroLog> logs;
 
-    private static UXSheetParser instance;
-
-    public static UXSheetParser instance(String text) {
-        return UXSheetParser.instance.reset(text);
-    }
-
     public UXSheetParser(String text) {
         this.text = text;
     }
 
-    public UXSheetParser reset(String text) {
+    public void reset(String text) {
         this.text = text;
         pos = 0;
         current = 0;
@@ -84,8 +79,6 @@ public class UXSheetParser {
         if (styles != null) styles.clear();
         if (variables != null) variables.clear();
         if (logs != null) logs.clear();
-
-        return this;
     }
 
     public void parse() {
@@ -94,7 +87,11 @@ public class UXSheetParser {
             if (currentType == VARIABLE) {
                 var variable = parseAttribute();
                 if (variable != null) {
-                    getVariables().put(variable.getName(), variable);
+                    if (variable.getValue() instanceof UXValueVariable) {
+                        log(ErroLog.VARIABLE_CANNOT_REFERENCE_A_VARIABLE);
+                    } else {
+                        getVariables().put(variable.getName(), variable);
+                    }
                 }
 
             } else if (currentType == TEXT) {
@@ -108,26 +105,28 @@ public class UXSheetParser {
         }
     }
 
-    public UXValue parseXML() {
-        String parsed = Parser.string(text);
+    public UXValue parseXmlAttribute() {
+        if (text.length() == 0) return new UXValueText(text);
+
         int init = text.codePointAt(0);
         if (isCharacter(init) || init == '+' || init == '#' || init == '$' || init == '@') {
             read();
             if (readNext()) {
                 UXValue value = parseValue();
-                if (getLogs().size() > 0 || next != -1) {
+                if (getLogs().size() > 0 || endsWithWhitespace || next != -1) {
                     getLogs().clear();
-                    return new UXValueText(parsed);
+                    return new UXValueText(text);
                 }
-                if (value instanceof UXValueVariable
-                        || value instanceof UXValueLocale
-                        || value instanceof UXValueText) {
+                if (value instanceof UXValueText) {
+                    return new UXValueText(text);
+                }
+                if (value instanceof UXValueVariable || value instanceof UXValueLocale) {
                     return value;
                 }
-                return new UXValueXML(parsed, value);
+                return new UXValueXML(text, value);
             }
         }
-        return new UXValueText(parsed);
+        return new UXValueText(text);
     }
 
     public HashMap<String, UXSheetAttribute> getVariables() {
@@ -390,29 +389,33 @@ public class UXSheetParser {
     }
 
     private void consumeWhiteSpace() {
+        endsWithWhitespace = true;
         while (isWhitespace(next)) {
             readNextChar();
         }
     }
 
     private void consumeComment() {
+        endsWithWhitespace = true;
         readNextChar();
         readNextChar();
         while (current != '*' || next != '/') {
-            readNextChar();
+            if (!readNextChar()) break;
         }
         readNextChar();
     }
 
     private void consumeLineComment() {
+        endsWithWhitespace = true;
         readNextChar();
         readNextChar();
         while (current != '\n') {
-            readNextChar();
+            if (!readNextChar()) break;
         }
     }
 
     private void readToken() {
+        endsWithWhitespace = false;
         if (current == '\'' || current == '"') {
             nextText = readString();
             nextType = STRING;
@@ -579,11 +582,11 @@ public class UXSheetParser {
         } else if (source.endsWith("in")) {
             return new UXValueSizeIn(val);
         } else if (source.endsWith("pc")) {
-            return new UXValueSizeIn(val * 6.0f);
+            return new UXValueSizeIn(val / 6.0f);
         } else if (source.endsWith("mm")) {
-            return new UXValueSizeIn(val * 25.4f);
+            return new UXValueSizeIn(val / 25.4f);
         } else if (source.endsWith("cm")) {
-            return new UXValueSizeIn(val * 2.54f);
+            return new UXValueSizeIn(val / 2.54f);
         } else {
             return new UXValueNumber(val);
         }
@@ -692,6 +695,7 @@ public class UXSheetParser {
     }
 
     public record ErroLog(int line, int position, String message) {
+        public static final String VARIABLE_CANNOT_REFERENCE_A_VARIABLE = "Variable cannot reference a variable";
         public static final String UNEXPECTED_TOKEN = "Unexpected token";
         public static final String UNEXPECTED_END_OF_TOKENS = "Unexpected end of tokens";
         public static final String INVALID_NUMBER = "Invalid number";

@@ -1,12 +1,10 @@
 package flat.uxml.value;
 
-import flat.Flat;
 import flat.resources.Parser;
 import flat.uxml.Controller;
+import flat.uxml.UXListener;
 import flat.uxml.UXTheme;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.Objects;
 
 public class UXValueText extends UXValue {
@@ -27,7 +25,7 @@ public class UXValueText extends UXValue {
     }
 
     @Override
-    public <T extends Enum> T asConstant(UXTheme theme, Class<T> tClass) {
+    public <T extends Enum<T>> T asConstant(UXTheme theme, Class<T> tClass) {
         T result = null;
         try {
             for (T each : tClass.getEnumConstants()) {
@@ -42,22 +40,8 @@ public class UXValueText extends UXValue {
     }
 
     @Override
-    public Method asListener(UXTheme theme, Class<?> argument, Controller controller) {
-        Method result = null;
-
-        if (controller != null) {
-            try {
-                Method method = controller.getClass().getMethod(text, argument);
-                method.setAccessible(true);
-                if (method.isAnnotationPresent(Flat.class)
-                        && Modifier.isPublic(method.getModifiers())
-                        && !Modifier.isStatic(method.getModifiers())) {
-                    result = method;
-                }
-            } catch (Exception ignored) {
-            }
-        }
-        return result;
+    public <T> UXListener<T> asListener(UXTheme theme, Class<T> argument, Controller controller) {
+        return controller != null ? controller.getListenerMethod(text, argument) : null;
     }
 
     @Override

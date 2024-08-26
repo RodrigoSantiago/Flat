@@ -3,9 +3,9 @@ package flat.uxml.value;
 import flat.graphics.context.Font;
 import flat.resources.ResourceStream;
 import flat.uxml.Controller;
+import flat.uxml.UXListener;
 import flat.uxml.UXTheme;
 
-import java.lang.reflect.Method;
 import java.util.Objects;
 
 public class UXValueVariable extends UXValue {
@@ -37,7 +37,7 @@ public class UXValueVariable extends UXValue {
 
     @Override
     public UXValue getVariable(UXTheme theme) {
-        return theme.getVariable(name);
+        return theme == null ? null : theme.getVariable(name);
     }
 
     @Override
@@ -121,7 +121,7 @@ public class UXValueVariable extends UXValue {
     }
 
     @Override
-    public <T extends Enum> T asConstant(UXTheme theme, Class<T> tClass) {
+    public <T extends Enum<T>> T asConstant(UXTheme theme, Class<T> tClass) {
         UXValue variable = getVariable(theme);
         if (variable != null) {
             return variable.asConstant(theme, tClass);
@@ -131,7 +131,7 @@ public class UXValueVariable extends UXValue {
     }
 
     @Override
-    public Method asListener(UXTheme theme, Class<?> argument, Controller controller) {
+    public <T> UXListener<T> asListener(UXTheme theme, Class<T> argument, Controller controller) {
         UXValue variable = getVariable(theme);
         if (variable != null) {
             return variable.asListener(theme, argument, controller);

@@ -59,12 +59,12 @@ public class UXSheet {
                     style.add(UXHash.getHash(attr.getName()), state, attr.getValue());
                 }
             }
-            sheet.styles.put(style.name, style);
+            sheet.styles.put(style.getName(), style);
         }
 
         for (var style : sheet.styles.values()) {
-            if (style.parentName != null) {
-                var parent = sheet.styles.get(style.parentName);
+            if (style.getParentName() != null) {
+                var parent = sheet.styles.get(style.getParentName());
                 if (!style.setParent(parent)) {
                     sheet.logs.add(new UXSheetParser.ErroLog(-1, -1, UXSheetParser.ErroLog.CYCLIC_PARENT));
                 }

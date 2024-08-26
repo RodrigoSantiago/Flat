@@ -1,11 +1,11 @@
 package flat.widget.image;
 
 import flat.events.DrawEvent;
-import flat.events.DrawListener;
 import flat.graphics.SmartContext;
 import flat.math.shapes.Shape;
 import flat.uxml.Controller;
 import flat.uxml.UXBuilder;
+import flat.uxml.UXListener;
 import flat.uxml.UXTheme;
 import flat.widget.Widget;
 
@@ -13,7 +13,7 @@ import java.lang.reflect.Method;
 
 public class Canvas extends Widget {
 
-    private DrawListener drawListener;
+    private UXListener<DrawEvent> drawListener;
     private boolean autorefresh;
 
     @Override
@@ -58,11 +58,11 @@ public class Canvas extends Widget {
         }
     }
 
-    public DrawListener getDrawListener() {
+    public UXListener<DrawEvent> getDrawListener() {
         return drawListener;
     }
 
-    public void setDrawListener(DrawListener drawListener) {
+    public void setDrawListener(UXListener<DrawEvent> drawListener) {
         this.drawListener = drawListener;
     }
 }

@@ -1,6 +1,9 @@
-package flat.uxml;
+package flat.uxml.value;
 
 import flat.graphics.context.Font;
+import flat.graphics.text.Align;
+import flat.uxml.Controller;
+import flat.uxml.UXTheme;
 import flat.uxml.value.UXValue;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,7 +37,7 @@ public class UXValueTest {
         assertEquals(0, value.asColor(theme));
         assertEquals(Font.getDefault(), value.asFont(theme));
         assertNull(value.asResource(theme));
-        assertNull(value.asConstant(theme, Enum.class));
+        assertNull(value.asConstant(theme, Align.Horizontal.class));
         assertNull(value.asListener(theme, Object.class, controller));
     }
 }

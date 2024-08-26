@@ -3,9 +3,9 @@ package flat.uxml.value;
 import flat.graphics.context.Font;
 import flat.resources.ResourceStream;
 import flat.uxml.Controller;
+import flat.uxml.UXListener;
 import flat.uxml.UXTheme;
 
-import java.lang.reflect.Method;
 import java.util.Objects;
 
 public class UXValueXML extends  UXValue {
@@ -83,12 +83,12 @@ public class UXValueXML extends  UXValue {
     }
 
     @Override
-    public <T extends Enum> T asConstant(UXTheme theme, Class<T> tClass) {
+    public <T extends Enum<T>> T asConstant(UXTheme theme, Class<T> tClass) {
         return value.asConstant(theme, tClass);
     }
 
     @Override
-    public Method asListener(UXTheme theme, Class<?> argument, Controller controller) {
+    public <T> UXListener<T> asListener(UXTheme theme, Class<T> argument, Controller controller) {
         return value.asListener(theme, argument, controller);
     }
 
@@ -98,11 +98,16 @@ public class UXValueXML extends  UXValue {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         UXValueXML that = (UXValueXML) o;
-        return value.equals(that.value) && text.equals(that.text);
+        return Objects.equals(value, that.value) && Objects.equals(text, that.text);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(value, text);
+    }
+
+    @Override
+    public String toString() {
+        return "XML : '" + text + "' >> " + value;
     }
 }

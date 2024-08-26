@@ -6,7 +6,6 @@ import flat.resources.ResourceStream;
 import flat.uxml.value.UXValue;
 import flat.widget.State;
 
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -20,9 +19,7 @@ public class UXAttrs {
     private BitArray bitArray;
     private HashMap<Integer, UXValue> attributes;
 
-    private boolean forAtt;
     private String forStyleStrTemp;
-    private Integer forStyleTemp;
     private Object forStyleValue;
 
     private int forStyleValueInt;
@@ -34,7 +31,7 @@ public class UXAttrs {
     }
 
     public void setName(String name) {
-        if (!Objects.equals(this.name, name)) {
+        if (!Objects.equals(this.name, name) && !Objects.equals(this.base, name)) {
             this.name = name;
             updateStyle();
         }
@@ -74,9 +71,9 @@ public class UXAttrs {
 
     public boolean contains(String name) {
         Integer hash = UXHash.getHash(name);
-        return (attributes.containsKey(hash) ||
-                (style != null && style.contains(hash)) ||
-                (baseStyle != null && baseStyle.contains(hash))
+        return ((attributes != null && attributes.containsKey(hash))
+                || (style != null && style.contains(hash))
+                || (baseStyle != null && baseStyle.contains(hash))
         );
     }
 
@@ -92,17 +89,6 @@ public class UXAttrs {
                 builder.addLink(value.asString(theme), linker);
             }
         }
-    }
-
-    public Method linkListener(String name, Class<?> argument, Controller controller) {
-        clearTemp();
-        if (controller != null && attributes != null) {
-            UXValue value = attributes.get(UXHash.getHash(name));
-            if (value != null) {
-                return value.asListener(theme, argument, controller);
-            }
-        }
-        return null;
     }
 
     public UXValue getAttribute(String name) {
@@ -133,26 +119,8 @@ public class UXAttrs {
         }
     }
 
-    public UXAttrs att(String name) {
-        forAtt = true;
-        forStyleStrTemp = name;
-        forStyleTemp = UXHash.getHash(name);
-        forStyleValue = null;
-        return this;
-    }
-
-    public UXAttrs value(String name) {
-        forAtt = false;
-        forStyleStrTemp = name;
-        forStyleTemp = UXHash.getHash(name);
-        forStyleValue = null;
-        return this;
-    }
-
     private void clearTemp() {
-        forAtt = false;
         forStyleStrTemp = null;
-        forStyleTemp = null;
         forStyleValue = null;
     }
 
@@ -164,7 +132,7 @@ public class UXAttrs {
         bitArray.set(hash, true);
     }
 
-    public void unfollow(String name, int value) {
+    public void checkSetUnfollow(String name, int value) {
         if (forStyleStrTemp != null && forStyleValueInt == value && forStyleStrTemp.equals(name)) {
             clearTemp();
         } else {
@@ -172,7 +140,7 @@ public class UXAttrs {
         }
     }
 
-    public void unfollow(String name, float value) {
+    public void checkSetUnfollow(String name, float value) {
         if (forStyleStrTemp != null && forStyleValueFloat == value && forStyleStrTemp.equals(name)) {
             clearTemp();
         } else {
@@ -180,7 +148,7 @@ public class UXAttrs {
         }
     }
 
-    public void unfollow(String name, boolean value) {
+    public void checkSetUnfollow(String name, boolean value) {
         if (forStyleStrTemp != null && forStyleValueBool == value && forStyleStrTemp.equals(name)) {
             clearTemp();
         } else {
@@ -188,7 +156,7 @@ public class UXAttrs {
         }
     }
 
-    public void unfollow(String name, Object object) {
+    public void checkSetUnfollow(String name, Object object) {
         if (forStyleStrTemp != null && forStyleStrTemp.equals(name) && Objects.equals(forStyleValue, object)) {
             clearTemp();
         } else {
@@ -206,12 +174,68 @@ public class UXAttrs {
         return bitArray != null && bitArray.get(UXHash.getHash(name));
     }
 
-    public String asString() {
-        return asString(null, null);
+    public String getAttributeString(String name, String def) {
+        UXValue value = getAttribute(name);
+        return value != null ? value.asString(theme) : def;
     }
 
-    public String asString(StateInfo state, String def) {
-        UXValue value = getValue(forStyleTemp, state);
+    public boolean getAttributeBool(String name, boolean def) {
+        UXValue value = getAttribute(name);
+        return value != null ? value.asBool(theme) : def;
+    }
+
+    public float getAttributeNumber(String name, float def) {
+        UXValue value = getAttribute(name);
+        return value != null ? value.asNumber(theme) : def;
+    }
+
+    public float getAttributeSize(String name, float def) {
+        UXValue value = getAttribute(name);
+        return value != null ? value.asSize(theme) : def;
+    }
+
+    public float getAttributeAngle(String name, float def) {
+        UXValue value = getAttribute(name);
+        return value != null ? value.asAngle(theme) : def;
+    }
+
+    public int getAttributeColor(String name, int def) {
+        UXValue value = getAttribute(name);
+        return value != null ? value.asColor(theme) : def;
+    }
+
+    public Font getAttributeFont(String name, Font def) {
+        UXValue value = getAttribute(name);
+        return value != null ? value.asFont(theme) : def;
+    }
+
+    public ResourceStream getAttributeResource(String name, ResourceStream def) {
+        UXValue value = getAttribute(name);
+        return value != null ? value.asResource(theme) : def;
+    }
+
+    public <T extends Enum<T>>T getAttributeConstant(String name, T def) {
+        UXValue value = getAttribute(name);
+        return value != null ? value.asConstant(theme, (Class<T>) def.getClass()) : def;
+    }
+
+    public <T> UXListener<T> getAttributeListener(String name, Class<T> argument, Controller controller) {
+        clearTemp();
+        if (controller != null && attributes != null) {
+            UXValue value = attributes.get(UXHash.getHash(name));
+            if (value != null) {
+                return value.asListener(theme, argument, controller);
+            }
+        }
+        return null;
+    }
+
+    public String getString(String name) {
+        return getString(name, null, null);
+    }
+
+    public String getString(String name, StateInfo state, String def) {
+        UXValue value = getValue(UXHash.getHash(forStyleStrTemp = name), state);
         if (value != null) {
             def = value.asString(theme);
         }
@@ -219,12 +243,12 @@ public class UXAttrs {
         return def;
     }
 
-    public boolean asBool() {
-        return asBool(null, false);
+    public boolean getBool(String name) {
+        return getBool(name, null, false);
     }
 
-    public boolean asBool(StateInfo state, boolean def) {
-        UXValue value = getValue(forStyleTemp, state);
+    public boolean getBool(String name, StateInfo state, boolean def) {
+        UXValue value = getValue(UXHash.getHash(forStyleStrTemp = name), state);
         if (value != null) {
             def = value.asBool(theme);
         }
@@ -232,12 +256,12 @@ public class UXAttrs {
         return def;
     }
 
-    public float asNumber() {
-        return asNumber(null, 0);
+    public float getNumber(String name) {
+        return getNumber(name, null, 0);
     }
 
-    public float asNumber(StateInfo state, float def) {
-        UXValue value = getValue(forStyleTemp, state);
+    public float getNumber(String name, StateInfo state, float def) {
+        UXValue value = getValue(UXHash.getHash(forStyleStrTemp = name), state);
         if (value != null) {
             def = value.asNumber(theme);
         }
@@ -245,12 +269,12 @@ public class UXAttrs {
         return def;
     }
 
-    public float asSize() {
-        return asSize(null, 0);
+    public float getSize(String name) {
+        return getSize(name, null, 0);
     }
 
-    public float asSize(StateInfo state, float def) {
-        UXValue value = getValue(forStyleTemp, state);
+    public float getSize(String name, StateInfo state, float def) {
+        UXValue value = getValue(UXHash.getHash(forStyleStrTemp = name), state);
         if (value != null) {
             def = value.asSize(theme);
         }
@@ -258,12 +282,12 @@ public class UXAttrs {
         return def;
     }
 
-    public float asAngle() {
-        return asAngle(null, 0);
+    public float getAngle(String name) {
+        return getAngle(name, null, 0);
     }
 
-    public float asAngle(StateInfo state, float def) {
-        UXValue value = getValue(forStyleTemp, state);
+    public float getAngle(String name, StateInfo state, float def) {
+        UXValue value = getValue(UXHash.getHash(forStyleStrTemp = name), state);
         if (value != null) {
             def = value.asAngle(theme);
         }
@@ -271,12 +295,12 @@ public class UXAttrs {
         return def;
     }
 
-    public int asColor() {
-        return asColor(null, 0);
+    public int getColor(String name) {
+        return getColor(name, null, 0x00000000);
     }
 
-    public int asColor(StateInfo state, int def) {
-        UXValue value = getValue(forStyleTemp, state);
+    public int getColor(String name, StateInfo state, int def) {
+        UXValue value = getValue(UXHash.getHash(forStyleStrTemp = name), state);
         if (value != null) {
             def = value.asColor(theme);
         }
@@ -284,12 +308,12 @@ public class UXAttrs {
         return def;
     }
 
-    public Font asFont() {
-        return asFont(null, Font.getDefault());
+    public Font getFont(String name) {
+        return getFont(name, null, Font.getDefault());
     }
 
-    public Font asFont(StateInfo state, Font def) {
-        UXValue value = getValue(forStyleTemp, state);
+    public Font getFont(String name, StateInfo state, Font def) {
+        UXValue value = getValue(UXHash.getHash(forStyleStrTemp = name), state);
         if (value != null) {
             def = value.asFont(theme);
         }
@@ -297,12 +321,12 @@ public class UXAttrs {
         return def;
     }
 
-    public ResourceStream asResource() {
-        return asResource(null, null);
+    public ResourceStream getResource(String name) {
+        return getResource(name, null, null);
     }
 
-    public ResourceStream asResource(StateInfo state, ResourceStream def) {
-        UXValue value = getValue(forStyleTemp, state);
+    public ResourceStream getResource(String name, StateInfo state, ResourceStream def) {
+        UXValue value = getValue(UXHash.getHash(forStyleStrTemp = name), state);
         if (value != null) {
             def = value.asResource(theme);
         }
@@ -310,12 +334,12 @@ public class UXAttrs {
         return def;
     }
 
-    public <T extends Enum> T asConstant(T def) {
-        return asConstant(null, def);
+    public <T extends Enum<T>> T getConstant(String name, T def) {
+        return getConstant(name, null, def);
     }
 
-    public <T extends Enum> T asConstant(StateInfo state, T def) {
-        UXValue value = getValue(forStyleTemp, state);
+    public <T extends Enum<T>> T getConstant(String name, StateInfo state, T def) {
+        UXValue value = getValue(UXHash.getHash(forStyleStrTemp = name), state);
         if (value != null) {
             def = value.asConstant(theme, (Class<T>) def.getClass());
         }
@@ -330,9 +354,6 @@ public class UXAttrs {
             if (att != null) {
                 return att;
             }
-        }
-        if (forAtt) {
-            return null;
         }
         UXValue[] sValue = style != null ? style.get(hash) : null;
         UXValue[] pValue = baseStyle != null ? baseStyle.get(hash) : null;

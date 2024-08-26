@@ -1,11 +1,11 @@
 package flat.widget.layout;
 
 import flat.events.ActionEvent;
-import flat.events.ActionListener;
 import flat.graphics.SmartContext;
 import flat.graphics.image.Drawable;
 import flat.uxml.Controller;
 import flat.uxml.UXBuilder;
+import flat.uxml.UXListener;
 import flat.uxml.UXTheme;
 import flat.widget.Widget;
 
@@ -17,7 +17,7 @@ public class Page extends Box {
     private Drawable icon;
 
     private Tab tab;
-    private ActionListener onActivated, onDeactivated;
+    private UXListener<ActionEvent> onActivated, onDeactivated;
 
     @Override
     public void applyAttributes(UXTheme theme, Controller controller, UXBuilder builder) {
@@ -81,19 +81,19 @@ public class Page extends Box {
         }
     }
 
-    public ActionListener getOnActivated() {
+    public UXListener<ActionEvent> getOnActivated() {
         return onActivated;
     }
 
-    public void setOnActivated(ActionListener onActivated) {
+    public void setOnActivated(UXListener<ActionEvent> onActivated) {
         this.onActivated = onActivated;
     }
 
-    public ActionListener getOnDeactivated() {
+    public UXListener<ActionEvent> getOnDeactivated() {
         return onDeactivated;
     }
 
-    public void setOnDeactivated(ActionListener onDeactivated) {
+    public void setOnDeactivated(UXListener<ActionEvent> onDeactivated) {
         this.onDeactivated = onDeactivated;
     }
 

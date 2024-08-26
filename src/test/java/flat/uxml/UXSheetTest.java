@@ -141,14 +141,14 @@ public class UXSheetTest {
         );
     }
 
-    private static ResourceStream mockStream(String value) {
+    private ResourceStream mockStream(String value) {
         ResourceStream stream = mock(ResourceStream.class);
         when(stream.getStream()).thenReturn(new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8)));
         return stream;
     }
 
     public void assertEmptyStyle(UXStyle style) {
-        assertEquals(0, style.entries.size());
+        assertEquals(0, style.getEntries().size());
     }
 
     public void assertStyles(UXStyle style, State state, Object... pair) {

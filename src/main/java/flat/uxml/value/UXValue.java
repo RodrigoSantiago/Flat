@@ -3,9 +3,8 @@ package flat.uxml.value;
 import flat.graphics.context.Font;
 import flat.resources.ResourceStream;
 import flat.uxml.Controller;
+import flat.uxml.UXListener;
 import flat.uxml.UXTheme;
-
-import java.lang.reflect.Method;
 
 public class UXValue {
     public UXValue() {
@@ -66,11 +65,11 @@ public class UXValue {
         return null;
     }
 
-    public <T extends Enum> T asConstant(UXTheme theme, Class<T> tClass) {
+    public <T extends Enum<T>> T asConstant(UXTheme theme, Class<T> tClass) {
         return null;
     }
 
-    public Method asListener(UXTheme theme, Class<?> argument, Controller controller) {
+    public <T> UXListener<T> asListener(UXTheme theme, Class<T> argument, Controller controller) {
         return null;
     }
 
