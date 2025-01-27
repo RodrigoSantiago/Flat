@@ -188,8 +188,8 @@ public class Widget implements Gadget {
         setMinWidth(attrs.getSize("min-width", info, getMinWidth()));
         setMinHeight(attrs.getSize("min-height", info, getMinHeight()));
 
-        setTranslateX(attrs.getSize("x", info, getTranslateX()));
-        setTranslateY(attrs.getSize("y", info, getTranslateY()));
+        setTranslateX(attrs.getSize("translate-x", info, getTranslateX()));
+        setTranslateY(attrs.getSize("translate-y", info, getTranslateY()));
         setCenterX(attrs.getNumber("center-x", info, getCenterX()));
         setCenterY(attrs.getNumber("center-y", info, getCenterY()));
         setScaleX(attrs.getNumber("scale-x", info, getScaleX()));
@@ -199,9 +199,9 @@ public class Widget implements Gadget {
         setRotate(attrs.getAngle("rotate", info, getRotate()));
 
         setElevation(attrs.getSize("elevation", info, getElevation()));
-        setShadowEnabled(attrs.getBool("shadow", info, isShadowEnabled()));
+        setShadowEnabled(attrs.getBool("shadow-enabled", info, isShadowEnabled()));
 
-        setRippleEnabled(attrs.getBool("ripple", info, isRippleEnabled()));
+        setRippleEnabled(attrs.getBool("ripple-enabled", info, isRippleEnabled()));
         setRippleColor(attrs.getColor("ripple-color", info, getRippleColor()));
         setRippleOverflow(attrs.getBool("ripple-overflow", info, isRippleOverflow()));
 
@@ -625,7 +625,6 @@ public class Widget implements Gadget {
     public void setClickable(boolean clickable) {
         if (this.clickable != clickable) {
             this.clickable = clickable;
-            attrs.checkSetUnfollow("clickable", clickable);
         }
     }
 
@@ -717,7 +716,6 @@ public class Widget implements Gadget {
 
         if (this.transitionDuration != transitionDuration) {
             this.transitionDuration = transitionDuration;
-            attrs.checkSetUnfollow("transition-duration", transitionDuration);
 
             if (transitionDuration == 0) {
                 if (stateAnimation != null) {
@@ -843,7 +841,6 @@ public class Widget implements Gadget {
     public void setFocusable(boolean focusable) {
         if (this.focusable != focusable) {
             this.focusable = focusable;
-            attrs.checkSetUnfollow("focusable", focusable);
 
             if (!focusable) {
                 setFocused(false);
@@ -993,7 +990,6 @@ public class Widget implements Gadget {
     public void setMarginTop(float marginTop) {
         if (this.marginTop != marginTop) {
             this.marginTop = marginTop;
-            attrs.checkSetUnfollow("margin-top", marginTop);
 
             updateRect();
             invalidate(true);
@@ -1007,7 +1003,6 @@ public class Widget implements Gadget {
     public void setMarginRight(float marginRight) {
         if (this.marginRight != marginRight) {
             this.marginRight = marginRight;
-            attrs.checkSetUnfollow("margin-right", marginRight);
 
             updateRect();
             invalidate(true);
@@ -1021,7 +1016,6 @@ public class Widget implements Gadget {
     public void setMarginBottom(float marginBottom) {
         if (this.marginBottom != marginBottom) {
             this.marginBottom = marginBottom;
-            attrs.checkSetUnfollow("margin-bottom", marginBottom);
 
             updateRect();
             invalidate(true);
@@ -1035,7 +1029,6 @@ public class Widget implements Gadget {
     public void setMarginLeft(float marginLeft) {
         if (this.marginLeft != marginLeft) {
             this.marginLeft = marginLeft;
-            attrs.checkSetUnfollow("margin-left", marginLeft);
 
             updateRect();
             invalidate(true);
@@ -1048,10 +1041,6 @@ public class Widget implements Gadget {
             marginRight = right;
             marginBottom = bottom;
             marginLeft = left;
-            attrs.checkSetUnfollow("margin-top", marginTop);
-            attrs.checkSetUnfollow("margin-right", marginRight);
-            attrs.checkSetUnfollow("margin-bottom", marginBottom);
-            attrs.checkSetUnfollow("margin-left", marginLeft);
 
             updateRect();
             invalidate(true);
@@ -1065,7 +1054,6 @@ public class Widget implements Gadget {
     public void setPaddingTop(float paddingTop) {
         if (this.paddingTop != paddingTop) {
             this.paddingTop = paddingTop;
-            attrs.checkSetUnfollow("padding-top", paddingTop);
 
             invalidate(true);
         }
@@ -1078,7 +1066,6 @@ public class Widget implements Gadget {
     public void setPaddingRight(float paddingRight) {
         if (this.paddingRight != paddingRight) {
             this.paddingRight = paddingRight;
-            attrs.checkSetUnfollow("padding-right", paddingRight);
 
             invalidate(true);
         }
@@ -1091,7 +1078,6 @@ public class Widget implements Gadget {
     public void setPaddingBottom(float paddingBottom) {
         if (this.paddingBottom != paddingBottom) {
             this.paddingBottom = paddingBottom;
-            attrs.checkSetUnfollow("padding-bottom", paddingBottom);
 
             invalidate(true);
         }
@@ -1104,7 +1090,6 @@ public class Widget implements Gadget {
     public void setPaddingLeft(float paddingLeft) {
         if (this.paddingLeft != paddingLeft) {
             this.paddingLeft = paddingLeft;
-            attrs.checkSetUnfollow("padding-left", paddingLeft);
 
             invalidate(true);
         }
@@ -1116,10 +1101,6 @@ public class Widget implements Gadget {
             paddingRight = right;
             paddingBottom = bottom;
             paddingLeft = left;
-            attrs.checkSetUnfollow("padding-top", paddingTop);
-            attrs.checkSetUnfollow("padding-right", paddingRight);
-            attrs.checkSetUnfollow("padding-bottom", paddingBottom);
-            attrs.checkSetUnfollow("padding-left", paddingLeft);
 
             invalidate(true);
         }
@@ -1132,7 +1113,6 @@ public class Widget implements Gadget {
     public void setMinWidth(float minWidth) {
         if (this.minWidth != minWidth) {
             this.minWidth = minWidth;
-            attrs.checkSetUnfollow("min-width", minWidth);
 
             invalidate(true);
         }
@@ -1145,7 +1125,6 @@ public class Widget implements Gadget {
     public void setMinHeight(float minHeight) {
         if (this.minHeight != minHeight) {
             this.minHeight = minHeight;
-            attrs.checkSetUnfollow("min-height", minHeight);
 
             invalidate(true);
         }
@@ -1155,8 +1134,6 @@ public class Widget implements Gadget {
         if (this.minWidth != minWidth || this.minHeight != minHeight) {
             this.minWidth = minWidth;
             this.minHeight = minHeight;
-            attrs.checkSetUnfollow("min-width", minWidth);
-            attrs.checkSetUnfollow("min-height", minHeight);
 
             invalidate(true);
         }
@@ -1169,7 +1146,6 @@ public class Widget implements Gadget {
     public void setMaxWidth(float maxWidth) {
         if (this.maxWidth != maxWidth) {
             this.maxWidth = maxWidth;
-            attrs.checkSetUnfollow("max-width", maxWidth);
 
             invalidate(true);
         }
@@ -1182,7 +1158,6 @@ public class Widget implements Gadget {
     public void setMaxHeight(float maxHeight) {
         if (this.maxHeight != maxHeight) {
             this.maxHeight = maxHeight;
-            attrs.checkSetUnfollow("max-height", maxHeight);
 
             invalidate(true);
         }
@@ -1192,8 +1167,6 @@ public class Widget implements Gadget {
         if (this.maxWidth != maxWidth || this.maxHeight != maxHeight) {
             this.maxWidth = maxWidth;
             this.maxHeight = maxHeight;
-            attrs.checkSetUnfollow("max-width", maxWidth);
-            attrs.checkSetUnfollow("max-height", maxHeight);
 
             invalidate(true);
         }
@@ -1206,7 +1179,6 @@ public class Widget implements Gadget {
     public void setPrefWidth(float prefWidth) {
         if (this.prefWidth != prefWidth) {
             this.prefWidth = prefWidth;
-            attrs.checkSetUnfollow("width", prefWidth);
 
             invalidate(true);
         }
@@ -1219,7 +1191,6 @@ public class Widget implements Gadget {
     public void setPrefHeight(float prefHeight) {
         if (this.prefHeight != prefHeight) {
             this.prefHeight = prefHeight;
-            attrs.checkSetUnfollow("height", prefHeight);
 
             invalidate(true);
         }
@@ -1229,8 +1200,6 @@ public class Widget implements Gadget {
         if (this.prefWidth != prefWidth || this.prefHeight != prefHeight) {
             this.prefWidth = prefWidth;
             this.prefHeight = prefHeight;
-            attrs.checkSetUnfollow("width", prefWidth);
-            attrs.checkSetUnfollow("height", prefHeight);
 
             invalidate(true);
         }
@@ -1243,7 +1212,6 @@ public class Widget implements Gadget {
     public void setCenterX(float centerX) {
         if (this.centerX != centerX) {
             this.centerX = centerX;
-            attrs.checkSetUnfollow("center-x", centerX);
 
             invalidate(false);
             invalidateTransform();
@@ -1257,7 +1225,6 @@ public class Widget implements Gadget {
     public void setCenterY(float centerY) {
         if (this.centerY != centerY) {
             this.centerY = centerY;
-            attrs.checkSetUnfollow("center-y", centerY);
 
             invalidate(false);
             invalidateTransform();
@@ -1271,7 +1238,6 @@ public class Widget implements Gadget {
     public void setTranslateX(float translateX) {
         if (this.translateX != translateX) {
             this.translateX = translateX;
-            attrs.checkSetUnfollow("translate-x", translateX);
 
             invalidate(false);
             invalidateTransform();
@@ -1285,7 +1251,6 @@ public class Widget implements Gadget {
     public void setTranslateY(float translateY) {
         if (this.translateY != translateY) {
             this.translateY = translateY;
-            attrs.checkSetUnfollow("translate-y", translateY);
 
             invalidate(false);
             invalidateTransform();
@@ -1299,7 +1264,6 @@ public class Widget implements Gadget {
     public void setScaleX(float scaleX) {
         if (this.scaleX != scaleX) {
             this.scaleX = scaleX;
-            attrs.checkSetUnfollow("scale-x", scaleX);
 
             invalidate(false);
             invalidateTransform();
@@ -1313,7 +1277,6 @@ public class Widget implements Gadget {
     public void setScaleY(float scaleY) {
         if (this.scaleY != scaleY) {
             this.scaleY = scaleY;
-            attrs.checkSetUnfollow("scale-y", scaleY);
 
             invalidate(false);
             invalidateTransform();
@@ -1329,7 +1292,6 @@ public class Widget implements Gadget {
 
         if (this.rotate != rotate) {
             this.rotate = rotate;
-            attrs.checkSetUnfollow("rotate", rotate);
 
             invalidate(false);
             invalidateTransform();
@@ -1343,7 +1305,6 @@ public class Widget implements Gadget {
     public void setElevation(float elevation) {
         if (this.elevation != elevation) {
             this.elevation = elevation;
-            attrs.checkSetUnfollow("elevation", elevation);
 
             invalidate(true);
             if (parent != null) {
@@ -1363,7 +1324,6 @@ public class Widget implements Gadget {
 
         if (this.visibility != visibility.ordinal()) {
             this.visibility = visibility.ordinal();
-            attrs.checkSetUnfollow("visibility", visibility);
 
             invalidate(true);
         }
@@ -1380,7 +1340,6 @@ public class Widget implements Gadget {
     public void setCursor(Cursor cursor) {
         if (this.cursor != cursor) {
             this.cursor = cursor;
-            attrs.checkSetUnfollow("cursor", cursor);
         }
     }
 
@@ -1396,7 +1355,6 @@ public class Widget implements Gadget {
         opacity = Math.max(0, Math.min(1, opacity));
         if (this.opacity != opacity) {
             this.opacity = opacity;
-            attrs.checkSetUnfollow("opacity", opacity);
 
             invalidate(false);
         }
@@ -1459,7 +1417,6 @@ public class Widget implements Gadget {
     public void setRadiusTop(float radiusTop) {
         if (bg.arcTop != radiusTop) {
             bg.arcTop = radiusTop;
-            attrs.checkSetUnfollow("radius-top", radiusTop);
 
             invalidate(false);
         }
@@ -1472,7 +1429,6 @@ public class Widget implements Gadget {
     public void setRadiusRight(float radiusRight) {
         if (bg.arcRight != radiusRight) {
             bg.arcRight = radiusRight;
-            attrs.checkSetUnfollow("radius-right", radiusRight);
 
             invalidate(false);
         }
@@ -1485,7 +1441,6 @@ public class Widget implements Gadget {
     public void setRadiusBottom(float radiusBottom) {
         if (bg.arcBottom != radiusBottom) {
             bg.arcBottom = radiusBottom;
-            attrs.checkSetUnfollow("radius-bottom", radiusBottom);
 
             invalidate(false);
         }
@@ -1498,7 +1453,6 @@ public class Widget implements Gadget {
     public void setRadiusLeft(float radiusLeft) {
         if (bg.arcLeft != radiusLeft) {
             bg.arcLeft = radiusLeft;
-            attrs.checkSetUnfollow("radius-left", radiusLeft);
 
             invalidate(false);
         }
@@ -1510,10 +1464,6 @@ public class Widget implements Gadget {
             bg.arcRight = cRight;
             bg.arcBottom = cBottom;
             bg.arcLeft = cLeft;
-            attrs.checkSetUnfollow("radius-top", cTop);
-            attrs.checkSetUnfollow("radius-right", cRight);
-            attrs.checkSetUnfollow("radius-bottom", cBottom);
-            attrs.checkSetUnfollow("radius-left", cLeft);
 
             invalidate(false);
         }
@@ -1526,7 +1476,6 @@ public class Widget implements Gadget {
     public void setBackgroundColor(int rgba) {
         if (this.backgroundColor != rgba) {
             this.backgroundColor = rgba;
-            attrs.checkSetUnfollow("background-color", backgroundColor);
 
             invalidate(false);
         }
@@ -1539,7 +1488,6 @@ public class Widget implements Gadget {
     public void setBorderRound(boolean borderRound) {
         if (this.borderRound != borderRound) {
             this.borderRound = borderRound;
-            attrs.checkSetUnfollow("border-round", borderRound);
 
             invalidate(false);
         }
@@ -1552,7 +1500,6 @@ public class Widget implements Gadget {
     public void setBorderColor(int rgba) {
         if (this.borderColor != rgba) {
             this.borderColor = rgba;
-            attrs.checkSetUnfollow("border-color", borderColor);
 
             invalidate(false);
         }
@@ -1565,7 +1512,6 @@ public class Widget implements Gadget {
     public void setBorderWidth(float width) {
         if (this.borderWidth != width) {
             this.borderWidth = width;
-            attrs.checkSetUnfollow("border-width", borderWidth);
 
             invalidate(false);
         }
@@ -1578,7 +1524,6 @@ public class Widget implements Gadget {
     public void setShadowEnabled(boolean enable) {
         if (this.shadowEnabled != enable) {
             this.shadowEnabled = enable;
-            attrs.checkSetUnfollow("shadow-enabled", shadowEnabled);
 
             invalidate(false);
         }
@@ -1591,7 +1536,6 @@ public class Widget implements Gadget {
     public void setRippleEnabled(boolean enable) {
         if (this.rippleEnabled != enable) {
             this.rippleEnabled = enable;
-            attrs.checkSetUnfollow("ripple-enabled", rippleEnabled);
 
             ripple = enable ? new RippleEffect(this) : null;
             invalidate(false);
@@ -1605,7 +1549,6 @@ public class Widget implements Gadget {
     public void setRippleColor(int rgba) {
         if (this.rippleColor != rgba) {
             this.rippleColor = rgba;
-            attrs.checkSetUnfollow("ripple-color", rippleColor);
 
             invalidate(false);
         }
@@ -1618,7 +1561,6 @@ public class Widget implements Gadget {
     public void setRippleOverflow(boolean rippleOverflow) {
         if (this.rippleOverflow != rippleOverflow) {
             this.rippleOverflow = rippleOverflow;
-            attrs.checkSetUnfollow("ripple-overflow", rippleOverflow);
 
             invalidate(false);
         }

@@ -158,7 +158,7 @@ public class UXAttrsTest {
         assertNull(attrs.getAttribute("property-added"));
         assertEquals(0, attrs.getNumber("property-added"), 0.0001f);
     }
-
+/*
     @Test
     public void doNotUnfollowIfValueIsEqual() {
         UXAttrs attrs = new UXAttrs("test");
@@ -241,7 +241,7 @@ public class UXAttrsTest {
         assertEquals("Text", attrs.getString("property-added-object"));
         assertFalse(attrs.isUnfollow("property-added-object"));
     }
-
+*/
     @Test
     public void getAttributeValues() {
         UXAttrs attrs = new UXAttrs("test");

@@ -1,6 +1,7 @@
 package flat.uxml;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 public class UXHash {
 
@@ -13,5 +14,14 @@ public class UXHash {
             hashes.put(property, val);
         }
         return val;
+    }
+
+    public static String findByHash(Integer hash) {
+        for (var entry : hashes.entrySet()) {
+            if (Objects.equals(entry.getValue(), hash)) {
+                return entry.getKey();
+            }
+        }
+        return null;
     }
 }
