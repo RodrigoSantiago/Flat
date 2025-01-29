@@ -170,8 +170,8 @@ public class Window {
 
     void processStartup() {
         if (!started) {
-            started = true;
             show();
+            started = true;
 
             activity = factory.build(context);
             activity.show();
@@ -262,6 +262,10 @@ public class Window {
 
     long getSvgId() {
         return svgId;
+    }
+
+    public boolean isStarted() {
+        return started;
     }
 
     public void runSync(FutureTask<?> task) {

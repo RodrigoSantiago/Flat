@@ -237,6 +237,7 @@ public class ApplicationTest {
         Application.Settings settings = mock(Application.Settings.class);
         File fileLibrary = mock(File.class);
         Window window = mock(Window.class);
+        when(window.isStarted()).thenReturn(true);
 
         when(resources.getFlatLibraryFile()).thenReturn(fileLibrary);
         when(settings.createResources()).thenReturn(resources);

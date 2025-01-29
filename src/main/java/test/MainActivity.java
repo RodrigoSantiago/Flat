@@ -12,19 +12,14 @@ import flat.uxml.UXSheet;
 import flat.uxml.UXTheme;
 import flat.window.Activity;
 import flat.window.Application;
-import flat.widget.layout.LinearBox;
-import flat.widget.text.Button;
 
 public class MainActivity extends Activity {
-
-    @Flat public LinearBox box;
-    @Flat public Button btn1;
 
     public MainActivity(Context context) {
         super(context);
 
-        //setTheme(new UXTheme(Application.getResourcesManager().getInput("themes/material.uxss")));
-        //setBuilder(new ResourceStream("screen_test"));
+        setTheme(Application.getResourcesManager().getResource("themes/material.uxss"));
+        setScene(Application.getResourcesManager().getResource("screen_test/screen_test.uxml"));
     }
 
     float mx, my;
@@ -74,22 +69,5 @@ public class MainActivity extends Activity {
         event.getSource().setClickable(false);
         hide.setDuration(1000);
         hide.play(this);
-    }
-
-    @Flat
-    public void onAdd(ActionEvent event) {
-        Button btn = new Button();
-        //btn.setStyle(getTheme().getStyle("button"));
-        btn.applyStyle();
-        btn.setText("ola");
-        btn.setActionListener(this::onAction);
-        box.add(btn);
-
-        Show show = new Show(btn);
-        show.setDimension(64);
-        show.setDuration(1000);
-        show.play(this);
-
-        Property p = new Property<>(box::setPrefWidth, 0f, 100f);
     }
 }

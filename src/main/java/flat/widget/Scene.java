@@ -1,10 +1,10 @@
 package flat.widget;
 
-import flat.exception.FlatException;
 import flat.graphics.SmartContext;
 import flat.uxml.UXChildren;
 import flat.widget.enuns.Visibility;
 import flat.window.Activity;
+import flat.window.ActivityScene;
 import org.tinylog.Logger;
 
 import java.util.HashMap;
@@ -12,38 +12,21 @@ import java.util.List;
 
 public class Scene extends Parent {
 
-    Activity activity;
+    ActivityScene activityScene = new ActivityScene();
     HashMap<String, Widget> idMap = new HashMap<>();
 
     public Scene() {
+
     }
 
-    public void setActivity(Activity activity) {
-        if (this.activity != activity) {
-            Activity prev = this.activity;
-
-            if (activity != null) {
-                if (this.activity == null && activity.getScene() == this) {
-                    this.activity = activity;
-                    onActivityChange(null, activity);
-                } else {
-                    throw new FlatException("The activity cannot be assigned");
-                }
-            } else {
-                if (this.activity.getScene() != this) {
-                    this.activity = null;
-                    onActivityChange(prev, null);
-                } else {
-                    throw new FlatException("The activity cannot be released");
-                }
-            }
-        }
+    public ActivityScene getActivityScene() {
+        return activityScene;
     }
 
     @Override
     public Activity getActivity() {
-        if (activity != null) {
-            return activity;
+        if (activityScene.getActivity() != null) {
+            return activityScene.getActivity();
         } else {
             return super.getActivity();
         }
@@ -71,31 +54,35 @@ public class Scene extends Parent {
             if (child.getVisibility() == Visibility.GONE) continue;
 
             if (mWidth != MATCH_PARENT) {
-                if (child.mWidth() == MATCH_PARENT) {
+                if (child.getMeasureWidth() == MATCH_PARENT) {
                     if (getPrefWidth() == WRAP_CONTENT)
                         mWidth = MATCH_PARENT;
-                } else if (child.mWidth() > mWidth) {
-                    mWidth = child.mWidth();
+                } else if (child.getMeasureWidth() > mWidth) {
+                    mWidth = child.getMeasureWidth();
                 }
             }
             if (mHeight != MATCH_PARENT) {
-                if (child.mHeight() == MATCH_PARENT) {
+                if (child.getMeasureHeight() == MATCH_PARENT) {
                     if (getPrefHeight() == WRAP_CONTENT)
                         mHeight = MATCH_PARENT;
-                } else if (child.mHeight() > mHeight) {
-                    mHeight = child.mHeight();
+                } else if (child.getMeasureHeight() > mHeight) {
+                    mHeight = child.getMeasureHeight();
                 }
             }
         }
         mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
         mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
+
+        mWidth = Math.max(mWidth, getTotalMinWidth());
+        mHeight = Math.max(mHeight, getTotalMinHeight());
+
         setMeasure(mWidth, mHeight);
     }
 
     @Override
     public void onLayout(float width, float height) {
         setLayout(width, height);
-        layoutHelperBox(getInX(), getInY(), getInWidth(), getInHeight());
+        setChildrenLayout(getInX(), getInY(), getInWidth(), getInHeight());
     }
 
     @Override
@@ -116,6 +103,7 @@ public class Scene extends Parent {
     @Override
     public void invalidate(boolean layout) {
         if (getParent() == null) {
+            Activity activity = getActivity();
             if (activity != null) {
                 activity.invalidate(layout);
             }

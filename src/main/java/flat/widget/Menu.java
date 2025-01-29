@@ -4,7 +4,6 @@ import flat.events.PointerEvent;
 import flat.graphics.SmartContext;
 import flat.graphics.text.Align;
 import flat.uxml.UXChildren;
-import flat.widget.dialogs.MenuItem;
 import flat.widget.enuns.Visibility;
 import flat.window.Activity;
 
@@ -16,7 +15,7 @@ public class Menu extends Scene {
 
     private Align.Horizontal halign = Align.Horizontal.LEFT;
     private ArrayList<Widget> orderedList;
-    private MenuItem chooseItem;
+    //private MenuItem chooseItem;
 
     public Menu() {
         orderedList = new ArrayList<>();
@@ -38,30 +37,30 @@ public class Menu extends Scene {
     @Override
     protected void onActivityChange(Activity prev, Activity activity) {
         super.onActivityChange(prev, activity);
-        setChooseItem(null);
+        //setChooseItem(null);
     }
 
     @Override
     public void onDraw(SmartContext context) {
-        if (!MenuItem.desktop
+        /*if (!MenuItem.desktop
                 && chooseItem != null
                 && chooseItem.getVisibility() == Visibility.VISIBLE
                 && chooseItem.isActivated()) {
 
             chooseItem.onDraw(context);
         } else {
-            backgroundDraw(getBackgroundColor(), getBorderColor(), getRippleColor(), context);
+            backgroundDraw(context, getBackgroundColor(), getBorderColor(), getRippleColor());
             for (Widget child : getChildrenIterable()) {
                 if (child.getVisibility() == Visibility.VISIBLE) {
                     child.onDraw(context);
                 }
             }
-        }
+        }*/
     }
 
     @Override
     public void onLayout(float width, float height) {
-        setLayout(Math.min(width, mWidth()), Math.min(mHeight(), height));
+        setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
         layoutHelperVertical(new Children(orderedList), getInX(), getInY(), getInWidth(), getInHeight(), halign);
     }
 
@@ -78,14 +77,14 @@ public class Menu extends Scene {
             child.onMeasure();
             if (child.getVisibility() == Visibility.GONE) continue;
 
-            if (child.mWidth() > childrenWidth) {
-                childrenWidth = child.mWidth();
+            if (child.getMeasureWidth() > childrenWidth) {
+                childrenWidth = child.getMeasureWidth();
             }
-            if (child.lMinWidth() > childrenMinWidth) {
-                childrenMinWidth += child.lMinWidth();
+            if (child.getTotalMinWidth() > childrenMinWidth) {
+                childrenMinWidth += child.getTotalMinWidth();
             }
-            childrenHeight += child.mHeight();
-            childrenMinHeight += child.lMinHeight();
+            childrenHeight += child.getMeasureHeight();
+            childrenMinHeight += child.getTotalMinHeight();
         }
         if (getPrefWidth() == WRAP_CONTENT) {
             mWidth = childrenWidth + offWidth;
@@ -122,10 +121,10 @@ public class Menu extends Scene {
 
     @Override
     public Widget findByPosition(float x, float y, boolean includeDisabled) {
-        if (chooseItem != null && chooseItem.isActivated()) {
+       /* if (chooseItem != null && chooseItem.isActivated()) {
             Widget found = chooseItem.findByPosition(x, y, includeDisabled);
             if (found != null) return found;
-        }
+        }*/
 
         if ((includeDisabled || isEnabled()) &&
                 (getVisibility() == Visibility.VISIBLE || getVisibility() == Visibility.INVISIBLE)) {
@@ -148,33 +147,9 @@ public class Menu extends Scene {
     @Override
     public Widget findById(String id) {
         if (getParent() == null) {
-            if (activity != null) {
-                return activity.findById(id);
-            } else {
-                return Objects.equals(getId(), id) ? this : null;
-            }
+            return Objects.equals(getId(), id) ? this : null;
         } else {
             return super.findById(id);
-        }
-    }
-
-    @Override
-    public Activity getActivity() {
-        if (getParent() == null) {
-            return activity;
-        } else {
-            return super.getActivity();
-        }
-    }
-
-    @Override
-    public void invalidate(boolean layout) {
-        if (getParent() == null) {
-            if (activity != null) {
-                activity.invalidate(layout);
-            }
-        } else {
-            super.invalidate(layout);
         }
     }
 
@@ -199,6 +174,7 @@ public class Menu extends Scene {
         }
     }
 
+    /*
     public MenuItem getChooseItem() {
         return chooseItem;
     }
@@ -221,6 +197,7 @@ public class Menu extends Scene {
             invalidate(true);
         }
     }
+*/
 
     public Align.Horizontal getHorizontalAlign() {
         return halign;

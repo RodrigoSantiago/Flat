@@ -58,6 +58,7 @@ public class WidgetTest {
         assertEquals(150, widget.getMaxHeight(), 0.0001f);
         assertEquals(80, widget.getMinWidth(), 0.0001f);
         assertEquals(40, widget.getMinHeight(), 0.0001f);
+        assertEquals(2, widget.getWeight(), 0.0001f);
 
         assertEquals(16, widget.getTranslateX(), 0.0001f);
         assertEquals(24, widget.getTranslateY(), 0.0001f);
@@ -127,6 +128,7 @@ public class WidgetTest {
         widget.setMaxHeight(151);
         widget.setMinWidth(801);
         widget.setMinHeight(401);
+        widget.setWeight(4);
 
         widget.setTranslateX(161);
         widget.setTranslateY(241);
@@ -178,6 +180,7 @@ public class WidgetTest {
         assertEquals(150, widget.getMaxHeight(), 0.0001f);
         assertEquals(80, widget.getMinWidth(), 0.0001f);
         assertEquals(40, widget.getMinHeight(), 0.0001f);
+        assertEquals(2, widget.getWeight(), 0.0001f);
 
         assertEquals(16, widget.getTranslateX(), 0.0001f);
         assertEquals(24, widget.getTranslateY(), 0.0001f);
@@ -257,6 +260,8 @@ public class WidgetTest {
         widget.unfollowStyleProperty("min-width");
         widget.setMinHeight(401);
         widget.unfollowStyleProperty("min-height");
+        widget.setWeight(4);
+        widget.unfollowStyleProperty("weight");
 
         widget.setTranslateX(161);
         widget.unfollowStyleProperty("translate-x");
@@ -337,6 +342,7 @@ public class WidgetTest {
         assertEquals(151, widget.getMaxHeight(), 0.0001f);
         assertEquals(801, widget.getMinWidth(), 0.0001f);
         assertEquals(401, widget.getMinHeight(), 0.0001f);
+        assertEquals(4, widget.getWeight(), 0.0001f);
 
         assertEquals(161, widget.getTranslateX(), 0.0001f);
         assertEquals(241, widget.getTranslateY(), 0.0001f);
@@ -391,6 +397,7 @@ public class WidgetTest {
         hash.put(UXHash.getHash("max-height"), new UXValueSizeDp(150));
         hash.put(UXHash.getHash("min-width"), new UXValueSizeDp(80));
         hash.put(UXHash.getHash("min-height"), new UXValueSizeDp(40));
+        hash.put(UXHash.getHash("weight"), new UXValueNumber(2));
 
         hash.put(UXHash.getHash("translate-x"), new UXValueSizeDp(16));
         hash.put(UXHash.getHash("translate-y"), new UXValueSizeDp(24));

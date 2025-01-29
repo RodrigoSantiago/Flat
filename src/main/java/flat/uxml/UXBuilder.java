@@ -4,21 +4,6 @@ import flat.widget.Gadget;
 import flat.widget.Menu;
 import flat.widget.Scene;
 import flat.widget.Widget;
-import flat.widget.bars.OverflowMenu;
-import flat.widget.bars.ToolBar;
-import flat.widget.bars.ToolItem;
-import flat.widget.dialogs.DropdownMenu;
-import flat.widget.dialogs.MenuItem;
-import flat.widget.image.Canvas;
-import flat.widget.image.ImageView;
-import flat.widget.layout.*;
-import flat.widget.selection.*;
-import flat.widget.text.*;
-import flat.widget.value.ProgressBar;
-import flat.widget.value.ProgressCircle;
-import flat.widget.value.ScrollBar;
-import flat.widget.value.Slider;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
@@ -39,7 +24,7 @@ public class UXBuilder {
 
     public static void installDefaultWidgets() {
         UXBuilder.install("Scene", Scene::new);
-        UXBuilder.install("Box", Box::new);
+        /*UXBuilder.install("Box", Box::new);
         UXBuilder.install("LinearBox", LinearBox::new);
         UXBuilder.install("Divider", Divider::new);
         UXBuilder.install("Button", Button::new);
@@ -71,7 +56,7 @@ public class UXBuilder {
         UXBuilder.install("DropdownMenu", DropdownMenu::new);
         UXBuilder.install("ToolBar", ToolBar::new);
         UXBuilder.install("ToolItem", ToolItem::new);
-        UXBuilder.install("OverflowMenu", OverflowMenu::new);
+        UXBuilder.install("OverflowMenu", OverflowMenu::new);*/
     }
 
     public UXBuilder(UXNode root) {

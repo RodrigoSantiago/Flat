@@ -93,7 +93,7 @@ public class Application {
             if (win != null) {
                 win.addEvent(EventData.getSize(width, height));
             }
-            if (loopActive) {
+            if ((win == null || win.isStarted()) && loopActive) {
                 refreshResize();
             }
         });

@@ -106,7 +106,9 @@ public class ActivityTest {
         Context context = mock(Context.class);
         UXTheme theme = mock(UXTheme.class);
         Scene scene1 = mock(Scene.class);
+        when(scene1.getActivityScene()).thenReturn(mock(ActivityScene.class));
         Scene scene2 = mock(Scene.class);
+        when(scene2.getActivityScene()).thenReturn(mock(ActivityScene.class));
 
         when(context.getWindow()).thenReturn(window);
         when(window.getDpi()).thenReturn(160f);
@@ -120,12 +122,14 @@ public class ActivityTest {
         assertNull(activity.getScene());
 
         activity.show();
+        verify(scene1, times(1)).applyTheme();
         assertEquals(scene1, activity.getScene());
 
         activity.setScene(scene2);
         assertEquals(scene1, activity.getScene());
 
         activity.refreshScene(160f);
+        verify(scene2, times(1)).applyTheme();
         assertEquals(scene2, activity.getScene());
     }
 
@@ -135,12 +139,14 @@ public class ActivityTest {
         Context context = mock(Context.class);
         UXTheme theme1 = mock(UXTheme.class);
         Scene scene1 = mock(Scene.class);
+        when(scene1.getActivityScene()).thenReturn(mock(ActivityScene.class));
         Scene scene2 = mock(Scene.class);
+        when(scene2.getActivityScene()).thenReturn(mock(ActivityScene.class));
         UXBuilder builder = mock(UXBuilder.class);
         when(builder.build(any(), anyBoolean())).thenReturn(scene2);
 
         UXNode root = mock(UXNode.class);
-        when(root.instance()).thenReturn(builder);
+        when(root.instance(any())).thenReturn(builder);
 
         ResourceStream stream = mock(ResourceStream.class);
         when(stream.getCache()).thenReturn(root);
@@ -157,6 +163,7 @@ public class ActivityTest {
         assertNull(activity.getScene());
 
         activity.show();
+        verify(scene1, times(1)).applyTheme();
         assertEquals(theme1, activity.getTheme());
         assertEquals(scene1, activity.getScene());
 
@@ -164,6 +171,7 @@ public class ActivityTest {
         assertEquals(scene1, activity.getScene());
 
         activity.refreshScene(160f);
+        verify(scene2, times(1)).applyTheme();
         assertEquals(scene2, activity.getScene());
     }
 
@@ -173,6 +181,7 @@ public class ActivityTest {
         Context context = mock(Context.class);
         UXTheme theme = mock(UXTheme.class);
         Scene scene = mock(Scene.class);
+        when(scene.getActivityScene()).thenReturn(mock(ActivityScene.class));
 
         when(context.getWindow()).thenReturn(window);
         when(context.getWidth()).thenReturn(200);
@@ -188,6 +197,7 @@ public class ActivityTest {
         assertNull(activity.getScene());
 
         activity.show();
+        verify(scene, times(1)).applyTheme();
         assertEquals(scene, activity.getScene());
 
         activity.layout(100f, 100f);
@@ -202,6 +212,7 @@ public class ActivityTest {
         SmartContext smartContext = mock(SmartContext.class);
         UXTheme theme = mock(UXTheme.class);
         Scene scene = mock(Scene.class);
+        when(scene.getActivityScene()).thenReturn(mock(ActivityScene.class));
 
         when(context.getWindow()).thenReturn(window);
         when(context.getWidth()).thenReturn(200);
@@ -217,6 +228,7 @@ public class ActivityTest {
         assertNull(activity.getScene());
 
         activity.show();
+        verify(scene, times(1)).applyTheme();
         assertEquals(scene, activity.getScene());
 
         activity.draw(smartContext);
@@ -233,6 +245,7 @@ public class ActivityTest {
         UXTheme theme = mock(UXTheme.class);
         Animation animation = mock(Animation.class);
         Scene scene = mock(Scene.class);
+        when(scene.getActivityScene()).thenReturn(mock(ActivityScene.class));
 
         when(context.getWindow()).thenReturn(window);
         when(context.getWidth()).thenReturn(200);
@@ -250,6 +263,7 @@ public class ActivityTest {
         assertNull(activity.getScene());
 
         activity.show();
+        verify(scene, times(1)).applyTheme();
         assertEquals(scene, activity.getScene());
 
         activity.addAnimation(animation);
@@ -268,6 +282,7 @@ public class ActivityTest {
         Context context = mock(Context.class);
         UXTheme theme = mock(UXTheme.class);
         Scene scene = mock(Scene.class);
+        when(scene.getActivityScene()).thenReturn(mock(ActivityScene.class));
         Widget widget = mock(Widget.class);
         when(context.getWindow()).thenReturn(window);
         when(window.getDpi()).thenReturn(160f);
@@ -283,6 +298,7 @@ public class ActivityTest {
         assertNull(activity.findById(findId));
 
         activity.show();
+        verify(scene, times(1)).applyTheme();
         assertEquals(scene, activity.getScene());
 
         Widget found = activity.findById(findId);
@@ -296,6 +312,7 @@ public class ActivityTest {
         Context context = mock(Context.class);
         UXTheme theme = mock(UXTheme.class);
         Scene scene = mock(Scene.class);
+        when(scene.getActivityScene()).thenReturn(mock(ActivityScene.class));
         Widget widget = mock(Widget.class);
         when(context.getWindow()).thenReturn(window);
         when(window.getDpi()).thenReturn(160f);
@@ -311,6 +328,7 @@ public class ActivityTest {
         assertNull(activity.findByPosition(10, 20, true));
 
         activity.show();
+        verify(scene, times(1)).applyTheme();
         assertEquals(scene, activity.getScene());
 
         Widget found = activity.findByPosition(10, 20, true);
@@ -324,6 +342,7 @@ public class ActivityTest {
         Context context = mock(Context.class);
         UXTheme theme = mock(UXTheme.class);
         Scene scene = mock(Scene.class);
+        when(scene.getActivityScene()).thenReturn(mock(ActivityScene.class));
         Widget widget = mock(Widget.class);
         when(context.getWindow()).thenReturn(window);
         when(window.getDpi()).thenReturn(160f);
@@ -339,6 +358,7 @@ public class ActivityTest {
         assertNull(activity.findFocused());
 
         activity.show();
+        verify(scene, times(1)).applyTheme();
         assertEquals(scene, activity.getScene());
 
         Widget found = activity.findFocused();
@@ -352,6 +372,7 @@ public class ActivityTest {
         Context context = mock(Context.class);
         UXTheme theme = mock(UXTheme.class);
         Scene scene = mock(Scene.class);
+        when(scene.getActivityScene()).thenReturn(mock(ActivityScene.class));
 
         when(context.getWindow()).thenReturn(window);
         when(window.getDpi()).thenReturn(160f);
@@ -366,18 +387,22 @@ public class ActivityTest {
         assertFalse(activity.isListening());
 
         activity.show();
+        verify(scene, times(1)).applyTheme();
         assertEquals(scene, activity.getScene());
         assertFalse(activity.isListening());
 
         activity.start();
+        verify(scene, times(1)).applyTheme();
         assertEquals(scene, activity.getScene());
         assertTrue(activity.isListening());
 
         activity.pause();
+        verify(scene, times(1)).applyTheme();
         assertEquals(scene, activity.getScene());
         assertFalse(activity.isListening());
 
         activity.hide();
+        verify(scene, times(1)).applyTheme();
         assertEquals(scene, activity.getScene());
         assertFalse(activity.isListening());
     }
@@ -392,6 +417,7 @@ public class ActivityTest {
         Context context = mock(Context.class);
         UXTheme theme = mock(UXTheme.class);
         Scene scene = mock(Scene.class);
+        when(scene.getActivityScene()).thenReturn(mock(ActivityScene.class));
         Widget focus1 = mock(Widget.class);
         Widget focus2 = mock(Widget.class);
 
@@ -411,7 +437,7 @@ public class ActivityTest {
         when(keyEvent.getKeycode()).thenReturn(KeyCode.KEY_TAB);
 
         Activity activity = new Activity(context);
-        when(scene.getActivity()).thenReturn(activity);
+        when(scene.getActivity()).thenReturn(null).thenReturn(activity);
         when(focus1.getActivity()).thenReturn(activity);
         when(focus2.getActivity()).thenReturn(activity);
 
@@ -422,6 +448,7 @@ public class ActivityTest {
         assertNull(activity.getScene());
 
         activity.show();
+        verify(scene, times(1)).applyTheme();
         assertEquals(scene, activity.getScene());
 
         activity.onKeyPress(keyEvent);

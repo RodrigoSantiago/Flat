@@ -42,6 +42,7 @@ public class Widget implements Gadget {
 
     private float width, height;
     private float minWidth, minHeight, maxWidth = MATCH_PARENT, maxHeight = MATCH_PARENT, prefWidth, prefHeight;
+    private float weight;
     private float measureWidth, measureHeight;
     private float layoutWidth, layoutHeight;
     private float offsetWidth, offsetHeight;
@@ -54,7 +55,6 @@ public class Widget implements Gadget {
     //---------------------
     //    Family
     //---------------------
-    Activity activity;
     Parent parent;
     ArrayList<Widget> children;
     List<Widget> unmodifiableChildren;
@@ -166,7 +166,6 @@ public class Widget implements Gadget {
 
         if (isDisabled()) {
             if (children != null) {
-                childSort();
                 for (Widget child : getChildrenIterable()) {
                     child.applyStyle();
                 }
@@ -187,6 +186,7 @@ public class Widget implements Gadget {
         setMaxHeight(attrs.getSize("max-height", info, getMaxHeight()));
         setMinWidth(attrs.getSize("min-width", info, getMinWidth()));
         setMinHeight(attrs.getSize("min-height", info, getMinHeight()));
+        setWeight(attrs.getSize("weight", info, getWeight()));
 
         setTranslateX(attrs.getSize("translate-x", info, getTranslateX()));
         setTranslateY(attrs.getSize("translate-y", info, getTranslateY()));
@@ -247,11 +247,11 @@ public class Widget implements Gadget {
     }
 
     public void onDraw(SmartContext context) {
-        backgroundDraw(backgroundColor, borderColor, rippleColor, context);
+        backgroundDraw(context, backgroundColor, borderColor, rippleColor);
         childrenDraw(context);
     }
 
-    protected void backgroundDraw(int backgroundColor, int borderColor, int rippleColor, SmartContext context) {
+    protected void backgroundDraw(SmartContext context, int backgroundColor, int borderColor, int rippleColor) {
         if (getDisplayOpacity() > 0) {
             float b = borderWidth;
             float b2 = borderWidth / 2;
@@ -310,8 +310,8 @@ public class Widget implements Gadget {
      * Equation : minsize < ([preferedSize || computedSize] + padding + margins) < maxsize
      */
     public void onMeasure() {
-        setMeasure(Math.max(prefWidth + marginLeft + marginRight, lMinWidth()),
-                Math.max(prefHeight + marginTop + marginBottom, lMinHeight()));
+        setMeasure(Math.max(prefWidth + marginLeft + marginRight, getTotalMinWidth()),
+                Math.max(prefHeight + marginTop + marginBottom, getTotalMinHeight()));
     }
 
     /**
@@ -321,15 +321,15 @@ public class Widget implements Gadget {
      * @param height
      */
     public final void setMeasure(float width, float height) {
-        measureWidth = Math.max(width, lMinWidth());
-        measureHeight = Math.max(height, lMinHeight());
+        measureWidth = Math.max(width, minWidth);
+        measureHeight = Math.max(height, minHeight);
     }
 
-    public float mWidth()  {
+    public float getMeasureWidth()  {
         return measureWidth;
     }
 
-    public float mHeight()  {
+    public float getMeasureHeight()  {
         return measureHeight;
     }
 
@@ -351,8 +351,7 @@ public class Widget implements Gadget {
         this.layoutWidth = width;
         this.layoutHeight = height;
 
-        setWidth(Math.max(0, width + offsetWidth));
-        setHeight(Math.max(0, height + offsetHeight));
+        setSize(Math.max(0, width + offsetWidth), Math.max(0, height + offsetHeight));
     }
 
     public float lWidth() {
@@ -363,12 +362,12 @@ public class Widget implements Gadget {
         return layoutHeight;
     }
 
-    public float lMinWidth() {
-        return Math.max(minWidth, paddingLeft + paddingRight) + marginLeft + marginRight;
+    public float getTotalMinWidth() {
+        return Math.max(minWidth, paddingLeft + paddingRight + marginLeft + marginRight);
     }
 
-    public float lMinHeight() {
-        return Math.max(minHeight, paddingTop + paddingBottom) + marginTop + marginBottom;
+    public float getTotalMinHeight() {
+        return Math.max(minHeight, paddingTop + paddingBottom + marginTop + marginBottom);
     }
 
     public float lMaxWidth() {
@@ -641,11 +640,11 @@ public class Widget implements Gadget {
             Activity act = getActivity();
             if (act != null) {
                 contextMenu.onMeasure();
-                boolean reverseX = contextMenu.mWidth() + x > act.getWidth();
-                boolean reverseY = contextMenu.mHeight() + y > act.getHeight();
+                boolean reverseX = contextMenu.getMeasureWidth() + x > act.getWidth();
+                boolean reverseY = contextMenu.getMeasureHeight() + y > act.getHeight();
                 contextMenu.show(act,
-                        reverseX ? x - contextMenu.mWidth() : x,
-                        reverseY ? y - contextMenu.mHeight() : y);
+                        reverseX ? x - contextMenu.getMeasureWidth() : x,
+                        reverseY ? y - contextMenu.getMeasureHeight() : y);
             }
         }
     }
@@ -939,6 +938,14 @@ public class Widget implements Gadget {
         return y;
     }
 
+    void setSize(float width, float height) {
+        if (this.width != width || this.height != height) {
+            this.width = width;
+            this.height = height;
+            updateRect();
+        }
+    }
+
     public float getWidth() {
         return width;
     }
@@ -1101,6 +1108,18 @@ public class Widget implements Gadget {
             paddingRight = right;
             paddingBottom = bottom;
             paddingLeft = left;
+
+            invalidate(true);
+        }
+    }
+
+    public float getWeight() {
+        return weight;
+    }
+
+    public void setWeight(float weight) {
+        if (this.weight != weight) {
+            this.weight = weight;
 
             invalidate(true);
         }

@@ -292,6 +292,19 @@ public class UXNodeParserTest {
     }
 
     @Test
+    public void sameNameFamily() {
+        UXNodeParser parser = new UXNodeParser("<button value=\"valueA\"><button value=\"valueB\"></button><button value=\"valueC\"></button></button>");
+        parser.parse();
+        UXNodeElement result = parser.getRootElement();
+
+        assertElement(result, "button",
+                "value", new UXValueText("valueA")
+        );
+        assertChild(result, "button", "button");
+        assertLog(parser.getLogs());
+    }
+
+    @Test
     public void ignoreComment() {
         UXNodeParser parser = new UXNodeParser(
                 """
@@ -358,7 +371,8 @@ public class UXNodeParserTest {
         assertElement(result, "button");
         assertChild(result, "text");
         assertLog(parser.getLogs(),
-                UXNodeParser.ErroLog.INVALID_CLOSE_TAG, 2
+                UXNodeParser.ErroLog.INVALID_CLOSE_TAG, 2,
+                UXNodeParser.ErroLog.MISSING_TAG_CLOSURE, 3
         );
     }
 

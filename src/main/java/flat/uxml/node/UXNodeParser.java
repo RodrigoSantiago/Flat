@@ -138,12 +138,8 @@ public class UXNodeParser {
                 } else if (closure) {
                     if (currentElement == null || !currentElement.getName().equals(currentName)) {
                         log(ErroLog.INVALID_CLOSE_TAG);
-                    }
-                    if (currentElement != null) {
+                    } else {
                         currentElement = currentElement.getParent();
-                        if (currentElement != null && currentElement.getName().equals(currentName)) {
-                            currentElement = currentElement.getParent();
-                        }
                     }
                 }
                 closure = false;

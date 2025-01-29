@@ -36,8 +36,8 @@ public class UXNode {
         this.children = children;
     }
 
-    public UXBuilder instance() {
-        return new UXBuilder(this);
+    public UXBuilder instance(Controller controller) {
+        return new UXBuilder(this, controller);
     }
 
     public String getName() {

@@ -1,6 +1,6 @@
-<Scene next-focus-id="text">
-    <LinearBox id="box" direction="vertical">
-        <Button text="click-me"/>
-        <Label text="Lavel" text-size="16sp"></Label>
-    </LinearBox>
+<Scene background-color="#FF0000">
+    <Scene background-color="#00FF0080" min-width="64" min-height="64">
+    </Scene>
+    <Scene background-color="#0000FF80" min-width="128" min-height="128">
+    </Scene>
 </Scene>

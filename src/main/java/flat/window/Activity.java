@@ -4,6 +4,7 @@ import flat.animations.Animation;
 import flat.events.FocusEvent;
 import flat.events.KeyCode;
 import flat.events.KeyEvent;
+import flat.exception.FlatException;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Context;
 import flat.resources.ResourceStream;
@@ -65,12 +66,16 @@ public class Activity extends Controller {
     }
 
     public void setScene(ResourceStream resourceStream) {
-        this.builder = UXNode.parse(resourceStream).instance();
+        this.builder = UXNode.parse(resourceStream).instance(this);
         this.nextScene = null;
         invalidate(true);
     }
 
     public void setScene(Scene scene) {
+        if (scene.getActivity() != null) {
+            throw new FlatException("The scene is already assigned to an Activity");
+        }
+
         if (this.scene != scene && this.nextScene != scene) {
             this.nextScene = scene;
             this.builder = null;
@@ -123,11 +128,9 @@ public class Activity extends Controller {
         Scene old = scene;
         if (builder != null) {
             nextScene = (Scene) builder.build(theme, true);
-            invalidTheme = false;
         }
         if (scene == null && nextScene == null) {
             nextScene = new Scene();
-            invalidTheme = true;
         }
         if (nextScene != null) {
             clearAnimations();
@@ -135,12 +138,13 @@ public class Activity extends Controller {
             scene = nextScene;
             builder = null;
             nextScene = null;
-            scene.setActivity(this);
+            scene.getActivityScene().setActivity(this);
             if (old != null) {
-                old.setActivity(null);
+                old.getActivityScene().setActivity(null);
             }
 
             invalidate(true);
+            invalidTheme = true;
         }
     }
 
@@ -155,6 +159,7 @@ public class Activity extends Controller {
         if (scene != null) {
             if (invalidTheme) {
                 invalidTheme = false;
+                scene.setTheme(getTheme());
                 scene.applyTheme();
                 invalidate(true);
             }
@@ -163,7 +168,7 @@ public class Activity extends Controller {
 
     void show() {
         hide = false;
-        buildScene();
+        refreshScene(getWindow().getDpi());
         onShow();
 
     }

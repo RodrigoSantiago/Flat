@@ -139,20 +139,20 @@ public class Font {
         }
         var res = Application.getResourcesManager();
 
-        var sans = new Font("Roboto", FontWeight.NORMAL, FontPosture.REGULAR, FontStyle.SANS, res.getData("/fonts/Roboto-Regular.ttf"));
+        var sans = new Font("Roboto", FontWeight.NORMAL, FontPosture.REGULAR, FontStyle.SANS, res.getData("fonts/Roboto-Regular.ttf"));
         install(sans);
-        var bold = new Font("Roboto", FontWeight.BOLD, FontPosture.REGULAR, FontStyle.SANS, res.getData("/fonts/Roboto-Bold.ttf"));
+        var bold = new Font("Roboto", FontWeight.BOLD, FontPosture.REGULAR, FontStyle.SANS, res.getData("fonts/Roboto-Bold.ttf"));
         install(bold);
-        var italic = new Font("Roboto", FontWeight.NORMAL, FontPosture.ITALIC, FontStyle.SANS, res.getData("/fonts/Roboto-Italic.ttf"));
+        var italic = new Font("Roboto", FontWeight.NORMAL, FontPosture.ITALIC, FontStyle.SANS, res.getData("fonts/Roboto-Italic.ttf"));
         install(italic);
-        var bolditalic = new Font("Roboto", FontWeight.BOLD, FontPosture.ITALIC, FontStyle.SANS, res.getData("/fonts/Roboto-BoldItalic.ttf"));
+        var bolditalic = new Font("Roboto", FontWeight.BOLD, FontPosture.ITALIC, FontStyle.SANS, res.getData("fonts/Roboto-BoldItalic.ttf"));
         install(bolditalic);
 
-        var serif = new Font("Roboto", FontWeight.NORMAL, FontPosture.REGULAR, FontStyle.SERIF, res.getData("/fonts/RobotoSerif-Regular.ttf"));
+        var serif = new Font("Roboto", FontWeight.NORMAL, FontPosture.REGULAR, FontStyle.SERIF, res.getData("fonts/RobotoSerif-Regular.ttf"));
         install(serif);
-        var mono = new Font("Roboto", FontWeight.NORMAL, FontPosture.REGULAR, FontStyle.MONO, res.getData("/fonts/RobotoMono-Regular.ttf"));
+        var mono = new Font("Roboto", FontWeight.NORMAL, FontPosture.REGULAR, FontStyle.MONO, res.getData("fonts/RobotoMono-Regular.ttf"));
         install(mono);
-        var cursive = new Font("DancingScript", FontWeight.NORMAL, FontPosture.REGULAR, FontStyle.CURSIVE, res.getData("/fonts/DancingScript-Regular.ttf"));
+        var cursive = new Font("DancingScript", FontWeight.NORMAL, FontPosture.REGULAR, FontStyle.CURSIVE, res.getData("fonts/DancingScript-Regular.ttf"));
         install(cursive);
 
         DefaultFont = sans;
