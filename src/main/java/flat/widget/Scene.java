@@ -1,16 +1,15 @@
 package flat.widget;
 
 import flat.graphics.SmartContext;
-import flat.uxml.UXChildren;
-import flat.widget.enuns.Visibility;
+import flat.widget.enums.Visibility;
+import flat.widget.layout.Box;
 import flat.window.Activity;
 import flat.window.ActivityScene;
 import org.tinylog.Logger;
 
 import java.util.HashMap;
-import java.util.List;
 
-public class Scene extends Parent {
+public class Scene extends Box {
 
     ActivityScene activityScene = new ActivityScene();
     HashMap<String, Widget> idMap = new HashMap<>();
@@ -30,74 +29,6 @@ public class Scene extends Parent {
         } else {
             return super.getActivity();
         }
-    }
-
-    @Override
-    public void applyChildren(UXChildren children) {
-        super.applyChildren(children);
-
-        Gadget child;
-        while ((child = children.next()) != null ) {
-            Widget widget = child.getWidget();
-            if (widget != null) {
-                add(widget);
-            }
-        }
-    }
-
-    @Override
-    public void onMeasure() {
-        float mWidth = getPrefWidth(), mHeight = getPrefHeight();
-
-        for (Widget child : getChildrenIterable()) {
-            child.onMeasure();
-            if (child.getVisibility() == Visibility.GONE) continue;
-
-            if (mWidth != MATCH_PARENT) {
-                if (child.getMeasureWidth() == MATCH_PARENT) {
-                    if (getPrefWidth() == WRAP_CONTENT)
-                        mWidth = MATCH_PARENT;
-                } else if (child.getMeasureWidth() > mWidth) {
-                    mWidth = child.getMeasureWidth();
-                }
-            }
-            if (mHeight != MATCH_PARENT) {
-                if (child.getMeasureHeight() == MATCH_PARENT) {
-                    if (getPrefHeight() == WRAP_CONTENT)
-                        mHeight = MATCH_PARENT;
-                } else if (child.getMeasureHeight() > mHeight) {
-                    mHeight = child.getMeasureHeight();
-                }
-            }
-        }
-        mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
-        mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
-
-        mWidth = Math.max(mWidth, getTotalMinWidth());
-        mHeight = Math.max(mHeight, getTotalMinHeight());
-
-        setMeasure(mWidth, mHeight);
-    }
-
-    @Override
-    public void onLayout(float width, float height) {
-        setLayout(width, height);
-        setChildrenLayout(getInX(), getInY(), getInWidth(), getInHeight());
-    }
-
-    @Override
-    public void add(Widget child) {
-        super.add(child);
-    }
-
-    @Override
-    public void add(Widget... children) {
-        super.add(children);
-    }
-
-    @Override
-    public void add(List<Widget> children) {
-        super.add(children);
     }
 
     @Override
@@ -121,20 +52,7 @@ public class Scene extends Parent {
 
     @Override
     public Scene getScene() {
-        if (parent != null) {
-            if (parent.isScene()) {
-                return (Scene) parent;
-            } else {
-                return parent.getScene();
-            }
-        } else {
-            return this;
-        }
-    }
-
-    @Override
-    final boolean isScene() {
-        return true;
+        return this;
     }
 
     @Override
@@ -150,7 +68,7 @@ public class Scene extends Parent {
                 Logger.info("Id override {}", id);
             }
         }
-        if (!widget.isScene() && widget.children != null) {
+        if (!(widget instanceof Scene) && widget.children != null) {
             for (Widget child : widget.getChildrenIterable()) {
                 assign(child);
             }
@@ -164,7 +82,7 @@ public class Scene extends Parent {
                 Logger.info("Id {} not assigned", id);
             }
         }
-        if (!widget.isScene() && widget.children != null) {
+        if (!(widget instanceof Scene) && widget.children != null) {
             for (Widget child : widget.getChildrenIterable()) {
                 unassign(child);
             }

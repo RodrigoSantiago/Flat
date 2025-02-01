@@ -1,5 +1,6 @@
 package flat.uxml;
 
+import flat.Weak;
 import flat.animations.StateInfo;
 import flat.graphics.context.Font;
 import flat.resources.ResourceStream;
@@ -172,7 +173,13 @@ public class UXAttrs {
 
     public <T extends Enum<T>>T getAttributeConstant(String name, T def) {
         UXValue value = getAttribute(name);
-        return value != null ? value.asConstant(theme, def.getDeclaringClass()) : def;
+        if (value != null) {
+            var constant = value.asConstant(theme, def.getDeclaringClass());
+            if (constant != null) {
+                return constant;
+            }
+        }
+        return def;
     }
 
     public <T> UXListener<T> getAttributeListener(String name, Class<T> argument, Controller controller) {
@@ -268,7 +275,10 @@ public class UXAttrs {
     public <T extends Enum<T>> T getConstant(String name, StateInfo state, T def) {
         UXValue value = getValue(UXHash.getHash(name), state);
         if (value != null) {
-            def = value.asConstant(theme, def.getDeclaringClass());
+            var constant = value.asConstant(theme, def.getDeclaringClass());
+            if (constant != null) {
+                return constant;
+            }
         }
         return def;
     }

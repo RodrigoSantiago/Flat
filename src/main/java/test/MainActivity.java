@@ -10,6 +10,7 @@ import flat.graphics.context.Context;
 import flat.resources.ResourceStream;
 import flat.uxml.UXSheet;
 import flat.uxml.UXTheme;
+import flat.widget.layout.Box;
 import flat.window.Activity;
 import flat.window.Application;
 

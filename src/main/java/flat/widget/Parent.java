@@ -1,7 +1,7 @@
 package flat.widget;
 
 import flat.graphics.text.Align;
-import flat.widget.enuns.Visibility;
+import flat.widget.enums.Visibility;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -74,22 +74,13 @@ public abstract class Parent extends Widget {
         }
     }
 
-    protected void setChildrenLayout(float x, float y, float w, float h) {
-        for (Widget child : getChildrenIterable()) {
-            if (child.getVisibility() == Visibility.GONE) continue;
-
-            child.onLayout(Math.min(child.getMeasureWidth(), w), Math.min(child.getMeasureHeight(), h));
-            child.setPosition(x, y);
-        }
-    }
-
     protected void layoutHelperHorizontal(Children<?> children, float x, float y, float w, float h, Align.Vertical valign) {
         float defSpace = 0, defMinSpace = 0;
         for (Widget child : children) {
             if (child.getVisibility() == Visibility.GONE) continue;
 
             float mes = child.getMeasureWidth();
-            float min = child.getTotalMinWidth();
+            float min = child.getLayoutMinWidth();
             if (mes != MATCH_PARENT) defSpace += mes;
             if (min != MATCH_PARENT) defMinSpace += min;
         }
@@ -99,7 +90,7 @@ public abstract class Parent extends Widget {
             for (Widget child : children) {
                 if (child.getVisibility() == Visibility.GONE) continue;
 
-                float min = child.getTotalMinWidth();
+                float min = child.getLayoutMinWidth();
                 if (min == MATCH_PARENT) min = 0;
 
                 child.onLayout(min * mul, Math.min(child.getMeasureHeight(), h));
@@ -111,7 +102,7 @@ public abstract class Parent extends Widget {
                 if (child.getVisibility() == Visibility.GONE) continue;
 
                 float mes = child.getMeasureWidth();
-                float min = child.getTotalMinWidth();
+                float min = child.getLayoutMinWidth();
                 if (mes == MATCH_PARENT) mes = 0;
                 if (min == MATCH_PARENT) min = 0;
 
@@ -128,7 +119,7 @@ public abstract class Parent extends Widget {
 
                 if (child.getMeasureWidth() == MATCH_PARENT) {
                     undefCount++;
-                    float min = child.getTotalMinWidth();
+                    float min = child.getLayoutMinWidth();
                     if (min != MATCH_PARENT) undefMinSpace += min;
                 } else {
                     child.onLayout(child.getMeasureWidth(), Math.min(child.getMeasureHeight(), h));
@@ -141,7 +132,7 @@ public abstract class Parent extends Widget {
                 if (child.getVisibility() == Visibility.GONE) continue;
 
                 if (child.getMeasureWidth() == MATCH_PARENT) {
-                    float min = child.getTotalMinWidth();
+                    float min = child.getLayoutMinWidth();
                     if (min == MATCH_PARENT) min = 0;
 
                     child.onLayout(min + (reamingW - undefMinSpace) / undefCount, Math.min(child.getMeasureHeight(), h));
@@ -165,7 +156,7 @@ public abstract class Parent extends Widget {
             if (child.getVisibility() == Visibility.GONE) continue;
 
             float mes = child.getMeasureHeight();
-            float min = child.getTotalMinHeight();
+            float min = child.getLayoutMinHeight();
             if (mes != MATCH_PARENT) defSpace += mes;
             if (min != MATCH_PARENT) defMinSpace += min;
         }
@@ -175,7 +166,7 @@ public abstract class Parent extends Widget {
             for (Widget child : children) {
                 if (child.getVisibility() == Visibility.GONE) continue;
 
-                float min = child.getTotalMinHeight();
+                float min = child.getLayoutMinHeight();
                 if (min == MATCH_PARENT) min = 0;
 
                 child.onLayout(Math.min(child.getMeasureWidth(), w), min * mul);
@@ -187,7 +178,7 @@ public abstract class Parent extends Widget {
                 if (child.getVisibility() == Visibility.GONE) continue;
 
                 float mes = child.getMeasureHeight();
-                float min = child.getTotalMinHeight();
+                float min = child.getLayoutMinHeight();
                 if (mes == MATCH_PARENT) mes = 0;
                 if (min == MATCH_PARENT) min = 0;
 
@@ -204,7 +195,7 @@ public abstract class Parent extends Widget {
 
                 if (child.getMeasureHeight() == MATCH_PARENT) {
                     undefCount++;
-                    float min = child.getTotalMinHeight();
+                    float min = child.getLayoutMinHeight();
                     if (min != MATCH_PARENT) undefMinSpace += min;
                 } else {
                     child.onLayout(Math.min(child.getMeasureWidth(), w), child.getMeasureHeight());
@@ -217,7 +208,7 @@ public abstract class Parent extends Widget {
                 if (child.getVisibility() == Visibility.GONE) continue;
 
                 if (child.getMeasureHeight() == MATCH_PARENT) {
-                    float min = child.getTotalMinHeight();
+                    float min = child.getLayoutMinHeight();
                     if (min == MATCH_PARENT) min = 0;
 
                     child.onLayout(Math.min(child.getMeasureWidth(), w), min + (reamingH - undefMinSpace) / undefCount);

@@ -4,6 +4,10 @@ import flat.widget.Gadget;
 import flat.widget.Menu;
 import flat.widget.Scene;
 import flat.widget.Widget;
+import flat.widget.layout.Box;
+import flat.widget.layout.LinearBox;
+import flat.widget.layout.StackBox;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
@@ -24,9 +28,10 @@ public class UXBuilder {
 
     public static void installDefaultWidgets() {
         UXBuilder.install("Scene", Scene::new);
-        /*UXBuilder.install("Box", Box::new);
+        UXBuilder.install("Box", Box::new);
         UXBuilder.install("LinearBox", LinearBox::new);
-        UXBuilder.install("Divider", Divider::new);
+        UXBuilder.install("StackBox", StackBox::new);
+        /*UXBuilder.install("Divider", Divider::new);
         UXBuilder.install("Button", Button::new);
         UXBuilder.install("ToggleButton", ToggleButton::new);
         UXBuilder.install("ToggleGroup", RadioGroup::new);

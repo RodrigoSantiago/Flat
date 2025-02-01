@@ -101,6 +101,12 @@ public class Application {
             Window win = windowsMap.get(window);
             return win == null || win.onRequestClose(true);
         });
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            if (loopActive) {
+                loopActive = false;
+                finish();
+            }
+        }));
     }
 
     private static void finish() {

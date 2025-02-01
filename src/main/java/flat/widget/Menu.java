@@ -4,11 +4,10 @@ import flat.events.PointerEvent;
 import flat.graphics.SmartContext;
 import flat.graphics.text.Align;
 import flat.uxml.UXChildren;
-import flat.widget.enuns.Visibility;
+import flat.widget.enums.Visibility;
 import flat.window.Activity;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Objects;
 
 public class Menu extends Scene {
@@ -19,7 +18,6 @@ public class Menu extends Scene {
 
     public Menu() {
         orderedList = new ArrayList<>();
-        unmodifiableChildren = Collections.unmodifiableList(orderedList);
     }
 
     @Override
@@ -80,11 +78,11 @@ public class Menu extends Scene {
             if (child.getMeasureWidth() > childrenWidth) {
                 childrenWidth = child.getMeasureWidth();
             }
-            if (child.getTotalMinWidth() > childrenMinWidth) {
-                childrenMinWidth += child.getTotalMinWidth();
+            if (child.getLayoutMinWidth() > childrenMinWidth) {
+                childrenMinWidth += child.getLayoutMinWidth();
             }
             childrenHeight += child.getMeasureHeight();
-            childrenMinHeight += child.getTotalMinHeight();
+            childrenMinHeight += child.getLayoutMinHeight();
         }
         if (getPrefWidth() == WRAP_CONTENT) {
             mWidth = childrenWidth + offWidth;

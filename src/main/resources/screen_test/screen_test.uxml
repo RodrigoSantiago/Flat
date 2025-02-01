@@ -1,6 +1,25 @@
 <Scene background-color="#FF0000">
-    <Scene background-color="#00FF0080" min-width="64" min-height="64">
+    <Scene background-color="#00FF0080" min-width="400" min-height="64">
     </Scene>
-    <Scene background-color="#0000FF80" min-width="128" min-height="128">
-    </Scene>
+    <LinearBox direction="vertical" horizontal-align="middle" vertical-align="bottom" background-color="#FFFFFF"
+               min-width="64" min-height="400" width="wrap_content" padding-top="16">
+        <Box background-color="#FF0000" min-width="128" min-height="128"
+             margin-left="8" margin-right="8" margin-top="8" margin-bottom="8">
+        </Box>
+        <Box background-color="#00FF00" min-width="64" min-height="64"
+             margin-left="4" margin-right="4" margin-top="4" margin-bottom="4">
+        </Box>
+        <Box background-color="#000080" min-width="64" min-height="64" height="match_parent" max-height="200"
+             margin-left="4" margin-right="4" margin-top="4" margin-bottom="4">
+        </Box>
+        <Box background-color="#00FF00" min-width="64" min-height="64"
+             margin-left="4" margin-right="4" margin-top="4" margin-bottom="4">
+        </Box>
+        <Box background-color="#000080" min-width="64" min-height="64" height="match_parent" max-height="100"
+             margin-left="4" margin-right="4" margin-top="4" margin-bottom="4">
+        </Box>
+        <Box background-color="#00FF00" min-width="64" min-height="64"
+             margin-left="4" margin-right="4" margin-top="4" margin-bottom="4">
+        </Box>
+    </LinearBox>
 </Scene>

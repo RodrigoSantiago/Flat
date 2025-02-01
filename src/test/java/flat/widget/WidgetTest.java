@@ -6,7 +6,7 @@ import flat.uxml.UXBuilder;
 import flat.uxml.UXHash;
 import flat.uxml.UXTheme;
 import flat.uxml.value.*;
-import flat.widget.enuns.Visibility;
+import flat.widget.enums.Visibility;
 import org.junit.Test;
 
 import java.util.HashMap;

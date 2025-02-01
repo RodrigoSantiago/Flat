@@ -14,7 +14,7 @@ import flat.math.stroke.BasicStroke;
 import flat.uxml.*;
 import flat.uxml.value.UXValue;
 import flat.widget.effects.RippleEffect;
-import flat.widget.enuns.Visibility;
+import flat.widget.enums.Visibility;
 import flat.window.Activity;
 import static flat.widget.State.*;
 
@@ -42,10 +42,9 @@ public class Widget implements Gadget {
 
     private float width, height;
     private float minWidth, minHeight, maxWidth = MATCH_PARENT, maxHeight = MATCH_PARENT, prefWidth, prefHeight;
-    private float weight;
+    private float weight = 1;
     private float measureWidth, measureHeight;
     private float layoutWidth, layoutHeight;
-    private float offsetWidth, offsetHeight;
 
     private int visibility = Visibility.VISIBLE.ordinal();
     private Cursor cursor = Cursor.UNSET;
@@ -310,8 +309,8 @@ public class Widget implements Gadget {
      * Equation : minsize < ([preferedSize || computedSize] + padding + margins) < maxsize
      */
     public void onMeasure() {
-        setMeasure(Math.max(prefWidth + marginLeft + marginRight, getTotalMinWidth()),
-                Math.max(prefHeight + marginTop + marginBottom, getTotalMinHeight()));
+        setMeasure(Math.max(prefWidth + marginLeft + marginRight, getLayoutMinWidth()),
+                Math.max(prefHeight + marginTop + marginBottom, getLayoutMinHeight()));
     }
 
     /**
@@ -351,7 +350,7 @@ public class Widget implements Gadget {
         this.layoutWidth = width;
         this.layoutHeight = height;
 
-        setSize(Math.max(0, width + offsetWidth), Math.max(0, height + offsetHeight));
+        setSize(width, height);
     }
 
     public float lWidth() {
@@ -362,12 +361,20 @@ public class Widget implements Gadget {
         return layoutHeight;
     }
 
-    public float getTotalMinWidth() {
+    public float getLayoutMinWidth() {
         return Math.max(minWidth, paddingLeft + paddingRight + marginLeft + marginRight);
     }
 
-    public float getTotalMinHeight() {
+    public float getLayoutMinHeight() {
         return Math.max(minHeight, paddingTop + paddingBottom + marginTop + marginBottom);
+    }
+
+    public float getLayoutMaxWidth() {
+        return Math.max(getLayoutMinWidth(), getMaxWidth() <= 0 ? MATCH_PARENT : getMaxWidth());
+    }
+
+    public float getLayoutMaxHeight() {
+        return Math.max(getLayoutMinHeight(), getMaxHeight() <= 0 ? MATCH_PARENT : getMaxHeight());
     }
 
     public float lMaxWidth() {
@@ -457,19 +464,11 @@ public class Widget implements Gadget {
      * @return
      */
     public Scene getScene() {
-        Scene scene = null;
         if (parent != null) {
-            if (parent.isScene()) {
-                scene = (Scene) parent;
-            } else {
-                scene = parent.getScene();
-            }
+            return parent.getScene();
+        } else {
+            return null;
         }
-        return scene;
-    }
-
-    boolean isScene() {
-        return false;
     }
 
     public Parent getParent() {
@@ -538,6 +537,9 @@ public class Widget implements Gadget {
     }
 
     public List<Widget> getUnmodifiableChildren() {
+        if (children != null && unmodifiableChildren == null) {
+            unmodifiableChildren = Collections.unmodifiableList(children);
+        }
         return unmodifiableChildren;
     }
 
@@ -965,28 +967,6 @@ public class Widget implements Gadget {
         if (this.height != height) {
             this.height = height;
             updateRect();
-        }
-    }
-
-    public float getOffsetWidth() {
-        return offsetWidth;
-    }
-
-    public void setOffsetWidth(float offsetWidth) {
-        if (this.offsetWidth != offsetWidth) {
-            this.offsetWidth = offsetWidth;
-            invalidate(true);
-        }
-    }
-
-    public float getOffsetHeight() {
-        return offsetHeight;
-    }
-
-    public void setOffsetHeight(float offsetHeight) {
-        if (this.offsetHeight != offsetHeight) {
-            this.offsetHeight = offsetHeight;
-            invalidate(true);
         }
     }
 

@@ -28,7 +28,7 @@ public class Hide extends NormalizedAnimation {
         widget.setMaxHeight(_dimension * nDimension);
         widget.setMinHeight(_dimension * nDimension);
         widget.setTranslateY(-_dimension * (1 - nDimension));
-        widget.setOffsetHeight(_dimension - (_dimension * nDimension));
+        //widget.setOffsetHeight(_dimension - (_dimension * nDimension));
         if (t == 1) {
             if (widget.getParent() != null) {
                 widget.getParent().remove(widget);
