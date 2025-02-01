@@ -63,18 +63,18 @@ public class StackBox extends Box {
             if (horizontalAlign == Align.Horizontal.LEFT) {
                 xPos = getPaddingLeft() + getMarginLeft();
             } else if (horizontalAlign == Align.Horizontal.RIGHT) {
-                xPos = lWidth - child.getWidth() - (getPaddingRight() + getMarginRight());
+                xPos = getWidth() - child.getWidth() - (getPaddingRight() + getMarginRight());
             } else if (horizontalAlign == Align.Horizontal.CENTER) {
-                xPos = (getPaddingLeft() + getMarginLeft() + (lWidth - child.getWidth() - (getPaddingRight() + getMarginRight()))) * 0.5f;
+                xPos = (getPaddingLeft() + getMarginLeft() + (getWidth() - child.getWidth() - (getPaddingRight() + getMarginRight()))) * 0.5f;
             }
 
             float yPos = 0;
             if (verticalAlign == Align.Vertical.TOP) {
                 yPos = getPaddingTop() + getMarginTop();
             } else if (verticalAlign == Align.Vertical.BOTTOM || verticalAlign == Align.Vertical.BASELINE) {
-                yPos = lHeight - child.getHeight() - (getPaddingBottom() + getMarginBottom());
+                yPos = getHeight() - child.getHeight() - (getPaddingBottom() + getMarginBottom());
             } else if (verticalAlign == Align.Vertical.MIDDLE) {
-                yPos = (getPaddingTop() + getMarginTop() + (lHeight - child.getHeight() - (getPaddingBottom() + getMarginBottom()))) * 0.5f;
+                yPos = (getPaddingTop() + getMarginTop() + (getHeight() - child.getHeight() - (getPaddingBottom() + getMarginBottom()))) * 0.5f;
             }
             child.setPosition(xPos, yPos);
         }
