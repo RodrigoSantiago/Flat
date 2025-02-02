@@ -2,18 +2,14 @@ package flat.widget.layout;
 
 import flat.animations.StateInfo;
 import flat.graphics.text.Align;
-import flat.uxml.*;
-import flat.widget.Gadget;
-import flat.widget.Parent;
+import flat.uxml.UXAttrs;
 import flat.widget.Widget;
 import flat.widget.enums.Direction;
 import flat.widget.enums.Visibility;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
-public class LinearBox extends Parent {
+public class LinearBox extends Box {
 
     private Direction direction = Direction.HORIZONTAL;
     private Align.Vertical verticalAlign = Align.Vertical.MIDDLE;
@@ -73,19 +69,6 @@ public class LinearBox extends Parent {
         setDirection(attrs.getConstant("direction", info, getDirection()));
         setHorizontalAlign(attrs.getConstant("horizontal-align", info, getHorizontalAlign()));
         setVerticalAlign(attrs.getConstant("vertical-align", info, getVerticalAlign()));
-    }
-
-    @Override
-    public void applyChildren(UXChildren children) {
-        super.applyChildren(children);
-
-        Gadget child;
-        while ((child = children.next()) != null ) {
-            Widget widget = child.getWidget();
-            if (widget != null) {
-                add(widget);
-            }
-        }
     }
 
     @Override
@@ -179,7 +162,7 @@ public class LinearBox extends Parent {
     }
 
     private float getDefWidth(Widget widget) {
-        return Math.min(widget.getLayoutMaxWidth(), widget.getMeasureHeight());
+        return Math.min(widget.getLayoutMaxWidth(), widget.getMeasureWidth());
     }
 
     private float getDefHeight(Widget widget) {
@@ -313,9 +296,9 @@ public class LinearBox extends Parent {
                 if (horizontalAlign == Align.Horizontal.LEFT) {
                     xPos = getPaddingLeft() + getMarginLeft();
                 } else if (horizontalAlign == Align.Horizontal.RIGHT) {
-                    xPos = lWidth - child.getWidth() - (getPaddingRight() + getMarginRight());
+                    xPos = getWidth() - child.getWidth() - (getPaddingRight() + getMarginRight());
                 } else if (horizontalAlign == Align.Horizontal.CENTER) {
-                    xPos = (getPaddingLeft() + getMarginLeft() + (lWidth - child.getWidth() - (getPaddingRight() + getMarginRight()))) * 0.5f;
+                    xPos = (getPaddingLeft() + getMarginLeft() + (getWidth() - child.getWidth() - (getPaddingRight() + getMarginRight()))) * 0.5f;
                 }
 
                 child.setPosition(xPos, yPos);
@@ -328,9 +311,9 @@ public class LinearBox extends Parent {
                 if (horizontalAlign == Align.Horizontal.LEFT) {
                     xPos = getPaddingLeft() + getMarginLeft();
                 } else if (horizontalAlign == Align.Horizontal.RIGHT) {
-                    xPos = lWidth - child.getWidth() - (getPaddingRight() + getMarginRight());
+                    xPos = getWidth() - child.getWidth() - (getPaddingRight() + getMarginRight());
                 } else if (horizontalAlign == Align.Horizontal.CENTER) {
-                    xPos = (getPaddingLeft() + getMarginLeft() + (lWidth - child.getWidth() - (getPaddingRight() + getMarginRight()))) * 0.5f;
+                    xPos = (getPaddingLeft() + getMarginLeft() + (getWidth() - child.getWidth() - (getPaddingRight() + getMarginRight()))) * 0.5f;
                 }
 
                 child.setPosition(xPos, yPos);
@@ -466,9 +449,9 @@ public class LinearBox extends Parent {
                 if (verticalAlign == Align.Vertical.TOP) {
                     yPos = getPaddingTop() + getMarginTop();
                 } else if (verticalAlign == Align.Vertical.BOTTOM || verticalAlign == Align.Vertical.BASELINE) {
-                    yPos = lHeight - child.getHeight() - (getPaddingBottom() + getMarginBottom());
+                    yPos = getHeight() - child.getHeight() - (getPaddingBottom() + getMarginBottom());
                 } else if (verticalAlign == Align.Vertical.MIDDLE) {
-                    yPos = (getPaddingTop() + getMarginTop() + (lHeight - child.getHeight() - (getPaddingBottom() + getMarginBottom()))) * 0.5f;
+                    yPos = (getPaddingTop() + getMarginTop() + (getHeight() - child.getHeight() - (getPaddingBottom() + getMarginBottom()))) * 0.5f;
                 }
 
                 child.setPosition(xPos, yPos);
@@ -481,9 +464,9 @@ public class LinearBox extends Parent {
                 if (verticalAlign == Align.Vertical.TOP) {
                     yPos = getPaddingTop() + getMarginTop();
                 } else if (verticalAlign == Align.Vertical.BOTTOM || verticalAlign == Align.Vertical.BASELINE) {
-                    yPos = lHeight - child.getHeight() - (getPaddingBottom() + getMarginBottom());
+                    yPos = getHeight() - child.getHeight() - (getPaddingBottom() + getMarginBottom());
                 } else if (verticalAlign == Align.Vertical.MIDDLE) {
-                    yPos = (getPaddingTop() + getMarginTop() + (lHeight - child.getHeight() - (getPaddingBottom() + getMarginBottom()))) * 0.5f;
+                    yPos = (getPaddingTop() + getMarginTop() + (getHeight() - child.getHeight() - (getPaddingBottom() + getMarginBottom()))) * 0.5f;
                 }
 
                 child.setPosition(xPos, yPos);
@@ -496,16 +479,6 @@ public class LinearBox extends Parent {
     public void add(Widget child) {
         orderedList.add(child);
         super.add(child);
-    }
-
-    @Override
-    public void add(Widget... children) {
-        super.add(children);
-    }
-
-    @Override
-    public void add(List<Widget> children) {
-        super.add(children);
     }
 
     @Override
