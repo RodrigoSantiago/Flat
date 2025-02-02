@@ -79,6 +79,10 @@ public class ResourcesManager {
         resources.clear();
     }
 
+    public void clearResourceCache(String pathName) {
+        resources.remove(pathName);
+    }
+
     public void putResourceCache(String pathName, Object cache) {
         resources.put(pathName, new SoftReference<>(cache));
     }

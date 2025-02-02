@@ -50,9 +50,9 @@ public class UXSheetParser {
     private int currentPosition;
     private boolean endsWithWhitespace;
 
-    private HashMap<String, UXSheetStyle> styles;
-    private HashMap<String, UXSheetAttribute> variables;
-    private List<ErroLog> logs;
+    private List<UXSheetStyle> styles = new ArrayList<>();
+    private List<UXSheetAttribute> variables = new ArrayList<>();
+    private List<ErroLog> logs = new ArrayList<>();
 
     public UXSheetParser(String text) {
         this.text = text;
@@ -90,13 +90,13 @@ public class UXSheetParser {
                     if (variable.getValue() instanceof UXValueVariable) {
                         log(ErroLog.VARIABLE_CANNOT_REFERENCE_A_VARIABLE);
                     } else {
-                        getVariables().put(variable.getName(), variable);
+                        getVariables().add(variable);
                     }
                 }
 
             } else if (currentType == TEXT) {
                 var style = parseStyle();
-                getStyles().put(style.getName(), style);
+                getStyles().add(style);
 
             } else {
 
@@ -129,24 +129,15 @@ public class UXSheetParser {
         return new UXValueText(text);
     }
 
-    public HashMap<String, UXSheetAttribute> getVariables() {
-        if (variables == null) {
-            variables = new HashMap<>();
-        }
+    public List<UXSheetAttribute> getVariables() {
         return variables;
     }
 
-    public HashMap<String, UXSheetStyle> getStyles() {
-        if (styles == null) {
-            styles = new HashMap<>();
-        }
+    public List<UXSheetStyle> getStyles() {
         return styles;
     }
 
     public List<ErroLog> getLogs() {
-        if (logs == null) {
-            logs = new ArrayList<>();
-        }
         return logs;
     }
 

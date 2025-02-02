@@ -19,8 +19,7 @@ public class UXSheet {
 
     private final HashMap<String, UXStyle> styles = new HashMap<>();
     private final HashMap<String, UXValue> variableInitialValue = new HashMap<>();
-    private List<UXSheetParser.ErroLog> logs = new ArrayList<>();
-    private final List<UXSheet> imports = new ArrayList<>();
+    private final List<UXSheetParser.ErroLog> logs = new ArrayList<>();
 
     public static UXSheet parse(ResourceStream stream) {
         Object cache = stream.getCache();
@@ -28,7 +27,7 @@ public class UXSheet {
             if (cache instanceof UXSheet) {
                 return (UXSheet) cache;
             } else {
-                throw new FlatException("Invalid UXSheet at: " + stream.getResourceName());
+                stream.clearCache();
             }
         }
         try {
@@ -73,7 +72,7 @@ public class UXSheet {
             sheet.logs.addAll(reader.getLogs());
 
             // Styles
-            for (UXSheetStyle sheetStyle : reader.getStyles().values()) {
+            for (UXSheetStyle sheetStyle : reader.getStyles()) {
                 UXStyle style = new UXStyle(sheetStyle.getName(), sheetStyle.getParent());
                 for (var attr : sheetStyle.getAttributes().values()) {
                     style.add(UXHash.getHash(attr.getName()), State.ENABLED, attr.getValue());
@@ -92,7 +91,7 @@ public class UXSheet {
             }
 
             // Variables
-            for (UXSheetAttribute variable : reader.getVariables().values()) {
+            for (UXSheetAttribute variable : reader.getVariables()) {
                 if (sheet.variableInitialValue.containsKey(variable.getName())) {
                     sheet.logs.add(new UXSheetParser.ErroLog(-1, -1
                             , UXSheetParser.ErroLog.REPEATED_VARIABLE + " '" + variable.getName() + "'"));
@@ -108,5 +107,13 @@ public class UXSheet {
 
     public UXStyle getStyle(String name) {
         return styles.get(name);
+    }
+
+    public UXValue getVariableInitialValue(String name) {
+        return variableInitialValue.get(name);
+    }
+
+    public List<UXSheetParser.ErroLog> getLogs() {
+        return logs;
     }
 }

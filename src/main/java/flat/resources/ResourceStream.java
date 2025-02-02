@@ -46,6 +46,10 @@ public class ResourceStream {
         }
     }
 
+    public void clearCache() {
+        Application.getResourcesManager().clearResourceCache(resourceName);
+    }
+
     public void putCache(Object cache) {
         Application.getResourcesManager().putResourceCache(resourceName, cache);
     }

@@ -56,10 +56,13 @@ public class UXTheme {
     public UXValue getVariable(String name) {
         UXValue value = variables.get(name);
         if (value == null) {
-            return new UXValue();
-        } else {
-            return value;
+            value = sheet.getVariableInitialValue(name);
+            if (value == null) {
+                value = new UXValue();
+            }
         }
+
+        return value;
     }
 
     public void setVariable(String name, UXValue value) {

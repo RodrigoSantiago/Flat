@@ -701,7 +701,8 @@ public class UXSheetParserTest {
         assertStyle(reader.getStyles(), "style", null,
                 "color", new UXValueColor(0xFFFFFFFF)
         );
-        assertStyle(reader.getStyles().get("style").getStates(), "hovered", null,
+        var list = reader.getStyles().get(0).getStates().values();
+        assertStyle(new ArrayList<>(list), "hovered", null,
                 "color", new UXValueColor(0xFF0000FF)
         );
 
@@ -791,8 +792,14 @@ public class UXSheetParserTest {
         }
     }
 
-    public void assertStyle(HashMap<String, UXSheetStyle> styleMap, String name, String parent, Object... pair) {
-        UXSheetStyle style = styleMap.get(name);
+    public void assertStyle(List<UXSheetStyle> styleMap, String name, String parent, Object... pair) {
+        UXSheetStyle style = null;
+        for (var st : styleMap) {
+            if (st.getName().equals(name)) {
+                style = st;
+                break;
+            }
+        }
         if (style == null) {
             fail("Style not found : " + name);
         }
@@ -816,22 +823,31 @@ public class UXSheetParserTest {
         }
     }
 
-    public void assertVariables(HashMap<String, UXSheetAttribute> variables, Object... pair) {
+    public void assertVariables(List<UXSheetAttribute> variables, Object... pair) {
         var list = new ArrayList<String>();
         for (int i = 0; i < pair.length; i += 2) {
             String name = (String) pair[i];
             UXValue value = (UXValue) pair[i + 1];
-            UXSheetAttribute variable = variables.get(name);
+
+
+            UXSheetAttribute variable = null;
+            for (var vr : variables) {
+                if (vr.getName().equals(name)) {
+                    variable = vr;
+                    break;
+                }
+            }
             if (variable == null) {
                 fail("Variable not found : " + name);
             }
             assertEquals("Variable \"" + name + "\"with a different value", value, variable.getValue());
             list.add(name);
         }
-        for (var key : variables.keySet()) {
-            if (!list.contains(key)) {
+        for (var key : variables) {
+            if (!list.contains(key.getName())) {
                 fail("Variable not expected : " + key);
             }
         }
     }
+
 }
