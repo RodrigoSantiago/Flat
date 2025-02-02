@@ -65,7 +65,7 @@ public class ActivityTest {
         activity.setTheme(theme2);
         assertEquals(theme1, activity.getTheme());
 
-        activity.refreshScene(160f);
+        activity.refreshScene();
         assertEquals(theme2, activity.getTheme());
     }
 
@@ -96,7 +96,7 @@ public class ActivityTest {
         activity.setTheme(stream);
         assertEquals(theme1, activity.getTheme());
 
-        activity.refreshScene(160f);
+        activity.refreshScene();
         assertEquals(theme2, activity.getTheme());
     }
 
@@ -128,7 +128,7 @@ public class ActivityTest {
         activity.setScene(scene2);
         assertEquals(scene1, activity.getScene());
 
-        activity.refreshScene(160f);
+        activity.refreshScene();
         verify(scene2, times(1)).applyTheme();
         assertEquals(scene2, activity.getScene());
     }
@@ -143,7 +143,7 @@ public class ActivityTest {
         Scene scene2 = mock(Scene.class);
         when(scene2.getActivityScene()).thenReturn(mock(ActivityScene.class));
         UXBuilder builder = mock(UXBuilder.class);
-        when(builder.build(any(), anyBoolean())).thenReturn(scene2);
+        when(builder.build(any())).thenReturn(scene2);
 
         UXNode root = mock(UXNode.class);
         when(root.instance(any())).thenReturn(builder);
@@ -170,7 +170,7 @@ public class ActivityTest {
         activity.setScene(stream);
         assertEquals(scene1, activity.getScene());
 
-        activity.refreshScene(160f);
+        activity.refreshScene();
         verify(scene2, times(1)).applyTheme();
         assertEquals(scene2, activity.getScene());
     }

@@ -1,29 +1,27 @@
 package flat.uxml;
 
-import flat.widget.Gadget;
+import flat.uxml.value.UXValue;
 import flat.widget.Menu;
 import flat.widget.Scene;
 import flat.widget.Widget;
 import flat.widget.layout.Box;
 import flat.widget.layout.LinearBox;
 import flat.widget.layout.StackBox;
+import flat.widget.text.Label;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Objects;
 
 public class UXBuilder {
 
-    private static HashMap<String, UXGadgetFactory> factories = new HashMap<>();
+    private static HashMap<String, UXWidgetFactory> factories = new HashMap<>();
 
     private UXNode root;
     private Controller controller;
+    private ArrayList<KeyValue> widgets = new ArrayList<>();
 
-    private ArrayList<Pair<String, UXGadgetLinker>> linkers = new ArrayList<>();
-    private HashMap<String, Gadget> targets = new HashMap<>();
-
-    public static void install(String name, UXGadgetFactory gadgetFactory) {
-        factories.put(name, gadgetFactory);
+    public static void install(String name, UXWidgetFactory WidgetFactory) {
+        factories.put(name, WidgetFactory);
     }
 
     public static void installDefaultWidgets() {
@@ -31,11 +29,11 @@ public class UXBuilder {
         UXBuilder.install("Box", Box::new);
         UXBuilder.install("LinearBox", LinearBox::new);
         UXBuilder.install("StackBox", StackBox::new);
+        UXBuilder.install("Label", Label::new);
         /*UXBuilder.install("Divider", Divider::new);
         UXBuilder.install("Button", Button::new);
         UXBuilder.install("ToggleButton", ToggleButton::new);
         UXBuilder.install("ToggleGroup", RadioGroup::new);
-        UXBuilder.install("Label", Label::new);
         UXBuilder.install("ImageView", ImageView::new);
         UXBuilder.install("Canvas", Canvas::new);
         UXBuilder.install("CheckBox", CheckBox::new);
@@ -81,102 +79,83 @@ public class UXBuilder {
         return controller;
     }
 
-    void addLink(String id, UXGadgetLinker linker) {
-        linkers.add(new Pair<>(id, linker));
-    }
+    public Scene build(UXTheme theme) {
+        Widget child = buildRecursive(root);
 
-    void link() {
-        for (Pair<String, UXGadgetLinker> linker : linkers) {
-            linker.getValue().onLink(targets.get(linker.getKey()));
-        }
-        linkers.clear();
-        targets.clear();
-    }
-
-    public Gadget build(UXTheme theme, boolean createScene) {
-        Gadget child = buildRecursive(theme, root);
-        link();
-
+        Scene scene;
         if (child instanceof Scene) {
-            return child;
+            scene = (Scene) child;
 
-        } else if (child instanceof Widget) {
-            if (createScene) {
-                Scene scene = new Scene();
-                scene.add((Widget) child);
-                return scene;
-            }
-            return child;
-
-        } else if (child != null) {
-
-            return child;
         } else {
-
-            return new Scene();
+            scene = new Scene();
+            if (child != null) {
+                scene.add(child);
+            }
         }
+
+        scene.setTheme(theme);
+        assignWidgets();
+
+        return scene;
     }
 
-    private Gadget buildRecursive(UXTheme theme, UXNode node) {
+    private Widget buildRecursive(UXNode node) {
         // Factory
-        UXGadgetFactory gadgetFactory = factories.get(node.getName());
+        UXWidgetFactory widgetFactory = factories.get(node.getName());
 
-        if (gadgetFactory != null) {
-            Gadget gadget = gadgetFactory.build();
-            gadget.setAttributes(node.getValues(), node.getStyle());
-            gadget.applyAttributes(theme, controller, this);
+        if (widgetFactory != null) {
+            Widget widget = widgetFactory.build();
 
-            // ID Link
-            if (gadget.getId() != null) {
-                targets.put(gadget.getId(), gadget);
-            }
+            // Attributes
+            widget.setAttributes(node.getValues(), node.getStyle());
 
             // Children
             UXChildren children = new UXChildren(this);
             for (var uxChild : node.getChildren()) {
-                Gadget child = buildRecursive(theme, uxChild);
+                Widget child = buildRecursive(uxChild);
                 if (child != null) {
-                    if (child instanceof Menu) {
-                        children.addMenu((Menu) child.getWidget());
+                    if (child instanceof Menu menu) {
+                        children.addMenu(menu);
                     } else {
                         children.add(child);
                     }
                 }
             }
-            gadget.applyChildren(children);
-            return gadget;
+            widget.applyChildren(children);
+
+            // Link
+            widgets.add(new KeyValue(node, widget));
+
+            return widget;
         }
         return null;
     }
 
-    static class Pair<K, V> {
-        private final K key;
-        private final V value;
-
-        public Pair(K key, V value) {
-            this.key = key;
-            this.value = value;
+    private void assignWidgets() {
+        for (var keyValue : widgets) {
+            if (keyValue.id != null) {
+                keyValue.widget.setId(keyValue.id);
+                if (controller != null) {
+                    controller.assign(keyValue.id, keyValue.widget);
+                }
+            }
         }
-
-        public K getKey() {
-            return key;
+        for (var keyValue : widgets) {
+            keyValue.widget.applyAttributes(controller);
         }
+        widgets.clear();
+    }
 
-        public V getValue() {
-            return value;
-        }
+    private static class KeyValue {
+        public String id;
+        public Widget widget;
 
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Pair<?, ?> pair = (Pair<?, ?>) o;
-            return Objects.equals(key, pair.key) && Objects.equals(value, pair.value);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(key, value);
+        public KeyValue(UXNode node, Widget widget) {
+            UXValue uxValue = node.getValues().get(UXHash.getHash("id"));
+            if (uxValue != null) {
+                this.id = uxValue.asString(null);
+            }
+            this.widget = widget;
         }
     }
 }

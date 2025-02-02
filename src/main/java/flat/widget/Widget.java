@@ -20,7 +20,7 @@ import static flat.widget.State.*;
 
 import java.util.*;
 
-public class Widget implements Gadget {
+public class Widget {
 
     //---------------------
     //    Constants
@@ -55,6 +55,7 @@ public class Widget implements Gadget {
     //    Family
     //---------------------
     Parent parent;
+    Activity activity;
     ArrayList<Widget> children;
     List<Widget> unmodifiableChildren;
     boolean invalidChildrenOrder;
@@ -108,24 +109,16 @@ public class Widget implements Gadget {
         attrs = new UXAttrs(getClass().getSimpleName().toLowerCase());
     }
 
-    @Override
     public void setAttributes(HashMap<Integer, UXValue> attributes, String style) {
         attrs.setAttributes(attributes);
         attrs.setName(style);
     }
 
-    @Override
-    public void applyAttributes(UXTheme theme, Controller controller, UXBuilder builder) {
+    public void applyAttributes(Controller controller) {
         UXAttrs attrs = getAttrs();
-        attrs.setTheme(theme);
+        attrs.setActivity(activity);
+        attrs.setTheme(getCurrentTheme());
 
-        String id = attrs.getAttributeString("id", null);
-        if (id != null) {
-            setId(id);
-            if (controller != null) {
-                controller.assign(id, this);
-            }
-        }
         setEnabled(attrs.getAttributeBool("enabled", isEnabled()));
 
         setPointerListener(attrs.getAttributeListener("on-pointer", PointerEvent.class, controller));
@@ -141,6 +134,7 @@ public class Widget implements Gadget {
 
     public void applyStyle() {
         UXAttrs attrs = getAttrs();
+        attrs.setActivity(activity);
 
         setTransitionDuration(attrs.getNumber("transition-duration", null, getTransitionDuration()));
 
@@ -225,7 +219,6 @@ public class Widget implements Gadget {
         setBorderWidth(attrs.getSize("border-width", info, getBorderWidth()));
     }
 
-    @Override
     public void applyChildren(UXChildren children) {
         Menu menu = children.nextMenu();
         if (menu != null) {
@@ -234,7 +227,7 @@ public class Widget implements Gadget {
     }
 
     public void applyTheme() {
-        attrs.setTheme(getTheme());
+        attrs.setTheme(getCurrentTheme());
         applyStyle();
 
         for (Widget child : getChildrenIterable()) {
@@ -417,14 +410,8 @@ public class Widget implements Gadget {
         invalidChildrenOrder = true;
     }
 
-    @Override
     public final String getId() {
         return id;
-    }
-
-    @Override
-    public final Widget getWidget() {
-        return this;
     }
 
     public void setId(String id) {
@@ -455,7 +442,11 @@ public class Widget implements Gadget {
     }
 
     public UXTheme getTheme() {
-        return this.theme != null ? this.theme : parent != null ? parent.getTheme() : null;
+        return this.theme;
+    }
+
+    public UXTheme getCurrentTheme() {
+        return this.theme != null ? this.theme : parent != null ? parent.getCurrentTheme() : null;
     }
 
     /**
@@ -509,7 +500,7 @@ public class Widget implements Gadget {
         }
     }
 
-    protected void onSceneChange() {
+    public void onSceneChange() {
         if (children != null) {
             for (Widget widget : getChildrenIterable()) {
                 widget.onSceneChange();
@@ -518,12 +509,17 @@ public class Widget implements Gadget {
     }
 
     protected void onActivityChange(Activity prev, Activity activity) {
+        this.activity = activity;
         refreshFocus();
 
         if (children != null) {
             for (Widget widget : getChildrenIterable()) {
                 widget.onActivityChange(prev, activity);
             }
+        }
+
+        if (contextMenu != null) {
+            contextMenu.onActivityChange(prev, activity);
         }
 
         if (ripple != null) {

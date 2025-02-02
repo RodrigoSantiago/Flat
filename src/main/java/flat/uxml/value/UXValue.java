@@ -14,14 +14,14 @@ public class UXValue {
         return null;
     }
 
-    public UXValue mix(UXValue uxValue, float t, UXTheme theme) {
+    public UXValue mix(UXValue uxValue, float t, UXTheme theme, float dpi) {
         if (uxValue == null) return this;
         if (t <= 0.001f) return this;
         if (t >= 0.999f) return uxValue;
-        return internalMix(uxValue, t, theme);
+        return internalMix(uxValue, t, theme, dpi);
     }
 
-    UXValue internalMix(UXValue uxValue, float t, UXTheme theme) {
+    UXValue internalMix(UXValue uxValue, float t, UXTheme theme, float dpi) {
         return t < 0.5 ? this : uxValue;
     }
 
@@ -45,7 +45,7 @@ public class UXValue {
         return 0;
     }
 
-    public float asSize(UXTheme theme) {
+    public float asSize(UXTheme theme, float dpi) {
         return 0;
     }
 

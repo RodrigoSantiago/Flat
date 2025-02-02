@@ -6,9 +6,6 @@ import flat.graphics.text.FontStyle;
 import flat.graphics.text.FontWeight;
 import flat.window.Application;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -116,10 +113,10 @@ public class Font {
     }
 
     private int getFontDifference(String family, FontWeight weight, FontPosture posture, FontStyle style) {
-        int f = family == null ? 0 : this.family.equalsIgnoreCase(family) ? 1 : 0;
-        int s = style == null ? 0 : this.style == style ? 1 : 0;
-        int p = posture == null ? 0 : this.posture == posture ? 1 : 0;
-        int w = weight == null ? 0 : Math.abs(this.weight.getWeight() - weight.getWeight());
+        int f = family == null ? 1 : this.family.equalsIgnoreCase(family) ? 0 : 1;
+        int s = style == null ? 1 : this.style == style ? 0 : 1;
+        int p = posture == null ? 1 : this.posture == posture ? 0 : 1;
+        int w = weight == null ? 400 : Math.abs(this.weight.getWeight() - weight.getWeight());
 
         return f * 8000 + s * 4000 + p * 2000 + w;
     }
@@ -139,20 +136,26 @@ public class Font {
         }
         var res = Application.getResourcesManager();
 
-        var sans = new Font("Roboto", FontWeight.NORMAL, FontPosture.REGULAR, FontStyle.SANS, res.getData("fonts/Roboto-Regular.ttf"));
+        var sans = new Font("Roboto", FontWeight.NORMAL, FontPosture.REGULAR, FontStyle.SANS
+                , res.getData("default/fonts/Roboto-Regular.ttf"));
         install(sans);
-        var bold = new Font("Roboto", FontWeight.BOLD, FontPosture.REGULAR, FontStyle.SANS, res.getData("fonts/Roboto-Bold.ttf"));
+        var bold = new Font("Roboto", FontWeight.BOLD, FontPosture.REGULAR, FontStyle.SANS
+                , res.getData("default/fonts/Roboto-Bold.ttf"));
         install(bold);
-        var italic = new Font("Roboto", FontWeight.NORMAL, FontPosture.ITALIC, FontStyle.SANS, res.getData("fonts/Roboto-Italic.ttf"));
+        var italic = new Font("Roboto", FontWeight.NORMAL, FontPosture.ITALIC, FontStyle.SANS
+                , res.getData("default/fonts/Roboto-Italic.ttf"));
         install(italic);
-        var bolditalic = new Font("Roboto", FontWeight.BOLD, FontPosture.ITALIC, FontStyle.SANS, res.getData("fonts/Roboto-BoldItalic.ttf"));
+        var bolditalic = new Font("Roboto", FontWeight.BOLD, FontPosture.ITALIC, FontStyle.SANS
+                , res.getData("default/fonts/Roboto-BoldItalic.ttf"));
         install(bolditalic);
-
-        var serif = new Font("Roboto", FontWeight.NORMAL, FontPosture.REGULAR, FontStyle.SERIF, res.getData("fonts/RobotoSerif-Regular.ttf"));
+        var serif = new Font("Roboto", FontWeight.NORMAL, FontPosture.REGULAR, FontStyle.SERIF
+                , res.getData("default/fonts/RobotoSerif-Regular.ttf"));
         install(serif);
-        var mono = new Font("Roboto", FontWeight.NORMAL, FontPosture.REGULAR, FontStyle.MONO, res.getData("fonts/RobotoMono-Regular.ttf"));
+        var mono = new Font("Roboto", FontWeight.NORMAL, FontPosture.REGULAR, FontStyle.MONO
+                , res.getData("default/fonts/RobotoMono-Regular.ttf"));
         install(mono);
-        var cursive = new Font("DancingScript", FontWeight.NORMAL, FontPosture.REGULAR, FontStyle.CURSIVE, res.getData("fonts/DancingScript-Regular.ttf"));
+        var cursive = new Font("DancingScript", FontWeight.NORMAL, FontPosture.REGULAR, FontStyle.CURSIVE
+                , res.getData("default/fonts/DancingScript-Regular.ttf"));
         install(cursive);
 
         DefaultFont = sans;
@@ -236,5 +239,13 @@ public class Font {
             return id;
         }
         return internalId;
+    }
+
+    @Override
+    public String toString() {
+        return family
+                + (posture == null ? "" : ", " + posture)
+                + (weight == null ? "" : ", " + weight)
+                + (style == null ? "" : ", " + style);
     }
 }

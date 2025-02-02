@@ -1,8 +1,6 @@
 package flat.resources;
 
 import flat.Flat;
-import flat.graphics.image.Drawable;
-import flat.graphics.image.DrawableReader;
 
 import java.io.*;
 import java.lang.ref.SoftReference;
@@ -21,7 +19,6 @@ public class ResourcesManager {
 
     private static boolean libraryLoaded;
 
-    private final Class<?> resourceClass;
     private final ZipFile zip;
     private final File dir;
     private final HashMap<String, SoftReference<Object>> resources = new HashMap<>();
@@ -29,32 +26,27 @@ public class ResourcesManager {
     public ResourcesManager() {
         this.dir = null;
         this.zip = null;
-        this.resourceClass = Flat.class;
     }
 
     public ResourcesManager(Class<?> resourceClass) {
         this.dir = null;
         this.zip = null;
-        this.resourceClass = resourceClass == null ? Flat.class : resourceClass;
     }
 
     public ResourcesManager(File file) {
         if (file == null) {
             this.dir = null;
             this.zip = null;
-            this.resourceClass = Flat.class;
         } else if (file.isFile()) {
             try {
                 this.dir = null;
                 this.zip = new ZipFile(file);
-                this.resourceClass = Flat.class;
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         } else {
             this.dir = file;
             this.zip = null;
-            this.resourceClass = Flat.class;
         }
     }
 
@@ -74,6 +66,13 @@ public class ResourcesManager {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public ResourceStream getResource(String value) {
+        if (exists(value)) {
+            return new ResourceStream(value);
+        }
+        return null;
     }
 
     public void unloadResources() {
@@ -99,32 +98,65 @@ public class ResourcesManager {
     }
 
     public InputStream getInput(String pathName) {
-        try {
-            InputStream is = null;
-
-            if (zip != null) {
+        if (zip != null) {
+            try {
                 ZipEntry zipEntry = zip.getEntry(pathName);
-                is = zip.getInputStream(zipEntry);
+                return zip.getInputStream(zipEntry);
+            } catch (Exception ignored) {
             }
-
-            if (is == null && dir != null) {
-                File entry = new File(dir, pathName);
-                is = new FileInputStream(entry);
-            }
-            if (is == null && resourceClass != null) {
-                is = resourceClass.getResourceAsStream("/"+pathName);
-            }
-
-            if (is == null) {
-                is = Thread.currentThread().getContextClassLoader().getResourceAsStream(pathName);
-            }
-
-            return is;
-        } catch (Exception e) {
-            System.out.println("Error at: Input File "+ pathName);
-            e.printStackTrace();
         }
+
+        if (dir != null) {
+            try {
+                File entry = new File(dir, pathName);
+                return new FileInputStream(entry);
+            } catch (Exception ignored) {
+            }
+        }
+
+        try {
+            return Flat.class.getResourceAsStream(pathName.startsWith("/") ? pathName : "/" + pathName);
+        } catch (Exception ignored) {
+        }
+
         return null;
+    }
+
+    public boolean isFolder(String pathName) {
+        if (zip != null) {
+            try {
+                ZipEntry zipEntry = zip.getEntry(pathName);
+                return zipEntry.isDirectory();
+            } catch (Exception ignored) {
+            }
+        }
+
+        if (dir != null) {
+            try {
+                File entry = new File(dir, pathName);
+                return entry.isDirectory();
+            } catch (Exception ignored) {
+            }
+        }
+
+        try {
+            URL dirURL = Flat.class.getResource(pathName.startsWith("/") ? pathName : "/" + pathName);
+
+            if (dirURL != null && dirURL.getProtocol().equals("file")) {
+                return new File(dirURL.toURI()).isDirectory();
+            }
+
+            if (dirURL != null && dirURL.getProtocol().equals("jar")) {
+                String jarPath = dirURL.getPath().substring(5, dirURL.getPath().indexOf("!"));
+
+                try (JarFile jar = new JarFile(URLDecoder.decode(jarPath, StandardCharsets.UTF_8))) {
+                    return jar.getEntry(pathName).isDirectory();
+                }
+            }
+        } catch (Exception ignored) {
+        }
+
+        return false;
     }
 
     public byte[] getData(String pathName) {
@@ -147,71 +179,72 @@ public class ResourcesManager {
         }
     }
 
-    public String[] listFiles(String pathName) {
+    public List<ResourceStream> listFiles(String pathName) {
         if (pathName.charAt(pathName.length() - 1) != '/') {
             pathName = pathName + "/";
         }
+
+        List<ResourceStream> list = new ArrayList<>();
         try {
             if (zip != null) {
                 Enumeration<? extends ZipEntry> entries = zip.entries();
-                Set<String> result = new HashSet<>();
                 while (entries.hasMoreElements()) {
-                    String name = entries.nextElement().getName();
-                    if (name.startsWith(pathName)) {
-                        String entry = name.substring(pathName.length());
-                        int checkSubdir = entry.indexOf("/");
-                        if (checkSubdir >= 0) {
-                            entry = entry.substring(0, checkSubdir);
+                    ZipEntry entry = entries.nextElement();
+                    String name = entry.getName();
+                    if (!name.equals(pathName) && name.startsWith(pathName)) {
+                        int indexOf = name.indexOf("/", pathName.length());
+                        int indexOf2 = indexOf == -1 ? -1 : name.indexOf("/", indexOf + 1);
+                        if (indexOf == -1 || indexOf2 == -1) {
+                            list.add(new ResourceStream(name, entry.isDirectory()));
                         }
-                        result.add(entry);
                     }
                 }
-                return result.toArray(new String[0]);
-            }
 
-            if (dir != null) {
+            } else if (dir != null) {
                 File subDir = new File(dir, pathName);
-                String[] sub = subDir.list();
-                return sub == null ? new String[0] : sub;
-
-            }
-
-            if (resourceClass != null) {
-                URL dirURL = resourceClass.getResource("/" + pathName);
-
-                if (dirURL != null && dirURL.getProtocol().equals("file")) {
-                    String[] sub = new File(dirURL.toURI()).list();
-                    return sub == null ? new String[0] : sub;
+                String[] files = subDir.list();
+                if (files != null) {
+                    for (var file : files) {
+                        list.add(new ResourceStream(pathName + file, new File(pathName + file).isDirectory()));
+                    }
                 }
 
-                if (dirURL != null && dirURL.getProtocol().equals("jar")) {
+            } else {
+                URL dirURL = Flat.class.getResource(pathName.startsWith("/") ? pathName : "/" + pathName);
+
+                if (dirURL != null && dirURL.getProtocol().equals("file")) {
+                    String[] files = new File(dirURL.toURI()).list();
+                    if (files != null) {
+                        for (var file : files) {
+                            list.add(new ResourceStream(pathName + file, new File(pathName, file).isDirectory()));
+                        }
+                    }
+
+                } else if (dirURL != null && dirURL.getProtocol().equals("jar")) {
+
                     String jarPath = dirURL.getPath().substring(5, dirURL.getPath().indexOf("!"));
 
                     try (JarFile jar = new JarFile(URLDecoder.decode(jarPath, StandardCharsets.UTF_8))) {
                         Enumeration<JarEntry> entries = jar.entries();
-                        Set<String> result = new HashSet<>();
                         while (entries.hasMoreElements()) {
-                            String name = entries.nextElement().getName();
-                            if (name.startsWith(pathName)) {
-                                String entry = name.substring(pathName.length());
-                                int checkSubdir = entry.indexOf("/");
-                                if (checkSubdir >= 0) {
-                                    entry = entry.substring(0, checkSubdir);
+                            JarEntry entry = entries.nextElement();
+                            String name = entry.getName();
+                            if (!name.equals(pathName) && name.startsWith(pathName)) {
+                                int indexOf = name.indexOf("/", pathName.length());
+                                int indexOf2 = indexOf == -1 ? -1 : name.indexOf("/", indexOf + 1);
+                                if (indexOf == -1 || indexOf2 == -1) {
+                                    list.add(new ResourceStream(name, entry.isDirectory()));
                                 }
-                                result.add(entry);
                             }
                         }
-                        return result.toArray(new String[0]);
                     }
                 }
-
-                throw new UnsupportedOperationException("Cannot list files for URL " + dirURL);
             }
+
         } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Cannot list files for URL " + pathName);
+            throw new UnsupportedOperationException("Cannot list files for URL " + pathName);
         }
-        return new String[0];
+        return list;
     }
 
     /**
@@ -366,26 +399,6 @@ public class ResourcesManager {
         }
     }
 
-    public String readPersistentData(String path) {
-        InputStream is = getInput(path);
-        if (is == null) {
-            return null;
-        }
-
-        try (ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
-            int nRead;
-            byte[] data = new byte[16384];
-            while ((nRead = is.read(data, 0, data.length)) != -1) {
-                buffer.write(data, 0, nRead);
-            }
-            buffer.flush();
-            return buffer.toString();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
     private static void getAllFiles(File dir, List<File> fileList) {
         File[] files = dir.listFiles();
         if (files != null) {
@@ -396,12 +409,5 @@ public class ResourcesManager {
                 }
             }
         }
-    }
-
-    public ResourceStream getResource(String value) {
-        if (exists(value)) {
-            return new ResourceStream(value);
-        }
-        return null;
     }
 }

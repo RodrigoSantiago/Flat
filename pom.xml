@@ -26,6 +26,21 @@
                     </argLine>
                 </configuration>
             </plugin>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>test.Main</mainClass>
+                        </manifest>
+                    </archive>
+                    <excludes>
+                        <exclude>**/Test*.class</exclude>
+                        <exclude>**/*Test.class</exclude>
+                        <exclude>**/test/**</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -50,18 +65,6 @@
             <artifactId>powermock-api-mockito2</artifactId>
             <version>2.0.9</version>
             <scope>test</scope>
-        </dependency>
-
-        <!-- Logger Dependency -->
-        <dependency>
-            <groupId>org.tinylog</groupId>
-            <artifactId>tinylog-api</artifactId>
-            <version>2.7.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.tinylog</groupId>
-            <artifactId>tinylog-impl</artifactId>
-            <version>2.7.0</version>
         </dependency>
     </dependencies>
 </project>

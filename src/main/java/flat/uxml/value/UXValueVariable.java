@@ -16,12 +16,12 @@ public class UXValueVariable extends UXValue {
     }
 
     @Override
-    UXValue internalMix(UXValue uxValue, float t, UXTheme theme) {
+    UXValue internalMix(UXValue uxValue, float t, UXTheme theme, float dpi) {
         UXValue variable = getVariable(theme);
         if (variable != null) {
-            return variable.mix(uxValue, t, theme);
+            return variable.mix(uxValue, t, theme, dpi);
         } else {
-            return super.internalMix(uxValue, t, theme);
+            return super.internalMix(uxValue, t, theme, dpi);
         }
     }
 
@@ -71,12 +71,12 @@ public class UXValueVariable extends UXValue {
     }
 
     @Override
-    public float asSize(UXTheme theme) {
+    public float asSize(UXTheme theme, float dpi) {
         UXValue variable = getVariable(theme);
         if (variable != null) {
-            return variable.asSize(theme);
+            return variable.asSize(theme, dpi);
         } else {
-            return super.asSize(theme);
+            return super.asSize(theme, dpi);
         }
     }
 

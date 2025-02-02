@@ -13,9 +13,9 @@ public class UXValueColor extends UXValue {
     }
 
     @Override
-    UXValue internalMix(UXValue uxValue, float t, UXTheme theme) {
+    UXValue internalMix(UXValue uxValue, float t, UXTheme theme, float dpi) {
         if (uxValue.asColor(theme) == 0x0 && getSourceType(theme) != uxValue.getSourceType(theme)) {
-            return super.internalMix(uxValue, t, theme);
+            return super.internalMix(uxValue, t, theme, dpi);
         } else {
             return new UXValueColor(Interpolation.mixColor(rgba, uxValue.asColor(theme), t));
         }

@@ -23,13 +23,13 @@ public class UXValueXML extends  UXValue {
     }
 
     @Override
-    public UXValue mix(UXValue uxValue, float t, UXTheme theme) {
-        return value.mix(uxValue, t, theme);
+    public UXValue mix(UXValue uxValue, float t, UXTheme theme, float dpi) {
+        return value.mix(uxValue, t, theme, dpi);
     }
 
     @Override
-    UXValue internalMix(UXValue uxValue, float t, UXTheme theme) {
-        return value.internalMix(uxValue, t, theme);
+    UXValue internalMix(UXValue uxValue, float t, UXTheme theme, float dpi) {
+        return value.internalMix(uxValue, t, theme, dpi);
     }
 
     @Override
@@ -58,8 +58,8 @@ public class UXValueXML extends  UXValue {
     }
 
     @Override
-    public float asSize(UXTheme theme) {
-        return value.asSize(theme);
+    public float asSize(UXTheme theme, float dpi) {
+        return value.asSize(theme, dpi);
     }
 
     @Override

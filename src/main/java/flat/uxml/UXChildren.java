@@ -1,13 +1,13 @@
 package flat.uxml;
 
-import flat.widget.Gadget;
 import flat.widget.Menu;
+import flat.widget.Widget;
 
 import java.util.ArrayList;
 
 public class UXChildren {
 
-    private final ArrayList<Gadget> children = new ArrayList<>();
+    private final ArrayList<Widget> children = new ArrayList<>();
     private final ArrayList<Menu> menus = new ArrayList<>();
     private final UXBuilder loader;
     private int pos;
@@ -25,11 +25,11 @@ public class UXChildren {
         this.menus.add(menu);
     }
 
-    public void add(Gadget child) {
+    public void add(Widget child) {
         children.add(child);
     }
 
-    public Gadget next() {
+    public Widget next() {
         return pos >= children.size() ? null : children.get(pos++);
     }
 

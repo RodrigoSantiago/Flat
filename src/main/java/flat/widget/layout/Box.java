@@ -1,7 +1,6 @@
 package flat.widget.layout;
 
 import flat.uxml.UXChildren;
-import flat.widget.Gadget;
 import flat.widget.Parent;
 import flat.widget.Widget;
 import flat.widget.enums.Visibility;
@@ -14,12 +13,9 @@ public class Box extends Parent {
     public void applyChildren(UXChildren children) {
         super.applyChildren(children);
 
-        Gadget child;
-        while ((child = children.next()) != null ) {
-            Widget widget = child.getWidget();
-            if (widget != null) {
-                add(widget);
-            }
+        Widget widget;
+        while ((widget = children.next()) != null ) {
+            add(widget);
         }
     }
 

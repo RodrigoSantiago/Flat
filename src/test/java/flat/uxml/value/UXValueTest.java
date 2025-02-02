@@ -4,7 +4,6 @@ import flat.graphics.context.Font;
 import flat.graphics.text.Align;
 import flat.uxml.Controller;
 import flat.uxml.UXTheme;
-import flat.uxml.value.UXValue;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -32,7 +31,7 @@ public class UXValueTest {
         assertEquals("", value.asString(theme));
         assertFalse(value.asBool(theme));
         assertEquals(0, value.asNumber(theme), 0);
-        assertEquals(0, value.asSize(theme), 0);
+        assertEquals(0, value.asSize(theme, 160), 0);
         assertEquals(0, value.asAngle(theme), 0);
         assertEquals(0, value.asColor(theme));
         assertEquals(Font.getDefault(), value.asFont(theme));

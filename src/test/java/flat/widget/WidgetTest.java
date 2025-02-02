@@ -22,28 +22,27 @@ public class WidgetTest {
     public void constructor() {
         UXTheme theme = mock(UXTheme.class);
         Controller controller = mock(Controller.class);
-        UXBuilder builder = mock(UXBuilder.class);
 
         Widget widget = new Widget();
+        widget.setTheme(theme);
         widget.setAttributes(null, "widget");
-        widget.applyAttributes(theme, controller, builder);
+        widget.applyAttributes(controller);
         widget.applyStyle();
     }
 
     @Test
     public void noDefaultValues() {
         UXTheme theme = mock(UXTheme.class);
-        when(theme.getDensity()).thenReturn(160f);
         when(theme.getFontScale()).thenReturn(1f);
 
         Controller controller = mock(Controller.class);
-        UXBuilder builder = mock(UXBuilder.class);
 
         var hash = createNonDefaultValues();
 
         Widget widget = new Widget();
+        widget.setTheme(theme);
         widget.setAttributes(hash, "widget");
-        widget.applyAttributes(theme, controller, builder);
+        widget.applyAttributes(controller);
         widget.applyStyle();
 
         assertEquals(Visibility.INVISIBLE, widget.getVisibility());
@@ -103,17 +102,16 @@ public class WidgetTest {
     @Test
     public void resetValuesAfterStyle() {
         UXTheme theme = mock(UXTheme.class);
-        when(theme.getDensity()).thenReturn(160f);
         when(theme.getFontScale()).thenReturn(1f);
 
         Controller controller = mock(Controller.class);
-        UXBuilder builder = mock(UXBuilder.class);
 
         var hash = createNonDefaultValues();
 
         Widget widget = new Widget();
+        widget.setTheme(theme);
         widget.setAttributes(hash, "widget");
-        widget.applyAttributes(theme, controller, builder);
+        widget.applyAttributes(controller);
         widget.applyStyle();
 
         widget.setVisibility(Visibility.VISIBLE);
@@ -225,17 +223,16 @@ public class WidgetTest {
     @Test
     public void doNotResetValuesIfUnfollow() {
         UXTheme theme = mock(UXTheme.class);
-        when(theme.getDensity()).thenReturn(160f);
         when(theme.getFontScale()).thenReturn(1f);
 
         Controller controller = mock(Controller.class);
-        UXBuilder builder = mock(UXBuilder.class);
 
         var hash = createNonDefaultValues();
 
         Widget widget = new Widget();
+        widget.setTheme(theme);
         widget.setAttributes(hash, "widget");
-        widget.applyAttributes(theme, controller, builder);
+        widget.applyAttributes(controller);
         widget.applyStyle();
 
         widget.setVisibility(Visibility.VISIBLE);

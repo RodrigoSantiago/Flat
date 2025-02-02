@@ -2,15 +2,9 @@ package test;
 
 import flat.Flat;
 import flat.animations.presets.Hide;
-import flat.animations.presets.Show;
-import flat.animations.property.Property;
 import flat.events.ActionEvent;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Context;
-import flat.resources.ResourceStream;
-import flat.uxml.UXSheet;
-import flat.uxml.UXTheme;
-import flat.widget.layout.Box;
 import flat.window.Activity;
 import flat.window.Application;
 
@@ -19,8 +13,8 @@ public class MainActivity extends Activity {
     public MainActivity(Context context) {
         super(context);
 
-        setTheme(Application.getResourcesManager().getResource("themes/material.uxss"));
-        setScene(Application.getResourcesManager().getResource("screen_test/screen_test.uxml"));
+        setTheme(Application.getResourcesManager().getResource("default/themes"));
+        setScene(Application.getResourcesManager().getResource("default/screen_test/screen_test.uxml"));
     }
 
     float mx, my;

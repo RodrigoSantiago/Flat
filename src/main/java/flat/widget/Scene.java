@@ -5,13 +5,12 @@ import flat.widget.enums.Visibility;
 import flat.widget.layout.Box;
 import flat.window.Activity;
 import flat.window.ActivityScene;
-import org.tinylog.Logger;
 
 import java.util.HashMap;
 
 public class Scene extends Box {
 
-    ActivityScene activityScene = new ActivityScene();
+    ActivityScene activityScene = new ActivityScene(this);
     HashMap<String, Widget> idMap = new HashMap<>();
 
     public Scene() {
@@ -20,6 +19,13 @@ public class Scene extends Box {
 
     public ActivityScene getActivityScene() {
         return activityScene;
+    }
+
+    @Override
+    public void onActivityChange(Activity prev, Activity activity) {
+        if (activity == getActivity()) {
+            super.onActivityChange(prev, activity);
+        }
     }
 
     @Override
@@ -63,10 +69,7 @@ public class Scene extends Box {
     final void assign(Widget widget) {
         String id = widget.getId();
         if (id != null) {
-            Widget old = idMap.put(id, widget);
-            if (old != null && old != widget) {
-                Logger.info("Id override {}", id);
-            }
+            idMap.put(id, widget);
         }
         if (!(widget instanceof Scene) && widget.children != null) {
             for (Widget child : widget.getChildrenIterable()) {
@@ -78,9 +81,7 @@ public class Scene extends Box {
     final void unassign(Widget widget) {
         String id = widget.getId();
         if (id != null) {
-            if (!idMap.remove(id, widget)) {
-                Logger.info("Id {} not assigned", id);
-            }
+            idMap.remove(id, widget);
         }
         if (!(widget instanceof Scene) && widget.children != null) {
             for (Widget child : widget.getChildrenIterable()) {
@@ -96,10 +97,7 @@ public class Scene extends Box {
 
         String newID = widget.getId();
         if (newID != null) {
-            Widget old = idMap.put(newID, widget);
-            if (old != null && old != widget) {
-                Logger.info("Id override {}", newID);
-            }
+            idMap.put(newID, widget);
         }
     }
 }

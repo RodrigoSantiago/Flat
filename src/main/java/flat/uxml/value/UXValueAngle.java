@@ -13,9 +13,9 @@ public class UXValueAngle extends UXValue {
     }
 
     @Override
-    UXValue internalMix(UXValue uxValue, float t, UXTheme theme) {
+    UXValue internalMix(UXValue uxValue, float t, UXTheme theme, float dpi) {
         if (getSourceType(theme) != uxValue.getSourceType(theme)) {
-            return super.internalMix(uxValue, t, theme);
+            return super.internalMix(uxValue, t, theme, dpi);
         } else {
             return new UXValueAngle(Interpolation.mixAngle(angle, uxValue.asAngle(theme), t));
         }

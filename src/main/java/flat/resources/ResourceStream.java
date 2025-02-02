@@ -8,38 +8,30 @@ import java.util.*;
 
 public class ResourceStream {
 
-    private String name;
     private String resourceName;
+    private boolean folder;
 
-    public ResourceStream(String name) {
-        this.name = name;
-
-        if (Application.getResourcesManager().exists(name)) {
-            this.resourceName = name;
-
-        } else if (name.matches(".*\\.[a-zA-Z_0-9]+")) {
-            String[] files = Application.getResourcesManager().listFiles(name);
-            for (String fileName : files) {
-                if (fileName.matches(name)) {
-                    this.resourceName = fileName;
-                    break;
-                }
-            }
-
-        } else {
-            String regex = ".*\\Q" + name +"\\E\\.[a-zA-Z_0-9]+";
-            String[] files = Application.getResourcesManager().listFiles(name);
-            for (String fileName : files) {
-                if (fileName.endsWith(name)) {
-                    this.resourceName = fileName;
-                    break;
-                }
-            }
-        }
+    ResourceStream(String name, boolean folder) {
+        this.resourceName = name;
+        this.folder = folder;
     }
 
-    public String getName() {
-        return name;
+    public ResourceStream(String name) {
+        this.resourceName = name;
+        this.folder = Application.getResourcesManager().isFolder(resourceName);
+    }
+
+    public boolean isFolder() {
+        return folder;
+    }
+
+    public List<ResourceStream> getFiles() {
+        if (isFolder()) {
+            return Application.getResourcesManager().listFiles(resourceName);
+
+        } else {
+            return new ArrayList<>();
+        }
     }
 
     public String getResourceName() {
@@ -47,7 +39,11 @@ public class ResourceStream {
     }
 
     public InputStream getStream() {
-        return Application.getResourcesManager().getInput(resourceName);
+        if (isFolder()) {
+            return null;
+        } else {
+            return Application.getResourcesManager().getInput(resourceName);
+        }
     }
 
     public void putCache(Object cache) {
@@ -62,11 +58,11 @@ public class ResourceStream {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof ResourceStream stream)) return false;
-        return Objects.equals(name, stream.name) && Objects.equals(resourceName, stream.resourceName);
+        return Objects.equals(resourceName, stream.resourceName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, resourceName);
+        return Objects.hash(resourceName);
     }
 }

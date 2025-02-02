@@ -53,7 +53,6 @@ public class UXAttrsTest {
         nameStyle = mock(UXStyle.class);
         when(theme.getStyle("test")).thenReturn(base);
         when(theme.getStyle("name")).thenReturn(nameStyle);
-        when(theme.getDensity()).thenReturn(160f);
         when(theme.getFontScale()).thenReturn(1f);
 
         when(base.contains(hashPropertyBase)).thenReturn(true);
@@ -322,20 +321,6 @@ public class UXAttrsTest {
 
         assertEquals(24, attrs.getSize("property-mix-different"), 0.0001f);
         assertEquals(92, attrs.getSize("property-mix-different", stateInfo, 0), 0.0001f);
-    }
-
-    @Test
-    public void linkIds() {
-        UXAttrs attrs = new UXAttrs("test");
-        attrs.setName("name");
-        attrs.setTheme(theme);
-        attrs.addAttribute("item-id", new UXValueText("item"));
-
-        UXBuilder builder = mock(UXBuilder.class);
-        UXGadgetLinker linker = mock(UXGadgetLinker.class);
-        attrs.link("item-id", builder, linker);
-
-        verify(builder, times(1)).addLink("item", linker);
     }
 
     @Test

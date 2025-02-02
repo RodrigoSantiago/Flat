@@ -110,7 +110,7 @@ public class Window {
 
             processEvents();
 
-            activity.refreshScene(getDpi());
+            activity.refreshScene();
 
             loopAnim = activity.animate(loopTime) || loopAnim;
 

@@ -1,11 +1,11 @@
 package flat.uxml;
 
-import flat.Weak;
 import flat.animations.StateInfo;
 import flat.graphics.context.Font;
 import flat.resources.ResourceStream;
 import flat.uxml.value.UXValue;
 import flat.widget.State;
+import flat.window.Activity;
 
 import java.util.HashMap;
 import java.util.Objects;
@@ -14,6 +14,7 @@ public class UXAttrs {
 
     private final String base;
     private String name;
+    private Activity activity;
     private UXTheme theme;
     private UXStyle style;
     private UXStyle baseStyle;
@@ -50,6 +51,14 @@ public class UXAttrs {
         return theme;
     }
 
+    public void setActivity(Activity activity) {
+        this.activity = activity;
+    }
+
+    public Activity getActivity() {
+        return activity;
+    }
+
     public UXStyle getStyle() {
         return style;
     }
@@ -74,15 +83,6 @@ public class UXAttrs {
     public boolean containsChange(byte stateA, byte stateB) {
         return (style != null && style.containsChange(stateA, stateB)) ||
                 (baseStyle != null && baseStyle.containsChange(stateA, stateB));
-    }
-
-    public void link(String name, UXBuilder builder, UXGadgetLinker linker) {
-        if (builder != null && attributes != null) {
-            UXValue value = attributes.get(UXHash.getHash(name));
-            if (value != null) {
-                builder.addLink(value.asString(theme), linker);
-            }
-        }
     }
 
     public UXValue getAttribute(String name) {
@@ -148,7 +148,7 @@ public class UXAttrs {
 
     public float getAttributeSize(String name, float def) {
         UXValue value = getAttribute(name);
-        return value != null ? value.asSize(theme) : def;
+        return value != null ? value.asSize(theme, activity == null ? 160 : activity.getDensity()) : def;
     }
 
     public float getAttributeAngle(String name, float def) {
@@ -223,7 +223,7 @@ public class UXAttrs {
 
     public float getSize(String name, StateInfo state, float def) {
         UXValue value = getValue(UXHash.getHash(name), state);
-        return value != null ? value.asSize(theme) : def;
+        return value != null ? value.asSize(theme, activity == null ? 160 : activity.getDensity()) : def;
     }
 
     public float getAngle(String name) {
@@ -293,10 +293,11 @@ public class UXAttrs {
         }
         UXValue[] sValue = style != null ? style.get(hash) : null;
         UXValue[] pValue = baseStyle != null ? baseStyle.get(hash) : null;
-        return mixStyle(state, sValue, pValue);
+        float dpi = activity == null ? 160 : activity.getDensity();
+        return mixStyle(state, sValue, pValue, dpi);
     }
 
-    private UXValue mixStyle(StateInfo state, UXValue[] sValue, UXValue[] pValue) {
+    private UXValue mixStyle(StateInfo state, UXValue[] sValue, UXValue[] pValue, float dpi) {
         UXValue fullMix = null;
         for (int i = 0; i < 8; i++) {
             UXValue value = sValue != null && sValue[i] != null ? sValue[i] : pValue != null ? pValue[i] : null;
@@ -308,7 +309,7 @@ public class UXAttrs {
                 }
                 float t = state.get(State.values()[i]);
                 if (value != null && t > 0.001f) {
-                    fullMix = fullMix.mix(value, t, theme);
+                    fullMix = fullMix.mix(value, t, theme, dpi);
                 }
             }
         }

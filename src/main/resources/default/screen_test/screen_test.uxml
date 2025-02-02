@@ -1,0 +1,7 @@
+<Scene background-color="#FF0000">
+    <Scene background-color="#00FF0080" min-width="400" min-height="64">
+    </Scene>
+    <LinearBox direction="vertical">
+        <Label text="Ola Mundo" font="font(Italic, Bold, Cursive)"/>
+    </LinearBox>
+</Scene>

@@ -38,6 +38,8 @@ public class Activity extends Controller {
     private boolean hide = true;
     private boolean pause = true;
 
+    private float lastDpi;
+
     public Activity(Context context) {
         this.context = context;
         this.width = context.getWidth();
@@ -92,6 +94,9 @@ public class Activity extends Controller {
     }
 
     public void setTheme(ResourceStream resourceStream) {
+        if (resourceStream.isFolder()) {
+
+        }
         setTheme(UXSheet.parse(resourceStream).instance());
     }
 
@@ -120,14 +125,13 @@ public class Activity extends Controller {
     private void buildScene() {
         if (nextTheme != null) {
             theme = nextTheme;
-            theme.setDensity(getWindow().getDpi());
             nextTheme = null;
             invalidTheme = true;
         }
 
         Scene old = scene;
         if (builder != null) {
-            nextScene = (Scene) builder.build(theme, true);
+            nextScene = builder.build(theme);
         }
         if (scene == null && nextScene == null) {
             nextScene = new Scene();
@@ -148,11 +152,12 @@ public class Activity extends Controller {
         }
     }
 
-    void refreshScene(float dpi) {
+    void refreshScene() {
         buildScene();
 
-        if (theme.getDensity() != dpi) {
-            theme.setDensity(dpi);
+        float dpi = getWindow() == null ? 160f : getWindow().getDpi();
+        if (lastDpi != dpi) {
+            lastDpi = dpi;
             invalidTheme = true;
         }
 
@@ -168,7 +173,7 @@ public class Activity extends Controller {
 
     void show() {
         hide = false;
-        refreshScene(getWindow().getDpi());
+        refreshScene();
         onShow();
 
     }
@@ -370,6 +375,10 @@ public class Activity extends Controller {
 
     public float getHeight() {
         return height;
+    }
+
+    public float getDensity() {
+        return lastDpi;
     }
 
     public static class Transition implements Animation {

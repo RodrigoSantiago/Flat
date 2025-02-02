@@ -11,6 +11,7 @@ import flat.widget.State;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -18,7 +19,7 @@ public class UXSheet {
 
     private final HashMap<String, UXStyle> styles = new HashMap<>();
     private final HashMap<String, UXValue> variableInitialValue = new HashMap<>();
-    private List<UXSheetParser.ErroLog> logs;
+    private List<UXSheetParser.ErroLog> logs = new ArrayList<>();
     private final List<UXSheet> imports = new ArrayList<>();
 
     public static UXSheet parse(ResourceStream stream) {
@@ -27,7 +28,7 @@ public class UXSheet {
             if (cache instanceof UXSheet) {
                 return (UXSheet) cache;
             } else {
-                throw new FlatException("Invalid UXSheet at: " + stream.getStream());
+                throw new FlatException("Invalid UXSheet at: " + stream.getResourceName());
             }
         }
         try {
@@ -40,46 +41,69 @@ public class UXSheet {
     }
 
     private static UXSheet read(ResourceStream stream) throws IOException {
-        String data = new String(stream.getStream().readAllBytes(), StandardCharsets.UTF_8);
-
-        UXSheetParser reader = new UXSheetParser(data);
-        reader.parse();
-
         UXSheet sheet = new UXSheet();
-        sheet.logs = reader.getLogs();
 
-        for (UXSheetStyle sheetStyle : reader.getStyles().values()) {
-            UXStyle style = new UXStyle(sheetStyle.getName(), sheetStyle.getParent());
-            for (var attr : sheetStyle.getAttributes().values()) {
-                style.add(UXHash.getHash(attr.getName()), State.ENABLED, attr.getValue());
-            }
-            for (var pseudo : sheetStyle.getStates().values()) {
-                State state = State.valueOf(pseudo.getName().toUpperCase());
-                for (var attr : pseudo.getAttributes().values()) {
-                    style.add(UXHash.getHash(attr.getName()), state, attr.getValue());
-                }
-            }
-            sheet.styles.put(style.getName(), style);
-        }
+        readRecursive(sheet, stream);
 
         for (var style : sheet.styles.values()) {
-            if (style.getParentName() != null) {
-                var parent = sheet.styles.get(style.getParentName());
+            String parentName = style.getParentName();
+            if (parentName != null) {
+                var parent = sheet.styles.get(parentName);
                 if (!style.setParent(parent)) {
-                    sheet.logs.add(new UXSheetParser.ErroLog(-1, -1, UXSheetParser.ErroLog.CYCLIC_PARENT));
+                    sheet.logs.add(new UXSheetParser.ErroLog(-1, -1
+                            , UXSheetParser.ErroLog.CYCLIC_PARENT + " '" + style.getName() + " : " + parentName + "'"));
                 }
             }
-        }
-
-        for (UXSheetAttribute variable : reader.getVariables().values()) {
-            sheet.variableInitialValue.put(variable.getName(), variable.getValue());
         }
 
         return sheet;
     }
 
+    private static void readRecursive(UXSheet sheet, ResourceStream stream) throws IOException {
+        if (stream.isFolder()) {
+            for (var st : stream.getFiles()) {
+                readRecursive(sheet, st);
+            }
+        } else {
+            String data = new String(stream.getStream().readAllBytes(), StandardCharsets.UTF_8);
+            UXSheetParser reader = new UXSheetParser(data);
+            reader.parse();
+
+            // Logs
+            sheet.logs.addAll(reader.getLogs());
+
+            // Styles
+            for (UXSheetStyle sheetStyle : reader.getStyles().values()) {
+                UXStyle style = new UXStyle(sheetStyle.getName(), sheetStyle.getParent());
+                for (var attr : sheetStyle.getAttributes().values()) {
+                    style.add(UXHash.getHash(attr.getName()), State.ENABLED, attr.getValue());
+                }
+                for (var pseudo : sheetStyle.getStates().values()) {
+                    State state = State.valueOf(pseudo.getName().toUpperCase());
+                    for (var attr : pseudo.getAttributes().values()) {
+                        style.add(UXHash.getHash(attr.getName()), state, attr.getValue());
+                    }
+                }
+                if (sheet.styles.containsKey(style.getName())) {
+                    sheet.logs.add(new UXSheetParser.ErroLog(-1, -1
+                            , UXSheetParser.ErroLog.REPEATED_STYLE + " '" + style.getName() + "'"));
+                }
+                sheet.styles.put(style.getName(), style);
+            }
+
+            // Variables
+            for (UXSheetAttribute variable : reader.getVariables().values()) {
+                if (sheet.variableInitialValue.containsKey(variable.getName())) {
+                    sheet.logs.add(new UXSheetParser.ErroLog(-1, -1
+                            , UXSheetParser.ErroLog.REPEATED_VARIABLE + " '" + variable.getName() + "'"));
+                }
+                sheet.variableInitialValue.put(variable.getName(), variable.getValue());
+            }
+        }
+    }
+
     public UXTheme instance() {
-        return new UXTheme(this, 160f, 1f, null);
+        return new UXTheme(this, 1f, null);
     }
 
     public UXStyle getStyle(String name) {

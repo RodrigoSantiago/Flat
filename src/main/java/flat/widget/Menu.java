@@ -23,19 +23,10 @@ public class Menu extends Scene {
     @Override
     public void applyChildren(UXChildren children) {
         super.applyChildren(children);
-        Gadget child;
-        while ((child = children.next()) != null) {
-            Widget widget = child.getWidget();
-            if (widget != null) {
-                add(widget);
-            }
+        Widget widget;
+        while ((widget = children.next()) != null) {
+            add(widget);
         }
-    }
-
-    @Override
-    protected void onActivityChange(Activity prev, Activity activity) {
-        super.onActivityChange(prev, activity);
-        //setChooseItem(null);
     }
 
     @Override

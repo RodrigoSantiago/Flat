@@ -8,17 +8,15 @@ import java.util.HashMap;
 public class UXTheme {
     private UXSheet sheet;
     private StringBundle stringBundle;
-    private float density;
     private float fontScale;
     private HashMap<String, UXValue> variables = new HashMap<>();
 
     public UXTheme(UXSheet sheet) {
-        this(sheet, 160f, 1f, null);
+        this(sheet, 1f, null);
     }
 
-    public UXTheme(UXSheet sheet, float density, float fontScale, StringBundle stringBundle) {
+    public UXTheme(UXSheet sheet, float fontScale, StringBundle stringBundle) {
         this.sheet = sheet;
-        this.density = density;
         this.fontScale = fontScale;
         this.stringBundle = stringBundle;
     }
@@ -37,14 +35,6 @@ public class UXTheme {
 
     public void setSheet(UXSheet sheet) {
         this.sheet = sheet;
-    }
-
-    public float getDensity() {
-        return density;
-    }
-
-    public void setDensity(float density) {
-        this.density = density;
     }
 
     public float getFontScale() {

@@ -42,6 +42,9 @@ public class Children<T extends Widget> implements Iterable<T> {
 
         @Override
         public boolean hasNext() {
+            if (children == null) {
+                return false;
+            }
             return reverse ? pos >= 0 && children.size() > 0 : pos < children.size();
         }
 
