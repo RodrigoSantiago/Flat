@@ -7,6 +7,7 @@ import flat.widget.Widget;
 import flat.widget.layout.Box;
 import flat.widget.layout.LinearBox;
 import flat.widget.layout.StackBox;
+import flat.widget.text.Button;
 import flat.widget.text.Label;
 
 import java.util.ArrayList;
@@ -30,8 +31,8 @@ public class UXBuilder {
         UXBuilder.install("LinearBox", LinearBox::new);
         UXBuilder.install("StackBox", StackBox::new);
         UXBuilder.install("Label", Label::new);
-        /*UXBuilder.install("Divider", Divider::new);
         UXBuilder.install("Button", Button::new);
+        /*UXBuilder.install("Divider", Divider::new);
         UXBuilder.install("ToggleButton", ToggleButton::new);
         UXBuilder.install("ToggleGroup", RadioGroup::new);
         UXBuilder.install("ImageView", ImageView::new);

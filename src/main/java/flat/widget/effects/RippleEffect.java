@@ -22,7 +22,7 @@ public class RippleEffect {
 
     public RippleEffect(Widget widget) {
         this.widget = widget;
-        animation.setDuration(1000);
+        animation.setDuration(2);
         animation.setInterpolation(Interpolation.quadOut);
     }
 
@@ -45,15 +45,17 @@ public class RippleEffect {
 
         context.setPaint(Paint.radial(ripple.x, ripple.y, ripple.radius, ripple.radius, 0, 0,
                 stops, colors, Paint.CycleMethod.CLAMP));
-
         context.drawShape(clip == null ? ripple : clip, true);
     }
 
     public void fire(float x, float y) {
-        ripple.set(x, y, 1);
-        animation.stop();
-        animation.setDelta(1);
-        animation.play(widget.getActivity());
+        ripple.x = x;
+        ripple.y = y;
+        if (animation.isStopped() || animation.getT() > 0.5f) {
+            ripple.radius = 1;
+            animation.stop();
+            animation.play(widget.getActivity());
+        }
     }
 
     public void onActivityChange(Activity prev, Activity activity) {

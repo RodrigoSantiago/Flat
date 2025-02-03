@@ -2,6 +2,8 @@ package flat.resources;
 
 import flat.window.Application;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.*;
@@ -43,6 +45,14 @@ public class ResourceStream {
             return null;
         } else {
             return Application.getResourcesManager().getInput(resourceName);
+        }
+    }
+
+    public byte[] readData() {
+        if (isFolder()) {
+            return null;
+        } else {
+            return Application.getResourcesManager().getData(resourceName);
         }
     }
 

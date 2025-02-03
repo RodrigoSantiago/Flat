@@ -60,7 +60,7 @@ public class SVG {
     //---------------------------
     //           Text
     //---------------------------
-    // TODO - LOAD AS USE
+    // TODO - LOAD AS USE (Ex.: Load just 10 letters from font for preview)
     public static native long FontCreate(byte[] data, float size, int sdf);
     public static native void FontLoadAllGlyphs(long font);
     public static native void FontLoadGlyphs(long font, String characters);
@@ -86,4 +86,8 @@ public class SVG {
     public static native int DrawText(long context, float x, float y, String string, float maxWidth, int hAlign, int vAlign);
     public static native int DrawTextBuffer(long context, float x, float y, Buffer string, int offset, int length, float maxWidth, int hAlign, int vAlign);
 
+    //---------------------------
+    //           Image
+    //---------------------------
+    public static native byte[] ReadImage(byte[] data, int[] imageData);
 }

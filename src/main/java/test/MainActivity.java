@@ -5,6 +5,7 @@ import flat.animations.presets.Hide;
 import flat.events.ActionEvent;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Context;
+import flat.widget.layout.LinearBox;
 import flat.window.Activity;
 import flat.window.Application;
 
@@ -18,8 +19,13 @@ public class MainActivity extends Activity {
     }
 
     float mx, my;
+
+    @Flat
+    private LinearBox layout;
+
     @Override
     public void onShow() {
+        System.out.println(layout);
         getScene().setPointerListener(event -> {
             mx = (event.getX()-100) / 100;
             my = (event.getY()-100) / 100;

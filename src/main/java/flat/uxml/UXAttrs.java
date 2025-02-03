@@ -1,6 +1,7 @@
 package flat.uxml;
 
 import flat.animations.StateInfo;
+import flat.exception.FlatException;
 import flat.graphics.context.Font;
 import flat.resources.ResourceStream;
 import flat.uxml.value.UXValue;
@@ -275,6 +276,10 @@ public class UXAttrs {
     public <T extends Enum<T>> T getConstant(String name, StateInfo state, T def) {
         UXValue value = getValue(UXHash.getHash(name), state);
         if (value != null) {
+            if (def == null) {
+                throw new FlatException("Constant default value cannot be null");
+            }
+
             var constant = value.asConstant(theme, def.getDeclaringClass());
             if (constant != null) {
                 return constant;

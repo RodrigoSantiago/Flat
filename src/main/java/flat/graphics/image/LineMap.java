@@ -6,6 +6,7 @@ import flat.math.Affine;
 import flat.math.shapes.Rectangle;
 import flat.math.shapes.Shape;
 import flat.math.shapes.Stroke;
+import flat.widget.enums.ImageFilter;
 
 public class LineMap implements Drawable {
 
@@ -33,7 +34,7 @@ public class LineMap implements Drawable {
     }
 
     @Override
-    public void draw(SmartContext context, float x, float y, float width, float height, float frame) {
+    public void draw(SmartContext context, float x, float y, float width, float height, float frame, ImageFilter filter) {
         Affine affine = context.getTransform2D();
         context.setTransform2D(
                 context.getTransform2D()
@@ -64,8 +65,8 @@ public class LineMap implements Drawable {
     }
 
     @Override
-    public void draw(SmartContext context, float x, float y, float frame) {
-        draw(context, x, y, getWidth(), getHeight(), frame);
+    public void draw(SmartContext context, float x, float y, float frame, ImageFilter filter) {
+        draw(context, x, y, getWidth(), getHeight(), frame, filter);
     }
 
     public static class SVGPath {

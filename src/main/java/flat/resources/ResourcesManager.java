@@ -1,6 +1,7 @@
 package flat.resources;
 
 import flat.Flat;
+import flat.exception.FlatException;
 
 import java.io.*;
 import java.lang.ref.SoftReference;
@@ -24,11 +25,6 @@ public class ResourcesManager {
     private final HashMap<String, SoftReference<Object>> resources = new HashMap<>();
 
     public ResourcesManager() {
-        this.dir = null;
-        this.zip = null;
-    }
-
-    public ResourcesManager(Class<?> resourceClass) {
         this.dir = null;
         this.zip = null;
     }
@@ -178,8 +174,7 @@ public class ResourcesManager {
             buffer.flush();
             return buffer.toByteArray();
         } catch (IOException e) {
-            e.printStackTrace();
-            return null;
+            throw new RuntimeException(e);
         }
     }
 

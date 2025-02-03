@@ -316,7 +316,11 @@ public class Activity extends Controller {
         animations.removeAll(animationsRemove);
         animationsRemove.clear();
 
-        animations.addAll(animationsAdd);
+        for (Animation anim : animationsAdd) {
+            if (!animations.contains(anim)) {
+                animations.add(anim);
+            }
+        }
         animationsAdd.clear();
 
         boolean wasAnimated = !animations.isEmpty();

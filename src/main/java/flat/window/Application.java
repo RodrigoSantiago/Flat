@@ -227,7 +227,6 @@ public class Application {
 
     public static class Settings {
 
-        private final Class<?> mainClass;
         private final File resourceFile;
 
         private final ActivityFactory factory;
@@ -237,24 +236,19 @@ public class Application {
         private final boolean transparent;
         private final int vsync;
 
-        public Settings(Class<?> mainClass, ActivityFactory factory, int width, int height) {
-            this(mainClass, null, factory, width, height, 0, 2, false);
+        public Settings(ActivityFactory factory, int width, int height) {
+            this(null, factory, width, height, 0, 2, false);
         }
 
-        public Settings(Class<?> mainClass, ActivityFactory factory, int width, int height, int vsync, int multiSamples, boolean transparent) {
-            this(mainClass, null, factory, width, height, vsync, multiSamples, transparent);
+        public Settings(ActivityFactory factory, int width, int height, int vsync, int multiSamples, boolean transparent) {
+            this(null, factory, width, height, vsync, multiSamples, transparent);
         }
 
         public Settings(File resources, ActivityFactory factory, int width, int height) {
-            this(null, resources, factory, width, height, 0, 2, false);
+            this(resources, factory, width, height, 0, 2, false);
         }
 
         public Settings(File resources, ActivityFactory factory, int width, int height, int vsync, int multiSamples, boolean transparent) {
-            this(null, resources, factory, width, height, vsync, multiSamples, transparent);
-        }
-
-        Settings(Class<?> mainClass, File resources, ActivityFactory factory,int width, int height, int vsync, int multiSamples, boolean transparent) {
-            this.mainClass = mainClass;
             this.resourceFile = resources;
             this.factory = factory;
             this.width = width;
@@ -285,7 +279,7 @@ public class Application {
         }
 
         ResourcesManager createResources() {
-            return this.mainClass != null ? new ResourcesManager(this.mainClass) : new ResourcesManager(resourceFile);
+            return new ResourcesManager(resourceFile);
         }
 
         Window createWindow() {

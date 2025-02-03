@@ -77,7 +77,7 @@ public abstract class NormalizedAnimation implements Animation {
             playing = true;
             paused = false;
         }
-        _reaming = (long) (_duration * (1 - position));
+        _reaming = (_duration * (1 - position));
 
         if (activity != null) {
             activity.addAnimation(this);
@@ -121,7 +121,7 @@ public abstract class NormalizedAnimation implements Animation {
     public void jump(float position) {
         if (playing || paused) {
             position = Math.max(Math.min(position, 1), 0);
-            _reaming = (long) (_duration * (1 - position));
+            _reaming = (_duration * (1 - position));
         }
     }
 
@@ -130,7 +130,7 @@ public abstract class NormalizedAnimation implements Animation {
     }
 
     public float getPosition() {
-        return playing || paused ? (1 - (_reaming / (float) _duration)) : 0;
+        return playing || paused ?  Math.max(Math.min(1 - (_reaming / _duration), 1), 0) : 0;
     }
 
     @Override

@@ -1,10 +1,9 @@
 package flat.graphics.image;
 
 import flat.graphics.SmartContext;
+import flat.widget.enums.ImageFilter;
 
 public interface Drawable {
-
-    // TODO - ADD Default DPI for scaling system
 
     boolean isDynamic();
 
@@ -12,8 +11,8 @@ public interface Drawable {
 
     float getHeight();
 
-    void draw(SmartContext context, float x, float y, float width, float height, float frame);
+    void draw(SmartContext context, float x, float y, float width, float height, float frame, ImageFilter filter);
 
-    void draw(SmartContext context, float x, float y, float frame);
+    void draw(SmartContext context, float x, float y, float frame, ImageFilter filter);
 
 }

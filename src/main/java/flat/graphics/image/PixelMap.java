@@ -6,14 +6,17 @@ import flat.graphics.context.Texture2D;
 import flat.graphics.context.enums.MagFilter;
 import flat.graphics.context.enums.MinFilter;
 import flat.graphics.context.enums.PixelFormat;
+import flat.graphics.context.enums.WrapMode;
+import flat.widget.enums.ImageFilter;
 
 public class PixelMap implements Drawable {
 
     private Texture2D texture;
     private int width, height;
-    private int[] data;
+    private byte[] data;
+    private ImageFilter filter;
 
-    PixelMap(int[] data, int width, int height) {
+    PixelMap(byte[] data, int width, int height) {
         this.width = width;
         this.height = height;
         this.data = data;
@@ -28,6 +31,7 @@ public class PixelMap implements Drawable {
             texture.setLevels(0);
             texture.generateMipmapLevels();
             texture.setScaleFilters(MagFilter.NEAREST, MinFilter.NEAREST);
+            texture.setWrapModes(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
             texture.end();
             data = null;
         }
@@ -50,12 +54,21 @@ public class PixelMap implements Drawable {
     }
 
     @Override
-    public void draw(SmartContext context, float x, float y, float width, float height, float frame) {
+    public void draw(SmartContext context, float x, float y, float width, float height, float frame, ImageFilter filter) {
+        readTexture(context.getContext());
+        if (this.filter != filter) {
+            texture.begin(0);
+            texture.setScaleFilters(
+                    filter == ImageFilter.LINEAR ? MagFilter.LINEAR : MagFilter.NEAREST,
+                    filter == ImageFilter.LINEAR ? MinFilter.LINEAR : MinFilter.NEAREST);
+            texture.end();
+            this.filter = filter;
+        }
         context.drawImage(this, null, x, y, width, height);
     }
 
     @Override
-    public void draw(SmartContext context, float x, float y, float frame) {
-        draw(context, x, y, getWidth(), getHeight(), frame);
+    public void draw(SmartContext context, float x, float y, float frame, ImageFilter filter) {
+        draw(context, x, y, getWidth(), getHeight(), frame, filter);
     }
 }
