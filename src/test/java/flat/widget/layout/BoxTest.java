@@ -228,16 +228,16 @@ public class BoxTest {
         box.setPadding(10, 10, 10, 10);
         box.onMeasure();
 
-        assertEquals(170, box.getMeasureWidth(), 0.0001f);
-        assertEquals(120, box.getMeasureHeight(), 0.0001f);
+        assertEquals(150, box.getMeasureWidth(), 0.0001f);
+        assertEquals(100, box.getMeasureHeight(), 0.0001f);
 
         box.setPrefSize(150, 100);
         box.setMinSize(160, 110);
         box.setPadding(10, 10, 10, 10);
         box.onMeasure();
 
-        assertEquals(170, box.getMeasureWidth(), 0.0001f);
-        assertEquals(120, box.getMeasureHeight(), 0.0001f);
+        assertEquals(160, box.getMeasureWidth(), 0.0001f);
+        assertEquals(110, box.getMeasureHeight(), 0.0001f);
 
         box.setPrefSize(150, 100);
         box.setMinSize(180, 130);
@@ -262,6 +262,18 @@ public class BoxTest {
 
         assertEquals(Widget.MATCH_PARENT, box.getMeasureWidth(), 0.0001f);
         assertEquals(Widget.MATCH_PARENT, box.getMeasureHeight(), 0.0001f);
+
+        Box child = new Box();
+        box.add(child);
+
+        box.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
+        box.setMinSize(0, 0);
+        box.setPadding(1, 2, 3, 4);
+        child.setPrefSize(150, 100);
+        box.onMeasure();
+
+        assertEquals(156, box.getMeasureWidth(), 0.0001f);
+        assertEquals(104, box.getMeasureHeight(), 0.0001f);
     }
 
     @Test
@@ -272,16 +284,16 @@ public class BoxTest {
         box.setMargins(10, 10, 10, 10);
         box.onMeasure();
 
-        assertEquals(170, box.getMeasureWidth(), 0.0001f);
-        assertEquals(120, box.getMeasureHeight(), 0.0001f);
+        assertEquals(150, box.getMeasureWidth(), 0.0001f);
+        assertEquals(100, box.getMeasureHeight(), 0.0001f);
 
         box.setPrefSize(150, 100);
         box.setMinSize(160, 110);
         box.setMargins(10, 10, 10, 10);
         box.onMeasure();
 
-        assertEquals(170, box.getMeasureWidth(), 0.0001f);
-        assertEquals(120, box.getMeasureHeight(), 0.0001f);
+        assertEquals(160, box.getMeasureWidth(), 0.0001f);
+        assertEquals(110, box.getMeasureHeight(), 0.0001f);
 
         box.setPrefSize(150, 100);
         box.setMinSize(180, 130);
@@ -306,6 +318,18 @@ public class BoxTest {
 
         assertEquals(Widget.MATCH_PARENT, box.getMeasureWidth(), 0.0001f);
         assertEquals(Widget.MATCH_PARENT, box.getMeasureHeight(), 0.0001f);
+
+        Box child = new Box();
+        box.add(child);
+
+        box.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
+        box.setMinSize(0, 0);
+        box.setMargins(1, 2, 3, 4);
+        child.setPrefSize(150, 100);
+        box.onMeasure();
+
+        assertEquals(156, box.getMeasureWidth(), 0.0001f);
+        assertEquals(104, box.getMeasureHeight(), 0.0001f);
     }
 
     @Test

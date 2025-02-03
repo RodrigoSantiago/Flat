@@ -81,73 +81,96 @@ public class LinearBox extends Box {
     }
 
     private void onMeasureVertical() {
-        float mWidth = getPrefWidth(), mHeight = getPrefHeight();
+        float extraWidth = getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
+        float extraHeight = getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
+        float mWidth = 0;
+        float mHeight = 0;
+        boolean wrapWidth = getPrefWidth() == WRAP_CONTENT;
+        boolean wrapHeight = getPrefHeight() == WRAP_CONTENT;
 
-        float sumHeight = 0;
         for (Widget child : getChildrenIterable()) {
-            child.onMeasure();
             if (child.getVisibility() == Visibility.GONE) continue;
 
-            if (getPrefWidth() == WRAP_CONTENT) {
-                if (child.getMeasureWidth() == MATCH_PARENT) {
-                    float mW = Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth());
-                    if (mW > mWidth) {
-                        mWidth = mW;
+            child.onMeasure();
+            if (wrapWidth) {
+                if (getPrefWidth() == WRAP_CONTENT) {
+                    if (child.getMeasureWidth() == MATCH_PARENT) {
+                        float mW = Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth());
+                        if (mW > mWidth) {
+                            mWidth = mW;
+                        }
+                    } else if (child.getMeasureWidth() > mWidth) {
+                        mWidth = child.getMeasureWidth();
                     }
-                } else if (child.getMeasureWidth() > mWidth) {
-                    mWidth = child.getMeasureWidth();
                 }
             }
-            if (getPrefHeight() == WRAP_CONTENT) {
-                if (child.getMeasureHeight() == MATCH_PARENT) {
-                    sumHeight += Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight());
-                } else {
-                    sumHeight += child.getMeasureHeight();
+            if (wrapHeight) {
+                if (getPrefHeight() == WRAP_CONTENT) {
+                    if (child.getMeasureHeight() == MATCH_PARENT) {
+                        mHeight += Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight());
+                    } else {
+                        mHeight += child.getMeasureHeight();
+                    }
                 }
             }
         }
-
-        float extraWidth = getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
-        mWidth = Math.max(mWidth + extraWidth, getLayoutMinWidth());
-
-        float extraHeight = getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
-        mHeight = Math.max(Math.max(mHeight + extraHeight, sumHeight + extraHeight), getLayoutMinHeight());
+        if (wrapWidth) {
+            mWidth = Math.max(mWidth + extraWidth, Math.max(getPrefWidth(), getLayoutMinWidth()));
+        } else {
+            mWidth = Math.max(getPrefWidth(), getLayoutMinWidth());
+        }
+        if (wrapHeight) {
+            mHeight = Math.max(mHeight + extraHeight, Math.max(getPrefHeight(), getLayoutMinHeight()));
+        } else {
+            mHeight = Math.max(getPrefHeight(), getLayoutMinHeight());
+        }
 
         setMeasure(mWidth, mHeight);
     }
 
     private void onMeasureHorizontal() {
-        float mWidth = getPrefWidth(), mHeight = getPrefHeight();
-
-        float sumWidth = 0;
+        float extraWidth = getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
+        float extraHeight = getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
+        float mWidth = 0;
+        float mHeight = 0;
+        boolean wrapWidth = getPrefWidth() == WRAP_CONTENT;
+        boolean wrapHeight = getPrefHeight() == WRAP_CONTENT;
         for (Widget child : getChildrenIterable()) {
-            child.onMeasure();
             if (child.getVisibility() == Visibility.GONE) continue;
 
-            if (getPrefWidth() == WRAP_CONTENT) {
-                if (child.getMeasureWidth() == MATCH_PARENT) {
-                    sumWidth += Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth());
-                } else {
-                    sumWidth += child.getMeasureWidth();
+            child.onMeasure();
+            if (wrapWidth) {
+                if (getPrefWidth() == WRAP_CONTENT) {
+                    if (child.getMeasureWidth() == MATCH_PARENT) {
+                        mWidth += Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth());
+                    } else {
+                        mWidth += child.getMeasureWidth();
+                    }
                 }
             }
-            if (getPrefHeight() == WRAP_CONTENT) {
-                if (child.getMeasureHeight() == MATCH_PARENT) {
-                    float mH = Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight());
-                    if (mH > mHeight) {
-                        mHeight = mH;
+            if (wrapHeight) {
+                if (getPrefHeight() == WRAP_CONTENT) {
+                    if (child.getMeasureHeight() == MATCH_PARENT) {
+                        float mH = Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight());
+                        if (mH > mHeight) {
+                            mHeight = mH;
+                        }
+                    } else if (child.getMeasureHeight() > mHeight) {
+                        mHeight = child.getMeasureHeight();
                     }
-                } else if (child.getMeasureHeight() > mHeight) {
-                    mHeight = child.getMeasureHeight();
                 }
             }
         }
-
-        float extraWidth = getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
-        mWidth = Math.max(Math.max(mWidth + extraWidth, sumWidth + extraWidth), getLayoutMinHeight());
-
-        float extraHeight = getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
-        mHeight = Math.max(mHeight + extraHeight, getLayoutMinHeight());
+        if (wrapWidth) {
+            mWidth = Math.max(mWidth + extraWidth, Math.max(getPrefWidth(), getLayoutMinWidth()));
+        } else {
+            mWidth = Math.max(getPrefWidth(), getLayoutMinWidth());
+        }
+        if (wrapHeight) {
+            mHeight = Math.max(mHeight + extraHeight, Math.max(getPrefHeight(), getLayoutMinHeight()));
+        } else {
+            mHeight = Math.max(getPrefHeight(), getLayoutMinHeight());
+        }
 
         setMeasure(mWidth, mHeight);
     }

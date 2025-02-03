@@ -5,6 +5,7 @@ import flat.graphics.context.Font;
 import flat.graphics.text.Align;
 import flat.uxml.*;
 import flat.uxml.value.*;
+import flat.widget.Widget;
 import flat.window.Activity;
 import flat.window.Window;
 import org.junit.Before;
@@ -77,6 +78,46 @@ public class LabelTest {
         assertEquals(boldFont, label.getFont());
         assertEquals(24f, label.getTextSize(), 0.1f);
         assertEquals(0xFF0000FF, label.getTextColor(), 0.1f);
+    }
+
+    @Test
+    public void showText() {
+        Label label = new Label();
+        label.setText("Hello World");
+        assertEquals("Hello World", label.getText());
+        assertEquals("Hello World", label.getShowText());
+        label.setTextAllCaps(true);
+        assertEquals("Hello World", label.getText());
+        assertEquals("HELLO WORLD", label.getShowText());
+    }
+
+    @Test
+    public void measure() {
+        when(defaultFont.getWidth(any(), anyFloat(), anyFloat())).thenReturn(165f);
+        when(defaultFont.getHeight(anyFloat())).thenReturn(32f);
+
+        Label label = new Label();
+        label.setText("Hello World");
+        label.onMeasure();
+
+        assertEquals(165, label.getMeasureWidth(), 0.1f);
+        assertEquals(32, label.getMeasureHeight(), 0.1f);
+
+        label.setMargins(1, 2, 3, 4);
+        label.setPadding(5, 4, 2, 3);
+        label.onMeasure();
+
+        assertEquals(178, label.getMeasureWidth(), 0.1f);
+        assertEquals(43, label.getMeasureHeight(), 0.1f);
+
+        label.setPrefSize(100, 200);
+        label.onMeasure();
+
+        label.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
+        label.onMeasure();
+
+        assertEquals(Widget.MATCH_PARENT, label.getMeasureWidth(), 0.1f);
+        assertEquals(Widget.MATCH_PARENT, label.getMeasureHeight(), 0.1f);
     }
 
     private HashMap<Integer, UXValue> createNonDefaultValues() {

@@ -178,7 +178,7 @@ public class LinearBoxTest {
         parent.add(child1, child2);
         parent.setDirection(Direction.HORIZONTAL);
 
-        parent.setPrefSize(200, 350);
+        parent.setPrefSize(220, 366);
         parent.setMargins(1, 2, 3, 4);
         parent.setPadding(5, 6, 7, 8);
         child1.setPrefSize(60, 120);
@@ -221,7 +221,7 @@ public class LinearBoxTest {
         parent.add(child1, child2);
         parent.setDirection(Direction.VERTICAL);
 
-        parent.setPrefSize(200, 350);
+        parent.setPrefSize(220, 366);
         parent.setMargins(1, 2, 3, 4);
         parent.setPadding(5, 6, 7, 8);
         child1.setPrefSize(60, 120);
@@ -1023,7 +1023,6 @@ public class LinearBoxTest {
         assertLayout(child2, 0,  60, 110, 90);
         assertLayout(child3, 0, 150, 90 , 80);
     }
-
 
     private void assertMeasure(Widget widget, float width, float height) {
         assertEquals("Measure Width", width, widget.getMeasureWidth(), 0.1f);

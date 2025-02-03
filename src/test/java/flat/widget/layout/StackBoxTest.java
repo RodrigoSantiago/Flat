@@ -4,6 +4,7 @@ import flat.graphics.text.Align;
 import flat.uxml.UXHash;
 import flat.uxml.value.UXValue;
 import flat.uxml.value.UXValueText;
+import flat.widget.Widget;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -34,6 +35,7 @@ public class StackBoxTest {
         parent.setHorizontalAlign(Align.Horizontal.LEFT);
         parent.setVerticalAlign(Align.Vertical.BOTTOM);
         parent.onMeasure();
+        assertMeasure(parent, 200, 350);
         parent.onLayout(200, 350);
 
         assertEquals(0, child.getX(), 0.001f);
@@ -42,6 +44,7 @@ public class StackBoxTest {
         parent.setHorizontalAlign(Align.Horizontal.RIGHT);
         parent.setVerticalAlign(Align.Vertical.TOP);
         parent.onMeasure();
+        assertMeasure(parent, 200, 350);
         parent.onLayout(200, 350);
 
         assertEquals(100, child.getX(), 0.001f);
@@ -50,6 +53,7 @@ public class StackBoxTest {
         parent.setHorizontalAlign(Align.Horizontal.CENTER);
         parent.setVerticalAlign(Align.Vertical.MIDDLE);
         parent.onMeasure();
+        assertMeasure(parent, 200, 350);
         parent.onLayout(200, 350);
 
         assertEquals(50, child.getX(), 0.001f);
@@ -60,6 +64,7 @@ public class StackBoxTest {
         parent.setMargins(2, 3, 4, 5);
         parent.setPadding(3, 4, 5, 6);
         parent.onMeasure();
+        assertMeasure(parent, 200, 350);
         parent.onLayout(200, 350);
 
         assertEquals(11, child.getX(), 0.001f);
@@ -70,6 +75,7 @@ public class StackBoxTest {
         parent.setMargins(2, 3, 4, 5);
         parent.setPadding(3, 4, 5, 6);
         parent.onMeasure();
+        assertMeasure(parent, 200, 350);
         parent.onLayout(200, 350);
 
         assertEquals(93, child.getX(), 0.001f);
@@ -90,6 +96,7 @@ public class StackBoxTest {
         parent.setHorizontalAlign(Align.Horizontal.LEFT);
         parent.setVerticalAlign(Align.Vertical.BOTTOM);
         parent.onMeasure();
+        assertMeasure(parent, 200, 350);
         parent.onLayout(200, 350);
 
         assertEquals(0, child1.getX(), 0.001f);
@@ -101,6 +108,7 @@ public class StackBoxTest {
         parent.setHorizontalAlign(Align.Horizontal.RIGHT);
         parent.setVerticalAlign(Align.Vertical.TOP);
         parent.onMeasure();
+        assertMeasure(parent, 200, 350);
         parent.onLayout(200, 350);
 
         assertEquals(100, child1.getX(), 0.001f);
@@ -111,6 +119,7 @@ public class StackBoxTest {
         parent.setHorizontalAlign(Align.Horizontal.CENTER);
         parent.setVerticalAlign(Align.Vertical.MIDDLE);
         parent.onMeasure();
+        assertMeasure(parent, 200, 350);
         parent.onLayout(200, 350);
 
         assertEquals(50, child1.getX(), 0.001f);
@@ -123,6 +132,7 @@ public class StackBoxTest {
         parent.setMargins(2, 3, 4, 5);
         parent.setPadding(3, 4, 5, 6);
         parent.onMeasure();
+        assertMeasure(parent, 200, 350);
         parent.onLayout(200, 350);
 
         assertEquals(11, child1.getX(), 0.001f);
@@ -135,12 +145,25 @@ public class StackBoxTest {
         parent.setMargins(2, 3, 4, 5);
         parent.setPadding(3, 4, 5, 6);
         parent.onMeasure();
+        assertMeasure(parent, 200, 350);
         parent.onLayout(200, 350);
 
         assertEquals(93, child1.getX(), 0.001f);
         assertEquals(221, child1.getY(), 0.001f);
         assertEquals(143, child2.getX(), 0.001f);
         assertEquals(281, child2.getY(), 0.001f);
+    }
+
+    private void assertMeasure(Widget widget, float width, float height) {
+        assertEquals("Measure Width", width, widget.getMeasureWidth(), 0.1f);
+        assertEquals("Measure Height", height, widget.getMeasureHeight(), 0.1f);
+    }
+
+    private void assertLayout(Widget widget, float x, float y, float width, float height) {
+        assertEquals("X", x, widget.getX(), 0.1f);
+        assertEquals("Y", y, widget.getY(), 0.1f);
+        assertEquals("Width", width, widget.getWidth(), 0.1f);
+        assertEquals("Height", height, widget.getHeight(), 0.1f);
     }
 
     private HashMap<Integer, UXValue> createNonDefaultValues() {

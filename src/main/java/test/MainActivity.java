@@ -5,7 +5,9 @@ import flat.animations.presets.Hide;
 import flat.events.ActionEvent;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Context;
+import flat.widget.layout.Box;
 import flat.widget.layout.LinearBox;
+import flat.widget.layout.StackBox;
 import flat.window.Activity;
 import flat.window.Application;
 
@@ -21,11 +23,10 @@ public class MainActivity extends Activity {
     float mx, my;
 
     @Flat
-    private LinearBox layout;
+    private StackBox box;
 
     @Override
     public void onShow() {
-        System.out.println(layout);
         getScene().setPointerListener(event -> {
             mx = (event.getX()-100) / 100;
             my = (event.getY()-100) / 100;
@@ -38,6 +39,8 @@ public class MainActivity extends Activity {
     @Override
     public void onDraw(SmartContext context) {
         super.onDraw(context);
+        System.out.println(box.getWidth());
+        System.out.println(box.getHeight());
         /*context.setAntialiasEnabled(true);
         context.setView(0, 0, (int) getWidth(), (int) getHeight());
         context.clear(0xFFFFFFFF, 1, 1);
