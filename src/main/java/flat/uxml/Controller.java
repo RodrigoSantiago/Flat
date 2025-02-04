@@ -33,7 +33,7 @@ public class Controller {
                     && !Modifier.isFinal(field.getModifiers())) {
                 field.set(this, object);
             }
-        } catch (NoSuchFieldException | IllegalAccessException ignored) {
+        } catch (Exception ignored) {
 
         }
     }

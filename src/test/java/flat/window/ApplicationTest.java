@@ -357,6 +357,47 @@ public class ApplicationTest {
         assertNoMoreNatives();
     }
 
+    @Test
+    public void runVsync() {
+        // Setup
+        ResourcesManager resources = mock(ResourcesManager.class);
+        Application.Settings settings = mock(Application.Settings.class);
+        File fileLibrary = mock(File.class);
+        Window window = mock(Window.class);
+
+        when(resources.getFlatLibraryFile()).thenReturn(fileLibrary);
+        when(settings.createResources()).thenReturn(resources);
+        when(settings.getVsync()).thenReturn(1);
+        when(settings.createWindow()).then(invocationOnMock -> {
+            Application.createContext(window);
+            return window;
+        });
+        when(window.loop(anyFloat())).then(invocation -> true);
+        when(window.isClosed()).thenReturn(true);
+        when(WL.Init()).thenReturn(true);
+
+        // Execution
+        Runnable task = mock(Runnable.class);
+        Application.runVsync(task);
+        Application.launch(settings);
+
+        // Assertion
+        verify(window).loop(anyFloat());
+        verify(task).run();
+
+        assertUsualInit(fileLibrary);
+
+        verifyStatic(WL.class);
+        WL.WindowAssign(anyLong());
+
+        verifyStatic(WL.class);
+        WL.HandleEvents(anyDouble());
+
+        assertEquals("Unexpected Application Vsync", 1, Application.getVsync());
+
+        assertNoMoreNatives();
+    }
+
     private void assertUsualInit(File fileLibrary) {
         verifyStatic(FlatLibrary.class);
         FlatLibrary.load(fileLibrary);

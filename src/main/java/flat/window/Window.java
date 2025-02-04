@@ -48,6 +48,7 @@ public class Window {
     private int minWidth, minHeight, maxWidth, maxHeight;
 
     private float loopTime;
+    private boolean assigned;
     private boolean started, loopAnim, loopDraw;
     private boolean releaseEventDelayed, eventConsume;
 
@@ -98,6 +99,7 @@ public class Window {
         this.loopTime = loopTime;
         this.loopAnim = false;
         this.loopDraw = false;
+        this.assigned = true;
 
         processStartup();
 
@@ -141,6 +143,7 @@ public class Window {
             context.getSmartContext().softFlush();
             WL.SwapBuffers(windowId);
         }
+        this.assigned = false;
         return loopAnim;
     }
 
@@ -307,6 +310,10 @@ public class Window {
 
     public boolean isClosed() {
         return disposed || closed || WL.IsClosed(windowId);
+    }
+
+    public boolean isAssigned() {
+        return assigned;
     }
 
     public boolean isTransparent() {

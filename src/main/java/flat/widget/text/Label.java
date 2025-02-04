@@ -63,12 +63,25 @@ public class Label extends Widget {
 
     @Override
     public void onMeasure() {
-        float mWidth = getPrefWidth();
-        float mHeight = getPrefHeight();
-        mWidth = mWidth == WRAP_CONTENT ? getTextWidth() : mWidth;
-        mHeight = mHeight == WRAP_CONTENT ? getTextHeight() : mHeight;
-        mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
-        mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
+        float extraWidth = getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
+        float extraHeight = getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
+
+        float mWidth;
+        float mHeight;
+        boolean wrapWidth = getPrefWidth() == WRAP_CONTENT;
+        boolean wrapHeight = getPrefHeight() == WRAP_CONTENT;
+
+        if (wrapWidth) {
+            mWidth = Math.max(getTextWidth() + extraWidth, Math.max(getPrefWidth(), getLayoutMinWidth()));
+        } else {
+            mWidth = Math.max(getPrefWidth(), getLayoutMinWidth());
+        }
+        if (wrapHeight) {
+            mHeight = Math.max(getTextHeight() + extraHeight, Math.max(getPrefHeight(), getLayoutMinHeight()));
+        } else {
+            mHeight = Math.max(getPrefHeight(), getLayoutMinHeight());
+        }
+
         setMeasure(mWidth, mHeight);
     }
 

@@ -117,12 +117,25 @@ public class Button extends Label {
         if (iconImage == null) {
             super.onMeasure();
         } else {
-            float mWidth = getPrefWidth();
-            float mHeight = getPrefHeight();
-            mWidth = mWidth == WRAP_CONTENT ? getTextWidth() + iconImage.getWidth() + iconSpacing : mWidth;
-            mHeight = mHeight == WRAP_CONTENT ? Math.max(getTextHeight(), iconImage.getHeight()) : mHeight;
-            mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
-            mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
+            float extraWidth = getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
+            float extraHeight = getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
+
+            float mWidth;
+            float mHeight;
+            boolean wrapWidth = getPrefWidth() == WRAP_CONTENT;
+            boolean wrapHeight = getPrefHeight() == WRAP_CONTENT;
+
+            if (wrapWidth) {
+                mWidth = Math.max(getTextWidth() + extraWidth + iconImage.getWidth() + iconSpacing, Math.max(getPrefWidth(), getLayoutMinWidth()));
+            } else {
+                mWidth = Math.max(getPrefWidth(), getLayoutMinWidth());
+            }
+            if (wrapHeight) {
+                mHeight = Math.max(getTextHeight() + extraHeight + iconImage.getHeight(), Math.max(getPrefHeight(), getLayoutMinHeight()));
+            } else {
+                mHeight = Math.max(getPrefHeight(), getLayoutMinHeight());
+            }
+
             setMeasure(mWidth, mHeight);
         }
     }

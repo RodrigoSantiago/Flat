@@ -1,8 +1,8 @@
 <Scene background-color="#C8C8C8">
-    <StackBox background-color="#00FF00" width="0" height="0"
+    <LinearBox direction="vertical" background-color="#00FF00" width="0" height="0" scale-x="20" scale-y="20"
         padding-left="8" padding-right="8" padding-top="8" padding-bottom="8"
         margin-left="8" margin-right="8" margin-top="8" margin-bottom="8" id="box">
-        <Box background-color="#FF0000" width="60" height="60">
-        </Box>
-    </StackBox>
+        <!--<Label background-color="#FF0000" text="Ola Mundo"/>-->
+        <!--<Button text="Ola Mundo" ripple-enabled="true"/>-->
+    </LinearBox>
 </Scene>

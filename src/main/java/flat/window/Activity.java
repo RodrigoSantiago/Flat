@@ -252,7 +252,7 @@ public class Activity extends Controller {
     public void drawBackground(SmartContext context) {
         context.setAntialiasEnabled(true);
         context.setView(0, 0, (int) getWidth(), (int) getHeight());
-        context.clear(0x0, 1, 0);
+        context.clear(scene == null ? 0x0 : scene.getBackgroundColor(), 1, 0);
         context.clearClip();
     }
 

@@ -9,6 +9,7 @@ public class SVG {
     //---------------------------
     public static native long Create();
     public static native void Destroy(long context);
+    public static native void SetDebug(boolean debug);
 
     //---------------------------
     //          Frame
@@ -60,11 +61,15 @@ public class SVG {
     //---------------------------
     //           Text
     //---------------------------
-    // TODO - LOAD AS USE (Ex.: Load just 10 letters from font for preview)
-    public static native long FontCreate(byte[] data, float size, int sdf);
+    public static native long FontLoad(byte[] data, float size, int sdf);
+    public static native void FontUnload(long font);
+
+    public static native long FontPaintCreate(long font);
+    public static native void FontPaintDestroy(long fontPaint);
+
     public static native void FontLoadAllGlyphs(long font);
-    public static native void FontLoadGlyphs(long font, String characters);
-    public static native void FontLoadGlyphsBuffer(long font, Buffer characters, int offset, int length);
+    public static native void FontLoadGlyphs(long font, String characters, int state);
+    public static native void FontLoadGlyphsBuffer(long font, Buffer characters, int offset, int length, int state);
     public static native int FontGetGlyphs(long font, String string, float[] data);
     public static native int FontGetGlyphsBuffer(long font, Buffer string, int offset, int length, float[] data);
     public static native float FontGetHeight(long font);
@@ -75,10 +80,9 @@ public class SVG {
     public static native float FontGetTextWidthBuffer(long font, Buffer string, int offset, int length, float size, float spacing);
     public static native int FontGetOffset(long font, String string, float size, float spacing, float x, boolean half);
     public static native int FontGetOffsetBuffer(long font, Buffer string, int offset, int length, float size, float spacing, float x, boolean half);
-    public static native void FontDestroy(long font);
     // TODO - Unificar Width e Offset
 
-    public static native void SetFont(long context, long font);
+    public static native void SetFont(long context, long fontPaint);
     public static native void SetFontScale(long context, float size);
     public static native void SetFontSpacing(long context, float spacing);
     public static native void SetFontBlur(long context, float blur);

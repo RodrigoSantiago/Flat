@@ -20,9 +20,11 @@ public class Font {
     private final long fontID;
     private final float size, height, ascent, descent, lineGap;
     private final boolean sdf;
-    private final byte[] data;
+    private int loadState;
+    private boolean disposedAssigned;
+    private boolean disposed;
 
-    private HashMap<Context, Long> contextInternal = new HashMap<>();
+    private HashMap<Context, FontRender> contextInternal = new HashMap<>();
 
     private static final ArrayList<Font> fonts = new ArrayList<>();
 
@@ -39,18 +41,15 @@ public class Font {
         this.style = style;
         this.size = size;
         this.sdf = sdf;
-        this.data = data.clone();
 
-        this.fontID = SVG.FontCreate(data, size, sdf ? 1 : 0);
+        this.fontID = SVG.FontLoad(data, size, sdf ? 1 : 0);
         if (this.fontID == 0) {
             throw new RuntimeException("Invalid font data");
         }
-
         this.height = SVG.FontGetHeight(fontID);
         this.ascent = SVG.FontGetAscent(fontID);
         this.descent = SVG.FontGetDescent(fontID);
         this.lineGap = SVG.FontGetLineGap(fontID);
-        SVG.FontLoadAllGlyphs(fontID);
     }
 
     public static Font findFont(String family) {
@@ -77,7 +76,7 @@ public class Font {
         return findFont(family, weight, posture, null);
     }
 
-    public static synchronized Font findFont(String family, FontWeight weight, FontPosture posture, FontStyle style) {
+    public static Font findFont(String family, FontWeight weight, FontPosture posture, FontStyle style) {
         readDefaultFonts();
 
         Font closer = null;
@@ -121,7 +120,7 @@ public class Font {
         return f * 8000 + s * 4000 + p * 2000 + w;
     }
 
-    public static synchronized void install(Font font) {
+    public static void install(Font font) {
         fonts.add(font);
     }
 
@@ -190,10 +189,12 @@ public class Font {
     }
 
     public float getWidth(String text, float size, float spacing) {
+        checkInternalLoadState(text);
         return SVG.FontGetTextWidth(fontID, text, size / this.size, spacing);
     }
 
     public float getWidth(ByteBuffer text, int offset, int length, float size, float spacing) {
+        loadAllGlyphs();
         return SVG.FontGetTextWidthBuffer(fontID, text, offset, length, size / this.size, spacing);
     }
 
@@ -218,27 +219,123 @@ public class Font {
     }
 
     public int getOffset(String text, float size, float spacing, float x, boolean half) {
+        checkInternalLoadState(text);
         return SVG.FontGetOffset(fontID, text, size / this.size, spacing, x, half);
     }
 
     public int getOffset(ByteBuffer text, int offset, int length, float size, float spacing, float x, boolean half) {
+        loadAllGlyphs();
         return SVG.FontGetOffsetBuffer(fontID, text, offset, length, size / this.size, spacing, x, half);
     }
 
-    public long getInternalID(Context context) {
-        Long internalId = contextInternal.get(context);
-        if (internalId == null) {
-            final long id = SVG.FontCreate(data, size, sdf ? 1 : 0);
-            SVG.FontLoadAllGlyphs(id);
+    private void checkDisposed() {
+        if (disposed) {
+            throw new RuntimeException("Font is disposed.");
+        }
+    }
 
-            contextInternal.put(context, id);
-            context.createSyncDestroyTask(() -> {
-                SVG.FontDestroy(id);
+    public boolean isDisposed() {
+        return disposed;
+    }
+
+    public void dispose() {
+        if (this == DefaultFont) {
+            throw new RuntimeException("Default font cannot be disposed.");
+        }
+
+        if (!disposedAssigned) {
+            disposedAssigned = true;
+            Application.runVsync(() -> {
+                disposed = true;
+                fonts.remove(this);
+                for (var render : contextInternal.values()) {
+                    render.destroyTask.run();
+                }
+                contextInternal.clear();
+                SVG.FontUnload(fontID);
+            });
+        }
+    }
+
+    public int getInternalLoadState() {
+        return loadState;
+    }
+
+    public long getInternalID(Context context) {
+        checkDisposed();
+
+        FontRender render = contextInternal.get(context);
+        if (render == null) {
+            final long paintID = SVG.FontPaintCreate(fontID);
+
+            FontRender fontRender = new FontRender();
+            fontRender.paintID = paintID;
+            fontRender.destroyTask = context.createSyncDestroyTask(() -> {
+                SVG.FontPaintDestroy(paintID);
                 contextInternal.remove(context);
             });
-            return id;
+
+            contextInternal.put(context, fontRender);
+
+            return paintID;
         }
-        return internalId;
+        return render.paintID;
+    }
+
+    private static String asc;
+
+    private static String getASCI() {
+        if (asc == null) {
+            StringBuilder asciiChars = new StringBuilder();
+            for (int i = 0; i < 128; i++) {
+                asciiChars.append((char) i);
+            }
+            asc = asciiChars.toString();
+        }
+        return asc;
+    }
+
+    public void checkInternalLoadState(String text) {
+        if (loadState < 3) {
+            int state;
+            if (text.length() == 0) {
+                state = 0;
+            } else if (text.equals("AaBbYyZz")) {
+                state = 1;
+            } else {
+                state = 2;
+                for (int i = 0; i < text.length(); i++) {
+                    if (text.charAt(i) >= 128) {
+                        state = 3;
+                        break;
+                    }
+                }
+            }
+            if (state > loadState) {
+                if (state == 1) {
+                    SVG.FontLoadGlyphs(fontID, "AaBbYyZz", state);
+                    loadState = 1;
+                } else if (state == 2) {
+                    Context.propagateHardFlush();
+                    SVG.FontLoadGlyphs(fontID, getASCI(), state);
+                    loadState = 2;
+                } else {
+                    Context.propagateHardFlush();
+                    SVG.FontLoadAllGlyphs(fontID);
+                    loadState = 3;
+                }
+            }
+        }
+    }
+
+    public void loadAllGlyphs() {
+        checkDisposed();
+
+        if (loadState < 3) {
+            Context.propagateHardFlush();
+            SVG.FontLoadAllGlyphs(fontID);
+            loadState = 3;
+        }
     }
 
     @Override
@@ -247,5 +344,10 @@ public class Font {
                 + (posture == null ? "" : ", " + posture)
                 + (weight == null ? "" : ", " + weight)
                 + (style == null ? "" : ", " + style);
+    }
+
+    private class FontRender {
+        long paintID;
+        Runnable destroyTask;
     }
 }

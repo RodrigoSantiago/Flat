@@ -2,9 +2,13 @@ package test;
 
 import flat.Flat;
 import flat.animations.presets.Hide;
+import flat.backend.GL;
+import flat.backend.SVG;
 import flat.events.ActionEvent;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Context;
+import flat.graphics.context.Font;
+import flat.graphics.text.FontStyle;
 import flat.widget.layout.Box;
 import flat.widget.layout.LinearBox;
 import flat.widget.layout.StackBox;
@@ -23,7 +27,7 @@ public class MainActivity extends Activity {
     float mx, my;
 
     @Flat
-    private StackBox box;
+    private LinearBox box;
 
     @Override
     public void onShow() {
@@ -38,9 +42,21 @@ public class MainActivity extends Activity {
 
     @Override
     public void onDraw(SmartContext context) {
+        // GL.SetDebug(true);
+        // SVG.SetDebug(true);
         super.onDraw(context);
-        System.out.println(box.getWidth());
-        System.out.println(box.getHeight());
+        var font = Font.findFont(FontStyle.CURSIVE);
+        context.setTextFont(font);
+        context.setTextSize(64);
+        context.setColor(0xFF0000FF);
+
+        context.drawText(0, 0, "AaBbYyZz");
+        System.out.println(Font.getDefault().getInternalLoadState());
+        context.drawText(0, 80, "Another  Text");
+        System.out.println(Font.getDefault().getInternalLoadState());
+        context.drawText(0, 160, "Atenção!");
+        System.out.println(Font.getDefault().getInternalLoadState());
+
         /*context.setAntialiasEnabled(true);
         context.setView(0, 0, (int) getWidth(), (int) getHeight());
         context.clear(0xFFFFFFFF, 1, 1);

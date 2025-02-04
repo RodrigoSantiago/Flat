@@ -9,6 +9,7 @@ import flat.math.Mathf;
 import flat.math.shapes.PathIterator;
 import flat.math.shapes.Shape;
 import flat.math.shapes.Stroke;
+import flat.window.Application;
 import flat.window.Window;
 
 import java.nio.Buffer;
@@ -24,6 +25,7 @@ public class Context {
     private SmartContext smartContext;
     private Thread thread;
     private boolean disposed;
+    private static ArrayList<Context> openContexts = new ArrayList<>();
 
     // ---- Core ---- //
     private int clearColor, clearStencil;
@@ -107,6 +109,14 @@ public class Context {
         this.svgId = svgId;
         this.thread = Thread.currentThread();
         init();
+    }
+
+    public static void propagateHardFlush() {
+        for (var context : openContexts) {
+            if (context.getWindow().isAssigned()) {
+                context.hardFlush();
+            }
+        }
     }
 
     public Window getWindow() {
@@ -231,11 +241,14 @@ public class Context {
         svgTextHorizontalAlign = Align.Horizontal.LEFT;
 
         svgTransform = new Affine();
+
+        openContexts.add(this);
     }
 
     public void dispose() {
         checkDisposed();
 
+        openContexts.remove(this);
         hardFlush();
         refreshBinds();
         bindFrame(null);
@@ -1127,6 +1140,9 @@ public class Context {
                     svgLineCap.getInternalEnum(),
                     svgLineJoin.getInternalEnum(), svgMiterLimit, svgDash, svgDashPhase);
 
+            if (svgTextFont.isDisposed()) {
+                svgTextFont = Font.getDefault();
+            }
             SVG.SetFont(svgId, svgTextFont.getInternalID(this));
             SVG.SetFontScale(svgId, svgTextScale);
             SVG.SetFontSpacing(svgId, svgTextSpacing);
@@ -1597,7 +1613,10 @@ public class Context {
         if (svgTextFont != font) {
             svgTextFont = font;
             if (svgMode) {
-                SVG.SetFont(svgId, font.getInternalID(this));
+                if (svgTextFont.isDisposed()) {
+                    svgTextFont = Font.getDefault();
+                }
+                SVG.SetFont(svgId, svgTextFont.getInternalID(this));
             }
         }
     }
@@ -1680,6 +1699,7 @@ public class Context {
 
         int w = 0;
         if (text != null) {
+            svgTextFont.checkInternalLoadState(text);
             svgBegin();
             // SVG.PathBegin(svgId, SVG_TEXT, 0);
             w = SVG.DrawText(svgId, x, y, text, maxWidth, svgTextHorizontalAlign.getInternalEnum(), svgTextVerticalAlign.getInternalEnum());
@@ -1693,6 +1713,7 @@ public class Context {
 
         int w = 0;
         if (text != null && offset >= 0 && offset + length <= text.limit()) {
+            svgTextFont.loadAllGlyphs();
             svgBegin();
             // SVG.PathBegin(svgId, SVG_TEXT, 0);
             w = SVG.DrawTextBuffer(svgId, x, y, text, offset, length, maxWidth, svgTextHorizontalAlign.getInternalEnum(), svgTextVerticalAlign.getInternalEnum());

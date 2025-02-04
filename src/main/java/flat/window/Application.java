@@ -17,8 +17,10 @@ public class Application {
     private static Window assignedWindow;
     private static ArrayList<Window> windowsAdd;
     private static ArrayList<Window> windowsRemove;
-    private static ArrayList<Window> windows ;
+    private static ArrayList<Window> windows;
     private static HashMap<Long, Window> windowsMap;
+    private static final ArrayList<Runnable> vsyncRun = new ArrayList<>();
+    private static final ArrayList<Runnable> vsyncRunTemp = new ArrayList<>();
 
     private static int vsync;
     private static int currentVsync;
@@ -39,7 +41,14 @@ public class Application {
         if (!WL.Init()) {
             throw new FlatException("Invalid context creation");
         }
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            if (loopActive) {
+                loopActive = false;
+                finish();
+            }
+        }));
 
+        loopActive = true;
         assignedWindow = null;
         windowsAdd = new ArrayList<>();
         windowsRemove = new ArrayList<>();
@@ -101,12 +110,6 @@ public class Application {
             Window win = windowsMap.get(window);
             return win == null || win.onRequestClose(true);
         });
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            if (loopActive) {
-                loopActive = false;
-                finish();
-            }
-        }));
     }
 
     private static void finish() {
@@ -117,7 +120,6 @@ public class Application {
         init(settings);
 
         try {
-            loopActive = true;
             lastLoopTime = System.currentTimeMillis();
             assignWindow(settings.createWindow());
 
@@ -197,6 +199,7 @@ public class Application {
 
     private static void refresh() {
         boolean anyAnimation = iterateWindows();
+        runVsyncTasks();
 
         if (assignedWindow != null) {
             WL.HandleEvents(anyAnimation || vsync > 0 ? 0 : 0.25f);
@@ -213,12 +216,29 @@ public class Application {
         }
     }
 
+    private static void runVsyncTasks() {
+        synchronized (vsyncRun) {
+            vsyncRunTemp.addAll(vsyncRun);
+            vsyncRun.clear();
+        }
+        for (var task : vsyncRunTemp) {
+            task.run();
+        }
+        vsyncRunTemp.clear();
+    }
+
     public static void setVsync(int vsync) {
         Application.vsync = vsync;
     }
 
     public static int getVsync() {
         return vsync;
+    }
+
+    public static void runVsync(Runnable task) {
+        synchronized (vsyncRun) {
+            vsyncRun.add(task);
+        }
     }
 
     public static List<Window> getAssignedWindows() {
