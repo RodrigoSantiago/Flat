@@ -487,6 +487,8 @@ public class SmartContext {
         Paint paint = context.svgPaint();
         context.svgPaint(Paint.image(srcX1, srcY1, srcX2, srcY2, dstX1, dstY1, dstX2, dstY2, texture, transform2D));
         drawRect(dstX1,dstY1, dstX2 - dstX1, dstY2 - dstY1, true);
+        context.svgPaint(Paint.color(0xFFFFFFFF));
+        drawRect(dstX1,dstY1, dstX2 - dstX1, dstY2 - dstY1, false);
         context.svgPaint(paint);
     }
 

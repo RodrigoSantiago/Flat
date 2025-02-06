@@ -111,15 +111,17 @@ public final class Paint {
     public static Paint image(float srcx1, float srcy1, float srcx2, float srcy2,
                               float dstx1, float dsty1, float dstx2, float dsty2,
                               Texture2D texture, Affine transform) {
+        srcx1 = srcx1 / texture.getWidth();
+        srcy1 = srcy1 / texture.getHeight();
+        srcx2 = srcx2 / texture.getWidth();
+        srcy2 = srcy2 / texture.getHeight();
         final float sw = srcx2 - srcx1;
         final float sh = srcy2 - srcy1;
         final float dw = dstx2 - dstx1;
         final float dh = dsty2 - dsty1;
         Affine inner = new Affine()
-                .translate(Math.min(dstx1, dstx2), Math.min(dsty1, dsty2))
-                .scale(dw / sw, dh / sh)
-                .translate(-srcx1, -srcy1)
-                .scale(dw, dh);
+                .translate(dstx1 - (dw / sw * srcx1), dsty1 - (dh / sh * srcy1))
+                .scale(dw / sw, dh / sh);
         if (transform != null) {
             inner.mul(transform);
         }

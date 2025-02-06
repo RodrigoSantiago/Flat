@@ -66,21 +66,20 @@ public class SVG {
 
     public static native long FontPaintCreate(long font);
     public static native void FontPaintDestroy(long fontPaint);
+    public static native long FontPaintGetAtlas(long fontPaint, int[] size);
 
-    public static native void FontLoadAllGlyphs(long font);
-    public static native void FontLoadGlyphs(long font, String characters, int state);
-    public static native void FontLoadGlyphsBuffer(long font, Buffer characters, int offset, int length, int state);
-    public static native int FontGetGlyphs(long font, String string, float[] data);
-    public static native int FontGetGlyphsBuffer(long font, Buffer string, int offset, int length, float[] data);
+    public static native void FontGetAllCodePoints(long font, int[] codePoints);
+    public static native void FontGetGlyph(long font, int codePoint, float[] data);
+    public static native float[] FontGetGlyphShape(long font, int codePoints);
     public static native float FontGetHeight(long font);
     public static native float FontGetAscent(long font);
     public static native float FontGetDescent(long font);
     public static native float FontGetLineGap(long font);
+    public static native int FontGetGlyphCount(long font);
     public static native float FontGetTextWidth(long font, String string, float size, float spacing);
     public static native float FontGetTextWidthBuffer(long font, Buffer string, int offset, int length, float size, float spacing);
     public static native int FontGetOffset(long font, String string, float size, float spacing, float x, boolean half);
     public static native int FontGetOffsetBuffer(long font, Buffer string, int offset, int length, float size, float spacing, float x, boolean half);
-    // TODO - Unificar Width e Offset
 
     public static native void SetFont(long context, long fontPaint);
     public static native void SetFontScale(long context, float size);

@@ -9,7 +9,6 @@ import flat.math.Mathf;
 import flat.math.shapes.PathIterator;
 import flat.math.shapes.Shape;
 import flat.math.shapes.Stroke;
-import flat.window.Application;
 import flat.window.Window;
 
 import java.nio.Buffer;
@@ -1143,7 +1142,7 @@ public class Context {
             if (svgTextFont.isDisposed()) {
                 svgTextFont = Font.getDefault();
             }
-            SVG.SetFont(svgId, svgTextFont.getInternalID(this));
+            SVG.SetFont(svgId, svgTextFont.getInternalPaintID(this));
             SVG.SetFontScale(svgId, svgTextScale);
             SVG.SetFontSpacing(svgId, svgTextSpacing);
             SVG.SetFontBlur(svgId, svgTextBlur);
@@ -1207,13 +1206,15 @@ public class Context {
         GL.SetPixelStore(GLEnums.PS_UNPACK_SKIP_PIXELS, pixelUnpackSkipPixels);
         GL.SetPixelStore(GLEnums.PS_UNPACK_SKIP_ROWS, pixelUnpackSkipRows);
 
+        if (textures[1] != null) {
+            GL.SetActiveTexture(1);
+            GL.TextureBind(textures[1].getInternalType(), textures[1].getInternalID());
+        }
         if (textures[0] != null) {
             GL.SetActiveTexture(0);
             GL.TextureBind(textures[0].getInternalType(), textures[0].getInternalID());
         }
-        if (activeTexture != 0) {
-            GL.SetActiveTexture(activeTexture);
-        }
+        GL.SetActiveTexture(activeTexture);
     }
 
     private void svgApplyTransformGradients() {
@@ -1616,7 +1617,7 @@ public class Context {
                 if (svgTextFont.isDisposed()) {
                     svgTextFont = Font.getDefault();
                 }
-                SVG.SetFont(svgId, svgTextFont.getInternalID(this));
+                SVG.SetFont(svgId, svgTextFont.getInternalPaintID(this));
             }
         }
     }
@@ -1699,7 +1700,12 @@ public class Context {
 
         int w = 0;
         if (text != null) {
-            svgTextFont.checkInternalLoadState(text);
+
+            if (svgTextFont.isDisposed()) {
+                svgTextFont = Font.getDefault();
+                SVG.SetFont(svgId, svgTextFont.getInternalPaintID(this));
+            }
+
             svgBegin();
             // SVG.PathBegin(svgId, SVG_TEXT, 0);
             w = SVG.DrawText(svgId, x, y, text, maxWidth, svgTextHorizontalAlign.getInternalEnum(), svgTextVerticalAlign.getInternalEnum());
@@ -1713,7 +1719,12 @@ public class Context {
 
         int w = 0;
         if (text != null && offset >= 0 && offset + length <= text.limit()) {
-            svgTextFont.loadAllGlyphs();
+
+            if (svgTextFont.isDisposed()) {
+                svgTextFont = Font.getDefault();
+                SVG.SetFont(svgId, svgTextFont.getInternalPaintID(this));
+            }
+
             svgBegin();
             // SVG.PathBegin(svgId, SVG_TEXT, 0);
             w = SVG.DrawTextBuffer(svgId, x, y, text, offset, length, maxWidth, svgTextHorizontalAlign.getInternalEnum(), svgTextVerticalAlign.getInternalEnum());
