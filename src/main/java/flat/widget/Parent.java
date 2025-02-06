@@ -1,6 +1,7 @@
 package flat.widget;
 
-import flat.graphics.text.Align;
+import flat.widget.enums.HorizontalAlign;
+import flat.widget.enums.VerticalAlign;
 import flat.widget.enums.Visibility;
 
 import java.util.ArrayList;
@@ -74,7 +75,7 @@ public abstract class Parent extends Widget {
         }
     }
 
-    protected void layoutHelperHorizontal(Children<?> children, float x, float y, float w, float h, Align.Vertical valign) {
+    protected void layoutHelperHorizontal(Children<?> children, float x, float y, float w, float h, VerticalAlign valign) {
         float defSpace = 0, defMinSpace = 0;
         for (Widget child : children) {
             if (child.getVisibility() == Visibility.GONE) continue;
@@ -149,7 +150,7 @@ public abstract class Parent extends Widget {
         }
     }
 
-    protected void layoutHelperVertical(Children<Widget> children, float x, float y, float w, float h, Align.Horizontal halign) {
+    protected void layoutHelperVertical(Children<Widget> children, float x, float y, float w, float h, HorizontalAlign halign) {
 
         float defSpace = 0, defMinSpace = 0;
         for (Widget child : children) {
@@ -225,21 +226,21 @@ public abstract class Parent extends Widget {
         }
     }
 
-    protected static float xOff(float childWidth, float sx, float ex, Align.Horizontal halign) {
+    protected static float xOff(float childWidth, float sx, float ex, HorizontalAlign halign) {
         float start = sx;
         float end = ex;
         if (end < start) return (start + end) / 2f;
-        if (halign == Align.Horizontal.RIGHT) return end - childWidth;
-        if (halign == Align.Horizontal.CENTER) return (start + end - childWidth) / 2f;
+        if (halign == HorizontalAlign.RIGHT) return end - childWidth;
+        if (halign == HorizontalAlign.CENTER) return (start + end - childWidth) / 2f;
         return start;
     }
 
-    protected static float yOff(float childHeight, float sy, float ey, Align.Vertical valign) {
+    protected static float yOff(float childHeight, float sy, float ey, VerticalAlign valign) {
         float start = sy;
         float end = ey;
         if (end < start) return (start + end) / 2f;
-        if (valign == Align.Vertical.BOTTOM || valign == Align.Vertical.BASELINE) return end - childHeight;
-        if (valign == Align.Vertical.MIDDLE) return (start + end - childHeight) / 2f;
+        if (valign == VerticalAlign.BOTTOM || valign == VerticalAlign.BASELINE) return end - childHeight;
+        if (valign == VerticalAlign.MIDDLE) return (start + end - childHeight) / 2f;
         return start;
     }
 }

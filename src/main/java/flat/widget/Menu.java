@@ -2,8 +2,8 @@ package flat.widget;
 
 import flat.events.PointerEvent;
 import flat.graphics.SmartContext;
-import flat.graphics.text.Align;
 import flat.uxml.UXChildren;
+import flat.widget.enums.HorizontalAlign;
 import flat.widget.enums.Visibility;
 import flat.window.Activity;
 
@@ -12,7 +12,7 @@ import java.util.Objects;
 
 public class Menu extends Scene {
 
-    private Align.Horizontal halign = Align.Horizontal.LEFT;
+    private HorizontalAlign halign = HorizontalAlign.LEFT;
     private ArrayList<Widget> orderedList;
     //private MenuItem chooseItem;
 
@@ -188,11 +188,11 @@ public class Menu extends Scene {
     }
 */
 
-    public Align.Horizontal getHorizontalAlign() {
+    public HorizontalAlign getHorizontalAlign() {
         return halign;
     }
 
-    public void setHorizontalAlign(Align.Horizontal halign) {
+    public void setHorizontalAlign(HorizontalAlign halign) {
         if (this.halign != halign) {
             this.halign = halign;
             invalidate(true);

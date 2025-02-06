@@ -1,11 +1,12 @@
 package flat.widget.layout;
 
-import flat.graphics.text.Align;
 import flat.uxml.UXHash;
 import flat.uxml.value.UXValue;
 import flat.uxml.value.UXValueText;
 import flat.widget.Widget;
 import flat.widget.enums.Direction;
+import flat.widget.enums.HorizontalAlign;
+import flat.widget.enums.VerticalAlign;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -20,8 +21,8 @@ public class LinearBoxTest {
         box.setAttributes(createNonDefaultValues(), "stack-box");
         box.applyStyle();
 
-        assertEquals(Align.Horizontal.LEFT, box.getHorizontalAlign());
-        assertEquals(Align.Vertical.TOP, box.getVerticalAlign());
+        assertEquals(HorizontalAlign.LEFT, box.getHorizontalAlign());
+        assertEquals(VerticalAlign.TOP, box.getVerticalAlign());
         assertEquals(Direction.VERTICAL, box.getDirection());
     }
 
@@ -30,8 +31,8 @@ public class LinearBoxTest {
         child.setPrefSize(100, 120);
         parent.add(child);
 
-        parent.setHorizontalAlign(Align.Horizontal.LEFT);
-        parent.setVerticalAlign(Align.Vertical.BOTTOM);
+        parent.setHorizontalAlign(HorizontalAlign.LEFT);
+        parent.setVerticalAlign(VerticalAlign.BOTTOM);
         parent.onMeasure();
         parent.onLayout(200, 350);
 
@@ -40,8 +41,8 @@ public class LinearBoxTest {
         assertEquals(100, child.getWidth(), 0.001f);
         assertEquals(120, child.getHeight(), 0.001f);
 
-        parent.setHorizontalAlign(Align.Horizontal.RIGHT);
-        parent.setVerticalAlign(Align.Vertical.TOP);
+        parent.setHorizontalAlign(HorizontalAlign.RIGHT);
+        parent.setVerticalAlign(VerticalAlign.TOP);
         parent.onMeasure();
         parent.onLayout(200, 350);
 
@@ -50,8 +51,8 @@ public class LinearBoxTest {
         assertEquals(100, child.getWidth(), 0.001f);
         assertEquals(120, child.getHeight(), 0.001f);
 
-        parent.setHorizontalAlign(Align.Horizontal.CENTER);
-        parent.setVerticalAlign(Align.Vertical.MIDDLE);
+        parent.setHorizontalAlign(HorizontalAlign.CENTER);
+        parent.setVerticalAlign(VerticalAlign.MIDDLE);
         parent.onMeasure();
         parent.onLayout(200, 350);
 
@@ -60,8 +61,8 @@ public class LinearBoxTest {
         assertEquals(100, child.getWidth(), 0.001f);
         assertEquals(120, child.getHeight(), 0.001f);
 
-        parent.setHorizontalAlign(Align.Horizontal.LEFT);
-        parent.setVerticalAlign(Align.Vertical.TOP);
+        parent.setHorizontalAlign(HorizontalAlign.LEFT);
+        parent.setVerticalAlign(VerticalAlign.TOP);
         parent.setMargins(2, 3, 4, 5);
         parent.setPadding(3, 4, 5, 6);
         parent.onMeasure();
@@ -72,8 +73,8 @@ public class LinearBoxTest {
         assertEquals(100, child.getWidth(), 0.001f);
         assertEquals(120, child.getHeight(), 0.001f);
 
-        parent.setHorizontalAlign(Align.Horizontal.RIGHT);
-        parent.setVerticalAlign(Align.Vertical.BASELINE);
+        parent.setHorizontalAlign(HorizontalAlign.RIGHT);
+        parent.setVerticalAlign(VerticalAlign.BASELINE);
         parent.setMargins(2, 3, 4, 5);
         parent.setPadding(3, 4, 5, 6);
         parent.onMeasure();
@@ -127,8 +128,8 @@ public class LinearBoxTest {
         LinearBox child1 = new LinearBox();
         LinearBox child2 = new LinearBox();
 
-        parent.setHorizontalAlign(Align.Horizontal.LEFT);
-        parent.setVerticalAlign(Align.Vertical.TOP);
+        parent.setHorizontalAlign(HorizontalAlign.LEFT);
+        parent.setVerticalAlign(VerticalAlign.TOP);
         parent.add(child1, child2);
         parent.setDirection(Direction.IHORIZONTAL);
 
@@ -150,8 +151,8 @@ public class LinearBoxTest {
         LinearBox child1 = new LinearBox();
         LinearBox child2 = new LinearBox();
 
-        parent.setHorizontalAlign(Align.Horizontal.LEFT);
-        parent.setVerticalAlign(Align.Vertical.TOP);
+        parent.setHorizontalAlign(HorizontalAlign.LEFT);
+        parent.setVerticalAlign(VerticalAlign.TOP);
         parent.add(child1, child2);
         parent.setDirection(Direction.IVERTICAL);
 
@@ -173,8 +174,8 @@ public class LinearBoxTest {
         LinearBox child1 = new LinearBox();
         LinearBox child2 = new LinearBox();
 
-        parent.setHorizontalAlign(Align.Horizontal.LEFT);
-        parent.setVerticalAlign(Align.Vertical.TOP);
+        parent.setHorizontalAlign(HorizontalAlign.LEFT);
+        parent.setVerticalAlign(VerticalAlign.TOP);
         parent.add(child1, child2);
         parent.setDirection(Direction.HORIZONTAL);
 
@@ -191,8 +192,8 @@ public class LinearBoxTest {
         assertLayout(child1, 12, 6, 60, 120);
         assertLayout(child2, 72, 6, 80, 110);
 
-        parent.setHorizontalAlign(Align.Horizontal.RIGHT);
-        parent.setVerticalAlign(Align.Vertical.BOTTOM);
+        parent.setHorizontalAlign(HorizontalAlign.RIGHT);
+        parent.setVerticalAlign(VerticalAlign.BOTTOM);
         parent.onMeasure();
         assertMeasure(parent, 220, 366);
         parent.onLayout(220, 366);
@@ -200,8 +201,8 @@ public class LinearBoxTest {
         assertLayout(child1, 72, 236, 60, 120);
         assertLayout(child2, 132, 246, 80, 110);
 
-        parent.setHorizontalAlign(Align.Horizontal.CENTER);
-        parent.setVerticalAlign(Align.Vertical.MIDDLE);
+        parent.setHorizontalAlign(HorizontalAlign.CENTER);
+        parent.setVerticalAlign(VerticalAlign.MIDDLE);
         parent.onMeasure();
         assertMeasure(parent, 220, 366);
         parent.onLayout(220, 366);
@@ -216,8 +217,8 @@ public class LinearBoxTest {
         LinearBox child1 = new LinearBox();
         LinearBox child2 = new LinearBox();
 
-        parent.setHorizontalAlign(Align.Horizontal.LEFT);
-        parent.setVerticalAlign(Align.Vertical.TOP);
+        parent.setHorizontalAlign(HorizontalAlign.LEFT);
+        parent.setVerticalAlign(VerticalAlign.TOP);
         parent.add(child1, child2);
         parent.setDirection(Direction.VERTICAL);
 
@@ -234,8 +235,8 @@ public class LinearBoxTest {
         assertLayout(child1, 12, 6, 60, 120);
         assertLayout(child2, 12, 126, 80, 110);
 
-        parent.setHorizontalAlign(Align.Horizontal.RIGHT);
-        parent.setVerticalAlign(Align.Vertical.BOTTOM);
+        parent.setHorizontalAlign(HorizontalAlign.RIGHT);
+        parent.setVerticalAlign(VerticalAlign.BOTTOM);
         parent.onMeasure();
         assertMeasure(parent, 220, 366);
         parent.onLayout(220, 366);
@@ -243,8 +244,8 @@ public class LinearBoxTest {
         assertLayout(child1, 152, 126, 60, 120);
         assertLayout(child2, 132, 246, 80, 110);
 
-        parent.setHorizontalAlign(Align.Horizontal.CENTER);
-        parent.setVerticalAlign(Align.Vertical.MIDDLE);
+        parent.setHorizontalAlign(HorizontalAlign.CENTER);
+        parent.setVerticalAlign(VerticalAlign.MIDDLE);
         parent.onMeasure();
         assertMeasure(parent, 220, 366);
         parent.onLayout(220, 366);
@@ -348,8 +349,8 @@ public class LinearBoxTest {
         parent.add(child1, child2);
 
         parent.setDirection(Direction.HORIZONTAL);
-        parent.setHorizontalAlign(Align.Horizontal.LEFT);
-        parent.setVerticalAlign(Align.Vertical.TOP);
+        parent.setHorizontalAlign(HorizontalAlign.LEFT);
+        parent.setVerticalAlign(VerticalAlign.TOP);
         // Both defined size
         parent.setPrefSize(400, 200);
         child1.setPrefSize(100, 120);
@@ -523,8 +524,8 @@ public class LinearBoxTest {
         parent.add(child1, child2);
 
         parent.setDirection(Direction.VERTICAL);
-        parent.setHorizontalAlign(Align.Horizontal.LEFT);
-        parent.setVerticalAlign(Align.Vertical.TOP);
+        parent.setHorizontalAlign(HorizontalAlign.LEFT);
+        parent.setVerticalAlign(VerticalAlign.TOP);
         // Both defined size
         parent.setPrefSize(400, 300);
         child1.setPrefSize(100, 120);
@@ -700,8 +701,8 @@ public class LinearBoxTest {
         parent.add(child1, child2, child3, child4);
 
         parent.setDirection(Direction.HORIZONTAL);
-        parent.setHorizontalAlign(Align.Horizontal.LEFT);
-        parent.setVerticalAlign(Align.Vertical.TOP);
+        parent.setHorizontalAlign(HorizontalAlign.LEFT);
+        parent.setVerticalAlign(VerticalAlign.TOP);
 
         child1.setPrefSize(100, 120);
         child1.setMinSize(45, 60);
@@ -779,8 +780,8 @@ public class LinearBoxTest {
         parent.add(child1, child2, child3, child4);
 
         parent.setDirection(Direction.VERTICAL);
-        parent.setHorizontalAlign(Align.Horizontal.LEFT);
-        parent.setVerticalAlign(Align.Vertical.TOP);
+        parent.setHorizontalAlign(HorizontalAlign.LEFT);
+        parent.setVerticalAlign(VerticalAlign.TOP);
 
         child1.setPrefSize(120, 100);
         child1.setMinSize(60, 45);
@@ -856,8 +857,8 @@ public class LinearBoxTest {
         parent.add(child1, child2);
 
         parent.setDirection(Direction.HORIZONTAL);
-        parent.setHorizontalAlign(Align.Horizontal.LEFT);
-        parent.setVerticalAlign(Align.Vertical.TOP);
+        parent.setHorizontalAlign(HorizontalAlign.LEFT);
+        parent.setVerticalAlign(VerticalAlign.TOP);
 
         parent.setPrefSize(400, 700);
         child1.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
@@ -894,8 +895,8 @@ public class LinearBoxTest {
         parent.add(child1, child2);
 
         parent.setDirection(Direction.VERTICAL);
-        parent.setHorizontalAlign(Align.Horizontal.LEFT);
-        parent.setVerticalAlign(Align.Vertical.TOP);
+        parent.setHorizontalAlign(HorizontalAlign.LEFT);
+        parent.setVerticalAlign(VerticalAlign.TOP);
 
         parent.setPrefSize(700, 400);
         child1.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
@@ -933,8 +934,8 @@ public class LinearBoxTest {
         parent.add(child1, child2, child3);
 
         parent.setDirection(Direction.HORIZONTAL);
-        parent.setHorizontalAlign(Align.Horizontal.LEFT);
-        parent.setVerticalAlign(Align.Vertical.TOP);
+        parent.setHorizontalAlign(HorizontalAlign.LEFT);
+        parent.setVerticalAlign(VerticalAlign.TOP);
 
         child1.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
         child1.setMaxSize(60, 70);
@@ -983,8 +984,8 @@ public class LinearBoxTest {
         parent.add(child1, child2, child3);
 
         parent.setDirection(Direction.VERTICAL);
-        parent.setHorizontalAlign(Align.Horizontal.LEFT);
-        parent.setVerticalAlign(Align.Vertical.TOP);
+        parent.setHorizontalAlign(HorizontalAlign.LEFT);
+        parent.setVerticalAlign(VerticalAlign.TOP);
 
         child1.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
         child1.setMaxSize(70, 60);
@@ -1038,8 +1039,8 @@ public class LinearBoxTest {
 
     private HashMap<Integer, UXValue> createNonDefaultValues() {
         var hash = new HashMap<Integer, UXValue>();
-        hash.put(UXHash.getHash("horizontal-align"), new UXValueText(Align.Horizontal.LEFT.toString()));
-        hash.put(UXHash.getHash("vertical-align"), new UXValueText(Align.Vertical.TOP.toString()));
+        hash.put(UXHash.getHash("horizontal-align"), new UXValueText(HorizontalAlign.LEFT.toString()));
+        hash.put(UXHash.getHash("vertical-align"), new UXValueText(VerticalAlign.TOP.toString()));
         hash.put(UXHash.getHash("direction"), new UXValueText(Direction.VERTICAL.toString()));
         return hash;
     }

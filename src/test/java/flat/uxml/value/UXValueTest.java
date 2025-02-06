@@ -1,9 +1,9 @@
 package flat.uxml.value;
 
 import flat.graphics.context.Font;
-import flat.graphics.text.Align;
 import flat.uxml.Controller;
 import flat.uxml.UXTheme;
+import flat.widget.enums.HorizontalAlign;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -36,7 +36,7 @@ public class UXValueTest {
         assertEquals(0, value.asColor(theme));
         assertEquals(Font.getDefault(), value.asFont(theme));
         assertNull(value.asResource(theme));
-        assertNull(value.asConstant(theme, Align.Horizontal.class));
+        assertNull(value.asConstant(theme, HorizontalAlign.class));
         assertNull(value.asListener(theme, Object.class, controller));
     }
 }

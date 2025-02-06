@@ -3,11 +3,11 @@ package flat.uxml;
 import flat.animations.StateInfo;
 import flat.events.PointerEvent;
 import flat.graphics.context.Font;
-import flat.graphics.text.Align;
 import flat.resources.ResourceStream;
 import flat.resources.ResourcesManager;
 import flat.uxml.value.*;
 import flat.widget.State;
+import flat.widget.enums.HorizontalAlign;
 import flat.window.Application;
 import org.junit.After;
 import org.junit.Before;
@@ -170,7 +170,7 @@ public class UXAttrsTest {
         assertEquals(100, attrs.getAttributeNumber("property-added", 0), 0.0001f);
         assertEquals(0, attrs.getAttributeNumber("property-base", 0), 0.0001f);
         assertEquals("Default", attrs.getAttributeString("property-string", "Default"));
-        assertEquals(Align.Horizontal.LEFT, attrs.getAttributeConstant("property-constant", Align.Horizontal.LEFT));
+        assertEquals(HorizontalAlign.LEFT, attrs.getAttributeConstant("property-constant", HorizontalAlign.LEFT));
         assertFalse(attrs.getAttributeBool("property-bool", false));
         assertEquals(0, attrs.getAttributeSize("property-size", 0), 0.0001f);
         assertEquals(360, attrs.getAttributeAngle("property-size", 360), 0.0001f);
@@ -193,7 +193,7 @@ public class UXAttrsTest {
         assertEquals(100, attrs.getNumber("property-added"), 0.0001f);
         assertEquals(55, attrs.getNumber("property-base"), 0.0001f);
         assertEquals("Text", attrs.getString("property-string"));
-        assertEquals(Align.Horizontal.LEFT, attrs.getConstant("property-constant", Align.Horizontal.LEFT));
+        assertEquals(HorizontalAlign.LEFT, attrs.getConstant("property-constant", HorizontalAlign.LEFT));
         assertTrue(attrs.getBool("property-bool"));
         assertEquals(24, attrs.getSize("property-size"), 0.0001f);
         assertEquals(180, attrs.getAngle("property-angle"), 0.0001f);
@@ -202,7 +202,7 @@ public class UXAttrsTest {
         assertEquals(stream, attrs.getResource("property-resource"));
 
         assertEquals("Default", attrs.getString("property-string-invalid", stateInfo, "Default"));
-        assertEquals(Align.Horizontal.LEFT, attrs.getConstant("property-constant-invalid", stateInfo, Align.Horizontal.LEFT));
+        assertEquals(HorizontalAlign.LEFT, attrs.getConstant("property-constant-invalid", stateInfo, HorizontalAlign.LEFT));
         assertFalse(attrs.getBool("property-bool-invalid", stateInfo, false));
         assertEquals(0, attrs.getSize("property-size-invalid", stateInfo, 0), 0.0001f);
         assertEquals(360, attrs.getAngle("property-size-invalid", stateInfo, 360), 0.0001f);

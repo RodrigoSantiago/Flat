@@ -3,10 +3,11 @@ package flat.widget.text;
 import flat.animations.StateInfo;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Font;
-import flat.graphics.text.Align;
 import flat.uxml.Controller;
 import flat.uxml.UXAttrs;
 import flat.widget.Widget;
+import flat.widget.enums.HorizontalAlign;
+import flat.widget.enums.VerticalAlign;
 
 import java.util.Objects;
 
@@ -19,8 +20,8 @@ public class Label extends Widget {
     private float textSize = 16f;
     private int textColor = 0x000000FF;
 
-    private Align.Vertical verticalAlign = Align.Vertical.TOP;
-    private Align.Horizontal horizontalAlign = Align.Horizontal.LEFT;
+    private VerticalAlign verticalAlign = VerticalAlign.TOP;
+    private HorizontalAlign horizontalAlign = HorizontalAlign.LEFT;
 
     private String showText;
     private boolean invalidTextSize;
@@ -94,8 +95,6 @@ public class Label extends Widget {
             context.setColor(textColor);
             context.setTextFont(font);
             context.setTextSize(textSize);
-            context.setTextVerticalAlign(Align.Vertical.TOP);
-            context.setTextHorizontalAlign(Align.Horizontal.LEFT);
 
             final float x = getInX();
             final float y = getInY();
@@ -174,12 +173,12 @@ public class Label extends Widget {
         invalidTextSize = true;
     }
 
-    public Align.Vertical getVerticalAlign() {
+    public VerticalAlign getVerticalAlign() {
         return verticalAlign;
     }
 
-    public void setVerticalAlign(Align.Vertical verticalAlign) {
-        if (verticalAlign == null) verticalAlign = Align.Vertical.TOP;
+    public void setVerticalAlign(VerticalAlign verticalAlign) {
+        if (verticalAlign == null) verticalAlign = VerticalAlign.TOP;
 
         if (this.verticalAlign != verticalAlign) {
             this.verticalAlign = verticalAlign;
@@ -187,12 +186,12 @@ public class Label extends Widget {
         }
     }
 
-    public Align.Horizontal getHorizontalAlign() {
+    public HorizontalAlign getHorizontalAlign() {
         return horizontalAlign;
     }
 
-    public void setHorizontalAlign(Align.Horizontal horizontalAlign) {
-        if (horizontalAlign == null) horizontalAlign = Align.Horizontal.LEFT;
+    public void setHorizontalAlign(HorizontalAlign horizontalAlign) {
+        if (horizontalAlign == null) horizontalAlign = HorizontalAlign.LEFT;
 
         if (this.horizontalAlign != horizontalAlign) {
             this.horizontalAlign = horizontalAlign;
@@ -221,15 +220,15 @@ public class Label extends Widget {
 
     protected float xOff(float start, float end, float textWidth) {
         if (end < start) return (start + end) / 2f;
-        if (horizontalAlign == Align.Horizontal.RIGHT) return end - textWidth;
-        if (horizontalAlign == Align.Horizontal.CENTER) return (start + end - textWidth) / 2f;
+        if (horizontalAlign == HorizontalAlign.RIGHT) return end - textWidth;
+        if (horizontalAlign == HorizontalAlign.CENTER) return (start + end - textWidth) / 2f;
         return start;
     }
 
     protected float yOff(float start, float end, float textHeight) {
         if (end < start) return (start + end) / 2f;
-        if (verticalAlign == Align.Vertical.BOTTOM || verticalAlign == Align.Vertical.BASELINE) return end - textHeight;
-        if (verticalAlign == Align.Vertical.MIDDLE) return (start + end - textHeight) / 2f;
+        if (verticalAlign == VerticalAlign.BOTTOM || verticalAlign == VerticalAlign.BASELINE) return end - textHeight;
+        if (verticalAlign == VerticalAlign.MIDDLE) return (start + end - textHeight) / 2f;
         return start;
     }
 }

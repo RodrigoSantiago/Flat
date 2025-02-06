@@ -6,12 +6,12 @@ import flat.events.PointerEvent;
 import flat.graphics.SmartContext;
 import flat.graphics.image.Drawable;
 import flat.graphics.image.DrawableReader;
-import flat.graphics.text.Align;
 import flat.math.Vector2;
 import flat.resources.ResourceStream;
 import flat.uxml.Controller;
 import flat.uxml.UXAttrs;
 import flat.uxml.UXListener;
+import flat.widget.enums.HorizontalAlign;
 import flat.widget.enums.ImageFilter;
 
 public class Button extends Label {
@@ -21,7 +21,7 @@ public class Button extends Label {
     private Drawable iconImage;
     private ImageFilter iconImageFilter = ImageFilter.NEAREST;
     private float iconSpacing;
-    private Align.Horizontal iconAlign = Align.Horizontal.LEFT;
+    private HorizontalAlign iconAlign = HorizontalAlign.LEFT;
 
     @Override
     public void applyAttributes(Controller controller) {
@@ -69,8 +69,6 @@ public class Button extends Label {
                 context.setColor(getTextColor());
                 context.setTextFont(getFont());
                 context.setTextSize(getTextSize());
-                context.setTextVerticalAlign(Align.Vertical.TOP);
-                context.setTextHorizontalAlign(Align.Horizontal.LEFT);
                 context.drawTextSlice(
                         xOff(x, x + width, Math.min(getTextWidth(), width)),
                         yOff(y, y + height, Math.min(getTextHeight(), height)),
@@ -81,13 +79,11 @@ public class Button extends Label {
                 context.setColor(getTextColor());
                 context.setTextFont(getFont());
                 context.setTextSize(getTextSize());
-                context.setTextVerticalAlign(Align.Vertical.TOP);
-                context.setTextHorizontalAlign(Align.Horizontal.LEFT);
 
                 float tw = Math.min(getTextWidth() + iconSpacing + iconImage.getWidth(), width);
                 float xoff = xOff(x, x + width, tw);
 
-                if (iconAlign == Align.Horizontal.RIGHT) {
+                if (iconAlign == HorizontalAlign.RIGHT) {
                     context.drawTextSlice(xoff,
                             yOff(y, y + height, getTextHeight()),
                             width - iconSpacing - iconImage.getWidth(), getShowText());
@@ -199,11 +195,11 @@ public class Button extends Label {
         }
     }
 
-    public Align.Horizontal getIconAlign() {
+    public HorizontalAlign getIconAlign() {
         return iconAlign;
     }
 
-    public void setIconAlign(Align.Horizontal iconAlign) {
+    public void setIconAlign(HorizontalAlign iconAlign) {
         if (this.iconAlign != iconAlign) {
             this.iconAlign = iconAlign;
             invalidate(false);

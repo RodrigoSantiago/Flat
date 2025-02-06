@@ -6,7 +6,6 @@ import flat.graphics.image.PixelMap;
 import flat.graphics.material.Material;
 import flat.graphics.material.MaterialValue;
 import flat.graphics.mesh.Mesh;
-import flat.graphics.text.Align;
 import flat.math.Affine;
 import flat.math.Matrix4;
 import flat.math.operations.Area;
@@ -254,22 +253,6 @@ public class SmartContext {
 
     public float getTextBlur() {
         return textBlur;
-    }
-
-    public void setTextVerticalAlign(Align.Vertical align) {
-        context.svgTextVerticalAlign(align);
-    }
-
-    public Align.Vertical getTextVerticalAlign() {
-        return context.svgTextVerticalAlign();
-    }
-
-    public void setTextHorizontalAlign(Align.Horizontal align) {
-        context.svgTextHorizontalAlign(align);
-    }
-
-    public Align.Horizontal getTextHorizontalAlign() {
-        return context.svgTextHorizontalAlign();
     }
 
     // ---- CANVAS ---- //

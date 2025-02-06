@@ -8,10 +8,13 @@ import flat.events.ActionEvent;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Context;
 import flat.graphics.context.Font;
+import flat.graphics.context.Texture2D;
+import flat.graphics.text.FontPosture;
 import flat.graphics.text.FontStyle;
-import flat.widget.layout.Box;
+import flat.graphics.text.FontWeight;
+import flat.math.Affine;
+import flat.math.stroke.BasicStroke;
 import flat.widget.layout.LinearBox;
-import flat.widget.layout.StackBox;
 import flat.window.Activity;
 import flat.window.Application;
 
@@ -24,64 +27,16 @@ public class MainActivity extends Activity {
         setScene(Application.getResourcesManager().getResource("default/screen_test/screen_test.uxml"));
     }
 
-    float mx, my;
-
-    @Flat
-    private LinearBox box;
-
     @Override
     public void onShow() {
-        getScene().setPointerListener(event -> {
-            mx = (event.getX()-100) / 100;
-            my = (event.getY()-100) / 100;
-            if (event.getPointerID() == 1) f += 0.01f;
-            else f -= 0.01;
-            invalidate(true);
-        });
+
     }
 
     @Override
     public void onDraw(SmartContext context) {
-        // GL.SetDebug(true);
-        // SVG.SetDebug(true);
         super.onDraw(context);
-        var font = Font.findFont(FontStyle.CURSIVE);
-        context.setTextFont(font);
-        context.setTextSize(64);
-        context.setColor(0xFF0000FF);
-
-        context.drawText(0, 0, "AaBbYyZz");
-        System.out.println(Font.getDefault().getInternalLoadState());
-        context.drawText(0, 80, "Another  Text");
-        System.out.println(Font.getDefault().getInternalLoadState());
-        context.drawText(0, 160, "Atenção!");
-        System.out.println(Font.getDefault().getInternalLoadState());
-
-        /*context.setAntialiasEnabled(true);
-        context.setView(0, 0, (int) getWidth(), (int) getHeight());
-        context.clear(0xFFFFFFFF, 1, 1);
-
-        //context.getContext().svgBegin();
-        context.clearClip();
-
-        context.setColor(0x00000080);
-        context.setTextBlur(0.1f);
-        context.setTextSize(64);
-        context.drawText(104, 104, "Ola Mundão" + f);
-        context.setColor(0xEEEEEEFF);
-        context.setTextBlur(1);
-        context.setTextSize(64);
-        context.drawText(100, 100, "Ola Mundão" + f);
-        context.setColor(0x0000FF64);
-
-        Paint radial = Paint.radial(100, 100, 0, 100, mx, my,
-                new float[]{0, 1}, new int[]{0xFF0000FF, 0x00FF00FF}, Paint.CycleMethod.REFLECT);
-        Paint linear = Paint.linear(0, 0, 200, 200, new float[]{0, 1}, new int[]{0xFF0000FF, 0x0000FFFF}, Paint.CycleMethod.REFLECT);
-        context.setPaint(radial);
-        context.drawCircle(100, 100, 100, true);*/
 
     }
-    float f = 1;
 
     @Flat
     public void onAction(ActionEvent event) {

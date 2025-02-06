@@ -3,7 +3,6 @@ package flat.graphics.context;
 import flat.backend.*;
 import flat.graphics.SmartContext;
 import flat.graphics.context.enums.*;
-import flat.graphics.text.Align;
 import flat.math.Affine;
 import flat.math.Mathf;
 import flat.math.shapes.PathIterator;
@@ -88,8 +87,6 @@ public class Context {
 
     private Font svgTextFont;
     private float svgTextScale, svgTextSpacing, svgTextBlur;
-    private Align.Vertical svgTextVerticalAlign;
-    private Align.Horizontal svgTextHorizontalAlign;
 
     private Affine svgTransform;
     private ArrayList<Runnable> disposeTasks = new ArrayList<>();
@@ -236,8 +233,6 @@ public class Context {
         svgTextScale = 1.0f;
         svgTextSpacing = 1.0f;
         svgTextBlur = 1f;
-        svgTextVerticalAlign = Align.Vertical.TOP;
-        svgTextHorizontalAlign = Align.Horizontal.LEFT;
 
         svgTransform = new Affine();
 
@@ -1656,14 +1651,6 @@ public class Context {
         return svgTextSpacing;
     }
 
-    public void svgTextVerticalAlign(Align.Vertical align) {
-        checkDisposed();
-
-        if (svgTextVerticalAlign != align) {
-            svgTextVerticalAlign = align;
-        }
-    }
-
     public float svgTextBlur() {
         return svgTextBlur;
     }
@@ -1679,36 +1666,19 @@ public class Context {
         }
     }
 
-    public Align.Vertical svgTextVerticalAlign() {
-        return svgTextVerticalAlign;
-    }
-
-    public void svgTextHorizontalAlign(Align.Horizontal align) {
-        checkDisposed();
-
-        if (svgTextHorizontalAlign != align) {
-            svgTextHorizontalAlign = align;
-        }
-    }
-
-    public Align.Horizontal svgTextHorizontalAlign() {
-        return svgTextHorizontalAlign;
-    }
-
     public int svgDrawText(float x, float y, String text, float maxWidth) {
         checkDisposed();
 
         int w = 0;
         if (text != null) {
-
+            svgBegin();
             if (svgTextFont.isDisposed()) {
                 svgTextFont = Font.getDefault();
                 SVG.SetFont(svgId, svgTextFont.getInternalPaintID(this));
             }
 
-            svgBegin();
             // SVG.PathBegin(svgId, SVG_TEXT, 0);
-            w = SVG.DrawText(svgId, x, y, text, maxWidth, svgTextHorizontalAlign.getInternalEnum(), svgTextVerticalAlign.getInternalEnum());
+            w = SVG.DrawText(svgId, x, y, text, maxWidth);
             // SVG.PathEnd(svgId);
         }
         return w;
@@ -1719,15 +1689,14 @@ public class Context {
 
         int w = 0;
         if (text != null && offset >= 0 && offset + length <= text.limit()) {
-
+            svgBegin();
             if (svgTextFont.isDisposed()) {
                 svgTextFont = Font.getDefault();
                 SVG.SetFont(svgId, svgTextFont.getInternalPaintID(this));
             }
 
-            svgBegin();
             // SVG.PathBegin(svgId, SVG_TEXT, 0);
-            w = SVG.DrawTextBuffer(svgId, x, y, text, offset, length, maxWidth, svgTextHorizontalAlign.getInternalEnum(), svgTextVerticalAlign.getInternalEnum());
+            w = SVG.DrawTextBuffer(svgId, x, y, text, offset, length, maxWidth);
             // SVG.PathEnd(svgId);
         }
         return w;

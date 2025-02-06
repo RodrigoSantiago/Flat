@@ -2,10 +2,11 @@ package flat.widget.text;
 
 import flat.graphics.context.Context;
 import flat.graphics.context.Font;
-import flat.graphics.text.Align;
 import flat.uxml.*;
 import flat.uxml.value.*;
 import flat.widget.Widget;
+import flat.widget.enums.HorizontalAlign;
+import flat.widget.enums.VerticalAlign;
 import flat.window.Activity;
 import flat.window.Window;
 import org.junit.Before;
@@ -71,8 +72,8 @@ public class LabelTest {
         label.applyAttributes(null);
         label.applyStyle();
 
-        assertEquals(Align.Horizontal.RIGHT, label.getHorizontalAlign());
-        assertEquals(Align.Vertical.BOTTOM, label.getVerticalAlign());
+        assertEquals(HorizontalAlign.RIGHT, label.getHorizontalAlign());
+        assertEquals(VerticalAlign.BOTTOM, label.getVerticalAlign());
         assertEquals("Hello World", label.getText());
         assertTrue(label.isTextAllCaps());
         assertEquals(boldFont, label.getFont());
@@ -113,6 +114,9 @@ public class LabelTest {
         label.setPrefSize(100, 200);
         label.onMeasure();
 
+        assertEquals(100, label.getMeasureWidth(), 0.1f);
+        assertEquals(200, label.getMeasureHeight(), 0.1f);
+
         label.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
         label.onMeasure();
 
@@ -125,8 +129,8 @@ public class LabelTest {
         UXValue uxBoldFont = mock(UXValue.class);
         when(uxBoldFont.asFont(any())).thenReturn(boldFont);
 
-        hash.put(UXHash.getHash("horizontal-align"), new UXValueText(Align.Horizontal.RIGHT.toString()));
-        hash.put(UXHash.getHash("vertical-align"), new UXValueText(Align.Vertical.BOTTOM.toString()));
+        hash.put(UXHash.getHash("horizontal-align"), new UXValueText(HorizontalAlign.RIGHT.toString()));
+        hash.put(UXHash.getHash("vertical-align"), new UXValueText(VerticalAlign.BOTTOM.toString()));
         hash.put(UXHash.getHash("text"), new UXValueText("Hello World"));
         hash.put(UXHash.getHash("text-all-caps"), new UXValueBool(true));
         hash.put(UXHash.getHash("font"), uxBoldFont);
