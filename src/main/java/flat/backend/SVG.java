@@ -86,8 +86,8 @@ public class SVG {
     public static native void SetFontSpacing(long context, float spacing);
     public static native void SetFontBlur(long context, float blur);
 
-    public static native int DrawText(long context, float x, float y, String string, float maxWidth);
-    public static native int DrawTextBuffer(long context, float x, float y, Buffer string, int offset, int length, float maxWidth);
+    public static native int DrawText(long context, float x, float y, String string, float maxWidth, float maxHeight);
+    public static native int DrawTextBuffer(long context, float x, float y, Buffer string, int offset, int length, float maxWidth, float maxHeight);
 
     //---------------------------
     //           Image

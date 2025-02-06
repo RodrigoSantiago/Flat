@@ -65,7 +65,6 @@ public class WidgetTest {
         assertEquals(8, widget.getCenterY(), 0.0001f);
         assertEquals(1.5f, widget.getScaleX(), 0.0001f);
         assertEquals(1.5f, widget.getScaleY(), 0.0001f);
-        assertEquals(0.5f, widget.getOpacity(), 0.0001f);
 
         assertEquals(180, widget.getRotate(), 0.0001f);
 
@@ -134,7 +133,6 @@ public class WidgetTest {
         widget.setCenterY(81);
         widget.setScaleX(1.51f);
         widget.setScaleY(1.51f);
-        widget.setOpacity(0.51f);
 
         widget.setRotate(181);
 
@@ -186,7 +184,6 @@ public class WidgetTest {
         assertEquals(8, widget.getCenterY(), 0.0001f);
         assertEquals(1.5f, widget.getScaleX(), 0.0001f);
         assertEquals(1.5f, widget.getScaleY(), 0.0001f);
-        assertEquals(0.5f, widget.getOpacity(), 0.0001f);
 
         assertEquals(180, widget.getRotate(), 0.0001f);
 
@@ -272,8 +269,6 @@ public class WidgetTest {
         widget.unfollowStyleProperty("scale-x");
         widget.setScaleY(1.51f);
         widget.unfollowStyleProperty("scale-y");
-        widget.setOpacity(0.51f);
-        widget.unfollowStyleProperty("opacity");
 
         widget.setRotate(181);
         widget.unfollowStyleProperty("rotate");
@@ -347,7 +342,6 @@ public class WidgetTest {
         assertEquals(81, widget.getCenterY(), 0.0001f);
         assertEquals(1.51f, widget.getScaleX(), 0.0001f);
         assertEquals(1.51f, widget.getScaleY(), 0.0001f);
-        assertEquals(0.51f, widget.getOpacity(), 0.0001f);
 
         assertEquals(181, widget.getRotate(), 0.0001f);
 
@@ -402,7 +396,6 @@ public class WidgetTest {
         hash.put(UXHash.getHash("center-y"), new UXValueSizeDp(8));
         hash.put(UXHash.getHash("scale-x"), new UXValueNumber(1.5f));
         hash.put(UXHash.getHash("scale-y"), new UXValueNumber(1.5f));
-        hash.put(UXHash.getHash("opacity"), new UXValueNumber(0.5f));
 
         hash.put(UXHash.getHash("rotate"), new UXValueAngle(180));
 

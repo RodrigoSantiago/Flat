@@ -232,7 +232,7 @@ public class Context {
         svgTextFont = Font.getDefault();
         svgTextScale = 1.0f;
         svgTextSpacing = 1.0f;
-        svgTextBlur = 1f;
+        svgTextBlur = 0f;
 
         svgTransform = new Affine();
 
@@ -1666,11 +1666,11 @@ public class Context {
         }
     }
 
-    public int svgDrawText(float x, float y, String text, float maxWidth) {
+    public int svgDrawText(float x, float y, String text, float maxWidth, float maxHeight) {
         checkDisposed();
 
         int w = 0;
-        if (text != null) {
+        if (text != null && svgTextScale > 0) {
             svgBegin();
             if (svgTextFont.isDisposed()) {
                 svgTextFont = Font.getDefault();
@@ -1678,17 +1678,17 @@ public class Context {
             }
 
             // SVG.PathBegin(svgId, SVG_TEXT, 0);
-            w = SVG.DrawText(svgId, x, y, text, maxWidth);
+            w = SVG.DrawText(svgId, x, y, text, maxWidth, maxHeight);
             // SVG.PathEnd(svgId);
         }
         return w;
     }
 
-    public int svgDrawText(float x, float y, Buffer text, int offset, int length, float maxWidth) {
+    public int svgDrawText(float x, float y, Buffer text, int offset, int length, float maxWidth, float maxHeight) {
         checkDisposed();
 
         int w = 0;
-        if (text != null && offset >= 0 && offset + length <= text.limit()) {
+        if (text != null && offset >= 0 && offset + length <= text.limit() && svgTextScale > 0) {
             svgBegin();
             if (svgTextFont.isDisposed()) {
                 svgTextFont = Font.getDefault();
@@ -1696,7 +1696,7 @@ public class Context {
             }
 
             // SVG.PathBegin(svgId, SVG_TEXT, 0);
-            w = SVG.DrawTextBuffer(svgId, x, y, text, offset, length, maxWidth);
+            w = SVG.DrawTextBuffer(svgId, x, y, text, offset, length, maxWidth, maxHeight);
             // SVG.PathEnd(svgId);
         }
         return w;

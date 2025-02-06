@@ -359,22 +359,22 @@ public class SmartContext {
 
     public void drawText(float x, float y, String text) {
         svgMode();
-        context.svgDrawText(x, y, text, 0);
+        context.svgDrawText(x, y, text, 0, 0);
     }
 
     public void drawText(float x, float y, Buffer text, int offset, int length) {
         svgMode();
-        context.svgDrawText(x, y, text, offset, length, 0);
+        context.svgDrawText(x, y, text, offset, length, 0, 0);
     }
 
-    public int drawTextSlice(float x, float y, float maxWidth, String text) {
+    public int drawTextSlice(float x, float y, float maxWidth, float maxHeight, String text) {
         svgMode();
-        return context.svgDrawText(x, y, text, maxWidth);
+        return context.svgDrawText(x, y, text, maxWidth, maxHeight);
     }
 
-    public int drawTextSlice(float x, float y, float maxWidth, Buffer text, int offset, int length) {
+    public int drawTextSlice(float x, float y, float maxWidth, float maxHeight, Buffer text, int offset, int length) {
         svgMode();
-        return context.svgDrawText(x, y, text, offset, length, maxWidth);
+        return context.svgDrawText(x, y, text, offset, length, maxWidth, maxHeight);
     }
 
     // TODO - Implement draw round rect border (use gradient values to create the effect)

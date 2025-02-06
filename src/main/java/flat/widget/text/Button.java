@@ -3,6 +3,7 @@ package flat.widget.text;
 import flat.animations.StateInfo;
 import flat.events.ActionEvent;
 import flat.events.PointerEvent;
+import flat.graphics.Color;
 import flat.graphics.SmartContext;
 import flat.graphics.image.Drawable;
 import flat.graphics.image.DrawableReader;
@@ -21,6 +22,7 @@ public class Button extends Label {
     private Drawable iconImage;
     private ImageFilter iconImageFilter = ImageFilter.NEAREST;
     private float iconSpacing;
+    private boolean iconScaleHeight;
     private HorizontalAlign iconAlign = HorizontalAlign.LEFT;
 
     @Override
@@ -48,6 +50,7 @@ public class Button extends Label {
             }
         }
 
+        setIconScaleHeight(attrs.getBool("icon-scale-height", info, getIconScaleHeight()));
         setIconAlign(attrs.getConstant("icon-align", info, getIconAlign()));
         setIconSpacing(attrs.getSize("icon-spacing", info, getIconSpacing()));
         setIconImageFilter(attrs.getConstant("icon-image-filter", info, getIconImageFilter()));
@@ -55,8 +58,12 @@ public class Button extends Label {
 
     @Override
     public void onDraw(SmartContext context) {
-        backgroundDraw(context, getBackgroundColor(), getBorderColor(), getRippleColor());
+        if (iconImage == null) {
+            super.onDraw(context);
+            return;
+        }
 
+        backgroundDraw(context);
         context.setTransform2D(getTransform());
 
         final float x = getInX();
@@ -64,46 +71,69 @@ public class Button extends Label {
         final float width = getInWidth();
         final float height = getInHeight();
 
-        if (iconImage == null) {
-            if (getShowText() != null && !getShowText().isEmpty()) {
-                context.setColor(getTextColor());
-                context.setTextFont(getFont());
-                context.setTextSize(getTextSize());
-                context.drawTextSlice(
-                        xOff(x, x + width, Math.min(getTextWidth(), width)),
-                        yOff(y, y + height, Math.min(getTextHeight(), height)),
-                        width, getShowText());
-            }
+        if (width <= 0 || height <= 0) return;
+
+        float imgWidth = iconImage.getWidth();
+        float imgHeight = iconImage.getHeight();
+        if (iconScaleHeight && getFont() != null) {
+            float diff = imgWidth / imgHeight;
+            imgHeight = getFont().getHeight(getTextSize());
+            imgWidth = imgHeight * diff;
+        }
+
+        float textWidth = Math.min(getTextWidth(), Math.max(0, width - iconSpacing - imgWidth));
+        float textHeight = Math.min(getTextHeight(), height);
+
+        if (getShowText() == null || getFont() == null || textWidth <= 0) {
+            float iw = Math.min(imgWidth, width);
+            float ih = Math.min(imgHeight, height);
+            float tw = Math.min(imgWidth + iconSpacing, width);
+            float sp = iconAlign == HorizontalAlign.RIGHT ? Math.min(iconSpacing, width - iw) : 0;
+
+            iconImage.draw(context
+                    , xOff(x, x + width, tw) + sp
+                    , yOff(y, y + height, ih)
+                    , iw, ih, 0, iconImageFilter);
+
         } else {
-            if (getShowText() != null && !getShowText().isEmpty()) {
-                context.setColor(getTextColor());
-                context.setTextFont(getFont());
-                context.setTextSize(getTextSize());
+            float iw = imgWidth;
+            float ih = Math.min(imgHeight, height);
 
-                float tw = Math.min(getTextWidth() + iconSpacing + iconImage.getWidth(), width);
-                float xoff = xOff(x, x + width, tw);
+            float tw = textWidth + iconSpacing + imgWidth;
+            float th = Math.min(Math.max(ih, getTextHeight()), height);
 
-                if (iconAlign == HorizontalAlign.RIGHT) {
-                    context.drawTextSlice(xoff,
-                            yOff(y, y + height, getTextHeight()),
-                            width - iconSpacing - iconImage.getWidth(), getShowText());
-                    iconImage.draw(context, xoff + getTextWidth() + iconSpacing,
-                            yOff(y, y + height, iconImage.getHeight()),
-                            iconImage.getWidth(), iconImage.getHeight(), 0, iconImageFilter);
-                } else {
-                    context.drawTextSlice(xoff + iconImage.getWidth() + iconSpacing,
-                            yOff(y, y + height, getTextHeight()),
-                            width - iconSpacing - iconImage.getWidth(), getShowText());
-                    iconImage.draw(context, xoff,
-                            yOff(y, y + height, iconImage.getHeight()),
-                            iconImage.getWidth(), iconImage.getHeight(), 0, iconImageFilter);
-                }
+            float xoff = xOff(x, x + width, tw);
+            float yoffGroup = yOff(y, y + height, th);
+            float yoffText = yOff(yoffGroup, yoffGroup + th, textHeight);
+            float yoffImg = yOff(yoffGroup, yoffGroup + th, ih);
+
+            context.setColor(getTextColor());
+            context.setTextFont(getFont());
+            context.setTextSize(getTextSize());
+            context.setTextBlur(0);
+
+            if (iconAlign == HorizontalAlign.RIGHT) {
+                context.drawTextSlice(
+                          xoff
+                        , yoffText
+                        , textWidth
+                        , textHeight
+                        , getShowText());
+                iconImage.draw(context
+                        , xoff + textWidth + iconSpacing
+                        , yoffImg
+                        , iw, ih, 0, iconImageFilter);
             } else {
-                context.setColor(getTextColor());
-                iconImage.draw(context,
-                        xOff(x, x + width, iconImage.getWidth()),
-                        yOff(y, y + height, iconImage.getHeight()), iconImage.getWidth(), iconImage.getHeight()
-                        , 0, iconImageFilter);
+                iconImage.draw(context
+                        , xoff
+                        , yoffImg
+                        , iw, ih, 0, iconImageFilter);
+                context.drawTextSlice(
+                          xoff + imgWidth + iconSpacing
+                        , yoffText
+                        , textWidth
+                        , textHeight
+                        , getShowText());
             }
         }
     }
@@ -112,28 +142,37 @@ public class Button extends Label {
     public void onMeasure() {
         if (iconImage == null) {
             super.onMeasure();
-        } else {
-            float extraWidth = getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
-            float extraHeight = getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
-
-            float mWidth;
-            float mHeight;
-            boolean wrapWidth = getPrefWidth() == WRAP_CONTENT;
-            boolean wrapHeight = getPrefHeight() == WRAP_CONTENT;
-
-            if (wrapWidth) {
-                mWidth = Math.max(getTextWidth() + extraWidth + iconImage.getWidth() + iconSpacing, Math.max(getPrefWidth(), getLayoutMinWidth()));
-            } else {
-                mWidth = Math.max(getPrefWidth(), getLayoutMinWidth());
-            }
-            if (wrapHeight) {
-                mHeight = Math.max(getTextHeight() + extraHeight + iconImage.getHeight(), Math.max(getPrefHeight(), getLayoutMinHeight()));
-            } else {
-                mHeight = Math.max(getPrefHeight(), getLayoutMinHeight());
-            }
-
-            setMeasure(mWidth, mHeight);
+            return;
         }
+
+        float extraWidth = getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
+        float extraHeight = getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
+
+        float mWidth;
+        float mHeight;
+        boolean wrapWidth = getPrefWidth() == WRAP_CONTENT;
+        boolean wrapHeight = getPrefHeight() == WRAP_CONTENT;
+
+        float iW = iconImage.getWidth();
+        float iH = iconImage.getHeight();
+        if (iconScaleHeight && getFont() != null) {
+            float diff = iW / iH;
+            iH = getFont().getHeight(getTextSize());
+            iW = iH * diff;
+        }
+
+        if (wrapWidth) {
+            mWidth = Math.max(getTextWidth() + extraWidth + iW + iconSpacing, getLayoutMinWidth());
+        } else {
+            mWidth = Math.max(getPrefWidth(), getLayoutMinWidth());
+        }
+        if (wrapHeight) {
+            mHeight = Math.max(Math.max(getTextHeight(), iH) + extraHeight, getLayoutMinHeight());
+        } else {
+            mHeight = Math.max(getPrefHeight(), getLayoutMinHeight());
+        }
+
+        setMeasure(mWidth, mHeight);
     }
 
     @Override
@@ -191,6 +230,17 @@ public class Button extends Label {
     public void setIconSpacing(float iconSpacing) {
         if (this.iconSpacing != iconSpacing) {
             this.iconSpacing = iconSpacing;
+            invalidate(true);
+        }
+    }
+
+    public boolean getIconScaleHeight() {
+        return iconScaleHeight;
+    }
+
+    public void setIconScaleHeight(boolean iconScaleHeight) {
+        if (this.iconScaleHeight != iconScaleHeight) {
+            this.iconScaleHeight = iconScaleHeight;
             invalidate(true);
         }
     }

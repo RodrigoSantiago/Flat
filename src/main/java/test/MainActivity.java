@@ -5,6 +5,7 @@ import flat.animations.presets.Hide;
 import flat.backend.GL;
 import flat.backend.SVG;
 import flat.events.ActionEvent;
+import flat.graphics.Color;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Context;
 import flat.graphics.context.Font;
@@ -13,8 +14,10 @@ import flat.graphics.text.FontPosture;
 import flat.graphics.text.FontStyle;
 import flat.graphics.text.FontWeight;
 import flat.math.Affine;
+import flat.math.shapes.Path;
 import flat.math.stroke.BasicStroke;
 import flat.widget.layout.LinearBox;
+import flat.widget.text.Button;
 import flat.window.Activity;
 import flat.window.Application;
 
@@ -27,15 +30,37 @@ public class MainActivity extends Activity {
         setScene(Application.getResourcesManager().getResource("default/screen_test/screen_test.uxml"));
     }
 
+    @Flat public Button button;
+    @Flat public Button button2;
+    @Flat public Button button3;
+
     @Override
     public void onShow() {
-
     }
 
+    float t;
     @Override
     public void onDraw(SmartContext context) {
         super.onDraw(context);
+        //t += 1 / 120f;
+        //if (t > 1) t = 0;
+        //context.setTransform2D(null);
+        //context.setTextSize(64);
+        //context.setTextFont(Font.getDefault());
+        //context.setColor(Color.black);
+        //context.setTextBlur(1);
+        //context.drawText(32, 300, "Ola Mundo");
 
+        /*context.setStroker(new BasicStroke(5.5f));
+        context.setAntialiasEnabled(false);
+        context.setColor(0x00000080);
+        context.setAntialiasEnabled(false);
+        context.drawLine(100, 100, 500, 600);
+        context.setAntialiasEnabled(true);
+        context.drawLine(100, 500, 500, 100);*/
+        //context.setColor(Color.black);
+        //context.setTextBlur(0);
+        //context.drawText(32, 200, "Ola Mundo");
     }
 
     @Flat

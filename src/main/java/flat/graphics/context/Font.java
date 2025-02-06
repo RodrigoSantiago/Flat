@@ -39,6 +39,10 @@ public class Font {
     }
 
     public Font(String family, FontWeight weight, FontPosture posture, FontStyle style, byte[] data, float size, boolean sdf) {
+        if (data == null || data.length == 0) {
+            throw new RuntimeException("Invalid font data");
+        }
+
         this.family = family;
         this.weight = weight;
         this.posture = posture;
@@ -208,22 +212,22 @@ public class Font {
 
     public float getWidth(String text, float size, float spacing) {
         checkDisposed();
-        return SVG.FontGetTextWidth(fontID, text, size / this.size, spacing);
+        return size <= 0 ? 0 : SVG.FontGetTextWidth(fontID, text, size / this.size, spacing);
     }
 
     public float getWidth(Buffer text, int offset, int length, float size, float spacing) {
         checkDisposed();
-        return SVG.FontGetTextWidthBuffer(fontID, text, offset, length, size / this.size, spacing);
+        return size <= 0 ? 0 : SVG.FontGetTextWidthBuffer(fontID, text, offset, length, size / this.size, spacing);
     }
 
     public int getCursorOffset(String text, float size, float spacing, float x, boolean half) {
         checkDisposed();
-        return SVG.FontGetOffset(fontID, text, size / this.size, spacing, x, half);
+        return size <= 0 ? 0 : SVG.FontGetOffset(fontID, text, size / this.size, spacing, x, half);
     }
 
     public int getCursorOffset(Buffer text, int offset, int length, float size, float spacing, float x, boolean half) {
         checkDisposed();
-        return SVG.FontGetOffsetBuffer(fontID, text, offset, length, size / this.size, spacing, x, half);
+        return size <= 0 ? 0 : SVG.FontGetOffsetBuffer(fontID, text, offset, length, size / this.size, spacing, x, half);
     }
 
     public float getSize() {

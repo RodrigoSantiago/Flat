@@ -57,7 +57,6 @@ public class DrawableReader {
         byte[] data = stream.readData();
         int[] imageData = new int[3];
         byte[] readImage = SVG.ReadImage(data, imageData);
-        System.out.println(imageData[2]);
         if (readImage == null) {
             throw new FlatException("Invalid image format " + stream.getResourceName());
         }

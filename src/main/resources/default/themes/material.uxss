@@ -19,13 +19,15 @@ button : label {
     font : font("Roboto", bold);
     ripple : true;
     ripple-color : #00000080;
-    shadow : true;
+    shadow-enabled : true;
     radius-top : 4;
     radius-left : 4;
     radius-right : 4;
     radius-bottom : 4;
     padding-left : 16;
     padding-right : 16;
+    padding-top : 8;
+    padding-bottom : 8;
     min-height : 36;
     text-size : 14sp;
     background-color : #FFFFFFFF;

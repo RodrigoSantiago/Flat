@@ -1,6 +1,7 @@
 package flat.widget.text;
 
 import flat.animations.StateInfo;
+import flat.graphics.Color;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Font;
 import flat.uxml.Controller;
@@ -73,12 +74,12 @@ public class Label extends Widget {
         boolean wrapHeight = getPrefHeight() == WRAP_CONTENT;
 
         if (wrapWidth) {
-            mWidth = Math.max(getTextWidth() + extraWidth, Math.max(getPrefWidth(), getLayoutMinWidth()));
+            mWidth = Math.max(getTextWidth() + extraWidth, getLayoutMinWidth());
         } else {
             mWidth = Math.max(getPrefWidth(), getLayoutMinWidth());
         }
         if (wrapHeight) {
-            mHeight = Math.max(getTextHeight() + extraHeight, Math.max(getPrefHeight(), getLayoutMinHeight()));
+            mHeight = Math.max(getTextHeight() + extraHeight, getLayoutMinHeight());
         } else {
             mHeight = Math.max(getPrefHeight(), getLayoutMinHeight());
         }
@@ -88,23 +89,26 @@ public class Label extends Widget {
 
     @Override
     public void onDraw(SmartContext context) {
-        backgroundDraw(context, getBackgroundColor(), getBorderColor(), getRippleColor());
+        backgroundDraw(context);
 
-        context.setTransform2D(getTransform());
-        if (showText != null && font != null) {
+        if (showText != null && font != null && textSize > 0 && Color.getAlpha(textColor) > 0) {
+            context.setTransform2D(getTransform());
             context.setColor(textColor);
             context.setTextFont(font);
             context.setTextSize(textSize);
+            context.setTextBlur(0);
 
             final float x = getInX();
             final float y = getInY();
             final float width = getInWidth();
             final float height = getInHeight();
 
+            if (width <= 0 || height <= 0) return;
+
             context.drawTextSlice(
                     xOff(x, x + width, Math.min(getTextWidth(), width)),
                     yOff(y, y + height, Math.min(getTextHeight(), height)),
-                    width, showText);
+                    width, height, showText);
         }
     }
 
@@ -230,5 +234,9 @@ public class Label extends Widget {
         if (verticalAlign == VerticalAlign.BOTTOM || verticalAlign == VerticalAlign.BASELINE) return end - textHeight;
         if (verticalAlign == VerticalAlign.MIDDLE) return (start + end - textHeight) / 2f;
         return start;
+    }
+
+    protected float yOffCenter(float start, float end, float textHeight) {
+        return (start + end - textHeight) / 2f;
     }
 }
