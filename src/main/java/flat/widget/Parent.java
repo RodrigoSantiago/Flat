@@ -35,7 +35,7 @@ public abstract class Parent extends Widget {
     protected void add(Widget child) {
         child.setParent(this);
         children.add(child);
-        invalidateChildrenOrder();
+        invalidateChildrenOrder(null);
         invalidate(true);
     }
 
@@ -56,7 +56,7 @@ public abstract class Parent extends Widget {
         if (widget.parent == this) {
             widget.setParent(null);
         }
-        invalidateChildrenOrder();
+        invalidateChildrenOrder(null);
         invalidate(true);
     }
 

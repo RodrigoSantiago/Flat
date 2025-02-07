@@ -38,11 +38,27 @@ public class Scene extends Box {
     }
 
     @Override
+    protected void childInvalidate(Widget child, boolean source) {
+        if (getParent() == null) {
+            Activity activity = getActivity();
+            if (activity != null) {
+                activity.invalidateWidget(source ? this : child);
+            }
+        } else {
+            super.childInvalidate(child, source);
+        }
+    }
+
+    @Override
     public void invalidate(boolean layout) {
         if (getParent() == null) {
             Activity activity = getActivity();
             if (activity != null) {
-                activity.invalidate(layout);
+                if (!layout) {
+                    activity.invalidate();
+                } else {
+                    activity.invalidateWidget(this);
+                }
             }
         } else {
             super.invalidate(layout);

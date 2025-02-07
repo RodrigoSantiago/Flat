@@ -283,8 +283,16 @@ public class Widget {
             ripple.drawRipple(context, isRippleOverflow() ? null : bg, rippleColor);
         }
 
+        if (afterLayout) {
+            afterLayout = false;
+            context.setColor(0xFF0000FF);
+            context.setStroker(new BasicStroke(3));
+            context.drawRoundRect(bg, false);
+        }
         context.setTransform2D(null);
     }
+
+    private boolean afterLayout = false;
 
     protected void childrenDraw(SmartContext context) {
         if (children != null) {
@@ -348,6 +356,7 @@ public class Widget {
     public final void setLayout(float width, float height) {
         this.layoutWidth = width;
         this.layoutHeight = height;
+        afterLayout = true;
 
         setSize(width, height);
     }
@@ -397,9 +406,27 @@ public class Widget {
         }
     }
 
+    protected void childInvalidate(Widget child, boolean source) {
+        if (parent != null) {
+            if (source) {
+                if (getWidth() == WRAP_CONTENT || getHeight() == WRAP_CONTENT) {
+                    parent.childInvalidate(this, true);
+                } else {
+                    parent.childInvalidate(this, false);
+                }
+            } else {
+                parent.childInvalidate(child, false);
+            }
+        }
+    }
+
     public void invalidate(boolean layout) {
         if (parent != null) {
-            parent.invalidate(layout);
+            if (layout) {
+                parent.childInvalidate(this, true);
+            } else {
+                parent.invalidate(false);
+            }
         }
     }
 
@@ -412,8 +439,23 @@ public class Widget {
         invalidTransform = true;
     }
 
-    protected void invalidateChildrenOrder() {
-        invalidChildrenOrder = true;
+    protected boolean invalidateChildrenOrder(Widget child) {
+        if (child == null) {
+            invalidChildrenOrder = true;
+            return true;
+        }
+
+        int index = children.indexOf(child);
+        float el = child.getElevation();
+        int indexPrev = index - 1;
+        int indexNext = index + 1;
+        boolean biggerThanPrevious = (indexPrev < 0 || children.get(indexPrev).getElevation() < el);
+        boolean smallerThanNext = (indexNext >= children.size() || children.get(indexNext).getElevation() > el);
+        if (!biggerThanPrevious || !smallerThanNext) {
+            invalidChildrenOrder = true;
+            return true;
+        }
+        return false;
     }
 
     public final String getId() {
@@ -1307,9 +1349,10 @@ public class Widget {
         if (this.elevation != elevation) {
             this.elevation = elevation;
 
-            invalidate(true);
-            if (parent != null) {
-                parent.invalidateChildrenOrder();
+            if (parent != null && parent.invalidateChildrenOrder(this)) {
+                invalidate(true);
+            } else {
+                invalidate(false);
             }
         }
     }

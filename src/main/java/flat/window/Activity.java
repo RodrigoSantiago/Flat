@@ -9,6 +9,7 @@ import flat.graphics.SmartContext;
 import flat.graphics.context.Context;
 import flat.resources.ResourceStream;
 import flat.uxml.*;
+import flat.widget.Parent;
 import flat.widget.Scene;
 import flat.widget.Widget;
 
@@ -32,8 +33,8 @@ public class Activity extends Controller {
     private UXTheme nextTheme;
 
     private UXBuilder builder;
-    private boolean invalided, layoutInvalided, streamInvalided;
-    private boolean invalidScene, invalidTheme;
+    private boolean invalided, invalidScene, invalidTheme;
+    private Widget invalidWidget;
 
     private boolean hide = true;
     private boolean pause = true;
@@ -70,7 +71,6 @@ public class Activity extends Controller {
     public void setScene(ResourceStream resourceStream) {
         this.builder = UXNode.parse(resourceStream).instance(this);
         this.nextScene = null;
-        invalidate(true);
     }
 
     public void setScene(Scene scene) {
@@ -81,7 +81,6 @@ public class Activity extends Controller {
         if (this.scene != scene && this.nextScene != scene) {
             this.nextScene = scene;
             this.builder = null;
-            invalidate(true);
         }
     }
 
@@ -94,17 +93,12 @@ public class Activity extends Controller {
     }
 
     public void setTheme(ResourceStream resourceStream) {
-        if (resourceStream.isFolder()) {
-
-        }
         setTheme(UXSheet.parse(resourceStream).instance());
     }
 
     public void setTheme(UXTheme theme) {
         if (this.theme != theme && this.nextTheme != theme) {
             this.nextTheme = theme;
-            invalidTheme = true;
-            invalidate(true);
         }
     }
 
@@ -122,16 +116,27 @@ public class Activity extends Controller {
         }
     }
 
-    private void buildScene() {
+    private void updateDensity() {
+        float dpi = getWindow() == null ? 160f : getWindow().getDpi();
+        if (lastDpi != dpi) {
+            lastDpi = dpi;
+            invalidateTheme();
+        }
+    }
+
+    private void buildTheme() {
         if (nextTheme != null) {
             theme = nextTheme;
             nextTheme = null;
-            invalidTheme = true;
+            invalidateTheme();
         }
+    }
 
+    private void buildScene() {
         Scene old = scene;
         if (builder != null) {
             nextScene = builder.build(theme);
+            builder = null;
         }
         if (scene == null && nextScene == null) {
             nextScene = new Scene();
@@ -140,40 +145,61 @@ public class Activity extends Controller {
             clearAnimations();
 
             scene = nextScene;
-            builder = null;
             nextScene = null;
             scene.getActivityScene().setActivity(this);
             if (old != null) {
                 old.getActivityScene().setActivity(null);
             }
-
-            invalidate(true);
-            invalidTheme = true;
+            invalidateTheme();
         }
     }
 
     void refreshScene() {
+        updateDensity();
+        buildTheme();
         buildScene();
 
-        float dpi = getWindow() == null ? 160f : getWindow().getDpi();
-        if (lastDpi != dpi) {
-            lastDpi = dpi;
-            invalidTheme = true;
+        if (invalidTheme) {
+            invalidTheme = false;
+            scene.setTheme(getTheme());
+            scene.applyTheme();
+            invalidateWidget(scene);
+        }
+    }
+
+    void layout(float width, float height) {
+        if (this.width != width || this.height != height) {
+            this.width = width;
+            this.height = height;
+            invalidateWidget(scene);
         }
 
-        if (scene != null) {
-            if (invalidTheme) {
-                invalidTheme = false;
-                scene.setTheme(getTheme());
-                scene.applyTheme();
-                invalidate(true);
+        if (invalidWidget != null) {
+            var wiget = invalidWidget;
+            invalidWidget = null;
+            if (wiget == scene) {
+                wiget.onMeasure();
+                wiget.onLayout(width, height);
+            } else {
+                wiget.onLayout(wiget.getWidth(), wiget.getHeight());
             }
+        }
+    }
+
+    boolean draw(SmartContext context) {
+        if (invalided) {
+            invalided = false;
+            onDraw(context);
+            return true;
+        } else {
+            return false;
         }
     }
 
     void show() {
         hide = false;
         refreshScene();
+        layout(getWindow().getClientWidth(), getWindow().getClientHeight());
         onShow();
 
     }
@@ -219,34 +245,6 @@ public class Activity extends Controller {
     public boolean onCloseRequest(boolean systemRequest) {
 
         return true;
-    }
-
-    void layout(float width, float height) {
-        this.width = width;
-        this.height = height;
-        if (layoutInvalided) {
-            layoutInvalided = false;
-
-            if (scene != null) {
-                scene.onMeasure();
-                scene.onLayout(width, height);
-            }
-            onLayout(width, height);
-        }
-    }
-
-    public void onLayout(float width, float height) {
-
-    }
-
-    boolean draw(SmartContext context) {
-        if (invalided) {
-            invalided = false;
-            onDraw(context);
-            return true;
-        } else {
-            return false;
-        }
     }
 
     public void drawBackground(SmartContext context) {
@@ -344,10 +342,25 @@ public class Activity extends Controller {
         animations.clear();
     }
 
-    public void invalidate(boolean layout) {
+    public void invalidate() {
         invalided = true;
-        if (layout) {
-            layoutInvalided = true;
+    }
+
+    public void invalidateTheme() {
+        invalidTheme = true;
+        invalidate();
+    }
+
+    public void invalidateWidget(Widget widget) {
+        invalidate();
+        if (invalidWidget != null) {
+            if (invalidWidget.isChildOf(widget)) {
+                invalidWidget = widget;
+            } else if (!widget.isChildOf(invalidWidget)) {
+                invalidWidget = scene;
+            }
+        } else {
+            invalidWidget = widget;
         }
     }
 

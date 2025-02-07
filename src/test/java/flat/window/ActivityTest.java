@@ -181,11 +181,14 @@ public class ActivityTest {
         Context context = mock(Context.class);
         UXTheme theme = mock(UXTheme.class);
         Scene scene = mock(Scene.class);
+        Widget child = mock(Widget.class);
         when(scene.getActivityScene()).thenReturn(mock(ActivityScene.class));
 
         when(context.getWindow()).thenReturn(window);
-        when(context.getWidth()).thenReturn(200);
-        when(context.getHeight()).thenReturn(100);
+        when(window.getClientWidth()).thenReturn(200);
+        when(window.getClientHeight()).thenReturn(100);
+        when(child.getWidth()).thenReturn(20f);
+        when(child.getHeight()).thenReturn(10f);
         when(window.getDpi()).thenReturn(160f);
 
         Activity activity = new Activity(context);
@@ -197,12 +200,27 @@ public class ActivityTest {
         assertNull(activity.getScene());
 
         activity.show();
+        verify(scene).onMeasure();
+        verify(scene).onLayout(200f, 100f);
+
         verify(scene, times(1)).applyTheme();
         assertEquals(scene, activity.getScene());
 
+        activity.layout(200f, 100f);
+        verify(scene, times(1)).onMeasure();
+        verify(scene, times(1)).onLayout(200f, 100f);
+
+        activity.invalidateWidget(scene);
         activity.layout(100f, 100f);
-        verify(scene).onMeasure();
-        verify(scene).onLayout(100f, 100f);
+        verify(scene, times(2)).onMeasure();
+        verify(scene, times(1)).onLayout(100f, 100f);
+
+        activity.invalidateWidget(child);
+        activity.layout(100f, 100f);
+        verify(scene, times(2)).onMeasure();
+        verify(scene, times(1)).onLayout(100f, 100f);
+        verify(child, times(0)).onMeasure();
+        verify(child, times(1)).onLayout(20f, 10f);
     }
 
     @Test
@@ -215,8 +233,8 @@ public class ActivityTest {
         when(scene.getActivityScene()).thenReturn(mock(ActivityScene.class));
 
         when(context.getWindow()).thenReturn(window);
-        when(context.getWidth()).thenReturn(200);
-        when(context.getHeight()).thenReturn(100);
+        when(window.getClientWidth()).thenReturn(200);
+        when(window.getClientHeight()).thenReturn(100);
         when(window.getDpi()).thenReturn(160f);
 
         Activity activity = new Activity(context);

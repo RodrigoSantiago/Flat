@@ -2,6 +2,7 @@ package flat.window.event;
 
 import flat.backend.WLEnums;
 import flat.events.KeyEvent;
+import flat.widget.Scene;
 import flat.widget.Widget;
 import flat.window.Activity;
 import flat.window.Window;
@@ -11,6 +12,7 @@ import org.mockito.ArgumentCaptor;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -36,6 +38,6 @@ public class EventDataSizeTest {
 
         // Assertion
         verify(window, times(1)).getActivity();
-        verify(activity, times(1)).invalidate(anyBoolean());
+        verify(activity, times(1)).invalidate();
     }
 }
