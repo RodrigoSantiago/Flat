@@ -1613,11 +1613,11 @@ public class Widget {
                 iy = (iny + inh) * 0.5f;
                 float w = Math.max(getWidth() - getMarginRight() - getMarginLeft(), 0) * 0.5f;
                 float h = Math.max(getHeight() - getMarginTop() - getMarginBottom(), 0) * 0.5f;
-                ripple.setSize(Math.min(500, (float) Math.sqrt(w * w + h * h)));
+                ripple.setSize((float) Math.sqrt(w * w + h * h));
             } else {
                 ix = inverseTransform.pointX(x, y);
                 iy = inverseTransform.pointY(x, y);
-                ripple.setSize(Math.min(500, Math.max(getWidth(), getHeight())));
+                ripple.setSize(Math.max(getWidth(), getHeight()));
             }
             ripple.fire(ix, iy);
         }
@@ -1684,9 +1684,11 @@ public class Widget {
     public void firePointer(PointerEvent pointerEvent) {
         // -- Pressed -- //
         if (pointerEvent.getType() == PointerEvent.PRESSED) {
+            setPressed(true);
             fireRipple(pointerEvent.getX(), pointerEvent.getY());
         }
         if (pointerEvent.getType() == PointerEvent.RELEASED) {
+            setPressed(false);
             releaseRipple();
 
             if (pointerEvent.getPointerID() == 2 && contextMenu != null) {

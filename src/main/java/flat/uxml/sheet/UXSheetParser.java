@@ -628,13 +628,6 @@ public class UXSheetParser {
             } else {
                 log(ErroLog.INVALID_COLOR);
             }
-        } else if (source.equalsIgnoreCase("url")) {
-            if (values.size() == 1 && values.get(0) instanceof UXValueText vt) {
-                String url = vt.asString(null);
-                return new UXValueResource(url);
-            } else {
-                log(ErroLog.INVALID_URL);
-            }
         } else if (source.equalsIgnoreCase("font")) {
             String family = null;
             FontWeight weight = null;
@@ -691,7 +684,6 @@ public class UXSheetParser {
         public static final String UNEXPECTED_END_OF_TOKENS = "Unexpected end of tokens";
         public static final String INVALID_NUMBER = "Invalid number";
         public static final String INVALID_FONT = "Invalid font";
-        public static final String INVALID_URL = "Invalid url";
         public static final String INVALID_COLOR = "Invalid color";
         public static final String INVALID_FUNCTION = "Invalid function";
         public static final String NAME_EXPECTED = "Name expected";

@@ -14,8 +14,6 @@ public class RippleEffect {
     private static final float[] stops = new float[]{0, 1};
     private final int[] colors = new int[]{0, 0};
 
-    private float size = 16f;
-
     private final Widget widget;
     private final Circle ripple = new Circle();
     private final RippleAnimation animation = new RippleAnimation();
@@ -27,11 +25,11 @@ public class RippleEffect {
     }
 
     public float getSize() {
-        return size;
+        return ripple.radius;
     }
 
     public void setSize(float size) {
-        this.size = size;
+        ripple.radius = size;
     }
 
     public boolean isVisible() {
@@ -39,24 +37,28 @@ public class RippleEffect {
     }
 
     public void drawRipple(SmartContext context, Shape clip, int color) {
-        float a = (((color & 0xFF) / 255f) * (1 - animation.getT()));
+        float a = (((color & 0xFF) / 255f) * (1 - animation.getInterpolatedPosition()));
         colors[0] = (color & 0xFFFFFF00) | ((int) (a * 255));
         colors[1] = (color & 0xFFFFFF00);
 
-        context.setPaint(Paint.radial(ripple.x, ripple.y, ripple.radius * size, ripple.radius * size, 0, 0,
+        float min = Math.min(16, Math.max(8, ripple.radius * 0.1f));
+        float max = Math.min(360, Math.max(16, ripple.radius));
+        float pos = animation.getInterpolatedPosition();
+        float radius = (min * (1 - pos)) + max * (pos);
+
+        context.setPaint(Paint.radial(ripple.x, ripple.y, radius, radius, 0, 0,
                 stops, colors, Paint.CycleMethod.CLAMP));
         if (clip == null) {
-            context.drawCircle(ripple.x, ripple.y, ripple.radius * size, true);
+            context.drawCircle(ripple.x, ripple.y, radius, true);
         } else {
             context.drawShape(clip, true);
         }
     }
 
     public void fire(float x, float y) {
-        ripple.x = x;
-        ripple.y = y;
-        if (animation.isStopped() || animation.getT() > 0.5f) {
-            ripple.radius = 0.1f;
+        if (animation.isStopped() || animation.getInterpolatedPosition() > 0.5f) {
+            ripple.x = x;
+            ripple.y = y;
             animation.stop();
             animation.play(widget.getActivity());
         }
@@ -73,7 +75,6 @@ public class RippleEffect {
     private class RippleAnimation extends NormalizedAnimation {
         @Override
         public void compute(float t) {
-            ripple.radius = Interpolation.mix(0.1f,  1.0f, t);
             widget.invalidate(false);
         }
 

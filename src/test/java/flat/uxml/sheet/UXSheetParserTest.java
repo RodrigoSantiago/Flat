@@ -154,13 +154,13 @@ public class UXSheetParserTest {
     @Test
     public void styleFunctionAttributes() {
         UXSheetParser reader = new UXSheetParser(
-                "style { url : url(\"path\"); color : rgb(0, 128, 255.0); color-alpha : rgba(0, 128, 255.0, 128); }"
+                "style { font : font(\"family\"); color : rgb(0, 128, 255.0); color-alpha : rgba(0, 128, 255.0, 128); }"
         );
         reader.parse();
 
         assertEquals(1, reader.getStyles().size());
         assertStyle(reader.getStyles(), "style", null, 
-                "url", new UXValueResource("path"),
+                "font", new UXValueFont("family", null, null, null),
                 "color", new UXValueColor(0x0080FFFF),
                 "color-alpha", new UXValueColor(0x0080FF80)
         );
@@ -551,19 +551,15 @@ public class UXSheetParserTest {
                     rgba-on : rgba(255, 128, 128, 128);
                     rgba-off : rgba(255, 128, 128, 128dp);
                 }
-                style-url {
-                    url-on : url("path");
-                    url-off : url("path", and, something);
-                }
                 style-function {
                     function-off : function("something");
-                    function-incomplete : url("something";
+                    function-incomplete : font("something";
                 }
                 """
         );
         reader.parse();
 
-        assertEquals(5, reader.getStyles().size());
+        assertEquals(4, reader.getStyles().size());
         assertStyle(reader.getStyles(), "style", null,
                 "color-on", new UXValueColor(0xFFFFFFFF),
                 "color-off", new UXValue()
@@ -577,13 +573,9 @@ public class UXSheetParserTest {
                 "rgba-on", new UXValueColor(0xFF808080),
                 "rgba-off", new UXValue()
         );
-        assertStyle(reader.getStyles(), "style-url", null,
-                "url-on", new UXValueResource("path"),
-                "url-off", new UXValue()
-        );
         assertStyle(reader.getStyles(), "style-function", null,
                 "function-off", new UXValue(),
-                "function-incomplete", new UXValueResource("something")
+                "function-incomplete", new UXValueFont("something", null, null, null)
         );
 
         assertEquals(0, reader.getVariables().size());
@@ -595,9 +587,8 @@ public class UXSheetParserTest {
                 UXSheetParser.ErroLog.INVALID_FONT, 7,
                 UXSheetParser.ErroLog.INVALID_FONT, 7,
                 UXSheetParser.ErroLog.INVALID_COLOR, 11,
-                UXSheetParser.ErroLog.INVALID_URL, 15,
-                UXSheetParser.ErroLog.INVALID_FUNCTION, 18,
-                UXSheetParser.ErroLog.UNEXPECTED_END_OF_TOKENS, 19
+                UXSheetParser.ErroLog.INVALID_FUNCTION, 14,
+                UXSheetParser.ErroLog.UNEXPECTED_END_OF_TOKENS, 15
         );
     }
 

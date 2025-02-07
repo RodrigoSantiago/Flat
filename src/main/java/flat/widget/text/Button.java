@@ -177,6 +177,9 @@ public class Button extends Label {
     @Override
     public void firePointer(PointerEvent pointerEvent) {
         super.firePointer(pointerEvent);
+        if (!pointerEvent.isConsumed() && pointerEvent.getType() == PointerEvent.PRESSED) {
+            requestFocus(true);
+        }
         if (!pointerEvent.isConsumed() && pointerEvent.getType() == PointerEvent.RELEASED) {
             fire();
         }

@@ -1,8 +1,10 @@
 package flat.widget.selection;
 
+import flat.animations.NormalizedAnimation;
 import flat.animations.StateInfo;
 import flat.events.ActionEvent;
 import flat.events.PointerEvent;
+import flat.graphics.Color;
 import flat.graphics.SmartContext;
 import flat.graphics.image.Drawable;
 import flat.uxml.Controller;
@@ -11,6 +13,7 @@ import flat.uxml.UXListener;
 import flat.widget.Widget;
 import flat.widget.enums.ImageFilter;
 import flat.widget.enums.SelectionState;
+import flat.window.Activity;
 
 public class CheckBox extends Widget {
 
@@ -20,7 +23,14 @@ public class CheckBox extends Widget {
     private Drawable iconInactive;
     private Drawable iconActive;
     private Drawable iconIdeterminate;
+    private int color = Color.black;
+
+    private IconChange iconChangeAnimation = new IconChange();
+    private Drawable prevIcon;
     private Drawable currentIcon;
+    private float iconTransitionDuration;
+    private float iconWidth;
+    private float iconHeight;
 
     @Override
     public void applyAttributes(Controller controller) {
@@ -28,6 +38,7 @@ public class CheckBox extends Widget {
 
         UXAttrs attrs = getAttrs();
         setActionListener(attrs.getAttributeListener("on-action", ActionEvent.class, controller));
+        setSelectionState(attrs.getAttributeConstant("selection-state", getSelectionState()));
     }
 
     @Override
@@ -37,17 +48,17 @@ public class CheckBox extends Widget {
         UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
 
+        setColor(attrs.getColor("icon-color", info, getColor()));
         setIconInactive(attrs.getResourceAsDrawable("icon-inactive", info, getIconInactive(), false));
         setIconActive(attrs.getResourceAsDrawable("icon-active", info, getIconActive(), false));
         setIconIdeterminate(attrs.getResourceAsDrawable("icon-indeterminate", info, getIconIdeterminate(), false));
+        setIconTransitionDuration(attrs.getNumber("icon-transition-duration", info, getIconTransitionDuration()));
     }
 
     @Override
     public void onDraw(SmartContext context) {
         backgroundDraw(context);
         context.setTransform2D(getTransform());
-
-        if (currentIcon == null) return;
 
         final float x = getInX();
         final float y = getInY();
@@ -56,14 +67,36 @@ public class CheckBox extends Widget {
 
         if (width <= 0 || height <= 0) return;
 
-        float icoWidth = Math.min(currentIcon.getWidth(), width);
-        float icoHeight = Math.min(currentIcon.getHeight(), height);
+        float pos = iconChangeAnimation.isPlaying() ? iconChangeAnimation.getInterpolatedPosition() : 1f;
+        float prevAlpha = pos < 0.5f ? 1 : 1 - (pos - 0.5f) / 0.5f;
+        float currentAlpha = pos < 0.5f ? pos / 0.5f : 1;
+        if (iconTransitionDuration <= 0) {
+            currentAlpha = 1f;
+        }
 
-        context.setColor(0xFF0000FF);
-        currentIcon.draw(context
-                , (x + width - icoWidth) * 0.5f
-                , (y + height - icoHeight) * 0.5f
-                , width, height, 0, iconImageFilter);
+        if (iconTransitionDuration > 0 && prevIcon != null) {
+            float icoWidth = Math.min(prevIcon.getWidth(), width);
+            float icoHeight = Math.min(prevIcon.getHeight(), height);
+            float xOff = (x + width - icoWidth) * 0.5f;
+            float yOff = (y + height - icoHeight) * 0.5f;
+            context.setColor(Color.multiplyColorAlpha(color, prevAlpha));
+            prevIcon.draw(context
+                    , xOff
+                    , yOff
+                    , width, height, 0, iconImageFilter);
+        }
+
+        if (currentIcon != null) {
+            float icoWidth = Math.min(currentIcon.getWidth(), width);
+            float icoHeight = Math.min(currentIcon.getHeight(), height);
+            float xOff = (x + width - icoWidth) * 0.5f;
+            float yOff = (y + height - icoHeight) * 0.5f;
+            context.setColor(Color.multiplyColorAlpha(color, currentAlpha));
+            currentIcon.draw(context
+                    , xOff
+                    , yOff
+                    , width, height, 0, iconImageFilter);
+        }
     }
 
     @Override
@@ -76,16 +109,13 @@ public class CheckBox extends Widget {
         boolean wrapWidth = getPrefWidth() == WRAP_CONTENT;
         boolean wrapHeight = getPrefHeight() == WRAP_CONTENT;
 
-        float iW = currentIcon == null ? 0 : currentIcon.getWidth();
-        float iH = currentIcon == null ? 0 : currentIcon.getHeight();
-
         if (wrapWidth) {
-            mWidth = Math.max(iW + extraWidth, getLayoutMinWidth());
+            mWidth = Math.max(iconWidth + extraWidth, getLayoutMinWidth());
         } else {
             mWidth = Math.max(getPrefWidth(), getLayoutMinWidth());
         }
         if (wrapHeight) {
-            mHeight = Math.max(iH + extraHeight, getLayoutMinHeight());
+            mHeight = Math.max(iconHeight + extraHeight, getLayoutMinHeight());
         } else {
             mHeight = Math.max(getPrefHeight(), getLayoutMinHeight());
         }
@@ -101,22 +131,38 @@ public class CheckBox extends Widget {
         }
     }
 
+    private void updateIconSize() {
+        float iaWidth = iconActive == null ? 0 : iconActive.getWidth();
+        float iaHeight = iconActive == null ? 0 : iconActive.getHeight();
+        float iiWidth = iconInactive == null ? 0 : iconInactive.getWidth();
+        float iiHeight = iconInactive == null ? 0 : iconInactive.getHeight();
+        float idWidth = iconIdeterminate == null ? 0 : iconIdeterminate.getWidth();
+        float idHeight = iconIdeterminate == null ? 0 : iconIdeterminate.getHeight();
+        float nextWidth = Math.max(Math.max(iaWidth, iiWidth), idWidth);
+        float nextHeight = Math.max(Math.max(iaHeight, iiHeight), idHeight);
+        if (nextWidth != iconWidth || nextHeight != iconHeight) {
+            this.iconWidth = nextWidth;
+            this.iconHeight = nextHeight;
+            invalidate(true);
+        } else {
+            invalidate(false);
+        }
+    }
+
     private void setCurrentIcon() {
-        Drawable nextIcon = isActive() ? iconActive : isIndeterminate() ? iconIdeterminate : iconInactive;
-        if (nextIcon == null) {
-            nextIcon = iconInactive;
+        Drawable icon = isActive() ? iconActive : isIndeterminate() ? iconIdeterminate : iconInactive;
+        if (icon == null) {
+            icon = iconInactive;
         }
-        if (currentIcon == nextIcon) {
-            return;
+        if (currentIcon != icon) {
+            if (iconTransitionDuration > 0) {
+                iconChangeAnimation.setDuration(iconTransitionDuration);
+                iconChangeAnimation.play(getActivity());
+            }
+            prevIcon = currentIcon;
+            currentIcon = icon;
+            invalidate(false);
         }
-
-        float width = currentIcon == null ? 0 : currentIcon.getWidth();
-        float height = currentIcon == null ? 0 : currentIcon.getHeight();
-        float nextWidth = nextIcon == null ? 0 : nextIcon.getWidth();
-        float nextHeight = nextIcon == null ? 0 : nextIcon.getHeight();
-        currentIcon = nextIcon;
-
-        invalidate(width != nextWidth || height != nextHeight);
     }
 
     public SelectionState getSelectionState() {
@@ -149,7 +195,7 @@ public class CheckBox extends Widget {
     public void setIconInactive(Drawable iconInactive) {
         if (this.iconInactive != iconInactive) {
             this.iconInactive = iconInactive;
-
+            updateIconSize();
             setCurrentIcon();
         }
     }
@@ -162,6 +208,7 @@ public class CheckBox extends Widget {
         if (this.iconActive != iconActive) {
             this.iconActive = iconActive;
 
+            updateIconSize();
             setCurrentIcon();
         }
     }
@@ -174,7 +221,31 @@ public class CheckBox extends Widget {
         if (this.iconIdeterminate != iconIdeterminate) {
             this.iconIdeterminate = iconIdeterminate;
 
+            updateIconSize();
             setCurrentIcon();
+        }
+    }
+
+    public float getIconTransitionDuration() {
+        return iconTransitionDuration;
+    }
+
+    public void setIconTransitionDuration(float iconTransitionDuration) {
+        if (this.iconTransitionDuration != iconTransitionDuration) {
+            this.iconTransitionDuration = iconTransitionDuration;
+
+            iconChangeAnimation.stop(true);
+        }
+    }
+
+    public int getColor() {
+        return color;
+    }
+
+    public void setColor(int color) {
+        if (this.color != color) {
+            this.color = color;
+            invalidate(false);
         }
     }
 
@@ -207,5 +278,17 @@ public class CheckBox extends Widget {
     public void fire() {
         setSelectionState(isActive() ? SelectionState.INACTIVE : SelectionState.ACTIVE);
         fireAction(new ActionEvent(this));
+    }
+
+    private class IconChange extends NormalizedAnimation {
+        @Override
+        public Activity getSource() {
+            return getActivity();
+        }
+
+        @Override
+        protected void compute(float t) {
+            invalidate(false);
+        }
     }
 }

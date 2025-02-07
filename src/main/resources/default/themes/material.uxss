@@ -17,7 +17,7 @@ label {
 
 button : label {
     font : font("Roboto", bold);
-    ripple : true;
+    ripple-enabled : true;
     ripple-color : #00000080;
     shadow-enabled : true;
     radius-top : 4;
@@ -34,6 +34,7 @@ button : label {
     transition-duration : 0.1;
     vertical-align : middle;
     cursor : hand;
+    focusable : true;
 
     enabled {
         elevation : 1;
@@ -43,6 +44,9 @@ button : label {
     }
     pressed {
         elevation : 4;
+    }
+    focused {
+        background-color : #00FFFFFF;
     }
 }
 
@@ -258,9 +262,9 @@ checkbox {
     ripple-overflow : true;
     ripple-enabled : true;
     ripple-color : #00000080;
-    icon-indeterminate : url('/default/icons/minus-box.svg');
-    icon-inactive : url('/default/icons/checkbox-blank-outline.svg');
-    icon-active : url('/default/icons/checkbox-marked.svg');
+    icon-indeterminate : '/default/icons/minus-box.svg';
+    icon-inactive : '/default/icons/checkbox-blank-outline.svg';
+    icon-active : '/default/icons/checkbox-marked.svg';
     cursor : hand;
 }
 
@@ -272,11 +276,11 @@ radiobutton {
 
     enabled {
         color : #000000;
-        icon : url(icons/radiobox-blank.svg);
+        icon : '/default/icons/radiobox-blank.svg';
     }
     activated {
         color : #FF0000;
-        icon : url(icons/radiobox-marked.svg);
+        icon : '/default/icons/radiobox-marked.svg';
     }
 }
 
@@ -295,7 +299,7 @@ switch {
     shadow : true;
     elevation : 1;
     background-color : #CA5050;
-    icon : url(icons/switch-shape.svg);
+    icon : '/default/icons/switch-shape.svg';
 
     transition-duration : 0.1;
 
@@ -330,7 +334,7 @@ slider {
 
     color : #FF0000;
     background-color : #CCCCCC;
-    icon : url(icons/slider-icon.svg);
+    icon : '/default/icons/slider-icon.svg';
 
     label-enabled : true;
     label-font : font("Roboto", bold);
@@ -339,7 +343,7 @@ slider {
     label-position : 32;
     label-decimal : 0;
     label-time-out : 0.4;
-    label-icon : url(icons/slider-label.svg);
+    label-icon : '/default/icons/slider-label.svg';
 
     transition-duration : 0.1;
 

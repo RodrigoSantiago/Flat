@@ -61,6 +61,11 @@ public class MainActivity extends Activity {
         //context.setColor(Color.black);
         //context.setTextBlur(0);
         //context.drawText(32, 200, "Ola Mundo");
+        context.setTransform2D(null);
+        context.setColor(0xFFFFFFFF);
+        context.drawRect(0, 0, 100, 100, true);
+        context.setColor(0xFF000080);
+        context.drawRect(0, 0, 100, 100, true);
     }
 
     @Flat

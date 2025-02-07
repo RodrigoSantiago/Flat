@@ -1,9 +1,11 @@
 package flat.uxml.value;
 
 import flat.resources.Parser;
+import flat.resources.ResourceStream;
 import flat.uxml.Controller;
 import flat.uxml.UXListener;
 import flat.uxml.UXTheme;
+import flat.window.Application;
 
 import java.util.Objects;
 
@@ -22,6 +24,11 @@ public class UXValueText extends UXValue {
     @Override
     public int asColor(UXTheme theme) {
         return Parser.colorByName(text);
+    }
+
+    @Override
+    public ResourceStream asResource(UXTheme theme) {
+        return Application.getResourcesManager().getResource(text);
     }
 
     @Override

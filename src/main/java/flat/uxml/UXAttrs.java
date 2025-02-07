@@ -173,6 +173,20 @@ public class UXAttrs {
         return value != null ? value.asResource(theme) : def;
     }
 
+    public Drawable getAttributeResourceAsDrawable(String name, Drawable def, boolean handleException) {
+        ResourceStream resource = getAttributeResource(name, null);
+        if (resource != null) {
+            try {
+                return DrawableReader.parse(resource);
+            } catch (Exception exception) {
+                if (handleException) throw new FlatException("Failed to load image", exception);
+                return null;
+            }
+        } else {
+            return def;
+        }
+    }
+
     public <T extends Enum<T>>T getAttributeConstant(String name, T def) {
         UXValue value = getAttribute(name);
         if (value != null) {
