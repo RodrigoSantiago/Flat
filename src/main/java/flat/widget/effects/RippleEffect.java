@@ -14,7 +14,7 @@ public class RippleEffect {
     private static final float[] stops = new float[]{0, 1};
     private final int[] colors = new int[]{0, 0};
 
-    private float size;
+    private float size = 16f;
 
     private final Widget widget;
     private final Circle ripple = new Circle();
@@ -43,26 +43,22 @@ public class RippleEffect {
         colors[0] = (color & 0xFFFFFF00) | ((int) (a * 255));
         colors[1] = (color & 0xFFFFFF00);
 
-        context.setPaint(Paint.radial(ripple.x, ripple.y, ripple.radius, ripple.radius, 0, 0,
+        context.setPaint(Paint.radial(ripple.x, ripple.y, ripple.radius * size, ripple.radius * size, 0, 0,
                 stops, colors, Paint.CycleMethod.CLAMP));
-        context.drawShape(clip == null ? ripple : clip, true);
+        if (clip == null) {
+            context.drawCircle(ripple.x, ripple.y, ripple.radius * size, true);
+        } else {
+            context.drawShape(clip, true);
+        }
     }
 
     public void fire(float x, float y) {
         ripple.x = x;
         ripple.y = y;
         if (animation.isStopped() || animation.getT() > 0.5f) {
-            ripple.radius = 1;
+            ripple.radius = 0.1f;
             animation.stop();
             animation.play(widget.getActivity());
-        }
-    }
-
-    public void onActivityChange(Activity prev, Activity activity) {
-        if (animation.isPlaying()) {
-            animation.stop();
-            if (prev != null) prev.removeAnimation(animation);
-            if (activity != null) activity.addAnimation(animation);
         }
     }
 
@@ -70,15 +66,20 @@ public class RippleEffect {
         animation.setDelta(2);
     }
 
+    public void stop() {
+        animation.stop();
+    }
+
     private class RippleAnimation extends NormalizedAnimation {
         @Override
         public void compute(float t) {
-            float w = widget.getWidth() - widget.getMarginLeft() - widget.getMarginRight();
-            float h = widget.getHeight() - widget.getMarginTop() - widget.getMarginBottom();
-            float s = size <= 0 ? (float) Math.min(300, Math.max(w, h)) : size;
-            ripple.radius = Interpolation.mix(s / 10f,  s, t);
-
+            ripple.radius = Interpolation.mix(0.1f,  1.0f, t);
             widget.invalidate(false);
+        }
+
+        @Override
+        public Activity getSource() {
+            return widget.getActivity();
         }
     }
 }

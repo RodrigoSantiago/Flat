@@ -273,6 +273,7 @@ public class ActivityTest {
         when(animation.isPlaying()).thenReturn(true);
 
         Activity activity = new Activity(context);
+        when(animation.getSource()).thenReturn(activity);
 
         assertNull(activity.getTheme());
         activity.setTheme(theme);
@@ -291,6 +292,25 @@ public class ActivityTest {
         verify(animation).handle(1f);
         assertTrue(animate1);
         assertFalse(animate2);
+
+        // Play to Stop
+        Animation animation2 = mock(Animation.class);
+        when(animation2.getSource()).thenReturn(activity);
+        when(animation2.isPlaying()).thenReturn(true).thenReturn(false);
+        activity.addAnimation(animation2);
+        boolean animate3 = activity.animate(1f);
+        assertTrue(animate3);
+        boolean animate4 = activity.animate(1f);
+        assertFalse(animate4);
+        verify(animation2).handle(1f);
+
+        // Invalid source
+        Animation animation3 = mock(Animation.class);
+        when(animation3.getSource()).thenReturn(null);
+        activity.addAnimation(animation3);
+        boolean animate5 = activity.animate(1f);
+        assertFalse(animate5);
+        verify(animation3, times(0)).handle(1f);
     }
 
     @Test

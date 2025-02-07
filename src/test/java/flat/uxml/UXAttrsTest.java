@@ -7,6 +7,7 @@ import flat.resources.ResourceStream;
 import flat.resources.ResourcesManager;
 import flat.uxml.value.*;
 import flat.widget.State;
+import flat.widget.Widget;
 import flat.widget.enums.HorizontalAlign;
 import flat.window.Application;
 import org.junit.After;
@@ -30,6 +31,7 @@ public class UXAttrsTest {
     private UXTheme theme;
     private UXStyle base;
     private UXStyle nameStyle;
+    private Widget widget;
 
     private int hashPropertyBase;
     private int hashPropertyStyle;
@@ -51,6 +53,7 @@ public class UXAttrsTest {
         theme = mock(UXTheme.class);
         base = mock(UXStyle.class);
         nameStyle = mock(UXStyle.class);
+        widget = mock(Widget.class);
         when(theme.getStyle("test")).thenReturn(base);
         when(theme.getStyle("name")).thenReturn(nameStyle);
         when(theme.getFontScale()).thenReturn(1f);
@@ -93,7 +96,7 @@ public class UXAttrsTest {
 
     @Test
     public void constructor() {
-        UXAttrs attrs = new UXAttrs("test");
+        UXAttrs attrs = new UXAttrs(widget, "test");
         attrs.setName("name");
         attrs.setTheme(theme);
 
@@ -108,7 +111,7 @@ public class UXAttrsTest {
 
     @Test
     public void contains() {
-        UXAttrs attrs = new UXAttrs("test");
+        UXAttrs attrs = new UXAttrs(widget, "test");
         attrs.setName("name");
         attrs.setTheme(theme);
 
@@ -119,7 +122,7 @@ public class UXAttrsTest {
 
     @Test
     public void containsChange() {
-        UXAttrs attrs = new UXAttrs("test");
+        UXAttrs attrs = new UXAttrs(widget, "test");
         attrs.setName("name");
         attrs.setTheme(theme);
 
@@ -131,7 +134,7 @@ public class UXAttrsTest {
 
     @Test
     public void containsAttribute() {
-        UXAttrs attrs = new UXAttrs("test");
+        UXAttrs attrs = new UXAttrs(widget, "test");
         attrs.setName("name");
         attrs.setTheme(theme);
         attrs.addAttribute("property-added", new UXValueNumber(100));
@@ -160,7 +163,7 @@ public class UXAttrsTest {
 
     @Test
     public void getAttributeValues() {
-        UXAttrs attrs = new UXAttrs("test");
+        UXAttrs attrs = new UXAttrs(widget, "test");
         attrs.setName("name");
         attrs.setTheme(theme);
         attrs.addAttribute("property-added", new UXValueNumber(100));
@@ -181,7 +184,7 @@ public class UXAttrsTest {
 
     @Test
     public void getStyleValues() {
-        UXAttrs attrs = new UXAttrs("test");
+        UXAttrs attrs = new UXAttrs(widget, "test");
         attrs.setName("name");
         attrs.setTheme(theme);
         attrs.addAttribute("property-added", new UXValueNumber(100));
@@ -213,7 +216,7 @@ public class UXAttrsTest {
 
     @Test
     public void mixStyleValues() {
-        UXAttrs attrs = new UXAttrs("test");
+        UXAttrs attrs = new UXAttrs(widget, "test");
         attrs.setName("name");
         attrs.setTheme(theme);
 
@@ -227,7 +230,7 @@ public class UXAttrsTest {
 
     @Test
     public void mixDifferentValues() {
-        UXAttrs attrs = new UXAttrs("test");
+        UXAttrs attrs = new UXAttrs(widget, "test");
         attrs.setName("name");
         attrs.setTheme(theme);
 
@@ -242,7 +245,7 @@ public class UXAttrsTest {
 
     @Test
     public void getListeners() {
-        UXAttrs attrs = new UXAttrs("test");
+        UXAttrs attrs = new UXAttrs(widget, "test");
         attrs.setName("name");
         attrs.setTheme(theme);
         attrs.addAttribute("on-click", new UXValueText("method"));

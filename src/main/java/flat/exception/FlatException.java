@@ -8,4 +8,8 @@ public class FlatException extends RuntimeException {
     public FlatException(Throwable cause) {
         super(cause);
     }
+
+    public FlatException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

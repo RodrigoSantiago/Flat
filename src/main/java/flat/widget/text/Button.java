@@ -3,7 +3,6 @@ package flat.widget.text;
 import flat.animations.StateInfo;
 import flat.events.ActionEvent;
 import flat.events.PointerEvent;
-import flat.graphics.Color;
 import flat.graphics.SmartContext;
 import flat.graphics.image.Drawable;
 import flat.graphics.image.DrawableReader;
@@ -20,7 +19,7 @@ public class Button extends Label {
     private UXListener<ActionEvent> actionListener;
 
     private Drawable iconImage;
-    private ImageFilter iconImageFilter = ImageFilter.NEAREST;
+    private ImageFilter iconImageFilter = ImageFilter.LINEAR;
     private float iconSpacing;
     private boolean iconScaleHeight;
     private HorizontalAlign iconAlign = HorizontalAlign.LEFT;
@@ -183,17 +182,6 @@ public class Button extends Label {
         }
     }
 
-    @Override
-    public void fireRipple(float x, float y) {
-        if (isRippleOverflow() && (getText() == null || getText().isEmpty()) && iconImage != null) {
-            Vector2 p = localToScreen(getInX() + getInWidth() / 2, getInY() + getHeight() / 2);
-            getRipple().setSize(getInWidth());
-            super.fireRipple(p.x, p.y);
-        } else {
-            super.fireRipple(x, y);
-        }
-    }
-
     public UXListener<ActionEvent> getActionListener() {
         return actionListener;
     }
@@ -261,7 +249,7 @@ public class Button extends Label {
     }
 
     public void setIconImageFilter(ImageFilter iconImageFilter) {
-        if (iconImageFilter == null) iconImageFilter = ImageFilter.NEAREST;
+        if (iconImageFilter == null) iconImageFilter = ImageFilter.LINEAR;
 
         if (this.iconImageFilter != iconImageFilter) {
             this.iconImageFilter = iconImageFilter;

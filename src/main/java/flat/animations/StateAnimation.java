@@ -21,6 +21,11 @@ public final class StateAnimation implements Animation, StateInfo {
     }
 
     @Override
+    public Activity getSource() {
+        return widget.getActivity();
+    }
+
+    @Override
     public boolean isPlaying() {
         return !(fEnabled == tEnabled && fFocused == tFocused && fActivated == tActivated &&
                 fHovered == tHovered && fPressed == tPressed && fDragged == tDragged &&
@@ -59,8 +64,7 @@ public final class StateAnimation implements Animation, StateInfo {
         return duration;
     }
 
-    public void play(int bitmask) {
-        boolean play = isPlaying();
+    private void setTargetMasks(int bitmask) {
         tEnabled    = (byte) ((bitmask & (State.ENABLED.bitset())) != 0 ? 1 : 0);
         tFocused    = (byte) ((bitmask & (State.FOCUSED.bitset())) != 0 ? 1 : 0);
         tActivated  = (byte) ((bitmask & (State.ACTIVATED.bitset())) != 0 ? 1 : 0);
@@ -69,15 +73,9 @@ public final class StateAnimation implements Animation, StateInfo {
         tDragged    = (byte) ((bitmask & (State.DRAGGED.bitset())) != 0 ? 1 : 0);
         tError      = (byte) ((bitmask & (State.ERROR.bitset())) != 0 ? 1 : 0);
         tDisabled   = (byte) ((bitmask & (State.DISABLED.bitset())) != 0 ? 1 : 0);
-        if (!play && isPlaying()) {
-            Activity activity = widget.getActivity();
-            if (activity != null) {
-                activity.addAnimation(this);
-            }
-        }
     }
 
-    public void stop() {
+    public void setMasks() {
         fEnabled = tEnabled;
         fFocused = tFocused;
         fActivated = tActivated;
@@ -88,9 +86,25 @@ public final class StateAnimation implements Animation, StateInfo {
         fDisabled = tDisabled;
     }
 
+    public void play(int bitmask) {
+        boolean play = isPlaying();
+        setTargetMasks(bitmask);
+
+        if (!play && isPlaying()) {
+            Activity activity = widget.getActivity();
+            if (activity != null) {
+                activity.addAnimation(this);
+            }
+        }
+    }
+
+    public void stop() {
+        setMasks();
+    }
+
     public void set(int bitmask) {
-        play(bitmask);
-        stop();
+        setTargetMasks(bitmask);
+        setMasks();
     }
 
     @Override

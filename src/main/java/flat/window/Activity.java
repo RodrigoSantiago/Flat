@@ -146,10 +146,11 @@ public class Activity extends Controller {
 
             scene = nextScene;
             nextScene = null;
-            scene.getActivityScene().setActivity(this);
+
             if (old != null) {
                 old.getActivityScene().setActivity(null);
             }
+            scene.getActivityScene().setActivity(this);
             invalidateTheme();
         }
     }
@@ -321,11 +322,17 @@ public class Activity extends Controller {
         }
         animationsAdd.clear();
 
-        boolean wasAnimated = !animations.isEmpty();
+        boolean wasAnimated = false;
 
         for (int i = 0; i < animations.size(); i++) {
             Animation anim = animations.get(i);
+            if (anim.getSource() != this) {
+                animations.remove(i--);
+                continue;
+            }
+
             if (anim.isPlaying()) {
+                wasAnimated = true;
                 anim.handle(loopTime);
             }
             if (!anim.isPlaying()) {
@@ -424,6 +431,11 @@ public class Activity extends Controller {
             if (next != null) {
                 next.show();
             }
+        }
+
+        @Override
+        public Activity getSource() {
+            return null;
         }
 
         @Override

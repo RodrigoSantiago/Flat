@@ -45,7 +45,6 @@ public class Widget {
     private float minWidth, minHeight, maxWidth = MATCH_PARENT, maxHeight = MATCH_PARENT, prefWidth, prefHeight;
     private float weight = 1;
     private float measureWidth, measureHeight;
-    private float layoutWidth, layoutHeight;
 
     private int visibility = Visibility.VISIBLE.ordinal();
     private Cursor cursor = Cursor.UNSET;
@@ -57,6 +56,7 @@ public class Widget {
     //---------------------
     Parent parent;
     Activity activity;
+    Scene scene;
     ArrayList<Widget> children;
     List<Widget> unmodifiableChildren;
     boolean invalidChildrenOrder;
@@ -107,7 +107,7 @@ public class Widget {
     private float transitionDuration;
 
     public Widget() {
-        attrs = new UXAttrs(getClass().getSimpleName().toLowerCase());
+        attrs = new UXAttrs(this, getClass().getSimpleName().toLowerCase());
     }
 
     public void setAttributes(HashMap<Integer, UXValue> attributes, String style) {
@@ -117,7 +117,6 @@ public class Widget {
 
     public void applyAttributes(Controller controller) {
         UXAttrs attrs = getAttrs();
-        attrs.setActivity(activity);
         attrs.setTheme(getCurrentTheme());
 
         setEnabled(attrs.getAttributeBool("enabled", isEnabled()));
@@ -135,7 +134,6 @@ public class Widget {
 
     public void applyStyle() {
         UXAttrs attrs = getAttrs();
-        attrs.setActivity(activity);
 
         setTransitionDuration(attrs.getNumber("transition-duration", null, getTransitionDuration()));
 
@@ -280,19 +278,11 @@ public class Widget {
 
         // Draw Ripple
         if (rippleOpacity > 0 && rippleEnabled && ripple.isVisible()) {
-            ripple.drawRipple(context, isRippleOverflow() ? null : bg, rippleColor);
+            ripple.drawRipple(context, rippleOverflow ? null : bg, rippleColor);
         }
 
-        if (afterLayout) {
-            afterLayout = false;
-            context.setColor(0xFF0000FF);
-            context.setStroker(new BasicStroke(3));
-            context.drawRoundRect(bg, false);
-        }
         context.setTransform2D(null);
     }
-
-    private boolean afterLayout = false;
 
     protected void childrenDraw(SmartContext context) {
         if (children != null) {
@@ -354,19 +344,7 @@ public class Widget {
      * @param height
      */
     public final void setLayout(float width, float height) {
-        this.layoutWidth = width;
-        this.layoutHeight = height;
-        afterLayout = true;
-
         setSize(width, height);
-    }
-
-    public float lWidth() {
-        return layoutWidth;
-    }
-
-    public float lHeight() {
-        return layoutHeight;
     }
 
     public float getLayoutMinWidth() {
@@ -383,14 +361,6 @@ public class Widget {
 
     public float getLayoutMaxHeight() {
         return Math.max(getLayoutMinHeight(), getMaxHeight() <= 0 ? MATCH_PARENT : getMaxHeight());
-    }
-
-    public float lMaxWidth() {
-        return maxWidth + marginLeft + marginRight;
-    }
-
-    public float lMaxHeight() {
-        return maxHeight + marginTop + marginBottom;
     }
 
     /**
@@ -467,18 +437,25 @@ public class Widget {
             String oldId = this.id;
             this.id = id;
             Scene scene = getScene();
+            if (scene == this) {
+                scene = scene.getScene();
+            }
             if (scene != null) {
                 scene.reassign(oldId, this);
             }
         }
     }
 
-    public Activity getActivity() {
+    protected Activity getCurrentActivity() {
         if (parent != null) {
-            return parent.getActivity();
+            return parent.getCurrentActivity();
         } else {
             return null;
         }
+    }
+
+    public Activity getActivity() {
+        return activity;
     }
 
     public void setTheme(UXTheme theme) {
@@ -498,13 +475,17 @@ public class Widget {
     }
 
     /**
-     * Return the top-most scene, direct assigned to an activity
+     * Return the current assigned scene
      *
      * @return
      */
     public Scene getScene() {
+        return scene;
+    }
+
+    protected Scene getCurrentScene() {
         if (parent != null) {
-            return parent.getScene();
+            return parent.getCurrentScene();
         } else {
             return null;
         }
@@ -525,41 +506,56 @@ public class Widget {
             parent.getParent().remove(parent);
         }
 
-        Scene sceneA = getScene();
+        Scene sceneA = getCurrentScene();
         Activity activityA = sceneA == null ? null : sceneA.getActivity();
 
         this.parent = parent;
 
-        Scene sceneB = getScene();
+        Scene sceneB = getCurrentScene();
         Activity activityB = sceneB == null ? null : sceneB.getActivity();
 
         if (sceneA != sceneB) {
-            if (sceneA != null) {
-                sceneA.unassign(this);
-            }
-            if (sceneB != null) {
-                sceneB.assign(this);
-            }
-            onSceneChange();
+            onSceneChangeLocal(sceneA, sceneB);
+            onSceneChange(sceneA, sceneB);
         }
 
         if (activityA != activityB) {
-            onActivityChange(activityA, activityB);
+            onActivityChangeLocal(activityA, activityB);
         }
     }
 
-    public void onSceneChange() {
+    public void onSceneChange(Scene prev, Scene scene) {
         if (children != null) {
             for (Widget widget : getChildrenIterable()) {
-                widget.onSceneChange();
+                widget.onSceneChange(prev, scene);
             }
+        }
+
+        if (contextMenu != null) {
+            contextMenu.onSceneChange(prev, scene);
         }
     }
 
-    protected void onActivityChange(Activity prev, Activity activity) {
-        this.activity = activity;
-        refreshFocus();
+    void onSceneChangeLocal(Scene prev, Scene scene) {
+        this.scene = scene;
+        if (prev != null) {
+            prev.unassign(this);
+        }
+        if (scene != null) {
+            scene.assign(this);
+        }
+        if (children != null) {
+            for (Widget widget : getChildrenIterable()) {
+                widget.onSceneChangeLocal(prev, scene);
+            }
+        }
 
+        if (contextMenu != null) {
+            ((Widget)contextMenu).onSceneChangeLocal(prev, scene);
+        }
+    }
+
+    public void onActivityChange(Activity prev, Activity activity) {
         if (children != null) {
             for (Widget widget : getChildrenIterable()) {
                 widget.onActivityChange(prev, activity);
@@ -569,14 +565,28 @@ public class Widget {
         if (contextMenu != null) {
             contextMenu.onActivityChange(prev, activity);
         }
+    }
+
+    void onActivityChangeLocal(Activity prev, Activity activity) {
+        this.activity = activity;
+        refreshFocus();
+
+        if (children != null) {
+            for (Widget widget : getChildrenIterable()) {
+                widget.onActivityChangeLocal(prev, activity);
+            }
+        }
+
+        if (contextMenu != null) {
+            ((Widget)contextMenu).onActivityChangeLocal(prev, activity);
+        }
 
         if (ripple != null) {
-            ripple.onActivityChange(prev, activity);
+            ripple.stop();
         }
 
         if (stateAnimation != null && stateAnimation.isPlaying()) {
-            if (prev != null) prev.removeAnimation(stateAnimation);
-            if (activity != null) activity.addAnimation(stateAnimation);
+            stateAnimation.stop();
         }
     }
 
@@ -1596,8 +1606,19 @@ public class Widget {
     public void fireRipple(float x, float y) {
         if (rippleEnabled) {
             transform();
-            float ix = inverseTransform.pointX(x, y);
-            float iy = inverseTransform.pointY(x, y);
+            float ix;
+            float iy;
+            if (rippleOverflow) {
+                ix = (inx + inw) * 0.5f;
+                iy = (iny + inh) * 0.5f;
+                float w = Math.max(getWidth() - getMarginRight() - getMarginLeft(), 0) * 0.5f;
+                float h = Math.max(getHeight() - getMarginTop() - getMarginBottom(), 0) * 0.5f;
+                ripple.setSize(Math.min(500, (float) Math.sqrt(w * w + h * h)));
+            } else {
+                ix = inverseTransform.pointX(x, y);
+                iy = inverseTransform.pointY(x, y);
+                ripple.setSize(Math.min(500, Math.max(getWidth(), getHeight())));
+            }
             ripple.fire(ix, iy);
         }
     }

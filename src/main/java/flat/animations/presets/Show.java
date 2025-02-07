@@ -3,6 +3,7 @@ package flat.animations.presets;
 import flat.animations.Interpolation;
 import flat.animations.NormalizedAnimation;
 import flat.widget.Widget;
+import flat.window.Activity;
 
 public class Show extends NormalizedAnimation {
 
@@ -36,5 +37,10 @@ public class Show extends NormalizedAnimation {
         widget.setPrefWidth(nDimension);
         widget.setMaxWidth(nDimension);
         widget.setMinWidth(nDimension);
+    }
+
+    @Override
+    public Activity getSource() {
+        return widget.getActivity();
     }
 }

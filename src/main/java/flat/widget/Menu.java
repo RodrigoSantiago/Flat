@@ -50,7 +50,7 @@ public class Menu extends Scene {
     @Override
     public void onLayout(float width, float height) {
         setLayout(Math.min(width, getMeasureWidth()), Math.min(getMeasureHeight(), height));
-        layoutHelperVertical(new Children(orderedList), getInX(), getInY(), getInWidth(), getInHeight(), halign);
+        //layoutHelperVertical(new Children(orderedList), getInX(), getInY(), getInWidth(), getInHeight(), halign);
     }
 
     @Override

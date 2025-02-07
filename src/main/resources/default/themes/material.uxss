@@ -255,18 +255,13 @@ canvas {
 checkbox {
     width : 24;
     height : 24;
-    ripple : true;
+    ripple-overflow : true;
+    ripple-enabled : true;
     ripple-color : #00000080;
-    icon-indeterminate : url(icons/minus-box.svg);
-
-    enabled {
-        color : #000000;
-        icon : url(icons/checkbox-blank-outline.svg);
-    }
-    activated {
-        color : #FF0000;
-        icon : url(icons/checkbox-marked.svg);
-    }
+    icon-indeterminate : url('/default/icons/minus-box.svg');
+    icon-inactive : url('/default/icons/checkbox-blank-outline.svg');
+    icon-active : url('/default/icons/checkbox-marked.svg');
+    cursor : hand;
 }
 
 radiobutton {

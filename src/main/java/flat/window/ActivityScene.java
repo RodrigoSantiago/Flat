@@ -1,15 +1,13 @@
 package flat.window;
 
-import flat.widget.Scene;
-
-import java.util.Objects;
+import flat.widget.SceneActivity;
 
 public class ActivityScene {
 
-    private Scene scene;
+    private SceneActivity scene;
     private Activity activity;
 
-    public ActivityScene(Scene scene) {
+    public ActivityScene(SceneActivity scene) {
         this.scene = scene;
     }
 

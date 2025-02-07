@@ -52,8 +52,6 @@ public class Label extends Widget {
         UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
 
-        attrs.getSize("width", info, getPrefWidth());
-
         setFont(attrs.getFont("font", info, getFont()));
         setTextSize(attrs.getSize("text-size", info, getTextSize()));
         setTextColor(attrs.getColor("text-color", info, getTextColor()));

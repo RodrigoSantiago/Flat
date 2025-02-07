@@ -3,9 +3,12 @@ package flat.uxml;
 import flat.animations.StateInfo;
 import flat.exception.FlatException;
 import flat.graphics.context.Font;
+import flat.graphics.image.Drawable;
+import flat.graphics.image.DrawableReader;
 import flat.resources.ResourceStream;
 import flat.uxml.value.UXValue;
 import flat.widget.State;
+import flat.widget.Widget;
 import flat.window.Activity;
 
 import java.util.HashMap;
@@ -13,6 +16,7 @@ import java.util.Objects;
 
 public class UXAttrs {
 
+    private final Widget widget;
     private final String base;
     private String name;
     private Activity activity;
@@ -22,7 +26,8 @@ public class UXAttrs {
     private BitArray bitArray;
     private HashMap<Integer, UXValue> attributes;
 
-    public UXAttrs(String base) {
+    public UXAttrs(Widget widget, String base) {
+        this.widget = widget;
         this.base = base;
     }
 
@@ -52,12 +57,8 @@ public class UXAttrs {
         return theme;
     }
 
-    public void setActivity(Activity activity) {
-        this.activity = activity;
-    }
-
     public Activity getActivity() {
-        return activity;
+        return widget.getActivity();
     }
 
     public UXStyle getStyle() {
@@ -267,6 +268,20 @@ public class UXAttrs {
             def = value.asResource(theme);
         }
         return def;
+    }
+
+    public Drawable getResourceAsDrawable(String name, StateInfo state, Drawable def, boolean handleException) {
+        ResourceStream resource = getResource(name, state, null);
+        if (resource != null) {
+            try {
+                return DrawableReader.parse(resource);
+            } catch (Exception exception) {
+                if (handleException) throw new FlatException("Failed to load image", exception);
+                return null;
+            }
+        } else {
+            return def;
+        }
     }
 
     public <T extends Enum<T>> T getConstant(String name, T def) {

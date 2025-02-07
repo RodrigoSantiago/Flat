@@ -10,7 +10,7 @@ import java.util.HashMap;
 
 public class Scene extends Box {
 
-    ActivityScene activityScene = new ActivityScene(this);
+    ActivityScene activityScene;
     HashMap<String, Widget> idMap = new HashMap<>();
 
     public Scene() {
@@ -18,22 +18,18 @@ public class Scene extends Box {
     }
 
     public ActivityScene getActivityScene() {
+        if (activityScene == null) {
+            activityScene = new ActivityScene(new SceneActivity(this));
+        }
         return activityScene;
     }
 
     @Override
-    public void onActivityChange(Activity prev, Activity activity) {
-        if (activity == getActivity()) {
-            super.onActivityChange(prev, activity);
-        }
-    }
-
-    @Override
-    public Activity getActivity() {
+    protected Activity getCurrentActivity() {
         if (activityScene.getActivity() != null) {
             return activityScene.getActivity();
         } else {
-            return super.getActivity();
+            return super.getCurrentActivity();
         }
     }
 
@@ -78,6 +74,11 @@ public class Scene extends Box {
     }
 
     @Override
+    protected Scene getCurrentScene() {
+        return this;
+    }
+
+    @Override
     public Widget findById(String id) {
         return idMap.get(id);
     }
@@ -116,4 +117,5 @@ public class Scene extends Box {
             idMap.put(newID, widget);
         }
     }
+
 }

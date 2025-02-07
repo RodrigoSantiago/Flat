@@ -1,8 +1,10 @@
 package flat.animations;
 
+import flat.window.Activity;
+
 public interface Animation {
 
-    // TODO - Animation source must be assigned to the same active that the animation si running
+    Activity getSource();
 
     boolean isPlaying();
 

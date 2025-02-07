@@ -3,6 +3,7 @@ package flat.animations.presets;
 import flat.animations.Interpolation;
 import flat.animations.NormalizedAnimation;
 import flat.widget.Widget;
+import flat.window.Activity;
 
 public class Hide extends NormalizedAnimation {
 
@@ -36,4 +37,8 @@ public class Hide extends NormalizedAnimation {
         }
     }
 
+    @Override
+    public Activity getSource() {
+        return widget.getActivity();
+    }
 }

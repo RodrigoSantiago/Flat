@@ -1,6 +1,7 @@
 package flat.animations;
 
 import flat.widget.Widget;
+import flat.window.Activity;
 
 public final class TransformAnimation extends NormalizedAnimation {
 
@@ -16,15 +17,16 @@ public final class TransformAnimation extends NormalizedAnimation {
     private boolean _linearAngularMix;
     private Widget _widget;
 
-    public TransformAnimation() {
-        this(null);
-    }
-
     public TransformAnimation(Widget widget) {
         fTx = tTx = fTy = tTy = Float.NaN;
         fSx = tSx = fSy = tSy = Float.NaN;
         fR = tR = Float.NaN;
         this.widget = widget;
+    }
+
+    @Override
+    public Activity getSource() {
+        return widget.getActivity();
     }
 
     public Widget getWidget() {
