@@ -3,6 +3,8 @@ package flat.widget.text;
 import flat.events.ActionEvent;
 import flat.graphics.context.Font;
 import flat.graphics.image.Drawable;
+import flat.graphics.image.DrawableReader;
+import flat.resources.ResourceStream;
 import flat.uxml.Controller;
 import flat.uxml.UXHash;
 import flat.uxml.UXListener;
@@ -26,11 +28,14 @@ import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({Font.class})
+@PrepareForTest({DrawableReader.class, Font.class})
 public class ButtonTest {
 
     Font boldFont;
     Font defaultFont;
+
+    ResourceStream resIcon;
+    Drawable icon;
 
     @Before
     public void before() {
@@ -43,6 +48,14 @@ public class ButtonTest {
         when(Font.findFont(any(), any(), any(), any())).thenReturn(defaultFont);
         when(defaultFont.getHeight(anyFloat())).thenReturn(16f);
         when(defaultFont.getWidth(any(), anyFloat(), anyFloat())).thenReturn(64f);
+
+        mockStatic(DrawableReader.class);
+        icon = mock(Drawable.class);
+        when(icon.getWidth()).thenReturn(24f);
+        when(icon.getHeight()).thenReturn(16f);
+
+        resIcon = mock(ResourceStream.class);
+        when(DrawableReader.parse(resIcon)).thenReturn(icon);
     }
 
     @Test
@@ -60,6 +73,7 @@ public class ButtonTest {
         assertEquals(button.getIconAlign(), HorizontalAlign.RIGHT);
         assertEquals(button.getIconSpacing(), 24, 0.1f);
         assertEquals(button.getIconImageFilter(), ImageFilter.LINEAR);
+        assertEquals(button.getIcon(), icon);
 
         assertEquals(action, button.getActionListener());
     }
@@ -107,7 +121,7 @@ public class ButtonTest {
 
         Button button = new Button();
         button.setText("Hello World");
-        button.setIconImage(drawable);
+        button.setIcon(drawable);
 
         button.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
         button.onMeasure();
@@ -154,7 +168,7 @@ public class ButtonTest {
 
         Button button = new Button();
         button.setText("Hello World");
-        button.setIconImage(drawable);
+        button.setIcon(drawable);
         button.setIconSpacing(8f);
 
         button.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
@@ -194,7 +208,7 @@ public class ButtonTest {
 
         Button button = new Button();
         button.setText("Hello World");
-        button.setIconImage(drawable);
+        button.setIcon(drawable);
         button.setIconScaleHeight(true);
 
         button.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
@@ -229,6 +243,10 @@ public class ButtonTest {
         UXValue uxBoldFont = mock(UXValue.class);
         when(uxBoldFont.asFont(any())).thenReturn(boldFont);
 
+        UXValue uxIconActive = mock(UXValue.class);
+        when(uxIconActive.asResource(any())).thenReturn(resIcon);
+
+        hash.put(UXHash.getHash("icon"), uxIconActive);
         hash.put(UXHash.getHash("icon-scale-height"), new UXValueBool(true));
         hash.put(UXHash.getHash("icon-align"), new UXValueText(HorizontalAlign.RIGHT.toString()));
         hash.put(UXHash.getHash("icon-spacing"), new UXValueSizeSp(24));

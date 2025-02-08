@@ -78,7 +78,7 @@ public class LabelTest {
         assertTrue(label.isTextAllCaps());
         assertEquals(boldFont, label.getFont());
         assertEquals(24f, label.getTextSize(), 0.1f);
-        assertEquals(0xFF0000FF, label.getTextColor(), 0.1f);
+        assertEquals(0xFF0000FF, label.getTextColor());
     }
 
     @Test

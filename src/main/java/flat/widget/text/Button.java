@@ -6,7 +6,6 @@ import flat.events.PointerEvent;
 import flat.graphics.SmartContext;
 import flat.graphics.image.Drawable;
 import flat.graphics.image.DrawableReader;
-import flat.math.Vector2;
 import flat.resources.ResourceStream;
 import flat.uxml.Controller;
 import flat.uxml.UXAttrs;
@@ -18,7 +17,7 @@ public class Button extends Label {
 
     private UXListener<ActionEvent> actionListener;
 
-    private Drawable iconImage;
+    private Drawable icon;
     private ImageFilter iconImageFilter = ImageFilter.LINEAR;
     private float iconSpacing;
     private boolean iconScaleHeight;
@@ -39,16 +38,7 @@ public class Button extends Label {
         UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
 
-        ResourceStream resourceIcon = attrs.getResource("icon-image", info, null);
-        if (resourceIcon != null) {
-            try {
-                Drawable drawable = DrawableReader.parse(resourceIcon);
-                setIconImage(drawable);
-            } catch (Exception ignored) {
-                setIconImage(null);
-            }
-        }
-
+        setIcon(attrs.getResourceAsDrawable("icon", info, getIcon(), false));
         setIconScaleHeight(attrs.getBool("icon-scale-height", info, getIconScaleHeight()));
         setIconAlign(attrs.getConstant("icon-align", info, getIconAlign()));
         setIconSpacing(attrs.getSize("icon-spacing", info, getIconSpacing()));
@@ -57,7 +47,7 @@ public class Button extends Label {
 
     @Override
     public void onDraw(SmartContext context) {
-        if (iconImage == null) {
+        if (icon == null) {
             super.onDraw(context);
             return;
         }
@@ -72,8 +62,8 @@ public class Button extends Label {
 
         if (width <= 0 || height <= 0) return;
 
-        float imgWidth = iconImage.getWidth();
-        float imgHeight = iconImage.getHeight();
+        float imgWidth = icon.getWidth();
+        float imgHeight = icon.getHeight();
         if (iconScaleHeight && getFont() != null) {
             float diff = imgWidth / imgHeight;
             imgHeight = getFont().getHeight(getTextSize());
@@ -89,7 +79,7 @@ public class Button extends Label {
             float tw = Math.min(imgWidth + iconSpacing, width);
             float sp = iconAlign == HorizontalAlign.RIGHT ? Math.min(iconSpacing, width - iw) : 0;
 
-            iconImage.draw(context
+            icon.draw(context
                     , xOff(x, x + width, tw) + sp
                     , yOff(y, y + height, ih)
                     , iw, ih, 0, iconImageFilter);
@@ -118,12 +108,12 @@ public class Button extends Label {
                         , textWidth
                         , textHeight
                         , getShowText());
-                iconImage.draw(context
+                icon.draw(context
                         , xoff + textWidth + iconSpacing
                         , yoffImg
                         , iw, ih, 0, iconImageFilter);
             } else {
-                iconImage.draw(context
+                icon.draw(context
                         , xoff
                         , yoffImg
                         , iw, ih, 0, iconImageFilter);
@@ -139,7 +129,7 @@ public class Button extends Label {
 
     @Override
     public void onMeasure() {
-        if (iconImage == null) {
+        if (icon == null) {
             super.onMeasure();
             return;
         }
@@ -152,8 +142,8 @@ public class Button extends Label {
         boolean wrapWidth = getLayoutPrefWidth() == WRAP_CONTENT;
         boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
 
-        float iW = iconImage.getWidth();
-        float iH = iconImage.getHeight();
+        float iW = icon.getWidth();
+        float iH = icon.getHeight();
         if (iconScaleHeight && getFont() != null) {
             float diff = iW / iH;
             iH = getFont().getHeight(getTextSize());
@@ -203,13 +193,13 @@ public class Button extends Label {
         fireAction(new ActionEvent(this));
     }
 
-    public Drawable getIconImage() {
-        return iconImage;
+    public Drawable getIcon() {
+        return icon;
     }
 
-    public void setIconImage(Drawable iconImage) {
-        if (this.iconImage != iconImage) {
-            this.iconImage = iconImage;
+    public void setIcon(Drawable icon) {
+        if (this.icon != icon) {
+            this.icon = icon;
             invalidate(true);
         }
     }

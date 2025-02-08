@@ -243,6 +243,11 @@ public class Widget {
     }
 
     protected void backgroundDraw(SmartContext context) {
+        if (bg.width <= 0 || bg.height <= 0) {
+            context.setTransform2D(null);
+            return;
+        }
+
         float bgOpacity = Color.getOpacity(backgroundColor);
         float borderOpacity = Color.getOpacity(borderColor);
         float rippleOpacity = Color.getOpacity(rippleColor);

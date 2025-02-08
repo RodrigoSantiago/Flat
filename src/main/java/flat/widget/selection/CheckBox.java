@@ -48,7 +48,7 @@ public class CheckBox extends Widget {
         UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
 
-        setColor(attrs.getColor("icon-color", info, getColor()));
+        setColor(attrs.getColor("color", info, getColor()));
         setIconInactive(attrs.getResourceAsDrawable("icon-inactive", info, getIconInactive(), false));
         setIconActive(attrs.getResourceAsDrawable("icon-active", info, getIconActive(), false));
         setIconIdeterminate(attrs.getResourceAsDrawable("icon-indeterminate", info, getIconIdeterminate(), false));

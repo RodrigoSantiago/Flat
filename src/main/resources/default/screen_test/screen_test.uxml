@@ -23,6 +23,12 @@
                     icon-align="LEFT"
                     height="80px"
             />
+            <Button text="Ola Mundo pq - OLÂ" ripple-enabled="true" text-size="24px" font="SANS" margin-top="32"
+                    icon-image="/default/img_test.png"
+                    icon-scale-height="true" icon-spacing="24px"
+                    icon-align="LEFT"
+                    height="80px"
+            />
         </LinearBox>
         <LinearBox direction="vertical" width="MATCH_PARENT" height="MATCH_PARENT">
             <Button text="Ola Mundo pq - OLÂ" text-size="24px" font="SANS" margin-top="8"
