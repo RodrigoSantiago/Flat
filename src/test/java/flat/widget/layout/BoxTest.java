@@ -284,32 +284,32 @@ public class BoxTest {
         box.setMargins(10, 10, 10, 10);
         box.onMeasure();
 
-        assertEquals(150, box.getMeasureWidth(), 0.0001f);
-        assertEquals(100, box.getMeasureHeight(), 0.0001f);
+        assertEquals(170, box.getMeasureWidth(), 0.0001f);
+        assertEquals(120, box.getMeasureHeight(), 0.0001f);
 
         box.setPrefSize(150, 100);
         box.setMinSize(160, 110);
-        box.setMargins(10, 10, 10, 10);
-        box.onMeasure();
-
-        assertEquals(160, box.getMeasureWidth(), 0.0001f);
-        assertEquals(110, box.getMeasureHeight(), 0.0001f);
-
-        box.setPrefSize(150, 100);
-        box.setMinSize(180, 130);
         box.setMargins(10, 10, 10, 10);
         box.onMeasure();
 
         assertEquals(180, box.getMeasureWidth(), 0.0001f);
         assertEquals(130, box.getMeasureHeight(), 0.0001f);
 
+        box.setPrefSize(150, 100);
+        box.setMinSize(180, 130);
+        box.setMargins(10, 10, 10, 10);
+        box.onMeasure();
+
+        assertEquals(200, box.getMeasureWidth(), 0.0001f);
+        assertEquals(150, box.getMeasureHeight(), 0.0001f);
+
         box.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
         box.setMinSize(160, 110);
         box.setMargins(10, 10, 10, 10);
         box.onMeasure();
 
-        assertEquals(160, box.getMeasureWidth(), 0.0001f);
-        assertEquals(110, box.getMeasureHeight(), 0.0001f);
+        assertEquals(180, box.getMeasureWidth(), 0.0001f);
+        assertEquals(130, box.getMeasureHeight(), 0.0001f);
 
         box.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
         box.setMinSize(160, 110);
@@ -348,6 +348,35 @@ public class BoxTest {
 
         assertEquals(Widget.WRAP_CONTENT, box.getMeasureWidth(), 0.0001f);
         assertEquals(Widget.WRAP_CONTENT, box.getMeasureHeight(), 0.0001f);
+
+        box.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
+        box.onMeasure();
+
+        assertEquals(Widget.MATCH_PARENT, box.getMeasureWidth(), 0.0001f);
+        assertEquals(Widget.MATCH_PARENT, box.getMeasureHeight(), 0.0001f);
+    }
+
+    @Test
+    public void measureBoxWithMaxMargin() {
+        // Max should not affect measure values
+        Box box = new Box();
+        Box child = new Box();
+        child.setPrefSize(80, 80);
+        box.add(child);
+
+        box.setMaxSize(150, 100);
+        box.setPrefSize(200, 250);
+        box.setMargins(5, 4, 10, 8);
+        box.onMeasure();
+
+        assertEquals(212, box.getMeasureWidth(), 0.0001f);
+        assertEquals(265, box.getMeasureHeight(), 0.0001f);
+
+        box.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
+        box.onMeasure();
+
+        assertEquals(92, box.getMeasureWidth(), 0.0001f);
+        assertEquals(95, box.getMeasureHeight(), 0.0001f);
 
         box.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
         box.onMeasure();
@@ -436,10 +465,10 @@ public class BoxTest {
         assertEquals(400, parent.getMeasureHeight(), 0.0001f);
         parent.onLayout(200, 400);
 
-        assertEquals(200, parent.getWidth(), 0.0001f);
-        assertEquals(400, parent.getHeight(), 0.0001f);
-        assertEquals(150, child.getWidth(), 0.0001f);
-        assertEquals(250, child.getHeight(), 0.0001f);
+        assertEquals(200, parent.getLayoutWidth(), 0.0001f);
+        assertEquals(400, parent.getLayoutHeight(), 0.0001f);
+        assertEquals(150, child.getLayoutWidth(), 0.0001f);
+        assertEquals(250, child.getLayoutHeight(), 0.0001f);
 
         // Parent size does not affect Child
         parent.setPrefSize(100, 200);
@@ -449,10 +478,10 @@ public class BoxTest {
         assertEquals(200, parent.getMeasureHeight(), 0.0001f);
         parent.onLayout(100, 200);
 
-        assertEquals(100, parent.getWidth(), 0.0001f);
-        assertEquals(200, parent.getHeight(), 0.0001f);
-        assertEquals(150, child.getWidth(), 0.0001f);
-        assertEquals(250, child.getHeight(), 0.0001f);
+        assertEquals(100, parent.getLayoutWidth(), 0.0001f);
+        assertEquals(200, parent.getLayoutHeight(), 0.0001f);
+        assertEquals(150, child.getLayoutWidth(), 0.0001f);
+        assertEquals(250, child.getLayoutHeight(), 0.0001f);
 
         // Child MatchParent should obey Parent size
         parent.setPrefSize(100, 200);
@@ -462,10 +491,10 @@ public class BoxTest {
         assertEquals(200, parent.getMeasureHeight(), 0.0001f);
         parent.onLayout(100, 200);
 
-        assertEquals(100, parent.getWidth(), 0.0001f);
-        assertEquals(200, parent.getHeight(), 0.0001f);
-        assertEquals(100, child.getWidth(), 0.0001f);
-        assertEquals(200, child.getHeight(), 0.0001f);
+        assertEquals(100, parent.getLayoutWidth(), 0.0001f);
+        assertEquals(200, parent.getLayoutHeight(), 0.0001f);
+        assertEquals(100, child.getLayoutWidth(), 0.0001f);
+        assertEquals(200, child.getLayoutHeight(), 0.0001f);
 
         // Parent WrapContent size should obey Child size
         parent.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
@@ -475,10 +504,10 @@ public class BoxTest {
         assertEquals(250, parent.getMeasureHeight(), 0.0001f);
         parent.onLayout(150, 250);
 
-        assertEquals(150, parent.getWidth(), 0.0001f);
-        assertEquals(250, parent.getHeight(), 0.0001f);
-        assertEquals(150, child.getWidth(), 0.0001f);
-        assertEquals(250, child.getHeight(), 0.0001f);
+        assertEquals(150, parent.getLayoutWidth(), 0.0001f);
+        assertEquals(250, parent.getLayoutHeight(), 0.0001f);
+        assertEquals(150, child.getLayoutWidth(), 0.0001f);
+        assertEquals(250, child.getLayoutHeight(), 0.0001f);
 
         // Parent WrapContent with Child MatchParent should obey MaxSize
         parent.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
@@ -489,10 +518,10 @@ public class BoxTest {
         assertEquals(75, parent.getMeasureHeight(), 0.0001f);
         parent.onLayout(80, 75);
 
-        assertEquals(80, parent.getWidth(), 0.0001f);
-        assertEquals(75, parent.getHeight(), 0.0001f);
-        assertEquals(80, child.getWidth(), 0.0001f);
-        assertEquals(75, child.getHeight(), 0.0001f);
+        assertEquals(80, parent.getLayoutWidth(), 0.0001f);
+        assertEquals(75, parent.getLayoutHeight(), 0.0001f);
+        assertEquals(80, child.getLayoutWidth(), 0.0001f);
+        assertEquals(75, child.getLayoutHeight(), 0.0001f);
 
         // Parent WrapContent with Child MatchParent should obey MaxSize plus margins and paddings
         parent.setMargins(1, 2, 4, 8);
@@ -505,10 +534,27 @@ public class BoxTest {
         assertEquals(75 + 85, parent.getMeasureHeight(), 0.0001f);
         parent.onLayout(250, 160);
 
-        assertEquals(250, parent.getWidth(), 0.0001f);
-        assertEquals(160, parent.getHeight(), 0.0001f);
-        assertEquals(80, child.getWidth(), 0.0001f);
-        assertEquals(75, child.getHeight(), 0.0001f);
+        assertEquals(250, parent.getLayoutWidth(), 0.0001f);
+        assertEquals(160, parent.getLayoutHeight(), 0.0001f);
+        assertEquals(80, child.getLayoutWidth(), 0.0001f);
+        assertEquals(75, child.getLayoutHeight(), 0.0001f);
+
+        // Parent WrapContent with Child MatchParent should obey MaxSize plus margins and paddings, and its own margins
+        parent.setMargins(1, 2, 4, 8);
+        parent.setPadding(16, 32, 64, 128);
+        parent.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
+        child.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
+        child.setMaxSize(80, 75);
+        child.setMargins(1, 2, 3, 4);
+        parent.onMeasure();
+        assertEquals(80 + 170 + 6, parent.getMeasureWidth(), 0.0001f);
+        assertEquals(75 + 85 + 4, parent.getMeasureHeight(), 0.0001f);
+        parent.onLayout(256, 164);
+
+        assertEquals(256, parent.getLayoutWidth(), 0.0001f);
+        assertEquals(164, parent.getLayoutHeight(), 0.0001f);
+        assertEquals(86, child.getLayoutWidth(), 0.0001f);
+        assertEquals(79, child.getLayoutHeight(), 0.0001f);
     }
 
     @Test
@@ -528,12 +574,12 @@ public class BoxTest {
         assertEquals(400, parent.getMeasureHeight(), 0.0001f);
         parent.onLayout(200, 400);
 
-        assertEquals(200, parent.getWidth(), 0.0001f);
-        assertEquals(400, parent.getHeight(), 0.0001f);
-        assertEquals(150, child1.getWidth(), 0.0001f);
-        assertEquals(250, child1.getHeight(), 0.0001f);
-        assertEquals(150, child2.getWidth(), 0.0001f);
-        assertEquals(250, child2.getHeight(), 0.0001f);
+        assertEquals(200, parent.getLayoutWidth(), 0.0001f);
+        assertEquals(400, parent.getLayoutHeight(), 0.0001f);
+        assertEquals(150, child1.getLayoutWidth(), 0.0001f);
+        assertEquals(250, child1.getLayoutHeight(), 0.0001f);
+        assertEquals(150, child2.getLayoutWidth(), 0.0001f);
+        assertEquals(250, child2.getLayoutHeight(), 0.0001f);
 
         // Parent size does not affect Child
         parent.setPrefSize(100, 200);
@@ -544,12 +590,12 @@ public class BoxTest {
         assertEquals(200, parent.getMeasureHeight(), 0.0001f);
         parent.onLayout(100, 200);
 
-        assertEquals(100, parent.getWidth(), 0.0001f);
-        assertEquals(200, parent.getHeight(), 0.0001f);
-        assertEquals(150, child1.getWidth(), 0.0001f);
-        assertEquals(250, child1.getHeight(), 0.0001f);
-        assertEquals(150, child2.getWidth(), 0.0001f);
-        assertEquals(250, child2.getHeight(), 0.0001f);
+        assertEquals(100, parent.getLayoutWidth(), 0.0001f);
+        assertEquals(200, parent.getLayoutHeight(), 0.0001f);
+        assertEquals(150, child1.getLayoutWidth(), 0.0001f);
+        assertEquals(250, child1.getLayoutHeight(), 0.0001f);
+        assertEquals(150, child2.getLayoutWidth(), 0.0001f);
+        assertEquals(250, child2.getLayoutHeight(), 0.0001f);
 
         // Child MatchParent should obey Parent size
         parent.setPrefSize(100, 200);
@@ -560,12 +606,12 @@ public class BoxTest {
         assertEquals(200, parent.getMeasureHeight(), 0.0001f);
         parent.onLayout(100, 200);
 
-        assertEquals(100, parent.getWidth(), 0.0001f);
-        assertEquals(200, parent.getHeight(), 0.0001f);
-        assertEquals(100, child1.getWidth(), 0.0001f);
-        assertEquals(200, child1.getHeight(), 0.0001f);
-        assertEquals(100, child2.getWidth(), 0.0001f);
-        assertEquals(200, child2.getHeight(), 0.0001f);
+        assertEquals(100, parent.getLayoutWidth(), 0.0001f);
+        assertEquals(200, parent.getLayoutHeight(), 0.0001f);
+        assertEquals(100, child1.getLayoutWidth(), 0.0001f);
+        assertEquals(200, child1.getLayoutHeight(), 0.0001f);
+        assertEquals(100, child2.getLayoutWidth(), 0.0001f);
+        assertEquals(200, child2.getLayoutHeight(), 0.0001f);
 
         // Parent WrapContent size should obey the biggest Child size
         parent.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
@@ -576,11 +622,11 @@ public class BoxTest {
         assertEquals(325, parent.getMeasureHeight(), 0.0001f);
         parent.onLayout(150, 325);
 
-        assertEquals(150, parent.getWidth(), 0.0001f);
-        assertEquals(325, parent.getHeight(), 0.0001f);
-        assertEquals(150, child1.getWidth(), 0.0001f);
-        assertEquals(250, child1.getHeight(), 0.0001f);
-        assertEquals(130, child2.getWidth(), 0.0001f);
-        assertEquals(325, child2.getHeight(), 0.0001f);
+        assertEquals(150, parent.getLayoutWidth(), 0.0001f);
+        assertEquals(325, parent.getLayoutHeight(), 0.0001f);
+        assertEquals(150, child1.getLayoutWidth(), 0.0001f);
+        assertEquals(250, child1.getLayoutHeight(), 0.0001f);
+        assertEquals(130, child2.getLayoutWidth(), 0.0001f);
+        assertEquals(325, child2.getLayoutHeight(), 0.0001f);
     }
 }

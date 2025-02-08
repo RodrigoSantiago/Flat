@@ -26,8 +26,8 @@ public class Box extends Parent {
         
         float mWidth = 0;
         float mHeight = 0;
-        boolean wrapWidth = getPrefWidth() == WRAP_CONTENT;
-        boolean wrapHeight = getPrefHeight() == WRAP_CONTENT;
+        boolean wrapWidth = getLayoutPrefWidth() == WRAP_CONTENT;
+        boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
 
         for (Widget child : getChildrenIterable()) {
             if (child.getVisibility() == Visibility.GONE) continue;
@@ -56,14 +56,14 @@ public class Box extends Parent {
         }
         
         if (wrapWidth) {
-            mWidth = Math.max(mWidth + extraWidth, Math.max(getPrefWidth(), getLayoutMinWidth()));
+            mWidth = Math.max(mWidth + extraWidth, getLayoutMinWidth());
         } else {
-            mWidth = Math.max(getPrefWidth(), getLayoutMinWidth());
+            mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
         }
         if (wrapHeight) {
-            mHeight = Math.max(mHeight + extraHeight, Math.max(getPrefHeight(), getLayoutMinHeight()));
+            mHeight = Math.max(mHeight + extraHeight, getLayoutMinHeight());
         } else {
-            mHeight = Math.max(getPrefHeight(), getLayoutMinHeight());
+            mHeight = Math.max(getLayoutPrefHeight(), getLayoutMinHeight());
         }
 
         setMeasure(mWidth, mHeight);
@@ -72,9 +72,9 @@ public class Box extends Parent {
     @Override
     public void onLayout(float width, float height) {
         setLayout(width, height);
-        float lWidth = Math.max(0, getWidth()
+        float lWidth = Math.max(0, getLayoutWidth()
                 - getMarginLeft() - getMarginRight() - getPaddingLeft() - getPaddingRight());
-        float lHeight = Math.max(0, getHeight()
+        float lHeight = Math.max(0, getLayoutHeight()
                 - getMarginTop() - getMarginBottom() - getPaddingTop() - getPaddingBottom());
 
         for (Widget child : getChildrenIterable()) {

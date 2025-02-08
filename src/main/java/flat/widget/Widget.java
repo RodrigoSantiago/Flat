@@ -42,6 +42,7 @@ public class Widget {
     private float paddingTop, paddingRight, paddingBottom, paddingLeft;
 
     private float width, height;
+    private float layoutWidth, layoutHeight;
     private float minWidth, minHeight, maxWidth = MATCH_PARENT, maxHeight = MATCH_PARENT, prefWidth, prefHeight;
     private float weight = 1;
     private float measureWidth, measureHeight;
@@ -340,27 +341,39 @@ public class Widget {
 
     /**
      * Set the widget real size, based on parent's size (internal)
-     * @param width
-     * @param height
+     * @param layoutWidth
+     * @param layoutHeight
      */
-    public final void setLayout(float width, float height) {
-        setSize(width, height);
+    public final void setLayout(float layoutWidth, float layoutHeight) {
+        if (this.layoutWidth != layoutWidth || this.layoutHeight != layoutHeight) {
+            this.layoutWidth = layoutWidth;
+            this.layoutHeight = layoutHeight;
+            updateRect();
+        }
+    }
+
+    public float getLayoutPrefWidth() {
+        return prefWidth == WRAP_CONTENT ? prefWidth : prefWidth + marginLeft + marginRight;
+    }
+
+    public float getLayoutPrefHeight() {
+        return prefHeight == WRAP_CONTENT ? prefHeight : prefHeight + marginTop + marginBottom;
     }
 
     public float getLayoutMinWidth() {
-        return Math.max(minWidth, paddingLeft + paddingRight + marginLeft + marginRight);
+        return Math.max(minWidth, paddingLeft + paddingRight) + marginLeft + marginRight;
     }
 
     public float getLayoutMinHeight() {
-        return Math.max(minHeight, paddingTop + paddingBottom + marginTop + marginBottom);
+        return Math.max(minHeight, paddingTop + paddingBottom) + marginTop + marginBottom;
     }
 
     public float getLayoutMaxWidth() {
-        return Math.max(getLayoutMinWidth(), getMaxWidth() <= 0 ? MATCH_PARENT : getMaxWidth());
+        return Math.max(getLayoutMinWidth(), maxWidth <= 0 ? MATCH_PARENT : maxWidth + marginLeft + marginRight);
     }
 
     public float getLayoutMaxHeight() {
-        return Math.max(getLayoutMinHeight(), getMaxHeight() <= 0 ? MATCH_PARENT : getMaxHeight());
+        return Math.max(getLayoutMinHeight(), maxHeight <= 0 ? MATCH_PARENT : maxHeight + marginTop + marginBottom);
     }
 
     /**
@@ -379,7 +392,7 @@ public class Widget {
     protected void childInvalidate(Widget child, boolean source) {
         if (parent != null) {
             if (source) {
-                if (getWidth() == WRAP_CONTENT || getHeight() == WRAP_CONTENT) {
+                if (getPrefWidth() == WRAP_CONTENT || getPrefHeight() == WRAP_CONTENT) {
                     parent.childInvalidate(this, true);
                 } else {
                     parent.childInvalidate(this, false);
@@ -962,6 +975,14 @@ public class Widget {
         return iny;
     }
 
+    public float getWidth() {
+        return width;
+    }
+
+    public float getHeight() {
+        return height;
+    }
+
     public float getInWidth() {
         return inw;
     }
@@ -994,32 +1015,24 @@ public class Widget {
         return y;
     }
 
-    void setSize(float width, float height) {
-        if (this.width != width || this.height != height) {
-            this.width = width;
-            this.height = height;
+    public float getLayoutWidth() {
+        return layoutWidth;
+    }
+
+    void setLayoutWidth(float layoutWidth) {
+        if (this.layoutWidth != layoutWidth) {
+            this.layoutWidth = layoutWidth;
             updateRect();
         }
     }
 
-    public float getWidth() {
-        return width;
+    public float getLayoutHeight() {
+        return layoutHeight;
     }
 
-    void setWidth(float width) {
-        if (this.width != width) {
-            this.width = width;
-            updateRect();
-        }
-    }
-
-    public float getHeight() {
-        return height;
-    }
-
-    void setHeight(float height) {
-        if (this.height != height) {
-            this.height = height;
+    void setLayoutHeight(float layoutHeight) {
+        if (this.layoutHeight != layoutHeight) {
+            this.layoutHeight = layoutHeight;
             updateRect();
         }
     }
@@ -1425,20 +1438,22 @@ public class Widget {
     }
 
     private void updateRect() {
-        bg.x = marginLeft + marginRight > width ? (marginLeft + width - marginRight) / 2f : marginLeft;
-        bg.y = marginTop + marginBottom > height ? (marginTop + height - marginBottom) / 2f : marginTop;
-        bg.width = Math.max(0, width - marginLeft - marginRight);
-        bg.height = Math.max(0, height - marginTop - marginBottom);
+        bg.x = marginLeft + marginRight > layoutWidth ? (marginLeft + layoutWidth - marginRight) / 2f : marginLeft;
+        bg.y = marginTop + marginBottom > layoutHeight ? (marginTop + layoutHeight - marginBottom) / 2f : marginTop;
+        bg.width = Math.max(0, layoutWidth - marginLeft - marginRight);
+        bg.height = Math.max(0, layoutHeight - marginTop - marginBottom);
 
-        float lm = marginLeft + paddingLeft;
-        float rm = marginRight + paddingRight;
-        float tm = marginTop + paddingTop;
-        float bm = marginBottom + paddingBottom;
+        float eLeft = marginLeft + paddingLeft;
+        float eRight = marginRight + paddingRight;
+        float eTop = marginTop + paddingTop;
+        float eBot = marginBottom + paddingBottom;
 
-        inx = lm + rm > getWidth() ? (lm + getWidth() - rm) / 2f : lm;
-        iny = tm + bm > getHeight() ? (tm + getHeight() - bm) / 2f : tm;
-        inw = Math.max(0, getWidth() - lm - rm);
-        inh = Math.max(0, getHeight() - tm - bm);
+        inx = eLeft + eRight > layoutWidth ? (eLeft + layoutWidth - eRight) / 2f : eLeft;
+        iny = eTop + eBot > layoutHeight ? (eTop + layoutHeight - eBot) / 2f : eTop;
+        inw = Math.max(0, layoutWidth - eLeft - eRight);
+        inh = Math.max(0, layoutHeight - eTop - eBot);
+        width = Math.max(0, layoutWidth - marginLeft - marginRight);
+        height = Math.max(0, layoutHeight - marginTop - marginBottom);
         invalidateTransform();
     }
 
@@ -1611,13 +1626,13 @@ public class Widget {
             if (rippleOverflow) {
                 ix = (inx + inw) * 0.5f;
                 iy = (iny + inh) * 0.5f;
-                float w = Math.max(getWidth() - getMarginRight() - getMarginLeft(), 0) * 0.5f;
-                float h = Math.max(getHeight() - getMarginTop() - getMarginBottom(), 0) * 0.5f;
+                float w = Math.max(getLayoutWidth() - getMarginRight() - getMarginLeft(), 0) * 0.5f;
+                float h = Math.max(getLayoutHeight() - getMarginTop() - getMarginBottom(), 0) * 0.5f;
                 ripple.setSize((float) Math.sqrt(w * w + h * h));
             } else {
                 ix = inverseTransform.pointX(x, y);
                 iy = inverseTransform.pointY(x, y);
-                ripple.setSize(Math.max(getWidth(), getHeight()));
+                ripple.setSize(Math.max(getLayoutWidth(), getLayoutHeight()));
             }
             ripple.fire(ix, iy);
         }

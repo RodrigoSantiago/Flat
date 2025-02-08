@@ -65,8 +65,8 @@ public class StackBoxTest {
         parent.setMargins(2, 3, 4, 5);
         parent.setPadding(3, 4, 5, 6);
         parent.onMeasure();
-        assertMeasure(parent, 200, 350);
-        parent.onLayout(200, 350);
+        assertMeasure(parent, 208, 356);
+        parent.onLayout(208, 356);
 
         assertEquals(11, child.getX(), 0.001f);
         assertEquals(5, child.getY(), 0.001f);
@@ -76,11 +76,11 @@ public class StackBoxTest {
         parent.setMargins(2, 3, 4, 5);
         parent.setPadding(3, 4, 5, 6);
         parent.onMeasure();
-        assertMeasure(parent, 200, 350);
-        parent.onLayout(200, 350);
+        assertMeasure(parent, 208, 356);
+        parent.onLayout(208, 356);
 
-        assertEquals(93, child.getX(), 0.001f);
-        assertEquals(221, child.getY(), 0.001f);
+        assertEquals(101, child.getX(), 0.001f);
+        assertEquals(227, child.getY(), 0.001f);
     }
 
     @Test
@@ -133,8 +133,8 @@ public class StackBoxTest {
         parent.setMargins(2, 3, 4, 5);
         parent.setPadding(3, 4, 5, 6);
         parent.onMeasure();
-        assertMeasure(parent, 200, 350);
-        parent.onLayout(200, 350);
+        assertMeasure(parent, 208, 356);
+        parent.onLayout(208, 356);
 
         assertEquals(11, child1.getX(), 0.001f);
         assertEquals(5, child1.getY(), 0.001f);
@@ -146,13 +146,13 @@ public class StackBoxTest {
         parent.setMargins(2, 3, 4, 5);
         parent.setPadding(3, 4, 5, 6);
         parent.onMeasure();
-        assertMeasure(parent, 200, 350);
-        parent.onLayout(200, 350);
+        assertMeasure(parent, 208, 356);
+        parent.onLayout(208, 356);
 
-        assertEquals(93, child1.getX(), 0.001f);
-        assertEquals(221, child1.getY(), 0.001f);
-        assertEquals(143, child2.getX(), 0.001f);
-        assertEquals(281, child2.getY(), 0.001f);
+        assertEquals(101, child1.getX(), 0.001f);
+        assertEquals(227, child1.getY(), 0.001f);
+        assertEquals(151, child2.getX(), 0.001f);
+        assertEquals(287, child2.getY(), 0.001f);
     }
 
     private void assertMeasure(Widget widget, float width, float height) {
@@ -163,8 +163,8 @@ public class StackBoxTest {
     private void assertLayout(Widget widget, float x, float y, float width, float height) {
         assertEquals("X", x, widget.getX(), 0.1f);
         assertEquals("Y", y, widget.getY(), 0.1f);
-        assertEquals("Width", width, widget.getWidth(), 0.1f);
-        assertEquals("Height", height, widget.getHeight(), 0.1f);
+        assertEquals("Width", width, widget.getLayoutWidth(), 0.1f);
+        assertEquals("Height", height, widget.getLayoutHeight(), 0.1f);
     }
 
     private HashMap<Integer, UXValue> createNonDefaultValues() {

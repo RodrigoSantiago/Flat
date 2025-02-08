@@ -9,7 +9,6 @@ import flat.graphics.SmartContext;
 import flat.graphics.context.Context;
 import flat.resources.ResourceStream;
 import flat.uxml.*;
-import flat.widget.Parent;
 import flat.widget.Scene;
 import flat.widget.Widget;
 
@@ -182,7 +181,7 @@ public class Activity extends Controller {
                 wiget.onMeasure();
                 wiget.onLayout(width, height);
             } else {
-                wiget.onLayout(wiget.getWidth(), wiget.getHeight());
+                wiget.onLayout(wiget.getLayoutWidth(), wiget.getLayoutHeight());
             }
         }
     }

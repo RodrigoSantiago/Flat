@@ -83,44 +83,40 @@ public class LinearBox extends Box {
         float extraHeight = getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
         float mWidth = 0;
         float mHeight = 0;
-        boolean wrapWidth = getPrefWidth() == WRAP_CONTENT;
-        boolean wrapHeight = getPrefHeight() == WRAP_CONTENT;
+        boolean wrapWidth = getLayoutPrefWidth() == WRAP_CONTENT;
+        boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
 
         for (Widget child : getChildrenIterable()) {
             if (child.getVisibility() == Visibility.GONE) continue;
 
             child.onMeasure();
             if (wrapWidth) {
-                if (getPrefWidth() == WRAP_CONTENT) {
-                    if (child.getMeasureWidth() == MATCH_PARENT) {
-                        float mW = Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth());
-                        if (mW > mWidth) {
-                            mWidth = mW;
-                        }
-                    } else if (child.getMeasureWidth() > mWidth) {
-                        mWidth = child.getMeasureWidth();
+                if (child.getMeasureWidth() == MATCH_PARENT) {
+                    float mW = Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth());
+                    if (mW > mWidth) {
+                        mWidth = mW;
                     }
+                } else if (child.getMeasureWidth() > mWidth) {
+                    mWidth = child.getMeasureWidth();
                 }
             }
             if (wrapHeight) {
-                if (getPrefHeight() == WRAP_CONTENT) {
-                    if (child.getMeasureHeight() == MATCH_PARENT) {
-                        mHeight += Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight());
-                    } else {
-                        mHeight += child.getMeasureHeight();
-                    }
+                if (child.getMeasureHeight() == MATCH_PARENT) {
+                    mHeight += Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight());
+                } else {
+                    mHeight += child.getMeasureHeight();
                 }
             }
         }
         if (wrapWidth) {
-            mWidth = Math.max(mWidth + extraWidth, Math.max(getPrefWidth(), getLayoutMinWidth()));
+            mWidth = Math.max(mWidth + extraWidth, getLayoutMinWidth());
         } else {
-            mWidth = Math.max(getPrefWidth(), getLayoutMinWidth());
+            mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
         }
         if (wrapHeight) {
-            mHeight = Math.max(mHeight + extraHeight, Math.max(getPrefHeight(), getLayoutMinHeight()));
+            mHeight = Math.max(mHeight + extraHeight, getLayoutMinHeight());
         } else {
-            mHeight = Math.max(getPrefHeight(), getLayoutMinHeight());
+            mHeight = Math.max(getLayoutPrefHeight(), getLayoutMinHeight());
         }
 
         setMeasure(mWidth, mHeight);
@@ -131,43 +127,39 @@ public class LinearBox extends Box {
         float extraHeight = getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
         float mWidth = 0;
         float mHeight = 0;
-        boolean wrapWidth = getPrefWidth() == WRAP_CONTENT;
-        boolean wrapHeight = getPrefHeight() == WRAP_CONTENT;
+        boolean wrapWidth = getLayoutPrefWidth() == WRAP_CONTENT;
+        boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
         for (Widget child : getChildrenIterable()) {
             if (child.getVisibility() == Visibility.GONE) continue;
 
             child.onMeasure();
             if (wrapWidth) {
-                if (getPrefWidth() == WRAP_CONTENT) {
-                    if (child.getMeasureWidth() == MATCH_PARENT) {
-                        mWidth += Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth());
-                    } else {
-                        mWidth += child.getMeasureWidth();
-                    }
+                if (child.getMeasureWidth() == MATCH_PARENT) {
+                    mWidth += Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth());
+                } else {
+                    mWidth += child.getMeasureWidth();
                 }
             }
             if (wrapHeight) {
-                if (getPrefHeight() == WRAP_CONTENT) {
-                    if (child.getMeasureHeight() == MATCH_PARENT) {
-                        float mH = Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight());
-                        if (mH > mHeight) {
-                            mHeight = mH;
-                        }
-                    } else if (child.getMeasureHeight() > mHeight) {
-                        mHeight = child.getMeasureHeight();
+                if (child.getMeasureHeight() == MATCH_PARENT) {
+                    float mH = Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight());
+                    if (mH > mHeight) {
+                        mHeight = mH;
                     }
+                } else if (child.getMeasureHeight() > mHeight) {
+                    mHeight = child.getMeasureHeight();
                 }
             }
         }
         if (wrapWidth) {
-            mWidth = Math.max(mWidth + extraWidth, Math.max(getPrefWidth(), getLayoutMinWidth()));
+            mWidth = Math.max(mWidth + extraWidth, getLayoutMinWidth());
         } else {
-            mWidth = Math.max(getPrefWidth(), getLayoutMinWidth());
+            mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
         }
         if (wrapHeight) {
-            mHeight = Math.max(mHeight + extraHeight, Math.max(getPrefHeight(), getLayoutMinHeight()));
+            mHeight = Math.max(mHeight + extraHeight, getLayoutMinHeight());
         } else {
-            mHeight = Math.max(getPrefHeight(), getLayoutMinHeight());
+            mHeight = Math.max(getLayoutPrefHeight(), getLayoutMinHeight());
         }
 
         setMeasure(mWidth, mHeight);
@@ -193,9 +185,9 @@ public class LinearBox extends Box {
     private void onLayoutVertical(float width, float height) {
         setLayout(width, height);
 
-        float lWidth = Math.max(0, getWidth()
+        float lWidth = Math.max(0, getLayoutWidth()
                 - getMarginLeft() - getMarginRight() - getPaddingLeft() - getPaddingRight());
-        float lHeight = Math.max(0, getHeight()
+        float lHeight = Math.max(0, getLayoutHeight()
                 - getMarginTop() - getMarginBottom() - getPaddingTop() - getPaddingBottom());
 
         float totalMinimum = 0;
@@ -286,7 +278,7 @@ public class LinearBox extends Box {
         int j = 0;
         for (Widget child : orderedList) {
             if (child.getVisibility() == Visibility.GONE || child.getMeasureHeight() != MATCH_PARENT) continue;
-            float childMin = totalMinimum == 0 ? 0 : (child.getMinHeight() / totalMinimum) * minSpace;
+            float childMin = totalMinimum == 0 ? 0 : (child.getLayoutMinHeight() / totalMinimum) * minSpace;
 
             float childWidth = Math.min(Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth()), lWidth);
             float childHeight = childMin + tempSize[j++];
@@ -297,7 +289,7 @@ public class LinearBox extends Box {
         float totalHeight = 0;
         for (Widget child : orderedList) {
             if (child.getVisibility() == Visibility.GONE) continue;
-            totalHeight += child.getHeight();
+            totalHeight += child.getLayoutHeight();
         }
 
         float xPos = 0;
@@ -305,9 +297,9 @@ public class LinearBox extends Box {
         if (verticalAlign == VerticalAlign.TOP) {
             yPos = getPaddingTop() + getMarginTop();
         } else if (verticalAlign == VerticalAlign.BOTTOM || verticalAlign == VerticalAlign.BASELINE) {
-            yPos = getHeight() - getPaddingBottom() - getMarginBottom() - totalHeight;
+            yPos = getLayoutHeight() - getPaddingBottom() - getMarginBottom() - totalHeight;
         } else if (verticalAlign == VerticalAlign.MIDDLE) {
-            yPos = (getPaddingTop() + getMarginTop() + (getHeight() - getPaddingBottom() - getMarginBottom() - totalHeight)) * 0.5f;
+            yPos = (getPaddingTop() + getMarginTop() + (getLayoutHeight() - getPaddingBottom() - getMarginBottom() - totalHeight)) * 0.5f;
         }
 
         if (direction == Direction.VERTICAL) {
@@ -317,13 +309,13 @@ public class LinearBox extends Box {
                 if (horizontalAlign == HorizontalAlign.LEFT) {
                     xPos = getPaddingLeft() + getMarginLeft();
                 } else if (horizontalAlign == HorizontalAlign.RIGHT) {
-                    xPos = getWidth() - child.getWidth() - (getPaddingRight() + getMarginRight());
+                    xPos = getLayoutWidth() - child.getLayoutWidth() - (getPaddingRight() + getMarginRight());
                 } else if (horizontalAlign == HorizontalAlign.CENTER) {
-                    xPos = (getPaddingLeft() + getMarginLeft() + (getWidth() - child.getWidth() - (getPaddingRight() + getMarginRight()))) * 0.5f;
+                    xPos = (getPaddingLeft() + getMarginLeft() + (getLayoutWidth() - child.getLayoutWidth() - (getPaddingRight() + getMarginRight()))) * 0.5f;
                 }
 
                 child.setPosition(xPos, yPos);
-                yPos += child.getHeight();
+                yPos += child.getLayoutHeight();
             }
         } else {
             for (int k = orderedList.size() - 1; k >= 0; k--) {
@@ -332,13 +324,13 @@ public class LinearBox extends Box {
                 if (horizontalAlign == HorizontalAlign.LEFT) {
                     xPos = getPaddingLeft() + getMarginLeft();
                 } else if (horizontalAlign == HorizontalAlign.RIGHT) {
-                    xPos = getWidth() - child.getWidth() - (getPaddingRight() + getMarginRight());
+                    xPos = getLayoutWidth() - child.getLayoutWidth() - (getPaddingRight() + getMarginRight());
                 } else if (horizontalAlign == HorizontalAlign.CENTER) {
-                    xPos = (getPaddingLeft() + getMarginLeft() + (getWidth() - child.getWidth() - (getPaddingRight() + getMarginRight()))) * 0.5f;
+                    xPos = (getPaddingLeft() + getMarginLeft() + (getLayoutWidth() - child.getLayoutWidth() - (getPaddingRight() + getMarginRight()))) * 0.5f;
                 }
 
                 child.setPosition(xPos, yPos);
-                yPos += child.getHeight();
+                yPos += child.getLayoutHeight();
             }
         }
     }
@@ -346,9 +338,9 @@ public class LinearBox extends Box {
     private void onLayoutHorizontal(float width, float height) {
         setLayout(width, height);
 
-        float lWidth = Math.max(0, getWidth()
+        float lWidth = Math.max(0, getLayoutWidth()
                 - getMarginLeft() - getMarginRight() - getPaddingLeft() - getPaddingRight());
-        float lHeight = Math.max(0, getHeight()
+        float lHeight = Math.max(0, getLayoutHeight()
                 - getMarginTop() - getMarginBottom() - getPaddingTop() - getPaddingBottom());
 
         float totalMinimum = 0;
@@ -439,7 +431,7 @@ public class LinearBox extends Box {
         int j = 0;
         for (Widget child : orderedList) {
             if (child.getVisibility() == Visibility.GONE || child.getMeasureWidth() != MATCH_PARENT) continue;
-            float childMin = totalMinimum == 0 ? 0 : (child.getMinWidth() / totalMinimum) * minSpace;
+            float childMin = totalMinimum == 0 ? 0 : (child.getLayoutMinWidth() / totalMinimum) * minSpace;
 
             float childWidth = childMin + tempSize[j++];
             float childHeight = Math.min(Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight()), lHeight);
@@ -450,7 +442,7 @@ public class LinearBox extends Box {
         float totalWidth = 0;
         for (Widget child : orderedList) {
             if (child.getVisibility() == Visibility.GONE) continue;
-            totalWidth += child.getWidth();
+            totalWidth += child.getLayoutWidth();
         }
 
         float xPos = 0;
@@ -458,9 +450,9 @@ public class LinearBox extends Box {
         if (horizontalAlign == HorizontalAlign.LEFT) {
             xPos = getPaddingLeft() + getMarginLeft();
         } else if (horizontalAlign == HorizontalAlign.RIGHT) {
-            xPos = getWidth() - getPaddingRight() - getMarginRight() - totalWidth;
+            xPos = getLayoutWidth() - getPaddingRight() - getMarginRight() - totalWidth;
         } else if (horizontalAlign == HorizontalAlign.CENTER) {
-            xPos = (getPaddingLeft() + getMarginLeft() + (getWidth() - getPaddingRight() - getMarginRight() - totalWidth)) * 0.5f;
+            xPos = (getPaddingLeft() + getMarginLeft() + (getLayoutWidth() - getPaddingRight() - getMarginRight() - totalWidth)) * 0.5f;
         }
 
         if (direction == Direction.HORIZONTAL) {
@@ -470,13 +462,13 @@ public class LinearBox extends Box {
                 if (verticalAlign == VerticalAlign.TOP) {
                     yPos = getPaddingTop() + getMarginTop();
                 } else if (verticalAlign == VerticalAlign.BOTTOM || verticalAlign == VerticalAlign.BASELINE) {
-                    yPos = getHeight() - child.getHeight() - (getPaddingBottom() + getMarginBottom());
+                    yPos = getLayoutHeight() - child.getLayoutHeight() - (getPaddingBottom() + getMarginBottom());
                 } else if (verticalAlign == VerticalAlign.MIDDLE) {
-                    yPos = (getPaddingTop() + getMarginTop() + (getHeight() - child.getHeight() - (getPaddingBottom() + getMarginBottom()))) * 0.5f;
+                    yPos = (getPaddingTop() + getMarginTop() + (getLayoutHeight() - child.getLayoutHeight() - (getPaddingBottom() + getMarginBottom()))) * 0.5f;
                 }
 
                 child.setPosition(xPos, yPos);
-                xPos += child.getWidth();
+                xPos += child.getLayoutWidth();
             }
         } else {
             for (int k = orderedList.size() - 1; k >= 0; k--) {
@@ -485,13 +477,13 @@ public class LinearBox extends Box {
                 if (verticalAlign == VerticalAlign.TOP) {
                     yPos = getPaddingTop() + getMarginTop();
                 } else if (verticalAlign == VerticalAlign.BOTTOM || verticalAlign == VerticalAlign.BASELINE) {
-                    yPos = getHeight() - child.getHeight() - (getPaddingBottom() + getMarginBottom());
+                    yPos = getLayoutHeight() - child.getLayoutHeight() - (getPaddingBottom() + getMarginBottom());
                 } else if (verticalAlign == VerticalAlign.MIDDLE) {
-                    yPos = (getPaddingTop() + getMarginTop() + (getHeight() - child.getHeight() - (getPaddingBottom() + getMarginBottom()))) * 0.5f;
+                    yPos = (getPaddingTop() + getMarginTop() + (getLayoutHeight() - child.getLayoutHeight() - (getPaddingBottom() + getMarginBottom()))) * 0.5f;
                 }
 
                 child.setPosition(xPos, yPos);
-                xPos += child.getWidth();
+                xPos += child.getLayoutWidth();
             }
         }
     }

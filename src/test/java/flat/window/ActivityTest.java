@@ -187,8 +187,8 @@ public class ActivityTest {
         when(context.getWindow()).thenReturn(window);
         when(window.getClientWidth()).thenReturn(200);
         when(window.getClientHeight()).thenReturn(100);
-        when(child.getWidth()).thenReturn(20f);
-        when(child.getHeight()).thenReturn(10f);
+        when(child.getLayoutWidth()).thenReturn(20f);
+        when(child.getLayoutHeight()).thenReturn(10f);
         when(window.getDpi()).thenReturn(160f);
 
         Activity activity = new Activity(context);

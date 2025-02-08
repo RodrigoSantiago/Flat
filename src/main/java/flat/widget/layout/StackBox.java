@@ -48,9 +48,9 @@ public class StackBox extends Box {
     public void onLayout(float width, float height) {
         setLayout(width, height);
 
-        float lWidth = Math.max(0, getWidth()
+        float lWidth = Math.max(0, getLayoutWidth()
                 - getMarginLeft() - getMarginRight() - getPaddingLeft() - getPaddingRight());
-        float lHeight = Math.max(0, getHeight()
+        float lHeight = Math.max(0, getLayoutHeight()
                 - getMarginTop() - getMarginBottom() - getPaddingTop() - getPaddingBottom());
 
         for (Widget child : getChildrenIterable()) {
@@ -64,18 +64,18 @@ public class StackBox extends Box {
             if (horizontalAlign == HorizontalAlign.LEFT) {
                 xPos = getPaddingLeft() + getMarginLeft();
             } else if (horizontalAlign == HorizontalAlign.RIGHT) {
-                xPos = getWidth() - child.getWidth() - (getPaddingRight() + getMarginRight());
+                xPos = getLayoutWidth() - child.getLayoutWidth() - (getPaddingRight() + getMarginRight());
             } else if (horizontalAlign == HorizontalAlign.CENTER) {
-                xPos = (getPaddingLeft() + getMarginLeft() + (getWidth() - child.getWidth() - (getPaddingRight() + getMarginRight()))) * 0.5f;
+                xPos = (getPaddingLeft() + getMarginLeft() + (getLayoutWidth() - child.getLayoutWidth() - (getPaddingRight() + getMarginRight()))) * 0.5f;
             }
 
             float yPos = 0;
             if (verticalAlign == VerticalAlign.TOP) {
                 yPos = getPaddingTop() + getMarginTop();
             } else if (verticalAlign == VerticalAlign.BOTTOM || verticalAlign == VerticalAlign.BASELINE) {
-                yPos = getHeight() - child.getHeight() - (getPaddingBottom() + getMarginBottom());
+                yPos = getLayoutHeight() - child.getLayoutHeight() - (getPaddingBottom() + getMarginBottom());
             } else if (verticalAlign == VerticalAlign.MIDDLE) {
-                yPos = (getPaddingTop() + getMarginTop() + (getHeight() - child.getHeight() - (getPaddingBottom() + getMarginBottom()))) * 0.5f;
+                yPos = (getPaddingTop() + getMarginTop() + (getLayoutHeight() - child.getLayoutHeight() - (getPaddingBottom() + getMarginBottom()))) * 0.5f;
             }
             child.setPosition(xPos, yPos);
         }
