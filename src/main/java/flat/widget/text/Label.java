@@ -68,18 +68,18 @@ public class Label extends Widget {
 
         float mWidth;
         float mHeight;
-        boolean wrapWidth = getPrefWidth() == WRAP_CONTENT;
-        boolean wrapHeight = getPrefHeight() == WRAP_CONTENT;
+        boolean wrapWidth = getLayoutPrefWidth() == WRAP_CONTENT;
+        boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
 
         if (wrapWidth) {
             mWidth = Math.max(getTextWidth() + extraWidth, getLayoutMinWidth());
         } else {
-            mWidth = Math.max(getPrefWidth(), getLayoutMinWidth());
+            mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
         }
         if (wrapHeight) {
             mHeight = Math.max(getTextHeight() + extraHeight, getLayoutMinHeight());
         } else {
-            mHeight = Math.max(getPrefHeight(), getLayoutMinHeight());
+            mHeight = Math.max(getLayoutPrefHeight(), getLayoutMinHeight());
         }
 
         setMeasure(mWidth, mHeight);

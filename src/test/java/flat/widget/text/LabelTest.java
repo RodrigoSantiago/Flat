@@ -114,8 +114,8 @@ public class LabelTest {
         label.setPrefSize(100, 200);
         label.onMeasure();
 
-        assertEquals(100, label.getMeasureWidth(), 0.1f);
-        assertEquals(200, label.getMeasureHeight(), 0.1f);
+        assertEquals(106, label.getMeasureWidth(), 0.1f);
+        assertEquals(204, label.getMeasureHeight(), 0.1f);
 
         label.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
         label.onMeasure();

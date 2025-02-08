@@ -307,8 +307,26 @@ public class Widget {
      * Equation : minsize < ([preferedSize || computedSize] + padding + margins) < maxsize
      */
     public void onMeasure() {
-        setMeasure(Math.max(prefWidth + marginLeft + marginRight, getLayoutMinWidth()),
-                Math.max(prefHeight + marginTop + marginBottom, getLayoutMinHeight()));
+        float extraWidth = getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
+        float extraHeight = getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
+
+        float mWidth;
+        float mHeight;
+        boolean wrapWidth = getLayoutPrefWidth() == WRAP_CONTENT;
+        boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
+
+        if (wrapWidth) {
+            mWidth = Math.max(extraWidth, getLayoutMinWidth());
+        } else {
+            mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
+        }
+        if (wrapHeight) {
+            mHeight = Math.max(extraHeight, getLayoutMinHeight());
+        } else {
+            mHeight = Math.max(getLayoutPrefHeight(), getLayoutMinHeight());
+        }
+
+        setMeasure(mWidth, mHeight);
     }
 
     /**
@@ -318,8 +336,8 @@ public class Widget {
      * @param height
      */
     public final void setMeasure(float width, float height) {
-        measureWidth = Math.max(width, minWidth);
-        measureHeight = Math.max(height, minHeight);
+        measureWidth = width;
+        measureHeight = height;
     }
 
     public float getMeasureWidth()  {

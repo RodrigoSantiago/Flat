@@ -149,8 +149,8 @@ public class Button extends Label {
 
         float mWidth;
         float mHeight;
-        boolean wrapWidth = getPrefWidth() == WRAP_CONTENT;
-        boolean wrapHeight = getPrefHeight() == WRAP_CONTENT;
+        boolean wrapWidth = getLayoutPrefWidth() == WRAP_CONTENT;
+        boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
 
         float iW = iconImage.getWidth();
         float iH = iconImage.getHeight();
@@ -163,12 +163,12 @@ public class Button extends Label {
         if (wrapWidth) {
             mWidth = Math.max(getTextWidth() + extraWidth + iW + iconSpacing, getLayoutMinWidth());
         } else {
-            mWidth = Math.max(getPrefWidth(), getLayoutMinWidth());
+            mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
         }
         if (wrapHeight) {
             mHeight = Math.max(Math.max(getTextHeight(), iH) + extraHeight, getLayoutMinHeight());
         } else {
-            mHeight = Math.max(getPrefHeight(), getLayoutMinHeight());
+            mHeight = Math.max(getLayoutPrefHeight(), getLayoutMinHeight());
         }
 
         setMeasure(mWidth, mHeight);

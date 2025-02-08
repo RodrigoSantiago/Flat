@@ -86,8 +86,8 @@ public class ButtonTest {
         button.setPrefSize(100, 200);
         button.onMeasure();
 
-        assertEquals(100, button.getMeasureWidth(), 0.1f);
-        assertEquals(200, button.getMeasureHeight(), 0.1f);
+        assertEquals(106, button.getMeasureWidth(), 0.1f);
+        assertEquals(204, button.getMeasureHeight(), 0.1f);
 
         button.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
         button.onMeasure();
@@ -133,8 +133,8 @@ public class ButtonTest {
         button.setPrefSize(100, 200);
         button.onMeasure();
 
-        assertEquals(100, button.getMeasureWidth(), 0.1f);
-        assertEquals(200, button.getMeasureHeight(), 0.1f);
+        assertEquals(106, button.getMeasureWidth(), 0.1f);
+        assertEquals(204, button.getMeasureHeight(), 0.1f);
 
         button.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
         button.onMeasure();
@@ -173,8 +173,8 @@ public class ButtonTest {
         button.setPrefSize(100, 200);
         button.onMeasure();
 
-        assertEquals(100, button.getMeasureWidth(), 0.1f);
-        assertEquals(200, button.getMeasureHeight(), 0.1f);
+        assertEquals(106, button.getMeasureWidth(), 0.1f);
+        assertEquals(204, button.getMeasureHeight(), 0.1f);
 
         button.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
         button.onMeasure();
@@ -213,8 +213,8 @@ public class ButtonTest {
         button.setPrefSize(100, 200);
         button.onMeasure();
 
-        assertEquals(100, button.getMeasureWidth(), 0.1f);
-        assertEquals(200, button.getMeasureHeight(), 0.1f);
+        assertEquals(106, button.getMeasureWidth(), 0.1f);
+        assertEquals(204, button.getMeasureHeight(), 0.1f);
 
         button.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
         button.onMeasure();
