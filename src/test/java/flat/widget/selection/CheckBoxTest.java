@@ -11,6 +11,7 @@ import flat.uxml.value.UXValueColor;
 import flat.uxml.value.UXValueNumber;
 import flat.uxml.value.UXValueText;
 import flat.widget.Widget;
+import flat.widget.enums.ImageFilter;
 import flat.widget.enums.SelectionState;
 import flat.window.Activity;
 import flat.window.Window;
@@ -98,6 +99,7 @@ public class CheckBoxTest {
         assertEquals(iconIndeterminate, checkBox.getIconIdeterminate());
         assertEquals(1.0f, checkBox.getIconTransitionDuration(), 0.0001f);
         assertEquals(0xFF0000FF, checkBox.getColor());
+        assertEquals(ImageFilter.LINEAR, checkBox.getIconImageFilter());
 
         assertEquals(action, checkBox.getActionListener());
     }
@@ -163,6 +165,7 @@ public class CheckBoxTest {
 
         hash.put(UXHash.getHash("on-action"), new UXValueText("onActionWork"));
         hash.put(UXHash.getHash("color"), new UXValueColor(0xFF0000FF));
+        hash.put(UXHash.getHash("icon-image-filter"), new UXValueText(ImageFilter.LINEAR.toString()));
         hash.put(UXHash.getHash("icon-active"), uxIconActive);
         hash.put(UXHash.getHash("icon-inactive"), uxIconInactive);
         hash.put(UXHash.getHash("icon-indeterminate"), uxIconIndeterminate);

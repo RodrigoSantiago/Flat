@@ -271,17 +271,12 @@ checkbox {
 radiobutton {
     width : 24;
     height : 24;
-    ripple : true;
+    ripple-overflow : true;
+    ripple-enabled : true;
     ripple-color : #00000080;
-
-    enabled {
-        color : #000000;
-        icon : '/default/icons/radiobox-blank.svg';
-    }
-    activated {
-        color : #FF0000;
-        icon : '/default/icons/radiobox-marked.svg';
-    }
+    icon-inactive : '/default/icons/radiobox-blank.svg';
+    icon-active : '/default/icons/radiobox-marked.svg';
+    cursor : hand;
 }
 
 switch {

@@ -10,21 +10,21 @@ import flat.graphics.image.Drawable;
 import flat.uxml.Controller;
 import flat.uxml.UXAttrs;
 import flat.uxml.UXListener;
+import flat.widget.Scene;
 import flat.widget.Widget;
 import flat.widget.enums.ImageFilter;
-import flat.widget.enums.SelectionState;
 import flat.window.Activity;
 
-public class CheckBox extends Widget {
+public class RadioButton extends Widget {
 
     private UXListener<ActionEvent> actionListener;
-    private SelectionState selectionState = SelectionState.INDETERMINATE;
     private ImageFilter iconImageFilter = ImageFilter.LINEAR;
     private Drawable iconInactive;
     private Drawable iconActive;
-    private Drawable iconIdeterminate;
     private int color = Color.black;
+    private boolean active;
     private float iconTransitionDuration;
+    RadioGroup radioGroup;
 
     private IconChange iconChangeAnimation = new IconChange();
     private Drawable prevIcon;
@@ -38,7 +38,18 @@ public class CheckBox extends Widget {
 
         UXAttrs attrs = getAttrs();
         setActionListener(attrs.getAttributeListener("on-action", ActionEvent.class, controller));
-        setSelectionState(attrs.getAttributeConstant("selection-state", getSelectionState()));
+
+        String groupId = attrs.getAttributeString("radio-group-id", null);
+        if (groupId != null) {
+            Scene scene = getScene();
+            if (scene != null) {
+                Widget widget = scene.findById(groupId);
+                if (widget instanceof RadioGroup group) {
+                    group.add(this);
+                }
+            }
+        }
+        setActive(attrs.getAttributeBool("active", isActive()));
     }
 
     @Override
@@ -52,7 +63,6 @@ public class CheckBox extends Widget {
         setIconImageFilter(attrs.getConstant("icon-image-filter", info, getIconImageFilter()));
         setIconInactive(attrs.getResourceAsDrawable("icon-inactive", info, getIconInactive(), false));
         setIconActive(attrs.getResourceAsDrawable("icon-active", info, getIconActive(), false));
-        setIconIdeterminate(attrs.getResourceAsDrawable("icon-indeterminate", info, getIconIdeterminate(), false));
         setIconTransitionDuration(attrs.getNumber("icon-transition-duration", info, getIconTransitionDuration()));
     }
 
@@ -137,10 +147,8 @@ public class CheckBox extends Widget {
         float iaHeight = iconActive == null ? 0 : iconActive.getHeight();
         float iiWidth = iconInactive == null ? 0 : iconInactive.getWidth();
         float iiHeight = iconInactive == null ? 0 : iconInactive.getHeight();
-        float idWidth = iconIdeterminate == null ? 0 : iconIdeterminate.getWidth();
-        float idHeight = iconIdeterminate == null ? 0 : iconIdeterminate.getHeight();
-        float nextWidth = Math.max(Math.max(iaWidth, iiWidth), idWidth);
-        float nextHeight = Math.max(Math.max(iaHeight, iiHeight), idHeight);
+        float nextWidth = Math.max(iaWidth, iiWidth);
+        float nextHeight = Math.max(iaHeight, iiHeight);
         if (nextWidth != iconWidth || nextHeight != iconHeight) {
             this.iconWidth = nextWidth;
             this.iconHeight = nextHeight;
@@ -151,9 +159,9 @@ public class CheckBox extends Widget {
     }
 
     private void setCurrentIcon() {
-        Drawable icon = isActive() ? iconActive : isIndeterminate() ? iconIdeterminate : iconInactive;
+        Drawable icon = isActive() ? iconActive : iconInactive;
         if (icon == null) {
-            icon = iconInactive;
+            icon = isActive() ? iconInactive : iconActive;
         }
         if (currentIcon != icon) {
             if (iconTransitionDuration > 0) {
@@ -166,18 +174,8 @@ public class CheckBox extends Widget {
         }
     }
 
-    public SelectionState getSelectionState() {
-        return selectionState;
-    }
-
-    public void setSelectionState(SelectionState selectionState) {
-        if (selectionState == null) selectionState = SelectionState.INDETERMINATE;
-
-        if (this.selectionState != selectionState) {
-            this.selectionState = selectionState;
-
-            setCurrentIcon();
-        }
+    public RadioGroup getRadioGroup() {
+        return radioGroup;
     }
 
     public ImageFilter getIconImageFilter() {
@@ -218,19 +216,6 @@ public class CheckBox extends Widget {
         }
     }
 
-    public Drawable getIconIdeterminate() {
-        return iconIdeterminate;
-    }
-
-    public void setIconIdeterminate(Drawable iconIdeterminate) {
-        if (this.iconIdeterminate != iconIdeterminate) {
-            this.iconIdeterminate = iconIdeterminate;
-
-            updateIconSize();
-            setCurrentIcon();
-        }
-    }
-
     public float getIconTransitionDuration() {
         return iconTransitionDuration;
     }
@@ -254,16 +239,23 @@ public class CheckBox extends Widget {
         }
     }
 
-    public boolean isInactive() {
-        return getSelectionState() == SelectionState.INACTIVE;
-    }
-
     public boolean isActive() {
-        return getSelectionState() == SelectionState.ACTIVE;
+        return active;
     }
 
-    public boolean isIndeterminate() {
-        return getSelectionState() == SelectionState.INDETERMINATE;
+    public void setActive(boolean active) {
+        if (this.active != active) {
+            this.active = active;
+
+            setCurrentIcon();
+            if (radioGroup != null) {
+                if (active) {
+                    radioGroup.select(this);
+                } else {
+                    radioGroup.unselect(this);
+                }
+            }
+        }
     }
 
     public UXListener<ActionEvent> getActionListener() {
@@ -281,7 +273,7 @@ public class CheckBox extends Widget {
     }
 
     public void fire() {
-        setSelectionState(isActive() ? SelectionState.INACTIVE : SelectionState.ACTIVE);
+        setActive(true);
         fireAction(new ActionEvent(this));
     }
 
