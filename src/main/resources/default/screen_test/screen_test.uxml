@@ -10,27 +10,27 @@
             <RadioButton radio-group-id="group-1" active="true" background-color="#FFFFFF" text="Ola Mundo" icon-transition-duration="0.2" ripple-color="#FF000080"/>
         </LinearBox>
         <Switch active="true" background-color="#FFFFFF" icon-transition-duration="0.2" ripple-color="#FF000080" width="200"/>
+        <LinearBox direction="horizontal" width="WRAP_CONTENT" height="WRAP_CONTENT">
+            <ImageView image="/default/img_test.png" width="200" height="100" image-scale="FIT" margin-right="8" horizontal-align="CENTER"/>
+            <ImageView image="/default/icons/baseline-more_vert.svg" width="200" height="100" image-scale="CROP" margin-right="8" vertical-align="MIDDLE"/>
+            <ImageView image="/default/test_transp.png" width="200" height="100" image-scale="STRETCH" margin-right="8" image-filter="NEAREST" horizontal-align="CENTER"/>
+            <ImageView image="/default/img_test.png" width="200" height="100" image-scale="NONE" vertical-align="MIDDLE"  horizontal-align="CENTER"/>
+        </LinearBox>
 
         <LinearBox direction="vertical" width="MATCH_PARENT" height="400">
             <Label background-color="#FF0000" text="Ola Mundo" margin-top="8"/>
             <Button text="Ola Mundo - OLAI" ripple-enabled="true" text-size="12px" id="button" margin-top="8" enabled="false"/>
-            <Button text="button2.setFont(new Font(Inter 2\, FontWeight.NORMAL" ripple-enabled="true" text-size="13px" id="button2"
+            <Button text="button2.setFont 123" ripple-enabled="true" text-size="13px" id="button2"
                     background-color="#1E1F22" text-color="#FFFFFF" margin-top="8"/>
             <Button text="Ola Mundo - OLA" ripple-enabled="true" text-size="12px" id="button3" margin-top="8"/>
             <Button text="Ola Mundo pq - OLÂ" ripple-enabled="true" text-size="24px" font="SANS" margin-top="8"
-                    icon-image="/default/img_test.png"
+                    icon="/default/img_test.png"
                     icon-scale-height="true" icon-spacing="24px"
                     icon-align="RIGHT"
                     height="80px"
             />
             <Button text="Ola Mundo pq - OLÂ" ripple-enabled="true" text-size="24px" font="SANS" margin-top="8"
-                    icon-image="/default/img_test.png"
-                    icon-scale-height="true" icon-spacing="24px"
-                    icon-align="LEFT"
-                    height="80px"
-            />
-            <Button text="Ola Mundo pq - OLÂ" ripple-enabled="true" text-size="24px" font="SANS" margin-top="32"
-                    icon-image="/default/img_test.png"
+                    icon="/default/img_test.png"
                     icon-scale-height="true" icon-spacing="24px"
                     icon-align="LEFT"
                     height="80px"
@@ -38,28 +38,28 @@
         </LinearBox>
         <LinearBox direction="vertical" width="MATCH_PARENT" height="MATCH_PARENT">
             <Button text="Ola Mundo pq - OLÂ" text-size="24px" font="SANS" margin-top="8"
-                    icon-image="/default/img_test.png"
+                    icon="/default/img_test.png"
                     icon-scale-height="true" icon-spacing="24px"
                     icon-align="RIGHT"
                     vertical-align="BOTTOM"
                     height="16px"
             />
             <Button text="Ola Mundo pq - OLÂ" text-size="24px" font="SANS" margin-top="8"
-                    icon-image="/default/img_test.png"
+                    icon="/default/img_test.png"
                     icon-scale-height="true" icon-spacing="24px"
                     icon-align="LEFT"
                     vertical-align="MIDDLE"
                     height="16px"
             />
             <Button text="Ola Mundo pq - OLÂA" text-size="24px" font="font(ITALIC)" margin-top="8"
-                    icon-image="/default/img_test.png"
+                    icon="/default/img_test.png"
                     icon-scale-height="true" icon-spacing="24px"
                     icon-align="LEFT"
                     vertical-align="MIDDLE"
                     height="80px"
             />
             <Button text="Ola Mundo pq - OLÂ" text-size="24px" font="SANS" margin-top="8"
-                    icon-image="/default/img_test.png"
+                    icon="/default/img_test.png"
                     icon-scale-height="true" icon-spacing="24px"
                     icon-align="RIGHT"
                     horizontal-align="RIGHT"

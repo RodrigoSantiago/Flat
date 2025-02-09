@@ -76,6 +76,7 @@ public class ButtonTest {
         assertEquals(button.getIconSpacing(), 24, 0.1f);
         assertEquals(button.getIconImageFilter(), ImageFilter.LINEAR);
         assertEquals(button.getIcon(), icon);
+        assertEquals(button.getIconColor(), 0xFFFF00FF);
 
         assertEquals(action, button.getActionListener());
     }
@@ -261,6 +262,7 @@ public class ButtonTest {
         when(uxIconActive.asResource(any())).thenReturn(resIcon);
 
         hash.put(UXHash.getHash("icon"), uxIconActive);
+        hash.put(UXHash.getHash("icon-color"), new UXValueColor(0xFFFF00FF));
         hash.put(UXHash.getHash("icon-scale-height"), new UXValueBool(true));
         hash.put(UXHash.getHash("icon-align"), new UXValueText(HorizontalAlign.RIGHT.toString()));
         hash.put(UXHash.getHash("icon-spacing"), new UXValueSizeSp(24));

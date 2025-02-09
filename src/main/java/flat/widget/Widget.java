@@ -426,6 +426,7 @@ public class Widget {
         }
     }
 
+    // TODO - Some widgets are using TRUE when the widget is NOT WRAP_CONTENT!
     public void invalidate(boolean layout) {
         if (parent != null) {
             if (layout) {

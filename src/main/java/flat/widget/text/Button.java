@@ -3,10 +3,9 @@ package flat.widget.text;
 import flat.animations.StateInfo;
 import flat.events.ActionEvent;
 import flat.events.PointerEvent;
+import flat.graphics.Color;
 import flat.graphics.SmartContext;
 import flat.graphics.image.Drawable;
-import flat.graphics.image.DrawableReader;
-import flat.resources.ResourceStream;
 import flat.uxml.Controller;
 import flat.uxml.UXAttrs;
 import flat.uxml.UXListener;
@@ -18,6 +17,7 @@ public class Button extends Label {
     private UXListener<ActionEvent> actionListener;
 
     private Drawable icon;
+    private int iconColor = Color.white;
     private ImageFilter iconImageFilter = ImageFilter.LINEAR;
     private float iconSpacing;
     private boolean iconScaleHeight;
@@ -39,6 +39,7 @@ public class Button extends Label {
         StateInfo info = getStateInfo();
 
         setIcon(attrs.getResourceAsDrawable("icon", info, getIcon(), false));
+        setIconColor(attrs.getColor("icon-color", info, getIconColor()));
         setIconScaleHeight(attrs.getBool("icon-scale-height", info, getIconScaleHeight()));
         setIconAlign(attrs.getConstant("icon-align", info, getIconAlign()));
         setIconSpacing(attrs.getSize("icon-spacing", info, getIconSpacing()));
@@ -82,7 +83,7 @@ public class Button extends Label {
             icon.draw(context
                     , xOff(x, x + width, tw) + sp
                     , yOff(y, y + height, ih)
-                    , iw, ih, 0, iconImageFilter);
+                    , iw, ih, iconColor, iconImageFilter);
 
         } else {
             float iw = imgWidth;
@@ -111,12 +112,12 @@ public class Button extends Label {
                 icon.draw(context
                         , xoff + textWidth + iconSpacing
                         , yoffImg
-                        , iw, ih, 0, iconImageFilter);
+                        , iw, ih, iconColor, iconImageFilter);
             } else {
                 icon.draw(context
                         , xoff
                         , yoffImg
-                        , iw, ih, 0, iconImageFilter);
+                        , iw, ih, iconColor, iconImageFilter);
                 context.drawTextSlice(
                           xoff + imgWidth + iconSpacing
                         , yoffText
@@ -191,6 +192,17 @@ public class Button extends Label {
 
     public void fire() {
         fireAction(new ActionEvent(this));
+    }
+
+    public int getIconColor() {
+        return iconColor;
+    }
+
+    public void setIconColor(int iconColor) {
+        if (this.iconColor != iconColor) {
+            this.iconColor = iconColor;
+            invalidate(false);
+        }
     }
 
     public Drawable getIcon() {

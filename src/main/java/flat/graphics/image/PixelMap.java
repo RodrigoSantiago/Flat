@@ -54,7 +54,7 @@ public class PixelMap implements Drawable {
     }
 
     @Override
-    public void draw(SmartContext context, float x, float y, float width, float height, float frame, ImageFilter filter) {
+    public void draw(SmartContext context, float x, float y, float width, float height, int color, ImageFilter filter) {
         readTexture(context.getContext());
         if (this.filter != filter) {
             texture.begin(0);
@@ -64,11 +64,11 @@ public class PixelMap implements Drawable {
             texture.end();
             this.filter = filter;
         }
-        context.drawImage(this, null, x, y, width, height);
+        context.drawImage(this, x, y, width, height, color);
     }
 
     @Override
     public void draw(SmartContext context, float x, float y, float frame, ImageFilter filter) {
-        draw(context, x, y, getWidth(), getHeight(), frame, filter);
+        draw(context, x, y, getWidth(), getHeight(), 0xFFFFFFFF, filter);
     }
 }

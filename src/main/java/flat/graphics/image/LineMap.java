@@ -34,7 +34,7 @@ public class LineMap implements Drawable {
     }
 
     @Override
-    public void draw(SmartContext context, float x, float y, float width, float height, float frame, ImageFilter filter) {
+    public void draw(SmartContext context, float x, float y, float width, float height, int color, ImageFilter filter) {
         Affine affine = context.getTransform2D();
         context.setTransform2D(
                 context.getTransform2D()
@@ -45,14 +45,14 @@ public class LineMap implements Drawable {
         Stroke stroke = context.getStroker();
         for (SVGPath svgPath : svgPaths) {
             if (svgPath.observeFill) {
-                context.setPaint(paint);
+                context.setColor(color);
                 context.drawShape(svgPath.shape, true);
             } else if (svgPath.fillPaint != null) {
                 context.setPaint(svgPath.fillPaint);
                 context.drawShape(svgPath.shape, true);
             }
             if (svgPath.observeStroke) {
-                context.setPaint(paint);
+                context.setColor(color);
                 context.setStroker(stroke);
                 context.drawShape(svgPath.shape, false);
             } else if (svgPath.strokePaint != null) {
@@ -66,7 +66,7 @@ public class LineMap implements Drawable {
 
     @Override
     public void draw(SmartContext context, float x, float y, float frame, ImageFilter filter) {
-        draw(context, x, y, getWidth(), getHeight(), frame, filter);
+        draw(context, x, y, getWidth(), getHeight(), 0xFFFFFFFF, filter);
     }
 
     public static class SVGPath {

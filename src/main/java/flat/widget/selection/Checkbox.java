@@ -80,11 +80,11 @@ public class Checkbox extends Widget {
             float icoHeight = Math.min(prevIcon.getHeight(), height);
             float xOff = (x + width - icoWidth) * 0.5f;
             float yOff = (y + height - icoHeight) * 0.5f;
-            context.setColor(Color.multiplyColorAlpha(color, prevAlpha));
+            int colorAlpha = Color.multiplyColorAlpha(color, prevAlpha);
             prevIcon.draw(context
                     , xOff
                     , yOff
-                    , icoWidth, icoHeight, 0, iconImageFilter);
+                    , icoWidth, icoHeight, colorAlpha, iconImageFilter);
         }
 
         if (currentIcon != null) {
@@ -92,11 +92,11 @@ public class Checkbox extends Widget {
             float icoHeight = Math.min(currentIcon.getHeight(), height);
             float xOff = (x + width - icoWidth) * 0.5f;
             float yOff = (y + height - icoHeight) * 0.5f;
-            context.setColor(Color.multiplyColorAlpha(color, currentAlpha));
+            int colorAlpha = Color.multiplyColorAlpha(color, currentAlpha);
             currentIcon.draw(context
                     , xOff
                     , yOff
-                    , icoWidth, icoHeight, 0, iconImageFilter);
+                    , icoWidth, icoHeight, colorAlpha, iconImageFilter);
         }
     }
 

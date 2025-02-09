@@ -97,11 +97,11 @@ public class SwitchToggle extends Widget {
             float xPosB = x + width - icoWidth;
             float xOff = xPosA * (1 - slide) + xPosB * slide;
             float yOff = (y + height - icoHeight) * 0.5f;
-            context.setColor(Color.multiplyColorAlpha(color, prevAlpha));
+            int colorAlpha = Color.multiplyColorAlpha(color, prevAlpha);
             prevIcon.draw(context
                     , xOff
                     , yOff
-                    , icoWidth, icoHeight, 0, iconImageFilter);
+                    , icoWidth, icoHeight, colorAlpha, iconImageFilter);
         }
 
         if (currentIcon != null) {
@@ -113,11 +113,11 @@ public class SwitchToggle extends Widget {
             float xOff = xPosA * (1 - slide) + xPosB * slide;
             float yOff = (y + height - icoHeight) * 0.5f;
 
-            context.setColor(Color.multiplyColorAlpha(color, currentAlpha));
+            int colorAlpha = Color.multiplyColorAlpha(color, currentAlpha);
             currentIcon.draw(context
                     , xOff
                     , yOff
-                    , icoWidth, icoHeight, 0, iconImageFilter);
+                    , icoWidth, icoHeight, colorAlpha, iconImageFilter);
         }
     }
 

@@ -1,14 +1,13 @@
 package flat.widget.text;
 
-import flat.graphics.context.Context;
 import flat.graphics.context.Font;
-import flat.uxml.*;
+import flat.uxml.Controller;
+import flat.uxml.UXBuilder;
+import flat.uxml.UXHash;
 import flat.uxml.value.*;
 import flat.widget.Widget;
 import flat.widget.enums.HorizontalAlign;
 import flat.widget.enums.VerticalAlign;
-import flat.window.Activity;
-import flat.window.Window;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,19 +16,16 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.HashMap;
 
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.powermock.api.mockito.PowerMockito.*;
-import static org.powermock.api.mockito.PowerMockito.when;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({Font.class})
 public class LabelTest {
 
-    Window window;
-    Context context;
-    Activity activity;
-    UXTheme theme;
     Controller controller;
     UXBuilder builder;
     Font defaultFont;
@@ -37,20 +33,6 @@ public class LabelTest {
 
     @Before
     public void before() {
-        window = mock(Window.class);
-        context = mock(Context.class);
-
-        when(context.getWindow()).thenReturn(window);
-        when(context.getWidth()).thenReturn(200);
-        when(context.getHeight()).thenReturn(100);
-
-        activity = mock(Activity.class);
-        when(activity.getContext()).thenReturn(context);
-        when(activity.getWindow()).thenReturn(window);
-        when(activity.getWidth()).thenReturn(200f);
-        when(activity.getHeight()).thenReturn(100f);
-
-        theme = mock(UXTheme.class);
         controller = mock(Controller.class);
         builder = mock(UXBuilder.class);
 

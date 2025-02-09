@@ -1222,7 +1222,7 @@ public class Context {
         } else if (svgPaint.isBoxShadow()) {
             SVG.SetPaintBoxGradient(svgId, svgPaint.transform, svgPaint.x1, svgPaint.y1, svgPaint.x2, svgPaint.y2, svgPaint.corners, svgPaint.blur, svgPaint.stops.length, svgPaint.stops, svgPaint.colors, svgPaint.cycleMethod.ordinal());
         } else if (svgPaint.isImagePattern()) {
-            SVG.SetPaintImage(svgId, svgPaint.texture.getInternalID(), svgPaint.transformImage, 0xFFFFFFFF);
+            SVG.SetPaintImage(svgId, svgPaint.texture.getInternalID(), svgPaint.transformImage, svgPaint.color);
         }
 
         SVG.TransformSet(svgId,

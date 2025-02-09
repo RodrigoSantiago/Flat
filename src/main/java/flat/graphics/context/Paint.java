@@ -110,7 +110,7 @@ public final class Paint {
 
     public static Paint image(float srcx1, float srcy1, float srcx2, float srcy2,
                               float dstx1, float dsty1, float dstx2, float dsty2,
-                              Texture2D texture, Affine transform) {
+                              Texture2D texture, int color, Affine transform) {
         srcx1 = srcx1 / texture.getWidth();
         srcy1 = srcy1 / texture.getHeight();
         srcx2 = srcx2 / texture.getWidth();
@@ -127,6 +127,7 @@ public final class Paint {
         }
         Paint paint = new Paint(4);
         paint.texture = texture;
+        paint.color = color;
         paint.transform = identity;
         paint.transformImage =
                 new float[]{
@@ -137,23 +138,15 @@ public final class Paint {
     }
 
     public static Paint image(float x, float y, float width, float height, Texture2D texture) {
-        return image(x, y, width, height, texture, null);
+        return image(x, y, width, height, texture, 0xFFFFFFFF);
     }
 
-    public static Paint image(float x, float y, float width, float height, Texture2D texture, Affine transform) {
-        Paint paint = new Paint(4);
-        paint.x1 = x;
-        paint.y1 = y;
-        paint.x2 = width;
-        paint.y2 = height;
-        paint.texture = texture;
-        paint.transform = identity;
-        paint.transformImage = transform == null ? identity :
-                new float[]{
-                        transform.m00, transform.m10,
-                        transform.m01, transform.m11,
-                        transform.m02, transform.m12};
-        return paint;
+    public static Paint image(float x, float y, float width, float height, Texture2D texture, int color) {
+        return image(x, y, width, height, texture, color, null);
+    }
+
+    public static Paint image(float x, float y, float width, float height, Texture2D texture, int color, Affine transform) {
+        return image(0, 0, texture.getWidth(), texture.getHeight(), x, y, width, height, texture, color, transform);
     }
 
     private Paint(int type) {

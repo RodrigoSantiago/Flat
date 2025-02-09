@@ -45,6 +45,12 @@ public class Path implements PathConsumer, Shape, Cloneable {
         append(p, false);
     }
 
+    public Path(PathIterator iterator) {
+        this(WIND_NON_ZERO, BUFFER_SIZE);
+        setWindingRule(iterator.windingRule());
+        append(iterator, false);
+    }
+
     @Override
     public Path clone() {
         return new Path(rule, types.clone(), points.clone(), typeSize, pointSize);

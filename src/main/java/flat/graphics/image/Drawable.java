@@ -11,7 +11,7 @@ public interface Drawable {
 
     float getHeight();
 
-    void draw(SmartContext context, float x, float y, float width, float height, float frame, ImageFilter filter);
+    void draw(SmartContext context, float x, float y, float width, float height, int color, ImageFilter filter);
 
     void draw(SmartContext context, float x, float y, float frame, ImageFilter filter);
 

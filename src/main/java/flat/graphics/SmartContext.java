@@ -24,7 +24,7 @@ public class SmartContext {
 
     // -- 2D
     private Affine transform2D = new Affine();
-    private Area clipArea = new Area();
+    private Shape clipArea;
     private Stroke stroker;
     private float textSize;
     private float textBlur;
@@ -98,7 +98,7 @@ public class SmartContext {
         context.setClearDepth(depth);
         context.setClearStencil(stencil);
         context.clear(true, true, true);
-        clipArea.set(getView());
+        clipArea = null;
     }
 
     // ---- Properties ---- //
@@ -169,29 +169,47 @@ public class SmartContext {
      * Clear the clipping
      */
     public void clearClip() {
-        clipArea.set(getView());
+        clipArea = null;
         context.svgClearClip(false);
     }
 
-    public Area intersectClip(Shape shape) {
-        Area old = new Area(clipArea);
-        clipArea.intersect(new Area(shape.pathIterator(transform2D)));
-        context.svgClearClip(true);
-        if (!clipArea.isEmpty()) {
-            context.svgTransform(null);
-            context.svgClip(clipArea);
-            context.svgTransform(transform2D);
+    public Shape intersectClip(Shape shape) {
+        if (clipArea == null) {
+            clipArea = new Path(shape.pathIterator(transform2D));
+
+            context.svgClearClip(true);
+            if (!clipArea.isEmpty()) {
+                context.svgTransform(null);
+                context.svgClip(clipArea);
+                context.svgTransform(transform2D);
+            }
+            return null;
+        } else {
+            Shape old = clipArea;
+
+            Area area = new Area(clipArea);
+            area.intersect(new Area(shape.pathIterator(transform2D)));
+            clipArea = area;
+
+            context.svgClearClip(true);
+            if (!clipArea.isEmpty()) {
+                context.svgTransform(null);
+                context.svgClip(clipArea);
+                context.svgTransform(transform2D);
+            }
+            return old;
         }
-        return old;
     }
 
     public void setClip(Shape shape) {
-        clipArea.set(shape.pathIterator(transform2D));
-        context.svgClearClip(true);
-        if (!clipArea.isEmpty()) {
-            context.svgTransform(null);
-            context.svgClip(clipArea);
-            context.svgTransform(transform2D);
+        if (shape == null) {
+            clearClip();
+        } else {
+            clipArea = shape;
+            context.svgClearClip(true);
+            if (!clipArea.isEmpty()) {
+                context.svgClip(clipArea);
+            }
         }
     }
 
@@ -426,28 +444,58 @@ public class SmartContext {
         drawRoundRectShadow(rect.x, rect.y, rect.width, rect.height, rect.arcTop, rect.arcRight, rect.arcBottom, rect.arcLeft, blur, alpha);
     }
 
-    public void drawImage(PixelMap image) {
+    public void drawImage(PixelMap image, float x, float y) {
         svgMode();
-        drawImage(image, null);
-    }
-
-    public void drawImage(PixelMap image, Affine transform) {
-        svgMode();
-        drawImage(image, transform, 0, 0, image.getWidth(), image.getHeight());
-    }
-
-    public void drawImage(PixelMap image, Affine transform, float x, float y, float width, float height) {
-        svgMode();
-        drawImage(
-                image.readTexture(context),
+        drawImage(image.readTexture(context),
                 0, 0, image.getWidth(), image.getHeight(),
-                x, y, x + width, y + height, transform);
+                x, y, x + image.getWidth(), y + image.getHeight(), 0xFFFFFFFF, null);
+    }
+
+    public void drawImage(PixelMap image, float x, float y, float width, float height) {
+        svgMode();
+        drawImage(image.readTexture(context),
+                0, 0, image.getWidth(), image.getHeight(),
+                x, y, x + width, y + height, 0xFFFFFFFF, null);
+    }
+
+    public void drawImage(PixelMap image, float x, float y, float width, float height, int color) {
+        svgMode();
+        drawImage(image.readTexture(context),
+                0, 0, image.getWidth(), image.getHeight(),
+                x, y, x + width, y + height, color, null);
+    }
+
+    public void drawImage(PixelMap image, float x, float y, float width, float height, int color, Affine transform) {
+        svgMode();
+        drawImage(image.readTexture(context),
+                0, 0, image.getWidth(), image.getHeight(),
+                x, y, x + width, y + height, color, transform);
+    }
+
+    public void drawImage(PixelMap image,
+                          float srcX1, float srcY1, float srcX2, float srcY2,
+                          float dstX1, float dstY1, float dstX2, float dstY2,
+                          int color) {
+        svgMode();
+        drawImage(image.readTexture(context),
+                srcX1, srcY1, srcX2, srcY2,
+                dstX1, dstY1, dstX2, dstY2, color, null);
+    }
+
+    public void drawImage(PixelMap image,
+                          float srcX1, float srcY1, float srcX2, float srcY2,
+                          float dstX1, float dstY1, float dstX2, float dstY2,
+                          int color, Affine transform) {
+        svgMode();
+        drawImage(image.readTexture(context),
+                srcX1, srcY1, srcX2, srcY2,
+                dstX1, dstY1, dstX2, dstY2, color, transform);
     }
 
     public void drawImage(Texture2D texture,
                           float srcX1, float srcY1, float srcX2, float srcY2,
                           float dstX1, float dstY1, float dstX2, float dstY2,
-                          Affine transform2D) {
+                          int color, Affine transform) {
         svgMode();
         if (dstX1 > dstX2) {
             float v = dstX1;
@@ -468,10 +516,8 @@ public class SmartContext {
             srcY2 = v;
         }
         Paint paint = context.svgPaint();
-        context.svgPaint(Paint.image(srcX1, srcY1, srcX2, srcY2, dstX1, dstY1, dstX2, dstY2, texture, transform2D));
-        drawRect(dstX1,dstY1, dstX2 - dstX1, dstY2 - dstY1, true);
-        context.svgPaint(Paint.color(0xFFFFFFFF));
-        drawRect(dstX1,dstY1, dstX2 - dstX1, dstY2 - dstY1, false);
+        context.svgPaint(Paint.image(srcX1, srcY1, srcX2, srcY2, dstX1, dstY1, dstX2, dstY2, texture, color, transform));
+        drawRect(dstX1, dstY1, dstX2 - dstX1, dstY2 - dstY1, true);
         context.svgPaint(paint);
     }
 
