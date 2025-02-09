@@ -13,7 +13,7 @@
 
         <LinearBox direction="vertical" width="MATCH_PARENT" height="400">
             <Label background-color="#FF0000" text="Ola Mundo" margin-top="8"/>
-            <Button text="Ola Mundo - OLA" ripple-enabled="true" text-size="12px" id="button" margin-top="8"/>
+            <Button text="Ola Mundo - OLAI" ripple-enabled="true" text-size="12px" id="button" margin-top="8" enabled="false"/>
             <Button text="button2.setFont(new Font(Inter 2\, FontWeight.NORMAL" ripple-enabled="true" text-size="13px" id="button2"
                     background-color="#1E1F22" text-color="#FFFFFF" margin-top="8"/>
             <Button text="Ola Mundo - OLA" ripple-enabled="true" text-size="12px" id="button3" margin-top="8"/>

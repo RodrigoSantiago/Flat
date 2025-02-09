@@ -832,7 +832,7 @@ public class Widget {
 
     public void setEnabled(boolean enabled) {
         if (isEnabled() != enabled) {
-            setStates((byte) (enabled ? states | DISABLED.bitset() : states & ~DISABLED.bitset()));
+            setStates((byte) (!enabled ? states | DISABLED.bitset() : states & ~DISABLED.bitset()));
         }
     }
 

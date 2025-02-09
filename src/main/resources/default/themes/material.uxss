@@ -48,6 +48,9 @@ button : label {
     focused {
         background-color : #00FFFFFF;
     }
+    disabled {
+        background-color : #808080FF;
+    }
 }
 
 togglebutton : button {
@@ -299,7 +302,7 @@ switchtoggle {
     icon-inactive : '/default/icons/switch-shape.svg';
 
     icon-transition-duration : 0.1;
-    transition-duration : 0.1;
+    slide-transition-duration : 0.1;
     cursor : hand;
 }
 
