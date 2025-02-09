@@ -7,7 +7,7 @@ import flat.widget.Widget;
 import flat.widget.layout.Box;
 import flat.widget.layout.LinearBox;
 import flat.widget.layout.StackBox;
-import flat.widget.selection.CheckBox;
+import flat.widget.selection.Checkbox;
 import flat.widget.selection.RadioButton;
 import flat.widget.selection.RadioGroup;
 import flat.widget.selection.SwitchToggle;
@@ -36,7 +36,7 @@ public class UXBuilder {
         UXBuilder.install("StackBox", StackBox::new);
         UXBuilder.install("Label", Label::new);
         UXBuilder.install("Button", Button::new);
-        UXBuilder.install("CheckBox", CheckBox::new);
+        UXBuilder.install("CheckBox", Checkbox::new);
         UXBuilder.install("RadioButton", RadioButton::new);
         UXBuilder.install("RadioGroup", RadioGroup::new);
         UXBuilder.install("Switch", SwitchToggle::new);

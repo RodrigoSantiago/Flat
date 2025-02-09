@@ -30,7 +30,7 @@ import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({DrawableReader.class})
-public class CheckBoxTest {
+public class CheckboxTest {
     ResourceStream resActive;
     ResourceStream resInactive;
     ResourceStream resIndeterminate;
@@ -68,72 +68,72 @@ public class CheckBoxTest {
         UXListener<ActionEvent> action = (UXListener<ActionEvent>) mock(UXListener.class);
         when(controller.getListenerMethod("onActionWork", ActionEvent.class)).thenReturn(action);
 
-        CheckBox checkBox = new CheckBox();
-        checkBox.setAttributes(createNonDefaultValues(), "checkBox");
-        checkBox.applyAttributes(controller);
-        checkBox.applyStyle();
+        Checkbox checkbox = new Checkbox();
+        checkbox.setAttributes(createNonDefaultValues(), "checkbox");
+        checkbox.applyAttributes(controller);
+        checkbox.applyStyle();
 
-        assertEquals(SelectionState.ACTIVE, checkBox.getSelectionState());
-        assertEquals(iconActive, checkBox.getIconActive());
-        assertEquals(iconInactive, checkBox.getIconInactive());
-        assertEquals(iconIndeterminate, checkBox.getIconIdeterminate());
-        assertEquals(1.0f, checkBox.getIconTransitionDuration(), 0.0001f);
-        assertEquals(0xFF0000FF, checkBox.getColor());
-        assertEquals(ImageFilter.LINEAR, checkBox.getIconImageFilter());
+        assertEquals(SelectionState.ACTIVE, checkbox.getSelectionState());
+        assertEquals(iconActive, checkbox.getIconActive());
+        assertEquals(iconInactive, checkbox.getIconInactive());
+        assertEquals(iconIndeterminate, checkbox.getIconIdeterminate());
+        assertEquals(1.0f, checkbox.getIconTransitionDuration(), 0.0001f);
+        assertEquals(0xFF0000FF, checkbox.getColor());
+        assertEquals(ImageFilter.LINEAR, checkbox.getIconImageFilter());
 
-        assertEquals(action, checkBox.getActionListener());
+        assertEquals(action, checkbox.getActionListener());
     }
 
     @Test
     public void measure() {
-        CheckBox checkBox = new CheckBox();
-        checkBox.setIconActive(iconActive);
-        checkBox.setIconInactive(iconInactive);
-        checkBox.setIconIdeterminate(iconIndeterminate);
-        checkBox.setSelectionState(SelectionState.ACTIVE);
-        checkBox.onMeasure();
+        Checkbox checkbox = new Checkbox();
+        checkbox.setIconActive(iconActive);
+        checkbox.setIconInactive(iconInactive);
+        checkbox.setIconIdeterminate(iconIndeterminate);
+        checkbox.setSelectionState(SelectionState.ACTIVE);
+        checkbox.onMeasure();
 
-        assertEquals(20, checkBox.getMeasureWidth(), 0.1f);
-        assertEquals(20, checkBox.getMeasureHeight(), 0.1f);
+        assertEquals(20, checkbox.getMeasureWidth(), 0.1f);
+        assertEquals(20, checkbox.getMeasureHeight(), 0.1f);
 
-        checkBox.setMargins(1, 2, 3, 4);
-        checkBox.setPadding(5, 4, 2, 3);
-        checkBox.onMeasure();
+        checkbox.setMargins(1, 2, 3, 4);
+        checkbox.setPadding(5, 4, 2, 3);
+        checkbox.onMeasure();
 
-        assertEquals(20 + 13, checkBox.getMeasureWidth(), 0.1f);
-        assertEquals(20 + 11, checkBox.getMeasureHeight(), 0.1f);
+        assertEquals(20 + 13, checkbox.getMeasureWidth(), 0.1f);
+        assertEquals(20 + 11, checkbox.getMeasureHeight(), 0.1f);
 
-        checkBox.setPrefSize(100, 200);
-        checkBox.onMeasure();
+        checkbox.setPrefSize(100, 200);
+        checkbox.onMeasure();
 
-        assertEquals(106, checkBox.getMeasureWidth(), 0.1f);
-        assertEquals(204, checkBox.getMeasureHeight(), 0.1f);
+        assertEquals(106, checkbox.getMeasureWidth(), 0.1f);
+        assertEquals(204, checkbox.getMeasureHeight(), 0.1f);
 
-        checkBox.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
-        checkBox.onMeasure();
+        checkbox.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
+        checkbox.onMeasure();
 
-        assertEquals(Widget.MATCH_PARENT, checkBox.getMeasureWidth(), 0.1f);
-        assertEquals(Widget.MATCH_PARENT, checkBox.getMeasureHeight(), 0.1f);
+        assertEquals(Widget.MATCH_PARENT, checkbox.getMeasureWidth(), 0.1f);
+        assertEquals(Widget.MATCH_PARENT, checkbox.getMeasureHeight(), 0.1f);
     }
 
     @Test
     public void fireAction() {
-        CheckBox checkBox = new CheckBox();
-        checkBox.setIconActive(iconActive);
-        checkBox.setIconInactive(iconInactive);
-        checkBox.setIconIdeterminate(iconIndeterminate);
-        checkBox.setSelectionState(SelectionState.INDETERMINATE);
+        Checkbox checkbox = new Checkbox();
+        checkbox.setIconActive(iconActive);
+        checkbox.setIconInactive(iconInactive);
+        checkbox.setIconIdeterminate(iconIndeterminate);
+        checkbox.setSelectionState(SelectionState.INDETERMINATE);
 
         UXListener<ActionEvent> action = (UXListener<ActionEvent>) mock(UXListener.class);
-        checkBox.setActionListener(action);
+        checkbox.setActionListener(action);
 
-        assertEquals(SelectionState.INDETERMINATE, checkBox.getSelectionState());
-        checkBox.fire();
-        assertEquals(SelectionState.ACTIVE, checkBox.getSelectionState());
-        checkBox.fire();
-        assertEquals(SelectionState.INACTIVE, checkBox.getSelectionState());
-        checkBox.fire();
-        assertEquals(SelectionState.ACTIVE, checkBox.getSelectionState());
+        assertEquals(SelectionState.INDETERMINATE, checkbox.getSelectionState());
+        checkbox.fire();
+        assertEquals(SelectionState.ACTIVE, checkbox.getSelectionState());
+        checkbox.fire();
+        assertEquals(SelectionState.INACTIVE, checkbox.getSelectionState());
+        checkbox.fire();
+        assertEquals(SelectionState.ACTIVE, checkbox.getSelectionState());
 
         verify(action, times(3)).handle(any());
     }

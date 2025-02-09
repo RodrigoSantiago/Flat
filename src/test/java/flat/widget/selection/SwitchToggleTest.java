@@ -1,7 +1,6 @@
 package flat.widget.selection;
 
 import flat.events.ActionEvent;
-import flat.graphics.context.Context;
 import flat.graphics.image.Drawable;
 import flat.graphics.image.DrawableReader;
 import flat.resources.ResourceStream;
@@ -12,8 +11,6 @@ import flat.uxml.UXTheme;
 import flat.uxml.value.*;
 import flat.widget.Widget;
 import flat.widget.enums.ImageFilter;
-import flat.window.Activity;
-import flat.window.Window;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,7 +27,7 @@ import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({DrawableReader.class})
-public class SwitchTest {
+public class SwitchToggleTest {
 
     UXTheme theme;
 

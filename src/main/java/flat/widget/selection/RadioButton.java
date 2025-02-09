@@ -138,6 +138,9 @@ public class RadioButton extends Widget {
     @Override
     public void firePointer(PointerEvent pointerEvent) {
         super.firePointer(pointerEvent);
+        if (!pointerEvent.isConsumed() && pointerEvent.getType() == PointerEvent.PRESSED) {
+            requestFocus(true);
+        }
         if (!pointerEvent.isConsumed() && pointerEvent.getType() == PointerEvent.RELEASED) {
             fire();
         }

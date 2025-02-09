@@ -7,6 +7,7 @@ import flat.uxml.UXHash;
 import flat.uxml.UXTheme;
 import flat.uxml.value.*;
 import flat.widget.enums.Visibility;
+import flat.window.Activity;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -28,6 +29,76 @@ public class WidgetTest {
         widget.setAttributes(null, "widget");
         widget.applyAttributes(controller);
         widget.applyStyle();
+    }
+
+    @Test
+    public void states() {
+        UXTheme theme = mock(UXTheme.class);
+        Controller controller = mock(Controller.class);
+
+        Activity activity = mock(Activity.class);
+        when(activity.getFocus()).thenReturn(null);
+
+        Widget widget = new Widget();
+        widget.setTheme(theme);
+        widget.setAttributes(null, "widget");
+        widget.applyAttributes(controller);
+        widget.applyStyle();
+        widget.activity = activity;
+
+        assertFalse(widget.isDisabled());
+        assertTrue(widget.isEnabled());
+        assertFalse(widget.isActivated());
+        assertFalse(widget.isPressed());
+        assertFalse(widget.isHovered());
+        assertFalse(widget.isDragged());
+        assertFalse(widget.isActivated());
+        assertFalse(widget.isError());
+        assertFalse(widget.isFocused());
+
+        widget.setEnabled(false);
+        assertTrue(widget.isDisabled());
+        assertFalse(widget.isEnabled());
+
+        widget.setEnabled(true);
+        assertFalse(widget.isDisabled());
+        assertTrue(widget.isEnabled());
+
+        widget.setActivated(true);
+        assertTrue(widget.isActivated());
+
+        widget.setPressed(true);
+        assertTrue(widget.isPressed());
+
+        widget.setHovered(true);
+        assertTrue(widget.isHovered());
+
+        widget.setDragged(true);
+        assertTrue(widget.isDragged());
+
+        widget.setActivated(true);
+        assertTrue(widget.isActivated());
+
+        widget.setError(true);
+        assertTrue(widget.isError());
+
+        widget.setFocused(true);
+        assertFalse(widget.isFocused());
+
+        widget.setFocusable(true);
+        widget.setFocused(true);
+        assertTrue(widget.isFocused());
+
+
+        assertFalse(widget.isDisabled());
+        assertTrue(widget.isEnabled());
+        assertTrue(widget.isActivated());
+        assertTrue(widget.isPressed());
+        assertTrue(widget.isHovered());
+        assertTrue(widget.isDragged());
+        assertTrue(widget.isActivated());
+        assertTrue(widget.isError());
+        assertTrue(widget.isFocused());
     }
 
     @Test

@@ -1042,22 +1042,8 @@ public class Widget {
         return layoutWidth;
     }
 
-    void setLayoutWidth(float layoutWidth) {
-        if (this.layoutWidth != layoutWidth) {
-            this.layoutWidth = layoutWidth;
-            updateRect();
-        }
-    }
-
     public float getLayoutHeight() {
         return layoutHeight;
-    }
-
-    void setLayoutHeight(float layoutHeight) {
-        if (this.layoutHeight != layoutHeight) {
-            this.layoutHeight = layoutHeight;
-            updateRect();
-        }
     }
 
     public float getMarginTop() {

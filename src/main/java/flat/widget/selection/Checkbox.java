@@ -15,7 +15,7 @@ import flat.widget.enums.ImageFilter;
 import flat.widget.enums.SelectionState;
 import flat.window.Activity;
 
-public class CheckBox extends Widget {
+public class Checkbox extends Widget {
 
     private UXListener<ActionEvent> actionListener;
     private SelectionState selectionState = SelectionState.INDETERMINATE;
@@ -127,6 +127,9 @@ public class CheckBox extends Widget {
     @Override
     public void firePointer(PointerEvent pointerEvent) {
         super.firePointer(pointerEvent);
+        if (!pointerEvent.isConsumed() && pointerEvent.getType() == PointerEvent.PRESSED) {
+            requestFocus(true);
+        }
         if (!pointerEvent.isConsumed() && pointerEvent.getType() == PointerEvent.RELEASED) {
             fire();
         }
