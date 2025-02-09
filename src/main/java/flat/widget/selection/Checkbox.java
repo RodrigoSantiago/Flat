@@ -147,7 +147,7 @@ public class Checkbox extends Widget {
         if (nextWidth != iconWidth || nextHeight != iconHeight) {
             this.iconWidth = nextWidth;
             this.iconHeight = nextHeight;
-            invalidate(true);
+            invalidate(isWrapContent());
         } else {
             invalidate(false);
         }
@@ -291,6 +291,10 @@ public class Checkbox extends Widget {
     public void fire() {
         setSelectionState(isActive() ? SelectionState.INACTIVE : SelectionState.ACTIVE);
         fireAction(new ActionEvent(this));
+    }
+
+    protected boolean isWrapContent() {
+        return getPrefWidth() == WRAP_CONTENT || getPrefHeight() == WRAP_CONTENT;
     }
 
     private class IconChange extends NormalizedAnimation {

@@ -18,10 +18,10 @@
         </LinearBox>
 
         <LinearBox direction="vertical" width="MATCH_PARENT" height="400">
-            <Label background-color="#FF0000" text="Ola Mundo" margin-top="8"/>
-            <Button text="Ola Mundo - OLAI" ripple-enabled="true" text-size="12px" id="button" margin-top="8" enabled="false"/>
-            <Button text="button2.setFont 123" ripple-enabled="true" text-size="13px" id="button2"
-                    background-color="#1E1F22" text-color="#FFFFFF" margin-top="8"/>
+            <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
+            <Button text="Ola Mundo - OLAI" ripple-enabled="true" text-size="12px" margin-top="8" enabled="false"/>
+            <Button text="button2.setFont 123" ripple-enabled="true" text-size="13px" id="button"
+                    background-color="#1E1F22" text-color="#FFFFFF" margin-top="8" on-action="onButtonClick"/>
             <Button text="Ola Mundo - OLA" ripple-enabled="true" text-size="12px" id="button3" margin-top="8"/>
             <Button text="Ola Mundo pq - OLÂ" ripple-enabled="true" text-size="24px" font="SANS" margin-top="8"
                     icon="/default/img_test.png"

@@ -181,6 +181,7 @@ public class Activity extends Controller {
                 wiget.onMeasure();
                 wiget.onLayout(width, height);
             } else {
+                wiget.onMeasure();
                 wiget.onLayout(wiget.getLayoutWidth(), wiget.getLayoutHeight());
             }
         }

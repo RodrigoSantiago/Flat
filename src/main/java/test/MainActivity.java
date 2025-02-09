@@ -18,6 +18,7 @@ import flat.math.shapes.Path;
 import flat.math.stroke.BasicStroke;
 import flat.widget.layout.LinearBox;
 import flat.widget.text.Button;
+import flat.widget.text.Label;
 import flat.window.Activity;
 import flat.window.Application;
 
@@ -31,8 +32,13 @@ public class MainActivity extends Activity {
     }
 
     @Flat public Button button;
-    @Flat public Button button2;
-    @Flat public Button button3;
+    @Flat public Label label;
+
+    @Flat
+    public void onButtonClick(ActionEvent actionEvent) {
+        label.setText(label.getText() + ".");
+        System.out.println("a");
+    }
 
     @Override
     public void onShow() {

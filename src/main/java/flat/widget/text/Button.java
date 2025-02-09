@@ -212,7 +212,7 @@ public class Button extends Label {
     public void setIcon(Drawable icon) {
         if (this.icon != icon) {
             this.icon = icon;
-            invalidate(true);
+            invalidate(isWrapContent());
         }
     }
 
@@ -223,7 +223,7 @@ public class Button extends Label {
     public void setIconSpacing(float iconSpacing) {
         if (this.iconSpacing != iconSpacing) {
             this.iconSpacing = iconSpacing;
-            invalidate(true);
+            invalidate(isWrapContent());
         }
     }
 
@@ -234,7 +234,7 @@ public class Button extends Label {
     public void setIconScaleHeight(boolean iconScaleHeight) {
         if (this.iconScaleHeight != iconScaleHeight) {
             this.iconScaleHeight = iconScaleHeight;
-            invalidate(true);
+            invalidate(isWrapContent());
         }
     }
 

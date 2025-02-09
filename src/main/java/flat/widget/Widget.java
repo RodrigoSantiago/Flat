@@ -1400,9 +1400,10 @@ public class Widget {
         }
 
         if (this.visibility != visibility.ordinal()) {
+            var old = getVisibility();
             this.visibility = visibility.ordinal();
 
-            invalidate(true);
+            invalidate(old == Visibility.GONE || visibility == Visibility.GONE);
         }
     }
 

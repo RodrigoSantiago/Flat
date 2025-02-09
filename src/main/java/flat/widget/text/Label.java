@@ -118,7 +118,7 @@ public class Label extends Widget {
         if (!Objects.equals(this.text, text)) {
             this.text = text;
             showText = text == null ? null : textAllCaps ? text.toUpperCase() : text;
-            invalidate(true);
+            invalidate(isWrapContent());
             invalidateTextSize();
         }
     }
@@ -131,7 +131,7 @@ public class Label extends Widget {
         if (this.textAllCaps != textAllCaps) {
             this.textAllCaps = textAllCaps;
             showText = text == null ? null : textAllCaps ? text.toUpperCase() : text;
-            invalidate(true);
+            invalidate(isWrapContent());
             invalidateTextSize();
         }
     }
@@ -143,7 +143,7 @@ public class Label extends Widget {
     public void setFont(Font font) {
         if (this.font != font) {
             this.font = font;
-            invalidate(true);
+            invalidate(isWrapContent());
             invalidateTextSize();
         }
     }
@@ -155,7 +155,7 @@ public class Label extends Widget {
     public void setTextSize(float textSize) {
         if (this.textSize != textSize) {
             this.textSize = textSize;
-            invalidate(true);
+            invalidate(isWrapContent());
             invalidateTextSize();
         }
     }
@@ -218,6 +218,10 @@ public class Label extends Widget {
 
     protected String getShowText() {
         return showText;
+    }
+
+    protected boolean isWrapContent() {
+        return getPrefWidth() == WRAP_CONTENT || getPrefHeight() == WRAP_CONTENT;
     }
 
     protected float xOff(float start, float end, float textWidth) {

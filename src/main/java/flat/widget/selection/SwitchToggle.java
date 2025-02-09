@@ -166,7 +166,7 @@ public class SwitchToggle extends Widget {
         if (nextWidth != iconWidth || nextHeight != iconHeight) {
             this.iconWidth = nextWidth;
             this.iconHeight = nextHeight;
-            invalidate(true);
+            invalidate(isWrapContent());
         } else {
             invalidate(false);
         }
@@ -295,6 +295,10 @@ public class SwitchToggle extends Widget {
     public void fire() {
         setActive(!isActive());
         fireAction(new ActionEvent(this));
+    }
+
+    protected boolean isWrapContent() {
+        return getPrefWidth() == WRAP_CONTENT || getPrefHeight() == WRAP_CONTENT;
     }
 
     private class IconChange extends NormalizedAnimation {

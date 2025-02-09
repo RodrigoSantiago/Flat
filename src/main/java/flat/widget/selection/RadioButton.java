@@ -156,7 +156,7 @@ public class RadioButton extends Widget {
         if (nextWidth != iconWidth || nextHeight != iconHeight) {
             this.iconWidth = nextWidth;
             this.iconHeight = nextHeight;
-            invalidate(true);
+            invalidate(isWrapContent());
         } else {
             invalidate(false);
         }
@@ -280,6 +280,10 @@ public class RadioButton extends Widget {
     public void fire() {
         setActive(true);
         fireAction(new ActionEvent(this));
+    }
+
+    protected boolean isWrapContent() {
+        return getPrefWidth() == WRAP_CONTENT || getPrefHeight() == WRAP_CONTENT;
     }
 
     private class IconChange extends NormalizedAnimation {
