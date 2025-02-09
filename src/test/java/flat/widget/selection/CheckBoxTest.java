@@ -1,11 +1,12 @@
 package flat.widget.selection;
 
 import flat.events.ActionEvent;
-import flat.graphics.context.Context;
 import flat.graphics.image.Drawable;
 import flat.graphics.image.DrawableReader;
 import flat.resources.ResourceStream;
-import flat.uxml.*;
+import flat.uxml.Controller;
+import flat.uxml.UXHash;
+import flat.uxml.UXListener;
 import flat.uxml.value.UXValue;
 import flat.uxml.value.UXValueColor;
 import flat.uxml.value.UXValueNumber;
@@ -13,8 +14,6 @@ import flat.uxml.value.UXValueText;
 import flat.widget.Widget;
 import flat.widget.enums.ImageFilter;
 import flat.widget.enums.SelectionState;
-import flat.window.Activity;
-import flat.window.Window;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,17 +24,13 @@ import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({DrawableReader.class})
 public class CheckBoxTest {
-
-    Window window;
-    Context context;
-    Activity activity;
-    UXTheme theme;
-
     ResourceStream resActive;
     ResourceStream resInactive;
     ResourceStream resIndeterminate;
@@ -46,21 +41,6 @@ public class CheckBoxTest {
 
     @Before
     public void before() {
-        window = mock(Window.class);
-        context = mock(Context.class);
-
-        when(context.getWindow()).thenReturn(window);
-        when(context.getWidth()).thenReturn(200);
-        when(context.getHeight()).thenReturn(100);
-
-        activity = mock(Activity.class);
-        when(activity.getContext()).thenReturn(context);
-        when(activity.getWindow()).thenReturn(window);
-        when(activity.getWidth()).thenReturn(200f);
-        when(activity.getHeight()).thenReturn(100f);
-
-        theme = mock(UXTheme.class);
-
         mockStatic(DrawableReader.class);
 
         iconActive = mock(Drawable.class);
@@ -144,6 +124,9 @@ public class CheckBoxTest {
         checkBox.setIconIdeterminate(iconIndeterminate);
         checkBox.setSelectionState(SelectionState.INDETERMINATE);
 
+        UXListener<ActionEvent> action = (UXListener<ActionEvent>) mock(UXListener.class);
+        checkBox.setActionListener(action);
+
         assertEquals(SelectionState.INDETERMINATE, checkBox.getSelectionState());
         checkBox.fire();
         assertEquals(SelectionState.ACTIVE, checkBox.getSelectionState());
@@ -151,6 +134,8 @@ public class CheckBoxTest {
         assertEquals(SelectionState.INACTIVE, checkBox.getSelectionState());
         checkBox.fire();
         assertEquals(SelectionState.ACTIVE, checkBox.getSelectionState());
+
+        verify(action, times(3)).handle(any());
     }
 
     private HashMap<Integer, UXValue> createNonDefaultValues() {

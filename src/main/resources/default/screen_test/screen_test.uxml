@@ -9,6 +9,7 @@
             <RadioButton radio-group-id="group-1" active="true" background-color="#FFFFFF" text="Ola Mundo" icon-transition-duration="0.2" ripple-color="#FF000080"/>
             <RadioButton radio-group-id="group-1" active="true" background-color="#FFFFFF" text="Ola Mundo" icon-transition-duration="0.2" ripple-color="#FF000080"/>
         </LinearBox>
+        <Switch active="true" background-color="#FFFFFF" icon-transition-duration="0.2" ripple-color="#FF000080" width="200"/>
 
         <LinearBox direction="vertical" width="MATCH_PARENT" height="400">
             <Label background-color="#FF0000" text="Ola Mundo" margin-top="8"/>

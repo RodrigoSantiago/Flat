@@ -5,9 +5,11 @@ import flat.graphics.context.Context;
 import flat.graphics.image.Drawable;
 import flat.graphics.image.DrawableReader;
 import flat.resources.ResourceStream;
-import flat.uxml.*;
+import flat.uxml.Controller;
+import flat.uxml.UXHash;
+import flat.uxml.UXListener;
+import flat.uxml.UXTheme;
 import flat.uxml.value.*;
-import flat.widget.Scene;
 import flat.widget.Widget;
 import flat.widget.enums.ImageFilter;
 import flat.window.Activity;
@@ -28,7 +30,10 @@ import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({DrawableReader.class})
-public class RadioButtonTest {
+public class SwitchTest {
+
+    UXTheme theme;
+
     ResourceStream resActive;
     ResourceStream resInactive;
 
@@ -37,6 +42,8 @@ public class RadioButtonTest {
 
     @Before
     public void before() {
+        theme = mock(UXTheme.class);
+
         mockStatic(DrawableReader.class);
 
         iconActive = mock(Drawable.class);
@@ -59,70 +66,71 @@ public class RadioButtonTest {
         UXListener<ActionEvent> action = (UXListener<ActionEvent>) mock(UXListener.class);
         when(controller.getListenerMethod("onActionWork", ActionEvent.class)).thenReturn(action);
 
-        RadioButton radioButton = new RadioButton();
+        SwitchToggle switchToggle = new SwitchToggle();
 
-        radioButton.setAttributes(createNonDefaultValues(), "radiobutton");
-        radioButton.applyAttributes(controller);
-        radioButton.applyStyle();
+        switchToggle.setAttributes(createNonDefaultValues(), "switchtoggle");
+        switchToggle.applyAttributes(controller);
+        switchToggle.applyStyle();
 
-        assertTrue(radioButton.isActive());
-        assertEquals(iconActive, radioButton.getIconActive());
-        assertEquals(iconInactive, radioButton.getIconInactive());
-        assertEquals(1.0f, radioButton.getIconTransitionDuration(), 0.0001f);
-        assertEquals(0xFF0000FF, radioButton.getColor());
-        assertEquals(ImageFilter.LINEAR, radioButton.getIconImageFilter());
+        assertTrue(switchToggle.isActive());
+        assertEquals(iconActive, switchToggle.getIconActive());
+        assertEquals(iconInactive, switchToggle.getIconInactive());
+        assertEquals(1.0f, switchToggle.getIconTransitionDuration(), 0.0001f);
+        assertEquals(2.0f, switchToggle.getSlideTransitionDuration(), 0.0001f);
+        assertEquals(0xFF0000FF, switchToggle.getColor());
+        assertEquals(ImageFilter.LINEAR, switchToggle.getIconImageFilter());
 
-        assertEquals(action, radioButton.getActionListener());
+        assertEquals(action, switchToggle.getActionListener());
     }
 
     @Test
     public void measure() {
-        RadioButton radioButton = new RadioButton();
-        radioButton.setIconActive(iconActive);
-        radioButton.setIconInactive(iconInactive);
-        radioButton.setActive(true);
-        radioButton.onMeasure();
+        SwitchToggle switchToggle = new SwitchToggle();
+        switchToggle.setIconActive(iconActive);
+        switchToggle.setIconInactive(iconInactive);
+        switchToggle.setActive(true);
+        switchToggle.onMeasure();
 
-        assertEquals(20, radioButton.getMeasureWidth(), 0.1f);
-        assertEquals(20, radioButton.getMeasureHeight(), 0.1f);
+        assertEquals(40, switchToggle.getMeasureWidth(), 0.1f);
+        assertEquals(20, switchToggle.getMeasureHeight(), 0.1f);
 
-        radioButton.setMargins(1, 2, 3, 4);
-        radioButton.setPadding(5, 4, 2, 3);
-        radioButton.onMeasure();
+        switchToggle.setMargins(1, 2, 3, 4);
+        switchToggle.setPadding(5, 4, 2, 3);
+        switchToggle.onMeasure();
 
-        assertEquals(20 + 13, radioButton.getMeasureWidth(), 0.1f);
-        assertEquals(20 + 11, radioButton.getMeasureHeight(), 0.1f);
+        assertEquals(40 + 13, switchToggle.getMeasureWidth(), 0.1f);
+        assertEquals(20 + 11, switchToggle.getMeasureHeight(), 0.1f);
 
-        radioButton.setPrefSize(100, 200);
-        radioButton.onMeasure();
+        switchToggle.setPrefSize(100, 200);
+        switchToggle.onMeasure();
 
-        assertEquals(106, radioButton.getMeasureWidth(), 0.1f);
-        assertEquals(204, radioButton.getMeasureHeight(), 0.1f);
+        assertEquals(106, switchToggle.getMeasureWidth(), 0.1f);
+        assertEquals(204, switchToggle.getMeasureHeight(), 0.1f);
 
-        radioButton.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
-        radioButton.onMeasure();
+        switchToggle.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
+        switchToggle.onMeasure();
 
-        assertEquals(Widget.MATCH_PARENT, radioButton.getMeasureWidth(), 0.1f);
-        assertEquals(Widget.MATCH_PARENT, radioButton.getMeasureHeight(), 0.1f);
+        assertEquals(Widget.MATCH_PARENT, switchToggle.getMeasureWidth(), 0.1f);
+        assertEquals(Widget.MATCH_PARENT, switchToggle.getMeasureHeight(), 0.1f);
     }
 
     @Test
     public void fireAction() {
-        RadioButton radioButton = new RadioButton();
-        radioButton.setIconActive(iconActive);
-        radioButton.setIconInactive(iconInactive);
+        SwitchToggle switchToggle = new SwitchToggle();
+        switchToggle.setIconActive(iconActive);
+        switchToggle.setIconInactive(iconInactive);
 
         UXListener<ActionEvent> action = (UXListener<ActionEvent>) mock(UXListener.class);
-        radioButton.setActionListener(action);
+        switchToggle.setActionListener(action);
 
-        radioButton.setActive(false);
-        assertFalse(radioButton.isActive());
+        switchToggle.setActive(false);
+        assertFalse(switchToggle.isActive());
 
-        radioButton.fire();
-        assertTrue(radioButton.isActive());
+        switchToggle.fire();
+        assertTrue(switchToggle.isActive());
 
-        radioButton.fire();
-        assertTrue(radioButton.isActive());
+        switchToggle.fire();
+        assertFalse(switchToggle.isActive());
 
         verify(action, times(2)).handle(any());
     }
@@ -141,6 +149,7 @@ public class RadioButtonTest {
         hash.put(UXHash.getHash("icon-active"), uxIconActive);
         hash.put(UXHash.getHash("icon-inactive"), uxIconInactive);
         hash.put(UXHash.getHash("icon-transition-duration"), new UXValueNumber(1.0f));
+        hash.put(UXHash.getHash("slide-transition-duration"), new UXValueNumber(2.0f));
         hash.put(UXHash.getHash("active"), new UXValueBool(true));
         return hash;
     }

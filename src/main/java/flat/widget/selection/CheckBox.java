@@ -84,7 +84,7 @@ public class CheckBox extends Widget {
             prevIcon.draw(context
                     , xOff
                     , yOff
-                    , width, height, 0, iconImageFilter);
+                    , icoWidth, icoHeight, 0, iconImageFilter);
         }
 
         if (currentIcon != null) {
@@ -96,7 +96,7 @@ public class CheckBox extends Widget {
             currentIcon.draw(context
                     , xOff
                     , yOff
-                    , width, height, 0, iconImageFilter);
+                    , icoWidth, icoHeight, 0, iconImageFilter);
         }
     }
 
@@ -175,6 +175,11 @@ public class CheckBox extends Widget {
 
         if (this.selectionState != selectionState) {
             this.selectionState = selectionState;
+            if (selectionState == SelectionState.ACTIVE) {
+                setActivated(true);
+            } else {
+                setActivated(false);
+            }
 
             setCurrentIcon();
         }

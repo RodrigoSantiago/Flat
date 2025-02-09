@@ -279,33 +279,28 @@ radiobutton {
     cursor : hand;
 }
 
-switch {
-    height : 16;
-    width : 36;
-    padding-top : 4;
-    padding-bottom : 4;
-    ripple : true;
+switchtoggle {
+    ripple-enabled : true;
+    ripple-overflow : true;
     ripple-color : #00000080;
     radius-top : 8;
     radius-left : 8;
     radius-right : 8;
     radius-bottom : 8;
+    radius-top : 16;
+    radius-bottom : 16;
+    radius-left : 16;
+    radius-right : 16;
 
     shadow : true;
     elevation : 1;
     background-color : #CA5050;
-    icon : '/default/icons/switch-shape.svg';
+    icon-active : '/default/icons/switch-shape.svg';
+    icon-inactive : '/default/icons/switch-shape.svg';
 
+    icon-transition-duration : 0.1;
     transition-duration : 0.1;
-
-    enabled {
-        color : #FFFFFF;
-        slide-animation : 8;
-    }
-    activated {
-        color : #FF0000;
-        slide-animation : 24;
-    }
+    cursor : hand;
 }
 
 /*

@@ -32,6 +32,11 @@ public class RippleEffect {
         ripple.radius = size;
     }
 
+    public void setPosition(float x, float y) {
+        ripple.x = x;
+        ripple.y = y;
+    }
+
     public boolean isVisible() {
         return animation.isPlaying();
     }

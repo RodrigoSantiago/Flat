@@ -10,13 +10,11 @@ import flat.graphics.image.Drawable;
 import flat.uxml.Controller;
 import flat.uxml.UXAttrs;
 import flat.uxml.UXListener;
-import flat.widget.Scene;
 import flat.widget.Widget;
 import flat.widget.enums.ImageFilter;
-import flat.widget.enums.SelectionState;
 import flat.window.Activity;
 
-public class RadioButton extends Widget {
+public class SwitchToggle extends Widget {
 
     private UXListener<ActionEvent> actionListener;
     private ImageFilter iconImageFilter = ImageFilter.LINEAR;
@@ -25,9 +23,10 @@ public class RadioButton extends Widget {
     private int color = Color.black;
     private boolean active;
     private float iconTransitionDuration;
-    RadioGroup radioGroup;
+    private float slideTransitionDuration;
 
     private IconChange iconChangeAnimation = new IconChange();
+    private IconChange iconSlideAnimation = new IconChange();
     private Drawable prevIcon;
     private Drawable currentIcon;
     private float iconWidth;
@@ -39,17 +38,6 @@ public class RadioButton extends Widget {
 
         UXAttrs attrs = getAttrs();
         setActionListener(attrs.getAttributeListener("on-action", ActionEvent.class, controller));
-
-        String groupId = attrs.getAttributeString("radio-group-id", null);
-        if (groupId != null) {
-            Scene scene = getScene();
-            if (scene != null) {
-                Widget widget = scene.findById(groupId);
-                if (widget instanceof RadioGroup group) {
-                    group.add(this);
-                }
-            }
-        }
         setActive(attrs.getAttributeBool("active", isActive()));
     }
 
@@ -65,19 +53,34 @@ public class RadioButton extends Widget {
         setIconInactive(attrs.getResourceAsDrawable("icon-inactive", info, getIconInactive(), false));
         setIconActive(attrs.getResourceAsDrawable("icon-active", info, getIconActive(), false));
         setIconTransitionDuration(attrs.getNumber("icon-transition-duration", info, getIconTransitionDuration()));
+        setSlideTransitionDuration(attrs.getNumber("slide-transition-duration", info, getSlideTransitionDuration()));
     }
 
     @Override
     public void onDraw(SmartContext context) {
-        backgroundDraw(context);
-        context.setTransform2D(getTransform());
-
         final float x = getInX();
         final float y = getInY();
         final float width = getInWidth();
         final float height = getInHeight();
 
         if (width <= 0 || height <= 0) return;
+
+        float slide = iconSlideAnimation.isPlaying() ? iconSlideAnimation.getInterpolatedPosition() : 1f;
+        if (!active) {
+            slide = 1 - slide;
+        }
+
+        if (isRippleEnabled()) {
+            float iWidth = Math.min(iconWidth, width);
+            float rXPosA = x + iWidth * 0.5f;
+            float rXPosB = x + width - iWidth * 0.5f;
+            float rXPos = rXPosA * (1 - slide) + rXPosB * slide;
+            getRipple().setSize((float) Math.sqrt(iconWidth * iconWidth + iconHeight * iconHeight) * 0.5f);
+            getRipple().setPosition(rXPos, y + height / 2f);
+        }
+
+        backgroundDraw(context);
+        context.setTransform2D(getTransform());
 
         float pos = iconChangeAnimation.isPlaying() ? iconChangeAnimation.getInterpolatedPosition() : 1f;
         float prevAlpha = pos < 0.5f ? 1 : 1 - (pos - 0.5f) / 0.5f;
@@ -89,7 +92,10 @@ public class RadioButton extends Widget {
         if (iconTransitionDuration > 0 && prevIcon != null) {
             float icoWidth = Math.min(prevIcon.getWidth(), width);
             float icoHeight = Math.min(prevIcon.getHeight(), height);
-            float xOff = (x + width - icoWidth) * 0.5f;
+
+            float xPosA = x;
+            float xPosB = x + width - icoWidth;
+            float xOff = xPosA * (1 - slide) + xPosB * slide;
             float yOff = (y + height - icoHeight) * 0.5f;
             context.setColor(Color.multiplyColorAlpha(color, prevAlpha));
             prevIcon.draw(context
@@ -101,8 +107,12 @@ public class RadioButton extends Widget {
         if (currentIcon != null) {
             float icoWidth = Math.min(currentIcon.getWidth(), width);
             float icoHeight = Math.min(currentIcon.getHeight(), height);
-            float xOff = (x + width - icoWidth) * 0.5f;
+
+            float xPosA = x;
+            float xPosB = x + width - icoWidth;
+            float xOff = xPosA * (1 - slide) + xPosB * slide;
             float yOff = (y + height - icoHeight) * 0.5f;
+
             context.setColor(Color.multiplyColorAlpha(color, currentAlpha));
             currentIcon.draw(context
                     , xOff
@@ -122,7 +132,7 @@ public class RadioButton extends Widget {
         boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
 
         if (wrapWidth) {
-            mWidth = Math.max(iconWidth + extraWidth, getLayoutMinWidth());
+            mWidth = Math.max(iconWidth * 2f + extraWidth, getLayoutMinWidth());
         } else {
             mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
         }
@@ -175,10 +185,6 @@ public class RadioButton extends Widget {
         }
     }
 
-    public RadioGroup getRadioGroup() {
-        return radioGroup;
-    }
-
     public ImageFilter getIconImageFilter() {
         return iconImageFilter;
     }
@@ -229,6 +235,18 @@ public class RadioButton extends Widget {
         }
     }
 
+    public float getSlideTransitionDuration() {
+        return slideTransitionDuration;
+    }
+
+    public void setSlideTransitionDuration(float slideTransitionDuration) {
+        if (this.slideTransitionDuration != slideTransitionDuration) {
+            this.slideTransitionDuration = slideTransitionDuration;
+
+            iconSlideAnimation.stop(true);
+        }
+    }
+
     public int getColor() {
         return color;
     }
@@ -248,15 +266,12 @@ public class RadioButton extends Widget {
         if (this.active != active) {
             this.active = active;
 
+            if (slideTransitionDuration > 0) {
+                iconSlideAnimation.setDuration(slideTransitionDuration);
+                iconSlideAnimation.play(getActivity());
+            }
             setCurrentIcon();
             setActivated(active);
-            if (radioGroup != null) {
-                if (active) {
-                    radioGroup.select(this);
-                } else {
-                    radioGroup.unselect(this);
-                }
-            }
         }
     }
 
@@ -275,7 +290,7 @@ public class RadioButton extends Widget {
     }
 
     public void fire() {
-        setActive(true);
+        setActive(!isActive());
         fireAction(new ActionEvent(this));
     }
 

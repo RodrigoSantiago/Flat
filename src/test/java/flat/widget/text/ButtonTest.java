@@ -25,6 +25,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyFloat;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(PowerMockRunner.class)
@@ -237,6 +239,18 @@ public class ButtonTest {
         assertEquals(Widget.MATCH_PARENT, button.getMeasureHeight(), 0.1f);
     }
 
+
+    @Test
+    public void fireAction() {
+        Button button = new Button();
+        button.setText("Hello World");
+
+        UXListener<ActionEvent> action = (UXListener<ActionEvent>) mock(UXListener.class);
+        button.setActionListener(action);
+
+        button.fire();
+        verify(action, times(1)).handle(any());
+    }
 
     private HashMap<Integer, UXValue> createNonDefaultValues() {
         var hash = new HashMap<Integer, UXValue>();
