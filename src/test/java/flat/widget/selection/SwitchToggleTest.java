@@ -4,10 +4,7 @@ import flat.events.ActionEvent;
 import flat.graphics.image.Drawable;
 import flat.graphics.image.DrawableReader;
 import flat.resources.ResourceStream;
-import flat.uxml.Controller;
-import flat.uxml.UXHash;
-import flat.uxml.UXListener;
-import flat.uxml.UXTheme;
+import flat.uxml.*;
 import flat.uxml.value.*;
 import flat.widget.Widget;
 import flat.widget.enums.ImageFilter;
@@ -60,24 +57,49 @@ public class SwitchToggleTest {
     @Test
     public void properties() {
         Controller controller = mock(Controller.class);
-        UXListener<ActionEvent> action = (UXListener<ActionEvent>) mock(UXListener.class);
+
+        var action = (UXListener<ActionEvent>) mock(UXListener.class);
         when(controller.getListenerMethod("onActionWork", ActionEvent.class)).thenReturn(action);
+
+        var listener = (UXValueListener<Boolean>) mock(UXValueListener.class);
+        when(controller.getValueListenerMethod("onActiveWork", Boolean.class)).thenReturn(listener);
 
         SwitchToggle switchToggle = new SwitchToggle();
 
+        assertNull(switchToggle.getIconActive());
+        assertNull(switchToggle.getIconInactive());
+        assertEquals(0, switchToggle.getIconTransitionDuration(), 0.0001f);
+        assertEquals(0, switchToggle.getSlideTransitionDuration(), 0.0001f);
+        assertEquals(0xFFFFFFFF, switchToggle.getColor());
+        assertEquals(ImageFilter.LINEAR, switchToggle.getIconImageFilter());
+        assertFalse(switchToggle.isActive());
+        assertNull(switchToggle.getToggleListener());
+        assertNull(switchToggle.getActiveListener());
+
         switchToggle.setAttributes(createNonDefaultValues(), "switchtoggle");
         switchToggle.applyAttributes(controller);
+
+        assertNull(switchToggle.getIconActive());
+        assertNull(switchToggle.getIconInactive());
+        assertEquals(0, switchToggle.getIconTransitionDuration(), 0.0001f);
+        assertEquals(0, switchToggle.getSlideTransitionDuration(), 0.0001f);
+        assertEquals(0xFFFFFFFF, switchToggle.getColor());
+        assertEquals(ImageFilter.LINEAR, switchToggle.getIconImageFilter());
+        assertTrue(switchToggle.isActive());
+        assertEquals(action, switchToggle.getToggleListener());
+        assertEquals(listener, switchToggle.getActiveListener());
+
         switchToggle.applyStyle();
 
-        assertTrue(switchToggle.isActive());
         assertEquals(iconActive, switchToggle.getIconActive());
         assertEquals(iconInactive, switchToggle.getIconInactive());
         assertEquals(1.0f, switchToggle.getIconTransitionDuration(), 0.0001f);
         assertEquals(2.0f, switchToggle.getSlideTransitionDuration(), 0.0001f);
         assertEquals(0xFF0000FF, switchToggle.getColor());
-        assertEquals(ImageFilter.LINEAR, switchToggle.getIconImageFilter());
-
-        assertEquals(action, switchToggle.getActionListener());
+        assertEquals(ImageFilter.NEAREST, switchToggle.getIconImageFilter());
+        assertTrue(switchToggle.isActive());
+        assertEquals(action, switchToggle.getToggleListener());
+        assertEquals(listener, switchToggle.getActiveListener());
     }
 
     @Test
@@ -117,19 +139,23 @@ public class SwitchToggleTest {
         switchToggle.setIconActive(iconActive);
         switchToggle.setIconInactive(iconInactive);
 
-        UXListener<ActionEvent> action = (UXListener<ActionEvent>) mock(UXListener.class);
-        switchToggle.setActionListener(action);
+        var action = (UXListener<ActionEvent>) mock(UXListener.class);
+        switchToggle.setToggleListener(action);
+
+        var listener = (UXValueListener<Boolean>) mock(UXValueListener.class);
+        switchToggle.setActiveListener(listener);
 
         switchToggle.setActive(false);
         assertFalse(switchToggle.isActive());
 
-        switchToggle.fire();
+        switchToggle.toggle();
         assertTrue(switchToggle.isActive());
 
-        switchToggle.fire();
+        switchToggle.toggle();
         assertFalse(switchToggle.isActive());
 
         verify(action, times(2)).handle(any());
+        verify(listener, times(2)).handle(any());
     }
 
     private HashMap<Integer, UXValue> createNonDefaultValues() {
@@ -140,9 +166,10 @@ public class SwitchToggleTest {
         UXValue uxIconInactive = mock(UXValue.class);
         when(uxIconInactive.asResource(any())).thenReturn(resInactive);
 
-        hash.put(UXHash.getHash("on-action"), new UXValueText("onActionWork"));
+        hash.put(UXHash.getHash("on-toggle"), new UXValueText("onActionWork"));
+        hash.put(UXHash.getHash("on-active-change"), new UXValueText("onActiveWork"));
         hash.put(UXHash.getHash("color"), new UXValueColor(0xFF0000FF));
-        hash.put(UXHash.getHash("icon-image-filter"), new UXValueText(ImageFilter.LINEAR.toString()));
+        hash.put(UXHash.getHash("icon-image-filter"), new UXValueText(ImageFilter.NEAREST.toString()));
         hash.put(UXHash.getHash("icon-active"), uxIconActive);
         hash.put(UXHash.getHash("icon-inactive"), uxIconInactive);
         hash.put(UXHash.getHash("icon-transition-duration"), new UXValueNumber(1.0f));

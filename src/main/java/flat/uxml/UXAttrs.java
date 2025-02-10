@@ -203,6 +203,11 @@ public class UXAttrs {
         return value != null ? value.asListener(theme, argument, controller) : null;
     }
 
+    public <T> UXValueListener<T> getAttributeValueListener(String name, Class<T> argument, Controller controller) {
+        UXValue value = getAttribute(name);
+        return value != null ? value.asValueListener(theme, argument, controller) : null;
+    }
+
     public String getString(String name) {
         return getString(name, null, null);
     }

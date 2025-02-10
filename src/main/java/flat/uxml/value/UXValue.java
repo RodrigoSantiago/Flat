@@ -5,6 +5,7 @@ import flat.resources.ResourceStream;
 import flat.uxml.Controller;
 import flat.uxml.UXListener;
 import flat.uxml.UXTheme;
+import flat.uxml.UXValueListener;
 
 public class UXValue {
     public UXValue() {
@@ -70,6 +71,10 @@ public class UXValue {
     }
 
     public <T> UXListener<T> asListener(UXTheme theme, Class<T> argument, Controller controller) {
+        return null;
+    }
+
+    public <T> UXValueListener<T> asValueListener(UXTheme theme, Class<T> argument, Controller controller) {
         return null;
     }
 

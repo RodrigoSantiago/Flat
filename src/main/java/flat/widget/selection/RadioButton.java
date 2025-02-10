@@ -7,24 +7,24 @@ import flat.events.PointerEvent;
 import flat.graphics.Color;
 import flat.graphics.SmartContext;
 import flat.graphics.image.Drawable;
-import flat.uxml.Controller;
-import flat.uxml.UXAttrs;
-import flat.uxml.UXListener;
+import flat.uxml.*;
 import flat.widget.Scene;
 import flat.widget.Widget;
 import flat.widget.enums.ImageFilter;
-import flat.widget.enums.SelectionState;
 import flat.window.Activity;
 
 public class RadioButton extends Widget {
 
-    private UXListener<ActionEvent> actionListener;
+    private UXListener<ActionEvent> toggleListener;
+    private UXValueListener<Boolean> activeListener;
+    private boolean active;
+
     private ImageFilter iconImageFilter = ImageFilter.LINEAR;
     private Drawable iconInactive;
     private Drawable iconActive;
-    private int color = Color.black;
-    private boolean active;
+    private int color = Color.white;
     private float iconTransitionDuration;
+
     RadioGroup radioGroup;
 
     private IconChange iconChangeAnimation = new IconChange();
@@ -38,7 +38,6 @@ public class RadioButton extends Widget {
         super.applyAttributes(controller);
 
         UXAttrs attrs = getAttrs();
-        setActionListener(attrs.getAttributeListener("on-action", ActionEvent.class, controller));
 
         String groupId = attrs.getAttributeString("radio-group-id", null);
         if (groupId != null) {
@@ -51,6 +50,8 @@ public class RadioButton extends Widget {
             }
         }
         setActive(attrs.getAttributeBool("active", isActive()));
+        setToggleListener(attrs.getAttributeListener("on-toggle", ActionEvent.class, controller));
+        setActiveListener(attrs.getAttributeValueListener("on-active-change", Boolean.class, controller));
     }
 
     @Override
@@ -142,7 +143,7 @@ public class RadioButton extends Widget {
             requestFocus(true);
         }
         if (!pointerEvent.isConsumed() && pointerEvent.getType() == PointerEvent.RELEASED) {
-            fire();
+            toggle();
         }
     }
 
@@ -249,10 +250,12 @@ public class RadioButton extends Widget {
 
     public void setActive(boolean active) {
         if (this.active != active) {
+            boolean old = this.active;
             this.active = active;
 
             setCurrentIcon();
             setActivated(active);
+            fireActiveListener(old);
             if (radioGroup != null) {
                 if (active) {
                     radioGroup.select(this);
@@ -263,23 +266,39 @@ public class RadioButton extends Widget {
         }
     }
 
-    public UXListener<ActionEvent> getActionListener() {
-        return actionListener;
+    public UXListener<ActionEvent> getToggleListener() {
+        return toggleListener;
     }
 
-    public void setActionListener(UXListener<ActionEvent> actionListener) {
-        this.actionListener = actionListener;
+    public void setToggleListener(UXListener<ActionEvent> toggleListener) {
+        this.toggleListener = toggleListener;
     }
 
-    public void fireAction(ActionEvent event) {
-        if (actionListener != null) {
-            actionListener.handle(event);
+    private void fireToggle(ActionEvent event) {
+        if (toggleListener != null) {
+            toggleListener.handle(event);
         }
     }
 
-    public void fire() {
-        setActive(true);
-        fireAction(new ActionEvent(this));
+    public void toggle() {
+        if (!isActive()) {
+            setActive(true);
+            fireToggle(new ActionEvent(this));
+        }
+    }
+
+    public UXValueListener<Boolean> getActiveListener() {
+        return activeListener;
+    }
+
+    public void setActiveListener(UXValueListener<Boolean> activeListener) {
+        this.activeListener = activeListener;
+    }
+
+    private void fireActiveListener(boolean oldValue) {
+        if (activeListener != null && oldValue != active) {
+            activeListener.handle(new ValueChange<>(this, oldValue, active));
+        }
     }
 
     protected boolean isWrapContent() {

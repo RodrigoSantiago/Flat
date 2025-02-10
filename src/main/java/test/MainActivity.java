@@ -16,6 +16,8 @@ import flat.graphics.text.FontWeight;
 import flat.math.Affine;
 import flat.math.shapes.Path;
 import flat.math.stroke.BasicStroke;
+import flat.uxml.ValueChange;
+import flat.widget.enums.SelectionState;
 import flat.widget.layout.LinearBox;
 import flat.widget.text.Button;
 import flat.widget.text.Label;
@@ -38,6 +40,11 @@ public class MainActivity extends Activity {
     public void onButtonClick(ActionEvent actionEvent) {
         label.setText(label.getText() + ".");
         System.out.println("a");
+    }
+
+    @Flat
+    public void doTheWork(ValueChange<Integer> change) {
+        System.out.println("From : " + change.getOldValue() + ", To : " + change.getValue());
     }
 
     @Override

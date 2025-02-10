@@ -21,6 +21,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.powermock.api.mockito.PowerMockito.*;
 
@@ -47,16 +48,29 @@ public class ImageViewTest {
     @Test
     public void properties() {
         Controller controller = mock(Controller.class);
-        UXListener<ActionEvent> action = (UXListener<ActionEvent>) mock(UXListener.class);
-        when(controller.getListenerMethod("onActionWork", ActionEvent.class)).thenReturn(action);
-
         ImageView imageView = new ImageView();
+
+        assertNull(imageView.getImage());
+        assertEquals(ImageFilter.LINEAR, imageView.getImageFilter());
+        assertEquals(ImageScale.STRETCH, imageView.getImageScale());
+        assertEquals(0xFFFFFFFF, imageView.getColor());
+        assertEquals(VerticalAlign.MIDDLE, imageView.getVerticalAlign());
+        assertEquals(HorizontalAlign.CENTER, imageView.getHorizontalAlign());
+
         imageView.setAttributes(createNonDefaultValues(), "imageview");
         imageView.applyAttributes(controller);
+
+        assertNull(imageView.getImage());
+        assertEquals(ImageFilter.LINEAR, imageView.getImageFilter());
+        assertEquals(ImageScale.STRETCH, imageView.getImageScale());
+        assertEquals(0xFFFFFFFF, imageView.getColor());
+        assertEquals(VerticalAlign.MIDDLE, imageView.getVerticalAlign());
+        assertEquals(HorizontalAlign.CENTER, imageView.getHorizontalAlign());
+
         imageView.applyStyle();
 
         assertEquals(image, imageView.getImage());
-        assertEquals(ImageFilter.LINEAR, imageView.getImageFilter());
+        assertEquals(ImageFilter.NEAREST, imageView.getImageFilter());
         assertEquals(ImageScale.FIT, imageView.getImageScale());
         assertEquals(0xFF0000FF, imageView.getColor());
         assertEquals(VerticalAlign.BOTTOM, imageView.getVerticalAlign());
@@ -100,7 +114,7 @@ public class ImageViewTest {
 
         hash.put(UXHash.getHash("color"), new UXValueColor(0xFF0000FF));
         hash.put(UXHash.getHash("image"), uxImage);
-        hash.put(UXHash.getHash("image-filter"), new UXValueText(ImageFilter.LINEAR.toString()));
+        hash.put(UXHash.getHash("image-filter"), new UXValueText(ImageFilter.NEAREST.toString()));
         hash.put(UXHash.getHash("image-scale"), new UXValueText(ImageScale.FIT.toString()));
         hash.put(UXHash.getHash("vertical-align"), new UXValueText(VerticalAlign.BOTTOM.toString()));
         hash.put(UXHash.getHash("horizontal-align"), new UXValueText(HorizontalAlign.RIGHT.toString()));

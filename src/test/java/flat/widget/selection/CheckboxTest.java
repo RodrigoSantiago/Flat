@@ -7,6 +7,7 @@ import flat.resources.ResourceStream;
 import flat.uxml.Controller;
 import flat.uxml.UXHash;
 import flat.uxml.UXListener;
+import flat.uxml.UXValueListener;
 import flat.uxml.value.UXValue;
 import flat.uxml.value.UXValueColor;
 import flat.uxml.value.UXValueNumber;
@@ -23,6 +24,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -65,23 +67,49 @@ public class CheckboxTest {
     @Test
     public void properties() {
         Controller controller = mock(Controller.class);
-        UXListener<ActionEvent> action = (UXListener<ActionEvent>) mock(UXListener.class);
+
+        var action = (UXListener<ActionEvent>) mock(UXListener.class);
         when(controller.getListenerMethod("onActionWork", ActionEvent.class)).thenReturn(action);
 
+        var listener = (UXValueListener<SelectionState>) mock(UXValueListener.class);
+        when(controller.getValueListenerMethod("onSelectionStateWork", SelectionState.class)).thenReturn(listener);
+
         Checkbox checkbox = new Checkbox();
+
+        assertNull(checkbox.getIconActive());
+        assertNull(checkbox.getIconInactive());
+        assertNull(checkbox.getIconIdeterminate());
+        assertEquals(0, checkbox.getIconTransitionDuration(), 0.0001f);
+        assertEquals(0xFFFFFFFF, checkbox.getColor());
+        assertEquals(ImageFilter.LINEAR, checkbox.getIconImageFilter());
+        assertEquals(SelectionState.INDETERMINATE, checkbox.getSelectionState());
+        assertNull(checkbox.getToggleListener());
+        assertNull(checkbox.getSelectionStateListener());
+
         checkbox.setAttributes(createNonDefaultValues(), "checkbox");
         checkbox.applyAttributes(controller);
+
+        assertNull(checkbox.getIconActive());
+        assertNull(checkbox.getIconInactive());
+        assertNull(checkbox.getIconIdeterminate());
+        assertEquals(0, checkbox.getIconTransitionDuration(), 0.0001f);
+        assertEquals(0xFFFFFFFF, checkbox.getColor());
+        assertEquals(ImageFilter.LINEAR, checkbox.getIconImageFilter());
+        assertEquals(SelectionState.ACTIVE, checkbox.getSelectionState());
+        assertEquals(action, checkbox.getToggleListener());
+        assertEquals(listener, checkbox.getSelectionStateListener());
+
         checkbox.applyStyle();
 
-        assertEquals(SelectionState.ACTIVE, checkbox.getSelectionState());
         assertEquals(iconActive, checkbox.getIconActive());
         assertEquals(iconInactive, checkbox.getIconInactive());
         assertEquals(iconIndeterminate, checkbox.getIconIdeterminate());
         assertEquals(1.0f, checkbox.getIconTransitionDuration(), 0.0001f);
         assertEquals(0xFF0000FF, checkbox.getColor());
-        assertEquals(ImageFilter.LINEAR, checkbox.getIconImageFilter());
-
-        assertEquals(action, checkbox.getActionListener());
+        assertEquals(ImageFilter.NEAREST, checkbox.getIconImageFilter());
+        assertEquals(SelectionState.ACTIVE, checkbox.getSelectionState());
+        assertEquals(action, checkbox.getToggleListener());
+        assertEquals(listener, checkbox.getSelectionStateListener());
     }
 
     @Test
@@ -124,18 +152,22 @@ public class CheckboxTest {
         checkbox.setIconIdeterminate(iconIndeterminate);
         checkbox.setSelectionState(SelectionState.INDETERMINATE);
 
-        UXListener<ActionEvent> action = (UXListener<ActionEvent>) mock(UXListener.class);
-        checkbox.setActionListener(action);
+        var action = (UXListener<ActionEvent>) mock(UXListener.class);
+        checkbox.setToggleListener(action);
+
+        var listener = (UXValueListener<SelectionState>) mock(UXValueListener.class);
+        checkbox.setSelectionStateListener(listener);
 
         assertEquals(SelectionState.INDETERMINATE, checkbox.getSelectionState());
-        checkbox.fire();
+        checkbox.toggle();
         assertEquals(SelectionState.ACTIVE, checkbox.getSelectionState());
-        checkbox.fire();
+        checkbox.toggle();
         assertEquals(SelectionState.INACTIVE, checkbox.getSelectionState());
-        checkbox.fire();
+        checkbox.toggle();
         assertEquals(SelectionState.ACTIVE, checkbox.getSelectionState());
 
         verify(action, times(3)).handle(any());
+        verify(listener, times(3)).handle(any());
     }
 
     private HashMap<Integer, UXValue> createNonDefaultValues() {
@@ -148,9 +180,10 @@ public class CheckboxTest {
         UXValue uxIconIndeterminate = mock(UXValue.class);
         when(uxIconIndeterminate.asResource(any())).thenReturn(resIndeterminate);
 
-        hash.put(UXHash.getHash("on-action"), new UXValueText("onActionWork"));
+        hash.put(UXHash.getHash("on-toggle"), new UXValueText("onActionWork"));
+        hash.put(UXHash.getHash("on-selection-state-change"), new UXValueText("onSelectionStateWork"));
         hash.put(UXHash.getHash("color"), new UXValueColor(0xFF0000FF));
-        hash.put(UXHash.getHash("icon-image-filter"), new UXValueText(ImageFilter.LINEAR.toString()));
+        hash.put(UXHash.getHash("icon-image-filter"), new UXValueText(ImageFilter.NEAREST.toString()));
         hash.put(UXHash.getHash("icon-active"), uxIconActive);
         hash.put(UXHash.getHash("icon-inactive"), uxIconInactive);
         hash.put(UXHash.getHash("icon-indeterminate"), uxIconIndeterminate);

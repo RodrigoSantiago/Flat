@@ -5,6 +5,7 @@ import flat.resources.ResourceStream;
 import flat.uxml.Controller;
 import flat.uxml.UXListener;
 import flat.uxml.UXTheme;
+import flat.uxml.UXValueListener;
 
 import java.util.Objects;
 
@@ -90,6 +91,11 @@ public class UXValueXML extends  UXValue {
     @Override
     public <T> UXListener<T> asListener(UXTheme theme, Class<T> argument, Controller controller) {
         return value.asListener(theme, argument, controller);
+    }
+
+    @Override
+    public <T> UXValueListener<T> asValueListener(UXTheme theme, Class<T> argument, Controller controller) {
+        return value.asValueListener(theme, argument, controller);
     }
 
     @Override

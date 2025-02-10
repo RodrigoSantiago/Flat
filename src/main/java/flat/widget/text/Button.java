@@ -243,6 +243,8 @@ public class Button extends Label {
     }
 
     public void setIconAlign(HorizontalAlign iconAlign) {
+        if (iconAlign == null) iconAlign = HorizontalAlign.LEFT;
+
         if (this.iconAlign != iconAlign) {
             this.iconAlign = iconAlign;
             invalidate(false);

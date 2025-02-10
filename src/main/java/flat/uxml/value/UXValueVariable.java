@@ -5,6 +5,7 @@ import flat.resources.ResourceStream;
 import flat.uxml.Controller;
 import flat.uxml.UXListener;
 import flat.uxml.UXTheme;
+import flat.uxml.UXValueListener;
 
 import java.util.Objects;
 
@@ -137,6 +138,16 @@ public class UXValueVariable extends UXValue {
             return variable.asListener(theme, argument, controller);
         } else {
             return super.asListener(theme, argument, controller);
+        }
+    }
+
+    @Override
+    public <T> UXValueListener<T> asValueListener(UXTheme theme, Class<T> argument, Controller controller) {
+        UXValue variable = getVariable(theme);
+        if (variable != null) {
+            return variable.asValueListener(theme, argument, controller);
+        } else {
+            return super.asValueListener(theme, argument, controller);
         }
     }
 

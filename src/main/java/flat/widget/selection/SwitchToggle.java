@@ -7,21 +7,21 @@ import flat.events.PointerEvent;
 import flat.graphics.Color;
 import flat.graphics.SmartContext;
 import flat.graphics.image.Drawable;
-import flat.uxml.Controller;
-import flat.uxml.UXAttrs;
-import flat.uxml.UXListener;
+import flat.uxml.*;
 import flat.widget.Widget;
 import flat.widget.enums.ImageFilter;
 import flat.window.Activity;
 
 public class SwitchToggle extends Widget {
 
-    private UXListener<ActionEvent> actionListener;
+    private UXListener<ActionEvent> toggleListener;
+    private UXValueListener<Boolean> activeListener;
+    private boolean active;
+
     private ImageFilter iconImageFilter = ImageFilter.LINEAR;
     private Drawable iconInactive;
     private Drawable iconActive;
-    private int color = Color.black;
-    private boolean active;
+    private int color = Color.white;
     private float iconTransitionDuration;
     private float slideTransitionDuration;
 
@@ -37,8 +37,9 @@ public class SwitchToggle extends Widget {
         super.applyAttributes(controller);
 
         UXAttrs attrs = getAttrs();
-        setActionListener(attrs.getAttributeListener("on-action", ActionEvent.class, controller));
         setActive(attrs.getAttributeBool("active", isActive()));
+        setToggleListener(attrs.getAttributeListener("on-toggle", ActionEvent.class, controller));
+        setActiveListener(attrs.getAttributeValueListener("on-active-change", Boolean.class, controller));
     }
 
     @Override
@@ -152,7 +153,7 @@ public class SwitchToggle extends Widget {
             requestFocus(true);
         }
         if (!pointerEvent.isConsumed() && pointerEvent.getType() == PointerEvent.RELEASED) {
-            fire();
+            toggle();
         }
     }
 
@@ -267,6 +268,7 @@ public class SwitchToggle extends Widget {
 
     public void setActive(boolean active) {
         if (this.active != active) {
+            boolean old = this.active;
             this.active = active;
 
             if (slideTransitionDuration > 0) {
@@ -275,26 +277,41 @@ public class SwitchToggle extends Widget {
             }
             setCurrentIcon();
             setActivated(active);
+            fireActiveListener(old);
         }
     }
 
-    public UXListener<ActionEvent> getActionListener() {
-        return actionListener;
+    public UXListener<ActionEvent> getToggleListener() {
+        return toggleListener;
     }
 
-    public void setActionListener(UXListener<ActionEvent> actionListener) {
-        this.actionListener = actionListener;
+    public void setToggleListener(UXListener<ActionEvent> toggleListener) {
+        this.toggleListener = toggleListener;
     }
 
-    public void fireAction(ActionEvent event) {
-        if (actionListener != null) {
-            actionListener.handle(event);
+    private void fireToggle(ActionEvent event) {
+        if (toggleListener != null) {
+            toggleListener.handle(event);
         }
     }
 
-    public void fire() {
+    public void toggle() {
         setActive(!isActive());
-        fireAction(new ActionEvent(this));
+        fireToggle(new ActionEvent(this));
+    }
+
+    public UXValueListener<Boolean> getActiveListener() {
+        return activeListener;
+    }
+
+    public void setActiveListener(UXValueListener<Boolean> activeListener) {
+        this.activeListener = activeListener;
+    }
+
+    private void fireActiveListener(boolean oldValue) {
+        if (activeListener != null && oldValue != active) {
+            activeListener.handle(new ValueChange<>(this, oldValue, active));
+        }
     }
 
     protected boolean isWrapContent() {

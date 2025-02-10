@@ -1,5 +1,9 @@
 package flat.widget.selection;
 
+import flat.uxml.Controller;
+import flat.uxml.UXAttrs;
+import flat.uxml.UXValueListener;
+import flat.uxml.ValueChange;
 import flat.widget.Widget;
 import flat.widget.enums.Visibility;
 
@@ -9,6 +13,7 @@ import java.util.List;
 
 public class RadioGroup extends Widget {
 
+    private UXValueListener<Integer> selectedListener;
     private List<RadioButton> radioButtons = new ArrayList<>();
     private List<RadioButton> unmodifiableRadioButtons;
     private RadioButton selectedButton;
@@ -18,6 +23,14 @@ public class RadioGroup extends Widget {
         setVisibility(Visibility.GONE);
     }
 
+    @Override
+    public void applyAttributes(Controller controller) {
+        super.applyAttributes(controller);
+
+        UXAttrs attrs = getAttrs();
+        setSelectedListener(attrs.getAttributeValueListener("on-selected-change", Integer.class, controller));
+    }
+
     public List<RadioButton> getUnmodifiableRadioButtons() {
         if (unmodifiableRadioButtons == null) {
             unmodifiableRadioButtons = Collections.unmodifiableList(radioButtons);
@@ -25,8 +38,20 @@ public class RadioGroup extends Widget {
         return unmodifiableRadioButtons;
     }
 
-    public int getSelectedIndex() {
+    public int getSelected() {
         return selectedIndex;
+    }
+
+    public void add(RadioButton... radioButton) {
+        for (var btn : radioButton) {
+            add(btn);
+        }
+    }
+
+    public void add(List<RadioButton> radioButton) {
+        for (var btn : radioButton) {
+            add(btn);
+        }
     }
 
     public void add(RadioButton radioButton) {
@@ -47,10 +72,14 @@ public class RadioGroup extends Widget {
             radioButtons.remove(radioButton);
 
             if (selectedButton == radioButton) {
+                int oldValue = selectedIndex;
                 selectedIndex = -1;
                 selectedButton = null;
+                fireSelectedListener(oldValue);
             } else {
+                int oldValue = selectedIndex;
                 selectedIndex = radioButtons.indexOf(selectedButton);
+                fireSelectedListener(oldValue);
             }
         }
     }
@@ -65,26 +94,46 @@ public class RadioGroup extends Widget {
     public void select(int index) {
         if (index < 0 || index >= radioButtons.size()) {
             if (selectedIndex != -1) {
+                int oldValue = selectedIndex;
                 RadioButton oldSelection = selectedButton;
                 selectedIndex = -1;
                 selectedButton = null;
                 if (oldSelection != null) oldSelection.setActive(false);
+                fireSelectedListener(oldValue);
             }
         } else {
             if (selectedIndex != index) {
+                int oldValue = selectedIndex;
                 RadioButton oldSelection = selectedButton;
                 selectedIndex = index;
                 selectedButton = radioButtons.get(index);
                 selectedButton.setActive(true);
                 if (oldSelection != null) oldSelection.setActive(false);
+                fireSelectedListener(oldValue);
             }
         }
     }
 
     void unselect(RadioButton radioButton) {
         if (selectedButton == radioButton) {
+            int oldValue = selectedIndex;
             selectedIndex = -1;
             selectedButton = null;
+            fireSelectedListener(oldValue);
+        }
+    }
+
+    public void setSelectedListener(UXValueListener<Integer> selectedListener) {
+        this.selectedListener = selectedListener;
+    }
+
+    public UXValueListener<Integer> getSelectedListener() {
+        return selectedListener;
+    }
+
+    private void fireSelectedListener(int oldValue) {
+        if (selectedListener != null && oldValue != selectedIndex) {
+            selectedListener.handle(new ValueChange<>(this, oldValue, selectedIndex));
         }
     }
 }

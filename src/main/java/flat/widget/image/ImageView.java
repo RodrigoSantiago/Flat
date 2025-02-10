@@ -150,6 +150,8 @@ public class ImageView extends Widget {
     }
 
     public void setImageFilter(ImageFilter imageFilter) {
+        if (imageFilter == null) imageFilter = ImageFilter.LINEAR;
+
         if (this.imageFilter != imageFilter) {
             this.imageFilter = imageFilter;
             invalidate(false);
@@ -161,6 +163,8 @@ public class ImageView extends Widget {
     }
 
     public void setImageScale(ImageScale imageScale) {
+        if (imageScale == null) imageScale = ImageScale.STRETCH;
+
         if (this.imageScale != imageScale) {
             this.imageScale = imageScale;
             invalidate(false);

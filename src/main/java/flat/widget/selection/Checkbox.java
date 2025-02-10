@@ -7,9 +7,7 @@ import flat.events.PointerEvent;
 import flat.graphics.Color;
 import flat.graphics.SmartContext;
 import flat.graphics.image.Drawable;
-import flat.uxml.Controller;
-import flat.uxml.UXAttrs;
-import flat.uxml.UXListener;
+import flat.uxml.*;
 import flat.widget.Widget;
 import flat.widget.enums.ImageFilter;
 import flat.widget.enums.SelectionState;
@@ -17,13 +15,15 @@ import flat.window.Activity;
 
 public class Checkbox extends Widget {
 
-    private UXListener<ActionEvent> actionListener;
+    private UXListener<ActionEvent> toggleListener;
+    private UXValueListener<SelectionState> selectionStateListener;
     private SelectionState selectionState = SelectionState.INDETERMINATE;
+
     private ImageFilter iconImageFilter = ImageFilter.LINEAR;
     private Drawable iconInactive;
     private Drawable iconActive;
     private Drawable iconIdeterminate;
-    private int color = Color.black;
+    private int color = Color.white;
     private float iconTransitionDuration;
 
     private IconChange iconChangeAnimation = new IconChange();
@@ -37,8 +37,9 @@ public class Checkbox extends Widget {
         super.applyAttributes(controller);
 
         UXAttrs attrs = getAttrs();
-        setActionListener(attrs.getAttributeListener("on-action", ActionEvent.class, controller));
         setSelectionState(attrs.getAttributeConstant("selection-state", getSelectionState()));
+        setToggleListener(attrs.getAttributeListener("on-toggle", ActionEvent.class, controller));
+        setSelectionStateListener(attrs.getAttributeValueListener("on-selection-state-change", SelectionState.class, controller));
     }
 
     @Override
@@ -131,7 +132,7 @@ public class Checkbox extends Widget {
             requestFocus(true);
         }
         if (!pointerEvent.isConsumed() && pointerEvent.getType() == PointerEvent.RELEASED) {
-            fire();
+            toggle();
         }
     }
 
@@ -177,6 +178,8 @@ public class Checkbox extends Widget {
         if (selectionState == null) selectionState = SelectionState.INDETERMINATE;
 
         if (this.selectionState != selectionState) {
+            SelectionState oldValue = this.selectionState;
+
             this.selectionState = selectionState;
             if (selectionState == SelectionState.ACTIVE) {
                 setActivated(true);
@@ -185,6 +188,7 @@ public class Checkbox extends Widget {
             }
 
             setCurrentIcon();
+            fireSelectedListener(oldValue);
         }
     }
 
@@ -274,23 +278,37 @@ public class Checkbox extends Widget {
         return getSelectionState() == SelectionState.INDETERMINATE;
     }
 
-    public UXListener<ActionEvent> getActionListener() {
-        return actionListener;
+    public UXListener<ActionEvent> getToggleListener() {
+        return toggleListener;
     }
 
-    public void setActionListener(UXListener<ActionEvent> actionListener) {
-        this.actionListener = actionListener;
+    public void setToggleListener(UXListener<ActionEvent> toggleListener) {
+        this.toggleListener = toggleListener;
     }
 
-    public void fireAction(ActionEvent event) {
-        if (actionListener != null) {
-            actionListener.handle(event);
+    private void fireToggle(ActionEvent event) {
+        if (toggleListener != null) {
+            toggleListener.handle(event);
         }
     }
 
-    public void fire() {
+    public void toggle() {
         setSelectionState(isActive() ? SelectionState.INACTIVE : SelectionState.ACTIVE);
-        fireAction(new ActionEvent(this));
+        fireToggle(new ActionEvent(this));
+    }
+
+    public UXValueListener<SelectionState> getSelectionStateListener() {
+        return selectionStateListener;
+    }
+
+    public void setSelectionStateListener(UXValueListener<SelectionState> selectionStateListener) {
+        this.selectionStateListener = selectionStateListener;
+    }
+
+    private void fireSelectedListener(SelectionState oldValue) {
+        if (selectionStateListener != null && oldValue != selectionState) {
+            selectionStateListener.handle(new ValueChange<>(this, oldValue, selectionState));
+        }
     }
 
     protected boolean isWrapContent() {

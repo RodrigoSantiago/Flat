@@ -14,6 +14,7 @@ import flat.widget.selection.RadioGroup;
 import flat.widget.selection.SwitchToggle;
 import flat.widget.text.Button;
 import flat.widget.text.Label;
+import flat.widget.value.ScrollBar;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,11 +38,12 @@ public class UXBuilder {
         UXBuilder.install("StackBox", StackBox::new);
         UXBuilder.install("Label", Label::new);
         UXBuilder.install("Button", Button::new);
-        UXBuilder.install("CheckBox", Checkbox::new);
+        UXBuilder.install("Checkbox", Checkbox::new);
         UXBuilder.install("RadioButton", RadioButton::new);
         UXBuilder.install("RadioGroup", RadioGroup::new);
         UXBuilder.install("Switch", SwitchToggle::new);
         UXBuilder.install("ImageView", ImageView::new);
+        UXBuilder.install("ScrollBar", ScrollBar::new);
         /*UXBuilder.install("Divider", Divider::new);
         UXBuilder.install("ToggleButton", ToggleButton::new);
         UXBuilder.install("ToggleGroup", RadioGroup::new);
@@ -50,7 +52,6 @@ public class UXBuilder {
         UXBuilder.install("Slider", Slider::new);
         UXBuilder.install("ProgressBar", ProgressBar::new);
         UXBuilder.install("ProgressCircle", ProgressCircle::new);
-        UXBuilder.install("ScrollBar", ScrollBar::new);
         UXBuilder.install("ScrollBox", ScrollBox::new);
         UXBuilder.install("Grid", Grid::new);
         UXBuilder.install("Cell", Cell::new);
