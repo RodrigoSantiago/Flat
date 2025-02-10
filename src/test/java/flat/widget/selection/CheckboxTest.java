@@ -166,8 +166,10 @@ public class CheckboxTest {
         checkbox.toggle();
         assertEquals(SelectionState.ACTIVE, checkbox.getSelectionState());
 
+        checkbox.setSelectionState(SelectionState.INACTIVE);
+
         verify(action, times(3)).handle(any());
-        verify(listener, times(3)).handle(any());
+        verify(listener, times(4)).handle(any());
     }
 
     private HashMap<Integer, UXValue> createNonDefaultValues() {

@@ -145,8 +145,10 @@ public class RadioButtonTest {
         radioButton.toggle();
         assertTrue(radioButton.isActive());
 
+        radioButton.setActive(false);
+
         verify(action, times(1)).handle(any());
-        verify(listener, times(1)).handle(any());
+        verify(listener, times(2)).handle(any());
     }
 
     private HashMap<Integer, UXValue> createNonDefaultValues() {

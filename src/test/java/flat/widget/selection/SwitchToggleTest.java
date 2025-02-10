@@ -154,8 +154,10 @@ public class SwitchToggleTest {
         switchToggle.toggle();
         assertFalse(switchToggle.isActive());
 
+        switchToggle.setActive(true);
+
         verify(action, times(2)).handle(any());
-        verify(listener, times(2)).handle(any());
+        verify(listener, times(3)).handle(any());
     }
 
     private HashMap<Integer, UXValue> createNonDefaultValues() {

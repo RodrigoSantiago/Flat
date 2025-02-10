@@ -16,8 +16,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.HashMap;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.powermock.api.mockito.PowerMockito.*;
@@ -50,17 +49,35 @@ public class LabelTest {
     @Test
     public void properties() {
         Label label = new Label();
+
+        assertEquals(HorizontalAlign.LEFT, label.getHorizontalAlign());
+        assertEquals(VerticalAlign.TOP, label.getVerticalAlign());
+        assertFalse(label.isTextAllCaps());
+        assertEquals(defaultFont, label.getFont());
+        assertEquals(16f, label.getTextSize(), 0.1f);
+        assertEquals(0x000000FF, label.getTextColor());
+        assertNull(label.getText());
+
         label.setAttributes(createNonDefaultValues(), "label");
         label.applyAttributes(null);
+
+        assertEquals(HorizontalAlign.LEFT, label.getHorizontalAlign());
+        assertEquals(VerticalAlign.TOP, label.getVerticalAlign());
+        assertFalse(label.isTextAllCaps());
+        assertEquals(defaultFont, label.getFont());
+        assertEquals(16f, label.getTextSize(), 0.1f);
+        assertEquals(0x000000FF, label.getTextColor());
+        assertEquals("Hello World", label.getText());
+
         label.applyStyle();
 
         assertEquals(HorizontalAlign.RIGHT, label.getHorizontalAlign());
         assertEquals(VerticalAlign.BOTTOM, label.getVerticalAlign());
-        assertEquals("Hello World", label.getText());
         assertTrue(label.isTextAllCaps());
         assertEquals(boldFont, label.getFont());
         assertEquals(24f, label.getTextSize(), 0.1f);
         assertEquals(0xFF0000FF, label.getTextColor());
+        assertEquals("Hello World", label.getText());
     }
 
     @Test

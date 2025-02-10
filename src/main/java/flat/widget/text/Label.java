@@ -15,8 +15,8 @@ import java.util.Objects;
 public class Label extends Widget {
 
     private String text;
-    private boolean textAllCaps;
 
+    private boolean textAllCaps;
     private Font font = Font.getDefault();
     private float textSize = 16f;
     private int textColor = 0x000000FF;

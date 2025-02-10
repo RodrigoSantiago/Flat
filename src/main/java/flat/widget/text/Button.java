@@ -172,7 +172,7 @@ public class Button extends Label {
             requestFocus(true);
         }
         if (!pointerEvent.isConsumed() && pointerEvent.getType() == PointerEvent.RELEASED) {
-            fire();
+            action();
         }
     }
 
@@ -184,13 +184,13 @@ public class Button extends Label {
         this.actionListener = actionListener;
     }
 
-    public void fireAction(ActionEvent event) {
+    private void fireAction(ActionEvent event) {
         if (actionListener != null) {
             actionListener.handle(event);
         }
     }
 
-    public void fire() {
+    public void action() {
         fireAction(new ActionEvent(this));
     }
 

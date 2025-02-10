@@ -6,18 +6,18 @@ import flat.events.PointerEvent;
 import flat.graphics.Color;
 import flat.graphics.SmartContext;
 import flat.math.Vector2;
-import flat.uxml.Controller;
-import flat.uxml.UXAttrs;
-import flat.uxml.UXListener;
+import flat.uxml.*;
 import flat.widget.Widget;
 import flat.widget.enums.Direction;
 
 public class ScrollBar extends Widget {
 
-    private UXListener<ActionEvent> scrollOffsetListener;
+    private UXListener<ActionEvent> slideListener;
+    private UXValueListener<Float> viewOffsetListener;
     private float viewOffset;
     private float viewDimension;
     private float totalDimension;
+
     private float minSize;
     private int color = Color.white;
     private Direction direction = Direction.VERTICAL;
@@ -30,7 +30,8 @@ public class ScrollBar extends Widget {
         setTotalDimension(attrs.getAttributeSize("total-dimension", getTotalDimension()));
         setViewDimension(attrs.getAttributeSize("view-dimension", getViewDimension()));
         setViewOffset(attrs.getAttributeSize("view-offset", getViewOffset()));
-        setDirection(attrs.getAttributeConstant("direction", getDirection()));
+        setSlideListener(attrs.getAttributeListener("on-slide", ActionEvent.class, controller));
+        setViewOffsetListener(attrs.getAttributeValueListener("on-view-offset-change", Float.class, controller));
     }
 
     @Override
@@ -39,6 +40,7 @@ public class ScrollBar extends Widget {
 
         UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
+        setDirection(attrs.getConstant("direction", info, getDirection()));
         setMinSize(attrs.getSize("min-size", info, getMinSize()));
         setColor(attrs.getColor("color", info, getColor()));
     }
@@ -78,8 +80,7 @@ public class ScrollBar extends Widget {
 
         context.setTransform2D(getTransform());
         context.setColor(color);
-        context.drawRoundRect(x1, y1, w, h,
-                getRadiusTop(), getRadiusRight(), getRadiusBottom(), getRadiusLeft(), true);
+        context.drawRoundRect(x1, y1, w, h, getRadiusTop(), getRadiusRight(), getRadiusBottom(), getRadiusLeft(), true);
 
     }
 
@@ -101,9 +102,14 @@ public class ScrollBar extends Widget {
     }
 
     public void setViewOffset(float viewOffset) {
+        if (viewOffset > totalDimension - viewDimension) viewOffset = totalDimension - viewDimension;
+        if (viewOffset < 0) viewOffset = 0;
+
         if (this.viewOffset != viewOffset) {
+            float old = this.viewOffset;
             this.viewOffset = viewOffset;
             invalidate(false);
+            fireViewOffsetListener(old);
         }
     }
 
@@ -126,6 +132,10 @@ public class ScrollBar extends Widget {
         if (this.totalDimension != totalDimension) {
             this.totalDimension = totalDimension;
             invalidate(false);
+
+            if (viewOffset > totalDimension - viewDimension) {
+                setViewOffset(totalDimension - viewDimension);
+            }
         }
     }
 
@@ -151,32 +161,51 @@ public class ScrollBar extends Widget {
         if (this.viewDimension != viewDimension) {
             this.viewDimension = viewDimension;
             invalidate(false);
+
+            if (viewOffset > totalDimension - viewDimension) {
+                setViewOffset(totalDimension - viewDimension);
+            }
         }
     }
 
-    public void scrollTo(float dimeionsOffset) {
-        if (dimeionsOffset > totalDimension - viewDimension) dimeionsOffset = totalDimension - viewDimension;
-        if (dimeionsOffset < 0) dimeionsOffset = 0;
+    public void slideTo(float dimeionsOffset) {
+        float old = getViewOffset();
         setViewOffset(dimeionsOffset);
-        fireScrollOffset();
-    }
-
-    public void scroll(float dimeionsOffset) {
-        scrollTo(getViewOffset() + dimeionsOffset);
-    }
-
-    public void fireScrollOffset() {
-        if (scrollOffsetListener != null) {
-            scrollOffsetListener.handle(new ActionEvent(this));
+        if (old != getViewOffset()) {
+            fireSlide();
         }
     }
 
-    public UXListener<ActionEvent> getScrollOffsetListener() {
-        return scrollOffsetListener;
+    public void slide(float dimeionsOffset) {
+        slideTo(getViewOffset() + dimeionsOffset);
     }
 
-    public void setScrollOffsetListener(UXListener<ActionEvent> scrollListener) {
-        this.scrollOffsetListener = scrollListener;
+    public UXListener<ActionEvent> getSlideListener() {
+        return slideListener;
+    }
+
+    public void setSlideListener(UXListener<ActionEvent> scrollListener) {
+        this.slideListener = scrollListener;
+    }
+
+    private void fireSlide() {
+        if (slideListener != null) {
+            slideListener.handle(new ActionEvent(this));
+        }
+    }
+
+    public void setViewOffsetListener(UXValueListener<Float> viewOffsetListener) {
+        this.viewOffsetListener = viewOffsetListener;
+    }
+
+    public UXValueListener<Float> getViewOffsetListener() {
+        return viewOffsetListener;
+    }
+
+    private void fireViewOffsetListener(float old) {
+        if (viewOffsetListener != null && old != viewOffset) {
+            viewOffsetListener.handle(new ValueChange<>(this, old, viewOffset));
+        }
     }
 
     @Override
@@ -219,13 +248,13 @@ public class ScrollBar extends Widget {
         }
 
         if (pointerEvent.getType() == PointerEvent.PRESSED) {
-            grabOffset = Math.max(0, Math.min(1, (pos - hStart) / hSize));
-            float target = (pos / size - handleSize * grabOffset) * totalDimension;
-            scrollTo(target);
+            grabOffset = Math.max(0, Math.min(1, (pos + (inverse ? start : 0) - hStart) / hSize));
+            float target = ((pos - (inverse ? 0 : start)) / size - handleSize * grabOffset) * totalDimension;
+            slideTo(target);
 
         } else if (pointerEvent.getType() == PointerEvent.DRAGGED) {
-            float target = ((pos - start) / size - handleSize * grabOffset) * totalDimension;
-            scrollTo(target);
+            float target = ((pos - (inverse ? 0 : start)) / size - handleSize * grabOffset) * totalDimension;
+            slideTo(target);
 
         } else if (pointerEvent.getType() == PointerEvent.RELEASED) {
             grabOffset = 0;

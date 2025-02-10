@@ -12,7 +12,6 @@ import flat.uxml.value.*;
 import flat.widget.Widget;
 import flat.widget.enums.HorizontalAlign;
 import flat.widget.enums.ImageFilter;
-import flat.widget.enums.VerticalAlign;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,8 +20,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.HashMap;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.Mockito.times;
@@ -63,21 +61,39 @@ public class ButtonTest {
     @Test
     public void properties() {
         Controller controller = mock(Controller.class);
-        UXListener<ActionEvent> action = (UXListener<ActionEvent>) mock(UXListener.class);
+
+        var action = (UXListener<ActionEvent>) mock(UXListener.class);
         when(controller.getListenerMethod("onActionWork", ActionEvent.class)).thenReturn(action);
 
         Button button = new Button();
+
+        assertFalse(button.getIconScaleHeight());
+        assertEquals(HorizontalAlign.LEFT, button.getIconAlign());
+        assertEquals(0, button.getIconSpacing(), 0.1f);
+        assertEquals(ImageFilter.LINEAR, button.getIconImageFilter());
+        assertNull(button.getIcon());
+        assertEquals(0xFFFFFFFF, button.getIconColor());
+        assertNull(button.getActionListener());
+
         button.setAttributes(createNonDefaultValues(), "button");
         button.applyAttributes(controller);
+
+        assertFalse(button.getIconScaleHeight());
+        assertEquals(HorizontalAlign.LEFT, button.getIconAlign());
+        assertEquals(0, button.getIconSpacing(), 0.1f);
+        assertEquals(ImageFilter.LINEAR, button.getIconImageFilter());
+        assertNull(button.getIcon());
+        assertEquals(0xFFFFFFFF, button.getIconColor());
+        assertEquals(action, button.getActionListener());
+
         button.applyStyle();
 
         assertTrue(button.getIconScaleHeight());
-        assertEquals(button.getIconAlign(), HorizontalAlign.RIGHT);
-        assertEquals(button.getIconSpacing(), 24, 0.1f);
-        assertEquals(button.getIconImageFilter(), ImageFilter.LINEAR);
-        assertEquals(button.getIcon(), icon);
-        assertEquals(button.getIconColor(), 0xFFFF00FF);
-
+        assertEquals(HorizontalAlign.RIGHT, button.getIconAlign());
+        assertEquals(24, button.getIconSpacing(), 0.1f);
+        assertEquals(ImageFilter.NEAREST, button.getIconImageFilter());
+        assertEquals(icon, button.getIcon());
+        assertEquals(0xFFFF00FF, button.getIconColor());
         assertEquals(action, button.getActionListener());
     }
 
@@ -246,10 +262,10 @@ public class ButtonTest {
         Button button = new Button();
         button.setText("Hello World");
 
-        UXListener<ActionEvent> action = (UXListener<ActionEvent>) mock(UXListener.class);
+        var action = (UXListener<ActionEvent>) mock(UXListener.class);
         button.setActionListener(action);
 
-        button.fire();
+        button.action();
         verify(action, times(1)).handle(any());
     }
 
@@ -266,16 +282,8 @@ public class ButtonTest {
         hash.put(UXHash.getHash("icon-scale-height"), new UXValueBool(true));
         hash.put(UXHash.getHash("icon-align"), new UXValueText(HorizontalAlign.RIGHT.toString()));
         hash.put(UXHash.getHash("icon-spacing"), new UXValueSizeSp(24));
-        hash.put(UXHash.getHash("icon-image-filter"), new UXValueText(ImageFilter.LINEAR.toString()));
+        hash.put(UXHash.getHash("icon-image-filter"), new UXValueText(ImageFilter.NEAREST.toString()));
         hash.put(UXHash.getHash("on-action"), new UXValueText("onActionWork"));
-
-        hash.put(UXHash.getHash("horizontal-align"), new UXValueText(HorizontalAlign.RIGHT.toString()));
-        hash.put(UXHash.getHash("vertical-align"), new UXValueText(VerticalAlign.BOTTOM.toString()));
-        hash.put(UXHash.getHash("text"), new UXValueText("Hello World"));
-        hash.put(UXHash.getHash("text-all-caps"), new UXValueBool(true));
-        hash.put(UXHash.getHash("font"), uxBoldFont);
-        hash.put(UXHash.getHash("text-size"), new UXValueSizeSp(24));
-        hash.put(UXHash.getHash("text-color"), new UXValueColor(0xFF0000FF));
         return hash;
     }
 }

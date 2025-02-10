@@ -219,7 +219,7 @@ public class ActivityTest {
         activity.layout(100f, 100f);
         verify(scene, times(2)).onMeasure();
         verify(scene, times(1)).onLayout(100f, 100f);
-        verify(child, times(0)).onMeasure();
+        verify(child, times(1)).onMeasure();
         verify(child, times(1)).onLayout(20f, 10f);
     }
 

@@ -14,12 +14,12 @@
         </LinearBox>
         <Switch active="true" background-color="#FFFFFF" icon-transition-duration="0.2" ripple-color="#FF000080" width="200"/>
         <LinearBox direction="horizontal" width="WRAP_CONTENT" height="WRAP_CONTENT" min-height="200">
-            <ScrollBar direction="ihorizontal" width="200" height="16" color="red" view-dimension="10" total-dimension="50"
+            <ScrollBar direction="ihorizontal" width="200" height="32" color="red" view-dimension="10" total-dimension="50"
             radius-left="8" radius-right="8" radius-bottom="8" radius-top="8" min-size="0.5"
-            padding-top="4" padding-left="4" padding-bottom="4" padding-right="4"/>
-            <ScrollBar direction="ivertical" height="200" width="16" color="red" view-dimension="10" total-dimension="50"
+            padding-top="4" padding-left="4" padding-bottom="4" padding-right="8"/>
+            <ScrollBar direction="ivertical" height="200" width="32" color="red" view-dimension="10" total-dimension="50"
                        radius-left="8" radius-right="8" radius-bottom="8" radius-top="8"
-                       padding-top="4" padding-left="4" padding-bottom="4" padding-right="4"/>
+                       padding-top="4" padding-left="4" padding-bottom="5" padding-right="4"/>
         </LinearBox>
 
         <ImageView image="/default/img_test.png" width="200" height="100" image-scale="FIT" margin-right="8" horizontal-align="CENTER"/>
