@@ -212,8 +212,8 @@ public class Window {
     void processEvents() {
 
         // DPI Change Listener
-        if (dpi != (float) Math.ceil(WL.GetDpi(windowId))) {
-            dpi = (float) Math.ceil(WL.GetDpi(windowId));
+        if (dpi != getDpi()) {
+            dpi = getDpi();
             addEvent(EventData.getSize(getWidth(), getHeight()));
         }
 
@@ -462,7 +462,7 @@ public class Window {
     public float getDpi() {
         checkDisposed();
 
-        return dpi;
+        return (float) WL.GetDpi(windowId);
     }
 
     public int getWidth() {

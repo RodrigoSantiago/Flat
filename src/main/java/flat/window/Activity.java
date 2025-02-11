@@ -1,6 +1,7 @@
 package flat.window;
 
 import flat.animations.Animation;
+import flat.backend.WL;
 import flat.events.FocusEvent;
 import flat.events.KeyCode;
 import flat.events.KeyEvent;
@@ -350,7 +351,10 @@ public class Activity extends Controller {
     }
 
     public void invalidate() {
-        invalided = true;
+        if (!invalided) {
+            invalided = true;
+            WL.PostEmptyEvent();
+        }
     }
 
     public void invalidateTheme() {
@@ -360,6 +364,7 @@ public class Activity extends Controller {
 
     public void invalidateWidget(Widget widget) {
         invalidate();
+        if (invalidWidget == scene) return;
         if (invalidWidget != null) {
             if (invalidWidget.isChildOf(widget)) {
                 invalidWidget = widget;

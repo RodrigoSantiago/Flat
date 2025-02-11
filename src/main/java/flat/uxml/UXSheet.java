@@ -48,7 +48,10 @@ public class UXSheet {
             String parentName = style.getParentName();
             if (parentName != null) {
                 var parent = sheet.styles.get(parentName);
-                if (!style.setParent(parent)) {
+                if (parent == null) {
+                    sheet.logs.add(new UXSheetParser.ErroLog(-1, -1
+                            , UXSheetParser.ErroLog.PARENT_NOT_FOUND + " '" + style.getName() + " : " + parentName + "'"));
+                } else if (!style.setParent(parent)) {
                     sheet.logs.add(new UXSheetParser.ErroLog(-1, -1
                             , UXSheetParser.ErroLog.CYCLIC_PARENT + " '" + style.getName() + " : " + parentName + "'"));
                 }

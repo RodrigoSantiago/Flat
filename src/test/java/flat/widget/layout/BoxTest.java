@@ -173,6 +173,47 @@ public class BoxTest {
     }
 
     @Test
+    public void addItself() {
+        Box box = new Box();
+
+        UXChildren uxChild = mock(UXChildren.class);
+
+        assertNull(box.getParent());
+
+        box.add(box);
+
+        assertNull(box.getParent());
+        assertEquals(0, box.getChildrenIterable().size());
+    }
+
+    @Test
+    public void addItsParent() {
+        Box box = new Box();
+        Box parent = new Box();
+
+        UXChildren uxChild = mock(UXChildren.class);
+
+        assertNull(box.getParent());
+        assertNull(parent.getParent());
+
+        parent.add(box);
+
+        assertEquals(parent, box.getParent());
+        assertNull(parent.getParent());
+
+        assertEquals(0, box.getChildrenIterable().size());
+        assertEquals(1, parent.getChildrenIterable().size());
+
+        box.add(parent);
+
+        assertEquals(parent, box.getParent());
+        assertNull(parent.getParent());
+
+        assertEquals(0, box.getChildrenIterable().size());
+        assertEquals(1, parent.getChildrenIterable().size());
+    }
+
+    @Test
     public void measureBox() {
         Box box = new Box();
 

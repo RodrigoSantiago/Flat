@@ -53,8 +53,8 @@ public class Button extends Label {
             return;
         }
 
-        backgroundDraw(context);
-        context.setTransform2D(getTransform());
+        drawBackground(context);
+        drawRipple(context);
 
         final float x = getInX();
         final float y = getInY();
@@ -62,6 +62,8 @@ public class Button extends Label {
         final float height = getInHeight();
 
         if (width <= 0 || height <= 0) return;
+
+        context.setTransform2D(getTransform());
 
         float imgWidth = icon.getWidth();
         float imgHeight = icon.getHeight();

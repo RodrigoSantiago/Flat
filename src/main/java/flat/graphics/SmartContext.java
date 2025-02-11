@@ -142,11 +142,16 @@ public class SmartContext {
 
     public void setTransform2D(Affine transform2D) {
         if (transform2D == null) {
-            this.transform2D.identity();
+            if (!this.transform2D.isIdentity()) {
+                this.transform2D.identity();
+                context.svgTransform(null);
+            }
         } else {
-            this.transform2D.set(transform2D);
+            if (!this.transform2D.isEquals(transform2D)) {
+                this.transform2D.set(transform2D);
+                context.svgTransform(transform2D);
+            }
         }
-        context.svgTransform(transform2D);
     }
 
     public Affine getTransform2D() {

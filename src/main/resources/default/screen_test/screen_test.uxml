@@ -5,24 +5,28 @@
 
         <LinearBox direction="horizontal" width="WRAP_CONTENT" height="WRAP_CONTENT">
             <RadioGroup id="group-1"/>
-            <RadioButton color="red" radio-group-id="group-1" active="true" background-color="#FFFFFF" text="Ola Mundo" icon-transition-duration="0.2" ripple-color="#FF000080"/>
-            <RadioButton color="red" radio-group-id="group-1" active="true" background-color="#FFFFFF" text="Ola Mundo" icon-transition-duration="0.2" ripple-color="#FF000080"/>
-            <RadioButton color="red" radio-group-id="group-1" active="true" background-color="#FFFFFF" text="Ola Mundo" icon-transition-duration="0.2" ripple-color="#FF000080"/>
-            <Checkbox color="red" background-color="#FFFFFF" text="Ola Mundo" icon-transition-duration="0.2" ripple-color="#FF000080"
+            <RadioButton margin-top="4" margin-right="4" margin-left="4" margin-bottom="4" color="red" radio-group-id="group-1" active="true" background-color="#FFFFFF" text="Ola Mundo" icon-transition-duration="0.2" ripple-color="#FF000080"/>
+            <RadioButton margin-top="4" margin-right="4" margin-left="4" margin-bottom="4" color="red" radio-group-id="group-1" active="true" background-color="#FFFFFF" text="Ola Mundo" icon-transition-duration="0.2" ripple-color="#FF000080"/>
+            <RadioButton margin-top="4" margin-right="4" margin-left="4" margin-bottom="4" color="red" radio-group-id="group-1" active="true" background-color="#FFFFFF" text="Ola Mundo" icon-transition-duration="0.2" ripple-color="#FF000080"/>
+            <Checkbox margin-top="4" margin-right="4" margin-left="4" margin-bottom="4" color="red" background-color="#FFFFFF" text="Ola Mundo" icon-transition-duration="0.2" ripple-color="#FF000080"
                 on-selection-state-change="doTheWork"
             />
         </LinearBox>
-        <Switch active="true" background-color="#FFFFFF" icon-transition-duration="0.2" ripple-color="#FF000080" width="200"/>
-        <LinearBox direction="horizontal" width="WRAP_CONTENT" height="WRAP_CONTENT" min-height="200">
-            <ScrollBar direction="ihorizontal" width="200" height="32" color="red" view-dimension="10" total-dimension="50"
-            radius-left="8" radius-right="8" radius-bottom="8" radius-top="8" min-size="0.5"
-            padding-top="4" padding-left="4" padding-bottom="4" padding-right="8"/>
-            <ScrollBar direction="ivertical" height="200" width="32" color="red" view-dimension="10" total-dimension="50"
-                       radius-left="8" radius-right="8" radius-bottom="8" radius-top="8"
-                       padding-top="4" padding-left="4" padding-bottom="5" padding-right="4"/>
+        <LinearBox direction="horizontal" width="WRAP_CONTENT" height="WRAP_CONTENT">
+            <Switch margin-top="4" margin-right="4" margin-left="4" margin-bottom="4"
+                    direction="ihorizontal" color="#000000" active="true" background-color="#FFFFFF" icon-transition-duration="0.2" ripple-color="#FF000080"/>
+            <Switch margin-top="4" margin-right="4" margin-left="4" margin-bottom="4"
+                    direction="ivertical" color="#000000" active="true" background-color="#FFFFFF" icon-transition-duration="0.2" ripple-color="#FF000080"/>
         </LinearBox>
-
-        <ImageView image="/default/img_test.png" width="200" height="100" image-scale="FIT" margin-right="8" horizontal-align="CENTER"/>
+        <ScrollBox width="150" height="150" background-color="yellow" horizontal-bar-id="scr1" vertical-bar-id="scr2"
+        horizontal-position="LEFT" vertical-position="TOP">
+            <LinearBox width="114" height="114" background-color="red" margin-top="16" margin-bottom="16" margin-left="16" margin-right="16">
+                <Button text="Ola Mundo - OLAI" ripple-enabled="true" text-size="12px" margin-top="8"/>
+            </LinearBox>
+            <ScrollBar id="scr1" direction="horizontal" width="MATCH_PARENT" color="red" view-dimension="10" total-dimension="50"/>
+            <ScrollBar id="scr2" direction="vertical" height="MATCH_PARENT" color="red" view-dimension="10" total-dimension="50"/>
+        </ScrollBox>
+        <!--ImageView image="/default/img_test.png" width="200" height="100" image-scale="FIT" margin-right="8" horizontal-align="CENTER"/-->
         <LinearBox direction="vertical" width="MATCH_PARENT" height="300">
             <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
             <Button text="Ola Mundo - OLAI" ripple-enabled="true" text-size="12px" margin-top="8" enabled="false"/>

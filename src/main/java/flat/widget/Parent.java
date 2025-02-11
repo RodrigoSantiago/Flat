@@ -6,7 +6,7 @@ import java.util.List;
 
 public abstract class Parent extends Widget {
 
-    public Parent() {
+    protected Parent() {
         children = new ArrayList<>();
         unmodifiableChildren = Collections.unmodifiableList(children);
     }
@@ -16,23 +16,30 @@ public abstract class Parent extends Widget {
         return super.getChildren();
     }
 
-    // add child - children list unaltered
-    protected void attachChildren(Widget child) {
-        child.setParent(this);
-    }
-
-    // remove child - children list unaltered
-    protected void detachChildren(Widget child) {
-        if (child.parent == this) {
-            child.setParent(null);
+    protected boolean attachChild(Widget child) {
+        if (child == this || this.isChildOf(child)) {
+            return false;
         }
-    }
-
-    protected void add(Widget child) {
-        child.setParent(this);
+        if (child.getParent() != null && !child.getParent().detachChild(child)) {
+            return false;
+        }
         children.add(child);
         invalidateChildrenOrder(null);
         invalidate(true);
+        return true;
+    }
+
+    protected boolean detachChild(Widget child) {
+        children.remove(child);
+        invalidateChildrenOrder(null);
+        invalidate(true);
+        return true;
+    }
+
+    protected void add(Widget child) {
+        if (attachChild(child)) {
+            child.setParent(this);
+        }
     }
 
     protected void add(Widget... children) {
@@ -48,26 +55,15 @@ public abstract class Parent extends Widget {
     }
 
     public void remove(Widget widget) {
-        children.remove(widget);
-        if (widget.parent == this) {
+        if (detachChild(widget)) {
             widget.setParent(null);
         }
-        invalidateChildrenOrder(null);
-        invalidate(true);
     }
 
     public void removeAll() {
-        List<Widget> children = getChildren();
-        if (children != null) {
-            int size;
-            while ((size = children.size()) > 0) {
-                remove(children.get(children.size() - 1));
-
-                if (children.size() >= size) {
-                    // UNEXPECTED ADDITION
-                    break;
-                }
-            }
+        List<Widget> children = new ArrayList<>(getChildren());
+        for (Widget child : children) {
+            remove(child);
         }
     }
 }

@@ -184,8 +184,8 @@ public class Application {
     private static boolean iterateWindows() {
         updateWindowList();
 
-        long now = System.currentTimeMillis();
-        float loopTime = (now - lastLoopTime) / 1000f;
+        long now = System.nanoTime();
+        float loopTime = (now - lastLoopTime) / 1_000_000_000.0f;
         lastLoopTime = now;
 
         boolean anyAnimation = false;

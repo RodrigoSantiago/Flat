@@ -9,6 +9,7 @@ import flat.graphics.SmartContext;
 import flat.graphics.image.Drawable;
 import flat.uxml.*;
 import flat.widget.Widget;
+import flat.widget.enums.Direction;
 import flat.widget.enums.ImageFilter;
 import flat.window.Activity;
 
@@ -24,6 +25,7 @@ public class SwitchToggle extends Widget {
     private int color = Color.white;
     private float iconTransitionDuration;
     private float slideTransitionDuration;
+    private Direction direction = Direction.HORIZONTAL;
 
     private IconChange iconChangeAnimation = new IconChange();
     private IconChange iconSlideAnimation = new IconChange();
@@ -55,10 +57,13 @@ public class SwitchToggle extends Widget {
         setIconActive(attrs.getResourceAsDrawable("icon-active", info, getIconActive(), false));
         setIconTransitionDuration(attrs.getNumber("icon-transition-duration", info, getIconTransitionDuration()));
         setSlideTransitionDuration(attrs.getNumber("slide-transition-duration", info, getSlideTransitionDuration()));
+        setDirection(attrs.getConstant("direction", info, getDirection()));
     }
 
     @Override
     public void onDraw(SmartContext context) {
+        drawBackground(context);
+
         final float x = getInX();
         final float y = getInY();
         final float width = getInWidth();
@@ -71,16 +76,28 @@ public class SwitchToggle extends Widget {
             slide = 1 - slide;
         }
 
-        if (isRippleEnabled()) {
-            float iWidth = Math.min(iconWidth, width);
-            float rXPosA = x + iWidth * 0.5f;
-            float rXPosB = x + width - iWidth * 0.5f;
-            float rXPos = rXPosA * (1 - slide) + rXPosB * slide;
-            getRipple().setSize((float) Math.sqrt(iconWidth * iconWidth + iconHeight * iconHeight) * 0.5f);
-            getRipple().setPosition(rXPos, y + height / 2f);
+        boolean hor = direction == Direction.HORIZONTAL || direction == Direction.IHORIZONTAL;
+        float cx1, cy1, cx2, cy2;
+
+        if (hor) {
+            cx1 = (x + Math.min(iconWidth, width) * 0.5f);
+            cy1 = y + height * 0.5f;
+            cx2 = (x + (width - Math.min(iconWidth, width) * 0.5f));
+            cy2 = y + height * 0.5f;
+
+        } else {
+            cx1 = x + width * 0.5f;
+            cy1 = (y + Math.min(iconHeight, height) * 0.5f);
+            cx2 = x + width * 0.5f;
+            cy2 = (y + (height - Math.min(iconHeight, height) * 0.5f));
+        }
+        if (direction == Direction.IHORIZONTAL || direction == Direction.IVERTICAL) {
+            slide = 1 - slide;
         }
 
-        backgroundDraw(context);
+        float px = cx1 * (1 - slide) + cx2 * slide;
+        float py = cy1 * (1 - slide) + cy2 * slide;
+
         context.setTransform2D(getTransform());
 
         float pos = iconChangeAnimation.isPlaying() ? iconChangeAnimation.getInterpolatedPosition() : 1f;
@@ -94,14 +111,10 @@ public class SwitchToggle extends Widget {
             float icoWidth = Math.min(prevIcon.getWidth(), width);
             float icoHeight = Math.min(prevIcon.getHeight(), height);
 
-            float xPosA = x;
-            float xPosB = x + width - icoWidth;
-            float xOff = xPosA * (1 - slide) + xPosB * slide;
-            float yOff = (y + height - icoHeight) * 0.5f;
             int colorAlpha = Color.multiplyColorAlpha(color, prevAlpha);
             prevIcon.draw(context
-                    , xOff
-                    , yOff
+                    , px - icoWidth * 0.5f
+                    , py - icoHeight * 0.5f
                     , icoWidth, icoHeight, colorAlpha, iconImageFilter);
         }
 
@@ -109,16 +122,17 @@ public class SwitchToggle extends Widget {
             float icoWidth = Math.min(currentIcon.getWidth(), width);
             float icoHeight = Math.min(currentIcon.getHeight(), height);
 
-            float xPosA = x;
-            float xPosB = x + width - icoWidth;
-            float xOff = xPosA * (1 - slide) + xPosB * slide;
-            float yOff = (y + height - icoHeight) * 0.5f;
-
             int colorAlpha = Color.multiplyColorAlpha(color, currentAlpha);
             currentIcon.draw(context
-                    , xOff
-                    , yOff
+                    , px - icoWidth * 0.5f
+                    , py - icoHeight * 0.5f
                     , icoWidth, icoHeight, colorAlpha, iconImageFilter);
+        }
+
+        if (isRippleEnabled()) {
+            getRipple().setSize((hor ? getLayoutHeight() : getLayoutWidth()) * 0.5f);
+            getRipple().setPosition(px, py);
+            drawRipple(context);
         }
     }
 
@@ -131,14 +145,15 @@ public class SwitchToggle extends Widget {
         float mHeight;
         boolean wrapWidth = getLayoutPrefWidth() == WRAP_CONTENT;
         boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
+        boolean hor = direction == Direction.HORIZONTAL || direction == Direction.IHORIZONTAL;
 
         if (wrapWidth) {
-            mWidth = Math.max(iconWidth * 2f + extraWidth, getLayoutMinWidth());
+            mWidth = Math.max(iconWidth * (hor ? 2f : 1f) + extraWidth, getLayoutMinWidth());
         } else {
             mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
         }
         if (wrapHeight) {
-            mHeight = Math.max(iconHeight + extraHeight, getLayoutMinHeight());
+            mHeight = Math.max(iconHeight * (hor ? 1f : 2f) + extraHeight, getLayoutMinHeight());
         } else {
             mHeight = Math.max(getLayoutPrefHeight(), getLayoutMinHeight());
         }
@@ -259,6 +274,19 @@ public class SwitchToggle extends Widget {
         if (this.color != color) {
             this.color = color;
             invalidate(false);
+        }
+    }
+
+    public Direction getDirection() {
+        return direction;
+    }
+
+    public void setDirection(Direction direction) {
+        if (direction == null) direction = Direction.HORIZONTAL;
+
+        if (this.direction != direction) {
+            this.direction = direction;
+            invalidate(true);
         }
     }
 

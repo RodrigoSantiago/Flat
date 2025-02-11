@@ -687,6 +687,7 @@ public class UXSheetParser {
         public static final String INVALID_COLOR = "Invalid color";
         public static final String INVALID_FUNCTION = "Invalid function";
         public static final String NAME_EXPECTED = "Name expected";
+        public static final String PARENT_NOT_FOUND = "Parent Not Found";
         public static final String CYCLIC_PARENT = "Cyclic Parent";
         public static final String REPEATED_STYLE = "Repeated Style";
         public static final String REPEATED_VARIABLE = "Repeated Variable";

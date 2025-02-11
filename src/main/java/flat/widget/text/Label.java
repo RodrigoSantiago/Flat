@@ -28,15 +28,6 @@ public class Label extends Widget {
     private boolean invalidTextSize;
     private float textWidth;
 
-    public Label() {
-
-    }
-
-    public Label(String text) {
-        setText(text);
-
-    }
-
     @Override
     public void applyAttributes(Controller controller) {
         super.applyAttributes(controller);
@@ -87,7 +78,8 @@ public class Label extends Widget {
 
     @Override
     public void onDraw(SmartContext context) {
-        backgroundDraw(context);
+        drawBackground(context);
+        drawRipple(context);
 
         if (showText != null && font != null && textSize > 0 && Color.getAlpha(textColor) > 0) {
             context.setTransform2D(getTransform());

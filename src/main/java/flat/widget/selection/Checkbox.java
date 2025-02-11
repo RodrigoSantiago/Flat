@@ -59,8 +59,8 @@ public class Checkbox extends Widget {
 
     @Override
     public void onDraw(SmartContext context) {
-        backgroundDraw(context);
-        context.setTransform2D(getTransform());
+        drawBackground(context);
+        drawRipple(context);
 
         final float x = getInX();
         final float y = getInY();
@@ -68,6 +68,8 @@ public class Checkbox extends Widget {
         final float height = getInHeight();
 
         if (width <= 0 || height <= 0) return;
+
+        context.setTransform2D(getTransform());
 
         float pos = iconChangeAnimation.isPlaying() ? iconChangeAnimation.getInterpolatedPosition() : 1f;
         float prevAlpha = pos < 0.5f ? 1 : 1 - (pos - 0.5f) / 0.5f;
@@ -79,8 +81,8 @@ public class Checkbox extends Widget {
         if (iconTransitionDuration > 0 && prevIcon != null) {
             float icoWidth = Math.min(prevIcon.getWidth(), width);
             float icoHeight = Math.min(prevIcon.getHeight(), height);
-            float xOff = (x + width - icoWidth) * 0.5f;
-            float yOff = (y + height - icoHeight) * 0.5f;
+            float xOff = x + (width - icoWidth) * 0.5f;
+            float yOff = y + (height - icoHeight) * 0.5f;
             int colorAlpha = Color.multiplyColorAlpha(color, prevAlpha);
             prevIcon.draw(context
                     , xOff
@@ -91,8 +93,8 @@ public class Checkbox extends Widget {
         if (currentIcon != null) {
             float icoWidth = Math.min(currentIcon.getWidth(), width);
             float icoHeight = Math.min(currentIcon.getHeight(), height);
-            float xOff = (x + width - icoWidth) * 0.5f;
-            float yOff = (y + height - icoHeight) * 0.5f;
+            float xOff = x + (width - icoWidth) * 0.5f;
+            float yOff = y + (height - icoHeight) * 0.5f;
             int colorAlpha = Color.multiplyColorAlpha(color, currentAlpha);
             currentIcon.draw(context
                     , xOff

@@ -12,12 +12,8 @@ public class LinearBox extends Box {
     private Direction direction = Direction.HORIZONTAL;
     private VerticalAlign verticalAlign = VerticalAlign.MIDDLE;
     private HorizontalAlign horizontalAlign = HorizontalAlign.CENTER;
-    private ArrayList<Widget> orderedList;
+    private ArrayList<Widget> orderedList = new ArrayList<>();
     private float[] tempSize;
-
-    public LinearBox() {
-        orderedList = new ArrayList<>();
-    }
 
     public Direction getDirection() {
         return direction;
@@ -489,14 +485,20 @@ public class LinearBox extends Box {
     }
     
     @Override
-    public void add(Widget child) {
-        orderedList.add(child);
-        super.add(child);
+    protected boolean attachChild(Widget child) {
+        if (super.attachChild(child)) {
+            orderedList.add(child);
+            return true;
+        }
+        return false;
     }
 
     @Override
-    public void remove(Widget widget) {
-        orderedList.remove(widget);
-        super.remove(widget);
+    protected boolean detachChild(Widget child) {
+        if (super.detachChild(child)) {
+            orderedList.remove(child);
+            return true;
+        }
+        return false;
     }
 }

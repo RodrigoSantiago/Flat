@@ -48,9 +48,9 @@ public class ScrollBarTest {
         assertEquals(0, scrollBar.getTotalDimension(), 0.1f);
         assertEquals(0, scrollBar.getViewDimension(), 0.1f);
         assertEquals(0, scrollBar.getViewOffset(), 0.1f);
-        assertEquals(Direction.VERTICAL, scrollBar.getDirection());
         assertEquals(0f, scrollBar.getMinSize(), 0.0001f);
         assertEquals(0xFFFFFFFF, scrollBar.getColor());
+        assertEquals(Direction.VERTICAL, scrollBar.getDirection());
         assertNull(scrollBar.getSlideListener());
         assertNull(scrollBar.getViewOffsetListener());
 
@@ -60,9 +60,9 @@ public class ScrollBarTest {
         assertEquals(200, scrollBar.getTotalDimension(), 0.1f);
         assertEquals(50, scrollBar.getViewDimension(), 0.1f);
         assertEquals(100, scrollBar.getViewOffset(), 0.1f);
-        assertEquals(Direction.VERTICAL, scrollBar.getDirection());
         assertEquals(0f, scrollBar.getMinSize(), 0.0001f);
         assertEquals(0xFFFFFFFF, scrollBar.getColor());
+        assertEquals(Direction.HORIZONTAL, scrollBar.getDirection());
         assertEquals(action, scrollBar.getSlideListener());
         assertEquals(listener, scrollBar.getViewOffsetListener());
 
@@ -71,9 +71,9 @@ public class ScrollBarTest {
         assertEquals(200, scrollBar.getTotalDimension(), 0.1f);
         assertEquals(50, scrollBar.getViewDimension(), 0.1f);
         assertEquals(100, scrollBar.getViewOffset(), 0.1f);
-        assertEquals(Direction.HORIZONTAL, scrollBar.getDirection());
         assertEquals(0.1f, scrollBar.getMinSize(), 0.0001f);
         assertEquals(0xFF0000FF, scrollBar.getColor());
+        assertEquals(Direction.HORIZONTAL, scrollBar.getDirection());
         assertEquals(action, scrollBar.getSlideListener());
         assertEquals(listener, scrollBar.getViewOffsetListener());
     }

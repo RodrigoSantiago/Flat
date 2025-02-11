@@ -108,7 +108,18 @@ public class Widget {
     private float transitionDuration;
 
     public Widget() {
-        attrs = new UXAttrs(this, getClass().getSimpleName().toLowerCase());
+        attrs = new UXAttrs(this, convertToKebabCase(getClass().getSimpleName()));
+    }
+
+    private static String convertToKebabCase(String camelCase) {
+        if (camelCase == null || camelCase.isEmpty()) {
+            return camelCase;
+        }
+
+        return camelCase
+                .replaceAll("([a-z])([A-Z])", "$1-$2")
+                .replaceAll("([A-Z]+)([A-Z][a-z])", "$1-$2")
+                .toLowerCase();
     }
 
     public void setAttributes(HashMap<Integer, UXValue> attributes, String style) {
@@ -238,19 +249,18 @@ public class Widget {
     }
 
     public void onDraw(SmartContext context) {
-        backgroundDraw(context);
-        childrenDraw(context);
+        drawBackground(context);
+        drawRipple(context);
+        drawChildren(context);
     }
 
-    protected void backgroundDraw(SmartContext context) {
+    protected void drawBackground(SmartContext context) {
         if (bg.width <= 0 || bg.height <= 0) {
-            context.setTransform2D(null);
             return;
         }
 
         float bgOpacity = Color.getOpacity(backgroundColor);
         float borderOpacity = Color.getOpacity(borderColor);
-        float rippleOpacity = Color.getOpacity(rippleColor);
 
         float b = borderWidth * borderOpacity;
         float b2 = b / 2;
@@ -264,16 +274,16 @@ public class Widget {
                     elevation * 2, 0.55f * bgOpacity);
         }
 
-        context.setTransform2D(getTransform());
-
         // Draw Background
         if (bgOpacity > 0) {
+            context.setTransform2D(getTransform());
             context.setColor(backgroundColor);
             context.drawRoundRect(bg, true);
         }
 
         // Draw Border
         if (borderOpacity > 0 && borderWidth > 0) {
+            context.setTransform2D(getTransform());
             context.setColor(borderColor);
             context.setStroker(new BasicStroke(borderWidth));
             context.drawRoundRect(
@@ -281,16 +291,18 @@ public class Widget {
                     bg.arcTop + b2, bg.arcRight + b2, bg.arcBottom + b2, bg.arcLeft + b2,
                     false);
         }
-
-        // Draw Ripple
-        if (rippleOpacity > 0 && rippleEnabled && ripple.isVisible()) {
-            ripple.drawRipple(context, rippleOverflow ? null : bg, rippleColor);
-        }
-
-        context.setTransform2D(null);
     }
 
-    protected void childrenDraw(SmartContext context) {
+    protected void drawRipple(SmartContext context) {
+        float rippleOpacity = Color.getOpacity(rippleColor);
+
+        if (rippleOpacity > 0 && rippleEnabled && ripple.isVisible()) {
+            context.setTransform2D(getTransform());
+            ripple.drawRipple(context, rippleOverflow ? null : bg, rippleColor);
+        }
+    }
+
+    protected void drawChildren(SmartContext context) {
         if (children != null) {
             childSort();
             for (Widget child : getChildrenIterable()) {
@@ -533,16 +545,6 @@ public class Widget {
     }
 
     void setParent(Parent parent) {
-        if (parent == this) parent = null;
-
-        if (this.parent != null && parent != null) {
-            this.parent.remove(this);
-        }
-
-        if (parent != null && parent.isChildOf(this)) {
-            parent.getParent().remove(parent);
-        }
-
         Scene sceneA = getCurrentScene();
         Activity activityA = sceneA == null ? null : sceneA.getActivity();
 
@@ -553,11 +555,18 @@ public class Widget {
 
         if (sceneA != sceneB) {
             onSceneChangeLocal(sceneA, sceneB);
-            onSceneChange(sceneA, sceneB);
         }
 
         if (activityA != activityB) {
             onActivityChangeLocal(activityA, activityB);
+        }
+
+        if (sceneA != sceneB) {
+            onSceneChange(sceneA, sceneB);
+        }
+
+        if (activityA != activityB) {
+            onActivityChange(activityA, activityB);
         }
     }
 
@@ -1635,15 +1644,16 @@ public class Widget {
             float ix;
             float iy;
             if (rippleOverflow) {
-                ix = (inx + inw) * 0.5f;
-                iy = (iny + inh) * 0.5f;
-                float w = Math.max(getLayoutWidth() - getMarginRight() - getMarginLeft(), 0) * 0.5f;
-                float h = Math.max(getLayoutHeight() - getMarginTop() - getMarginBottom(), 0) * 0.5f;
-                ripple.setSize((float) Math.sqrt(w * w + h * h));
+                ix = inx + inw * 0.5f;
+                iy = iny + inh * 0.5f;
+                float w = getLayoutWidth();
+                float h = getLayoutHeight();
+                ripple.setSize((float) Math.sqrt(w * w + h * h) * 0.5f);
+                ripple.setSize(Math.max(getLayoutWidth(), getLayoutHeight()) * 0.5f);
             } else {
                 ix = inverseTransform.pointX(x, y);
                 iy = inverseTransform.pointY(x, y);
-                ripple.setSize(Math.max(getLayoutWidth(), getLayoutHeight()));
+                ripple.setSize(Math.max(getWidth(), getHeight()));
             }
             ripple.fire(ix, iy);
         }

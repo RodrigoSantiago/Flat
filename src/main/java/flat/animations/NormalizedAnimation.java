@@ -9,6 +9,7 @@ public abstract class NormalizedAnimation implements Animation {
     private boolean playing;
     private boolean paused;
     private int loops;
+    private boolean firstAfterPlay;
     private Interpolation interpolation = Interpolation.linear;
 
     private float duration;
@@ -78,6 +79,7 @@ public abstract class NormalizedAnimation implements Animation {
             paused = false;
         }
         _reaming = (_duration * (1 - position));
+        firstAfterPlay = false;
 
         if (activity != null) {
             activity.addAnimation(this);
@@ -136,6 +138,11 @@ public abstract class NormalizedAnimation implements Animation {
     @Override
     public void handle(float time) {
         if (playing) {
+            if (!firstAfterPlay) {
+                firstAfterPlay = true;
+            } else {
+                _reaming -= time * delta;
+            }
             if (_reaming <= 0) {
                 if (_reaming == 0 || _loops == 0) {
                     compute(_interpolation.apply(1));
@@ -151,7 +158,6 @@ public abstract class NormalizedAnimation implements Animation {
             } else {
                 compute(_interpolation.apply(1 - (_reaming / _duration)));
             }
-            _reaming -= time * delta;
         }
     }
 

@@ -63,11 +63,11 @@ public class Controller {
         return true;
     }
 
-    private static class ControllerValueListener<T> implements UXValueListener<T> {
+    public final static class ControllerValueListener<T> implements UXValueListener<T> {
         private WeakReference<Controller> controller;
         private Method method;
 
-        public ControllerValueListener(Controller controller, Method method) {
+        ControllerValueListener(Controller controller, Method method) {
             this.controller = new WeakReference<>(controller);
             this.method = method;
         }
@@ -94,11 +94,11 @@ public class Controller {
         }
     }
 
-    private static class ControllerListener<T> implements UXListener<T> {
+    public final static class ControllerListener<T> implements UXListener<T> {
         private WeakReference<Controller> controller;
         private Method method;
 
-        public ControllerListener(Controller controller, Method method) {
+        ControllerListener(Controller controller, Method method) {
             this.controller = new WeakReference<>(controller);
             this.method = method;
         }

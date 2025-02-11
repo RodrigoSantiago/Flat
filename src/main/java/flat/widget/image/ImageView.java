@@ -66,10 +66,12 @@ public class ImageView extends Widget {
 
     @Override
     public void onDraw(SmartContext context) {
-        backgroundDraw(context);
+        drawBackground(context);
+        drawRipple(context);
 
         float dW = imgWidth;
         float dH = imgHeight;
+
         final float x = getInX();
         final float y = getInY();
         float width = getInWidth();

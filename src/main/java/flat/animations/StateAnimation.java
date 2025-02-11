@@ -15,6 +15,7 @@ public final class StateAnimation implements Animation, StateInfo {
     boolean disabledOverlayed;
 
     float duration;
+    boolean firstTimeAfterPlay;
 
     public StateAnimation(Widget widget) {
         this.widget = widget;
@@ -35,6 +36,10 @@ public final class StateAnimation implements Animation, StateInfo {
     @Override
     public void handle(float time) {
         float pass = time / duration;
+        if (!firstTimeAfterPlay) {
+            pass = 0;
+            firstTimeAfterPlay = true;
+        }
 
         if (tEnabled == 0) fEnabled = Math.max(0, fEnabled - pass);
         else fEnabled = Math.min(1, fEnabled + pass);
@@ -91,6 +96,7 @@ public final class StateAnimation implements Animation, StateInfo {
         setTargetMasks(bitmask);
 
         if (!play && isPlaying()) {
+            firstTimeAfterPlay = false;
             Activity activity = widget.getActivity();
             if (activity != null) {
                 activity.addAnimation(this);

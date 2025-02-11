@@ -7,6 +7,7 @@ import flat.widget.Widget;
 import flat.widget.image.ImageView;
 import flat.widget.layout.Box;
 import flat.widget.layout.LinearBox;
+import flat.widget.layout.ScrollBox;
 import flat.widget.layout.StackBox;
 import flat.widget.selection.Checkbox;
 import flat.widget.selection.RadioButton;
@@ -44,6 +45,7 @@ public class UXBuilder {
         UXBuilder.install("Switch", SwitchToggle::new);
         UXBuilder.install("ImageView", ImageView::new);
         UXBuilder.install("ScrollBar", ScrollBar::new);
+        UXBuilder.install("ScrollBox", ScrollBox::new);
         /*UXBuilder.install("Divider", Divider::new);
         UXBuilder.install("ToggleButton", ToggleButton::new);
         UXBuilder.install("ToggleGroup", RadioGroup::new);
@@ -52,7 +54,6 @@ public class UXBuilder {
         UXBuilder.install("Slider", Slider::new);
         UXBuilder.install("ProgressBar", ProgressBar::new);
         UXBuilder.install("ProgressCircle", ProgressCircle::new);
-        UXBuilder.install("ScrollBox", ScrollBox::new);
         UXBuilder.install("Grid", Grid::new);
         UXBuilder.install("Cell", Cell::new);
         UXBuilder.install("Tab", Tab::new);

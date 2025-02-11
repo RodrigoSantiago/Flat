@@ -31,6 +31,7 @@ public class ScrollBar extends Widget {
         setViewDimension(attrs.getAttributeSize("view-dimension", getViewDimension()));
         setViewOffset(attrs.getAttributeSize("view-offset", getViewOffset()));
         setSlideListener(attrs.getAttributeListener("on-slide", ActionEvent.class, controller));
+        setDirection(attrs.getAttributeConstant("direction", getDirection()));
         setViewOffsetListener(attrs.getAttributeValueListener("on-view-offset-change", Float.class, controller));
     }
 
@@ -40,14 +41,13 @@ public class ScrollBar extends Widget {
 
         UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
-        setDirection(attrs.getConstant("direction", info, getDirection()));
         setMinSize(attrs.getSize("min-size", info, getMinSize()));
         setColor(attrs.getColor("color", info, getColor()));
     }
 
     @Override
     public void onDraw(SmartContext context) {
-        backgroundDraw(context);
+        drawBackground(context);
 
         boolean hor = direction == Direction.HORIZONTAL || direction == Direction.IHORIZONTAL;
         boolean inverse = direction == Direction.IHORIZONTAL || direction == Direction.IVERTICAL;
@@ -56,6 +56,8 @@ public class ScrollBar extends Widget {
         final float y = getInY();
         final float width = getInWidth();
         final float height = getInHeight();
+
+        if (width <= 0 || height <= 0) return;
 
         float w, h, x1, y1, xc, yc;
         float handleSize = totalDimension == 0 ? 1 : Math.max(minSize, Math.min(1, viewDimension / totalDimension));

@@ -53,11 +53,11 @@ button : label {
     }
 }
 
-togglebutton : button {
+toggle-button : button {
 
 }
 
-textfield {
+text-field {
     cursor : ibeam;
     focusable : true;
 
@@ -105,7 +105,7 @@ textfield {
     }
 }
 
-textarea {
+text-area {
     cursor : ibeam;
     focusable : true;
 
@@ -207,10 +207,6 @@ icon : button {
     padding-right : 0;
 }
 
-com.flatfusion : button {
-
-}
-
 raised : button {
 
 }
@@ -226,7 +222,7 @@ floating : button {
 /*
   TextField Styles
 */
-text-outline : textfield {
+text-outline : text-field {
     radius-top : 4;
     radius-right : 4;
     radius-bottom : 4;
@@ -239,15 +235,11 @@ text-outline : textfield {
     border-discret : false;
 }
 
-text-dense : textfield {
-
-}
-
 /*
   Image
 */
 
-imageview {
+image-view {
 
 }
 
@@ -271,7 +263,7 @@ checkbox {
     cursor : hand;
 }
 
-radiobutton {
+radio-button {
     width : 24;
     height : 24;
     ripple-overflow : true;
@@ -282,7 +274,7 @@ radiobutton {
     cursor : hand;
 }
 
-switchtoggle {
+switch-toggle {
     ripple-enabled : true;
     ripple-overflow : true;
     ripple-color : #00000080;
@@ -358,30 +350,20 @@ slider {
     }
 }
 
-scrollbar {
+scroll-bar {
     color : #FF0000;
     background-color : #ACACAC;
-
-    min-range-display : 24;
+    radius-left : 8;
+    radius-right : 8;
+    radius-top : 8;
+    radius-bottom : 8;
+    min-width : 16;
+    min-height : 16;
+    min-range : 0.1;
     transition-duration : 0.1;
-
-    label-font : font("Roboto", bold);
-    label-text-color : #FFFFFF;
-    label-text-size : 32sp;
-    popup-x : -32;
-    popup-y : -68;
-    popup-width : 64;
-    popup-height : 64;
-    popup-radius-top : 32;
-    popup-radius-right : 32;
-    popup-radius-bottom : 0;
-    popup-radius-left : 32;
-    popup-time-out : 0.3;
-
-    linear-flow : ihorizontal;
 }
 
-progressbar {
+progress-bar {
     height : 4;
     width : 240;
     color : #FFFFFF;
@@ -389,7 +371,7 @@ progressbar {
     animation-duration : 3.0;
 }
 
-progresscircle {
+progress-circle {
     height : 48;
     width : 48;
     indicator-size : 4;
@@ -417,7 +399,7 @@ box {
 
 }
 
-linearbox {
+linear-box {
 
 }
 
@@ -425,7 +407,7 @@ grid {
 
 }
 
-scrollbox {
+scroll-box {
     enabled {
         background-color : #FF000000;
     }
@@ -487,11 +469,11 @@ drawer {
     slide-gesture-area : 16;
 }
 
-listview {
+list-view {
 
 }
 
-treeview {
+tree-view {
 
 }
 
@@ -513,7 +495,7 @@ menu {
     background-color : #FFFFFF;
 }
 
-menuitem : label {
+menu-item : label {
     ripple : true;
     ripple-color : #00000080;
     text-size : 14sp;
@@ -535,7 +517,7 @@ menuitem : label {
     }
 }
 
-dropdownmenu : menu {
+dropdown-menu : menu {
 
 }
 
@@ -551,7 +533,7 @@ toolbar {
     elevation : 4;
 }
 
-toolitem {
+toolbar-item {
     ripple : true;
     ripple-color : #00000080;
     ripple-overflow : true;
@@ -577,11 +559,11 @@ toolbar-menu : menu {
     width : 200;
 }
 
-toolbar-menuitem : menuitem {
+toolbar-menuitem : menu-item {
     min-width : 32;
 }
 
-overflowmenu : button {
+overflow-menu : button {
     ripple : true;
     ripple-color : #00000080;
     shadow : false;

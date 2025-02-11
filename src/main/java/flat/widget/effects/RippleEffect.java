@@ -42,12 +42,12 @@ public class RippleEffect {
     }
 
     public void drawRipple(SmartContext context, Shape clip, int color) {
-        float a = (((color & 0xFF) / 255f) * (1 - animation.getInterpolatedPosition()));
+        float a = (((color & 0xFF) / 255f) * (1 - animation.getPosition()));
         colors[0] = (color & 0xFFFFFF00) | ((int) (a * 255));
         colors[1] = (color & 0xFFFFFF00);
 
-        float min = Math.min(16, Math.max(8, ripple.radius * 0.1f));
-        float max = Math.min(360, Math.max(16, ripple.radius));
+        float min = Math.min(16, Math.max(4, ripple.radius * 0.1f));
+        float max = Math.min(360, Math.max(8, ripple.radius));
         float pos = animation.getInterpolatedPosition();
         float radius = (min * (1 - pos)) + max * (pos);
 
@@ -70,7 +70,7 @@ public class RippleEffect {
     }
 
     public void release() {
-        animation.setDelta(2);
+        animation.setDelta(3);
     }
 
     public void stop() {
