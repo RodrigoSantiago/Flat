@@ -43,7 +43,6 @@ public class EventDataMouseButtonTest {
         event.handle(window);
 
         // Assertion
-        verify(window, times(1)).getActivity();
         verify(activity, times(1)).findByPosition(anyFloat(), anyFloat(), anyBoolean());
 
         verify(widget, times(1)).firePointer(argumentCaptor.capture());
@@ -73,7 +72,6 @@ public class EventDataMouseButtonTest {
         event.handle(window);
 
         // Assertion
-        verify(window, times(1)).getActivity();
         verify(activity, times(1)).findByPosition(anyFloat(), anyFloat(), anyBoolean());
 
         verify(widget, times(1)).firePointer(argumentCaptor.capture());
@@ -106,7 +104,6 @@ public class EventDataMouseButtonTest {
         event2.handle(window);
 
         // Assertion
-        verify(window, times(2)).getActivity();
         verify(activity, times(2)).findByPosition(anyFloat(), anyFloat(), anyBoolean());
 
         verify(widget, times(2)).firePointer(argumentCaptor.capture());
@@ -142,7 +139,6 @@ public class EventDataMouseButtonTest {
         event2.handle(window);
 
         // Assertion
-        verify(window, times(2)).getActivity();
         verify(activity, times(2)).findByPosition(anyFloat(), anyFloat(), anyBoolean());
 
         verify(widget, times(1)).firePointer(argumentCaptor.capture());
@@ -178,7 +174,6 @@ public class EventDataMouseButtonTest {
         event2.handle(window);
 
         // Assertion
-        verify(window, times(2)).getActivity();
         verify(activity, times(2)).findByPosition(anyFloat(), anyFloat(), anyBoolean());
 
         verify(widget, times(2)).firePointer(argumentCaptor.capture());

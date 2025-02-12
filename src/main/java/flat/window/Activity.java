@@ -1,10 +1,10 @@
 package flat.window;
 
 import flat.animations.Animation;
-import flat.backend.WL;
 import flat.events.FocusEvent;
 import flat.events.KeyCode;
 import flat.events.KeyEvent;
+import flat.events.PointerEvent;
 import flat.exception.FlatException;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Context;
@@ -21,6 +21,9 @@ public class Activity extends Controller {
     private final ArrayList<Animation> animations = new ArrayList<>();
     private final ArrayList<Animation> animationsAdd = new ArrayList<>();
     private final ArrayList<Animation> animationsRemove = new ArrayList<>();
+    private final ArrayList<Widget> pointerFilters = new ArrayList<>();
+    private final ArrayList<Widget> keyFilters = new ArrayList<>();
+    private final ArrayList<Widget> filtersTemp = new ArrayList<>();
     private Widget focus;
 
     private float width;
@@ -165,6 +168,7 @@ public class Activity extends Controller {
             scene.setTheme(getTheme());
             invalidateWidget(scene);
         }
+        clearUnusedFilters();
     }
 
     void layout(float width, float height) {
@@ -248,14 +252,14 @@ public class Activity extends Controller {
         return true;
     }
 
-    public void drawBackground(SmartContext context) {
+    protected void drawBackground(SmartContext context) {
         context.setAntialiasEnabled(true);
         context.setView(0, 0, (int) getWidth(), (int) getHeight());
         context.clear(scene == null ? 0x0 : scene.getBackgroundColor(), 1, 0);
         context.clearClip();
     }
 
-    public void drawWidgets(SmartContext context) {
+    protected void drawWidgets(SmartContext context) {
         if (scene != null) {
             scene.onDraw(context);
         }
@@ -266,8 +270,69 @@ public class Activity extends Controller {
         drawWidgets(context);
     }
 
-    public void onKeyPress(KeyEvent event) {
-        if (event.getType() == KeyEvent.RELEASED || event.getType() == KeyEvent.REPEATED) {
+    private void clearUnusedFilters() {
+        filtersTemp.addAll(pointerFilters);
+        for (var widget : filtersTemp) {
+            if (widget.getActivity() != this) {
+                removePointerFilter(widget);
+            }
+        }
+        filtersTemp.clear();
+        filtersTemp.addAll(keyFilters);
+        for (var widget : filtersTemp) {
+            if (widget.getActivity() != this) {
+                removePointerFilter(widget);
+            }
+        }
+        filtersTemp.clear();
+    }
+
+    public void addPointerFilter(Widget widget) {
+        if (widget.getActivity() == this && !pointerFilters.contains(widget)) {
+            pointerFilters.add(widget);
+        }
+    }
+
+    public void removePointerFilter(Widget widget) {
+        pointerFilters.remove(widget);
+    }
+
+    public void onPointerFilter(PointerEvent event) {
+        filtersTemp.addAll(pointerFilters);
+        for (var widget : filtersTemp) {
+            if (widget.getActivity() == this && widget != event.getSource()) {
+                widget.firePointer(event);
+                if (event.isConsumed()) {
+                    break;
+                }
+            }
+        }
+        filtersTemp.clear();
+    }
+
+    public void addKeyFilter(Widget widget) {
+        if (widget.getActivity() == this && !keyFilters.contains(widget)) {
+            keyFilters.add(widget);
+        }
+    }
+
+    public void removeKeyFilter(Widget widget) {
+        keyFilters.remove(widget);
+    }
+
+    public void onKeyFilter(KeyEvent event) {
+        filtersTemp.addAll(keyFilters);
+        for (var widget : filtersTemp) {
+            if (widget.getActivity() == this && widget != event.getSource()) {
+                widget.fireKey(event);
+                if (event.isConsumed()) {
+                    break;
+                }
+            }
+        }
+        filtersTemp.clear();
+
+        if (!event.isConsumed()) {
             if (event.getKeycode() == KeyCode.KEY_TAB) {
                 Widget nextFocus;
                 if (getFocus() == null) {
@@ -309,6 +374,10 @@ public class Activity extends Controller {
 
     public Widget getFocus() {
         return focus;
+    }
+
+    public Widget getKeyFocus() {
+        return focus == null ? scene : focus;
     }
 
     boolean animate(float loopTime) {

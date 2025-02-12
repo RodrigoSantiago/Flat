@@ -489,8 +489,8 @@ public class ActivityTest {
         verify(scene, times(1)).setTheme(any());
         assertEquals(scene, activity.getScene());
 
-        activity.onKeyPress(keyEvent);
-        activity.onKeyPress(keyEvent);
+        activity.onKeyFilter(keyEvent);
+        activity.onKeyFilter(keyEvent);
 
         verify(focus1, times(2)).fireFocus(any());
         verify(focus2).fireFocus(any());

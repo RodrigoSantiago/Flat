@@ -1,6 +1,5 @@
 package flat.window.event;
 
-import flat.events.KeyEvent;
 import flat.events.ScrollEvent;
 import flat.widget.Widget;
 import flat.window.Activity;
@@ -37,7 +36,6 @@ public class EventDataMouseScrollTest {
         event.handle(window);
 
         // Assertion
-        verify(window, times(1)).getActivity();
         verify(activity, times(1)).findByPosition(anyFloat(), anyFloat(), anyBoolean());
 
         verify(widget, times(1)).fireScroll(argumentCaptor.capture());

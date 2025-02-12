@@ -623,7 +623,12 @@ public class Widget {
 
     void onActivityChangeLocal(Activity prev, Activity activity) {
         this.activity = activity;
-        refreshFocus();
+        setFocused(false);
+        if (prev != null) {
+            if (prev.getFocus() == this) {
+                prev.setFocus(null);
+            }
+        }
 
         if (children != null) {
             for (Widget widget : getChildrenIterable()) {
@@ -746,17 +751,17 @@ public class Widget {
     }
 
     public void showContextMenu(float x, float y) {
-        if (contextMenu != null) {
-            Activity act = getActivity();
-            if (act != null) {
-                contextMenu.onMeasure();
-                boolean reverseX = contextMenu.getMeasureWidth() + x > act.getWidth();
-                boolean reverseY = contextMenu.getMeasureHeight() + y > act.getHeight();
-                contextMenu.show(act,
-                        reverseX ? x - contextMenu.getMeasureWidth() : x,
-                        reverseY ? y - contextMenu.getMeasureHeight() : y);
-            }
-        }
+        //if (contextMenu != null) {
+        //    Activity act = getActivity();
+        //    if (act != null) {
+        //        contextMenu.onMeasure();
+        //        boolean reverseX = contextMenu.getMeasureWidth() + x > act.getWidth();
+        //        boolean reverseY = contextMenu.getMeasureHeight() + y > act.getHeight();
+        //        contextMenu.show(act,
+        //                reverseX ? x - contextMenu.getMeasureWidth() : x,
+        //                reverseY ? y - contextMenu.getMeasureHeight() : y);
+        //    }
+        //}
     }
 
     public void hideContextMenu() {
@@ -928,18 +933,22 @@ public class Widget {
         if (isFocused() != focused) {
             Activity activity = getActivity();
             if (activity != null) {
-                if (focused) {
-                    if (focusable) {
-                        setStates((byte) (states | FOCUSED.bitset()));
-                        if (activity.getFocus() != this) {
-                            activity.setFocus(this);
-                        }
+                if (focused && focusable) {
+                    setStates((byte) (states | FOCUSED.bitset()));
+                    if (activity.getFocus() != this) {
+                        activity.setFocus(this);
                     }
                 } else {
                     setStates((byte) (states & ~FOCUSED.bitset()));
                     if (activity.getFocus() == this) {
                         activity.setFocus(null);
                     }
+                }
+            } else {
+                if (focused && focusable) {
+                    setStates((byte) (states | FOCUSED.bitset()));
+                } else {
+                    setStates((byte) (states & ~FOCUSED.bitset()));
                 }
             }
         }
@@ -1758,8 +1767,10 @@ public class Widget {
         if (pointerListener != null) {
             pointerListener.handle(pointerEvent);
         }
-        if (parent != null) {
-            parent.firePointer(pointerEvent);
+        if (pointerEvent.getType() != PointerEvent.FILTER) {
+            if (parent != null) {
+                parent.firePointer(pointerEvent);
+            }
         }
     }
 

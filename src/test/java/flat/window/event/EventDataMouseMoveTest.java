@@ -43,7 +43,6 @@ public class EventDataMouseMoveTest {
         EventDataMouseMove.get(20, 30).handle(window);
 
         // Assertion
-        verify(window, times(2)).getActivity();
         verify(activity, times(2)).findByPosition(anyFloat(), anyFloat(), anyBoolean());
 
         verify(widgetA, times(3)).fireHover(argumentCaptor.capture());
@@ -91,7 +90,6 @@ public class EventDataMouseMoveTest {
         EventDataMouseButton.get(1, WLEnums.RELEASE).handle(window);
 
         // Assertion
-        verify(window, times(4)).getActivity();
         verify(activity, times(4)).findByPosition(anyFloat(), anyFloat(), anyBoolean());
 
         verify(widget, times(3)).fireHover(capHover.capture());
@@ -139,7 +137,6 @@ public class EventDataMouseMoveTest {
         EventDataMouseButton.get(1, WLEnums.RELEASE).handle(window);
 
         // Assertion
-        verify(window, times(4)).getActivity();
         verify(activity, times(4)).findByPosition(anyFloat(), anyFloat(), anyBoolean());
 
         verify(widget, times(3)).fireHover(capHover.capture());
@@ -194,7 +191,6 @@ public class EventDataMouseMoveTest {
         EventDataMouseButton.get(2, WLEnums.PRESS).handle(window);
 
         // Assertion
-        verify(window, times(4)).getActivity();
         verify(activity, times(4)).findByPosition(anyFloat(), anyFloat(), anyBoolean());
 
         verify(widget, times(3)).fireHover(capHover.capture());
@@ -206,7 +202,6 @@ public class EventDataMouseMoveTest {
         EventDataMouseButton.get(1, WLEnums.RELEASE).handle(window);
 
         // Assertion2
-        verify(window, times(5)).getActivity();
         verify(activity, times(5)).findByPosition(anyFloat(), anyFloat(), anyBoolean());
 
         verify(widget, times(4)).firePointer(capPointer.capture());
@@ -262,7 +257,6 @@ public class EventDataMouseMoveTest {
         EventDataMouseButton.get(2, WLEnums.RELEASE).handle(window);
 
         // Assertion
-        verify(window, times(4)).getActivity();
         verify(activity, times(4)).findByPosition(anyFloat(), anyFloat(), anyBoolean());
 
         verify(widget, times(3)).fireHover(capHover.capture());
@@ -274,7 +268,6 @@ public class EventDataMouseMoveTest {
         EventDataMouseButton.get(1, WLEnums.RELEASE).handle(window);
 
         // Assertion2
-        verify(window, times(5)).getActivity();
         verify(activity, times(5)).findByPosition(anyFloat(), anyFloat(), anyBoolean());
 
         verify(widget, times(4)).firePointer(capPointer.capture());
@@ -338,7 +331,6 @@ public class EventDataMouseMoveTest {
         EventDataMouseButton.get(1, WLEnums.RELEASE).handle(window);
 
         // Assertion
-        verify(window, times(4)).getActivity();
         verify(activity, times(4)).findByPosition(anyFloat(), anyFloat(), anyBoolean());
 
         verify(widgetA, times(3)).fireHover(capHover.capture());
@@ -405,7 +397,6 @@ public class EventDataMouseMoveTest {
         EventDataMouseButton.get(1, WLEnums.RELEASE).handle(window);
 
         // Assertion
-        verify(window, times(4)).getActivity();
         verify(activity, times(4)).findByPosition(anyFloat(), anyFloat(), anyBoolean());
 
         verify(widgetA, times(3)).fireHover(capHover.capture());
@@ -480,7 +471,6 @@ public class EventDataMouseMoveTest {
         EventDataMouseButton.get(1, WLEnums.RELEASE).handle(window);
 
         // Assertion
-        verify(window, times(4)).getActivity();
         verify(activity, times(4)).findByPosition(anyFloat(), anyFloat(), anyBoolean());
 
         verify(widgetA, times(3)).fireHover(capHover.capture());
@@ -556,7 +546,6 @@ public class EventDataMouseMoveTest {
         EventDataMouseButton.get(1, WLEnums.RELEASE).handle(window);
 
         // Assertion
-        verify(window, times(4)).getActivity();
         verify(activity, times(4)).findByPosition(anyFloat(), anyFloat(), anyBoolean());
 
         verify(widgetA, times(3)).fireHover(capHover.capture());
@@ -632,7 +621,6 @@ public class EventDataMouseMoveTest {
         EventDataMouseButton.get(1, WLEnums.RELEASE).handle(window);
 
         // Assertion
-        verify(window, times(5)).getActivity();
         verify(activity, times(5)).findByPosition(anyFloat(), anyFloat(), anyBoolean());
 
         verify(widgetA, times(5)).fireHover(capHover.capture());
@@ -694,7 +682,6 @@ public class EventDataMouseMoveTest {
         EventDataMouseButton.get(1, WLEnums.RELEASE).handle(window);
 
         // Assertion
-        verify(window, times(4)).getActivity();
         verify(activity, times(4)).findByPosition(anyFloat(), anyFloat(), anyBoolean());
 
         verify(widgetA, times(3)).fireHover(capHover.capture());

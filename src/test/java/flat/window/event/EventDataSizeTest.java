@@ -37,7 +37,6 @@ public class EventDataSizeTest {
         event.handle(window);
 
         // Assertion
-        verify(window, times(1)).getActivity();
         verify(activity, times(1)).invalidate();
     }
 }

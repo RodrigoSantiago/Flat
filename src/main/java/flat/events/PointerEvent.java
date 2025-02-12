@@ -6,6 +6,7 @@ public class PointerEvent extends Event {
     public static final EventType PRESSED = new EventType();
     public static final EventType RELEASED = new EventType();
     public static final EventType DRAGGED = new EventType();
+    public static final EventType FILTER = new EventType();
 
     private float x, y;
     private final int buttonID;
@@ -45,6 +46,7 @@ public class PointerEvent extends Event {
         if (getType() == PRESSED) s.append("[PRESSED]");
         else if (getType() == RELEASED) s.append("[RELEASED]");
         else if (getType() == DRAGGED) s.append("[DRAGGED]");
+        else if (getType() == FILTER) s.append("[FILTER]");
         return s.toString();
     }
 }

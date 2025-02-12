@@ -1,7 +1,9 @@
 package flat.window.event;
 
 import flat.backend.WLEnums;
+import flat.events.PointerEvent;
 import flat.widget.Widget;
+import flat.window.Activity;
 import flat.window.Window;
 
 import java.util.ArrayList;
@@ -50,7 +52,9 @@ public class EventDataMouseButton extends EventData {
 
     private void pressed(Window window, EventDataPointer pointer, Widget widget) {
         if (!pointer.isPressed()) {
-            pointer.setPressed(widget, button);
+            if (pointer.performPressedFilter(window.getActivity(), button)) {
+                pointer.setPressed(widget, button);
+            }
         }
         pointer.performPressed(button);
     }

@@ -27,7 +27,7 @@ public class EventDataKeyTest {
         Widget widget = mock(Widget.class);
 
         when(window.getActivity()).thenReturn(activity);
-        when(activity.getFocus()).thenReturn(widget);
+        when(activity.getKeyFocus()).thenReturn(widget);
         ArgumentCaptor<KeyEvent> argumentCaptor = ArgumentCaptor.forClass(KeyEvent.class);
 
         int keyCode = WLEnums.KEY_A;
@@ -36,8 +36,7 @@ public class EventDataKeyTest {
         event.handle(window);
 
         // Assertion
-        verify(window, times(1)).getActivity();
-        verify(activity, times(1)).getFocus();
+        verify(activity, times(1)).getKeyFocus();
 
         verify(widget, times(1)).fireKey(argumentCaptor.capture());
 
@@ -60,7 +59,7 @@ public class EventDataKeyTest {
         Widget widget = mock(Widget.class);
 
         when(window.getActivity()).thenReturn(activity);
-        when(activity.getFocus()).thenReturn(widget);
+        when(activity.getKeyFocus()).thenReturn(widget);
         ArgumentCaptor<KeyEvent> argumentCaptor = ArgumentCaptor.forClass(KeyEvent.class);
 
         int keyCode = WLEnums.KEY_A;
@@ -69,8 +68,7 @@ public class EventDataKeyTest {
         event.handle(window);
 
         // Assertion
-        verify(window, times(1)).getActivity();
-        verify(activity, times(1)).getFocus();
+        verify(activity, times(1)).getKeyFocus();
 
         verify(widget, times(1)).fireKey(argumentCaptor.capture());
 
@@ -93,7 +91,7 @@ public class EventDataKeyTest {
         Widget widget = mock(Widget.class);
 
         when(window.getActivity()).thenReturn(activity);
-        when(activity.getFocus()).thenReturn(widget);
+        when(activity.getKeyFocus()).thenReturn(widget);
         ArgumentCaptor<KeyEvent> argumentCaptor = ArgumentCaptor.forClass(KeyEvent.class);
 
         int keyCode = WLEnums.KEY_A;
@@ -102,8 +100,7 @@ public class EventDataKeyTest {
         event.handle(window);
 
         // Assertion
-        verify(window, times(1)).getActivity();
-        verify(activity, times(1)).getFocus();
+        verify(activity, times(1)).getKeyFocus();
 
         verify(widget, times(1)).fireKey(argumentCaptor.capture());
 

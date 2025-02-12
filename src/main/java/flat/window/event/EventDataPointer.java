@@ -4,6 +4,7 @@ import flat.events.DragEvent;
 import flat.events.HoverEvent;
 import flat.events.PointerEvent;
 import flat.widget.Widget;
+import flat.window.Activity;
 
 public class EventDataPointer {
     public final int pointerId;
@@ -60,6 +61,12 @@ public class EventDataPointer {
     void setPressed(Widget widget, int button) {
         this.pressed = widget;
         this.pressedButton = button;
+    }
+
+    boolean performPressedFilter(Activity activity, int button) {
+        PointerEvent event = new PointerEvent(pressed, PointerEvent.FILTER, button, x, y);
+        activity.onPointerFilter(event);
+        return !event.isConsumed();
     }
 
     void performPressed(int button) {

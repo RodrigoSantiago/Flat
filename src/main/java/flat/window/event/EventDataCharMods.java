@@ -36,7 +36,7 @@ public class EventDataCharMods extends EventData {
     @Override
     public void handle(Window window) {
         Activity activity = window.getActivity();
-        Widget widget = activity.getFocus();
+        Widget widget = activity.getKeyFocus();
         if (widget != null) {
 
             boolean shift = (mods & (WLEnums.MOD_SHIFT)) != 0;

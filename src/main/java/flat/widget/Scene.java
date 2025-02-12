@@ -1,11 +1,13 @@
 package flat.widget;
 
+import flat.events.PointerEvent;
 import flat.graphics.SmartContext;
 import flat.widget.enums.Visibility;
 import flat.widget.layout.Box;
 import flat.window.Activity;
 import flat.window.ActivityScene;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Scene extends Box {

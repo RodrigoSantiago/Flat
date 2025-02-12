@@ -7,6 +7,7 @@ public class KeyEvent extends Event {
     public static final EventType REPEATED = new EventType();
     public static final EventType RELEASED = new EventType();
     public static final EventType TYPED = new EventType();
+    public static final EventType FILTER = new EventType();
 
     private boolean shift, ctrl, alt, spr;
     private String chr;
@@ -53,6 +54,7 @@ public class KeyEvent extends Event {
         else if (getType() == REPEATED) s.append("[REPEATED]");
         else if (getType() == RELEASED) s.append("[RELEASED]");
         else if (getType() == TYPED) s.append("[TYPED]");
+        else if (getType() == FILTER) s.append("[FILTER]");
         s.append(" [").append(keycode).append("], [CHAR:").append("\n".equals(chr) ? "\n" : chr).append("]");
 
         if (shift) s.append(", [").append("SHIFT").append("]");
