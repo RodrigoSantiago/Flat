@@ -29,6 +29,14 @@ public abstract class Parent extends Widget {
         return true;
     }
 
+    protected boolean attachAndAddChild(Widget child) {
+        if (attachChild(child)) {
+            child.setParent(this);
+            return true;
+        }
+        return false;
+    }
+
     protected boolean detachChild(Widget child) {
         children.remove(child);
         invalidateChildrenOrder(null);
@@ -36,10 +44,16 @@ public abstract class Parent extends Widget {
         return true;
     }
 
-    protected void add(Widget child) {
-        if (attachChild(child)) {
-            child.setParent(this);
+    protected boolean detachAndRemoveChild(Widget widget) {
+        if (detachChild(widget)) {
+            widget.setParent(null);
+            return true;
         }
+        return false;
+    }
+
+    protected void add(Widget child) {
+        attachAndAddChild(child);
     }
 
     protected void add(Widget... children) {
@@ -55,9 +69,7 @@ public abstract class Parent extends Widget {
     }
 
     public void remove(Widget widget) {
-        if (detachChild(widget)) {
-            widget.setParent(null);
-        }
+        detachAndRemoveChild(widget);
     }
 
     public void removeAll() {

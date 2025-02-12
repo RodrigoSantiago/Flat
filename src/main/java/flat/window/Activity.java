@@ -163,7 +163,6 @@ public class Activity extends Controller {
         if (invalidTheme) {
             invalidTheme = false;
             scene.setTheme(getTheme());
-            scene.applyTheme();
             invalidateWidget(scene);
         }
     }
@@ -353,7 +352,6 @@ public class Activity extends Controller {
     public void invalidate() {
         if (!invalided) {
             invalided = true;
-            WL.PostEmptyEvent();
         }
     }
 

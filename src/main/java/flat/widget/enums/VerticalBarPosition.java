@@ -1,5 +1,5 @@
 package flat.widget.enums;
 
-public enum HorizontalPosition {
+public enum VerticalBarPosition {
     LEFT, RIGHT
 }

@@ -122,14 +122,14 @@ public class ActivityTest {
         assertNull(activity.getScene());
 
         activity.show();
-        verify(scene1, times(1)).applyTheme();
+        verify(scene1, times(1)).setTheme(any());
         assertEquals(scene1, activity.getScene());
 
         activity.setScene(scene2);
         assertEquals(scene1, activity.getScene());
 
         activity.refreshScene();
-        verify(scene2, times(1)).applyTheme();
+        verify(scene2, times(1)).setTheme(any());
         assertEquals(scene2, activity.getScene());
     }
 
@@ -163,7 +163,7 @@ public class ActivityTest {
         assertNull(activity.getScene());
 
         activity.show();
-        verify(scene1, times(1)).applyTheme();
+        verify(scene1, times(1)).setTheme(any());
         assertEquals(theme1, activity.getTheme());
         assertEquals(scene1, activity.getScene());
 
@@ -171,7 +171,7 @@ public class ActivityTest {
         assertEquals(scene1, activity.getScene());
 
         activity.refreshScene();
-        verify(scene2, times(1)).applyTheme();
+        verify(scene2, times(1)).setTheme(any());
         assertEquals(scene2, activity.getScene());
     }
 
@@ -203,7 +203,7 @@ public class ActivityTest {
         verify(scene).onMeasure();
         verify(scene).onLayout(200f, 100f);
 
-        verify(scene, times(1)).applyTheme();
+        verify(scene, times(1)).setTheme(any());
         assertEquals(scene, activity.getScene());
 
         activity.layout(200f, 100f);
@@ -246,7 +246,7 @@ public class ActivityTest {
         assertNull(activity.getScene());
 
         activity.show();
-        verify(scene, times(1)).applyTheme();
+        verify(scene, times(1)).setTheme(any());
         assertEquals(scene, activity.getScene());
 
         activity.draw(smartContext);
@@ -282,7 +282,7 @@ public class ActivityTest {
         assertNull(activity.getScene());
 
         activity.show();
-        verify(scene, times(1)).applyTheme();
+        verify(scene, times(1)).setTheme(any());
         assertEquals(scene, activity.getScene());
 
         activity.addAnimation(animation);
@@ -336,7 +336,7 @@ public class ActivityTest {
         assertNull(activity.findById(findId));
 
         activity.show();
-        verify(scene, times(1)).applyTheme();
+        verify(scene, times(1)).setTheme(any());
         assertEquals(scene, activity.getScene());
 
         Widget found = activity.findById(findId);
@@ -366,7 +366,7 @@ public class ActivityTest {
         assertNull(activity.findByPosition(10, 20, true));
 
         activity.show();
-        verify(scene, times(1)).applyTheme();
+        verify(scene, times(1)).setTheme(any());
         assertEquals(scene, activity.getScene());
 
         Widget found = activity.findByPosition(10, 20, true);
@@ -396,7 +396,7 @@ public class ActivityTest {
         assertNull(activity.findFocused());
 
         activity.show();
-        verify(scene, times(1)).applyTheme();
+        verify(scene, times(1)).setTheme(any());
         assertEquals(scene, activity.getScene());
 
         Widget found = activity.findFocused();
@@ -425,22 +425,22 @@ public class ActivityTest {
         assertFalse(activity.isListening());
 
         activity.show();
-        verify(scene, times(1)).applyTheme();
+        verify(scene, times(1)).setTheme(any());
         assertEquals(scene, activity.getScene());
         assertFalse(activity.isListening());
 
         activity.start();
-        verify(scene, times(1)).applyTheme();
+        verify(scene, times(1)).setTheme(any());
         assertEquals(scene, activity.getScene());
         assertTrue(activity.isListening());
 
         activity.pause();
-        verify(scene, times(1)).applyTheme();
+        verify(scene, times(1)).setTheme(any());
         assertEquals(scene, activity.getScene());
         assertFalse(activity.isListening());
 
         activity.hide();
-        verify(scene, times(1)).applyTheme();
+        verify(scene, times(1)).setTheme(any());
         assertEquals(scene, activity.getScene());
         assertFalse(activity.isListening());
     }
@@ -486,7 +486,7 @@ public class ActivityTest {
         assertNull(activity.getScene());
 
         activity.show();
-        verify(scene, times(1)).applyTheme();
+        verify(scene, times(1)).setTheme(any());
         assertEquals(scene, activity.getScene());
 
         activity.onKeyPress(keyEvent);

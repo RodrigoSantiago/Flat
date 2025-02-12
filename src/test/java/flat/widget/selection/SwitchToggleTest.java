@@ -7,6 +7,7 @@ import flat.resources.ResourceStream;
 import flat.uxml.*;
 import flat.uxml.value.*;
 import flat.widget.Widget;
+import flat.widget.enums.Direction;
 import flat.widget.enums.ImageFilter;
 import org.junit.Before;
 import org.junit.Test;
@@ -71,6 +72,7 @@ public class SwitchToggleTest {
         assertEquals(0, switchToggle.getIconTransitionDuration(), 0.0001f);
         assertEquals(0, switchToggle.getSlideTransitionDuration(), 0.0001f);
         assertEquals(0xFFFFFFFF, switchToggle.getColor());
+        assertEquals(Direction.HORIZONTAL, switchToggle.getDirection());
         assertEquals(ImageFilter.LINEAR, switchToggle.getIconImageFilter());
         assertFalse(switchToggle.isActive());
         assertNull(switchToggle.getToggleListener());
@@ -84,6 +86,7 @@ public class SwitchToggleTest {
         assertEquals(0, switchToggle.getIconTransitionDuration(), 0.0001f);
         assertEquals(0, switchToggle.getSlideTransitionDuration(), 0.0001f);
         assertEquals(0xFFFFFFFF, switchToggle.getColor());
+        assertEquals(Direction.HORIZONTAL, switchToggle.getDirection());
         assertEquals(ImageFilter.LINEAR, switchToggle.getIconImageFilter());
         assertTrue(switchToggle.isActive());
         assertEquals(action, switchToggle.getToggleListener());
@@ -96,6 +99,7 @@ public class SwitchToggleTest {
         assertEquals(1.0f, switchToggle.getIconTransitionDuration(), 0.0001f);
         assertEquals(2.0f, switchToggle.getSlideTransitionDuration(), 0.0001f);
         assertEquals(0xFF0000FF, switchToggle.getColor());
+        assertEquals(Direction.VERTICAL, switchToggle.getDirection());
         assertEquals(ImageFilter.NEAREST, switchToggle.getIconImageFilter());
         assertTrue(switchToggle.isActive());
         assertEquals(action, switchToggle.getToggleListener());
@@ -103,10 +107,11 @@ public class SwitchToggleTest {
     }
 
     @Test
-    public void measure() {
+    public void measureHorizontal() {
         SwitchToggle switchToggle = new SwitchToggle();
         switchToggle.setIconActive(iconActive);
         switchToggle.setIconInactive(iconInactive);
+        switchToggle.setDirection(Direction.HORIZONTAL);
         switchToggle.setActive(true);
         switchToggle.onMeasure();
 
@@ -119,6 +124,38 @@ public class SwitchToggleTest {
 
         assertEquals(40 + 13, switchToggle.getMeasureWidth(), 0.1f);
         assertEquals(20 + 11, switchToggle.getMeasureHeight(), 0.1f);
+
+        switchToggle.setPrefSize(100, 200);
+        switchToggle.onMeasure();
+
+        assertEquals(106, switchToggle.getMeasureWidth(), 0.1f);
+        assertEquals(204, switchToggle.getMeasureHeight(), 0.1f);
+
+        switchToggle.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
+        switchToggle.onMeasure();
+
+        assertEquals(Widget.MATCH_PARENT, switchToggle.getMeasureWidth(), 0.1f);
+        assertEquals(Widget.MATCH_PARENT, switchToggle.getMeasureHeight(), 0.1f);
+    }
+
+    @Test
+    public void measureVertical() {
+        SwitchToggle switchToggle = new SwitchToggle();
+        switchToggle.setIconActive(iconActive);
+        switchToggle.setIconInactive(iconInactive);
+        switchToggle.setDirection(Direction.VERTICAL);
+        switchToggle.setActive(true);
+        switchToggle.onMeasure();
+
+        assertEquals(20, switchToggle.getMeasureWidth(), 0.1f);
+        assertEquals(40, switchToggle.getMeasureHeight(), 0.1f);
+
+        switchToggle.setMargins(1, 2, 3, 4);
+        switchToggle.setPadding(5, 4, 2, 3);
+        switchToggle.onMeasure();
+
+        assertEquals(20 + 13, switchToggle.getMeasureWidth(), 0.1f);
+        assertEquals(40 + 11, switchToggle.getMeasureHeight(), 0.1f);
 
         switchToggle.setPrefSize(100, 200);
         switchToggle.onMeasure();
@@ -171,6 +208,7 @@ public class SwitchToggleTest {
         hash.put(UXHash.getHash("on-toggle"), new UXValueText("onActionWork"));
         hash.put(UXHash.getHash("on-active-change"), new UXValueText("onActiveWork"));
         hash.put(UXHash.getHash("color"), new UXValueColor(0xFF0000FF));
+        hash.put(UXHash.getHash("direction"), new UXValueText(Direction.VERTICAL.toString()));
         hash.put(UXHash.getHash("icon-image-filter"), new UXValueText(ImageFilter.NEAREST.toString()));
         hash.put(UXHash.getHash("icon-active"), uxIconActive);
         hash.put(UXHash.getHash("icon-inactive"), uxIconInactive);

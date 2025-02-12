@@ -47,6 +47,16 @@ public class MainActivity extends Activity {
         System.out.println("From : " + change.getOldValue() + ", To : " + change.getValue());
     }
 
+    @Flat
+    public void slideBar(ActionEvent event) {
+        System.out.println("Slide");
+    }
+
+    @Flat
+    public void slideChange(ValueChange<Float> change) {
+        System.out.println("From : " + change.getOldValue() + ", To : " + change.getValue());
+    }
+
     @Override
     public void onShow() {
     }

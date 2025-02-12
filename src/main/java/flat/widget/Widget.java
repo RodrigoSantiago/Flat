@@ -129,7 +129,6 @@ public class Widget {
 
     public void applyAttributes(Controller controller) {
         UXAttrs attrs = getAttrs();
-        attrs.setTheme(getCurrentTheme());
 
         setEnabled(attrs.getAttributeBool("enabled", isEnabled()));
 
@@ -237,14 +236,16 @@ public class Widget {
     }
 
     public void applyTheme() {
-        attrs.setTheme(getCurrentTheme());
-        applyStyle();
+        if (attrs.getTheme() != getCurrentTheme()) {
+            attrs.setTheme(getCurrentTheme());
+            applyStyle();
 
-        for (Widget child : getChildrenIterable()) {
-            child.applyTheme();
-        }
-        if (contextMenu != null) {
-            contextMenu.applyTheme();
+            for (Widget child : getChildrenIterable()) {
+                child.applyTheme();
+            }
+            if (contextMenu != null) {
+                contextMenu.applyTheme();
+            }
         }
     }
 
@@ -510,6 +511,7 @@ public class Widget {
     public void setTheme(UXTheme theme) {
         if (this.theme != theme) {
             this.theme = theme;
+            applyTheme();
 
             invalidate(true);
         }
@@ -545,13 +547,19 @@ public class Widget {
     }
 
     void setParent(Parent parent) {
+        UXTheme themeA = getCurrentTheme();
         Scene sceneA = getCurrentScene();
         Activity activityA = sceneA == null ? null : sceneA.getActivity();
 
         this.parent = parent;
 
+        UXTheme themeB = getCurrentTheme();
         Scene sceneB = getCurrentScene();
         Activity activityB = sceneB == null ? null : sceneB.getActivity();
+
+        if (themeA != themeB) {
+            applyTheme();
+        }
 
         if (sceneA != sceneB) {
             onSceneChangeLocal(sceneA, sceneB);
@@ -800,6 +808,17 @@ public class Widget {
     public void setStyle(String style) {
         if (!Objects.equals(this.attrs.getName(), style)) {
             attrs.setName(style);
+            applyStyle();
+        }
+    }
+
+    public String getBaseStyle() {
+        return this.attrs.getBase();
+    }
+
+    public void setBaseStyle(String style) {
+        if (!Objects.equals(this.attrs.getBase(), style)) {
+            attrs.setBase(style);
             applyStyle();
         }
     }

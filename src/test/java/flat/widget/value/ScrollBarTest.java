@@ -8,7 +8,6 @@ import flat.uxml.value.UXValueNumber;
 import flat.uxml.value.UXValueText;
 import flat.widget.Widget;
 import flat.widget.enums.Direction;
-import flat.widget.enums.SelectionState;
 import org.junit.Before;
 import org.junit.Test;
 

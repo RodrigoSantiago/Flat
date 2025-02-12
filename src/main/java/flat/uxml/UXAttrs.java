@@ -17,7 +17,7 @@ import java.util.Objects;
 public class UXAttrs {
 
     private final Widget widget;
-    private final String base;
+    private String base;
     private String name;
     private Activity activity;
     private UXTheme theme;
@@ -32,7 +32,7 @@ public class UXAttrs {
     }
 
     public void setName(String name) {
-        if (!Objects.equals(this.name, name) && !Objects.equals(this.base, name)) {
+        if (!Objects.equals(this.name, name)) {
             this.name = name;
             updateStyle();
         }
@@ -40,6 +40,13 @@ public class UXAttrs {
 
     public String getName() {
         return name;
+    }
+
+    public void setBase(String base) {
+        if (!Objects.equals(this.base, base)) {
+            this.base = base;
+            updateStyle();
+        }
     }
 
     public String getBase() {
@@ -70,8 +77,8 @@ public class UXAttrs {
     }
 
     private void updateStyle() {
-        this.style = theme != null ? theme.getStyle(name) : null;
         this.baseStyle = theme != null ? theme.getStyle(base) : null;
+        this.style = theme != null && !Objects.equals(base, name) ? theme.getStyle(name) : null;
     }
 
     public boolean contains(String name) {
