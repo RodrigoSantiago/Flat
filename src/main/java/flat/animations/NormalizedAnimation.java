@@ -61,6 +61,9 @@ public abstract class NormalizedAnimation implements Animation {
     }
 
     public void play(Activity activity) {
+        if (activity == null) {
+            return;
+        }
         play(activity, 0);
     }
 
@@ -81,9 +84,7 @@ public abstract class NormalizedAnimation implements Animation {
         _reaming = (_duration * (1 - position));
         firstAfterPlay = false;
 
-        if (activity != null) {
-            activity.addAnimation(this);
-        }
+        activity.addAnimation(this);
     }
 
     public void pause() {

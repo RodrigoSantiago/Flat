@@ -1,23 +1,16 @@
 package flat.widget;
 
-import flat.events.PointerEvent;
 import flat.graphics.SmartContext;
+import flat.uxml.UXChildren;
 import flat.widget.enums.Visibility;
-import flat.widget.layout.Box;
 import flat.window.Activity;
 import flat.window.ActivityScene;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
 
-public class Scene extends Box {
+public class Scene extends Group {
 
     ActivityScene activityScene;
-    HashMap<String, Widget> idMap = new HashMap<>();
-
-    public Scene() {
-
-    }
 
     public ActivityScene getActivityScene() {
         if (activityScene == null) {
@@ -27,40 +20,47 @@ public class Scene extends Box {
     }
 
     @Override
-    protected Activity getCurrentActivity() {
-        if (activityScene.getActivity() != null) {
+    public Activity getActivity() {
+        if (activityScene != null && activityScene.getActivity() != null) {
             return activityScene.getActivity();
         } else {
-            return super.getCurrentActivity();
+            return super.getActivity();
         }
     }
 
     @Override
-    protected void childInvalidate(Widget child, boolean source) {
-        if (getParent() == null) {
-            Activity activity = getActivity();
-            if (activity != null) {
-                activity.invalidateWidget(source ? this : child);
-            }
-        } else {
-            super.childInvalidate(child, source);
+    public void applyChildren(UXChildren children) {
+        super.applyChildren(children);
+
+        Widget widget;
+        while ((widget = children.next()) != null ) {
+            add(widget);
         }
     }
 
     @Override
-    public void invalidate(boolean layout) {
-        if (getParent() == null) {
-            Activity activity = getActivity();
-            if (activity != null) {
-                if (!layout) {
-                    activity.invalidate();
-                } else {
-                    activity.invalidateWidget(this);
-                }
-            }
-        } else {
-            super.invalidate(layout);
-        }
+    public void onMeasure() {
+        performMeasureStack();
+    }
+
+    @Override
+    public void onLayout(float width, float height) {
+        performLayoutFree(width, height);
+    }
+
+    @Override
+    public void add(Widget child) {
+        super.add(child);
+    }
+
+    @Override
+    public void add(Widget... children) {
+        super.add(children);
+    }
+
+    @Override
+    public void add(List<Widget> children) {
+        super.add(children);
     }
 
     @Override
@@ -69,55 +69,4 @@ public class Scene extends Box {
             super.onDraw(context);
         }
     }
-
-    @Override
-    public Scene getScene() {
-        return this;
-    }
-
-    @Override
-    protected Scene getCurrentScene() {
-        return this;
-    }
-
-    @Override
-    public Widget findById(String id) {
-        return idMap.get(id);
-    }
-
-    final void assign(Widget widget) {
-        String id = widget.getId();
-        if (id != null) {
-            idMap.put(id, widget);
-        }
-        if (!(widget instanceof Scene) && widget.children != null) {
-            for (Widget child : widget.getChildrenIterable()) {
-                assign(child);
-            }
-        }
-    }
-
-    final void unassign(Widget widget) {
-        String id = widget.getId();
-        if (id != null) {
-            idMap.remove(id, widget);
-        }
-        if (!(widget instanceof Scene) && widget.children != null) {
-            for (Widget child : widget.getChildrenIterable()) {
-                unassign(child);
-            }
-        }
-    }
-
-    final void reassign(String oldId, Widget widget) {
-        if (idMap.get(oldId) == widget) {
-            idMap.remove(oldId);
-        }
-
-        String newID = widget.getId();
-        if (newID != null) {
-            idMap.put(newID, widget);
-        }
-    }
-
 }

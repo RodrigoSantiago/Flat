@@ -27,8 +27,8 @@ public class SwitchToggle extends Widget {
     private float slideTransitionDuration;
     private Direction direction = Direction.HORIZONTAL;
 
-    private IconChange iconChangeAnimation = new IconChange();
-    private IconChange iconSlideAnimation = new IconChange();
+    private final IconChange iconChangeAnimation = new IconChange();
+    private final IconChange iconSlideAnimation = new IconChange();
     private Drawable prevIcon;
     private Drawable currentIcon;
     private float iconWidth;
@@ -75,6 +75,9 @@ public class SwitchToggle extends Widget {
         if (!active) {
             slide = 1 - slide;
         }
+        if (direction == Direction.HORIZONTAL || direction == Direction.VERTICAL) {
+            slide = 1 - slide;
+        }
 
         boolean hor = direction == Direction.HORIZONTAL || direction == Direction.IHORIZONTAL;
         float cx1, cy1, cx2, cy2;
@@ -90,9 +93,6 @@ public class SwitchToggle extends Widget {
             cy1 = (y + Math.min(iconHeight, height) * 0.5f);
             cx2 = x + width * 0.5f;
             cy2 = (y + (height - Math.min(iconHeight, height) * 0.5f));
-        }
-        if (direction == Direction.IHORIZONTAL || direction == Direction.IVERTICAL) {
-            slide = 1 - slide;
         }
 
         float px = cx1 * (1 - slide) + cx2 * slide;

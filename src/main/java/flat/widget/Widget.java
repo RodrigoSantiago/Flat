@@ -57,7 +57,7 @@ public class Widget {
     //---------------------
     Parent parent;
     Activity activity;
-    Scene scene;
+    Group group;
     ArrayList<Widget> children;
     List<Widget> unmodifiableChildren;
     boolean invalidChildrenOrder;
@@ -232,20 +232,6 @@ public class Widget {
         Menu menu = children.nextMenu();
         if (menu != null) {
             setContextMenu(menu);
-        }
-    }
-
-    public void applyTheme() {
-        if (attrs.getTheme() != getCurrentTheme()) {
-            attrs.setTheme(getCurrentTheme());
-            applyStyle();
-
-            for (Widget child : getChildrenIterable()) {
-                child.applyTheme();
-            }
-            if (contextMenu != null) {
-                contextMenu.applyTheme();
-            }
         }
     }
 
@@ -425,27 +411,26 @@ public class Widget {
         }
     }
 
-    protected void childInvalidate(Widget child, boolean source) {
-        if (parent != null) {
-            if (source) {
-                if (getPrefWidth() == WRAP_CONTENT || getPrefHeight() == WRAP_CONTENT) {
-                    parent.childInvalidate(this, true);
-                } else {
-                    parent.childInvalidate(this, false);
-                }
+    protected void childInvalidate(Widget child) {
+        if (activity != null) {
+            if (getPrefWidth() == WRAP_CONTENT || getPrefHeight() == WRAP_CONTENT) {
+                invalidate(true);
             } else {
-                parent.childInvalidate(child, false);
+                activity.invalidateWidget(this);
             }
         }
     }
 
-    // TODO - Some widgets are using TRUE when the widget is NOT WRAP_CONTENT!
     public void invalidate(boolean layout) {
-        if (parent != null) {
+        if (activity != null) {
             if (layout) {
-                parent.childInvalidate(this, true);
+                if (parent != null) {
+                    parent.childInvalidate(this);
+                } else {
+                    activity.invalidateWidget(this);
+                }
             } else {
-                parent.invalidate(false);
+                activity.invalidate();
             }
         }
     }
@@ -486,21 +471,9 @@ public class Widget {
         if (!Objects.equals(this.id, id)) {
             String oldId = this.id;
             this.id = id;
-            Scene scene = getScene();
-            if (scene == this) {
-                scene = scene.getScene();
+            if (group != null) {
+                group.reassign(oldId, this);
             }
-            if (scene != null) {
-                scene.reassign(oldId, this);
-            }
-        }
-    }
-
-    protected Activity getCurrentActivity() {
-        if (parent != null) {
-            return parent.getCurrentActivity();
-        } else {
-            return null;
         }
     }
 
@@ -511,9 +484,7 @@ public class Widget {
     public void setTheme(UXTheme theme) {
         if (this.theme != theme) {
             this.theme = theme;
-            applyTheme();
-
-            invalidate(true);
+            onThemeChangeLocal();
         }
     }
 
@@ -526,20 +497,16 @@ public class Widget {
     }
 
     /**
-     * Return the current assigned scene
+     * Return the current assigned group
      *
      * @return
      */
-    public Scene getScene() {
-        return scene;
+    public Group getGroup() {
+        return group;
     }
 
-    protected Scene getCurrentScene() {
-        if (parent != null) {
-            return parent.getCurrentScene();
-        } else {
-            return null;
-        }
+    protected Group getCurrentOrGroup() {
+        return group;
     }
 
     public Parent getParent() {
@@ -548,81 +515,60 @@ public class Widget {
 
     void setParent(Parent parent) {
         UXTheme themeA = getCurrentTheme();
-        Scene sceneA = getCurrentScene();
-        Activity activityA = sceneA == null ? null : sceneA.getActivity();
+        Group groupA = getGroup();
+        Activity activityA = getActivity();
 
         this.parent = parent;
 
-        UXTheme themeB = getCurrentTheme();
-        Scene sceneB = getCurrentScene();
-        Activity activityB = sceneB == null ? null : sceneB.getActivity();
+        Group groupB = parent == null ? null : parent.getCurrentOrGroup();
+        Activity activityB = parent == null ? null : parent.getActivity();
 
-        if (themeA != themeB) {
-            applyTheme();
-        }
-
-        if (sceneA != sceneB) {
-            onSceneChangeLocal(sceneA, sceneB);
+        if (groupA != groupB) {
+            onGroupChangeLocal(groupA, groupB);
         }
 
         if (activityA != activityB) {
             onActivityChangeLocal(activityA, activityB);
         }
 
-        if (sceneA != sceneB) {
-            onSceneChange(sceneA, sceneB);
+        if (groupA != groupB) {
+            onGroupChange(groupA, groupB);
         }
 
         if (activityA != activityB) {
             onActivityChange(activityA, activityB);
         }
+
+        UXTheme themeB = getCurrentTheme();
+        if (themeA != themeB) {
+            onThemeChangeLocal();
+        }
     }
 
-    public void onSceneChange(Scene prev, Scene scene) {
-        if (children != null) {
+    public void onGroupChange(Group prev, Group current) {
+        if (getCurrentOrGroup() != this && children != null) {
             for (Widget widget : getChildrenIterable()) {
-                widget.onSceneChange(prev, scene);
+                widget.onGroupChange(prev, current);
             }
         }
-
-        if (contextMenu != null) {
-            contextMenu.onSceneChange(prev, scene);
-        }
     }
 
-    void onSceneChangeLocal(Scene prev, Scene scene) {
-        this.scene = scene;
+    void onGroupChangeLocal(Group prev, Group current) {
+        this.group = current;
         if (prev != null) {
             prev.unassign(this);
         }
-        if (scene != null) {
-            scene.assign(this);
+        if (current != null) {
+            current.assign(this);
         }
-        if (children != null) {
+        if (getCurrentOrGroup() != this && children != null) {
             for (Widget widget : getChildrenIterable()) {
-                widget.onSceneChangeLocal(prev, scene);
+                widget.onGroupChangeLocal(prev, current);
             }
-        }
-
-        if (contextMenu != null) {
-            ((Widget)contextMenu).onSceneChangeLocal(prev, scene);
         }
     }
 
-    public void onActivityChange(Activity prev, Activity activity) {
-        if (children != null) {
-            for (Widget widget : getChildrenIterable()) {
-                widget.onActivityChange(prev, activity);
-            }
-        }
-
-        if (contextMenu != null) {
-            contextMenu.onActivityChange(prev, activity);
-        }
-    }
-
-    void onActivityChangeLocal(Activity prev, Activity activity) {
-        this.activity = activity;
+    public void onActivityChange(Activity prev, Activity current) {
         setFocused(false);
         if (prev != null) {
             if (prev.getFocus() == this) {
@@ -630,14 +576,8 @@ public class Widget {
             }
         }
 
-        if (children != null) {
-            for (Widget widget : getChildrenIterable()) {
-                widget.onActivityChangeLocal(prev, activity);
-            }
-        }
-
         if (contextMenu != null) {
-            ((Widget)contextMenu).onActivityChangeLocal(prev, activity);
+            contextMenu.hide();
         }
 
         if (ripple != null) {
@@ -646,6 +586,37 @@ public class Widget {
 
         if (stateAnimation != null && stateAnimation.isPlaying()) {
             stateAnimation.stop();
+        }
+
+        if (children != null) {
+            for (Widget widget : getChildrenIterable()) {
+                widget.onActivityChange(prev, current);
+            }
+        }
+    }
+
+    void onActivityChangeLocal(Activity prev, Activity current) {
+        this.activity = current;
+
+        if (children != null) {
+            for (Widget widget : getChildrenIterable()) {
+                widget.onActivityChangeLocal(prev, current);
+            }
+        }
+    }
+
+    void onThemeChangeLocal() {
+        if (attrs.getTheme() != getCurrentTheme()) {
+            attrs.setTheme(getCurrentTheme());
+            applyStyle();
+
+            if (contextMenu != null) {
+                contextMenu.setTheme(getCurrentTheme());
+            }
+
+            for (Widget child : getChildrenIterable()) {
+                child.onThemeChangeLocal();
+            }
         }
     }
 
@@ -674,9 +645,9 @@ public class Widget {
     public Widget findById(String id) {
         if (id == null) return null;
 
-        Scene scene = getScene();
-        if (scene != null) {
-            return scene.findById(id);
+        Group group = getGroup();
+        if (group != null) {
+            return group.findById(id);
         } else {
             if (children != null) {
                 for (Widget child : getChildrenIterable()) {
@@ -751,17 +722,10 @@ public class Widget {
     }
 
     public void showContextMenu(float x, float y) {
-        //if (contextMenu != null) {
-        //    Activity act = getActivity();
-        //    if (act != null) {
-        //        contextMenu.onMeasure();
-        //        boolean reverseX = contextMenu.getMeasureWidth() + x > act.getWidth();
-        //        boolean reverseY = contextMenu.getMeasureHeight() + y > act.getHeight();
-        //        contextMenu.show(act,
-        //                reverseX ? x - contextMenu.getMeasureWidth() : x,
-        //                reverseY ? y - contextMenu.getMeasureHeight() : y);
-        //    }
-        //}
+        Activity act = getActivity();
+        if (contextMenu != null && act != null) {
+            contextMenu.show(act, x, y);
+        }
     }
 
     public void hideContextMenu() {
@@ -1419,11 +1383,7 @@ public class Widget {
         if (this.elevation != elevation) {
             this.elevation = elevation;
 
-            if (parent != null && parent.invalidateChildrenOrder(this)) {
-                invalidate(true);
-            } else {
-                invalidate(false);
-            }
+            invalidate(parent != null && parent.invalidateChildrenOrder(this));
         }
     }
 
@@ -1821,6 +1781,10 @@ public class Widget {
         if (focusListener != null) {
             focusListener.handle(focusEvent);
         }
+    }
+
+    public void fireResize() {
+
     }
 
     @Override

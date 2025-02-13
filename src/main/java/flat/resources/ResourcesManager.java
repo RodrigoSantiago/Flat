@@ -1,7 +1,6 @@
 package flat.resources;
 
 import flat.Flat;
-import flat.exception.FlatException;
 
 import java.io.*;
 import java.lang.ref.SoftReference;
@@ -49,15 +48,31 @@ public class ResourcesManager {
     public File getFlatLibraryFile() {
         try {
             InputStream in = Flat.class.getResourceAsStream("/flat.dll");
+            if (in == null) {
+                return null;
+            }
+
+            File temp = new File("flat.dll");
+            if (temp.exists()) {
+                if (!temp.delete()) {
+                    return null;
+                }
+            }
+
+            if (!temp.createNewFile()) {
+                return null;
+            }
+
             byte[] buffer = new byte[1024];
-            int read = -1;
-            File temp = File.createTempFile("flat.dll", "");
+            int read;
             FileOutputStream fos = new FileOutputStream(temp);
             while ((read = in.read(buffer)) != -1) {
                 fos.write(buffer, 0, read);
             }
             fos.close();
             in.close();
+            temp.deleteOnExit();
+
             return temp;
         } catch (Exception e) {
             return null;
@@ -267,7 +282,6 @@ public class ResourcesManager {
      * @param outDir Target Directory
      * @return All extracted files
      *
-     * @throws Exception
      */
     public static File[] zipUnpack(File zipFile, File outDir) throws Exception {
         if (!outDir.mkdir() || !outDir.exists() || outDir.isFile() ){
@@ -318,7 +332,6 @@ public class ResourcesManager {
      * @param zipFile Target zip file
      * @param srcFiles Source files
      *
-     * @throws Exception
      */
     public static void zipPack(File zipFile, File... srcFiles) throws Exception{
         byte[] buffer = new byte[1024];
@@ -353,7 +366,6 @@ public class ResourcesManager {
      * @param zipFile Target zip file
      * @param dir Source directory
      *
-     * @throws Exception
      */
     public static void zipPack(File zipFile, File dir) throws Exception {
         List<File> fileList = new ArrayList<>();

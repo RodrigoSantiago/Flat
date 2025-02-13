@@ -1,65 +1,15 @@
 package flat.widget;
 
-import flat.graphics.context.Context;
-import flat.uxml.Controller;
-import flat.uxml.UXBuilder;
-import flat.uxml.UXTheme;
 import flat.widget.layout.Box;
 import flat.window.Activity;
 import flat.window.ActivitySupport;
-import flat.window.Window;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.when;
 
 public class SceneTest {
-
-    Window window;
-    Context context;
-    Activity activity;
-    UXTheme theme;
-    Controller controller;
-    UXBuilder builder;
-
-    @Before
-    public void before() {
-        window = mock(Window.class);
-        context = mock(Context.class);
-
-        when(context.getWindow()).thenReturn(window);
-        when(context.getWidth()).thenReturn(200);
-        when(context.getHeight()).thenReturn(100);
-
-        activity = mock(Activity.class);
-        when(activity.getContext()).thenReturn(context);
-        when(activity.getWindow()).thenReturn(window);
-        when(activity.getWidth()).thenReturn(200f);
-        when(activity.getHeight()).thenReturn(100f);
-
-        theme = mock(UXTheme.class);
-        controller = mock(Controller.class);
-        builder = mock(UXBuilder.class);
-    }
-
-    @After
-    public void after() {
-
-    }
-
-    @Test
-    public void constructor() {
-        Scene scene = new Scene();
-
-        when(activity.getScene()).thenReturn(scene);
-        ActivitySupport.setActivity(scene, activity);
-
-        assertEquals(activity, scene.getActivity());
-    }
 
     @Test
     public void findById() {
@@ -103,13 +53,227 @@ public class SceneTest {
         Scene parent = new Scene();
 
         Scene child1 = new Scene();
+        child1.setId("child-id1");
         parent.add(child1);
 
         Box child2 = new Box();
         child2.setId("child-id2");
         child1.add(child2);
 
+        assertEquals(child1, parent.findById("child-id1"));
         assertNull(parent.findById("child-id2"));
+
+        assertNull(child1.findById("child-id1"));
         assertEquals(child2, child1.findById("child-id2"));
+    }
+
+    @Test
+    public void changeParent() {
+        Scene parentA = new Scene();
+        Scene parentB = new Scene();
+        Box child1 = new Box();
+
+        child1.setId("child-id");
+        parentA.add(child1);
+
+        assertEquals(parentA, child1.getParent());
+        assertEquals(parentA, child1.getGroup());
+        assertEquals(child1, parentA.findById("child-id"));
+        assertNull(parentB.findById("child-id"));
+
+        parentB.add(child1);
+
+        assertEquals(parentB, child1.getParent());
+        assertEquals(parentB, child1.getGroup());
+        assertNull(parentA.findById("child-id"));
+        assertEquals(child1, parentB.findById("child-id"));
+    }
+
+    @Test
+    public void changeParentEventPropagation() {
+        Scene parentA = new Scene();
+        Scene parentB = new Scene();
+        Box child1 = new Box();
+        Box child2 = new Box();
+        child1.add(child2);
+
+        child1.setId("child-id1");
+        child2.setId("child-id2");
+        parentA.add(child1);
+
+        assertEquals(parentA, child1.getParent());
+        assertEquals(child1, child2.getParent());
+        assertEquals(parentA, child1.getGroup());
+        assertEquals(parentA, child2.getGroup());
+        assertEquals(child1, parentA.findById("child-id1"));
+        assertEquals(child2, parentA.findById("child-id2"));
+        assertNull(parentB.findById("child-id1"));
+        assertNull(parentB.findById("child-id2"));
+
+        parentB.add(child1);
+
+        assertEquals(parentB, child1.getParent());
+        assertEquals(child1, child2.getParent());
+        assertEquals(parentB, child2.getGroup());
+        assertEquals(parentB, child2.getGroup());
+        assertNull(parentA.findById("child-id1"));
+        assertNull(parentA.findById("child-id2"));
+        assertEquals(child1, parentB.findById("child-id1"));
+        assertEquals(child2, parentB.findById("child-id2"));
+    }
+
+    @Test
+    public void changeParentEventBlockPropagation() {
+        Scene parentA = new Scene();
+        Scene parentB = new Scene();
+        Box child1 = new Box();
+        Scene parentC = new Scene();
+        Box child2 = new Box();
+        child1.add(parentC);
+        parentC.add(child2);
+
+        child1.setId("child-id1");
+        child2.setId("child-id2");
+        parentC.setId("parend-idc");
+        parentA.add(child1);
+
+        assertEquals(parentA, child1.getParent());
+        assertEquals(child1, parentC.getParent());
+        assertEquals(parentC, child2.getParent());
+
+        assertEquals(parentA, child1.getGroup());
+        assertEquals(parentA, parentC.getGroup());
+        assertEquals(parentC, child2.getGroup());
+
+        assertEquals(child1, parentA.findById("child-id1"));
+        assertEquals(parentC, parentA.findById("parend-idc"));
+        assertNull(parentA.findById("child-id2"));
+
+        assertNull(parentB.findById("child-id1"));
+        assertNull(parentB.findById("parend-idc"));
+        assertNull(parentB.findById("child-id2"));
+
+        assertNull(parentC.findById("child-id1"));
+        assertNull(parentC.findById("parend-idc"));
+        assertEquals(child2, parentC.findById("child-id2"));
+
+        parentB.add(child1);
+
+        assertEquals(parentB, child1.getParent());
+        assertEquals(child1, parentC.getParent());
+        assertEquals(parentC, child2.getParent());
+
+        assertEquals(parentB, child1.getGroup());
+        assertEquals(parentB, parentC.getGroup());
+        assertEquals(parentC, child2.getGroup());
+
+        assertNull(parentA.findById("child-id1"));
+        assertNull(parentA.findById("parend-idc"));
+        assertNull(parentA.findById("child-id2"));
+
+        assertEquals(child1, parentB.findById("child-id1"));
+        assertEquals(parentC, parentB.findById("parend-idc"));
+        assertNull(parentB.findById("child-id2"));
+
+        assertNull(parentC.findById("child-id1"));
+        assertNull(parentC.findById("parend-idc"));
+        assertEquals(child2, parentC.findById("child-id2"));
+    }
+
+    @Test
+    public void changeParentActivity() {
+        Activity activityA = mock(Activity.class);
+        Activity activityB = mock(Activity.class);
+        Scene parentA = new Scene();
+        ActivitySupport.setActivity(parentA, activityA);
+        Scene parentB = new Scene();
+        ActivitySupport.setActivity(parentB, activityB);
+
+        Box child1 = new Box();
+        Scene parentC = new Scene();
+        Box child2 = new Box();
+        child1.add(parentC);
+        parentC.add(child2);
+
+        child1.setId("child-id1");
+        child2.setId("child-id2");
+        parentC.setId("parend-idc");
+        parentA.add(child1);
+
+        assertEquals(parentA, child1.getParent());
+        assertEquals(child1, parentC.getParent());
+        assertEquals(parentC, child2.getParent());
+
+        assertEquals(parentA, child1.getGroup());
+        assertEquals(parentA, parentC.getGroup());
+        assertEquals(parentC, child2.getGroup());
+
+        assertEquals(activityA, child1.getActivity());
+        assertEquals(activityA, parentC.getActivity());
+        assertEquals(activityA, child2.getActivity());
+
+        assertEquals(child1, parentA.findById("child-id1"));
+        assertEquals(parentC, parentA.findById("parend-idc"));
+        assertNull(parentA.findById("child-id2"));
+
+        assertNull(parentB.findById("child-id1"));
+        assertNull(parentB.findById("parend-idc"));
+        assertNull(parentB.findById("child-id2"));
+
+        assertNull(parentC.findById("child-id1"));
+        assertNull(parentC.findById("parend-idc"));
+        assertEquals(child2, parentC.findById("child-id2"));
+
+        parentB.add(child1);
+
+        assertEquals(parentB, child1.getParent());
+        assertEquals(child1, parentC.getParent());
+        assertEquals(parentC, child2.getParent());
+
+        assertEquals(parentB, child1.getGroup());
+        assertEquals(parentB, parentC.getGroup());
+        assertEquals(parentC, child2.getGroup());
+
+        assertEquals(activityB, child1.getActivity());
+        assertEquals(activityB, parentC.getActivity());
+        assertEquals(activityB, child2.getActivity());
+
+        assertNull(parentA.findById("child-id1"));
+        assertNull(parentA.findById("parend-idc"));
+        assertNull(parentA.findById("child-id2"));
+
+        assertEquals(child1, parentB.findById("child-id1"));
+        assertEquals(parentC, parentB.findById("parend-idc"));
+        assertNull(parentB.findById("child-id2"));
+
+        assertNull(parentC.findById("child-id1"));
+        assertNull(parentC.findById("parend-idc"));
+        assertEquals(child2, parentC.findById("child-id2"));
+
+        parentB.add(child2);
+
+        assertEquals(parentB, child1.getParent());
+        assertEquals(child1, parentC.getParent());
+        assertEquals(parentB, child2.getParent());
+
+        assertEquals(parentB, child1.getGroup());
+        assertEquals(parentB, parentC.getGroup());
+        assertEquals(parentB, child2.getGroup());
+
+        assertEquals(activityB, child1.getActivity());
+        assertEquals(activityB, parentC.getActivity());
+        assertEquals(activityB, child2.getActivity());
+
+        assertNull(parentA.findById("child-id1"));
+        assertNull(parentA.findById("parend-idc"));
+        assertNull(parentA.findById("child-id2"));
+
+        assertEquals(child1, parentB.findById("child-id1"));
+        assertEquals(parentC, parentB.findById("parend-idc"));
+        assertEquals(child2, parentB.findById("child-id2"));
+
+        assertNull(parentC.findById("child-id1"));
+        assertNull(parentC.findById("parend-idc"));
+        assertNull(parentC.findById("child-id2"));
     }
 }

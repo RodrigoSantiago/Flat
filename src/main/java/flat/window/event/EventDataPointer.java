@@ -63,8 +63,8 @@ public class EventDataPointer {
         this.pressedButton = button;
     }
 
-    boolean performPressedFilter(Activity activity, int button) {
-        PointerEvent event = new PointerEvent(pressed, PointerEvent.FILTER, button, x, y);
+    boolean performPressedFilter(Activity activity, int button, Widget widget) {
+        PointerEvent event = new PointerEvent(widget, PointerEvent.FILTER, button, x, y);
         activity.onPointerFilter(event);
         return !event.isConsumed();
     }

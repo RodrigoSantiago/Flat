@@ -8,7 +8,7 @@ import flat.graphics.Color;
 import flat.graphics.SmartContext;
 import flat.graphics.image.Drawable;
 import flat.uxml.*;
-import flat.widget.Scene;
+import flat.widget.Group;
 import flat.widget.Widget;
 import flat.widget.enums.ImageFilter;
 import flat.window.Activity;
@@ -27,7 +27,7 @@ public class RadioButton extends Widget {
 
     RadioGroup radioGroup;
 
-    private IconChange iconChangeAnimation = new IconChange();
+    private final IconChange iconChangeAnimation = new IconChange();
     private Drawable prevIcon;
     private Drawable currentIcon;
     private float iconWidth;
@@ -41,11 +41,11 @@ public class RadioButton extends Widget {
 
         String groupId = attrs.getAttributeString("radio-group-id", null);
         if (groupId != null) {
-            Scene scene = getScene();
-            if (scene != null) {
-                Widget widget = scene.findById(groupId);
-                if (widget instanceof RadioGroup group) {
-                    group.add(this);
+            Group group = getGroup();
+            if (group != null) {
+                Widget widget = group.findById(groupId);
+                if (widget instanceof RadioGroup rGroup) {
+                    rGroup.add(this);
                 }
             }
         }

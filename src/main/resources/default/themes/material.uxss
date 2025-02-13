@@ -483,7 +483,7 @@ tree-view {
 
 menu {
     width : 200;
-    shadow : true;
+    shadow-enabled : true;
     elevation : 8;
     radius-top : 4;
     radius-left : 4;
@@ -493,6 +493,7 @@ menu {
     padding-bottom : 8;
     margin-bottom : 32;
     background-color : #FFFFFF;
+    showup-transition-duration : 0.25;
 }
 
 menu-item : label {

@@ -54,15 +54,21 @@
                     icon-scale-height="true" icon-spacing="24px"
                     icon-align="LEFT"
                     vertical-align="MIDDLE"
-                    height="80px"
-            />
+                    height="80px">
+                <Menu width="100" height="200" background-color="blue">
+                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
+                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
+                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
+                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
+                </Menu>
+            </Button>
             <Button text="Ola Mundo pq - OLÂ" text-size="24px" font="SANS" margin-top="8"
                     icon="/default/img_test.png"
                     icon-scale-height="true" icon-spacing="24px"
                     icon-align="RIGHT"
                     horizontal-align="RIGHT"
-                    height="80px" width="MATCH_PARENT"
-            />
+                    height="80px" width="MATCH_PARENT">
+            </Button>
         </LinearBox>
     </LinearBox>
 </Scene>

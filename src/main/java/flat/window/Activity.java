@@ -23,6 +23,7 @@ public class Activity extends Controller {
     private final ArrayList<Animation> animationsRemove = new ArrayList<>();
     private final ArrayList<Widget> pointerFilters = new ArrayList<>();
     private final ArrayList<Widget> keyFilters = new ArrayList<>();
+    private final ArrayList<Widget> resizeFilters = new ArrayList<>();
     private final ArrayList<Widget> filtersTemp = new ArrayList<>();
     private Widget focus;
 
@@ -175,6 +176,7 @@ public class Activity extends Controller {
         if (this.width != width || this.height != height) {
             this.width = width;
             this.height = height;
+            onResizeFilter();
             invalidateWidget(scene);
         }
 
@@ -299,8 +301,9 @@ public class Activity extends Controller {
 
     public void onPointerFilter(PointerEvent event) {
         filtersTemp.addAll(pointerFilters);
-        for (var widget : filtersTemp) {
-            if (widget.getActivity() == this && widget != event.getSource()) {
+        for (int i = filtersTemp.size() - 1; i >= 0; i--) {
+            var widget = filtersTemp.get(i);
+            if (widget.getActivity() == this) {
                 widget.firePointer(event);
                 if (event.isConsumed()) {
                     break;
@@ -322,8 +325,9 @@ public class Activity extends Controller {
 
     public void onKeyFilter(KeyEvent event) {
         filtersTemp.addAll(keyFilters);
-        for (var widget : filtersTemp) {
-            if (widget.getActivity() == this && widget != event.getSource()) {
+        for (int i = filtersTemp.size() - 1; i >= 0; i--) {
+            var widget = filtersTemp.get(i);
+            if (widget.getActivity() == this) {
                 widget.fireKey(event);
                 if (event.isConsumed()) {
                     break;
@@ -347,6 +351,27 @@ public class Activity extends Controller {
                 }
             }
         }
+    }
+
+    public void addResizeFilter(Widget widget) {
+        if (widget.getActivity() == this && !resizeFilters.contains(widget)) {
+            resizeFilters.add(widget);
+        }
+    }
+
+    public void removeResizeFilter(Widget widget) {
+        resizeFilters.remove(widget);
+    }
+
+    public void onResizeFilter() {
+        filtersTemp.addAll(resizeFilters);
+        for (int i = filtersTemp.size() - 1; i >= 0; i--) {
+            var widget = filtersTemp.get(i);
+            if (widget.getActivity() == this) {
+                widget.fireResize();
+            }
+        }
+        filtersTemp.clear();
     }
 
     public void setFocus(Widget widget) {

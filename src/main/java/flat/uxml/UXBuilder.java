@@ -22,11 +22,11 @@ import java.util.HashMap;
 
 public class UXBuilder {
 
-    private static HashMap<String, UXWidgetFactory> factories = new HashMap<>();
+    private static final HashMap<String, UXWidgetFactory> factories = new HashMap<>();
 
-    private UXNode root;
-    private Controller controller;
-    private ArrayList<KeyValue> widgets = new ArrayList<>();
+    private final UXNode root;
+    private final Controller controller;
+    private final ArrayList<KeyValue> widgets = new ArrayList<>();
 
     public static void install(String name, UXWidgetFactory WidgetFactory) {
         factories.put(name, WidgetFactory);
@@ -46,6 +46,7 @@ public class UXBuilder {
         UXBuilder.install("ImageView", ImageView::new);
         UXBuilder.install("ScrollBar", ScrollBar::new);
         UXBuilder.install("ScrollBox", ScrollBox::new);
+        UXBuilder.install("Menu", Menu::new);
         /*UXBuilder.install("Divider", Divider::new);
         UXBuilder.install("ToggleButton", ToggleButton::new);
         UXBuilder.install("ToggleGroup", RadioGroup::new);
@@ -62,7 +63,6 @@ public class UXBuilder {
         UXBuilder.install("TextArea", TextArea::new);
         UXBuilder.install("Chip", Chip::new);
         UXBuilder.install("Drawer", Drawer::new);
-        UXBuilder.install("Menu", Menu::new);
         UXBuilder.install("MenuItem", MenuItem::new);
         UXBuilder.install("DropdownMenu", DropdownMenu::new);
         UXBuilder.install("ToolBar", ToolBar::new);
