@@ -1,5 +1,6 @@
 package flat.widget.selection;
 
+import flat.animations.Interpolation;
 import flat.animations.NormalizedAnimation;
 import flat.animations.StateInfo;
 import flat.events.ActionEvent;
@@ -162,12 +163,9 @@ public class SwitchToggle extends Widget {
     }
 
     @Override
-    public void firePointer(PointerEvent pointerEvent) {
-        super.firePointer(pointerEvent);
-        if (!pointerEvent.isConsumed() && pointerEvent.getType() == PointerEvent.PRESSED) {
-            requestFocus(true);
-        }
-        if (!pointerEvent.isConsumed() && pointerEvent.getType() == PointerEvent.RELEASED) {
+    public void firePointer(PointerEvent event) {
+        super.firePointer(event);
+        if (!event.isConsumed() && event.getType() == PointerEvent.RELEASED && event.getPointerID() == 1) {
             toggle();
         }
     }
@@ -317,15 +315,15 @@ public class SwitchToggle extends Widget {
         this.toggleListener = toggleListener;
     }
 
-    private void fireToggle(ActionEvent event) {
+    private void fireToggle() {
         if (toggleListener != null) {
-            toggleListener.handle(event);
+            toggleListener.handle(new ActionEvent(this));
         }
     }
 
     public void toggle() {
         setActive(!isActive());
-        fireToggle(new ActionEvent(this));
+        fireToggle();
     }
 
     public UXValueListener<Boolean> getActiveListener() {

@@ -14,7 +14,9 @@ import flat.math.shapes.Shape;
 import flat.math.stroke.BasicStroke;
 import flat.uxml.*;
 import flat.uxml.value.UXValue;
+import flat.widget.stages.Menu;
 import flat.widget.effects.RippleEffect;
+import flat.widget.enums.DropdownAlign;
 import flat.widget.enums.Visibility;
 import flat.window.Activity;
 import static flat.widget.State.*;
@@ -28,8 +30,7 @@ public class Widget {
     //---------------------
     public static final float WRAP_CONTENT = 0;
     public static final float MATCH_PARENT = Float.POSITIVE_INFINITY;
-
-    private static final Comparator<Widget> childComparator = (o1, o2) -> Float.compare(o1.elevation, o2.elevation);
+    public static final Comparator<Widget> childComparator = (o1, o2) -> Float.compare(o1.elevation, o2.elevation);
 
     //---------------------
     //    Properties
@@ -291,7 +292,6 @@ public class Widget {
 
     protected void drawChildren(SmartContext context) {
         if (children != null) {
-            childSort();
             for (Widget child : getChildrenIterable()) {
                 if (child.getVisibility() == Visibility.VISIBLE) {
                     child.onDraw(context);
@@ -403,11 +403,12 @@ public class Widget {
      * @param x
      * @param y
      */
-    public final void setPosition(float x, float y) {
+    public void setLayoutPosition(float x, float y) {
         if (this.x != x || this.y != y) {
             this.x = x;
             this.y = y;
             updateRect();
+            invalidate(false);
         }
     }
 
@@ -416,7 +417,7 @@ public class Widget {
             if (getPrefWidth() == WRAP_CONTENT || getPrefHeight() == WRAP_CONTENT) {
                 invalidate(true);
             } else {
-                activity.invalidateWidget(this);
+                activity.invalidateWidget(child);
             }
         }
     }
@@ -633,13 +634,11 @@ public class Widget {
     }
 
     public Children<Widget> getChildrenIterable() {
-        childSort();
-        return new Children<>(children);
+        return new Children<>(getChildren());
     }
 
     public Children<Widget> getChildrenIterableReverse() {
-        childSort();
-        return new Children<>(children, true);
+        return new Children<>(getChildren(), true);
     }
 
     public Widget findById(String id) {
@@ -660,18 +659,14 @@ public class Widget {
     }
 
     public Widget findByPosition(float x, float y, boolean includeDisabled) {
-        // TODO - reverse order {child -> contains to contains -> child on cliping }
-
-        if ((includeDisabled || isEnabled()) &&
-                (getVisibility() == Visibility.VISIBLE || getVisibility() == Visibility.INVISIBLE)) {
+        if (getVisibility() == Visibility.VISIBLE && (includeDisabled || isEnabled()) && contains(x, y)) {
             if (children != null) {
-                childSort();
                 for (Widget child : getChildrenIterableReverse()) {
                     Widget found = child.findByPosition(x, y, includeDisabled);
                     if (found != null) return found;
                 }
             }
-            return clickable && contains(x, y) ? this : null;
+            return clickable ? this : null;
         } else {
             return null;
         }
@@ -724,7 +719,7 @@ public class Widget {
     public void showContextMenu(float x, float y) {
         Activity act = getActivity();
         if (contextMenu != null && act != null) {
-            contextMenu.show(act, x, y);
+            contextMenu.show(act, x, y, DropdownAlign.TOP_LEFT_ADAPTATIVE);
         }
     }
 
@@ -792,8 +787,16 @@ public class Widget {
         }
     }
 
-    public void unfollowStyleProperty(String name) {
-        attrs.unfollow(name);
+    public void setFollowStyleProperty(String name, boolean follow) {
+        if (follow) {
+            attrs.clearUnfollow(name);
+        } else {
+            attrs.unfollow(name);
+        }
+    }
+
+    public boolean isFollowStyleProperty(String name) {
+        return !attrs.isUnfollow(name);
     }
 
     public float getTransitionDuration() {
@@ -1339,6 +1342,8 @@ public class Widget {
     }
 
     public void setScaleX(float scaleX) {
+        if (Math.abs(scaleX) < 0.001f) scaleX = 0.001f;
+
         if (this.scaleX != scaleX) {
             this.scaleX = scaleX;
 
@@ -1352,6 +1357,8 @@ public class Widget {
     }
 
     public void setScaleY(float scaleY) {
+        if (Math.abs(scaleY) < 0.001f) scaleY = 0.001f;
+
         if (this.scaleY != scaleY) {
             this.scaleY = scaleY;
 
@@ -1421,9 +1428,13 @@ public class Widget {
     private void childSort() {
         if (invalidChildrenOrder) {
             invalidChildrenOrder = false;
-            if (children != null) {
-                children.sort(childComparator);
-            }
+            sortChildren();
+        }
+    }
+
+    protected void sortChildren() {
+        if (children != null) {
+            children.sort(childComparator);
         }
     }
 
@@ -1705,81 +1716,81 @@ public class Widget {
         return focusListener;
     }
 
-    public void firePointer(PointerEvent pointerEvent) {
+    public void firePointer(PointerEvent event) {
         // -- Pressed -- //
-        if (pointerEvent.getType() == PointerEvent.PRESSED) {
+        if (event.getType() == PointerEvent.PRESSED) {
             setPressed(true);
-            fireRipple(pointerEvent.getX(), pointerEvent.getY());
+            fireRipple(event.getX(), event.getY());
         }
-        if (pointerEvent.getType() == PointerEvent.RELEASED) {
+        if (event.getType() == PointerEvent.RELEASED) {
             setPressed(false);
             releaseRipple();
 
-            if (pointerEvent.getPointerID() == 2 && contextMenu != null) {
-                showContextMenu(pointerEvent.getX(), pointerEvent.getY());
+            if (event.getPointerID() == 2 && contextMenu != null) {
+                showContextMenu(event.getX(), event.getY());
             }
-            if (!pointerEvent.isFocusConsumed() && isFocusable()) {
-                pointerEvent.consumeFocus(true);
+            if (!event.isFocusConsumed() && isFocusable()) {
+                event.consumeFocus(true);
                 requestFocus(true);
             }
         }
 
         if (pointerListener != null) {
-            pointerListener.handle(pointerEvent);
+            pointerListener.handle(event);
         }
-        if (pointerEvent.getType() != PointerEvent.FILTER) {
+        if (event.getType() != PointerEvent.FILTER) {
             if (parent != null) {
-                parent.firePointer(pointerEvent);
+                parent.firePointer(event);
             }
         }
     }
 
-    public void fireHover(HoverEvent hoverEvent) {
+    public void fireHover(HoverEvent event) {
         // -- Hovered -- //
-        if (hoverEvent.getType() == HoverEvent.ENTERED) {
+        if (event.getType() == HoverEvent.ENTERED) {
             setHovered(true);
-        } else if (hoverEvent.getType() == HoverEvent.EXITED) {
+        } else if (event.getType() == HoverEvent.EXITED) {
             setHovered(false);
         }
 
         if (hoverListener != null) {
-            hoverListener.handle(hoverEvent);
+            hoverListener.handle(event);
         }
-        if (parent != null && hoverEvent.isRecyclable(parent)) {
-            parent.fireHover(hoverEvent);
+        if (parent != null && event.isRecyclable(parent)) {
+            parent.fireHover(event);
         }
     }
 
-    public void fireScroll(ScrollEvent scrollEvent) {
+    public void fireScroll(ScrollEvent event) {
         if (scrollListener != null) {
-            scrollListener.handle(scrollEvent);
+            scrollListener.handle(event);
         }
         if (parent != null) {
-            parent.fireScroll(scrollEvent);
+            parent.fireScroll(event);
         }
     }
 
-    public void fireDrag(DragEvent dragEvent) {
+    public void fireDrag(DragEvent event) {
         if (dragListener != null) {
-            dragListener.handle(dragEvent);
+            dragListener.handle(event);
         }
-        if (parent != null && dragEvent.isRecyclable(parent)) {
-            parent.fireDrag(dragEvent);
+        if (parent != null && event.isRecyclable(parent)) {
+            parent.fireDrag(event);
         }
     }
 
-    public void fireKey(KeyEvent keyEvent) {
+    public void fireKey(KeyEvent event) {
         if (keyListener != null) {
-            keyListener.handle(keyEvent);
+            keyListener.handle(event);
         }
         if (parent != null) {
-            parent.fireKey(keyEvent);
+            parent.fireKey(event);
         }
     }
 
-    public void fireFocus(FocusEvent focusEvent) {
+    public void fireFocus(FocusEvent event) {
         if (focusListener != null) {
-            focusListener.handle(focusEvent);
+            focusListener.handle(event);
         }
     }
 

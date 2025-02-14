@@ -10,6 +10,7 @@ import flat.math.Affine;
 import flat.math.Matrix4;
 import flat.math.operations.Area;
 import flat.math.shapes.*;
+import flat.math.stroke.BasicStroke;
 
 import java.nio.Buffer;
 import java.util.ArrayList;

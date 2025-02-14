@@ -1,11 +1,11 @@
 package flat.uxml;
 
 import flat.uxml.value.UXValue;
-import flat.widget.Menu;
+import flat.widget.layout.Panel;
+import flat.widget.stages.Menu;
 import flat.widget.Scene;
 import flat.widget.Widget;
 import flat.widget.image.ImageView;
-import flat.widget.layout.Box;
 import flat.widget.layout.LinearBox;
 import flat.widget.layout.ScrollBox;
 import flat.widget.layout.StackBox;
@@ -34,7 +34,7 @@ public class UXBuilder {
 
     public static void installDefaultWidgets() {
         UXBuilder.install("Scene", Scene::new);
-        UXBuilder.install("Box", Box::new);
+        UXBuilder.install("Panel", Panel::new);
         UXBuilder.install("LinearBox", LinearBox::new);
         UXBuilder.install("StackBox", StackBox::new);
         UXBuilder.install("Label", Label::new);
@@ -51,7 +51,6 @@ public class UXBuilder {
         UXBuilder.install("ToggleButton", ToggleButton::new);
         UXBuilder.install("ToggleGroup", RadioGroup::new);
         UXBuilder.install("Canvas", Canvas::new);
-        UXBuilder.install("CheckGroup", CheckGroup::new);
         UXBuilder.install("Slider", Slider::new);
         UXBuilder.install("ProgressBar", ProgressBar::new);
         UXBuilder.install("ProgressCircle", ProgressCircle::new);
@@ -87,7 +86,17 @@ public class UXBuilder {
         return controller;
     }
 
-    public Scene build(UXTheme theme) {
+    public Widget build(UXTheme theme) {
+        Widget child = buildRecursive(root);
+        if (child != null) {
+            child.setTheme(theme);
+            assignWidgets();
+        }
+
+        return child;
+    }
+
+    public Scene buildScene(UXTheme theme) {
         Widget child = buildRecursive(root);
 
         Scene scene;

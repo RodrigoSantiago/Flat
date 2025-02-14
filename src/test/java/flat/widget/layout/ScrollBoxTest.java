@@ -90,7 +90,7 @@ public class ScrollBoxTest {
         horBar.setId("hor-bar-id");
         ScrollBar verBar = new ScrollBar();
         verBar.setId("ver-bar-id");
-        Box content = new Box();
+        Panel content = new Panel();
 
         UXChildren uxChild = mock(UXChildren.class);
         when(uxChild.next()).thenReturn(horBar).thenReturn(verBar).thenReturn(content).thenReturn(null);
@@ -114,7 +114,7 @@ public class ScrollBoxTest {
     @Test
     public void measure() {
         ScrollBox scrollBox = new ScrollBox();
-        Box content = new Box();
+        Panel content = new Panel();
         content.setPrefSize(500, 350);
         scrollBox.add(content);
         scrollBox.onMeasure();
@@ -147,7 +147,7 @@ public class ScrollBoxTest {
         ScrollBox scrollBox = new ScrollBox();
         ScrollBar horBar = new ScrollBar();
         ScrollBar verBar = new ScrollBar();
-        Box content = new Box();
+        Panel content = new Panel();
         horBar.setPrefSize(Widget.MATCH_PARENT, 16);
         verBar.setPrefSize(16, Widget.MATCH_PARENT);
         content.setPrefSize(500, 350);
@@ -190,7 +190,7 @@ public class ScrollBoxTest {
         horBar.setId("horBar");
         ScrollBar verBar = new ScrollBar();
         verBar.setId("verBar");
-        Box content = new Box();
+        Panel content = new Panel();
         horBar.setPrefSize(Widget.MATCH_PARENT, 16);
         verBar.setPrefSize(18, Widget.MATCH_PARENT);
         content.setPrefSize(500, 350);
@@ -234,7 +234,7 @@ public class ScrollBoxTest {
         ScrollBox scrollBox = new ScrollBox();
         ScrollBar horBar = new ScrollBar();
         ScrollBar verBar = new ScrollBar();
-        Box content = new Box();
+        Panel content = new Panel();
         horBar.setPrefSize(Widget.MATCH_PARENT, 16);
         verBar.setPrefSize(16, Widget.MATCH_PARENT);
         content.setPrefSize(500, 350);
@@ -344,13 +344,12 @@ public class ScrollBoxTest {
         assertEquals(300 - 16, scrollBox.getViewDimensionY(), 0.1f);
     }
 
-
     @Test
     public void layoutFloating() {
         ScrollBox scrollBox = new ScrollBox();
         ScrollBar horBar = new ScrollBar();
         ScrollBar verBar = new ScrollBar();
-        Box content = new Box();
+        Panel content = new Panel();
         horBar.setPrefSize(Widget.MATCH_PARENT, 16);
         verBar.setPrefSize(16, Widget.MATCH_PARENT);
         content.setPrefSize(500, 350);
@@ -466,7 +465,7 @@ public class ScrollBoxTest {
         ScrollBox scrollBox = new ScrollBox();
         ScrollBar horBar = new ScrollBar();
         ScrollBar verBar = new ScrollBar();
-        Box content = new Box();
+        Panel content = new Panel();
         horBar.setPrefSize(Widget.MATCH_PARENT, 16);
         verBar.setPrefSize(18, Widget.MATCH_PARENT);
         content.setPrefSize(500, 350);

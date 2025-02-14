@@ -10,8 +10,11 @@ import flat.graphics.SmartContext;
 import flat.graphics.context.Context;
 import flat.resources.ResourceStream;
 import flat.uxml.*;
+import flat.widget.Parent;
 import flat.widget.Scene;
 import flat.widget.Widget;
+import flat.widget.stages.Menu;
+import flat.widget.stages.Stage;
 
 import java.util.ArrayList;
 
@@ -139,7 +142,7 @@ public class Activity extends Controller {
     private void buildScene() {
         Scene old = scene;
         if (builder != null) {
-            nextScene = builder.build(theme);
+            nextScene = builder.buildScene(theme);
             builder = null;
         }
         if (scene == null && nextScene == null) {
@@ -187,8 +190,14 @@ public class Activity extends Controller {
                 wiget.onMeasure();
                 wiget.onLayout(width, height);
             } else {
-                wiget.onMeasure();
-                wiget.onLayout(wiget.getLayoutWidth(), wiget.getLayoutHeight());
+                Parent parent = wiget.getParent();
+                if (parent == null) {
+                    wiget.onMeasure();
+                    wiget.onLayout(wiget.getLayoutWidth(), wiget.getLayoutHeight());
+                } else if (!parent.onLayoutSingleChild(wiget)) {
+                    parent.onMeasure();
+                    parent.onLayout(parent.getLayoutWidth(), parent.getLayoutHeight());
+                }
             }
         }
     }
@@ -290,7 +299,8 @@ public class Activity extends Controller {
     }
 
     public void addPointerFilter(Widget widget) {
-        if (widget.getActivity() == this && !pointerFilters.contains(widget)) {
+        if (widget.getActivity() == this) {
+            pointerFilters.remove(widget);
             pointerFilters.add(widget);
         }
     }
@@ -315,6 +325,7 @@ public class Activity extends Controller {
 
     public void addKeyFilter(Widget widget) {
         if (widget.getActivity() == this && !keyFilters.contains(widget)) {
+            keyFilters.remove(widget);
             keyFilters.add(widget);
         }
     }
@@ -500,6 +511,10 @@ public class Activity extends Controller {
 
     public float getDensity() {
         return lastDpi;
+    }
+
+    public void addStage(Stage stage) {
+        getScene().getActivityScene().addStage(stage);
     }
 
     public static class Transition implements Animation {

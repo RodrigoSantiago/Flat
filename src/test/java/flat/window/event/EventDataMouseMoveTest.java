@@ -112,6 +112,80 @@ public class EventDataMouseMoveTest {
 
     }
 
+
+    // press + drag [accept] + releas + press + drag [accept] + releas
+    @Test
+    public void eventPressDragReleaseRepeat() {
+        // Setup
+        Activity activity = mock(Activity.class);
+        Window window = mock(Window.class);
+        Widget widget = mock(Widget.class);
+        EventDataPointer pointer = new EventDataPointer(-1);
+        pointer.setPosition(10, 20);
+
+        when(window.getActivity()).thenReturn(activity);
+        when(activity.findByPosition(anyFloat(), anyFloat(), anyBoolean())).thenReturn(widget);
+        when(window.getPointer()).thenReturn(pointer);
+
+        int[] time = {0};
+        doAnswer(obj -> {
+            DragEvent dragEvent = obj.getArgument(0);
+            if (time[0] == 0) {
+                time[0] = 1;
+                dragEvent.accept(widget);
+            }
+            return null;
+        }).when(widget).fireDrag(any());
+
+        ArgumentCaptor<HoverEvent> capHover = ArgumentCaptor.forClass(HoverEvent.class);
+        ArgumentCaptor<DragEvent> capDrag = ArgumentCaptor.forClass(DragEvent.class);
+        ArgumentCaptor<PointerEvent> capPointer = ArgumentCaptor.forClass(PointerEvent.class);
+
+        // Execution
+        EventDataMouseMove.get(10, 20).handle(window);
+        EventDataMouseButton.get(1, WLEnums.PRESS).handle(window);
+        EventDataMouseMove.get(20, 30).handle(window);
+        EventDataMouseButton.get(1, WLEnums.RELEASE).handle(window);
+        time[0] = 0;
+        EventDataMouseMove.get(10, 20).handle(window);
+        EventDataMouseButton.get(1, WLEnums.PRESS).handle(window);
+        EventDataMouseMove.get(20, 30).handle(window);
+        EventDataMouseButton.get(1, WLEnums.RELEASE).handle(window);
+
+        // Assertion
+        verify(activity, times(8)).findByPosition(anyFloat(), anyFloat(), anyBoolean());
+
+        verify(widget, times(5)).fireHover(capHover.capture());
+
+        verify(widget, times(6)).firePointer(capPointer.capture());
+        verify(widget, times(6)).fireDrag(capDrag.capture());
+
+        // Hover is Independent
+        assertHoverEvent(capHover.getAllValues().get(0), HoverEvent.ENTERED, 10, 20);
+        assertHoverEvent(capHover.getAllValues().get(1), HoverEvent.MOVED, 10, 20);
+        assertHoverEvent(capHover.getAllValues().get(2), HoverEvent.MOVED, 20, 30);
+
+        assertPointerEvent(capPointer.getAllValues().get(0), PointerEvent.PRESSED, 10, 20);
+        assertPointerEvent(capPointer.getAllValues().get(1), PointerEvent.DRAGGED, 20, 30);
+        assertPointerEvent(capPointer.getAllValues().get(2), PointerEvent.RELEASED, 20, 30);
+
+        assertDragEvent(capDrag.getAllValues().get(0), DragEvent.STARTED, widget, null, null);
+        assertDragEvent(capDrag.getAllValues().get(1), DragEvent.OVER, widget, null, null);
+        assertDragEvent(capDrag.getAllValues().get(2), DragEvent.DONE, widget, null, null);
+
+        // Hover is Independent
+        assertHoverEvent(capHover.getAllValues().get(3), HoverEvent.MOVED, 10, 20);
+        assertHoverEvent(capHover.getAllValues().get(4), HoverEvent.MOVED, 20, 30);
+
+        assertPointerEvent(capPointer.getAllValues().get(3), PointerEvent.PRESSED, 10, 20);
+        assertPointerEvent(capPointer.getAllValues().get(4), PointerEvent.DRAGGED, 20, 30);
+        assertPointerEvent(capPointer.getAllValues().get(5), PointerEvent.RELEASED, 20, 30);
+
+        assertDragEvent(capDrag.getAllValues().get(3), DragEvent.STARTED, widget, null, null);
+        assertDragEvent(capDrag.getAllValues().get(4), DragEvent.OVER, widget, null, null);
+        assertDragEvent(capDrag.getAllValues().get(5), DragEvent.DONE, widget, null, null);
+    }
+
     // press + drag [reject] + releas
     @Test
     public void eventPressDragRejectRelease() {

@@ -9,25 +9,25 @@ import static org.junit.Assert.assertNull;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
 
-public class BoxTest {
+public class PanelTest {
 
     @Test
     public void childrenFromUx() {
-        Box box = new Box();
+        Panel panel = new Panel();
         Widget child = new Widget();
 
         UXChildren uxChild = mock(UXChildren.class);
         when(uxChild.next()).thenReturn(child).thenReturn(null);
 
         assertNull(child.getParent());
-        box.applyChildren(uxChild);
-        assertEquals(child, box.getChildrenIterable().get(0));
-        assertEquals(box, child.getParent());
+        panel.applyChildren(uxChild);
+        assertEquals(child, panel.getChildrenIterable().get(0));
+        assertEquals(panel, child.getParent());
     }
 
     @Test
     public void siblingsFromUx() {
-        Box box = new Box();
+        Panel panel = new Panel();
         Widget child1 = new Widget();
         Widget child2 = new Widget();
 
@@ -36,16 +36,16 @@ public class BoxTest {
 
         assertNull(child1.getParent());
         assertNull(child2.getParent());
-        box.applyChildren(uxChild);
-        assertEquals(child1, box.getChildrenIterable().get(0));
-        assertEquals(child2, box.getChildrenIterable().get(1));
-        assertEquals(box, child1.getParent());
-        assertEquals(box, child2.getParent());
+        panel.applyChildren(uxChild);
+        assertEquals(child1, panel.getChildrenIterable().get(0));
+        assertEquals(child2, panel.getChildrenIterable().get(1));
+        assertEquals(panel, child1.getParent());
+        assertEquals(panel, child2.getParent());
     }
 
     @Test
     public void siblingsFromAdding() {
-        Box box = new Box();
+        Panel panel = new Panel();
         Widget child1 = new Widget();
         Widget child2 = new Widget();
 
@@ -53,77 +53,77 @@ public class BoxTest {
         assertNull(child1.getParent());
         assertNull(child2.getParent());
 
-        box.add(child1, child2);
+        panel.add(child1, child2);
 
-        assertEquals(child1, box.getChildrenIterable().get(0));
-        assertEquals(child2, box.getChildrenIterable().get(1));
-        assertEquals(box, child1.getParent());
-        assertEquals(box, child2.getParent());
+        assertEquals(child1, panel.getChildrenIterable().get(0));
+        assertEquals(child2, panel.getChildrenIterable().get(1));
+        assertEquals(panel, child1.getParent());
+        assertEquals(panel, child2.getParent());
     }
 
     @Test
     public void swapParentsFromAdding() {
-        Box box1 = new Box();
-        Box box2 = new Box();
+        Panel panel1 = new Panel();
+        Panel panel2 = new Panel();
         Widget child = new Widget();
 
         UXChildren uxChild = mock(UXChildren.class);
 
         assertNull(child.getParent());
-        box1.add(child);
+        panel1.add(child);
 
-        assertEquals(child, box1.getChildrenIterable().get(0));
-        assertEquals(0, box2.getChildrenIterable().size());
-        assertEquals(box1, child.getParent());
+        assertEquals(child, panel1.getChildrenIterable().get(0));
+        assertEquals(0, panel2.getChildrenIterable().size());
+        assertEquals(panel1, child.getParent());
 
-        box2.add(child);
-        assertEquals(child, box2.getChildrenIterable().get(0));
-        assertEquals(0, box1.getChildrenIterable().size());
-        assertEquals(box2, child.getParent());
+        panel2.add(child);
+        assertEquals(child, panel2.getChildrenIterable().get(0));
+        assertEquals(0, panel1.getChildrenIterable().size());
+        assertEquals(panel2, child.getParent());
     }
 
     @Test
     public void addTwice() {
-        Box box = new Box();
+        Panel panel = new Panel();
         Widget child = new Widget();
 
         UXChildren uxChild = mock(UXChildren.class);
 
         assertNull(child.getParent());
-        box.add(child);
+        panel.add(child);
 
-        assertEquals(child, box.getChildrenIterable().get(0));
-        assertEquals(1, box.getChildrenIterable().size());
-        assertEquals(box, child.getParent());
+        assertEquals(child, panel.getChildrenIterable().get(0));
+        assertEquals(1, panel.getChildrenIterable().size());
+        assertEquals(panel, child.getParent());
 
-        box.add(child);
-        assertEquals(child, box.getChildrenIterable().get(0));
-        assertEquals(1, box.getChildrenIterable().size());
-        assertEquals(box, child.getParent());
+        panel.add(child);
+        assertEquals(child, panel.getChildrenIterable().get(0));
+        assertEquals(1, panel.getChildrenIterable().size());
+        assertEquals(panel, child.getParent());
     }
 
     @Test
     public void addAndRemove() {
-        Box box = new Box();
+        Panel panel = new Panel();
         Widget child = new Widget();
 
         UXChildren uxChild = mock(UXChildren.class);
 
         assertNull(child.getParent());
-        box.add(child);
+        panel.add(child);
 
-        assertEquals(child, box.getChildrenIterable().get(0));
-        assertEquals(1, box.getChildrenIterable().size());
-        assertEquals(box, child.getParent());
+        assertEquals(child, panel.getChildrenIterable().get(0));
+        assertEquals(1, panel.getChildrenIterable().size());
+        assertEquals(panel, child.getParent());
 
-        box.remove(child);
-        assertEquals(0, box.getChildrenIterable().size());
+        panel.remove(child);
+        assertEquals(0, panel.getChildrenIterable().size());
         assertNull(child.getParent());
     }
 
     @Test
     public void addAndRemoveSibling() {
-        Box box = new Box();
+        Panel panel = new Panel();
         Widget child1 = new Widget();
         Widget child2 = new Widget();
 
@@ -131,307 +131,307 @@ public class BoxTest {
 
         assertNull(child1.getParent());
         assertNull(child2.getParent());
-        box.add(child1);
-        box.add(child2);
+        panel.add(child1);
+        panel.add(child2);
 
-        assertEquals(child1, box.getChildrenIterable().get(0));
-        assertEquals(child2, box.getChildrenIterable().get(1));
-        assertEquals(2, box.getChildrenIterable().size());
-        assertEquals(box, child1.getParent());
-        assertEquals(box, child2.getParent());
+        assertEquals(child1, panel.getChildrenIterable().get(0));
+        assertEquals(child2, panel.getChildrenIterable().get(1));
+        assertEquals(2, panel.getChildrenIterable().size());
+        assertEquals(panel, child1.getParent());
+        assertEquals(panel, child2.getParent());
 
-        box.remove(child1);
-        assertEquals(child2, box.getChildrenIterable().get(0));
-        assertEquals(1, box.getChildrenIterable().size());
+        panel.remove(child1);
+        assertEquals(child2, panel.getChildrenIterable().get(0));
+        assertEquals(1, panel.getChildrenIterable().size());
         assertNull(child1.getParent());
-        assertEquals(box, child2.getParent());
+        assertEquals(panel, child2.getParent());
     }
 
     @Test
     public void siblingsOrderFromElevation() {
-        Box box = new Box();
+        Panel panel = new Panel();
         Widget child1 = new Widget();
         Widget child2 = new Widget();
 
         assertNull(child1.getParent());
         assertNull(child2.getParent());
 
-        box.add(child1, child2);
+        panel.add(child1, child2);
 
-        assertEquals(child1, box.getChildrenIterable().get(0));
-        assertEquals(child2, box.getChildrenIterable().get(1));
-        assertEquals(box, child1.getParent());
-        assertEquals(box, child2.getParent());
+        assertEquals(child1, panel.getChildrenIterable().get(0));
+        assertEquals(child2, panel.getChildrenIterable().get(1));
+        assertEquals(panel, child1.getParent());
+        assertEquals(panel, child2.getParent());
 
         child1.setElevation(2);
         child2.setElevation(0);
 
-        assertEquals(child2, box.getChildrenIterable().get(0));
-        assertEquals(child1, box.getChildrenIterable().get(1));
-        assertEquals(box, child1.getParent());
-        assertEquals(box, child2.getParent());
+        assertEquals(child2, panel.getChildrenIterable().get(0));
+        assertEquals(child1, panel.getChildrenIterable().get(1));
+        assertEquals(panel, child1.getParent());
+        assertEquals(panel, child2.getParent());
     }
 
     @Test
     public void addItself() {
-        Box box = new Box();
+        Panel panel = new Panel();
 
         UXChildren uxChild = mock(UXChildren.class);
 
-        assertNull(box.getParent());
+        assertNull(panel.getParent());
 
-        box.add(box);
+        panel.add(panel);
 
-        assertNull(box.getParent());
-        assertEquals(0, box.getChildrenIterable().size());
+        assertNull(panel.getParent());
+        assertEquals(0, panel.getChildrenIterable().size());
     }
 
     @Test
     public void addItsParent() {
-        Box box = new Box();
-        Box parent = new Box();
+        Panel panel = new Panel();
+        Panel parent = new Panel();
 
         UXChildren uxChild = mock(UXChildren.class);
 
-        assertNull(box.getParent());
+        assertNull(panel.getParent());
         assertNull(parent.getParent());
 
-        parent.add(box);
+        parent.add(panel);
 
-        assertEquals(parent, box.getParent());
+        assertEquals(parent, panel.getParent());
         assertNull(parent.getParent());
 
-        assertEquals(0, box.getChildrenIterable().size());
+        assertEquals(0, panel.getChildrenIterable().size());
         assertEquals(1, parent.getChildrenIterable().size());
 
-        box.add(parent);
+        panel.add(parent);
 
-        assertEquals(parent, box.getParent());
+        assertEquals(parent, panel.getParent());
         assertNull(parent.getParent());
 
-        assertEquals(0, box.getChildrenIterable().size());
+        assertEquals(0, panel.getChildrenIterable().size());
         assertEquals(1, parent.getChildrenIterable().size());
     }
 
     @Test
-    public void measureBox() {
-        Box box = new Box();
+    public void measure() {
+        Panel panel = new Panel();
 
-        box.setPrefSize(150, 100);
-        box.onMeasure();
+        panel.setPrefSize(150, 100);
+        panel.onMeasure();
 
-        assertEquals(150f, box.getMeasureWidth(), 0.0001f);
-        assertEquals(100f, box.getMeasureHeight(), 0.0001f);
+        assertEquals(150f, panel.getMeasureWidth(), 0.0001f);
+        assertEquals(100f, panel.getMeasureHeight(), 0.0001f);
 
-        box.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
-        box.onMeasure();
+        panel.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
+        panel.onMeasure();
 
-        assertEquals(Widget.WRAP_CONTENT, box.getMeasureWidth(), 0.0001f);
-        assertEquals(Widget.WRAP_CONTENT, box.getMeasureHeight(), 0.0001f);
+        assertEquals(Widget.WRAP_CONTENT, panel.getMeasureWidth(), 0.0001f);
+        assertEquals(Widget.WRAP_CONTENT, panel.getMeasureHeight(), 0.0001f);
 
-        box.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
-        box.onMeasure();
+        panel.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
+        panel.onMeasure();
 
-        assertEquals(Widget.MATCH_PARENT, box.getMeasureWidth(), 0.0001f);
-        assertEquals(Widget.MATCH_PARENT, box.getMeasureHeight(), 0.0001f);
+        assertEquals(Widget.MATCH_PARENT, panel.getMeasureWidth(), 0.0001f);
+        assertEquals(Widget.MATCH_PARENT, panel.getMeasureHeight(), 0.0001f);
     }
 
     @Test
-    public void measureBoxWithMin() {
+    public void measureWithMin() {
         // Min should affect measure values
-        Box box = new Box();
+        Panel panel = new Panel();
 
-        box.setPrefSize(150, 100);
-        box.setMinSize(200, 250);
-        box.onMeasure();
+        panel.setPrefSize(150, 100);
+        panel.setMinSize(200, 250);
+        panel.onMeasure();
 
-        assertEquals(200, box.getMeasureWidth(), 0.0001f);
-        assertEquals(250, box.getMeasureHeight(), 0.0001f);
+        assertEquals(200, panel.getMeasureWidth(), 0.0001f);
+        assertEquals(250, panel.getMeasureHeight(), 0.0001f);
 
-        box.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
-        box.onMeasure();
+        panel.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
+        panel.onMeasure();
 
-        assertEquals(200, box.getMeasureWidth(), 0.0001f);
-        assertEquals(250, box.getMeasureHeight(), 0.0001f);
+        assertEquals(200, panel.getMeasureWidth(), 0.0001f);
+        assertEquals(250, panel.getMeasureHeight(), 0.0001f);
 
-        box.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
-        box.onMeasure();
+        panel.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
+        panel.onMeasure();
 
-        assertEquals(Widget.MATCH_PARENT, box.getMeasureWidth(), 0.0001f);
-        assertEquals(Widget.MATCH_PARENT, box.getMeasureHeight(), 0.0001f);
+        assertEquals(Widget.MATCH_PARENT, panel.getMeasureWidth(), 0.0001f);
+        assertEquals(Widget.MATCH_PARENT, panel.getMeasureHeight(), 0.0001f);
     }
 
     @Test
-    public void measureBoxWithMinAndPadding() {
-        Box box = new Box();
+    public void measureWithMinAndPadding() {
+        Panel panel = new Panel();
 
-        box.setPrefSize(150, 100);
-        box.setPadding(10, 10, 10, 10);
-        box.onMeasure();
+        panel.setPrefSize(150, 100);
+        panel.setPadding(10, 10, 10, 10);
+        panel.onMeasure();
 
-        assertEquals(150, box.getMeasureWidth(), 0.0001f);
-        assertEquals(100, box.getMeasureHeight(), 0.0001f);
+        assertEquals(150, panel.getMeasureWidth(), 0.0001f);
+        assertEquals(100, panel.getMeasureHeight(), 0.0001f);
 
-        box.setPrefSize(150, 100);
-        box.setMinSize(160, 110);
-        box.setPadding(10, 10, 10, 10);
-        box.onMeasure();
+        panel.setPrefSize(150, 100);
+        panel.setMinSize(160, 110);
+        panel.setPadding(10, 10, 10, 10);
+        panel.onMeasure();
 
-        assertEquals(160, box.getMeasureWidth(), 0.0001f);
-        assertEquals(110, box.getMeasureHeight(), 0.0001f);
+        assertEquals(160, panel.getMeasureWidth(), 0.0001f);
+        assertEquals(110, panel.getMeasureHeight(), 0.0001f);
 
-        box.setPrefSize(150, 100);
-        box.setMinSize(180, 130);
-        box.setPadding(10, 10, 10, 10);
-        box.onMeasure();
+        panel.setPrefSize(150, 100);
+        panel.setMinSize(180, 130);
+        panel.setPadding(10, 10, 10, 10);
+        panel.onMeasure();
 
-        assertEquals(180, box.getMeasureWidth(), 0.0001f);
-        assertEquals(130, box.getMeasureHeight(), 0.0001f);
+        assertEquals(180, panel.getMeasureWidth(), 0.0001f);
+        assertEquals(130, panel.getMeasureHeight(), 0.0001f);
 
-        box.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
-        box.setMinSize(160, 110);
-        box.setPadding(10, 10, 10, 10);
-        box.onMeasure();
+        panel.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
+        panel.setMinSize(160, 110);
+        panel.setPadding(10, 10, 10, 10);
+        panel.onMeasure();
 
-        assertEquals(160, box.getMeasureWidth(), 0.0001f);
-        assertEquals(110, box.getMeasureHeight(), 0.0001f);
+        assertEquals(160, panel.getMeasureWidth(), 0.0001f);
+        assertEquals(110, panel.getMeasureHeight(), 0.0001f);
 
-        box.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
-        box.setMinSize(160, 110);
-        box.setPadding(10, 10, 10, 10);
-        box.onMeasure();
+        panel.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
+        panel.setMinSize(160, 110);
+        panel.setPadding(10, 10, 10, 10);
+        panel.onMeasure();
 
-        assertEquals(Widget.MATCH_PARENT, box.getMeasureWidth(), 0.0001f);
-        assertEquals(Widget.MATCH_PARENT, box.getMeasureHeight(), 0.0001f);
+        assertEquals(Widget.MATCH_PARENT, panel.getMeasureWidth(), 0.0001f);
+        assertEquals(Widget.MATCH_PARENT, panel.getMeasureHeight(), 0.0001f);
 
-        Box child = new Box();
-        box.add(child);
+        Panel child = new Panel();
+        panel.add(child);
 
-        box.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
-        box.setMinSize(0, 0);
-        box.setPadding(1, 2, 3, 4);
+        panel.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
+        panel.setMinSize(0, 0);
+        panel.setPadding(1, 2, 3, 4);
         child.setPrefSize(150, 100);
-        box.onMeasure();
+        panel.onMeasure();
 
-        assertEquals(156, box.getMeasureWidth(), 0.0001f);
-        assertEquals(104, box.getMeasureHeight(), 0.0001f);
+        assertEquals(156, panel.getMeasureWidth(), 0.0001f);
+        assertEquals(104, panel.getMeasureHeight(), 0.0001f);
     }
 
     @Test
-    public void measureBoxWithMinAndMargin() {
-        Box box = new Box();
+    public void measureWithMinAndMargin() {
+        Panel panel = new Panel();
 
-        box.setPrefSize(150, 100);
-        box.setMargins(10, 10, 10, 10);
-        box.onMeasure();
+        panel.setPrefSize(150, 100);
+        panel.setMargins(10, 10, 10, 10);
+        panel.onMeasure();
 
-        assertEquals(170, box.getMeasureWidth(), 0.0001f);
-        assertEquals(120, box.getMeasureHeight(), 0.0001f);
+        assertEquals(170, panel.getMeasureWidth(), 0.0001f);
+        assertEquals(120, panel.getMeasureHeight(), 0.0001f);
 
-        box.setPrefSize(150, 100);
-        box.setMinSize(160, 110);
-        box.setMargins(10, 10, 10, 10);
-        box.onMeasure();
+        panel.setPrefSize(150, 100);
+        panel.setMinSize(160, 110);
+        panel.setMargins(10, 10, 10, 10);
+        panel.onMeasure();
 
-        assertEquals(180, box.getMeasureWidth(), 0.0001f);
-        assertEquals(130, box.getMeasureHeight(), 0.0001f);
+        assertEquals(180, panel.getMeasureWidth(), 0.0001f);
+        assertEquals(130, panel.getMeasureHeight(), 0.0001f);
 
-        box.setPrefSize(150, 100);
-        box.setMinSize(180, 130);
-        box.setMargins(10, 10, 10, 10);
-        box.onMeasure();
+        panel.setPrefSize(150, 100);
+        panel.setMinSize(180, 130);
+        panel.setMargins(10, 10, 10, 10);
+        panel.onMeasure();
 
-        assertEquals(200, box.getMeasureWidth(), 0.0001f);
-        assertEquals(150, box.getMeasureHeight(), 0.0001f);
+        assertEquals(200, panel.getMeasureWidth(), 0.0001f);
+        assertEquals(150, panel.getMeasureHeight(), 0.0001f);
 
-        box.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
-        box.setMinSize(160, 110);
-        box.setMargins(10, 10, 10, 10);
-        box.onMeasure();
+        panel.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
+        panel.setMinSize(160, 110);
+        panel.setMargins(10, 10, 10, 10);
+        panel.onMeasure();
 
-        assertEquals(180, box.getMeasureWidth(), 0.0001f);
-        assertEquals(130, box.getMeasureHeight(), 0.0001f);
+        assertEquals(180, panel.getMeasureWidth(), 0.0001f);
+        assertEquals(130, panel.getMeasureHeight(), 0.0001f);
 
-        box.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
-        box.setMinSize(160, 110);
-        box.setMargins(10, 10, 10, 10);
-        box.onMeasure();
+        panel.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
+        panel.setMinSize(160, 110);
+        panel.setMargins(10, 10, 10, 10);
+        panel.onMeasure();
 
-        assertEquals(Widget.MATCH_PARENT, box.getMeasureWidth(), 0.0001f);
-        assertEquals(Widget.MATCH_PARENT, box.getMeasureHeight(), 0.0001f);
+        assertEquals(Widget.MATCH_PARENT, panel.getMeasureWidth(), 0.0001f);
+        assertEquals(Widget.MATCH_PARENT, panel.getMeasureHeight(), 0.0001f);
 
-        Box child = new Box();
-        box.add(child);
+        Panel child = new Panel();
+        panel.add(child);
 
-        box.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
-        box.setMinSize(0, 0);
-        box.setMargins(1, 2, 3, 4);
+        panel.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
+        panel.setMinSize(0, 0);
+        panel.setMargins(1, 2, 3, 4);
         child.setPrefSize(150, 100);
-        box.onMeasure();
+        panel.onMeasure();
 
-        assertEquals(156, box.getMeasureWidth(), 0.0001f);
-        assertEquals(104, box.getMeasureHeight(), 0.0001f);
+        assertEquals(156, panel.getMeasureWidth(), 0.0001f);
+        assertEquals(104, panel.getMeasureHeight(), 0.0001f);
     }
 
     @Test
-    public void measureBoxWithMax() {
+    public void measureWithMax() {
         // Max should not affect measure values
-        Box box = new Box();
-        box.setMaxSize(150, 100);
-        box.setPrefSize(200, 250);
-        box.onMeasure();
+        Panel panel = new Panel();
+        panel.setMaxSize(150, 100);
+        panel.setPrefSize(200, 250);
+        panel.onMeasure();
 
-        assertEquals(200, box.getMeasureWidth(), 0.0001f);
-        assertEquals(250, box.getMeasureHeight(), 0.0001f);
+        assertEquals(200, panel.getMeasureWidth(), 0.0001f);
+        assertEquals(250, panel.getMeasureHeight(), 0.0001f);
 
-        box.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
-        box.onMeasure();
+        panel.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
+        panel.onMeasure();
 
-        assertEquals(Widget.WRAP_CONTENT, box.getMeasureWidth(), 0.0001f);
-        assertEquals(Widget.WRAP_CONTENT, box.getMeasureHeight(), 0.0001f);
+        assertEquals(Widget.WRAP_CONTENT, panel.getMeasureWidth(), 0.0001f);
+        assertEquals(Widget.WRAP_CONTENT, panel.getMeasureHeight(), 0.0001f);
 
-        box.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
-        box.onMeasure();
+        panel.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
+        panel.onMeasure();
 
-        assertEquals(Widget.MATCH_PARENT, box.getMeasureWidth(), 0.0001f);
-        assertEquals(Widget.MATCH_PARENT, box.getMeasureHeight(), 0.0001f);
+        assertEquals(Widget.MATCH_PARENT, panel.getMeasureWidth(), 0.0001f);
+        assertEquals(Widget.MATCH_PARENT, panel.getMeasureHeight(), 0.0001f);
     }
 
     @Test
-    public void measureBoxWithMaxMargin() {
+    public void measureWithMaxMargin() {
         // Max should not affect measure values
-        Box box = new Box();
-        Box child = new Box();
+        Panel panel = new Panel();
+        Panel child = new Panel();
         child.setPrefSize(80, 80);
-        box.add(child);
+        panel.add(child);
 
-        box.setMaxSize(150, 100);
-        box.setPrefSize(200, 250);
-        box.setMargins(5, 4, 10, 8);
-        box.onMeasure();
+        panel.setMaxSize(150, 100);
+        panel.setPrefSize(200, 250);
+        panel.setMargins(5, 4, 10, 8);
+        panel.onMeasure();
 
-        assertEquals(212, box.getMeasureWidth(), 0.0001f);
-        assertEquals(265, box.getMeasureHeight(), 0.0001f);
+        assertEquals(212, panel.getMeasureWidth(), 0.0001f);
+        assertEquals(265, panel.getMeasureHeight(), 0.0001f);
 
-        box.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
-        box.onMeasure();
+        panel.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
+        panel.onMeasure();
 
-        assertEquals(92, box.getMeasureWidth(), 0.0001f);
-        assertEquals(95, box.getMeasureHeight(), 0.0001f);
+        assertEquals(92, panel.getMeasureWidth(), 0.0001f);
+        assertEquals(95, panel.getMeasureHeight(), 0.0001f);
 
-        box.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
-        box.onMeasure();
+        panel.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
+        panel.onMeasure();
 
-        assertEquals(Widget.MATCH_PARENT, box.getMeasureWidth(), 0.0001f);
-        assertEquals(Widget.MATCH_PARENT, box.getMeasureHeight(), 0.0001f);
+        assertEquals(Widget.MATCH_PARENT, panel.getMeasureWidth(), 0.0001f);
+        assertEquals(Widget.MATCH_PARENT, panel.getMeasureHeight(), 0.0001f);
     }
 
     @Test
-    public void measureBoxMatchParent() {
-        Box parent = new Box();
+    public void measureMatchParent() {
+        Panel parent = new Panel();
         parent.setPrefSize(150, 100);
 
-        Box child = new Box();
+        Panel child = new Panel();
         child.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
         parent.add(child);
 
@@ -444,11 +444,11 @@ public class BoxTest {
     }
 
     @Test
-    public void measureBoxMatchParentChild() {
-        Box parent = new Box();
+    public void measureMatchParentChild() {
+        Panel parent = new Panel();
         parent.setPrefSize(150, 100);
 
-        Box child = new Box();
+        Panel child = new Panel();
         child.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
         parent.add(child);
 
@@ -459,11 +459,11 @@ public class BoxTest {
     }
 
     @Test
-    public void measureBoxMatchParentChildAndWrapContent() {
-        Box parent = new Box();
+    public void measureMatchParentChildAndWrapContent() {
+        Panel parent = new Panel();
         parent.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
 
-        Box child = new Box();
+        Panel child = new Panel();
         child.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
         parent.add(child);
 
@@ -477,10 +477,10 @@ public class BoxTest {
 
     @Test
     public void measureChildBiggerThanParent() {
-        Box parent = new Box();
+        Panel parent = new Panel();
         parent.setPrefSize(150, 100);
 
-        Box child = new Box();
+        Panel child = new Panel();
         child.setPrefSize(200, 250);
         parent.add(child);
 
@@ -494,8 +494,8 @@ public class BoxTest {
 
     @Test
     public void layoutOneChildren() {
-        Box parent = new Box();
-        Box child = new Box();
+        Panel parent = new Panel();
+        Panel child = new Panel();
         parent.add(child);
 
         // Child size does not affect Parent
@@ -600,9 +600,9 @@ public class BoxTest {
 
     @Test
     public void layoutSiblings() {
-        Box parent = new Box();
-        Box child1 = new Box();
-        Box child2 = new Box();
+        Panel parent = new Panel();
+        Panel child1 = new Panel();
+        Panel child2 = new Panel();
         parent.add(child1);
         parent.add(child2);
 

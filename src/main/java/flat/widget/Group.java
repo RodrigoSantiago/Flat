@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public abstract class Group extends Parent {
 
-    HashMap<String, Widget> idMap = new HashMap<>();
+    private final HashMap<String, Widget> idMap = new HashMap<>();
 
     @Override
     public Widget findById(String id) {

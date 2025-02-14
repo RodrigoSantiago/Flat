@@ -2,7 +2,6 @@ package flat.widget;
 
 import flat.graphics.cursor.Cursor;
 import flat.uxml.Controller;
-import flat.uxml.UXBuilder;
 import flat.uxml.UXHash;
 import flat.uxml.UXTheme;
 import flat.uxml.value.*;
@@ -304,93 +303,93 @@ public class WidgetTest {
         widget.applyStyle();
 
         widget.setVisibility(Visibility.VISIBLE);
-        widget.unfollowStyleProperty("visibility");
+        widget.setFollowStyleProperty("visibility", false);
         widget.setCursor(Cursor.UNSET);
-        widget.unfollowStyleProperty("cursor");
+        widget.setFollowStyleProperty("cursor", false);
 
         widget.setFocusable(false);
-        widget.unfollowStyleProperty("focusable");
+        widget.setFollowStyleProperty("focusable", false);
         widget.setClickable(true);
-        widget.unfollowStyleProperty("clickable");
+        widget.setFollowStyleProperty("clickable", false);
 
         widget.setPrefWidth(161);
-        widget.unfollowStyleProperty("width");
+        widget.setFollowStyleProperty("width", false);
         widget.setPrefHeight(801);
-        widget.unfollowStyleProperty("height");
+        widget.setFollowStyleProperty("height", false);
         widget.setMaxWidth(121);
-        widget.unfollowStyleProperty("max-width");
+        widget.setFollowStyleProperty("max-width", false);
         widget.setMaxHeight(151);
-        widget.unfollowStyleProperty("max-height");
+        widget.setFollowStyleProperty("max-height", false);
         widget.setMinWidth(801);
-        widget.unfollowStyleProperty("min-width");
+        widget.setFollowStyleProperty("min-width", false);
         widget.setMinHeight(401);
-        widget.unfollowStyleProperty("min-height");
+        widget.setFollowStyleProperty("min-height", false);
         widget.setWeight(4);
-        widget.unfollowStyleProperty("weight");
+        widget.setFollowStyleProperty("weight", false);
 
         widget.setTranslateX(161);
-        widget.unfollowStyleProperty("translate-x");
+        widget.setFollowStyleProperty("translate-x", false);
         widget.setTranslateY(241);
-        widget.unfollowStyleProperty("translate-y");
+        widget.setFollowStyleProperty("translate-y", false);
         widget.setCenterX(41);
-        widget.unfollowStyleProperty("center-x");
+        widget.setFollowStyleProperty("center-x", false);
         widget.setCenterY(81);
-        widget.unfollowStyleProperty("center-y");
+        widget.setFollowStyleProperty("center-y", false);
         widget.setScaleX(1.51f);
-        widget.unfollowStyleProperty("scale-x");
+        widget.setFollowStyleProperty("scale-x", false);
         widget.setScaleY(1.51f);
-        widget.unfollowStyleProperty("scale-y");
+        widget.setFollowStyleProperty("scale-y", false);
 
         widget.setRotate(181);
-        widget.unfollowStyleProperty("rotate");
+        widget.setFollowStyleProperty("rotate", false);
 
         widget.setElevation(121);
-        widget.unfollowStyleProperty("elevation");
+        widget.setFollowStyleProperty("elevation", false);
         widget.setShadowEnabled(false);
-        widget.unfollowStyleProperty("shadow-enabled");
+        widget.setFollowStyleProperty("shadow-enabled", false);
 
         widget.setRippleEnabled(false);
-        widget.unfollowStyleProperty("ripple-enabled");
+        widget.setFollowStyleProperty("ripple-enabled", false);
         widget.setRippleColor(0xFF1000FF);
-        widget.unfollowStyleProperty("ripple-color");
+        widget.setFollowStyleProperty("ripple-color", false);
         widget.setRippleOverflow(true);
-        widget.unfollowStyleProperty("ripple-overflow");
+        widget.setFollowStyleProperty("ripple-overflow", false);
 
         widget.setMarginTop(11);
-        widget.unfollowStyleProperty("margin-top");
+        widget.setFollowStyleProperty("margin-top", false);
         widget.setMarginRight(21);
-        widget.unfollowStyleProperty("margin-right");
+        widget.setFollowStyleProperty("margin-right", false);
         widget.setMarginBottom(31);
-        widget.unfollowStyleProperty("margin-bottom");
+        widget.setFollowStyleProperty("margin-bottom", false);
         widget.setMarginLeft(41);
-        widget.unfollowStyleProperty("margin-left");
+        widget.setFollowStyleProperty("margin-left", false);
 
         widget.setPaddingTop(51);
-        widget.unfollowStyleProperty("padding-top");
+        widget.setFollowStyleProperty("padding-top", false);
         widget.setPaddingRight(61);
-        widget.unfollowStyleProperty("padding-right");
+        widget.setFollowStyleProperty("padding-right", false);
         widget.setPaddingBottom(71);
-        widget.unfollowStyleProperty("padding-bottom");
+        widget.setFollowStyleProperty("padding-bottom", false);
         widget.setPaddingLeft(81);
-        widget.unfollowStyleProperty("padding-left");
+        widget.setFollowStyleProperty("padding-left", false);
 
         widget.setRadiusTop(11);
-        widget.unfollowStyleProperty("radius-top");
+        widget.setFollowStyleProperty("radius-top", false);
         widget.setRadiusRight(21);
-        widget.unfollowStyleProperty("radius-right");
+        widget.setFollowStyleProperty("radius-right", false);
         widget.setRadiusBottom(31);
-        widget.unfollowStyleProperty("radius-bottom");
+        widget.setFollowStyleProperty("radius-bottom", false);
         widget.setRadiusLeft(41);
-        widget.unfollowStyleProperty("radius-left");
+        widget.setFollowStyleProperty("radius-left", false);
 
         widget.setBackgroundColor(0x10FF00FF);
-        widget.unfollowStyleProperty("background-color");
+        widget.setFollowStyleProperty("background-color", false);
         widget.setBorderRound(false);
-        widget.unfollowStyleProperty("border-round");
+        widget.setFollowStyleProperty("border-round", false);
         widget.setBorderColor(0x100000FF);
-        widget.unfollowStyleProperty("border-color");
+        widget.setFollowStyleProperty("border-color", false);
         widget.setBorderWidth(11);
-        widget.unfollowStyleProperty("border-width");
+        widget.setFollowStyleProperty("border-width", false);
 
         assertUnfollow(widget, hash);
 

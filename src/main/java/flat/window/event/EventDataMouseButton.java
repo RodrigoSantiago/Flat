@@ -60,8 +60,6 @@ public class EventDataMouseButton extends EventData {
     private void released(Window window, EventDataPointer pointer, Widget widget) {
         if (pointer.isDragged(button)) {
             pointer.setDragDropped();
-        }
-        if (pointer.isDragDone()) {
             pointer.setDragReleased();
         }
 

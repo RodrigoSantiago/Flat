@@ -143,7 +143,7 @@ public class ActivityTest {
         Scene scene2 = mock(Scene.class);
         when(scene2.getActivityScene()).thenReturn(mock(ActivityScene.class));
         UXBuilder builder = mock(UXBuilder.class);
-        when(builder.build(any())).thenReturn(scene2);
+        when(builder.buildScene(any())).thenReturn(scene2);
 
         UXNode root = mock(UXNode.class);
         when(root.instance(any())).thenReturn(builder);

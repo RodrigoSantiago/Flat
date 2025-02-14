@@ -1,6 +1,6 @@
 package flat.widget;
 
-import flat.widget.layout.Box;
+import flat.widget.layout.Panel;
 import flat.window.Activity;
 import flat.window.ActivitySupport;
 import org.junit.Test;
@@ -15,7 +15,7 @@ public class SceneTest {
     public void findById() {
         Scene parent = new Scene();
 
-        Box child = new Box();
+        Panel child = new Panel();
         parent.add(child);
 
         child.setId("child-id");
@@ -36,13 +36,13 @@ public class SceneTest {
     public void assignIdBeforeAdd() {
         Scene parent = new Scene();
 
-        Box child1 = new Box();
+        Panel child1 = new Panel();
         child1.setId("child-id1");
         parent.add(child1);
 
         assertEquals(child1, parent.findById("child-id1"));
 
-        Box child2 = new Box();
+        Panel child2 = new Panel();
         child2.setId("child-id2");
         child1.add(child2);
         assertEquals(child2, parent.findById("child-id2"));
@@ -56,7 +56,7 @@ public class SceneTest {
         child1.setId("child-id1");
         parent.add(child1);
 
-        Box child2 = new Box();
+        Panel child2 = new Panel();
         child2.setId("child-id2");
         child1.add(child2);
 
@@ -71,7 +71,7 @@ public class SceneTest {
     public void changeParent() {
         Scene parentA = new Scene();
         Scene parentB = new Scene();
-        Box child1 = new Box();
+        Panel child1 = new Panel();
 
         child1.setId("child-id");
         parentA.add(child1);
@@ -93,8 +93,8 @@ public class SceneTest {
     public void changeParentEventPropagation() {
         Scene parentA = new Scene();
         Scene parentB = new Scene();
-        Box child1 = new Box();
-        Box child2 = new Box();
+        Panel child1 = new Panel();
+        Panel child2 = new Panel();
         child1.add(child2);
 
         child1.setId("child-id1");
@@ -126,9 +126,9 @@ public class SceneTest {
     public void changeParentEventBlockPropagation() {
         Scene parentA = new Scene();
         Scene parentB = new Scene();
-        Box child1 = new Box();
+        Panel child1 = new Panel();
         Scene parentC = new Scene();
-        Box child2 = new Box();
+        Panel child2 = new Panel();
         child1.add(parentC);
         parentC.add(child2);
 
@@ -189,9 +189,9 @@ public class SceneTest {
         Scene parentB = new Scene();
         ActivitySupport.setActivity(parentB, activityB);
 
-        Box child1 = new Box();
+        Panel child1 = new Panel();
         Scene parentC = new Scene();
-        Box child2 = new Box();
+        Panel child2 = new Panel();
         child1.add(parentC);
         parentC.add(child2);
 

@@ -1,0 +1,33 @@
+<Scene background-color="#C8C8C8" width="400" height="200" id="dialog-scene">
+    <LinearBox direction="vertical" background-color="#C0C0C0" width="MATCH_PARENT" height="MATCH_PARENT"
+        padding-left="8" padding-right="8" padding-top="8" padding-bottom="8"
+        margin-left="32" margin-right="32" margin-top="8" margin-bottom="8" id="panel" >
+        <LinearBox direction="vertical" width="MATCH_PARENT" height="MATCH_PARENT">
+            <Button text="Ola Mundo pq - OLÂA" text-size="24px" font="font(ITALIC)" margin-top="8"
+                    icon="/default/img_test.png"
+                    icon-scale-height="true" icon-spacing="24px"
+                    icon-align="LEFT"
+                    vertical-align="MIDDLE"
+                    height="80px"
+                    on-action="resize">
+                <Menu width="100" height="200" background-color="blue">
+                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
+                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
+                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
+                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
+                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
+                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
+                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
+                </Menu>
+            </Button>
+            <Button text="Ola Mundo pq - OLÂ" text-size="24px" font="SANS" margin-top="8"
+                    icon="/default/img_test.png"
+                    icon-scale-height="true" icon-spacing="24px"
+                    icon-align="RIGHT"
+                    horizontal-align="RIGHT"
+                    height="80px" width="MATCH_PARENT"
+                    on-action="bring">
+            </Button>
+        </LinearBox>
+    </LinearBox>
+</Scene>

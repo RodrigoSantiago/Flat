@@ -211,13 +211,13 @@ public class ScrollBar extends Widget {
     }
 
     @Override
-    public void firePointer(PointerEvent pointerEvent) {
-        super.firePointer(pointerEvent);
-        if (pointerEvent.isConsumed()) {
+    public void firePointer(PointerEvent event) {
+        super.firePointer(event);
+        if (event.isConsumed() || event.getPointerID() != 1) {
             return;
         }
 
-        Vector2 point = new Vector2(pointerEvent.getX(), pointerEvent.getY());
+        Vector2 point = new Vector2(event.getX(), event.getY());
         screenToLocal(point);
 
         boolean hor = direction == Direction.HORIZONTAL || direction == Direction.IHORIZONTAL;
@@ -249,16 +249,16 @@ public class ScrollBar extends Widget {
             hSize = height * handleSize;
         }
 
-        if (pointerEvent.getType() == PointerEvent.PRESSED) {
+        if (event.getType() == PointerEvent.PRESSED) {
             grabOffset = Math.max(0, Math.min(1, (pos + (inverse ? start : 0) - hStart) / hSize));
             float target = ((pos - (inverse ? 0 : start)) / size - handleSize * grabOffset) * totalDimension;
             slideTo(target);
 
-        } else if (pointerEvent.getType() == PointerEvent.DRAGGED) {
+        } else if (event.getType() == PointerEvent.DRAGGED) {
             float target = ((pos - (inverse ? 0 : start)) / size - handleSize * grabOffset) * totalDimension;
             slideTo(target);
 
-        } else if (pointerEvent.getType() == PointerEvent.RELEASED) {
+        } else if (event.getType() == PointerEvent.RELEASED) {
             grabOffset = 0;
         }
     }

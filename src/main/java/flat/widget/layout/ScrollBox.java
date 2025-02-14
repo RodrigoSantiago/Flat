@@ -60,7 +60,7 @@ public class ScrollBox extends Parent {
 
         String horizontalBarId = attrs.getAttributeString("horizontal-bar-id", null);
         if (horizontalBarId != null) {
-            for (var child : getChildren()) {
+            for (var child : getChildrenIterable()) {
                 if (horizontalBarId.equals(child.getId()) && child instanceof ScrollBar bar) {
                     setHorizontalBar(bar);
                     break;
@@ -70,7 +70,7 @@ public class ScrollBox extends Parent {
 
         String verticalBarId = attrs.getAttributeString("vertical-bar-id", null);
         if (verticalBarId != null) {
-            for (var child : getChildren()) {
+            for (var child : getChildrenIterable()) {
                 if (child != horizontalBar && verticalBarId.equals(child.getId()) && child instanceof ScrollBar bar) {
                     setVerticalBar(bar);
                     break;
@@ -236,9 +236,9 @@ public class ScrollBox extends Parent {
             horizontalBar.onLayout(childWidth, childHeight);
             float xx = (verticalBarPosition == VerticalBarPosition.LEFT) ? barSizeX : 0;
             if (horizontalBarPosition == HorizontalBarPosition.TOP) {
-                horizontalBar.setPosition(getInX() + xx, getInY());
+                horizontalBar.setLayoutPosition(getInX() + xx, getInY());
             } else {
-                horizontalBar.setPosition(getInX() + xx, getInY() + getInHeight() - horizontalBar.getLayoutHeight());
+                horizontalBar.setLayoutPosition(getInX() + xx, getInY() + getInHeight() - horizontalBar.getLayoutHeight());
             }
         }
 
@@ -258,9 +258,9 @@ public class ScrollBox extends Parent {
             }
             verticalBar.onLayout(childWidth, childHeight);
             if (verticalBarPosition == VerticalBarPosition.LEFT) {
-                verticalBar.setPosition(getInX(), getInY());
+                verticalBar.setLayoutPosition(getInX(), getInY());
             } else {
-                verticalBar.setPosition(getInX() + getInWidth() - verticalBar.getLayoutWidth(), getInY());
+                verticalBar.setLayoutPosition(getInX() + getInWidth() - verticalBar.getLayoutWidth(), getInY());
             }
         }
 
@@ -287,7 +287,7 @@ public class ScrollBox extends Parent {
             }
 
             child.onLayout(childWidth, childHeight);
-            child.setPosition(getInX() + xx - viewX, getInY() + yy - viewY);
+            child.setLayoutPosition(getInX() + xx - viewX, getInY() + yy - viewY);
         }
 
         float oldX = viewOffsetX;
@@ -317,11 +317,39 @@ public class ScrollBox extends Parent {
     }
 
     @Override
+    public boolean onLayoutSingleChild(Widget child) {
+        return false;
+    }
+
+    @Override
+    public void add(Widget... children) {
+        super.add(children);
+    }
+
+    @Override
+    public void add(Widget child) {
+        super.add(child);
+    }
+
+    @Override
+    public void add(List<Widget> children) {
+        super.add(children);
+    }
+
+    @Override
+    protected boolean detachChild(Widget child) {
+        if (child == horizontalBar || child == verticalBar) {
+            return false;
+        }
+        return super.detachChild(child);
+    }
+
+    @Override
     public void onDraw(SmartContext context) {
+        if (getInWidth() <= 0 || getInHeight() <= 0) return;
+
         drawBackground(context);
         drawRipple(context);
-
-        if (getInWidth() <= 0 || getInHeight() <= 0) return;
 
         Shape oldClip = backgroundClip(context);
         for (Widget child : getChildrenIterable()) {
@@ -366,39 +394,11 @@ public class ScrollBox extends Parent {
     }
 
     @Override
-    public void fireScroll(ScrollEvent scrollEvent) {
-        super.fireScroll(scrollEvent);
-        if (!scrollEvent.isConsumed()) {
-            slide(0, - scrollEvent.getDeltaY() * scrollSensibility);
+    public void fireScroll(ScrollEvent event) {
+        super.fireScroll(event);
+        if (!event.isConsumed()) {
+            slide(0, - event.getDeltaY() * scrollSensibility);
         }
-    }
-
-    @Override
-    public void add(Widget... children) {
-        super.add(children);
-    }
-
-    @Override
-    public void add(Widget child) {
-        super.add(child);
-    }
-
-    @Override
-    public void add(List<Widget> children) {
-        super.add(children);
-    }
-
-    @Override
-    public void remove(Widget widget) {
-        super.remove(widget);
-    }
-
-    @Override
-    protected boolean detachChild(Widget child) {
-        if (child == horizontalBar || child == verticalBar) {
-            return false;
-        }
-        return super.detachChild(child);
     }
 
     public Policy getHorizontalPolicy() {

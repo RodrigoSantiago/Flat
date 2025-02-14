@@ -6,7 +6,7 @@ import flat.widget.Widget;
 
 import java.util.List;
 
-public class Box extends Parent {
+public class Panel extends Parent {
 
     @Override
     public void applyChildren(UXChildren children) {
@@ -29,6 +29,15 @@ public class Box extends Parent {
     }
 
     @Override
+    public boolean onLayoutSingleChild(Widget child) {
+        if (getChildren().contains(child)) {
+            performSingleLayoutFree(getLayoutWidth(), getLayoutHeight(), child);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public void add(Widget child) {
         super.add(child);
     }
@@ -42,4 +51,5 @@ public class Box extends Parent {
     public void add(List<Widget> children) {
         super.add(children);
     }
+
 }

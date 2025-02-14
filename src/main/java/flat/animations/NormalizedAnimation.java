@@ -18,7 +18,12 @@ public abstract class NormalizedAnimation implements Animation {
     private int _loops;
     private Interpolation _interpolation;
 
-    private Runnable onStop;
+    public NormalizedAnimation() {
+    }
+
+    public NormalizedAnimation(Interpolation interpolation) {
+        this.interpolation = interpolation;
+    }
 
     public Interpolation getInterpolation() {
         return interpolation;
@@ -26,14 +31,6 @@ public abstract class NormalizedAnimation implements Animation {
 
     public void setInterpolation(Interpolation interpolation) {
         this.interpolation = interpolation == null ? Interpolation.linear : interpolation;
-    }
-
-    public Runnable getOnStop() {
-        return onStop;
-    }
-
-    public void setOnStop(Runnable onStop) {
-        this.onStop = onStop;
     }
 
     public float getDuration() {
@@ -85,6 +82,7 @@ public abstract class NormalizedAnimation implements Animation {
         firstAfterPlay = false;
 
         activity.addAnimation(this);
+        onStart();
     }
 
     public void pause() {
@@ -98,7 +96,7 @@ public abstract class NormalizedAnimation implements Animation {
         if (playing || paused) {
             playing = false;
             paused = false;
-            if (onStop != null) onStop.run();
+            onStop();
         }
     }
 
@@ -172,4 +170,12 @@ public abstract class NormalizedAnimation implements Animation {
     }
 
     protected abstract void compute(float t);
+
+    protected void onStart() {
+
+    }
+
+    protected void onStop() {
+
+    }
 }

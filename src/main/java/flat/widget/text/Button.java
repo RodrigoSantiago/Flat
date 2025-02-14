@@ -168,12 +168,9 @@ public class Button extends Label {
     }
 
     @Override
-    public void firePointer(PointerEvent pointerEvent) {
-        super.firePointer(pointerEvent);
-        if (!pointerEvent.isConsumed() && pointerEvent.getType() == PointerEvent.PRESSED) {
-            requestFocus(true);
-        }
-        if (!pointerEvent.isConsumed() && pointerEvent.getType() == PointerEvent.RELEASED) {
+    public void firePointer(PointerEvent event) {
+        super.firePointer(event);
+        if (!event.isConsumed() && event.getType() == PointerEvent.RELEASED && event.getPointerID() == 1) {
             action();
         }
     }
@@ -186,14 +183,14 @@ public class Button extends Label {
         this.actionListener = actionListener;
     }
 
-    private void fireAction(ActionEvent event) {
+    private void fireAction() {
         if (actionListener != null) {
-            actionListener.handle(event);
+            actionListener.handle(new ActionEvent(this));
         }
     }
 
     public void action() {
-        fireAction(new ActionEvent(this));
+        fireAction();
     }
 
     public int getIconColor() {

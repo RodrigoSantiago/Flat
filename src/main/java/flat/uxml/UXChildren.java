@@ -1,6 +1,6 @@
 package flat.uxml;
 
-import flat.widget.Menu;
+import flat.widget.stages.Menu;
 import flat.widget.Widget;
 
 import java.util.ArrayList;

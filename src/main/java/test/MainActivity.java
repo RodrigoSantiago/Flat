@@ -2,22 +2,12 @@ package test;
 
 import flat.Flat;
 import flat.animations.presets.Hide;
-import flat.backend.GL;
-import flat.backend.SVG;
 import flat.events.ActionEvent;
-import flat.graphics.Color;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Context;
-import flat.graphics.context.Font;
-import flat.graphics.context.Texture2D;
-import flat.graphics.text.FontPosture;
-import flat.graphics.text.FontStyle;
-import flat.graphics.text.FontWeight;
-import flat.math.Affine;
-import flat.math.shapes.Path;
-import flat.math.stroke.BasicStroke;
+import flat.uxml.Controller;
 import flat.uxml.ValueChange;
-import flat.widget.enums.SelectionState;
+import flat.widget.stages.Dialog;
 import flat.widget.layout.LinearBox;
 import flat.widget.text.Button;
 import flat.widget.text.Label;
@@ -35,11 +25,35 @@ public class MainActivity extends Activity {
 
     @Flat public Button button;
     @Flat public Label label;
+    @Flat public LinearBox linear;
+
+    private int num;
+
+    @Flat
+    public void linearAction(ActionEvent actionEvent) {
+        linear.setPrefWidth(linear.getPrefWidth() + 5);
+    }
 
     @Flat
     public void onButtonClick(ActionEvent actionEvent) {
-        label.setText(label.getText() + ".");
-        System.out.println("a");
+        Activity activity = this;
+        var dialog = new Dialog();
+        dialog.setId("dialog");
+        dialog.build("/default/screen_test/dialog_test.uxml", new Controller() {
+            @Flat
+            public void resize(ActionEvent actionEvent) {
+                dialog.getChildrenIterable().get(0).setPrefWidth(dialog.getChildrenIterable().get(0).getPrefWidth() + 15);
+            }
+            @Flat
+            public void bring(ActionEvent actionEvent) {
+                System.out.println("ola");
+                var dialog2 = new Dialog();
+                dialog2.setId("dialog" + (++num));
+                dialog2.build("/default/screen_test/dialog_test.uxml", null, getTheme());
+                dialog2.show(activity, getWidth() / 1.5f, getHeight() / 2f);
+            }
+        }, getTheme());
+        dialog.show(this, getWidth() / 2f, getHeight() / 2f);
     }
 
     @Flat

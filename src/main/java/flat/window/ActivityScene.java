@@ -1,6 +1,7 @@
 package flat.window;
 
 import flat.widget.SceneActivity;
+import flat.widget.stages.Stage;
 
 public class ActivityScene {
 
@@ -21,5 +22,9 @@ public class ActivityScene {
             this.activity = activity;
             scene.onActivityChange(prev, this.activity);
         }
+    }
+
+    void addStage(Stage stage) {
+        scene.addStage(stage);
     }
 }

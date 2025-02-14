@@ -1,5 +1,6 @@
 package flat.widget.layout;
 
+import flat.uxml.UXChildren;
 import flat.uxml.UXHash;
 import flat.uxml.value.UXValue;
 import flat.uxml.value.UXValueText;
@@ -11,8 +12,29 @@ import org.junit.Test;
 import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 public class StackBoxTest {
+
+    @Test
+    public void childrenFromUx() {
+        StackBox box = new StackBox();
+        Widget child1 = new Widget();
+        Widget child2 = new Widget();
+
+        UXChildren uxChild = mock(UXChildren.class);
+        when(uxChild.next()).thenReturn(child1).thenReturn(child2).thenReturn(null);
+
+        assertNull(child1.getParent());
+        assertNull(child2.getParent());
+        box.applyChildren(uxChild);
+        assertEquals(child1, box.getChildrenIterable().get(0));
+        assertEquals(child2, box.getChildrenIterable().get(1));
+        assertEquals(box, child1.getParent());
+        assertEquals(box, child2.getParent());
+    }
 
     @Test
     public void alignStyles() {
