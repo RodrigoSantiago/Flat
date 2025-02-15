@@ -206,6 +206,7 @@ public class Dialog extends Stage {
     }
 
     private void onShow(Activity act, float x, float y) {
+        refreshStyle();
         onMeasure();
         float mW = Math.min(Math.min(getMeasureWidth(), getLayoutMaxWidth()), act.getWidth());
         float mH = Math.min(Math.min(getMeasureHeight(), getLayoutMaxHeight()), act.getHeight());

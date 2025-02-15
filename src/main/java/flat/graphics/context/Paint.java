@@ -4,7 +4,7 @@ import flat.math.Affine;
 import flat.math.Mathf;
 
 public final class Paint {
-    public enum CycleMethod {CLAMP, REPEAT, REFLECT}
+    public enum CycleMethod {CLAMP, REPEAT, REFLECT, GAUSIAN_CLAMP}
 
     private static final float[] identity = new float[]{1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f};
 
@@ -97,9 +97,9 @@ public final class Paint {
         paint.y2 = Math.abs(y1 - y2);
         paint.corners = corners;
         paint.blur = blur;
-        paint.stops = new float[]{0.0f, 0.6f, 1.0f};
-        paint.colors = new int[]{0x000000FF & (int) (alpha * 255), 0x000000FF & (int) (alpha * 24), 0};
-        paint.cycleMethod = CycleMethod.CLAMP;
+        paint.stops = new float[]{0.0f, 1.0f};
+        paint.colors = new int[]{0x000000FF & (int) (alpha * 255), 0};
+        paint.cycleMethod = CycleMethod.GAUSIAN_CLAMP;
         paint.transform = transform == null ? identity :
                 new float[]{
                         transform.m00, transform.m10,

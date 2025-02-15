@@ -10,7 +10,7 @@ public class Main {
                 .layout("/default/screen_test/screen_test.uxml")
                 .theme("/default/themes")
                 .controller(MainActivity::new)
-                .size(800, 600)
+                .size(1000, 800)
                 .multiSamples(8)
                 .transparent(false)
                 .build()
