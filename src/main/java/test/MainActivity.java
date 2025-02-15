@@ -1,26 +1,23 @@
 package test;
 
 import flat.Flat;
-import flat.animations.presets.Hide;
 import flat.events.ActionEvent;
 import flat.graphics.SmartContext;
-import flat.graphics.context.Context;
 import flat.uxml.Controller;
 import flat.uxml.ValueChange;
-import flat.widget.stages.Dialog;
 import flat.widget.layout.LinearBox;
+import flat.widget.stages.Dialog;
 import flat.widget.text.Button;
 import flat.widget.text.Label;
 import flat.window.Activity;
-import flat.window.Application;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Controller {
 
-    public MainActivity(Context context) {
-        super(context);
+    public MainActivity(Activity activity) {
+        super(activity);
 
-        setTheme(Application.getResourcesManager().getResource("default/themes"));
-        setScene(Application.getResourcesManager().getResource("default/screen_test/screen_test.uxml"));
+        activity.setTheme("default/themes");
+        activity.setLayoutBuilder("default/screen_test/screen_test.uxml", this);
     }
 
     @Flat public Button button;
@@ -36,10 +33,10 @@ public class MainActivity extends Activity {
 
     @Flat
     public void onButtonClick(ActionEvent actionEvent) {
-        Activity activity = this;
+        Activity activity = getActivity();
         var dialog = new Dialog();
         dialog.setId("dialog");
-        dialog.build("/default/screen_test/dialog_test.uxml", new Controller() {
+        dialog.build("/default/screen_test/dialog_test.uxml", new Controller(getActivity()) {
             @Flat
             public void resize(ActionEvent actionEvent) {
                 dialog.getChildrenIterable().get(0).setPrefWidth(dialog.getChildrenIterable().get(0).getPrefWidth() + 15);
@@ -49,11 +46,11 @@ public class MainActivity extends Activity {
                 System.out.println("ola");
                 var dialog2 = new Dialog();
                 dialog2.setId("dialog" + (++num));
-                dialog2.build("/default/screen_test/dialog_test.uxml", null, getTheme());
-                dialog2.show(activity, getWidth() / 1.5f, getHeight() / 2f);
+                dialog2.build("/default/screen_test/dialog_test.uxml", null, activity.getTheme());
+                dialog2.show(activity);
             }
-        }, getTheme());
-        dialog.show(this, getWidth() / 2f, getHeight() / 2f);
+        }, activity.getTheme());
+        dialog.show(activity);
     }
 
     @Flat
@@ -107,9 +104,6 @@ public class MainActivity extends Activity {
 
     @Flat
     public void onAction(ActionEvent event) {
-        Hide hide = new Hide(event.getSource());
-        event.getSource().setClickable(false);
-        hide.setDuration(1000);
-        hide.play(this);
+
     }
 }

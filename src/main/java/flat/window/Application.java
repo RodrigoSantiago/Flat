@@ -7,7 +7,6 @@ import flat.graphics.context.Context;
 import flat.resources.ResourcesManager;
 import flat.window.event.EventData;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,8 +28,12 @@ public class Application {
     private static boolean loopActive;
     private static long lastLoopTime;
 
-    private static void init(Settings settings) {
-        resources = settings.createResources();
+    public static void init() {
+        init(new ResourcesManager());
+    }
+
+    public static void init(ResourcesManager resourcesManager) {
+        resources = resourcesManager;
 
         try {
             FlatLibrary.load(resources.getFlatLibraryFile());
@@ -54,9 +57,6 @@ public class Application {
         windowsRemove = new ArrayList<>();
         windows = new ArrayList<>();
         windowsMap = new HashMap<>();
-
-        currentVsync = -1;
-        setVsync(settings.getVsync());
 
         WL.SetErrorCallback((error) -> {
             System.err.println(error);
@@ -116,29 +116,31 @@ public class Application {
         WL.Finish();
     }
 
-    public static void launch(Settings settings) {
-        init(settings);
-
+    public static void launch(WindowSettings settings) {
         try {
+            createWindow(settings);
+
             lastLoopTime = System.currentTimeMillis();
-            assignWindow(settings.createWindow());
 
             while (loopActive) {
                 refresh();
             }
+
         } finally {
             loopActive = false;
             finish();
         }
     }
 
-    public static ResourcesManager getResourcesManager() {
-        return resources;
+    public static Window createWindow(WindowSettings settings) {
+        Window window = Window.create(settings);
+        windowsAdd.add(window);
+
+        return window;
     }
 
-    static Context createContext(Window window) {
-        windowsAdd.add(window);
-        return Context.create(window, window.getWindowId(), window.getSvgId());
+    public static ResourcesManager getResourcesManager() {
+        return resources;
     }
 
     private static void removeWindow(Window window) {
@@ -164,8 +166,10 @@ public class Application {
         }
 
         for (Window window : windowsAdd) {
-            windows.add(window);
-            windowsMap.put(window.getWindowId(), window);
+            if (!window.isClosed()) {
+                windows.add(window);
+                windowsMap.put(window.getWindowId(), window);
+            }
         }
         windowsAdd.clear();
 
@@ -192,7 +196,12 @@ public class Application {
         for (Window window : windows) {
             assignWindow(window);
 
-            anyAnimation = window.loop(loopTime) || anyAnimation;
+            try {
+                anyAnimation = window.loop(loopTime) || anyAnimation;
+            } catch (Exception e) {
+                Application.handleException(e);
+                window.close();
+            }
         }
         return anyAnimation;
     }
@@ -222,7 +231,11 @@ public class Application {
             vsyncRun.clear();
         }
         for (var task : vsyncRunTemp) {
-            task.run();
+            try {
+                task.run();
+            } catch (Exception e) {
+                Application.handleException(e);
+            }
         }
         vsyncRunTemp.clear();
     }
@@ -245,65 +258,8 @@ public class Application {
         return new ArrayList<>(windows);
     }
 
-    public static class Settings {
-
-        private final File resourceFile;
-
-        private final ActivityFactory factory;
-        private final int multiSamples;
-        private final int width;
-        private final int height;
-        private final boolean transparent;
-        private final int vsync;
-
-        public Settings(ActivityFactory factory, int width, int height) {
-            this(null, factory, width, height, 0, 2, false);
-        }
-
-        public Settings(ActivityFactory factory, int width, int height, int vsync, int multiSamples, boolean transparent) {
-            this(null, factory, width, height, vsync, multiSamples, transparent);
-        }
-
-        public Settings(File resources, ActivityFactory factory, int width, int height) {
-            this(resources, factory, width, height, 0, 2, false);
-        }
-
-        public Settings(File resources, ActivityFactory factory, int width, int height, int vsync, int multiSamples, boolean transparent) {
-            this.resourceFile = resources;
-            this.factory = factory;
-            this.width = width;
-            this.height = height;
-            this.vsync = vsync;
-            this.multiSamples = multiSamples;
-            this.transparent = transparent;
-        }
-
-        public int getMultiSamples() {
-            return multiSamples;
-        }
-
-        public int getWidth() {
-            return width;
-        }
-
-        public int getHeight() {
-            return height;
-        }
-
-        public boolean isTransparent() {
-            return transparent;
-        }
-
-        public int getVsync() {
-            return vsync;
-        }
-
-        ResourcesManager createResources() {
-            return new ResourcesManager(resourceFile);
-        }
-
-        Window createWindow() {
-            return new Window(factory, width, height, multiSamples, transparent);
-        }
+    public static void handleException(Exception e) {
+        e.printStackTrace();
     }
+
 }

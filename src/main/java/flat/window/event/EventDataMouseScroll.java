@@ -3,6 +3,7 @@ package flat.window.event;
 import flat.events.ScrollEvent;
 import flat.window.Activity;
 import flat.widget.Widget;
+import flat.window.Application;
 import flat.window.Window;
 
 import java.util.ArrayList;
@@ -34,10 +35,16 @@ public class EventDataMouseScroll extends EventData {
 
     @Override
     public void handle(Window window) {
-        Activity activity = window.getActivity();
-        Widget widget = activity.findByPosition(window.getPointerX(), window.getPointerY(), false);
-        widget.fireScroll(new ScrollEvent(widget, ScrollEvent.SCROLL, x, y));
-
-        release();
+        try {
+            Activity activity = window.getActivity();
+            Widget widget = activity.findByPosition(window.getPointerX(), window.getPointerY(), false);
+            try {
+                widget.fireScroll(new ScrollEvent(widget, ScrollEvent.SCROLL, x, y));
+            } catch (Exception e) {
+                Application.handleException(e);
+            }
+        } finally {
+            release();
+        }
     }
 }

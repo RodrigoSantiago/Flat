@@ -1,11 +1,22 @@
 package flat.uxml;
 
 import flat.Flat;
+import flat.graphics.SmartContext;
+import flat.window.Activity;
 
-import java.lang.ref.WeakReference;
 import java.lang.reflect.*;
 
 public class Controller {
+
+    private Activity activity;
+
+    public Controller(Activity activity) {
+        this.activity = activity;
+    }
+
+    public Activity getActivity() {
+        return activity;
+    }
 
     public <T> UXListener<T> getListenerMethod(String name, Class<T> argument) {
         try {
@@ -63,65 +74,21 @@ public class Controller {
         return true;
     }
 
-    public final static class ControllerValueListener<T> implements UXValueListener<T> {
-        private WeakReference<Controller> controller;
-        private Method method;
+    public void onShow() {
 
-        ControllerValueListener(Controller controller, Method method) {
-            this.controller = new WeakReference<>(controller);
-            this.method = method;
-        }
-
-        @Override
-        public void handle(ValueChange<T> change) {
-            if (controller == null) {
-                return;
-            }
-
-            try {
-                var obj = controller.get();
-                if (obj != null && obj.isListening()) {
-                    method.invoke(obj, change);
-                } else {
-                    controller = null;
-                    method = null;
-                }
-            } catch (Exception e) {
-                controller = null;
-                method = null;
-                throw new RuntimeException(e);
-            }
-        }
     }
 
-    public final static class ControllerListener<T> implements UXListener<T> {
-        private WeakReference<Controller> controller;
-        private Method method;
+    public void onDraw(SmartContext context) {
 
-        ControllerListener(Controller controller, Method method) {
-            this.controller = new WeakReference<>(controller);
-            this.method = method;
-        }
-
-        @Override
-        public void handle(T event) {
-            if (controller == null) {
-                return;
-            }
-
-            try {
-                var obj = controller.get();
-                if (obj != null && obj.isListening()) {
-                    method.invoke(obj, event);
-                } else {
-                    controller = null;
-                    method = null;
-                }
-            } catch (Exception e) {
-                controller = null;
-                method = null;
-                throw new RuntimeException(e);
-            }
-        }
     }
+
+    public void onHide() {
+
+    }
+
+    public boolean onCloseRequest(boolean systemRequest) {
+
+        return true;
+    }
+
 }

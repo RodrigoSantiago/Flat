@@ -31,7 +31,10 @@ public class EventDataSize extends EventData {
 
     @Override
     public void handle(Window window) {
-        window.getActivity().invalidate();
-        release();
+        try {
+            window.getActivity().invalidate();
+        } finally {
+            release();
+        }
     }
 }

@@ -8,6 +8,7 @@ import flat.math.Mathf;
 import flat.math.shapes.PathIterator;
 import flat.math.shapes.Shape;
 import flat.math.shapes.Stroke;
+import flat.window.Activity;
 import flat.window.Window;
 
 import java.nio.Buffer;
@@ -16,7 +17,6 @@ import java.util.Arrays;
 
 public class Context {
 
-    public final long id;
     public final long svgId;
 
     private Window window;
@@ -91,20 +91,27 @@ public class Context {
     private Affine svgTransform;
     private ArrayList<Runnable> disposeTasks = new ArrayList<>();
 
-    public static Context create(Window window, long id, long svgId) {
+    public static Context create(Window window, long svgId) {
         if (window.getContext() != null) {
             throw new RuntimeException("The Window already have a context");
         } else {
-            return new Context(window, id, svgId);
+            return new Context(window, svgId);
         }
     }
 
-    private Context(Window window, long id, long svgId) {
+    private Context(Window window, long svgId) {
         this.window = window;
-        this.id = id;
         this.svgId = svgId;
         this.thread = Thread.currentThread();
         init();
+    }
+
+    public Activity getActivity() {
+        return window.getActivity();
+    }
+
+    public Window getWindow() {
+        return window;
     }
 
     public static void propagateHardFlush() {
@@ -113,10 +120,6 @@ public class Context {
                 context.hardFlush();
             }
         }
-    }
-
-    public Window getWindow() {
-        return window;
     }
 
     void checkDisposed() {

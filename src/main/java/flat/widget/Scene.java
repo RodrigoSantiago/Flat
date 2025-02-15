@@ -2,7 +2,6 @@ package flat.widget;
 
 import flat.graphics.SmartContext;
 import flat.uxml.UXChildren;
-import flat.widget.stages.Stage;
 import flat.widget.enums.Visibility;
 import flat.window.Activity;
 import flat.window.ActivityScene;

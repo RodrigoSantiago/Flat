@@ -32,7 +32,7 @@ public class UXBuilder {
         factories.put(name, WidgetFactory);
     }
 
-    public static void installDefaultWidgets() {
+    static {
         UXBuilder.install("Scene", Scene::new);
         UXBuilder.install("Panel", Panel::new);
         UXBuilder.install("LinearBox", LinearBox::new);

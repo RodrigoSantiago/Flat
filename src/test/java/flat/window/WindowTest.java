@@ -24,7 +24,7 @@ import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({FlatLibrary.class, WL.class, GL.class, SVG.class, Application.class})
+@PrepareForTest({FlatLibrary.class, WL.class, GL.class, SVG.class, Application.class, Context.class, Activity.class})
 public class WindowTest {
 
     @Before
@@ -34,6 +34,8 @@ public class WindowTest {
         PowerMockito.mockStatic(GL.class);
         PowerMockito.mockStatic(SVG.class);
         PowerMockito.mockStatic(Application.class);
+        PowerMockito.mockStatic(Context.class);
+        PowerMockito.mockStatic(Activity.class);
     }
 
     @After
@@ -44,38 +46,40 @@ public class WindowTest {
     @Test
     public void constructor() {
         // Setup
-        ActivityFactory activityFactory = mock(ActivityFactory.class);
         Context context = mock(Context.class);
-        when(Application.createContext(any())).thenReturn(context);
+        Activity activity = mock(Activity.class);
+        when(Context.create(any(), anyLong())).thenReturn(context);
+        when(Activity.create(any(), any())).thenReturn(activity);
         when(WL.WindowCreate(anyInt(), anyInt(), anyInt(), anyBoolean())).thenReturn(1L);
         when(SVG.Create()).thenReturn(1L);
 
+        WindowSettings settings = new WindowSettings.Builder().size(800, 600).multiSamples(1).build();
+
         // Execution
-        Window window = new Window(activityFactory, 800, 600, 1, false);
+        Window window = Window.create(settings);
 
         // Assertion
-        verifyStatic(Application.class);
-        Application.createContext(any());
+        assertEquals(context, window.getContext());
+        assertEquals(activity, window.getActivity());
 
         verifyStatic(WL.class);
         WL.WindowCreate(800, 600, 1, false);
 
         verifyStatic(SVG.class);
         SVG.Create();
-
-        assertEquals("Unexpected Window Context", context, window.getContext());
     }
 
     @Test
     public void constructor_InvalidContextCreation() {
         // Setup
-        ActivityFactory activityFactory = mock(ActivityFactory.class);
         when(WL.WindowCreate(anyInt(), anyInt(), anyInt(), anyBoolean())).thenReturn(0L);
         when(SVG.Create()).thenReturn(1L);
 
+        WindowSettings settings = new WindowSettings.Builder().size(800, 600).multiSamples(1).build();
+
         // Execution
         try {
-            Window window = new Window(activityFactory, 800, 600, 1, false);
+            Window window = Window.create(settings);
 
             fail("Exception expected");
         } catch (Exception e) {
@@ -93,13 +97,14 @@ public class WindowTest {
     @Test
     public void constructor_InvalidContextCreationSVG() {
         // Setup
-        ActivityFactory activityFactory = mock(ActivityFactory.class);
         when(WL.WindowCreate(anyInt(), anyInt(), anyInt(), anyBoolean())).thenReturn(1L);
         when(SVG.Create()).thenReturn(0L);
 
+        WindowSettings settings = new WindowSettings.Builder().size(800, 600).multiSamples(1).build();
+
         // Execution
         try {
-            Window window = new Window(activityFactory, 800, 600, 1, false);
+            Window window = Window.create(settings);
 
             fail("Exception expected");
         } catch (Exception e) {
@@ -120,13 +125,18 @@ public class WindowTest {
     @Test
     public void processEvents() {
         // Setup
-        ActivityFactory activityFactory = mock(ActivityFactory.class);
+        Context context = mock(Context.class);
+        Activity activity = mock(Activity.class);
+        when(Context.create(any(), anyLong())).thenReturn(context);
+        when(Activity.create(any(), any())).thenReturn(activity);
         EventData eventData = mock(EventData.class);
 
         when(WL.WindowCreate(anyInt(), anyInt(), anyInt(), anyBoolean())).thenReturn(1L);
         when(SVG.Create()).thenReturn(1L);
 
-        Window window = new Window(activityFactory, 800, 600, 1, false);
+        WindowSettings settings = new WindowSettings.Builder().size(800, 600).multiSamples(1).build();
+
+        Window window = Window.create(settings);
 
         // Execution
         window.addEvent(eventData);
@@ -139,13 +149,18 @@ public class WindowTest {
     @Test
     public void releaseEvents() {
         // Setup
-        ActivityFactory activityFactory = mock(ActivityFactory.class);
+        Context context = mock(Context.class);
+        Activity activity = mock(Activity.class);
+        when(Context.create(any(), anyLong())).thenReturn(context);
+        when(Activity.create(any(), any())).thenReturn(activity);
         EventData eventData = mock(EventData.class);
 
         when(WL.WindowCreate(anyInt(), anyInt(), anyInt(), anyBoolean())).thenReturn(1L);
         when(SVG.Create()).thenReturn(1L);
 
-        Window window = new Window(activityFactory, 800, 600, 1, false);
+        WindowSettings settings = new WindowSettings.Builder().size(800, 600).multiSamples(1).build();
+
+        Window window = Window.create(settings);
 
         // Execution
         window.addEvent(eventData);
@@ -157,41 +172,12 @@ public class WindowTest {
     }
 
     @Test
-    public void processTransitions() {
-        // Setup
-        Activity activityA = mock(Activity.class);
-        Activity activityB = mock(Activity.class);
-        ActivityFactory activityFactory = mock(ActivityFactory.class);
-
-        when(WL.WindowCreate(anyInt(), anyInt(), anyInt(), anyBoolean())).thenReturn(1L);
-        when(SVG.Create()).thenReturn(1L);
-        when(activityFactory.build(any())).thenReturn(activityA);
-
-        Window window = new Window(activityFactory, 800, 600, 1, false);
-
-        // Execution/Assertion
-        window.processStartup();
-        assertEquals(activityA, window.getActivity());
-
-        window.setActivity(activityB);
-        assertEquals(activityA, window.getActivity());
-
-        window.processTransitions();
-        assertEquals(activityB, window.getActivity());
-
-        verify(activityA, times(1)).show();
-        verify(activityA, times(1)).start();
-        verify(activityA, times(1)).pause();
-        verify(activityA, times(1)).hide();
-
-        verify(activityB, times(1)).show();
-        verify(activityB, times(1)).start();
-    }
-
-    @Test
     public void processSyncCalls() throws Exception {
         // Setup
-        ActivityFactory activityFactory = mock(ActivityFactory.class);
+        Context context = mock(Context.class);
+        Activity activity = mock(Activity.class);
+        when(Context.create(any(), anyLong())).thenReturn(context);
+        when(Activity.create(any(), any())).thenReturn(activity);
         Callable<Integer> callable = mock(Callable.class);
         Runnable runnable = mock(Runnable.class);
         FutureTask<Integer> task = mock(FutureTask.class);
@@ -200,7 +186,9 @@ public class WindowTest {
         when(SVG.Create()).thenReturn(1L);
         when(callable.call()).thenReturn(1);
 
-        Window window = new Window(activityFactory, 800, 600, 1, false);
+        WindowSettings settings = new WindowSettings.Builder().size(800, 600).multiSamples(1).build();
+
+        Window window = Window.create(settings);
 
         // Execution
         window.runSync(callable);
@@ -215,16 +203,22 @@ public class WindowTest {
     @Test
     public void onCloseRequest() {
         // Setup
-        ActivityFactory activityFactory = mock(ActivityFactory.class);
-        Activity activityA = mock(Activity.class);
+
+        Context context = mock(Context.class);
+        Activity activity = mock(Activity.class);
+        when(Context.create(any(), anyLong())).thenReturn(context);
+        when(Activity.create(any(), any())).thenReturn(activity);
+
+        when(activity.closeRequest(true)).thenReturn(true);
+        when(activity.closeRequest(false)).thenReturn(false);
 
         when(WL.WindowCreate(anyInt(), anyInt(), anyInt(), anyBoolean())).thenReturn(1L);
         when(SVG.Create()).thenReturn(1L);
-        when(activityFactory.build(any())).thenReturn(activityA);
-        when(activityA.closeRequest(true)).thenReturn(true);
-        when(activityA.closeRequest(false)).thenReturn(false);
 
-        Window window = new Window(activityFactory, 800, 600, 1, false);
+        WindowSettings settings = new WindowSettings.Builder().size(800, 600).multiSamples(1).build();
+
+
+        Window window = new Window(settings);
         window.processStartup();
 
         // Execution
@@ -233,8 +227,8 @@ public class WindowTest {
         boolean closeC = window.requestClose();
 
         // Assertion
-        verify(activityA, times(1)).closeRequest(true);
-        verify(activityA, times(1)).closeRequest(false);
+        verify(activity, times(1)).closeRequest(true);
+        verify(activity, times(1)).closeRequest(false);
 
         assertFalse(closeA);
         assertTrue(closeB);
@@ -242,50 +236,20 @@ public class WindowTest {
     }
 
     @Test
-    public void onCloseRequest_overTransition() {
-        // Setup
-        ActivityFactory activityFactory = mock(ActivityFactory.class);
-        Activity activityA = mock(Activity.class);
-        Activity activityB = mock(Activity.class);
-        Activity.Transition transition = mock(Activity.Transition.class);
-        Context context = mock(Context.class);
-
-        when(WL.WindowCreate(anyInt(), anyInt(), anyInt(), anyBoolean())).thenReturn(1L);
-        when(SVG.Create()).thenReturn(1L);
-        when(activityFactory.build(any())).thenReturn(activityA);
-        when(activityA.closeRequest(true)).thenReturn(true);
-        when(activityA.closeRequest(false)).thenReturn(false);
-        when(transition.isPlaying()).thenReturn(true);
-
-        when(Application.createContext(any())).thenReturn(context);
-
-        Window window = new Window(activityFactory, 800, 600, 1, false);
-        window.processStartup();
-        window.setActivity(transition);
-        window.processTransitions();
-
-        // Execution
-        boolean closeA = window.requestClose();
-        boolean closeB = window.onRequestClose(true);
-
-        // Assertion
-        verify(activityA, times(0)).closeRequest(anyBoolean());
-
-        assertFalse(closeA);
-        assertFalse(closeB);
-    }
-
-    @Test
     public void dispose() {
         // Setup
-        ActivityFactory activityFactory = mock(ActivityFactory.class);
         Context context = mock(Context.class);
+        Activity activity = mock(Activity.class);
+        when(Context.create(any(), anyLong())).thenReturn(context);
+        when(Activity.create(any(), any())).thenReturn(activity);
+        EventData eventData = mock(EventData.class);
 
         when(WL.WindowCreate(anyInt(), anyInt(), anyInt(), anyBoolean())).thenReturn(1L);
         when(SVG.Create()).thenReturn(1L);
-        when(Application.createContext(any())).thenReturn(context);
 
-        Window window = new Window(activityFactory, 800, 600, 1, false);
+        WindowSettings settings = new WindowSettings.Builder().size(800, 600).multiSamples(1).build();
+
+        Window window = Window.create(settings);
 
         // Execution
         window.dispose();

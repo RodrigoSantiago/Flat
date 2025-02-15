@@ -8,6 +8,7 @@ import flat.events.PointerEvent;
 import flat.resources.ResourceStream;
 import flat.uxml.*;
 import flat.widget.Group;
+import flat.widget.Stage;
 import flat.widget.Widget;
 import flat.widget.enums.HorizontalAlign;
 import flat.widget.enums.VerticalAlign;
@@ -180,7 +181,7 @@ public class Dialog extends Stage {
 
     public void show(Activity activity, float x, float y) {
         if (!isShown()) {
-            activity.addStage(this);
+            setToShow(activity);
             show = true;
             onShow(activity, x, y);
             activity.addPointerFilter(this);
@@ -199,7 +200,7 @@ public class Dialog extends Stage {
 
     public void bringToFront() {
         if (isShown()) {
-            getActivity().addStage(this);
+            setToShow(getActivity());
             getActivity().addPointerFilter(this);
         }
     }

@@ -34,18 +34,20 @@ public class EventDataMouseButton extends EventData {
 
     @Override
     public void handle(Window window) {
-        EventDataPointer pointer = window.getPointer();
-        Widget widget = window.getActivity().findByPosition(pointer.getX(), pointer.getY(), false);
+        try {
+            EventDataPointer pointer = window.getPointer();
+            Widget widget = window.getActivity().findByPosition(pointer.getX(), pointer.getY(), false);
 
-        if (action == WLEnums.PRESS) {
-            pressed(window, pointer, widget);
+            if (action == WLEnums.PRESS) {
+                pressed(window, pointer, widget);
 
-        } else if (action == WLEnums.RELEASE) {
-            released(window, pointer, widget);
+            } else if (action == WLEnums.RELEASE) {
+                released(window, pointer, widget);
 
+            }
+        } finally {
+            release();
         }
-
-        release();
     }
 
     private void pressed(Window window, EventDataPointer pointer, Widget widget) {

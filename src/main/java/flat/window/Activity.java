@@ -10,16 +10,16 @@ import flat.graphics.SmartContext;
 import flat.graphics.context.Context;
 import flat.resources.ResourceStream;
 import flat.uxml.*;
+import flat.widget.Group;
 import flat.widget.Parent;
 import flat.widget.Scene;
 import flat.widget.Widget;
-import flat.widget.stages.Menu;
-import flat.widget.stages.Stage;
 
 import java.util.ArrayList;
 
-public class Activity extends Controller {
+public class Activity {
 
+    private final Window window;
     private final Context context;
     private final ArrayList<Animation> animations = new ArrayList<>();
     private final ArrayList<Animation> animationsAdd = new ArrayList<>();
@@ -34,24 +34,63 @@ public class Activity extends Controller {
     private float height;
 
     private Scene scene;
+    private Controller controller;
     private Scene nextScene;
+    private Controller nextController;
+    private WindowSettings initialSettings;
 
     private UXTheme theme;
-    private UXTheme nextTheme;
 
-    private UXBuilder builder;
-    private boolean invalided, invalidScene, invalidTheme;
+    private boolean invalided, invalidScene, invalidDensity;
     private Widget invalidWidget;
-
-    private boolean hide = true;
-    private boolean pause = true;
 
     private float lastDpi;
 
-    public Activity(Context context) {
-        this.context = context;
-        this.width = context.getWidth();
-        this.height = context.getHeight();
+    public static Activity create(Window window, WindowSettings settings) {
+        if (window.getActivity() != null) {
+            throw new RuntimeException("The Window already have a activity");
+        } else {
+            return new Activity(window, settings);
+        }
+    }
+
+    private Activity(Window window, WindowSettings settings) {
+        this.window = window;
+        this.context = window.getContext();
+        this.width = settings.getWidth();
+        this.height = settings.getHeight();
+        this.initialSettings = settings;
+    }
+
+    void initialize() {
+        if (initialSettings.getController() != null) {
+            controller = initialSettings.getController().build(this);
+        }
+
+        if (initialSettings.getThemeStream() != null) {
+            theme = UXSheet.parse(initialSettings.getThemeStream()).instance();
+
+        } else if (initialSettings.getTheme() != null) {
+            theme = initialSettings.getTheme();
+        }
+
+        if (initialSettings.getLayoutStream() != null) {
+            scene = UXNode.parse(initialSettings.getLayoutStream()).instance(controller).buildScene(theme);
+
+        } else if (initialSettings.getLayout() != null) {
+            scene = initialSettings.getLayout();
+            scene.setTheme(theme);
+
+        } else {
+            scene = new Scene();
+            scene.setTheme(theme);
+        }
+
+        initialSettings = null;
+
+        scene.getActivityScene().setActivity(this);
+        invalidateWidget(scene);
+        invalidateDensity();
     }
 
     public Context getContext() {
@@ -62,32 +101,31 @@ public class Activity extends Controller {
         return context.getWindow();
     }
 
-    @Override
-    public boolean isListening() {
-        return !hide && !pause;
-    }
-
     public Scene getScene() {
         return scene;
     }
 
-    public void setScene(String pathName) {
-        setScene(new ResourceStream(pathName));
+    public Controller getController() {
+        return controller;
     }
 
-    public void setScene(ResourceStream resourceStream) {
-        this.builder = UXNode.parse(resourceStream).instance(this);
-        this.nextScene = null;
+    public void setLayoutBuilder(String pathName, Controller controller) {
+        setLayoutBuilder(new ResourceStream(pathName), controller);
     }
 
-    public void setScene(Scene scene) {
+    public void setLayoutBuilder(ResourceStream resourceStream, Controller controller) {
+        this.nextController = controller;
+        this.nextScene = UXNode.parse(resourceStream).instance(controller).buildScene(getTheme());
+    }
+
+    public void setLayoutBuilder(Scene scene) {
         if (scene.getActivity() != null) {
             throw new FlatException("The scene is already assigned to an Activity");
         }
 
-        if (this.scene != scene && this.nextScene != scene) {
+        if (this.nextScene != scene) {
+            this.nextController = null;
             this.nextScene = scene;
-            this.builder = null;
         }
     }
 
@@ -104,73 +142,56 @@ public class Activity extends Controller {
     }
 
     public void setTheme(UXTheme theme) {
-        if (this.theme != theme && this.nextTheme != theme) {
-            this.nextTheme = theme;
-        }
+        this.theme = theme;
+        invalidateDensity();
     }
 
     public void addAnimation(Animation animation) {
-        if (!hide) {
-            animationsAdd.add(animation);
-            animationsRemove.remove(animation);
-        }
+        animationsAdd.add(animation);
+        animationsRemove.remove(animation);
     }
 
     public void removeAnimation(Animation animation) {
-        if (!hide) {
-            animationsRemove.add(animation);
-            animationsAdd.remove(animation);
-        }
+        animationsRemove.add(animation);
+        animationsAdd.remove(animation);
     }
 
     private void updateDensity() {
         float dpi = getWindow() == null ? 160f : getWindow().getDpi();
         if (lastDpi != dpi) {
             lastDpi = dpi;
-            invalidateTheme();
-        }
-    }
-
-    private void buildTheme() {
-        if (nextTheme != null) {
-            theme = nextTheme;
-            nextTheme = null;
-            invalidateTheme();
+            invalidateDensity();
         }
     }
 
     private void buildScene() {
-        Scene old = scene;
-        if (builder != null) {
-            nextScene = builder.buildScene(theme);
-            builder = null;
-        }
-        if (scene == null && nextScene == null) {
-            nextScene = new Scene();
-        }
         if (nextScene != null) {
             clearAnimations();
 
-            scene = nextScene;
+            Scene old = scene;
+
+            this.controller = nextController;
+            this.scene = nextScene;
+
+            nextController = null;
             nextScene = null;
 
             if (old != null) {
                 old.getActivityScene().setActivity(null);
             }
             scene.getActivityScene().setActivity(this);
-            invalidateTheme();
+            invalidateWidget(scene);
+            invalidateDensity();
         }
     }
 
     void refreshScene() {
         updateDensity();
-        buildTheme();
         buildScene();
 
-        if (invalidTheme) {
-            invalidTheme = false;
-            scene.setTheme(getTheme());
-            invalidateWidget(scene);
+        if (invalidDensity) {
+            invalidDensity = false;
+            scene.refreshStyle();
         }
         clearUnusedFilters();
     }
@@ -213,72 +234,57 @@ public class Activity extends Controller {
     }
 
     void show() {
-        hide = false;
         refreshScene();
         layout(getWindow().getClientWidth(), getWindow().getClientHeight());
-        onShow();
 
-    }
-
-    public void onShow() {
-
-    }
-
-    void start() {
-        pause = false;
-        onStart();
-    }
-
-    public void onStart() {
-
-
-    }
-
-    void pause() {
-        pause = true;
-        onPause();
-    }
-
-    public void onPause() {
-
-
-    }
-
-    void hide() {
-        clearAnimations();
-        hide = true;
-        onHide();
-    }
-
-    public void onHide() {
-
-    }
-
-    boolean closeRequest(boolean systemRequest) {
-        return onCloseRequest(systemRequest);
-    }
-
-    public boolean onCloseRequest(boolean systemRequest) {
-
-        return true;
-    }
-
-    protected void drawBackground(SmartContext context) {
-        context.setAntialiasEnabled(true);
-        context.setView(0, 0, (int) getWidth(), (int) getHeight());
-        context.clear(scene == null ? 0x0 : scene.getBackgroundColor(), 1, 0);
-        context.clearClip();
-    }
-
-    protected void drawWidgets(SmartContext context) {
-        if (scene != null) {
-            scene.onDraw(context);
+        if (controller != null) {
+            try {
+                controller.onShow();
+            } catch (Exception e) {
+                Application.handleException(e);
+            }
         }
     }
 
-    public void onDraw(SmartContext context) {
+    boolean closeRequest(boolean systemRequest) {
+        try {
+            return controller.onCloseRequest(systemRequest);
+        } catch (Exception e) {
+            Application.handleException(e);;
+            return true;
+        }
+    }
+
+    void close() {
+        try {
+            controller.onHide();
+        } catch (Exception e) {
+            Application.handleException(e);;
+        }
+    }
+
+    private void drawBackground(SmartContext context) {
+        context.setAntialiasEnabled(true);
+        context.setView(0, 0, (int) getWidth(), (int) getHeight());
+        context.clear(scene.getBackgroundColor(), 1, 0);
+        context.clearClip();
+    }
+
+    private void drawWidgets(SmartContext context) {
+        scene.onDraw(context);
+    }
+
+    private void onDraw(SmartContext context) {
         drawBackground(context);
         drawWidgets(context);
+
+        if (controller != null) {
+            try {
+                controller.onDraw(context);
+            } catch (Exception e) {
+                Application.handleException(e);
+            }
+        }
     }
 
     private void clearUnusedFilters() {
@@ -314,7 +320,11 @@ public class Activity extends Controller {
         for (int i = filtersTemp.size() - 1; i >= 0; i--) {
             var widget = filtersTemp.get(i);
             if (widget.getActivity() == this) {
-                widget.firePointer(event);
+                try {
+                    widget.firePointer(event);
+                } catch (Exception e) {
+                    Application.handleException(e);
+                }
                 if (event.isConsumed()) {
                     break;
                 }
@@ -339,7 +349,11 @@ public class Activity extends Controller {
         for (int i = filtersTemp.size() - 1; i >= 0; i--) {
             var widget = filtersTemp.get(i);
             if (widget.getActivity() == this) {
-                widget.fireKey(event);
+                try {
+                    widget.fireKey(event);
+                } catch (Exception e) {
+                    Application.handleException(e);
+                }
                 if (event.isConsumed()) {
                     break;
                 }
@@ -347,19 +361,24 @@ public class Activity extends Controller {
         }
         filtersTemp.clear();
 
-        if (!event.isConsumed()) {
-            if (event.getKeycode() == KeyCode.KEY_TAB) {
-                Widget nextFocus;
-                if (getFocus() == null) {
-                    String focusID = event.isShiftDown() ? scene.getPrevFocusId() : scene.getNextFocusId();
-                    nextFocus = scene.findById(focusID);
+        if (!event.isConsumed() && event.getKeycode() == KeyCode.KEY_TAB) {
+            Widget nextFocus = getFocus() == null ? scene : getFocus();
+            do {
+                if (nextFocus instanceof Group group) {
+                    if (group.getInitialFocusId() != null) {
+                        nextFocus = nextFocus.findById(group.getInitialFocusId());
+                    } else if (nextFocus.getGroup() != null) {
+                        nextFocus = nextFocus.getGroup().findById(nextFocus.getNextFocusId());
+                    } else {
+                        nextFocus = nextFocus.findById(nextFocus.getNextFocusId());
+                    }
                 } else {
-                    String focusID = event.isShiftDown() ? getFocus().getPrevFocusId() : getFocus().getNextFocusId();
-                    nextFocus = scene.findById(focusID);
+                    nextFocus = nextFocus.findById(nextFocus.getNextFocusId());
                 }
-                if (nextFocus != null) {
-                    setFocus(nextFocus);
-                }
+            } while (nextFocus instanceof Group group && group.getInitialFocusId() != null);
+
+            if (nextFocus != null && nextFocus.isFocusable()) {
+                setFocus(nextFocus);
             }
         }
     }
@@ -379,14 +398,20 @@ public class Activity extends Controller {
         for (int i = filtersTemp.size() - 1; i >= 0; i--) {
             var widget = filtersTemp.get(i);
             if (widget.getActivity() == this) {
-                widget.fireResize();
+                try {
+                    widget.fireResize();
+                } catch (Exception e) {
+                    Application.handleException(e);
+                }
             }
         }
         filtersTemp.clear();
     }
 
     public void setFocus(Widget widget) {
-        if ((widget == focus) || (widget != null && widget.getActivity() != this)) {
+        if ((widget == focus) ||
+                (widget != null && widget.getActivity() != this) ||
+                (widget != null && !widget.isFocusable())) {
             return;
         }
 
@@ -401,10 +426,18 @@ public class Activity extends Controller {
         }
 
         if (oldFocus != null) {
-            oldFocus.fireFocus(new FocusEvent(oldFocus, focus));
+            try {
+                oldFocus.fireFocus(new FocusEvent(oldFocus, focus));
+            } catch (Exception e) {
+                Application.handleException(e);
+            }
         }
         if (focus != null) {
-            focus.fireFocus(new FocusEvent(oldFocus, focus));
+            try {
+                focus.fireFocus(new FocusEvent(oldFocus, focus));
+            } catch (Exception e) {
+                Application.handleException(e);
+            }
         }
     }
 
@@ -460,45 +493,33 @@ public class Activity extends Controller {
         }
     }
 
-    public void invalidateTheme() {
-        invalidTheme = true;
-        invalidate();
-    }
-
     public void invalidateWidget(Widget widget) {
         invalidate();
-        if (invalidWidget == scene) return;
-        if (invalidWidget != null) {
-            if (invalidWidget.isChildOf(widget)) {
+        if (invalidWidget != scene && widget.getActivity() == this) {
+            if (invalidWidget != null) {
+                if (invalidWidget.isChildOf(widget)) {
+                    invalidWidget = widget;
+                } else if (!widget.isChildOf(invalidWidget)) {
+                    invalidWidget = scene;
+                }
+            } else {
                 invalidWidget = widget;
-            } else if (!widget.isChildOf(invalidWidget)) {
-                invalidWidget = scene;
             }
-        } else {
-            invalidWidget = widget;
         }
+    }
+
+    private void invalidateDensity() {
+        invalidDensity = true;
+        invalidate();
     }
 
     public Widget findById(String id) {
-        return scene == null ? null : scene.findById(id);
+        return scene.findById(id);
     }
 
     public Widget findByPosition(float x, float y, boolean includeDisabled) {
-        if (scene == null) {
-            return null;
-        } else {
-            Widget child = scene.findByPosition(x, y, includeDisabled);
-            return child == null ? scene : child;
-        }
-    }
-
-    public Widget findFocused() {
-        if (scene == null) {
-            return null;
-        } else {
-            Widget child = scene.findFocused();
-            return child == null ? scene : child;
-        }
+        Widget child = scene.findByPosition(x, y, includeDisabled);
+        return child == null ? scene : child;
     }
 
     public float getWidth() {
@@ -511,65 +532,5 @@ public class Activity extends Controller {
 
     public float getDensity() {
         return lastDpi;
-    }
-
-    public void addStage(Stage stage) {
-        getScene().getActivityScene().addStage(stage);
-    }
-
-    public static class Transition implements Animation {
-
-        private Activity prev;
-        private Activity next;
-
-        public Transition(Activity next) {
-            this.next = next;
-        }
-
-        public Activity getNext() {
-            return next;
-        }
-
-        public Activity getPrev() {
-            return prev;
-        }
-
-        public void start(Activity current) {
-            this.prev = current;
-
-            if (prev != null) {
-                prev.pause();
-            }
-            if (next != null) {
-                next.show();
-            }
-        }
-
-        @Override
-        public Activity getSource() {
-            return null;
-        }
-
-        @Override
-        public void handle(float time) {
-
-        }
-
-        public void end() {
-
-        }
-
-        public boolean draw(SmartContext context) {
-            return false;
-        }
-
-        public void stop() {
-
-        }
-
-        @Override
-        public boolean isPlaying() {
-            return false;
-        }
     }
 }

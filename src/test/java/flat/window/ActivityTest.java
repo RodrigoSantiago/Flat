@@ -6,14 +6,13 @@ import flat.events.KeyEvent;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Context;
 import flat.resources.ResourceStream;
-import flat.uxml.UXBuilder;
-import flat.uxml.UXNode;
-import flat.uxml.UXSheet;
-import flat.uxml.UXTheme;
+import flat.uxml.*;
 import flat.widget.Scene;
 import flat.widget.Widget;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import static org.junit.Assert.*;
@@ -24,18 +23,33 @@ import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 @RunWith(PowerMockRunner.class)
+@PrepareForTest({UXNode.class, UXSheet.class})
 public class ActivityTest {
 
-    @Test
-    public void constructor() {
-        Window window = mock(Window.class);
-        Context context = mock(Context.class);
+    Window window;
+    Context context;
+
+    @Before
+    public void before() {
+        window = mock(Window.class);
+        context = mock(Context.class);
+        when(window.getContext()).thenReturn(context);
+        when(window.getDpi()).thenReturn(160f);
+        when(window.getWidth()).thenReturn(200);
+        when(window.getHeight()).thenReturn(100);
+        when(window.getClientWidth()).thenReturn(200);
+        when(window.getClientHeight()).thenReturn(100);
 
         when(context.getWindow()).thenReturn(window);
         when(context.getWidth()).thenReturn(200);
         when(context.getHeight()).thenReturn(100);
+    }
 
-        Activity activity = new Activity(context);
+    @Test
+    public void constructor() {
+        WindowSettings settings = new WindowSettings.Builder().size(200, 100).build();
+
+        Activity activity = Activity.create(window, settings);
 
         assertEquals(context, activity.getContext());
         assertEquals(window, activity.getWindow());
@@ -45,25 +59,29 @@ public class ActivityTest {
 
     @Test
     public void setTheme() {
-        Window window = mock(Window.class);
-        Context context = mock(Context.class);
         UXTheme theme1 = mock(UXTheme.class);
         UXTheme theme2 = mock(UXTheme.class);
 
-        when(context.getWindow()).thenReturn(window);
-        when(window.getDpi()).thenReturn(160f);
-
-        Activity activity = new Activity(context);
+        WindowSettings settings = new WindowSettings.Builder().size(200, 100).build();
+        Activity activity = Activity.create(window, settings);
 
         assertNull(activity.getTheme());
+        assertNull(activity.getScene());
+        assertNull(activity.getController());
+        activity.initialize();
+
+        assertNull(activity.getTheme());
+        assertNotNull(activity.getScene());
+        assertNull(activity.getController());
+
         activity.setTheme(theme1);
-        assertNull(activity.getTheme());
+        assertEquals(theme1, activity.getTheme());
 
         activity.show();
         assertEquals(theme1, activity.getTheme());
 
         activity.setTheme(theme2);
-        assertEquals(theme1, activity.getTheme());
+        assertEquals(theme2, activity.getTheme());
 
         activity.refreshScene();
         assertEquals(theme2, activity.getTheme());
@@ -71,30 +89,36 @@ public class ActivityTest {
 
     @Test
     public void setThemeResource() {
-        Window window = mock(Window.class);
-        Context context = mock(Context.class);
         UXTheme theme1 = mock(UXTheme.class);
         UXTheme theme2 = mock(UXTheme.class);
-        ResourceStream stream = mock(ResourceStream.class);
+        ResourceStream stream1 = mock(ResourceStream.class);
+        ResourceStream stream2 = mock(ResourceStream.class);
 
-        UXSheet sheet = mock(UXSheet.class);
-        when(sheet.instance()).thenReturn(theme2);
-        when(stream.getCache()).thenReturn(sheet);
+        UXSheet sheet1 = mock(UXSheet.class);
+        when(sheet1.instance()).thenReturn(theme1);
+        when(stream1.getCache()).thenReturn(sheet1);
 
-        when(context.getWindow()).thenReturn(window);
-        when(window.getDpi()).thenReturn(160f);
+        UXSheet sheet2 = mock(UXSheet.class);
+        when(sheet2.instance()).thenReturn(theme2);
+        when(stream2.getCache()).thenReturn(sheet2);
 
-        Activity activity = new Activity(context);
+        WindowSettings settings = new WindowSettings.Builder().size(200, 100).theme(stream1).build();
+        Activity activity = Activity.create(window, settings);
 
         assertNull(activity.getTheme());
-        activity.setTheme(theme1);
-        assertNull(activity.getTheme());
+        assertNull(activity.getScene());
+        assertNull(activity.getController());
+        activity.initialize();
+
+        assertEquals(theme1, activity.getTheme());
+        assertNotNull(activity.getScene());
+        assertNull(activity.getController());
 
         activity.show();
         assertEquals(theme1, activity.getTheme());
 
-        activity.setTheme(stream);
-        assertEquals(theme1, activity.getTheme());
+        activity.setTheme(stream2);
+        assertEquals(theme2, activity.getTheme());
 
         activity.refreshScene();
         assertEquals(theme2, activity.getTheme());
@@ -102,108 +126,101 @@ public class ActivityTest {
 
     @Test
     public void setScene() {
-        Window window = mock(Window.class);
-        Context context = mock(Context.class);
-        UXTheme theme = mock(UXTheme.class);
         Scene scene1 = mock(Scene.class);
         when(scene1.getActivityScene()).thenReturn(mock(ActivityScene.class));
         Scene scene2 = mock(Scene.class);
         when(scene2.getActivityScene()).thenReturn(mock(ActivityScene.class));
 
-        when(context.getWindow()).thenReturn(window);
-        when(window.getDpi()).thenReturn(160f);
+        WindowSettings settings = new WindowSettings.Builder().size(200, 100).layout(scene1).build();
+        Activity activity = Activity.create(window, settings);
 
-        Activity activity = new Activity(context);
-
-        assertNull(activity.getTheme());
-        activity.setTheme(theme);
-        activity.setScene(scene1);
         assertNull(activity.getTheme());
         assertNull(activity.getScene());
+        assertNull(activity.getController());
+        activity.initialize();
+
+        assertNull(activity.getTheme());
+        assertEquals(scene1, activity.getScene());
+        assertNull(activity.getController());
 
         activity.show();
-        verify(scene1, times(1)).setTheme(any());
         assertEquals(scene1, activity.getScene());
 
-        activity.setScene(scene2);
+        activity.setLayoutBuilder(scene2);
         assertEquals(scene1, activity.getScene());
 
         activity.refreshScene();
-        verify(scene2, times(1)).setTheme(any());
         assertEquals(scene2, activity.getScene());
     }
 
     @Test
     public void setSceneResource() {
-        Window window = mock(Window.class);
-        Context context = mock(Context.class);
-        UXTheme theme1 = mock(UXTheme.class);
         Scene scene1 = mock(Scene.class);
         when(scene1.getActivityScene()).thenReturn(mock(ActivityScene.class));
         Scene scene2 = mock(Scene.class);
         when(scene2.getActivityScene()).thenReturn(mock(ActivityScene.class));
-        UXBuilder builder = mock(UXBuilder.class);
-        when(builder.buildScene(any())).thenReturn(scene2);
 
-        UXNode root = mock(UXNode.class);
-        when(root.instance(any())).thenReturn(builder);
+        UXBuilder builder1 = mock(UXBuilder.class);
+        when(builder1.buildScene(any())).thenReturn(scene1);
+        UXBuilder builder2 = mock(UXBuilder.class);
+        when(builder2.buildScene(any())).thenReturn(scene2);
 
-        ResourceStream stream = mock(ResourceStream.class);
-        when(stream.getCache()).thenReturn(root);
+        UXNode root1 = mock(UXNode.class);
+        when(root1.instance(any())).thenReturn(builder1);
+        UXNode root2 = mock(UXNode.class);
+        when(root2.instance(any())).thenReturn(builder2);
 
-        when(context.getWindow()).thenReturn(window);
-        when(window.getDpi()).thenReturn(160f);
+        ResourceStream stream1 = mock(ResourceStream.class);
+        when(stream1.getCache()).thenReturn(root1);
+        ResourceStream stream2 = mock(ResourceStream.class);
+        when(stream2.getCache()).thenReturn(root2);
 
-        Activity activity = new Activity(context);
+        WindowSettings settings = new WindowSettings.Builder().size(200, 100).layout(stream1).build();
+        Activity activity = Activity.create(window, settings);
 
-        assertNull(activity.getTheme());
-        activity.setTheme(theme1);
-        activity.setScene(scene1);
         assertNull(activity.getTheme());
         assertNull(activity.getScene());
+        assertNull(activity.getController());
+        activity.initialize();
+
+        assertNull(activity.getTheme());
+        assertEquals(scene1, activity.getScene());
+        assertNull(activity.getController());
 
         activity.show();
-        verify(scene1, times(1)).setTheme(any());
-        assertEquals(theme1, activity.getTheme());
         assertEquals(scene1, activity.getScene());
 
-        activity.setScene(stream);
+        activity.setLayoutBuilder(stream2, null);
         assertEquals(scene1, activity.getScene());
 
         activity.refreshScene();
-        verify(scene2, times(1)).setTheme(any());
         assertEquals(scene2, activity.getScene());
     }
 
     @Test
     public void performLayout() {
-        Window window = mock(Window.class);
-        Context context = mock(Context.class);
         UXTheme theme = mock(UXTheme.class);
         Scene scene = mock(Scene.class);
         Widget child = mock(Widget.class);
         when(scene.getActivityScene()).thenReturn(mock(ActivityScene.class));
 
-        when(context.getWindow()).thenReturn(window);
-        when(window.getClientWidth()).thenReturn(200);
-        when(window.getClientHeight()).thenReturn(100);
         when(child.getLayoutWidth()).thenReturn(20f);
         when(child.getLayoutHeight()).thenReturn(10f);
-        when(window.getDpi()).thenReturn(160f);
 
-        Activity activity = new Activity(context);
+        WindowSettings settings = new WindowSettings.Builder().size(200, 100).layout(scene).theme(theme).build();
+        Activity activity = Activity.create(window, settings);
+        when(scene.getActivity()).thenReturn(activity);
+        when(child.getActivity()).thenReturn(activity);
 
-        assertNull(activity.getTheme());
-        activity.setTheme(theme);
-        activity.setScene(scene);
-        assertNull(activity.getTheme());
-        assertNull(activity.getScene());
+        activity.initialize();
+
+        assertEquals(theme, activity.getTheme());
+        assertEquals(scene, activity.getScene());
 
         activity.show();
         verify(scene).onMeasure();
         verify(scene).onLayout(200f, 100f);
 
-        verify(scene, times(1)).setTheme(any());
         assertEquals(scene, activity.getScene());
 
         activity.layout(200f, 100f);
@@ -225,65 +242,60 @@ public class ActivityTest {
 
     @Test
     public void performDraw() {
-        Window window = mock(Window.class);
-        Context context = mock(Context.class);
         SmartContext smartContext = mock(SmartContext.class);
         UXTheme theme = mock(UXTheme.class);
         Scene scene = mock(Scene.class);
         when(scene.getActivityScene()).thenReturn(mock(ActivityScene.class));
 
-        when(context.getWindow()).thenReturn(window);
-        when(window.getClientWidth()).thenReturn(200);
-        when(window.getClientHeight()).thenReturn(100);
-        when(window.getDpi()).thenReturn(160f);
+        WindowSettings settings = new WindowSettings.Builder().size(200, 100).theme(theme).layout(scene).build();
+        Activity activity = Activity.create(window, settings);
+        when(scene.getActivity()).thenReturn(activity);
 
-        Activity activity = new Activity(context);
-
-        assertNull(activity.getTheme());
-        activity.setTheme(theme);
-        activity.setScene(scene);
-        assertNull(activity.getTheme());
-        assertNull(activity.getScene());
-
-        activity.show();
-        verify(scene, times(1)).setTheme(any());
+        activity.initialize();
+        assertEquals(theme, activity.getTheme());
         assertEquals(scene, activity.getScene());
 
+        activity.show();
+
         activity.draw(smartContext);
-        verify(smartContext).setView(0, 0, 200, 100);
-        verify(smartContext).clear(0x0, 1, 0);
-        verify(smartContext).clearClip();
-        verify(scene).onDraw(smartContext);
+        verify(smartContext, times(1)).setView(0, 0, 200, 100);
+        verify(smartContext, times(1)).clear(0x0, 1, 0);
+        verify(smartContext, times(1)).clearClip();
+        verify(scene, times(1)).onDraw(smartContext);
+
+        activity.draw(smartContext);
+        verify(smartContext, times(1)).setView(0, 0, 200, 100);
+        verify(smartContext, times(1)).clear(0x0, 1, 0);
+        verify(smartContext, times(1)).clearClip();
+        verify(scene, times(1)).onDraw(smartContext);
+
+        activity.invalidate();
+
+        activity.draw(smartContext);
+        verify(smartContext, times(2)).setView(0, 0, 200, 100);
+        verify(smartContext, times(2)).clear(0x0, 1, 0);
+        verify(smartContext, times(2)).clearClip();
+        verify(scene, times(2)).onDraw(smartContext);
     }
 
     @Test
     public void performAnimations() {
-        Window window = mock(Window.class);
-        Context context = mock(Context.class);
         UXTheme theme = mock(UXTheme.class);
         Animation animation = mock(Animation.class);
         Scene scene = mock(Scene.class);
         when(scene.getActivityScene()).thenReturn(mock(ActivityScene.class));
-
-        when(context.getWindow()).thenReturn(window);
-        when(context.getWidth()).thenReturn(200);
-        when(context.getHeight()).thenReturn(100);
-        when(window.getDpi()).thenReturn(160f);
-
         when(animation.isPlaying()).thenReturn(true);
 
-        Activity activity = new Activity(context);
+        WindowSettings settings = new WindowSettings.Builder().size(200, 100).theme(theme).layout(scene).build();
+        Activity activity = Activity.create(window, settings);
+        when(scene.getActivity()).thenReturn(activity);
         when(animation.getSource()).thenReturn(activity);
 
-        assertNull(activity.getTheme());
-        activity.setTheme(theme);
-        activity.setScene(scene);
-        assertNull(activity.getTheme());
-        assertNull(activity.getScene());
+        activity.initialize();
+        assertEquals(theme, activity.getTheme());
+        assertEquals(scene, activity.getScene());
 
         activity.show();
-        verify(scene, times(1)).setTheme(any());
-        assertEquals(scene, activity.getScene());
 
         activity.addAnimation(animation);
         boolean animate1 = activity.animate(1f);
@@ -316,28 +328,21 @@ public class ActivityTest {
     @Test
     public void findById() {
         String findId = "findId";
-        Window window = mock(Window.class);
-        Context context = mock(Context.class);
         UXTheme theme = mock(UXTheme.class);
         Scene scene = mock(Scene.class);
         when(scene.getActivityScene()).thenReturn(mock(ActivityScene.class));
         Widget widget = mock(Widget.class);
-        when(context.getWindow()).thenReturn(window);
-        when(window.getDpi()).thenReturn(160f);
-        when(scene.findById(findId)).thenReturn(widget);
+        when(scene.findById("findId")).thenReturn(widget);
 
-        Activity activity = new Activity(context);
+        WindowSettings settings = new WindowSettings.Builder().size(200, 100).theme(theme).layout(scene).build();
+        Activity activity = Activity.create(window, settings);
+        when(scene.getActivity()).thenReturn(activity);
 
-        assertNull(activity.getTheme());
-        activity.setTheme(theme);
-        activity.setScene(scene);
-        assertNull(activity.getTheme());
-        assertNull(activity.getScene());
-        assertNull(activity.findById(findId));
+        activity.initialize();
+        assertEquals(theme, activity.getTheme());
+        assertEquals(scene, activity.getScene());
 
         activity.show();
-        verify(scene, times(1)).setTheme(any());
-        assertEquals(scene, activity.getScene());
 
         Widget found = activity.findById(findId);
         assertEquals(widget, found);
@@ -346,28 +351,21 @@ public class ActivityTest {
 
     @Test
     public void findByPosition() {
-        Window window = mock(Window.class);
-        Context context = mock(Context.class);
         UXTheme theme = mock(UXTheme.class);
         Scene scene = mock(Scene.class);
         when(scene.getActivityScene()).thenReturn(mock(ActivityScene.class));
         Widget widget = mock(Widget.class);
-        when(context.getWindow()).thenReturn(window);
-        when(window.getDpi()).thenReturn(160f);
         when(scene.findByPosition(10, 20, true)).thenReturn(widget);
 
-        Activity activity = new Activity(context);
+        WindowSettings settings = new WindowSettings.Builder().size(200, 100).theme(theme).layout(scene).build();
+        Activity activity = Activity.create(window, settings);
+        when(scene.getActivity()).thenReturn(activity);
 
-        assertNull(activity.getTheme());
-        activity.setTheme(theme);
-        activity.setScene(scene);
-        assertNull(activity.getTheme());
-        assertNull(activity.getScene());
-        assertNull(activity.findByPosition(10, 20, true));
+        activity.initialize();
+        assertEquals(theme, activity.getTheme());
+        assertEquals(scene, activity.getScene());
 
         activity.show();
-        verify(scene, times(1)).setTheme(any());
-        assertEquals(scene, activity.getScene());
 
         Widget found = activity.findByPosition(10, 20, true);
         assertEquals(widget, found);
@@ -375,74 +373,29 @@ public class ActivityTest {
     }
 
     @Test
-    public void findFocused() {
-        Window window = mock(Window.class);
-        Context context = mock(Context.class);
-        UXTheme theme = mock(UXTheme.class);
-        Scene scene = mock(Scene.class);
-        when(scene.getActivityScene()).thenReturn(mock(ActivityScene.class));
-        Widget widget = mock(Widget.class);
-        when(context.getWindow()).thenReturn(window);
-        when(window.getDpi()).thenReturn(160f);
-        when(scene.findFocused()).thenReturn(widget);
-
-        Activity activity = new Activity(context);
-
-        assertNull(activity.getTheme());
-        activity.setTheme(theme);
-        activity.setScene(scene);
-        assertNull(activity.getTheme());
-        assertNull(activity.getScene());
-        assertNull(activity.findFocused());
-
-        activity.show();
-        verify(scene, times(1)).setTheme(any());
-        assertEquals(scene, activity.getScene());
-
-        Widget found = activity.findFocused();
-        assertEquals(widget, found);
-        verify(scene).findFocused();
-    }
-
-    @Test
     public void hide() {
-        Window window = mock(Window.class);
-        Context context = mock(Context.class);
+        Controller controller = mock(Controller.class);
+        ControllerFactory factory = mock(ControllerFactory.class);
+        when(factory.build(any())).thenReturn(controller);
+
         UXTheme theme = mock(UXTheme.class);
         Scene scene = mock(Scene.class);
         when(scene.getActivityScene()).thenReturn(mock(ActivityScene.class));
 
-        when(context.getWindow()).thenReturn(window);
-        when(window.getDpi()).thenReturn(160f);
+        WindowSettings settings = new WindowSettings.Builder().size(200, 100)
+                .theme(theme).layout(scene).controller(factory).build();
+        Activity activity = Activity.create(window, settings);
+        when(scene.getActivity()).thenReturn(activity);
 
-        Activity activity = new Activity(context);
-
-        assertNull(activity.getTheme());
-        activity.setTheme(theme);
-        activity.setScene(scene);
-        assertNull(activity.getTheme());
-        assertNull(activity.getScene());
-        assertFalse(activity.isListening());
+        activity.initialize();
+        assertEquals(theme, activity.getTheme());
+        assertEquals(scene, activity.getScene());
 
         activity.show();
-        verify(scene, times(1)).setTheme(any());
-        assertEquals(scene, activity.getScene());
-        assertFalse(activity.isListening());
+        activity.close();
 
-        activity.start();
-        verify(scene, times(1)).setTheme(any());
-        assertEquals(scene, activity.getScene());
-        assertTrue(activity.isListening());
-
-        activity.pause();
-        verify(scene, times(1)).setTheme(any());
-        assertEquals(scene, activity.getScene());
-        assertFalse(activity.isListening());
-
-        activity.hide();
-        verify(scene, times(1)).setTheme(any());
-        assertEquals(scene, activity.getScene());
-        assertFalse(activity.isListening());
+        verify(controller).onShow();
+        verify(controller).onHide();
     }
 
     @Test
@@ -451,8 +404,6 @@ public class ActivityTest {
         String focus1Id = "focus1Id";
         String focus2Id = "focis2Id";
 
-        Window window = mock(Window.class);
-        Context context = mock(Context.class);
         UXTheme theme = mock(UXTheme.class);
         Scene scene = mock(Scene.class);
         when(scene.getActivityScene()).thenReturn(mock(ActivityScene.class));
@@ -462,32 +413,38 @@ public class ActivityTest {
         when(scene.findById(sceneId)).thenReturn(scene);
         when(scene.findById(focus1Id)).thenReturn(focus1);
         when(scene.findById(focus2Id)).thenReturn(focus2);
+        when(focus1.findById(focus1Id)).thenReturn(focus1);
+        when(focus1.findById(focus2Id)).thenReturn(focus2);
+        when(focus2.findById(focus1Id)).thenReturn(focus1);
+        when(focus2.findById(focus2Id)).thenReturn(focus2);
 
         when(scene.getNextFocusId()).thenReturn(focus1Id);
         when(focus1.getNextFocusId()).thenReturn(focus2Id);
         when(focus2.getNextFocusId()).thenReturn(sceneId);
 
-        when(context.getWindow()).thenReturn(window);
-        when(window.getDpi()).thenReturn(160f);
+        when(scene.isFocusable()).thenReturn(false);
+        when(focus1.isFocusable()).thenReturn(true);
+        when(focus2.isFocusable()).thenReturn(true);
+
+        when(focus1.getGroup()).thenReturn(scene);
+        when(focus2.getGroup()).thenReturn(scene);
 
         KeyEvent keyEvent = mock(KeyEvent.class);
         when(keyEvent.getType()).thenReturn(KeyEvent.RELEASED);
         when(keyEvent.getKeycode()).thenReturn(KeyCode.KEY_TAB);
 
-        Activity activity = new Activity(context);
-        when(scene.getActivity()).thenReturn(null).thenReturn(activity);
+        WindowSettings settings = new WindowSettings.Builder().size(200, 100).theme(theme).layout(scene).build();
+        Activity activity = Activity.create(window, settings);
+
+        when(scene.getActivity()).thenReturn(activity);
         when(focus1.getActivity()).thenReturn(activity);
         when(focus2.getActivity()).thenReturn(activity);
 
-        assertNull(activity.getTheme());
-        activity.setTheme(theme);
-        activity.setScene(scene);
-        assertNull(activity.getTheme());
-        assertNull(activity.getScene());
+        activity.initialize();
+        assertEquals(theme, activity.getTheme());
+        assertEquals(scene, activity.getScene());
 
         activity.show();
-        verify(scene, times(1)).setTheme(any());
-        assertEquals(scene, activity.getScene());
 
         activity.onKeyFilter(keyEvent);
         activity.onKeyFilter(keyEvent);

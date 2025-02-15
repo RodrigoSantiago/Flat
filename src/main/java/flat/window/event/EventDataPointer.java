@@ -5,6 +5,7 @@ import flat.events.HoverEvent;
 import flat.events.PointerEvent;
 import flat.widget.Widget;
 import flat.window.Activity;
+import flat.window.Application;
 
 public class EventDataPointer {
     public final int pointerId;
@@ -71,7 +72,11 @@ public class EventDataPointer {
 
     void performPressed(int button) {
         if (pressed != null) {
-            pressed.firePointer(new PointerEvent(pressed, PointerEvent.PRESSED, button, x, y));
+            try {
+                pressed.firePointer(new PointerEvent(pressed, PointerEvent.PRESSED, button, x, y));
+            } catch (Exception e) {
+                Application.handleException(e);
+            }
         }
     }
 
@@ -84,7 +89,11 @@ public class EventDataPointer {
 
     void performReleased(Widget released, int button) {
         if (released != null) {
-            released.firePointer(new PointerEvent(released, PointerEvent.RELEASED, button, x, y));
+            try {
+                released.firePointer(new PointerEvent(released, PointerEvent.RELEASED, button, x, y));
+            } catch (Exception e) {
+                Application.handleException(e);
+            }
         }
     }
 
@@ -102,7 +111,12 @@ public class EventDataPointer {
             Widget lastAccepted = null;
             if (dragAccepted != null) {
                 DragEvent dragEvent = new DragEvent(dragAccepted, DragEvent.DROPPED, dragData, x, y, dragHandler, dragAccepted);
-                dragAccepted.fireDrag(dragEvent);
+                try {
+                    dragAccepted.fireDrag(dragEvent);
+                } catch (Exception e) {
+                    Application.handleException(e);
+                }
+
                 dragData = dragEvent.getData();
                 lastAccepted = dragEvent.getDragAccepted();
 
@@ -110,7 +124,11 @@ public class EventDataPointer {
             }
 
             DragEvent dragEvent = new DragEvent(dragHandler, DragEvent.DONE, dragData, x, y, dragHandler, lastAccepted);
-            dragHandler.fireDrag(dragEvent);
+            try {
+                dragHandler.fireDrag(dragEvent);
+            } catch (Exception e) {
+                Application.handleException(e);
+            }
         }
 
         setDragHover(null);
@@ -142,25 +160,41 @@ public class EventDataPointer {
     void setHover(Widget hover) {
         if (this.hover != hover) {
             if (this.hover != null) {
-                this.hover.fireHover(new HoverEvent(this.hover, HoverEvent.EXITED, x, y));
+                try {
+                    this.hover.fireHover(new HoverEvent(this.hover, HoverEvent.EXITED, x, y));
+                } catch (Exception e) {
+                    Application.handleException(e);
+                }
             }
             this.hover = hover;
             if (this.hover != null) {
-                this.hover.fireHover(new HoverEvent(this.hover, HoverEvent.ENTERED, x, y));
+                try {
+                    this.hover.fireHover(new HoverEvent(this.hover, HoverEvent.ENTERED, x, y));
+                } catch (Exception e) {
+                    Application.handleException(e);
+                }
             }
         }
     }
 
     void performHover() {
         if (hover != null) {
-            hover.fireHover(new HoverEvent(hover, HoverEvent.MOVED, x, y));
+            try {
+                hover.fireHover(new HoverEvent(hover, HoverEvent.MOVED, x, y));
+            } catch (Exception e) {
+                Application.handleException(e);
+            }
         }
     }
 
     void requestDrag() {
         if (!dragStarted && !dragRequested) {
             DragEvent event = new DragEvent(pressed, DragEvent.STARTED, null, x, y);
-            pressed.fireDrag(event);
+            try {
+                pressed.fireDrag(event);
+            } catch (Exception e) {
+                Application.handleException(e);
+            }
 
             if (event.isAccepted()) {
                 setDragStarted(event.getDragHandler(), event.getData());
@@ -174,13 +208,21 @@ public class EventDataPointer {
         Widget dragHover = widget == null || dragHandler == widget || widget.isChildOf(dragHandler) ? null : widget;
         if (dragHover != this.dragHover) {
             if (this.dragHover != null) {
-                this.dragHover.fireDrag(new DragEvent(this.dragHover, DragEvent.EXITED, dragData, x, y, dragHandler, null));
+                try {
+                    this.dragHover.fireDrag(new DragEvent(this.dragHover, DragEvent.EXITED, dragData, x, y, dragHandler, null));
+                } catch (Exception e) {
+                    Application.handleException(e);
+                }
                 dragAccepted = null;
             }
             this.dragHover = dragHover;
             if (this.dragHover != null) {
                 DragEvent dragEvent = new DragEvent(this.dragHover, DragEvent.ENTERED, dragData, x, y, dragHandler, null);
-                this.dragHover.fireDrag(dragEvent);
+                try {
+                    this.dragHover.fireDrag(dragEvent);
+                } catch (Exception e) {
+                    Application.handleException(e);
+                }
                 dragData = dragEvent.getData();
                 dragAccepted = dragEvent.getDragAccepted();
 
@@ -193,7 +235,11 @@ public class EventDataPointer {
 
     void performDrag() {
         DragEvent dragEvent = new DragEvent(dragHandler, DragEvent.OVER, dragData, x, y, dragHandler, dragAccepted);
-        dragHandler.fireDrag(dragEvent);
+        try {
+            dragHandler.fireDrag(dragEvent);
+        } catch (Exception e) {
+            Application.handleException(e);
+        }
         dragData = dragEvent.getData();
 
         if (dragEvent.isCanceled() && !dragCanceled) {
@@ -205,13 +251,21 @@ public class EventDataPointer {
         setDragHover(null);
         DragEvent cancelEvent = new DragEvent(dragHandler, DragEvent.DONE, dragData, x, y, dragHandler, null);
         cancelEvent.cancel();
-        dragHandler.fireDrag(cancelEvent);
+        try {
+            dragHandler.fireDrag(cancelEvent);
+        } catch (Exception e) {
+            Application.handleException(e);
+        }
         setDragCanceled();
     }
 
     void performPointerDrag() {
         if (pressed != null) {
-            pressed.firePointer(new PointerEvent(pressed, PointerEvent.DRAGGED, pressedButton, x, y));
+            try {
+                pressed.firePointer(new PointerEvent(pressed, PointerEvent.DRAGGED, pressedButton, x, y));
+            } catch (Exception e) {
+                Application.handleException(e);
+            }
         }
     }
 
@@ -245,17 +299,33 @@ public class EventDataPointer {
 
         if (pastDragStarted && pastDragHover != null) {
             DragEvent dragEvent = new DragEvent(pastPressed, DragEvent.EXITED, pastDragData, x, y, pastDragHandler, null);
-            pastDragHover.fireDrag(dragEvent);
+            try {
+                pastDragHover.fireDrag(dragEvent);
+            } catch (Exception e) {
+                Application.handleException(e);
+            }
             pastDragData = dragEvent.getData();
         }
         if (pastDragStarted) {
-            pastDragHandler.fireDrag(new DragEvent(pastDragHandler, DragEvent.DONE, pastDragData, x, y, pastDragHandler, null));
+            try {
+                pastDragHandler.fireDrag(new DragEvent(pastDragHandler, DragEvent.DONE, pastDragData, x, y, pastDragHandler, null));
+            } catch (Exception e) {
+                Application.handleException(e);
+            }
         }
         if (pastPressed != null) {
-            pastPressed.firePointer(new PointerEvent(pastPressed, PointerEvent.RELEASED, pastPressedButton, x, y));
+            try {
+                pastPressed.firePointer(new PointerEvent(pastPressed, PointerEvent.RELEASED, pastPressedButton, x, y));
+            } catch (Exception e) {
+                Application.handleException(e);
+            }
         }
         if (pastHover != null) {
-            pastHover.fireHover(new HoverEvent(pastHover, HoverEvent.EXITED, x, y));
+            try {
+                pastHover.fireHover(new HoverEvent(pastHover, HoverEvent.EXITED, x, y));
+            } catch (Exception e) {
+                Application.handleException(e);
+            }
         }
     }
 }

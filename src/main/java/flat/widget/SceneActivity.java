@@ -1,6 +1,5 @@
 package flat.widget;
 
-import flat.widget.stages.Stage;
 import flat.window.Activity;
 
 public class SceneActivity {

@@ -3,6 +3,7 @@ package flat.window.event;
 import flat.events.DragEvent;
 import flat.window.Activity;
 import flat.widget.Widget;
+import flat.window.Application;
 import flat.window.Window;
 
 import java.util.ArrayList;
@@ -33,10 +34,16 @@ public class EventDataMouseDrop extends EventData {
 
     @Override
     public void handle(Window window) {
-        Activity activity = window.getActivity();
-        Widget widget = activity.findByPosition(window.getPointerX(), window.getPointerY(), false);
-        widget.fireDrag(new DragEvent(widget, DragEvent.DROPPED, paths, window.getPointerX(), window.getPointerY(), widget, null));
-
-        release();
+        try {
+            Activity activity = window.getActivity();
+            Widget widget = activity.findByPosition(window.getPointerX(), window.getPointerY(), false);
+            try {
+                widget.fireDrag(new DragEvent(widget, DragEvent.DROPPED, paths, window.getPointerX(), window.getPointerY(), widget, null));
+            } catch (Exception e) {
+                Application.handleException(e);
+            }
+        } finally {
+            release();
+        }
     }
 }

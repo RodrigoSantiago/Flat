@@ -5,12 +5,13 @@ import flat.uxml.*;
 import flat.uxml.value.UXValue;
 import flat.uxml.value.UXValueNumber;
 import flat.uxml.value.UXValueText;
-import flat.widget.Group;
+import flat.widget.Scene;
 import flat.widget.Widget;
 import flat.widget.enums.HorizontalAlign;
 import flat.widget.enums.VerticalAlign;
 import flat.widget.layout.Panel;
 import flat.window.Activity;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -26,6 +27,24 @@ import static org.powermock.api.mockito.PowerMockito.*;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({UXNode.class})
 public class DialogTest {
+
+    Activity activityA;
+    Scene sceneA;
+    Activity activityB;
+    Scene sceneB;
+
+    @Before
+    public void before() {
+        activityA = mock(Activity.class);
+        sceneA = mock(Scene.class);
+        when(activityA.getScene()).thenReturn(sceneA);
+        when(sceneA.getActivity()).thenReturn(activityA);
+
+        activityB = mock(Activity.class);
+        sceneB = mock(Scene.class);
+        when(activityB.getScene()).thenReturn(sceneB);
+        when(sceneB.getActivity()).thenReturn(activityB);
+    }
 
     @Test
     public void properties() {
@@ -75,14 +94,11 @@ public class DialogTest {
 
     @Test
     public void showHide() {
-        Activity activity = mock(Activity.class);
-
         Dialog dialog = new Dialog();
-        dialog.show(activity);
+        dialog.show(activityA);
 
         assertTrue(dialog.isShown());
-        verify(activity, times(1)).addStage(dialog);
-        verify(activity, times(1)).addPointerFilter(dialog);
+        verify(activityA, times(1)).addPointerFilter(dialog);
 
         dialog.hide();
         assertFalse(dialog.isShown());
@@ -90,14 +106,10 @@ public class DialogTest {
 
     @Test
     public void showChangeActivity() {
-        Activity activityA = mock(Activity.class);
-        Activity activityB = mock(Activity.class);
-
         Dialog dialog = new Dialog();
         dialog.show(activityA);
 
         assertTrue(dialog.isShown());
-        verify(activityA, times(1)).addStage(dialog);
         verify(activityA, times(1)).addPointerFilter(dialog);
 
         dialog.onActivityChange(activityA, activityB);
@@ -106,18 +118,13 @@ public class DialogTest {
 
     @Test
     public void showChangeGroup() {
-        Activity activity = mock(Activity.class);
-        Group groupA = mock(Group.class);
-        Group groupB = mock(Group.class);
-
         Dialog dialog = new Dialog();
-        dialog.show(activity);
+        dialog.show(activityA);
 
         assertTrue(dialog.isShown());
-        verify(activity, times(1)).addStage(dialog);
-        verify(activity, times(1)).addPointerFilter(dialog);
+        verify(activityA, times(1)).addPointerFilter(dialog);
 
-        dialog.onGroupChange(groupA, groupB);
+        dialog.onGroupChange(sceneA, sceneB);
         assertFalse(dialog.isShown());
     }
 
@@ -154,15 +161,12 @@ public class DialogTest {
 
     @Test
     public void layoutPosition() {
-        Activity activity = mock(Activity.class);
-
         Dialog dialog = new Dialog();
         dialog.setPrefSize(100, 150);
-        dialog.show(activity, 200, 300);
+        dialog.show(activityA, 200, 300);
 
         assertTrue(dialog.isShown());
-        verify(activity, times(1)).addStage(dialog);
-        verify(activity, times(1)).addPointerFilter(dialog);
+        verify(activityA, times(1)).addPointerFilter(dialog);
 
         dialog.onMeasure();
         dialog.onLayout(100, 150);

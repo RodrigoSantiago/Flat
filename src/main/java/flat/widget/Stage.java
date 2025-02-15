@@ -1,6 +1,6 @@
-package flat.widget.stages;
+package flat.widget;
 
-import flat.widget.Group;
+import flat.window.Activity;
 
 public abstract class Stage extends Group {
 
@@ -14,5 +14,9 @@ public abstract class Stage extends Group {
 
     public void hide() {
 
+    }
+
+    protected void setToShow(Activity activity) {
+        activity.getScene().addStage(this);
     }
 }

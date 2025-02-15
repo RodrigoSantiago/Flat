@@ -497,6 +497,18 @@ public class Widget {
         return this.theme != null ? this.theme : parent != null ? parent.getCurrentTheme() : null;
     }
 
+    public void refreshStyle() {
+        applyStyle();
+        if (children != null) {
+            for (var child : getChildrenIterable()) {
+                child.refreshStyle();
+            }
+        }
+        if (contextMenu != null) {
+            contextMenu.refreshStyle();
+        }
+    }
+
     /**
      * Return the current assigned group
      *
@@ -609,7 +621,9 @@ public class Widget {
     void onThemeChangeLocal() {
         if (attrs.getTheme() != getCurrentTheme()) {
             attrs.setTheme(getCurrentTheme());
-            applyStyle();
+            if (getActivity() != null) {
+                applyStyle();
+            }
 
             if (contextMenu != null) {
                 contextMenu.setTheme(getCurrentTheme());
@@ -672,20 +686,6 @@ public class Widget {
         }
     }
 
-    public Widget findFocused() {
-        if (isFocused()) {
-            if (children != null) {
-                for (Widget child : getChildrenIterable()) {
-                    Widget focus = child.findFocused();
-                    if (focus != null) return focus;
-                }
-            }
-            return this;
-        } else {
-            return null;
-        }
-    }
-
     public boolean isChildOf(Widget widget) {
         if (parent != null) {
             if (parent == widget) {
@@ -732,7 +732,7 @@ public class Widget {
     // ---- STATES ---- //
     protected void setStates(byte bitmask) {
         if (states != bitmask) {
-            boolean applyStyle = getAttrs() != null && getAttrs().containsChange(states, bitmask);
+            boolean applyStyle = getAttrs().containsChange(states, bitmask);
             states = bitmask;
 
             if (transitionDuration > 0) {
@@ -748,7 +748,6 @@ public class Widget {
                 }
             } else if (applyStyle) {
                 applyStyle();
-                invalidate(false);
             }
         }
     }

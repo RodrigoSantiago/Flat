@@ -24,10 +24,7 @@ public class Window {
     private boolean closed;
 
     // Application
-    private ActivityFactory factory;
     private Activity activity;
-    private Activity.Transition transition;
-    private final ArrayList<Activity.Transition> transitions = new ArrayList<>();
 
     // Events
     private ArrayList<EventData> events = new ArrayList<>();
@@ -52,15 +49,18 @@ public class Window {
     private boolean started, loopAnim, loopDraw;
     private boolean releaseEventDelayed, eventConsume;
 
-    public Window(ActivityFactory factory, int width, int height, int multiSamples, boolean transparent) {
-        if (width <= 0 || height <= 0) {
+    static Window create(WindowSettings settings) {
+        if (settings.getWidth() <= 0 || settings.getHeight() <= 0) {
             throw new FlatException("Invalid application settings (Negative Screen Size)");
         }
-        if (multiSamples < 0) {
+        if (settings.getMultiSamples() < 0) {
             throw new FlatException("Invalid application settings (Negative Multi Samples)");
         }
+        return new Window(settings);
+    }
 
-        windowId = WL.WindowCreate(width, height, multiSamples, transparent);
+    Window(WindowSettings settings) {
+        windowId = WL.WindowCreate(settings.getWidth(), settings.getHeight(), settings.getMultiSamples(), settings.isTransparent());
         if (windowId == 0) {
             throw new FlatException("Invalid context creation");
         }
@@ -73,8 +73,8 @@ public class Window {
         outMouseX = (float) WL.GetCursorX(windowId);
         outMouseY = (float) WL.GetCursorY(windowId);
 
-        this.factory = factory;
-        this.context = Application.createContext(this);
+        this.context = Context.create(this, svgId);
+        this.activity = Activity.create(this, settings);
     }
 
     private void checkDisposed() {
@@ -105,21 +105,16 @@ public class Window {
 
         processSyncCalls();
 
-        processTransitions();
+        processEvents();
 
         // Activity
-        if (transition == null) {
+        activity.refreshScene();
 
-            processEvents();
+        loopAnim = activity.animate(loopTime) || loopAnim;
 
-            activity.refreshScene();
+        activity.layout(getClientWidth(), getClientHeight());
 
-            loopAnim = activity.animate(loopTime) || loopAnim;
-
-            activity.layout(getClientWidth(), getClientHeight());
-
-            loopDraw = activity.draw(context.getSmartContext()) || loopDraw;
-        }
+        loopDraw = activity.draw(context.getSmartContext()) || loopDraw;
 
         // Cursor
         if (cursor != currentCursor) {
@@ -148,13 +143,13 @@ public class Window {
     }
 
     void addEvent(EventData eventData) {
-        if (!closed && transition == null) {
+        if (!closed) {
             events.add(eventData);
         }
     }
 
     void addEvent(EventData eventData, float mouseX, float mouseY) {
-        if (!closed && transition == null) {
+        if (!closed) {
             outMouseX = mouseX;
             outMouseY = mouseY;
             events.add(eventData);
@@ -175,37 +170,8 @@ public class Window {
         if (!started) {
             show();
             started = true;
-
-            activity = factory.build(context);
+            activity.initialize();
             activity.show();
-            activity.start();
-        }
-    }
-
-    void processTransitions() {
-        if (transition == null && transitions.size() > 0) {
-            releaseEvents();
-
-            transition = transitions.remove(0);
-            transition.start(activity);
-        }
-
-        if (transition != null) {
-            loopAnim = true;
-            transition.handle(loopTime);
-
-            if (transition.isPlaying()) {
-                loopDraw = transition.draw(context.getSmartContext()) || loopDraw;
-
-            } else {
-                transition.end();
-                activity.hide();
-
-                activity = transition.getNext();
-                activity.start();
-
-                transition = null;
-            }
         }
     }
 
@@ -232,7 +198,11 @@ public class Window {
 
         eventConsume = true;
         for (EventData eData : eventsCp) {
-            eData.handle(this);
+            try {
+                eData.handle(this);
+            } catch (Exception e) {
+                Application.handleException(e);
+            }
 
             if (releaseEventDelayed) {
                 break;
@@ -254,7 +224,11 @@ public class Window {
             runSync = swap;
         }
         for (FutureTask<?> run : runSyncCp) {
-            run.run();
+            try {
+                run.run();
+            } catch (Exception e) {
+                Application.handleException(e);
+            }
         }
         runSyncCp.clear();
     }
@@ -298,14 +272,6 @@ public class Window {
 
     public Activity getActivity() {
         return activity;
-    }
-
-    public void setActivity(Activity next) {
-        setActivity(new Activity.Transition(next));
-    }
-
-    public void setActivity(Activity.Transition activityTransition) {
-        transitions.add(activityTransition);
     }
 
     public boolean isClosed() {
@@ -561,18 +527,17 @@ public class Window {
         if (activity == null || closed) {
             return true;
 
-        } else if (transition != null) {
-            return false;
-
         } else if (activity.closeRequest(system)) {
-            closed = true;
+            close();
             releaseEvents();
-
-            activity.pause();
-            activity.hide();
             return true;
 
         }
         return false;
+    }
+
+    void close() {
+        closed = true;
+        activity.close();
     }
 }

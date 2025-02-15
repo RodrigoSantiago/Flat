@@ -10,7 +10,7 @@ import flat.graphics.SmartContext;
 import flat.math.shapes.Shape;
 import flat.uxml.*;
 import flat.widget.Group;
-import flat.widget.Scene;
+import flat.widget.Stage;
 import flat.widget.Widget;
 import flat.widget.enums.DropdownAlign;
 import flat.widget.enums.HorizontalAlign;
@@ -312,7 +312,7 @@ public class Menu extends Stage {
 
     public void show(Activity activity, float x, float y, DropdownAlign align) {
         if (!isShown()) {
-            activity.addStage(this);
+            setToShow(activity);
             show = true;
             onShow(activity, x, y, align);
             activity.addPointerFilter(this);

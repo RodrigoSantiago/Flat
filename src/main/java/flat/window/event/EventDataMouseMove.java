@@ -32,17 +32,19 @@ public class EventDataMouseMove extends EventData {
 
     @Override
     public void handle(Window window) {
-        EventDataPointer pointer = window.getPointer();
-        pointer.setPosition(x, y);
-        Widget widget = window.getActivity().findByPosition(x, y, false);
+        try {
+            EventDataPointer pointer = window.getPointer();
+            pointer.setPosition(x, y);
+            Widget widget = window.getActivity().findByPosition(x, y, false);
 
-        move(window, pointer, widget);
+            move(window, pointer, widget);
 
-        if (pointer.isPressed()) {
-            drag(window, pointer, widget);
+            if (pointer.isPressed()) {
+                drag(window, pointer, widget);
+            }
+        } finally {
+            release();
         }
-
-        release();
     }
 
     private void move(Window window, EventDataPointer pointer, Widget widget) {

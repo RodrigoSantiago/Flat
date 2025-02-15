@@ -9,12 +9,14 @@ import flat.uxml.value.UXValue;
 import flat.uxml.value.UXValueNumber;
 import flat.uxml.value.UXValueText;
 import flat.widget.Group;
+import flat.widget.Scene;
 import flat.widget.Widget;
 import flat.widget.WidgetSupport;
 import flat.widget.enums.DropdownAlign;
 import flat.widget.enums.HorizontalAlign;
 import flat.widget.layout.Panel;
 import flat.window.Activity;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -25,6 +27,28 @@ import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 public class MenuTest {
+
+    Activity activityA;
+    Scene sceneA;
+    Activity activityB;
+    Scene sceneB;
+
+    @Before
+    public void before() {
+        activityA = mock(Activity.class);
+        sceneA = mock(Scene.class);
+        when(activityA.getScene()).thenReturn(sceneA);
+        when(sceneA.getActivity()).thenReturn(activityA);
+        when(activityA.getWidth()).thenReturn(800f);
+        when(activityA.getHeight()).thenReturn(600f);
+
+        activityB = mock(Activity.class);
+        sceneB = mock(Scene.class);
+        when(activityB.getScene()).thenReturn(sceneB);
+        when(sceneB.getActivity()).thenReturn(activityB);
+        when(activityB.getWidth()).thenReturn(800f);
+        when(activityB.getHeight()).thenReturn(600f);
+    }
 
     @Test
     public void properties() {
@@ -135,24 +159,13 @@ public class MenuTest {
 
     @Test
     public void showHide() {
-        Activity activity = mock(Activity.class);
-        Group group = mock(Group.class);
-        when(activity.getWidth()).thenReturn(800f);
-        when(activity.getHeight()).thenReturn(600f);
         Menu menu = new Menu();
 
-        doAnswer((any) -> {
-            WidgetSupport.setGroup(menu, group);
-            WidgetSupport.setActivity(menu, activity);
-            return null;
-        }).when(activity).addStage(menu);
-
-        menu.show(activity, 150, 100, DropdownAlign.TOP_LEFT);
+        menu.show(activityA, 150, 100, DropdownAlign.TOP_LEFT);
 
         assertTrue(menu.isShown());
-        verify(activity, times(1)).addStage(menu);
-        verify(activity, times(1)).addPointerFilter(menu);
-        verify(activity, times(1)).addResizeFilter(menu);
+        verify(activityA, times(1)).addPointerFilter(menu);
+        verify(activityA, times(1)).addResizeFilter(menu);
 
         menu.hide();
         assertFalse(menu.isShown());
@@ -160,25 +173,11 @@ public class MenuTest {
 
     @Test
     public void showChangeActivity() {
-        Activity activityA = mock(Activity.class);
-        when(activityA.getWidth()).thenReturn(800f);
-        when(activityA.getHeight()).thenReturn(600f);
-        Activity activityB = mock(Activity.class);
-        when(activityB.getWidth()).thenReturn(800f);
-        when(activityB.getHeight()).thenReturn(600f);
-        Group group = mock(Group.class);
         Menu menu = new Menu();
-
-        doAnswer((any) -> {
-            WidgetSupport.setGroup(menu, group);
-            WidgetSupport.setActivity(menu, activityA);
-            return null;
-        }).when(activityA).addStage(menu);
 
         menu.show(activityA, 150, 100, DropdownAlign.TOP_LEFT);
 
         assertTrue(menu.isShown());
-        verify(activityA, times(1)).addStage(menu);
         verify(activityA, times(1)).addPointerFilter(menu);
         verify(activityA, times(1)).addResizeFilter(menu);
 
@@ -188,60 +187,29 @@ public class MenuTest {
 
     @Test
     public void showChangeGroup() {
-        Activity activity = mock(Activity.class);
-        Group groupA = mock(Group.class);
-        Group groupB = mock(Group.class);
-        when(activity.getWidth()).thenReturn(800f);
-        when(activity.getHeight()).thenReturn(600f);
         Menu menu = new Menu();
-
-        doAnswer((any) -> {
-            WidgetSupport.setGroup(menu, groupA);
-            WidgetSupport.setActivity(menu, activity);
-            return null;
-        }).when(activity).addStage(menu);
-
-        menu.show(activity, 150, 100, DropdownAlign.TOP_LEFT);
+        menu.show(activityA, 150, 100, DropdownAlign.TOP_LEFT);
 
         assertTrue(menu.isShown());
-        verify(activity, times(1)).addStage(menu);
-        verify(activity, times(1)).addPointerFilter(menu);
-        verify(activity, times(1)).addResizeFilter(menu);
+        verify(activityA, times(1)).addPointerFilter(menu);
+        verify(activityA, times(1)).addResizeFilter(menu);
 
-        menu.onGroupChange(groupA, groupB);
+        menu.onGroupChange(sceneA, sceneB);
         assertFalse(menu.isShown());
     }
 
     @Test
     public void showHideCascade() {
-        Activity activity = mock(Activity.class);
-        Group group = mock(Group.class);
-        when(activity.getWidth()).thenReturn(800f);
-        when(activity.getHeight()).thenReturn(600f);
-
         Menu menu = new Menu();
         Menu childMenu = new Menu();
 
-        doAnswer((any) -> {
-            WidgetSupport.setGroup(menu, group);
-            WidgetSupport.setActivity(menu, activity);
-            return null;
-        }).when(activity).addStage(menu);
-
-        doAnswer((any) -> {
-            WidgetSupport.setGroup(childMenu, group);
-            WidgetSupport.setActivity(childMenu, activity);
-            return null;
-        }).when(activity).addStage(childMenu);
-
-        menu.show(activity, 150, 100, DropdownAlign.TOP_LEFT);
+        menu.show(activityA, 150, 100, DropdownAlign.TOP_LEFT);
         childMenu.show(menu, 150, 100, DropdownAlign.TOP_LEFT);
 
         assertTrue(menu.isShown());
         assertTrue(childMenu.isShown());
-        verify(activity, times(1)).addStage(menu);
-        verify(activity, times(1)).addPointerFilter(menu);
-        verify(activity, times(1)).addResizeFilter(menu);
+        verify(activityA, times(1)).addPointerFilter(menu);
+        verify(activityA, times(1)).addResizeFilter(menu);
 
         menu.hide();
         assertFalse(menu.isShown());
@@ -250,34 +218,16 @@ public class MenuTest {
 
     @Test
     public void showHideChild() {
-        Activity activity = mock(Activity.class);
-        Group group = mock(Group.class);
-        when(activity.getWidth()).thenReturn(800f);
-        when(activity.getHeight()).thenReturn(600f);
-
         Menu menu = new Menu();
         Menu childMenu = new Menu();
 
-        doAnswer((any) -> {
-            WidgetSupport.setGroup(menu, group);
-            WidgetSupport.setActivity(menu, activity);
-            return null;
-        }).when(activity).addStage(menu);
-
-        doAnswer((any) -> {
-            WidgetSupport.setGroup(childMenu, group);
-            WidgetSupport.setActivity(childMenu, activity);
-            return null;
-        }).when(activity).addStage(childMenu);
-
-        menu.show(activity, 150, 100, DropdownAlign.TOP_LEFT);
+        menu.show(activityA, 150, 100, DropdownAlign.TOP_LEFT);
         childMenu.show(menu, 150, 100, DropdownAlign.TOP_LEFT);
 
         assertTrue(menu.isShown());
         assertTrue(childMenu.isShown());
-        verify(activity, times(1)).addStage(menu);
-        verify(activity, times(1)).addPointerFilter(menu);
-        verify(activity, times(1)).addResizeFilter(menu);
+        verify(activityA, times(1)).addPointerFilter(menu);
+        verify(activityA, times(1)).addResizeFilter(menu);
 
         childMenu.hide();
         assertTrue(menu.isShown());
@@ -286,26 +236,14 @@ public class MenuTest {
 
     @Test
     public void showCircular() {
-        Activity activity = mock(Activity.class);
-        Group group = mock(Group.class);
-        when(activity.getWidth()).thenReturn(800f);
-        when(activity.getHeight()).thenReturn(600f);
-
         Menu menu = new Menu();
 
-        doAnswer((any) -> {
-            WidgetSupport.setGroup(menu, group);
-            WidgetSupport.setActivity(menu, activity);
-            return null;
-        }).when(activity).addStage(menu);
-
-        menu.show(activity, 150, 100, DropdownAlign.TOP_LEFT);
+        menu.show(activityA, 150, 100, DropdownAlign.TOP_LEFT);
         menu.show(menu, 150, 100, DropdownAlign.TOP_LEFT);
 
         assertTrue(menu.isShown());
-        verify(activity, times(1)).addStage(menu);
-        verify(activity, times(1)).addPointerFilter(menu);
-        verify(activity, times(1)).addResizeFilter(menu);
+        verify(activityA, times(1)).addPointerFilter(menu);
+        verify(activityA, times(1)).addResizeFilter(menu);
 
         menu.hide();
         assertFalse(menu.isShown());

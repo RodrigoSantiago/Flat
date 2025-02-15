@@ -1,7 +1,7 @@
 package flat.window;
 
 import flat.widget.SceneActivity;
-import flat.widget.stages.Stage;
+import flat.widget.Stage;
 
 public class ActivityScene {
 

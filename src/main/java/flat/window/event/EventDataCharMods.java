@@ -4,6 +4,7 @@ import flat.backend.WLEnums;
 import flat.events.KeyEvent;
 import flat.window.Activity;
 import flat.widget.Widget;
+import flat.window.Application;
 import flat.window.Window;
 
 import java.util.ArrayList;
@@ -35,19 +36,25 @@ public class EventDataCharMods extends EventData {
 
     @Override
     public void handle(Window window) {
-        Activity activity = window.getActivity();
-        Widget widget = activity.getKeyFocus();
-        if (widget != null) {
+        try {
+            Activity activity = window.getActivity();
+            Widget widget = activity.getKeyFocus();
+            if (widget != null) {
 
-            boolean shift = (mods & (WLEnums.MOD_SHIFT)) != 0;
-            boolean ctrl = (mods & (WLEnums.MOD_CONTROL)) != 0;
-            boolean alt = (mods & (WLEnums.MOD_ALT)) != 0;
-            boolean spr = (mods & (WLEnums.MOD_SUPER)) != 0;
+                boolean shift = (mods & (WLEnums.MOD_SHIFT)) != 0;
+                boolean ctrl = (mods & (WLEnums.MOD_CONTROL)) != 0;
+                boolean alt = (mods & (WLEnums.MOD_ALT)) != 0;
+                boolean spr = (mods & (WLEnums.MOD_SUPER)) != 0;
 
-            String value = new String(Character.toChars(codepoint));
-            widget.fireKey(new KeyEvent(widget, KeyEvent.TYPED, shift, ctrl, alt, spr, value, -1));
+                String value = new String(Character.toChars(codepoint));
+                try {
+                    widget.fireKey(new KeyEvent(widget, KeyEvent.TYPED, shift, ctrl, alt, spr, value, -1));
+                } catch (Exception e) {
+                    Application.handleException(e);
+                }
+            }
+        } finally {
+            release();
         }
-
-        release();
     }
 }

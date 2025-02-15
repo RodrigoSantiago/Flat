@@ -23,7 +23,7 @@ import static org.powermock.api.mockito.PowerMockito.verifyNoMoreInteractions;
 import static org.powermock.api.mockito.PowerMockito.doThrow;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({FlatLibrary.class, WL.class, GL.class, SVG.class, Context.class})
+@PrepareForTest({FlatLibrary.class, WL.class, GL.class, SVG.class, Context.class, Activity.class, Window.class})
 public class ApplicationTest {
 
     @Before
@@ -33,29 +33,22 @@ public class ApplicationTest {
         PowerMockito.mockStatic(GL.class);
         PowerMockito.mockStatic(SVG.class);
         PowerMockito.mockStatic(Context.class);
-        when(Context.create(any(), anyLong(), anyLong())).thenReturn(null);
-    }
-
-    @After
-    public void after() {
-
+        PowerMockito.mockStatic(Activity.class);
+        PowerMockito.mockStatic(Window.class);
     }
 
     @Test
     public void init() {
         // Setup
         ResourcesManager resources = mock(ResourcesManager.class);
-        Application.Settings settings = mock(Application.Settings.class);
         File fileLibrary = mock(File.class);
-        Window window = mock(Window.class);
+        WindowSettings settings = new WindowSettings.Builder().size(200, 400).build();
 
         when(resources.getFlatLibraryFile()).thenReturn(fileLibrary);
-        when(settings.createResources()).thenReturn(resources);
-        when(settings.createWindow()).then(invocationOnMock -> null);
         when(WL.Init()).thenReturn(true);
 
         // Execution
-        Application.launch(settings);
+        Application.init(resources);
 
         // Assertion
         assertUsualInit(fileLibrary);
@@ -66,18 +59,17 @@ public class ApplicationTest {
     public void init_FailedToLoadLibrary() {
         // Setup
         ResourcesManager resources = mock(ResourcesManager.class);
-        Application.Settings settings = mock(Application.Settings.class);
+        WindowSettings settings = new WindowSettings.Builder().size(200, 400).build();
         File fileLibrary = mock(File.class);
 
         when(resources.getFlatLibraryFile()).thenReturn(fileLibrary);
-        when(settings.createResources()).thenReturn(resources);
-        when(settings.createWindow()).then(invocationOnMock -> null);
+
         doThrow(new RuntimeException()).when(FlatLibrary.class);
         FlatLibrary.load(fileLibrary);
 
         // Execution/Assertion
         try {
-            Application.launch(settings);
+            Application.init(resources);
 
             fail("Exception expected");
         } catch (Exception e) {
@@ -91,19 +83,18 @@ public class ApplicationTest {
     }
 
     @Test
-    public void init_InvalidContextCreation() {
+    public void init_InvalidWindowCreation() {
         // Setup
         ResourcesManager resources = mock(ResourcesManager.class);
-        Application.Settings settings = mock(Application.Settings.class);
+        WindowSettings settings = new WindowSettings.Builder().size(200, 400).build();
         File fileLibrary = mock(File.class);
 
         when(resources.getFlatLibraryFile()).thenReturn(fileLibrary);
-        when(settings.createResources()).thenReturn(resources);
-        when(settings.createWindow()).then(invocationOnMock -> null);
         when(WL.Init()).thenReturn(false);
 
         // Execution/Assertion
         try {
+            Application.init(resources);
             Application.launch(settings);
 
             fail("Exception expected");
@@ -124,20 +115,18 @@ public class ApplicationTest {
     public void launch() {
         // Setup
         ResourcesManager resources = mock(ResourcesManager.class);
-        Application.Settings settings = mock(Application.Settings.class);
+        WindowSettings settings = new WindowSettings.Builder().size(200, 400).build();
         File fileLibrary = mock(File.class);
+
         Window window = mock(Window.class);
+        when(window.isClosed()).thenReturn(false).thenReturn(true);
+        when(Window.create(settings)).thenReturn(window);
 
         when(resources.getFlatLibraryFile()).thenReturn(fileLibrary);
-        when(settings.createResources()).thenReturn(resources);
-        when(settings.createWindow()).then(invocationOnMock -> {
-            Application.createContext(window);
-            return window;
-        });
-        when(window.isClosed()).thenReturn(true);
         when(WL.Init()).thenReturn(true);
 
         // Execution
+        Application.init(resources);
         Application.launch(settings);
 
         // Assertion
@@ -151,6 +140,9 @@ public class ApplicationTest {
         verifyStatic(WL.class);
         WL.HandleEvents(anyDouble());
 
+        verifyStatic(WL.class);
+        WL.Finish();
+
         assertNoMoreNatives();
     }
 
@@ -158,17 +150,14 @@ public class ApplicationTest {
     public void launch_EventHandling() {
         // Setup
         ResourcesManager resources = mock(ResourcesManager.class);
-        Application.Settings settings = mock(Application.Settings.class);
+        WindowSettings settings = new WindowSettings.Builder().size(200, 400).build();
         File fileLibrary = mock(File.class);
+
         Window window = mock(Window.class);
+        when(window.isClosed()).thenReturn(false).thenReturn(true);
+        when(Window.create(settings)).thenReturn(window);
 
         when(resources.getFlatLibraryFile()).thenReturn(fileLibrary);
-        when(settings.createResources()).thenReturn(resources);
-        when(settings.createWindow()).then(invocationOnMock -> {
-            Application.createContext(window);
-            return window;
-        });
-        when(window.isClosed()).thenReturn(true);
         when(WL.Init()).thenReturn(true);
 
         // Event Setup
@@ -216,6 +205,7 @@ public class ApplicationTest {
         WL.HandleEvents(anyDouble());
 
         // Execution
+        Application.init(resources);
         Application.launch(settings);
 
         // Assertion
@@ -227,6 +217,9 @@ public class ApplicationTest {
         verifyStatic(WL.class);
         WL.HandleEvents(anyDouble());
 
+        verifyStatic(WL.class);
+        WL.Finish();
+
         assertNoMoreNatives();
     }
 
@@ -234,18 +227,15 @@ public class ApplicationTest {
     public void launch_ScreenSizeEventHandling() {
         // Setup
         ResourcesManager resources = mock(ResourcesManager.class);
-        Application.Settings settings = mock(Application.Settings.class);
+        WindowSettings settings = new WindowSettings.Builder().size(200, 400).build();
         File fileLibrary = mock(File.class);
+
         Window window = mock(Window.class);
         when(window.isStarted()).thenReturn(true);
+        when(window.isClosed()).thenReturn(false).thenReturn(false).thenReturn(true);
+        when(Window.create(settings)).thenReturn(window);
 
         when(resources.getFlatLibraryFile()).thenReturn(fileLibrary);
-        when(settings.createResources()).thenReturn(resources);
-        when(settings.createWindow()).then(invocationOnMock -> {
-            Application.createContext(window);
-            return window;
-        });
-        when(window.isClosed()).thenReturn(false).thenReturn(true);
         when(WL.Init()).thenReturn(true);
 
         // Event Setup
@@ -261,6 +251,7 @@ public class ApplicationTest {
         WL.HandleEvents(anyDouble());
 
         // Execution
+        Application.init(resources);
         Application.launch(settings);
 
         // Assertion
@@ -275,6 +266,9 @@ public class ApplicationTest {
         verifyStatic(WL.class);
         WL.HandleEvents(anyDouble());
 
+        verifyStatic(WL.class);
+        WL.Finish();
+
         verify(window).addEvent(any());
         verify(window, times(2)).loop(anyFloat());
 
@@ -285,34 +279,40 @@ public class ApplicationTest {
     public void vsyncConfiguration() {
         // Setup
         ResourcesManager resources = mock(ResourcesManager.class);
-        Application.Settings settings = mock(Application.Settings.class);
+        WindowSettings settings = new WindowSettings.Builder().size(200, 400).build();
         File fileLibrary = mock(File.class);
+
         Window window = mock(Window.class);
+        when(window.isClosed()).thenReturn(false).thenReturn(false).thenReturn(true);
+        when(window.loop(anyFloat())).thenAnswer(a -> {
+            Application.setVsync(1);
+            return false;
+        });
+        when(Window.create(settings)).thenReturn(window);
 
         when(resources.getFlatLibraryFile()).thenReturn(fileLibrary);
-        when(settings.createResources()).thenReturn(resources);
-        when(settings.getVsync()).thenReturn(1);
-        when(settings.createWindow()).then(invocationOnMock -> {
-            Application.createContext(window);
-            return window;
-        });
-        when(window.loop(anyFloat())).then(invocation -> true);
-        when(window.isClosed()).thenReturn(true);
         when(WL.Init()).thenReturn(true);
 
         // Execution
+        Application.init(resources);
         Application.launch(settings);
 
         // Assertion
-        verify(window).loop(anyFloat());
+        verify(window, times(2)).loop(anyFloat());
+
+        verifyStatic(WL.class);
+        WL.SetVsync(anyInt());
 
         assertUsualInit(fileLibrary);
 
         verifyStatic(WL.class);
         WL.WindowAssign(anyLong());
 
-        verifyStatic(WL.class);
+        verifyStatic(WL.class, times(2));
         WL.HandleEvents(anyDouble());
+
+        verifyStatic(WL.class);
+        WL.Finish();
 
         assertEquals("Unexpected Application Vsync", 1, Application.getVsync());
 
@@ -323,36 +323,35 @@ public class ApplicationTest {
     public void launch_WindowLoopException() {
         // Setup
         ResourcesManager resources = mock(ResourcesManager.class);
-        Application.Settings settings = mock(Application.Settings.class);
+        WindowSettings settings = new WindowSettings.Builder().size(200, 400).build();
         File fileLibrary = mock(File.class);
+
         Window window = mock(Window.class);
+        when(window.isClosed()).thenReturn(false).thenReturn(true);
+        when(Window.create(settings)).thenReturn(window);
 
         when(resources.getFlatLibraryFile()).thenReturn(fileLibrary);
-        when(settings.createResources()).thenReturn(resources);
-        when(settings.createWindow()).then(invocationOnMock -> {
-            Application.createContext(window);
-            return window;
-        });
-        when(window.isClosed()).thenReturn(true);
         when(WL.Init()).thenReturn(true);
         when(window.loop(anyFloat())).thenThrow(new RuntimeException("Problem"));
 
         // Execution
-        try {
-            Application.launch(settings);
-
-            fail("Exception expected");
-        } catch (Exception e) {
-            assertEquals("Problem", e.getMessage());
-        }
+        Application.init(resources);
+        Application.launch(settings);
 
         // Assertion
         verify(window).loop(anyFloat());
+        verify(window).close();
 
         assertUsualInit(fileLibrary);
 
         verifyStatic(WL.class);
         WL.WindowAssign(anyLong());
+
+        verifyStatic(WL.class);
+        WL.HandleEvents(anyDouble());
+
+        verifyStatic(WL.class);
+        WL.Finish();
 
         assertNoMoreNatives();
     }
@@ -361,24 +360,24 @@ public class ApplicationTest {
     public void runVsync() {
         // Setup
         ResourcesManager resources = mock(ResourcesManager.class);
-        Application.Settings settings = mock(Application.Settings.class);
+        WindowSettings settings = new WindowSettings.Builder().size(200, 400).build();
         File fileLibrary = mock(File.class);
+
         Window window = mock(Window.class);
+        when(window.isClosed()).thenReturn(false).thenReturn(true);
+        when(Window.create(settings)).thenReturn(window);
 
         when(resources.getFlatLibraryFile()).thenReturn(fileLibrary);
-        when(settings.createResources()).thenReturn(resources);
-        when(settings.getVsync()).thenReturn(1);
-        when(settings.createWindow()).then(invocationOnMock -> {
-            Application.createContext(window);
-            return window;
-        });
-        when(window.loop(anyFloat())).then(invocation -> true);
-        when(window.isClosed()).thenReturn(true);
         when(WL.Init()).thenReturn(true);
 
-        // Execution
         Runnable task = mock(Runnable.class);
-        Application.runVsync(task);
+        when(window.loop(anyFloat())).thenAnswer(a -> {
+            Application.runVsync(task);
+            return false;
+        });
+
+        // Execution
+        Application.init(resources);
         Application.launch(settings);
 
         // Assertion
@@ -393,7 +392,8 @@ public class ApplicationTest {
         verifyStatic(WL.class);
         WL.HandleEvents(anyDouble());
 
-        assertEquals("Unexpected Application Vsync", 1, Application.getVsync());
+        verifyStatic(WL.class);
+        WL.Finish();
 
         assertNoMoreNatives();
     }
@@ -431,12 +431,6 @@ public class ApplicationTest {
 
         verifyStatic(WL.class);
         WL.SetWindowCloseCallback(any());
-
-        verifyStatic(WL.class);
-        WL.SetVsync(anyInt());
-
-        verifyStatic(WL.class);
-        WL.Finish();
     }
 
     private void assertNoMoreNatives() {
