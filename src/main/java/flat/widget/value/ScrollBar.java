@@ -22,6 +22,8 @@ public class ScrollBar extends Widget {
     private int color = Color.white;
     private Direction direction = Direction.VERTICAL;
 
+    private float grabOffset;
+
     @Override
     public void applyAttributes(Controller controller) {
         super.applyAttributes(controller);
@@ -262,6 +264,4 @@ public class ScrollBar extends Widget {
             grabOffset = 0;
         }
     }
-
-    private float grabOffset;
 }

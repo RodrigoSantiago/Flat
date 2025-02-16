@@ -527,10 +527,13 @@ public class Widget {
     }
 
     void setParent(Parent parent) {
+        if (parent == this.parent) return;
+
         UXTheme themeA = getCurrentTheme();
         Group groupA = getGroup();
         Activity activityA = getActivity();
 
+        Parent old = this.parent;
         this.parent = parent;
 
         Group groupB = parent == null ? null : parent.getCurrentOrGroup();
@@ -543,6 +546,8 @@ public class Widget {
         if (activityA != activityB) {
             onActivityChangeLocal(activityA, activityB);
         }
+
+        onGroupChange(groupA, groupB);
 
         if (groupA != groupB) {
             onGroupChange(groupA, groupB);
@@ -558,7 +563,11 @@ public class Widget {
         }
     }
 
-    public void onGroupChange(Group prev, Group current) {
+    protected void onParentChange(Parent prev, Parent current) {
+
+    }
+
+    protected void onGroupChange(Group prev, Group current) {
         if (getCurrentOrGroup() != this && children != null) {
             for (Widget widget : getChildrenIterable()) {
                 widget.onGroupChange(prev, current);
@@ -581,7 +590,7 @@ public class Widget {
         }
     }
 
-    public void onActivityChange(Activity prev, Activity current) {
+    protected void onActivityChange(Activity prev, Activity current) {
         setFocused(false);
         if (prev != null) {
             if (prev.getFocus() == this) {

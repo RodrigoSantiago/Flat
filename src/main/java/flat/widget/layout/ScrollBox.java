@@ -338,10 +338,16 @@ public class ScrollBox extends Parent {
 
     @Override
     protected boolean detachChild(Widget child) {
-        if (child == horizontalBar || child == verticalBar) {
-            return false;
+        if (super.detachChild(child)) {
+            if (child == horizontalBar) {
+                horizontalBar = null;
+            }
+            if (child == verticalBar) {
+                verticalBar = null;
+            }
+            return true;
         }
-        return super.detachChild(child);
+        return false;
     }
 
     @Override

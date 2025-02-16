@@ -5,14 +5,17 @@ import flat.animations.NormalizedAnimation;
 import flat.animations.StateInfo;
 import flat.events.DragEvent;
 import flat.events.PointerEvent;
+import flat.graphics.SmartContext;
 import flat.resources.ResourceStream;
 import flat.uxml.*;
 import flat.widget.Group;
+import flat.widget.Parent;
 import flat.widget.Stage;
 import flat.widget.Widget;
 import flat.widget.enums.HorizontalAlign;
 import flat.widget.enums.VerticalAlign;
 import flat.window.Activity;
+import flat.window.Application;
 
 public class Dialog extends Stage {
 
@@ -27,31 +30,41 @@ public class Dialog extends Stage {
 
     private final ShowupAnimation showupAnimation = new ShowupAnimation();
 
-    public void build(String uxmlStream, Controller controller, UXTheme theme) {
-        build(new ResourceStream(uxmlStream), controller, theme);
+    public void build(String uxmlStream) {
+        build(new ResourceStream(uxmlStream), null);
     }
 
-    public void build(ResourceStream uxmlStream, Controller controller, UXTheme theme) {
+    public void build(String uxmlStream, Controller controller) {
+        build(new ResourceStream(uxmlStream), controller);
+    }
+
+    public void build(ResourceStream uxmlStream) {
+        build(uxmlStream, null);
+    }
+
+    public void build(ResourceStream uxmlStream, Controller controller) {
+        build(UXNode.parse(uxmlStream).instance(controller).build(getCurrentTheme()), controller);
+    }
+
+    public void build(Widget root) {
+        build(root, null);
+    }
+
+    public void build(Widget root, Controller controller) {
         this.controller = controller;
 
-        UXBuilder builder = UXNode.parse(uxmlStream).instance(controller);
-        Widget root = builder.build(theme);
-
-        setTheme(theme);
         removeAll();
         if (root != null) {
             add(root);
         }
     }
 
-    public void build(Widget root, UXTheme theme) {
-        this.controller = null;
+    protected void setController(Controller controller) {
+        this.controller = controller;
+    }
 
-        setTheme(theme);
-        removeAll();
-        if (root != null) {
-            add(root);
-        }
+    public Controller getController() {
+        return controller;
     }
 
     @Override
@@ -78,13 +91,32 @@ public class Dialog extends Stage {
     }
 
     @Override
-    public void onGroupChange(Group prev, Group current) {
+    public void onDraw(SmartContext context) {
+        super.onDraw(context);
+
+        if (controller != null) {
+            try {
+                controller.onDraw(context);
+            } catch (Exception e) {
+                Application.handleException(e);
+            }
+        }
+    }
+
+    @Override
+    protected void onParentChange(Parent prev, Parent current) {
+        super.onParentChange(prev, current);
+        hide();
+    }
+
+    @Override
+    protected void onGroupChange(Group prev, Group current) {
         super.onGroupChange(prev, current);
         hide();
     }
 
     @Override
-    public void onActivityChange(Activity prev, Activity current) {
+    protected void onActivityChange(Activity prev, Activity current) {
         super.onActivityChange(prev, current);
         hide();
     }
@@ -195,6 +227,14 @@ public class Dialog extends Stage {
             if (getParent() != null) {
                 getParent().remove(this);
             }
+
+            if (controller != null) {
+                try {
+                    controller.onHide();
+                } catch (Exception e) {
+                    Application.handleException(e);
+                }
+            }
         }
     }
 
@@ -218,6 +258,14 @@ public class Dialog extends Stage {
         if (showupTransitionDuration > 0) {
             showupAnimation.setDuration(showupTransitionDuration);
             showupAnimation.play(act);
+        }
+
+        if (controller != null) {
+            try {
+                controller.onShow();
+            } catch (Exception e) {
+                Application.handleException(e);
+            }
         }
     }
 

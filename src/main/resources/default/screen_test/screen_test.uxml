@@ -27,8 +27,7 @@
         </LinearBox>
         <ScrollBox width="150" height="150" background-color="yellow" horizontal-bar-id="scr1" vertical-bar-id="scr2"
             horizontal-position="LEFT" vertical-position="TOP" floating-bars="true"
-                   on-slide="slideBar" on-view-offset-y-change="slideChange"
-        >
+                   on-slide="slideBar" on-view-offset-y-change="slideChange">
             <LinearBox width="114" height="114" background-color="red" margin-top="16" margin-bottom="16" margin-left="16" margin-right="16" id="linear">
                 <Button text="Ola Mundo - OLAI" ripple-enabled="true" text-size="12px" margin-top="8" on-action="linearAction"/>
             </LinearBox>

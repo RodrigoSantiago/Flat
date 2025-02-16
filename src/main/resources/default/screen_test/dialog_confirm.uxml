@@ -22,14 +22,20 @@
                     <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
                 </Menu>
             </Button>
-            <Button text="Ola Mundo pq - OLÂ" text-size="24px" font="SANS" margin-top="8"
+            <Button text="YES" text-size="24px" font="SANS" margin-top="8"
                     icon="/default/img_test.png"
                     icon-scale-height="true" icon-spacing="24px"
                     icon-align="RIGHT"
                     horizontal-align="RIGHT"
                     height="80px" width="MATCH_PARENT"
-                    on-action="hide">
-            </Button>
+                    on-action="onYes"/>
+            <Button text="NO" text-size="24px" font="SANS" margin-top="8"
+                    icon="/default/img_test.png"
+                    icon-scale-height="true" icon-spacing="24px"
+                    icon-align="RIGHT"
+                    horizontal-align="RIGHT"
+                    height="80px" width="MATCH_PARENT"
+                    on-action="onNo"/>
         </LinearBox>
     </LinearBox>
 </StackBox>

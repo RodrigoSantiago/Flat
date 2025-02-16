@@ -86,7 +86,8 @@ public class DialogTest {
         when(builder.build(theme)).thenReturn(child);
 
         Dialog dialog = new Dialog();
-        dialog.build(stream, controller, theme);
+        dialog.setTheme(theme);
+        dialog.build(stream, controller);
 
         assertEquals(1, dialog.getChildrenIterable().size());
         assertEquals(child, dialog.getChildrenIterable().get(0));

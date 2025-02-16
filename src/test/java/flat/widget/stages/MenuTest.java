@@ -204,7 +204,9 @@ public class MenuTest {
         Menu childMenu = new Menu();
 
         menu.show(activityA, 150, 100, DropdownAlign.TOP_LEFT);
+        WidgetSupport.setActivity(menu, activityA);
         childMenu.show(menu, 150, 100, DropdownAlign.TOP_LEFT);
+        WidgetSupport.setActivity(childMenu, activityA);
 
         assertTrue(menu.isShown());
         assertTrue(childMenu.isShown());
@@ -222,7 +224,9 @@ public class MenuTest {
         Menu childMenu = new Menu();
 
         menu.show(activityA, 150, 100, DropdownAlign.TOP_LEFT);
+        WidgetSupport.setActivity(menu, activityA);
         childMenu.show(menu, 150, 100, DropdownAlign.TOP_LEFT);
+        WidgetSupport.setActivity(childMenu, activityA);
 
         assertTrue(menu.isShown());
         assertTrue(childMenu.isShown());
@@ -251,49 +255,45 @@ public class MenuTest {
 
     @Test
     public void layoutPosition() {
-        Activity activity = mock(Activity.class);
-        when(activity.getWidth()).thenReturn(800f);
-        when(activity.getHeight()).thenReturn(600f);
-
         Menu menu = new Menu();
         menu.setPrefSize(100, 150);
 
-        menu.show(activity, 200, 300, DropdownAlign.TOP_LEFT);
+        menu.show(activityA, 200, 300, DropdownAlign.TOP_LEFT);
         menu.onMeasure();
         menu.onLayout(100, 150);
         assertEquals(200, menu.getX(), 0.1f);
         assertEquals(300, menu.getY(), 0.1f);
         menu.hide();
 
-        menu.show(activity, 200, 300, DropdownAlign.TOP_RIGHT);
+        menu.show(activityA, 200, 300, DropdownAlign.TOP_RIGHT);
         menu.onMeasure();
         menu.onLayout(100, 150);
         assertEquals(100, menu.getX(), 0.1f);
         assertEquals(300, menu.getY(), 0.1f);
         menu.hide();
 
-        menu.show(activity, 200, 300, DropdownAlign.BOTTOM_LEFT);
+        menu.show(activityA, 200, 300, DropdownAlign.BOTTOM_LEFT);
         menu.onMeasure();
         menu.onLayout(100, 150);
         assertEquals(200, menu.getX(), 0.1f);
         assertEquals(150, menu.getY(), 0.1f);
         menu.hide();
 
-        menu.show(activity, 200, 300, DropdownAlign.BOTTOM_RIGHT);
+        menu.show(activityA, 200, 300, DropdownAlign.BOTTOM_RIGHT);
         menu.onMeasure();
         menu.onLayout(100, 150);
         assertEquals(100, menu.getX(), 0.1f);
         assertEquals(150, menu.getY(), 0.1f);
         menu.hide();
 
-        menu.show(activity, 200, 200, DropdownAlign.SCREEN_SPACE);
+        menu.show(activityA, 200, 200, DropdownAlign.SCREEN_SPACE);
         menu.onMeasure();
         menu.onLayout(100, 150);
         assertEquals(200, menu.getX(), 0.1f);
         assertEquals(200, menu.getY(), 0.1f);
         menu.hide();
 
-        menu.show(activity, 600, 400, DropdownAlign.SCREEN_SPACE);
+        menu.show(activityA, 600, 400, DropdownAlign.SCREEN_SPACE);
         menu.onMeasure();
         menu.onLayout(100, 150);
         assertEquals(500, menu.getX(), 0.1f);
@@ -301,14 +301,14 @@ public class MenuTest {
         menu.hide();
 
         // Outsite activity
-        menu.show(activity, 800, 600, DropdownAlign.TOP_LEFT);
+        menu.show(activityA, 800, 600, DropdownAlign.TOP_LEFT);
         menu.onMeasure();
         menu.onLayout(100, 150);
         assertEquals(700, menu.getX(), 0.1f);
         assertEquals(450, menu.getY(), 0.1f);
         menu.hide();
 
-        menu.show(activity, 50, 50, DropdownAlign.BOTTOM_RIGHT);
+        menu.show(activityA, 50, 50, DropdownAlign.BOTTOM_RIGHT);
         menu.onMeasure();
         menu.onLayout(100, 150);
         assertEquals(0, menu.getX(), 0.1f);
@@ -317,14 +317,14 @@ public class MenuTest {
 
         // Margins
         menu.setMargins(1, 2, 3, 4);
-        menu.show(activity, 200, 300, DropdownAlign.TOP_LEFT);
+        menu.show(activityA, 200, 300, DropdownAlign.TOP_LEFT);
         menu.onMeasure();
         menu.onLayout(100, 150);
         assertEquals(196, menu.getX(), 0.1f);
         assertEquals(299, menu.getY(), 0.1f);
         menu.hide();
 
-        menu.show(activity, 200, 300, DropdownAlign.BOTTOM_RIGHT);
+        menu.show(activityA, 200, 300, DropdownAlign.BOTTOM_RIGHT);
         menu.onMeasure();
         menu.onLayout(100, 150);
         assertEquals(96, menu.getX(), 0.1f);

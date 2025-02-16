@@ -28,11 +28,19 @@ public class Application {
     private static boolean loopActive;
     private static long lastLoopTime;
 
+    private static boolean initialized;
+    private static boolean finalized;
+
     public static void init() {
         init(new ResourcesManager());
     }
 
     public static void init(ResourcesManager resourcesManager) {
+        if (!initialized) {
+            initialized = true;
+        } else {
+            throw new FlatException("The application is already initialized");
+        }
         resources = resourcesManager;
 
         try {
@@ -113,7 +121,10 @@ public class Application {
     }
 
     private static void finish() {
-        WL.Finish();
+        if (!finalized) {
+            finalized = true;
+            WL.Finish();
+        }
     }
 
     public static void launch(WindowSettings settings) {

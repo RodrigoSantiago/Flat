@@ -7,6 +7,8 @@ import flat.uxml.Controller;
 import flat.uxml.ValueChange;
 import flat.widget.layout.LinearBox;
 import flat.widget.stages.Dialog;
+import flat.widget.stages.dialogs.AlertDialogBuilder;
+import flat.widget.stages.dialogs.ConfirmDialogBuilder;
 import flat.widget.text.Button;
 import flat.widget.text.Label;
 import flat.window.Activity;
@@ -34,7 +36,24 @@ public class MainActivity extends Controller {
     @Flat
     public void onButtonClick(ActionEvent actionEvent) {
         Activity activity = getActivity();
-        var dialog = new Dialog();
+        /*var alert = new AlertDialogBuilder("/default/screen_test/dialog_test.uxml")
+                .title("This is THE Title")
+                .message("This is THE Message")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .build();
+        alert.show(getActivity());*/
+        var alert = new ConfirmDialogBuilder("/default/screen_test/dialog_confirm.uxml")
+                .title("This is THE Title")
+                .message("This is THE Message")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onYesListener((dg) -> System.out.println("Yes"))
+                .onNoListener((dg) -> System.out.println("No"))
+                .build();
+        alert.show(getActivity());
+
+        /*var dialog = new Dialog();
         dialog.setId("dialog");
         dialog.build("/default/screen_test/dialog_test.uxml", new Controller(getActivity()) {
             @Flat
@@ -46,11 +65,11 @@ public class MainActivity extends Controller {
                 System.out.println("ola");
                 var dialog2 = new Dialog();
                 dialog2.setId("dialog" + (++num));
-                dialog2.build("/default/screen_test/dialog_test.uxml", null, activity.getTheme());
+                dialog2.build("/default/screen_test/dialog_test.uxml", null);
                 dialog2.show(activity);
             }
-        }, activity.getTheme());
-        dialog.show(activity);
+        });
+        dialog.show(activity);*/
     }
 
     @Flat

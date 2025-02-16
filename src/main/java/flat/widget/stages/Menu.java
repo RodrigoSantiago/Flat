@@ -10,6 +10,7 @@ import flat.graphics.SmartContext;
 import flat.math.shapes.Shape;
 import flat.uxml.*;
 import flat.widget.Group;
+import flat.widget.Parent;
 import flat.widget.Stage;
 import flat.widget.Widget;
 import flat.widget.enums.DropdownAlign;
@@ -141,13 +142,19 @@ public class Menu extends Stage {
     }
 
     @Override
-    public void onGroupChange(Group prev, Group current) {
+    protected void onParentChange(Parent prev, Parent current) {
+        super.onParentChange(prev, current);
+        hide();
+    }
+
+    @Override
+    protected void onGroupChange(Group prev, Group current) {
         super.onGroupChange(prev, current);
         hide();
     }
 
     @Override
-    public void onActivityChange(Activity prev, Activity current) {
+    protected void onActivityChange(Activity prev, Activity current) {
         super.onActivityChange(prev, current);
         hide();
     }
