@@ -262,6 +262,7 @@ public class Dialog extends Stage {
 
         if (controller != null) {
             try {
+                controller.setActivity(getActivity());
                 controller.onShow();
             } catch (Exception e) {
                 Application.handleException(e);

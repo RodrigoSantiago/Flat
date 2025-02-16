@@ -21,9 +21,7 @@ public class UXNodeTest {
     @Test
     public void empty() {
         UXNode node = UXNode.parse(mockStream(""));
-        assertNotNull(node);
-        assertNode(node, "scene");
-        assertChild(node);
+        assertNull(node);
     }
 
     @Test
@@ -92,6 +90,88 @@ public class UXNodeTest {
                 "parse", new UXValueBool(true)
         );
         assertChild(node);
+    }
+
+    @Test
+    public void include() {
+        ResourceStream stream = mockStream(
+                """
+                <scene><Include src=\"stream/include\"></button></scene>
+                """);
+        ResourceStream streamInclude = mockStream(
+                """
+                <button></button>
+                """);
+        when(stream.getResourceName()).thenReturn("/stream");
+        when(streamInclude.getResourceName()).thenReturn("/stream/include");
+        when(stream.getRelative("stream/include")).thenReturn(streamInclude);
+        UXNode node = UXNode.parse(stream);
+        assertNotNull(node);
+        assertNode(node, "scene");
+        assertChild(node, "button");
+    }
+
+    @Test
+    public void includeOverrideAttributes() {
+        ResourceStream stream = mockStream(
+                """
+                <scene><Include src=\"stream/include\" width=\"100\" height=\"20\"></button></scene>
+                """);
+        ResourceStream streamInclude = mockStream(
+                """
+                <button width=\"50\"></button>
+                """);
+        when(stream.getResourceName()).thenReturn("/stream");
+        when(streamInclude.getResourceName()).thenReturn("/stream/include");
+        when(stream.getRelative("stream/include")).thenReturn(streamInclude);
+        UXNode node = UXNode.parse(stream);
+        assertNotNull(node);
+        assertNode(node, "scene");
+        assertChild(node, "button");
+        assertNode(node.getChildren().get(0), "button",
+                "width", new UXValueXML("100", new UXValueNumber(100)),
+                "height", new UXValueXML("20", new UXValueNumber(20))
+        );
+    }
+
+    @Test
+    public void includeCycle() {
+        ResourceStream stream = mockStream(
+                """
+                <scene><Include src=\"stream/include\"></button></scene>
+                """);
+        ResourceStream streamInclude = mockStream(
+                """
+                <button><Include src=\"stream\"></button>
+                """);
+        when(stream.getResourceName()).thenReturn("/stream");
+        when(streamInclude.getResourceName()).thenReturn("/stream/include");
+        when(stream.getRelative("stream/include")).thenReturn(streamInclude);
+        when(streamInclude.getRelative("stream")).thenReturn(stream);
+        UXNode node = UXNode.parse(stream);
+        assertNotNull(node);
+        assertNode(node, "scene");
+        assertChild(node, "button");
+    }
+
+    @Test
+    public void includeCycleNested() {
+        ResourceStream stream = mockStream(
+                """
+                <scene><Include src=\"stream/include\"></button></scene>
+                """);
+        ResourceStream streamInclude = mockStream(
+                """
+                <button><Include src=\"stream/include\"></button>
+                """);
+        when(stream.getResourceName()).thenReturn("/stream");
+        when(streamInclude.getResourceName()).thenReturn("/stream/include");
+        when(stream.getRelative("stream/include")).thenReturn(streamInclude);
+        when(streamInclude.getRelative("stream/include")).thenReturn(stream);
+        UXNode node = UXNode.parse(stream);
+        assertNotNull(node);
+        assertNode(node, "scene");
+        assertChild(node, "button");
     }
 
     public void assertNode(UXNode node, String name, Object... pair) {

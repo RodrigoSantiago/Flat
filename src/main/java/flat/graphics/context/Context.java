@@ -266,6 +266,10 @@ public class Context {
         disposed = true;
     }
 
+    public boolean isDisposed() {
+        return disposed;
+    }
+
     // ---- CORE ---- //
 
     public void softFlush() {

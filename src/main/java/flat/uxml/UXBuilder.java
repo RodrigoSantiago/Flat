@@ -1,14 +1,11 @@
 package flat.uxml;
 
 import flat.uxml.value.UXValue;
-import flat.widget.layout.Panel;
+import flat.widget.layout.*;
 import flat.widget.stages.Menu;
 import flat.widget.Scene;
 import flat.widget.Widget;
 import flat.widget.image.ImageView;
-import flat.widget.layout.LinearBox;
-import flat.widget.layout.ScrollBox;
-import flat.widget.layout.StackBox;
 import flat.widget.selection.Checkbox;
 import flat.widget.selection.RadioButton;
 import flat.widget.selection.RadioGroup;
@@ -47,6 +44,7 @@ public class UXBuilder {
         UXBuilder.install("ScrollBar", ScrollBar::new);
         UXBuilder.install("ScrollBox", ScrollBox::new);
         UXBuilder.install("Menu", Menu::new);
+        UXBuilder.install("Frame", Frame::new);
         /*UXBuilder.install("Divider", Divider::new);
         UXBuilder.install("ToggleButton", ToggleButton::new);
         UXBuilder.install("ToggleGroup", RadioGroup::new);
@@ -97,7 +95,7 @@ public class UXBuilder {
     }
 
     public Scene buildScene(UXTheme theme) {
-        Widget child = buildRecursive(root);
+        Widget child = root == null ? null : buildRecursive(root);
 
         Scene scene;
         if (child instanceof Scene) {

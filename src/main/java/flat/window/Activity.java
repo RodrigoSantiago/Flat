@@ -247,19 +247,23 @@ public class Activity {
     }
 
     boolean closeRequest(boolean systemRequest) {
-        try {
-            return controller.onCloseRequest(systemRequest);
-        } catch (Exception e) {
-            Application.handleException(e);;
-            return true;
+        if (controller != null) {
+            try {
+                return controller.onCloseRequest(systemRequest);
+            } catch (Exception e) {
+                Application.handleException(e);
+            }
         }
+        return true;
     }
 
     void close() {
-        try {
-            controller.onHide();
-        } catch (Exception e) {
-            Application.handleException(e);;
+        if (controller != null) {
+            try {
+                controller.onHide();
+            } catch (Exception e) {
+                Application.handleException(e);
+            }
         }
     }
 

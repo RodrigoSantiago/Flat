@@ -28,7 +28,6 @@ public class Application {
     private static boolean loopActive;
     private static long lastLoopTime;
 
-    private static boolean initialized;
     private static boolean finalized;
 
     public static void init() {
@@ -36,12 +35,8 @@ public class Application {
     }
 
     public static void init(ResourcesManager resourcesManager) {
-        if (!initialized) {
-            initialized = true;
-        } else {
-            throw new FlatException("The application is already initialized");
-        }
         resources = resourcesManager;
+        finalized = false;
 
         try {
             FlatLibrary.load(resources.getFlatLibraryFile());
@@ -188,10 +183,11 @@ public class Application {
             windows.remove(window);
             windowsMap.remove(window.getWindowId(), window);
 
+            assignWindow(window);
+            window.dispose();
             if (assignedWindow == window) {
                 assignedWindow = null;
             }
-            window.dispose();
         }
         windowsRemove.clear();
     }

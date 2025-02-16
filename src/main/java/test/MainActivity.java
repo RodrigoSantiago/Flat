@@ -3,6 +3,7 @@ package test;
 import flat.Flat;
 import flat.events.ActionEvent;
 import flat.graphics.SmartContext;
+import flat.math.Affine;
 import flat.uxml.Controller;
 import flat.uxml.ValueChange;
 import flat.widget.layout.LinearBox;
@@ -12,6 +13,8 @@ import flat.widget.stages.dialogs.ConfirmDialogBuilder;
 import flat.widget.text.Button;
 import flat.widget.text.Label;
 import flat.window.Activity;
+import flat.window.Application;
+import flat.window.WindowSettings;
 
 public class MainActivity extends Controller {
 
@@ -114,15 +117,18 @@ public class MainActivity extends Controller {
         //context.setColor(Color.black);
         //context.setTextBlur(0);
         //context.drawText(32, 200, "Ola Mundo");
-        context.setTransform2D(null);
-        context.setColor(0xFFFFFFFF);
-        context.drawRect(0, 0, 100, 100, true);
-        context.setColor(0xFF000080);
-        context.drawRect(0, 0, 100, 100, true);
     }
 
     @Flat
     public void onAction(ActionEvent event) {
-
+        System.out.println("action");
+        Application.createWindow(new WindowSettings.Builder()
+                .layout("/default/screen_test/screen_test.uxml")
+                .theme("/default/themes")
+                .controller(MainActivity::new)
+                .size(1000, 800)
+                .multiSamples(8)
+                .transparent(false)
+                .build());
     }
 }

@@ -109,18 +109,7 @@ public class Widget {
     private float transitionDuration;
 
     public Widget() {
-        attrs = new UXAttrs(this, convertToKebabCase(getClass().getSimpleName()));
-    }
-
-    private static String convertToKebabCase(String camelCase) {
-        if (camelCase == null || camelCase.isEmpty()) {
-            return camelCase;
-        }
-
-        return camelCase
-                .replaceAll("([a-z])([A-Z])", "$1-$2")
-                .replaceAll("([A-Z]+)([A-Z][a-z])", "$1-$2")
-                .toLowerCase();
+        attrs = new UXAttrs(this, UXAttrs.convertToKebabCase(getClass().getSimpleName()));
     }
 
     public void setAttributes(HashMap<Integer, UXValue> attributes, String style) {

@@ -31,6 +31,17 @@ public class UXAttrs {
         this.base = base;
     }
 
+    public static String convertToKebabCase(String camelCase) {
+        if (camelCase == null || camelCase.isEmpty()) {
+            return camelCase;
+        }
+
+        return camelCase
+                .replaceAll("([a-z])([A-Z])", "$1-$2")
+                .replaceAll("([A-Z]+)([A-Z][a-z])", "$1-$2")
+                .toLowerCase();
+    }
+
     public void setName(String name) {
         if (!Objects.equals(this.name, name)) {
             this.name = name;

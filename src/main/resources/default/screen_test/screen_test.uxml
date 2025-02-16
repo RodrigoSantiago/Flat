@@ -1,4 +1,12 @@
 <Scene background-color="#C8C8C8" id="main-scene">
+    <LinearBox direction="horizontal" width="WRAP_CONTENT" height="WRAP_CONTENT">
+    <LinearBox direction="vertical" background-color="#C0C0C0" width="MATCH_PARENT" height="MATCH_PARENT"
+               padding-left="8" padding-right="8" padding-top="8" padding-bottom="8"
+               margin-left="32" margin-right="32" margin-top="8" margin-bottom="8" id="panel" >
+        <Include src="include.uxml" radius-top="16"/>
+        <Include src="include.uxml"/>
+        <Include src="../folder/include_cycle.uxml"/>
+    </LinearBox>
     <LinearBox direction="vertical" background-color="#C0C0C0" width="MATCH_PARENT" height="MATCH_PARENT"
         padding-left="8" padding-right="8" padding-top="8" padding-bottom="8"
         margin-left="32" margin-right="32" margin-top="8" margin-bottom="8" id="panel" >
@@ -71,13 +79,14 @@
                     <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
                 </Menu>
             </Button>
-            <Button text="Ola Mundo pq - OLÂ" text-size="24px" font="SANS" margin-top="8"
+            <Button text="Ola Mundo pq - onAction" text-size="24px" font="SANS" margin-top="8"
                     icon="/default/img_test.png"
                     icon-scale-height="true" icon-spacing="24px"
                     icon-align="RIGHT"
                     horizontal-align="RIGHT"
-                    height="80px" width="MATCH_PARENT">
+                    height="80px" width="MATCH_PARENT" on-action="onAction">
             </Button>
         </LinearBox>
+    </LinearBox>
     </LinearBox>
 </Scene>

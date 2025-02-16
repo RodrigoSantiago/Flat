@@ -1,0 +1,3 @@
+<StackBox background-color="#FF00FF" width="200" height="200" id="dialog-scene">
+    <Include src="../screen_test/include.uxml"/>
+</StackBox>

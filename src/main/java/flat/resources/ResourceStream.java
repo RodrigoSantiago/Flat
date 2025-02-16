@@ -14,13 +14,19 @@ public class ResourceStream {
     private boolean folder;
 
     ResourceStream(String name, boolean folder) {
-        this.resourceName = name;
+        this.resourceName = name.length() > 0 && name.charAt(0) == '/' ? name : "/" + name;
         this.folder = folder;
+        if (folder && !this.resourceName.endsWith("/")) {
+            this.resourceName += "/";
+        }
     }
 
     public ResourceStream(String name) {
-        this.resourceName = name;
+        this.resourceName = name.length() > 0 && name.charAt(0) == '/' ? name : "/" + name;
         this.folder = Application.getResourcesManager().isFolder(resourceName);
+        if (folder && !this.resourceName.endsWith("/")) {
+            this.resourceName += "/";
+        }
     }
 
     public boolean isFolder() {
@@ -66,6 +72,45 @@ public class ResourceStream {
 
     public Object getCache() {
         return Application.getResourcesManager().getResourceCache(resourceName);
+    }
+
+    public ResourceStream getRelative(String path) {
+        if (path.startsWith("/")) {
+            return new ResourceStream(path);
+        }
+        if (!path.contains("..")) {
+            if (isFolder()) {
+                return new ResourceStream(resourceName + path);
+            } else {
+                int index = resourceName.lastIndexOf("/");
+                if (index == -1) {
+                    return new ResourceStream("/" + path);
+                } else {
+                    return new ResourceStream(resourceName.substring(0, index) + "/" + path);
+                }
+            }
+        }
+
+        String[] currentPathParts = resourceName.split("/");
+        String[] relativePathParts = path.split("/");
+        List<String> pathList = new ArrayList<>(Arrays.asList(currentPathParts));
+        if (!isFolder() && pathList.size() > 0 && !pathList.get(pathList.size() - 1).isEmpty()) {
+            pathList.remove(pathList.size() - 1);
+        }
+        for (String part : relativePathParts) {
+            if (part.equals("..")) {
+                if (pathList.size() > 1) {
+                    pathList.remove(pathList.size() - 1);
+                }
+            } else if (!part.equals(".") && !part.isEmpty()) {
+                pathList.add(part);
+            }
+        }
+        String resolvedPath = String.join("/", pathList);
+        if (!resolvedPath.startsWith("/")) {
+            resolvedPath = "/" + resolvedPath;
+        }
+        return new ResourceStream(resolvedPath);
     }
 
     @Override

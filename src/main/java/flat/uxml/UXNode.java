@@ -57,6 +57,11 @@ public class UXNode {
     }
 
     public static UXNode parse(ResourceStream stream) {
+        ArrayList<String> includes = new ArrayList<>();
+        return parseInclude(stream, includes);
+    }
+
+    private static UXNode parseInclude(ResourceStream stream, ArrayList<String> includes) {
         Object obj = stream.getCache();
         if (obj != null) {
             if (obj instanceof UXNode) {
@@ -67,15 +72,21 @@ public class UXNode {
         }
 
         try {
-            UXNode node = read(stream);
-            stream.putCache(node);
+            includes.add(stream.getResourceName());
+            UXNode node = read(stream, includes);
+            if (node != null) {
+                stream.putCache(node);
+            }
             return node;
         } catch (IOException e) {
             throw new FlatException(e);
         }
     }
 
-    private static UXNode read(ResourceStream stream) throws IOException {
+    private static UXNode read(ResourceStream stream, ArrayList<String> includes) throws IOException {
+        if (stream.getStream() == null) {
+            throw new FlatException("File not found at: " + stream.getResourceName());
+        }
         String data = new String(stream.getStream().readAllBytes(), StandardCharsets.UTF_8);
 
         UXNodeParser reader = new UXNodeParser(data);
@@ -83,17 +94,16 @@ public class UXNode {
 
         UXNodeElement root = reader.getRootElement();
         if (root == null) {
-            return new UXNode("scene", "scene", null, new ArrayList<>());
+            return null;
         } else {
-            return readRecursive(root);
+            return readRecursive(stream, root, includes);
         }
-
     }
 
-    private static UXNode readRecursive(UXNodeElement element) {
+    private static UXNode readRecursive(ResourceStream stream, UXNodeElement element, ArrayList<String> includes) {
         // Name
         String name = element.getName();
-        String style = name.toLowerCase();
+        String style = null;
 
         // Attributes
         HashMap<Integer, UXValue> values = new HashMap<>();
@@ -113,11 +123,43 @@ public class UXNode {
             }
         }
 
+        // Include
+        if (name.equals("Include")) {
+            UXValue value = values.get(UXHash.getHash("src"));
+            if (value != null) {
+                ResourceStream relative = stream.getRelative(value.asString(null));
+                if (includes.contains(relative.getResourceName())) {
+                    return null;
+                } else {
+                    int size = includes.size();
+                    UXNode include = parseInclude(relative, includes);
+                    includes.subList(size, includes.size()).clear();
+
+                    values.remove(UXHash.getHash("content"));
+                    values.remove(UXHash.getHash("src"));
+                    for (var entry : include.getValues().entrySet()) {
+                        if (!values.containsKey(entry.getKey())) {
+                            values.put(entry.getKey(), entry.getValue());
+                        }
+                    }
+                    if (style == null) {
+                        style = include.getStyle();
+                    }
+                    return new UXNode(include.getName(), style, values, include.getChildren());
+                }
+            }
+            return null;
+        }
+
         // Children
         List<UXNode> children = new ArrayList<>();
         for (UXNodeElement childNode : element.getChildren()) {
-            children.add(readRecursive(childNode));
+            UXNode child = readRecursive(stream, childNode, includes);
+            if (child != null) {
+                children.add(child);
+            }
         }
+
         return new UXNode(name, style, values, children);
     }
 }

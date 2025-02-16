@@ -9,12 +9,14 @@ import flat.graphics.context.enums.PixelFormat;
 import flat.graphics.context.enums.WrapMode;
 import flat.widget.enums.ImageFilter;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 public class PixelMap implements Drawable {
 
-    private Texture2D texture;
+    private HashMap<Context, Texture2D> textures = new HashMap<>();
     private int width, height;
     private byte[] data;
-    private ImageFilter filter;
 
     PixelMap(byte[] data, int width, int height) {
         this.width = width;
@@ -23,6 +25,7 @@ public class PixelMap implements Drawable {
     }
 
     public Texture2D readTexture(Context context) {
+        var texture = textures.get(context);
         if (texture == null) {
             texture = new Texture2D(context);
             texture.begin(0);
@@ -33,7 +36,13 @@ public class PixelMap implements Drawable {
             texture.setScaleFilters(MagFilter.NEAREST, MinFilter.NEAREST);
             texture.setWrapModes(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
             texture.end();
-            data = null;
+            textures.put(context, texture);
+        }
+        for (var ctx : textures.keySet()) {
+            if (ctx.isDisposed()) {
+                textures.remove(ctx);
+                break;
+            }
         }
         return texture;
     }
@@ -55,14 +64,13 @@ public class PixelMap implements Drawable {
 
     @Override
     public void draw(SmartContext context, float x, float y, float width, float height, int color, ImageFilter filter) {
-        readTexture(context.getContext());
-        if (this.filter != filter) {
+        var texture = readTexture(context.getContext());
+        if ((texture.getMagFilter() == MagFilter.NEAREST) != (filter == ImageFilter.NEAREST)) {
             texture.begin(0);
             texture.setScaleFilters(
                     filter == ImageFilter.LINEAR ? MagFilter.LINEAR : MagFilter.NEAREST,
                     filter == ImageFilter.LINEAR ? MinFilter.LINEAR : MinFilter.NEAREST);
             texture.end();
-            this.filter = filter;
         }
         context.drawImage(this, x, y, width, height, color);
     }
