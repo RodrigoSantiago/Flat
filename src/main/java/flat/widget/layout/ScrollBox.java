@@ -11,6 +11,7 @@ import flat.widget.Widget;
 import flat.widget.enums.*;
 import flat.widget.value.ScrollBar;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ScrollBox extends Parent {
@@ -18,6 +19,8 @@ public class ScrollBox extends Parent {
     private UXListener<ActionEvent> slideListener;
     private UXValueListener<Float> viewOffsetXListener;
     private UXValueListener<Float> viewOffsetYListener;
+    private ArrayList<ValueChange<Float>> viewOffsetXQueue = new ArrayList<>();
+    private ArrayList<ValueChange<Float>> viewOffsetYQueue = new ArrayList<>();
     private float viewOffsetX;
     private float viewOffsetY;
     private ScrollBar horizontalBar;
@@ -295,6 +298,19 @@ public class ScrollBox extends Parent {
         viewOffsetX = viewX;
         viewOffsetY = viewY;
 
+        if (oldX != viewOffsetX) {
+            viewOffsetXQueue.add(new ValueChange<>(this, oldX, viewOffsetX));
+            if (getActivity() != null) {
+                getActivity().getWindow().runSync(this::executeQueueX);
+            }
+        }
+        if (oldY != viewOffsetY) {
+            viewOffsetYQueue.add(new ValueChange<>(this, oldY, viewOffsetY));
+            if (getActivity() != null) {
+                getActivity().getWindow().runSync(this::executeQueueY);
+            }
+        }
+
         if (horizontalBar != null) {
             horizontalBar.setViewOffsetListener(null);
             horizontalBar.setSlideListener(null);
@@ -311,9 +327,6 @@ public class ScrollBox extends Parent {
             verticalBar.setViewOffsetListener(scrollY);
             verticalBar.setSlideListener(slideY);
         }
-
-        fireViewOffsetXListener(oldX);
-        fireViewOffsetYListener(oldY);
     }
 
     @Override
@@ -481,6 +494,7 @@ public class ScrollBox extends Parent {
                     this.verticalBar.setSlideListener(null);
                     this.verticalBar.setViewDimension(viewDimensionY);
                     this.verticalBar.setTotalDimension(totalDimensionY);
+                    this.verticalBar.setViewOffset(viewOffsetY);
                     this.verticalBar.setViewOffsetListener(scrollY);
                     this.verticalBar.setSlideListener(slideY);
                 }
@@ -511,6 +525,7 @@ public class ScrollBox extends Parent {
                         this.horizontalBar.setSlideListener(null);
                         this.horizontalBar.setViewDimension(viewDimensionX);
                         this.horizontalBar.setTotalDimension(totalDimensionX);
+                        this.horizontalBar.setViewOffset(viewOffsetX);
                         this.horizontalBar.setViewOffsetListener(scrollX);
                         this.horizontalBar.setSlideListener(slideX);
                     }
@@ -546,6 +561,8 @@ public class ScrollBox extends Parent {
             if (horizontalBar != null) {
                 horizontalBar.setViewOffset(viewOffsetX);
             }
+        } else {
+            executeQueueX();
         }
     }
 
@@ -577,6 +594,8 @@ public class ScrollBox extends Parent {
             if (verticalBar != null) {
                 verticalBar.setViewOffset(viewOffsetY);
             }
+        } else {
+            executeQueueY();
         }
     }
 
@@ -632,19 +651,41 @@ public class ScrollBox extends Parent {
 
     private void fireSlide() {
         if (slideListener != null) {
-            slideListener.handle(new ActionEvent(this));
+            UXListener.safeHandle(slideListener, new ActionEvent(this));
         }
     }
 
     private void fireViewOffsetXListener(float old) {
         if (viewOffsetXListener != null && old != viewOffsetX) {
-            viewOffsetXListener.handle(new ValueChange<>(this, old, viewOffsetX));
+            if (viewOffsetXQueue.size() > 0) {
+                viewOffsetXQueue.add(new ValueChange<>(this, old, viewOffsetX));
+                executeQueueX();
+            } else {
+                UXValueListener.safeHandle(viewOffsetXListener, new ValueChange<>(this, old, viewOffsetX));
+            }
+        }
+    }
+
+    private void executeQueueX() {
+        while (viewOffsetXQueue.size() > 0) {
+            UXValueListener.safeHandle(viewOffsetXListener, viewOffsetXQueue.remove(0));
         }
     }
 
     private void fireViewOffsetYListener(float old) {
         if (viewOffsetYListener != null && old != viewOffsetY) {
-            viewOffsetYListener.handle(new ValueChange<>(this, old, viewOffsetY));
+            if (viewOffsetYQueue.size() > 0) {
+                viewOffsetYQueue.add(new ValueChange<>(this, old, viewOffsetY));
+                executeQueueY();
+            } else {
+                UXValueListener.safeHandle(viewOffsetYListener, new ValueChange<>(this, old, viewOffsetY));
+            }
+        }
+    }
+
+    private void executeQueueY() {
+        while (viewOffsetYQueue.size() > 0) {
+            UXValueListener.safeHandle(viewOffsetYListener, viewOffsetYQueue.remove(0));
         }
     }
 

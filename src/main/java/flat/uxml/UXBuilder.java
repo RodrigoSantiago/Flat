@@ -45,6 +45,8 @@ public class UXBuilder {
         UXBuilder.install("ScrollBox", ScrollBox::new);
         UXBuilder.install("Menu", Menu::new);
         UXBuilder.install("Frame", Frame::new);
+        UXBuilder.install("Tab", Tab::new);
+        UXBuilder.install("Page", Page::new);
         /*UXBuilder.install("Divider", Divider::new);
         UXBuilder.install("ToggleButton", ToggleButton::new);
         UXBuilder.install("ToggleGroup", RadioGroup::new);
@@ -54,8 +56,6 @@ public class UXBuilder {
         UXBuilder.install("ProgressCircle", ProgressCircle::new);
         UXBuilder.install("Grid", Grid::new);
         UXBuilder.install("Cell", Cell::new);
-        UXBuilder.install("Tab", Tab::new);
-        UXBuilder.install("Page", Page::new);
         UXBuilder.install("TextField", TextField::new);
         UXBuilder.install("TextArea", TextArea::new);
         UXBuilder.install("Chip", Chip::new);

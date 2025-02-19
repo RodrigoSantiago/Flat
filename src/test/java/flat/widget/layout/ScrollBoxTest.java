@@ -538,6 +538,9 @@ public class ScrollBoxTest {
         assertEquals(200, scrollBox.getViewDimensionX(), 0.1f);
         assertEquals(120, scrollBox.getViewDimensionY(), 0.1f);
 
+        scrollBox.setViewOffsetX(scrollBox.getViewOffsetX());
+        scrollBox.setViewOffsetY(scrollBox.getViewOffsetY());
+
         verify(action, times(4)).handle(any());
         verify(listenerx, times(6)).handle(any());
         verify(listenery, times(6)).handle(any());

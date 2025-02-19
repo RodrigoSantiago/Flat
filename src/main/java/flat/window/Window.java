@@ -99,16 +99,14 @@ public class Window {
         this.loopTime = loopTime;
         this.loopAnim = false;
         this.loopDraw = false;
-        this.assigned = true;
 
         processStartup();
 
-        processSyncCalls();
+        activity.refreshScene();
 
         processEvents();
 
-        // Activity
-        activity.refreshScene();
+        processSyncCalls();
 
         loopAnim = activity.animate(loopTime) || loopAnim;
 
@@ -138,7 +136,6 @@ public class Window {
             context.getSmartContext().softFlush();
             WL.SwapBuffers(windowId);
         }
-        this.assigned = false;
         return loopAnim;
     }
 
@@ -278,6 +275,10 @@ public class Window {
         return disposed || closed || WL.IsClosed(windowId);
     }
 
+    void setAssigned(boolean assigned) {
+        this.assigned = assigned;
+    }
+
     public boolean isAssigned() {
         return assigned;
     }
@@ -336,10 +337,10 @@ public class Window {
         WL.SetTitle(this.title = title);
     }
 
-    public void setIcon(PixelMap icons) {
+    public void setIcon(PixelMap icon) {
         checkDisposed();
 
-
+        WL.SetIcon(windowId, icon.getData(), (int) icon.getWidth(), (int) icon.getHeight());
     }
 
     public void setCursor(Cursor cursor) {
@@ -529,7 +530,6 @@ public class Window {
 
         } else if (activity.closeRequest(system)) {
             close();
-            releaseEvents();
             return true;
 
         }
@@ -537,7 +537,8 @@ public class Window {
     }
 
     void close() {
-        closed = true;
+        releaseEvents();
         activity.close();
+        closed = true;
     }
 }

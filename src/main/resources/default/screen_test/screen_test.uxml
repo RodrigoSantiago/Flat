@@ -1,92 +1,94 @@
 <Scene background-color="#C8C8C8" id="main-scene">
-    <LinearBox direction="horizontal" width="WRAP_CONTENT" height="WRAP_CONTENT">
-    <LinearBox direction="vertical" background-color="#C0C0C0" width="MATCH_PARENT" height="MATCH_PARENT"
-               padding-left="8" padding-right="8" padding-top="8" padding-bottom="8"
-               margin-left="32" margin-right="32" margin-top="8" margin-bottom="8" id="panel" >
-        <Include src="include.uxml" radius-top="16"/>
-        <Include src="include.uxml"/>
-        <Include src="../folder/include_cycle.uxml"/>
-    </LinearBox>
-    <LinearBox direction="vertical" background-color="#C0C0C0" width="MATCH_PARENT" height="MATCH_PARENT"
-        padding-left="8" padding-right="8" padding-top="8" padding-bottom="8"
-        margin-left="32" margin-right="32" margin-top="8" margin-bottom="8" id="panel" >
+    <LinearBox direction="horizontal" width="MATCH_PARENT" height="MATCH_PARENT">
+        <LinearBox direction="vertical" background-color="#C0C0C0" width="MATCH_PARENT" height="MATCH_PARENT"
+                   padding-left="8" padding-right="8" padding-top="8" padding-bottom="8"
+                   margin-left="32" margin-right="32" margin-top="32" margin-bottom="32">
 
-        <LinearBox direction="horizontal" width="WRAP_CONTENT" height="WRAP_CONTENT">
-            <RadioGroup id="group-1"/>
-            <RadioButton margin-top="4" margin-right="4" margin-left="4" margin-bottom="4" color="red" radio-group-id="group-1" active="true" background-color="#FFFFFF" text="Ola Mundo" icon-transition-duration="0.2" ripple-color="#FF000080">
-                <Menu width="100" height="200" background-color="blue">
-                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
-                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
-                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
-                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
-                </Menu>
-            </RadioButton>
-            <RadioButton margin-top="4" margin-right="4" margin-left="4" margin-bottom="4" color="red" radio-group-id="group-1" active="true" background-color="#FFFFFF" text="Ola Mundo" icon-transition-duration="0.2" ripple-color="#FF000080"/>
-            <RadioButton margin-top="4" margin-right="4" margin-left="4" margin-bottom="4" color="red" radio-group-id="group-1" active="true" background-color="#FFFFFF" text="Ola Mundo" icon-transition-duration="0.2" ripple-color="#FF000080"/>
-            <Checkbox margin-top="4" margin-right="4" margin-left="4" margin-bottom="4" color="red" background-color="#FFFFFF" text="Ola Mundo" icon-transition-duration="0.2" ripple-color="#FF000080"
-                on-selection-state-change="doTheWork"
-            />
-        </LinearBox>
-        <LinearBox direction="horizontal" width="WRAP_CONTENT" height="WRAP_CONTENT">
-            <Switch margin-top="4" margin-right="4" margin-left="4" margin-bottom="4"
-                    direction="ihorizontal" color="#000000" active="true" background-color="#FFFFFF" icon-transition-duration="0.2" ripple-color="#FF000080"/>
-            <Switch margin-top="4" margin-right="4" margin-left="4" margin-bottom="4"
-                    direction="ivertical" color="#000000" active="true" background-color="#FFFFFF" icon-transition-duration="0.2" ripple-color="#FF000080"/>
-        </LinearBox>
-        <ScrollBox width="150" height="150" background-color="yellow" horizontal-bar-id="scr1" vertical-bar-id="scr2"
-            horizontal-position="LEFT" vertical-position="TOP" floating-bars="true"
-                   on-slide="slideBar" on-view-offset-y-change="slideChange">
-            <LinearBox width="114" height="114" background-color="red" margin-top="16" margin-bottom="16" margin-left="16" margin-right="16" id="linear">
-                <Button text="Ola Mundo - OLAI" ripple-enabled="true" text-size="12px" margin-top="8" on-action="linearAction"/>
+            <LinearBox direction="horizontal" width="WRAP_CONTENT" height="WRAP_CONTENT">
+                <RadioGroup id="group-1"/>
+                <RadioButton radio-group-id="group-1"
+                             margin-top="4" margin-right="4" margin-left="4" margin-bottom="4" icon-color="red" active="true"
+                             background-color="#FFFFFF" text="Ola Mundo" icon-transition-duration="0.2" ripple-color="#FF000080"/>
+                <RadioButton radio-group-id="group-1"
+                             margin-top="4" margin-right="4" margin-left="4" margin-bottom="4" icon-color="red"
+                             background-color="#FFFFFF" text="Ola Mundo" icon-transition-duration="0.2" ripple-color="#FF000080"/>
+                <RadioButton radio-group-id="group-1"
+                             margin-top="4" margin-right="4" margin-left="4" margin-bottom="4" icon-color="red"
+                             background-color="#FFFFFF" text="Ola Mundo" icon-transition-duration="0.2" ripple-color="#FF000080"/>
+
             </LinearBox>
-            <ScrollBar id="scr1" direction="horizontal" width="MATCH_PARENT" color="red" view-dimension="10" total-dimension="50"/>
-            <ScrollBar id="scr2" direction="vertical" height="MATCH_PARENT" color="red" view-dimension="10" total-dimension="50"/>
-        </ScrollBox>
-        <!--ImageView image="/default/img_test.png" width="200" height="100" image-scale="FIT" margin-right="8" horizontal-align="CENTER"/-->
-        <LinearBox direction="vertical" width="MATCH_PARENT" height="300">
-            <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
-            <Button text="Ola Mundo - OLAI" ripple-enabled="true" text-size="12px" margin-top="8" enabled="false"/>
-            <Button text="button2.setFont 123" ripple-enabled="true" text-size="13px" id="button"
-                    background-color="#1E1F22" text-color="#FFFFFF" margin-top="8" on-action="onButtonClick"/>
-            <Button text="Ola Mundo - OLA" ripple-enabled="true" text-size="12px" id="button3" margin-top="8"/>
-            <Button text="Ola Mundo pq - OLÂ" ripple-enabled="true" text-size="24px" font="SANS" margin-top="8"
-                    icon="/default/img_test.png"
-                    icon-scale-height="true" icon-spacing="24px"
-                    icon-align="RIGHT"
-                    height="80px"
-            />
-            <Button text="Ola Mundo pq - OLÂ" ripple-enabled="true" text-size="24px" font="SANS" margin-top="8"
-                    icon="/default/img_test.png"
-                    icon-scale-height="true" icon-spacing="24px"
-                    icon-align="LEFT"
-                    height="80px"
-            />
+            <LinearBox direction="horizontal" width="WRAP_CONTENT" height="WRAP_CONTENT">
+                <Checkbox background-color="#FFFFFF" margin-top="4" margin-right="4" margin-left="4" margin-bottom="4"
+                          icon-color="red" icon-transition-duration="0.2" ripple-color="#FF000080"
+                          on-selection-state-change="doTheWork"/>
+                <Checkbox background-color="#FFFFFF" margin-top="4" margin-right="4" margin-left="4" margin-bottom="4"
+                          icon-color="red" icon-transition-duration="0.2" ripple-color="#FF000080" selection-state="inactive"
+                          on-selection-state-change="doTheWork"/>
+                <Checkbox background-color="#FFFFFF" margin-top="4" margin-right="4" margin-left="4" margin-bottom="4"
+                          icon-color="red" icon-transition-duration="0.2" ripple-color="#FF000080" selection-state="active"
+                          on-selection-state-change="doTheWork"/>
+            </LinearBox>
+            <LinearBox direction="horizontal" width="WRAP_CONTENT" height="WRAP_CONTENT">
+                <Switch margin-top="4" margin-right="4" margin-left="4" margin-bottom="4"
+                        direction="ihorizontal" icon-color="#000000" active="true" background-color="#FFFFFF" icon-transition-duration="0.2" ripple-color="#FF000080"/>
+                <Switch margin-top="4" margin-right="4" margin-left="4" margin-bottom="4"
+                        direction="ivertical" icon-color="#000000" active="true" background-color="#FFFFFF" icon-transition-duration="0.2" ripple-color="#FF000080"/>
+            </LinearBox>
+            <Panel width="MATCH_PARENT" height="MATCH_PARENT" background-color="#FFFFFF"><Label text="Panel Spacing"/>
+                <Tab width="MATCH_PARENT" height="MATCH_PARENT" background-color="#C8C800" pages-vertical-position="top"
+                radius-top="4" radius-bottom="16" radius-right="8" radius-left="20">
+                    <Page text="This is a Page" background-color="#FFC8C8">
+                        <Label text="Page 1" width="200"/>
+                    </Page>
+                    <Page text="This is a Page" background-color="#FFC8C8">
+                        <Label text="Page 2" width="200"/>
+                    </Page>
+                    <Page text="This is a Page" background-color="#FFC8C8">
+                        <ImageView image="/default/image.png"/>
+                    </Page>
+                    <Page text="This is a Page" background-color="#FFC8C8">
+                        <Frame height="MATCH_PARENT" width="MATCH_PARENT">
+                            <Button text="Context Menu" margin-top="16"
+                                    horizontal-align="RIGHT" on-action="onPageBtnClick">
+                            </Button>
+                        </Frame>
+                    </Page>
+                </Tab>
+            </Panel>
+            <StackBox width="MATCH_PARENT" height="MATCH_PARENT" max-height="128" background-color="#808080"><Label text="Stack Spacing"/></StackBox>
         </LinearBox>
-        <LinearBox direction="vertical" width="MATCH_PARENT" height="MATCH_PARENT">
-            <Button text="Ola Mundo pq - OLÂA" text-size="24px" font="font(ITALIC)" margin-top="8"
-                    icon="/default/img_test.png"
-                    icon-scale-height="true" icon-spacing="24px"
-                    icon-align="LEFT"
-                    vertical-align="MIDDLE"
-                    height="80px">
-                <Menu width="100" height="200" background-color="blue">
-                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
-                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
-                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
-                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
-                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
-                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
-                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
-                </Menu>
-            </Button>
-            <Button text="Ola Mundo pq - onAction" text-size="24px" font="SANS" margin-top="8"
+        <LinearBox direction="vertical" background-color="#C0C0C0" width="MATCH_PARENT" height="MATCH_PARENT"
+                   padding-left="8" padding-right="8" padding-top="8" padding-bottom="8"
+                   margin-left="32" margin-right="32" margin-top="32" margin-bottom="32" vertical-align="TOP">
+            <Label text="Title" background-color="#0000c8" text-color="white"/>
+            <Button text="Big Dialog Button" text-size="24px" font="SANS" margin-top="8"
                     icon="/default/img_test.png"
                     icon-scale-height="true" icon-spacing="24px"
                     icon-align="RIGHT"
                     horizontal-align="RIGHT"
-                    height="80px" width="MATCH_PARENT" on-action="onAction">
+                    height="80px" width="MATCH_PARENT" on-action="onDialogClick"/>
+            <Button text="Big Window Button" margin-top="8"
+                    icon="/default/img_test.png"
+                    icon-scale-height="true" icon-spacing="12px"
+                    icon-align="LEFT"
+                    horizontal-align="RIGHT"
+                    background-color="#1E1F22" text-color="#FFFFFF"
+                    on-action="onWindowClick"/>
+            <Button text="Context Menu" margin-top="16"
+                    horizontal-align="RIGHT">
+                <Menu width="100" height="200" background-color="blue">
+                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
+                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
+                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
+                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
+                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
+                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
+                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
+                </Menu>
             </Button>
+            <ScrollBox width="400" height="400" background-color="yellow">
+                <StackBox><ImageView image="/default/image.png"/></StackBox>
+            </ScrollBox>
         </LinearBox>
-    </LinearBox>
     </LinearBox>
 </Scene>

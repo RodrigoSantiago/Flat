@@ -24,6 +24,10 @@ public class PixelMap implements Drawable {
         this.data = data;
     }
 
+    public byte[] getData() {
+        return data;
+    }
+
     public Texture2D readTexture(Context context) {
         var texture = textures.get(context);
         if (texture == null) {

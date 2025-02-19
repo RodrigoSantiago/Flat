@@ -185,7 +185,7 @@ public class Button extends Label {
 
     private void fireAction() {
         if (actionListener != null) {
-            actionListener.handle(new ActionEvent(this));
+            UXListener.safeHandle(actionListener, new ActionEvent(this));
         }
     }
 

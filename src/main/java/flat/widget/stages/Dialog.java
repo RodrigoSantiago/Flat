@@ -85,7 +85,8 @@ public class Dialog extends Stage {
 
     @Override
     public void onLayout(float width, float height) {
-        performLayoutConstraints(width, height, verticalAlign, horizontalAlign);
+        setLayout(width, height);
+        performLayoutConstraints(getInWidth(), getInHeight(), getInX(), getInY(), verticalAlign, horizontalAlign);
         limitPosition();
         setLayoutPosition(targetX, targetY);
     }
@@ -94,31 +95,13 @@ public class Dialog extends Stage {
     public void onDraw(SmartContext context) {
         super.onDraw(context);
 
-        if (controller != null) {
+        if (controller != null && controller.isListening()) {
             try {
                 controller.onDraw(context);
             } catch (Exception e) {
                 Application.handleException(e);
             }
         }
-    }
-
-    @Override
-    protected void onParentChange(Parent prev, Parent current) {
-        super.onParentChange(prev, current);
-        hide();
-    }
-
-    @Override
-    protected void onGroupChange(Group prev, Group current) {
-        super.onGroupChange(prev, current);
-        hide();
-    }
-
-    @Override
-    protected void onActivityChange(Activity prev, Activity current) {
-        super.onActivityChange(prev, current);
-        hide();
     }
 
     @Override
@@ -204,7 +187,7 @@ public class Dialog extends Stage {
 
     @Override
     public boolean isShown() {
-        return show;
+        return getActivity() != null && getActivity().getScene() == getParent();
     }
 
     public void show(Activity activity) {
@@ -212,28 +195,26 @@ public class Dialog extends Stage {
     }
 
     public void show(Activity activity, float x, float y) {
-        if (!isShown()) {
-            setToShow(activity);
-            show = true;
-            onShow(activity, x, y);
-            activity.addPointerFilter(this);
+        setToShow(activity);
+        activity.addPointerFilter(this);
+        onShow(activity, x, y);
+        if (controller != null) {
+            try {
+                controller.setActivity(getActivity());
+            } catch (Exception e) {
+                Application.handleException(e);
+            }
         }
     }
 
     @Override
     public void hide() {
-        if (isShown()) {
-            show = false;
-            if (getParent() != null) {
-                getParent().remove(this);
-            }
-
-            if (controller != null) {
-                try {
-                    controller.onHide();
-                } catch (Exception e) {
-                    Application.handleException(e);
-                }
+        setToHide();
+        if (controller != null) {
+            try {
+                controller.setActivity(null);
+            } catch (Exception e) {
+                Application.handleException(e);
             }
         }
     }
@@ -258,15 +239,6 @@ public class Dialog extends Stage {
         if (showupTransitionDuration > 0) {
             showupAnimation.setDuration(showupTransitionDuration);
             showupAnimation.play(act);
-        }
-
-        if (controller != null) {
-            try {
-                controller.setActivity(getActivity());
-                controller.onShow();
-            } catch (Exception e) {
-                Application.handleException(e);
-            }
         }
     }
 

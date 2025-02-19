@@ -46,8 +46,6 @@ public class Menu extends Stage {
 
     @Override
     public void applyChildren(UXChildren children) {
-        super.applyChildren(children);
-
         Widget widget;
         while ((widget = children.next()) != null ) {
             add(widget);
@@ -81,7 +79,9 @@ public class Menu extends Stage {
 
     @Override
     public void onLayout(float width, float height) {
-        totalDimension = performLayoutVerticalScrollable(width, height, orderedList, VerticalAlign.TOP, horizontalAlign, getViewOffset());
+        setLayout(width, height);
+        totalDimension = performLayoutVerticalScrollable(getInWidth(), getInHeight(), getInX(), getInY(),
+                orderedList, VerticalAlign.TOP, horizontalAlign, getViewOffset());
         viewDimension = getInHeight();
         setViewOffset(getViewOffset());
         setLayoutPosition(targetX, targetY);
@@ -139,24 +139,6 @@ public class Menu extends Stage {
             return true;
         }
         return false;
-    }
-
-    @Override
-    protected void onParentChange(Parent prev, Parent current) {
-        super.onParentChange(prev, current);
-        hide();
-    }
-
-    @Override
-    protected void onGroupChange(Group prev, Group current) {
-        super.onGroupChange(prev, current);
-        hide();
-    }
-
-    @Override
-    protected void onActivityChange(Activity prev, Activity current) {
-        super.onActivityChange(prev, current);
-        hide();
     }
 
     @Override
@@ -265,7 +247,7 @@ public class Menu extends Stage {
 
     private void fireSlide() {
         if (slideListener != null) {
-            slideListener.handle(new ActionEvent(this));
+            UXListener.safeHandle(slideListener, new ActionEvent(this));
         }
     }
 
@@ -279,7 +261,7 @@ public class Menu extends Stage {
 
     private void fireViewOffsetListener(float old) {
         if (viewOffsetListener != null && old != viewOffset) {
-            viewOffsetListener.handle(new ValueChange<>(this, old, viewOffset));
+            UXValueListener.safeHandle(viewOffsetListener, new ValueChange<>(this, old, viewOffset));
         }
     }
 
@@ -319,16 +301,17 @@ public class Menu extends Stage {
 
     public void show(Activity activity, float x, float y, DropdownAlign align) {
         if (!isShown()) {
-            setToShow(activity);
             show = true;
-            onShow(activity, x, y, align);
+            setToShow(activity);
             activity.addPointerFilter(this);
             activity.addResizeFilter(this);
+            onShow(activity, x, y, align);
         }
     }
 
     public void show(Menu menu, float x, float y, DropdownAlign align) {
-        if (!isShown() && menu.isShown() && !menu.isChildMenuOf(this)) {
+        if (!isShown() && menu.isShown() && menu.getActivity() != null
+                && !menu.isChildMenuOf(this) && !menu.isChildOf(this) && !this.isChildOf(menu)) {
             menu.showSubMenu(this, x, y, align);
         }
     }
@@ -336,15 +319,13 @@ public class Menu extends Stage {
     @Override
     public void hide() {
         if (isShown()) {
+            show = false;
             if (parentMenu != null) {
                 parentMenu.childMenu = null;
                 parentMenu = null;
             }
-            show = false;
             hideSubMenu();
-            if (getParent() != null) {
-                getParent().remove(this);
-            }
+            setToHide();
         }
     }
 

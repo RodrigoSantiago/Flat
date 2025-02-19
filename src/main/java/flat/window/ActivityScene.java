@@ -23,8 +23,4 @@ public class ActivityScene {
             scene.onActivityChange(prev, this.activity);
         }
     }
-
-    void addStage(Stage stage) {
-        scene.addStage(stage);
-    }
 }

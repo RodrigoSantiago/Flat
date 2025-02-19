@@ -65,6 +65,7 @@ public class RippleEffect {
             ripple.x = x;
             ripple.y = y;
             animation.stop();
+            animation.setDelta(1);
             animation.play(widget.getActivity());
         }
     }

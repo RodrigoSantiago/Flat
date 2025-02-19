@@ -42,13 +42,15 @@ public class StackBox extends Parent {
 
     @Override
     public void onLayout(float width, float height) {
-        performLayoutConstraints(width, height, verticalAlign, horizontalAlign);
+        setLayout(width, height);
+        performLayoutConstraints(getInWidth(), getInHeight(), getInX(), getInY(), verticalAlign, horizontalAlign);
     }
 
     @Override
     public boolean onLayoutSingleChild(Widget child) {
         if (getChildren().contains(child)) {
-            performSingleLayoutConstraints(getLayoutWidth(), getLayoutHeight(), child, verticalAlign, horizontalAlign);
+            child.onMeasure();
+            performSingleLayoutConstraints(getLayoutWidth(), getLayoutHeight(), getInX(), getInY(), child, verticalAlign, horizontalAlign);
             return true;
         }
         return false;

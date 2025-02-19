@@ -194,7 +194,7 @@ public class ScrollBar extends Widget {
 
     private void fireSlide() {
         if (slideListener != null) {
-            slideListener.handle(new ActionEvent(this));
+            UXListener.safeHandle(slideListener, new ActionEvent(this));
         }
     }
 
@@ -208,7 +208,7 @@ public class ScrollBar extends Widget {
 
     private void fireViewOffsetListener(float old) {
         if (viewOffsetListener != null && old != viewOffset) {
-            viewOffsetListener.handle(new ValueChange<>(this, old, viewOffset));
+            UXValueListener.safeHandle(viewOffsetListener, new ValueChange<>(this, old, viewOffset));
         }
     }
 

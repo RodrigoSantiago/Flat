@@ -37,12 +37,10 @@ public class EventDataMouseScroll extends EventData {
     public void handle(Window window) {
         try {
             Activity activity = window.getActivity();
+            EventDataPointer pointer = window.getPointer();
+
             Widget widget = activity.findByPosition(window.getPointerX(), window.getPointerY(), false);
-            try {
-                widget.fireScroll(new ScrollEvent(widget, ScrollEvent.SCROLL, x, y));
-            } catch (Exception e) {
-                Application.handleException(e);
-            }
+            widget.fireScroll(new ScrollEvent(widget, ScrollEvent.SCROLL, x, y, pointer.getX(), pointer.getY()));
         } finally {
             release();
         }

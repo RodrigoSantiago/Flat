@@ -133,7 +133,7 @@ public class RadioGroup extends Widget {
 
     private void fireSelectedListener(int oldValue) {
         if (selectedListener != null && oldValue != selectedIndex) {
-            selectedListener.handle(new ValueChange<>(this, oldValue, selectedIndex));
+            UXValueListener.safeHandle(selectedListener, new ValueChange<>(this, oldValue, selectedIndex));
         }
     }
 }

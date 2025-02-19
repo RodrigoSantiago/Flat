@@ -11,6 +11,7 @@ import flat.widget.enums.HorizontalAlign;
 import flat.widget.enums.VerticalAlign;
 import flat.widget.layout.Panel;
 import flat.window.Activity;
+import flat.window.ActivitySupport;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,14 +37,18 @@ public class DialogTest {
     @Before
     public void before() {
         activityA = mock(Activity.class);
-        sceneA = mock(Scene.class);
+        sceneA = new Scene();
+        ActivitySupport.setActivity(sceneA, activityA);
         when(activityA.getScene()).thenReturn(sceneA);
-        when(sceneA.getActivity()).thenReturn(activityA);
+        when(activityA.getWidth()).thenReturn(800f);
+        when(activityA.getHeight()).thenReturn(600f);
 
         activityB = mock(Activity.class);
-        sceneB = mock(Scene.class);
+        sceneB = new Scene();
+        ActivitySupport.setActivity(sceneB, activityB);
         when(activityB.getScene()).thenReturn(sceneB);
-        when(sceneB.getActivity()).thenReturn(activityB);
+        when(activityB.getWidth()).thenReturn(800f);
+        when(activityB.getHeight()).thenReturn(600f);
     }
 
     @Test
@@ -95,38 +100,67 @@ public class DialogTest {
 
     @Test
     public void showHide() {
+        Activity activity = mock(Activity.class);
+        Scene scene = new Scene();
+        ActivitySupport.setActivity(scene, activity);
+        when(activity.getScene()).thenReturn(scene);
+
         Dialog dialog = new Dialog();
-        dialog.show(activityA);
+        dialog.show(activity);
 
         assertTrue(dialog.isShown());
-        verify(activityA, times(1)).addPointerFilter(dialog);
+        verify(activity, times(1)).addPointerFilter(dialog);
 
         dialog.hide();
         assertFalse(dialog.isShown());
     }
 
     @Test
-    public void showChangeActivity() {
+    public void removeParentManually() {
         Dialog dialog = new Dialog();
         dialog.show(activityA);
 
         assertTrue(dialog.isShown());
+        assertEquals(sceneA, dialog.getParent());
         verify(activityA, times(1)).addPointerFilter(dialog);
 
-        dialog.onActivityChange(activityA, activityB);
-        assertFalse(dialog.isShown());
+        dialog.getParent().remove(dialog);
+
+        assertEquals(sceneA, dialog.getParent());
+        assertTrue(dialog.isShown());
     }
 
     @Test
-    public void showChangeGroup() {
+    public void moveParentManually() {
+        Panel child = new Panel();
+        sceneA.add(child);
+
         Dialog dialog = new Dialog();
         dialog.show(activityA);
 
         assertTrue(dialog.isShown());
+        assertEquals(sceneA, dialog.getParent());
         verify(activityA, times(1)).addPointerFilter(dialog);
 
-        dialog.onGroupChange(sceneA, sceneB);
+        child.add(dialog);
+
+        assertEquals(sceneA, dialog.getParent());
+        assertTrue(dialog.isShown());
+    }
+
+    @Test
+    public void closeOnShow() {
+        Dialog dialog = new Dialog();
+        dialog.setController(new Controller() {
+            @Override
+            public void onShow() {
+                dialog.hide();
+            }
+        });
+        dialog.show(activityA);
+
         assertFalse(dialog.isShown());
+        assertNull(dialog.getParent());
     }
 
     @Test
@@ -167,13 +201,14 @@ public class DialogTest {
         dialog.show(activityA, 200, 300);
 
         assertTrue(dialog.isShown());
+        assertEquals(sceneA, dialog.getParent());
         verify(activityA, times(1)).addPointerFilter(dialog);
 
-        dialog.onMeasure();
-        dialog.onLayout(100, 150);
+        sceneA.onMeasure();
+        sceneA.onLayout(800, 600);
 
-        assertEquals(200, dialog.getX(), 0.1f);
-        assertEquals(300, dialog.getY(), 0.1f);
+        assertEquals(150, dialog.getX(), 0.1f);
+        assertEquals(225, dialog.getY(), 0.1f);
     }
 
     private HashMap<Integer, UXValue> createNonDefaultValues() {

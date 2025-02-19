@@ -25,13 +25,15 @@ public class Panel extends Parent {
 
     @Override
     public void onLayout(float width, float height) {
-        performLayoutFree(width, height);
+        setLayout(width, height);
+        performLayoutFree(getInWidth(), getInHeight());
     }
 
     @Override
     public boolean onLayoutSingleChild(Widget child) {
         if (getChildren().contains(child)) {
-            performSingleLayoutFree(getLayoutWidth(), getLayoutHeight(), child);
+            child.onMeasure();
+            performSingleLayoutFree(getInWidth(), getInHeight(), child);
             return true;
         }
         return false;

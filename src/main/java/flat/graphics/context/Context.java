@@ -1,6 +1,7 @@
 package flat.graphics.context;
 
 import flat.backend.*;
+import flat.exception.FlatException;
 import flat.graphics.SmartContext;
 import flat.graphics.context.enums.*;
 import flat.math.Affine;
@@ -23,7 +24,6 @@ public class Context {
     private SmartContext smartContext;
     private Thread thread;
     private boolean disposed;
-    private static ArrayList<Context> openContexts = new ArrayList<>();
 
     // ---- Core ---- //
     private int clearColor, clearStencil;
@@ -114,17 +114,12 @@ public class Context {
         return window;
     }
 
-    public static void propagateHardFlush() {
-        for (var context : openContexts) {
-            if (context.getWindow().isAssigned()) {
-                context.hardFlush();
-            }
-        }
-    }
-
     void checkDisposed() {
         if (disposed) {
-            throw new RuntimeException("Context is disposed.");
+            throw new FlatException("Context is disposed.");
+        }
+        if (!window.isAssigned()) {
+            throw new FlatException("The Context is not curretly assigned");
         }
     }
 
@@ -238,14 +233,11 @@ public class Context {
         svgTextBlur = 0f;
 
         svgTransform = new Affine();
-
-        openContexts.add(this);
     }
 
     public void dispose() {
         checkDisposed();
 
-        openContexts.remove(this);
         hardFlush();
         refreshBinds();
         bindFrame(null);

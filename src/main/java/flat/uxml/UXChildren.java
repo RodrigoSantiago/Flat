@@ -33,7 +33,15 @@ public class UXChildren {
         return pos >= children.size() ? null : children.get(pos++);
     }
 
+    public boolean hasNext() {
+        return pos < children.size();
+    }
+
     public Menu nextMenu() {
         return posMenu >= menus.size() ? null : menus.get(posMenu++);
+    }
+
+    public boolean hasNextMenu() {
+        return posMenu < menus.size();
     }
 }

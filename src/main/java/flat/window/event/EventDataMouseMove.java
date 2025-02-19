@@ -51,7 +51,7 @@ public class EventDataMouseMove extends EventData {
         pointer.setHover(widget);
         pointer.performHover();
         if (widget != null) {
-            window.setCursor(widget.getShowCursor());
+            window.setCursor(widget.getCurrentCursor());
         } else {
             window.setCursor(null);
         }

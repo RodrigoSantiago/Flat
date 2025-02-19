@@ -11,6 +11,7 @@ import flat.widget.Widget;
 import flat.widget.stages.Dialog;
 import flat.widget.text.Label;
 import flat.window.Activity;
+import flat.window.ActivitySupport;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -72,9 +73,12 @@ public class AlertDialogBuilderTest {
         verify(hideListener, times(1)).handle(dialog);
 
         Activity activity = mock(Activity.class);
-        when(activity.getScene()).thenReturn(mock(Scene.class));
+        Scene scene = new Scene();
+        ActivitySupport.setActivity(scene, activity);
+        when(activity.getScene()).thenReturn(scene);
 
         dialog.show(activity);
+        assertTrue(dialog.isShown());
         verify(showListener, times(2)).handle(dialog);
         hide.handle(mock(ActionEvent.class));
         verify(hideListener, times(2)).handle(dialog);

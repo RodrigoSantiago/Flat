@@ -3,19 +3,33 @@ package flat.uxml;
 import flat.Flat;
 import flat.graphics.SmartContext;
 import flat.window.Activity;
+import flat.window.Application;
 
 import java.lang.reflect.*;
 
 public class Controller {
 
     private Activity activity;
+    private boolean listening;
 
-    public Controller(Activity activity) {
-        this.activity = activity;
-    }
-
-    public void setActivity(Activity activity) {
-        this.activity = activity;
+    public final void setActivity(Activity activity) {
+        if (this.activity != activity) {
+            Activity old = this.activity;
+            this.activity = activity;
+            if (old == null) {
+                try {
+                    onShow();
+                } catch (Exception e) {
+                    Application.handleException(e);
+                }
+            } else if (activity == null) {
+                try {
+                    onHide();
+                } catch (Exception e) {
+                    Application.handleException(e);
+                }
+            }
+        }
     }
 
     public Activity getActivity() {
@@ -70,12 +84,11 @@ public class Controller {
                 field.set(this, object);
             }
         } catch (Exception ignored) {
-
         }
     }
 
     public boolean isListening() {
-        return true;
+        return activity != null;
     }
 
     public void onShow() {

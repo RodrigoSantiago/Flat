@@ -146,7 +146,7 @@ public class ActivityTest {
         activity.show();
         assertEquals(scene1, activity.getScene());
 
-        activity.setLayoutBuilder(scene2);
+        activity.setLayoutBuilder(scene2, null);
         assertEquals(scene1, activity.getScene());
 
         activity.refreshScene();

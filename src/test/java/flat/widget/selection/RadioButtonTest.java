@@ -61,10 +61,10 @@ public class RadioButtonTest {
 
         RadioButton radioButton = new RadioButton();
 
-        assertNull(radioButton.getIconActive());
-        assertNull(radioButton.getIconInactive());
+        assertNull(radioButton.getActiveIcon());
+        assertNull(radioButton.getInactiveIcon());
         assertEquals(0, radioButton.getIconTransitionDuration(), 0.0001f);
-        assertEquals(0xFFFFFFFF, radioButton.getColor());
+        assertEquals(0xFFFFFFFF, radioButton.getIconColor());
         assertEquals(ImageFilter.LINEAR, radioButton.getIconImageFilter());
         assertFalse(radioButton.isActive());
         assertNull(radioButton.getToggleListener());
@@ -73,10 +73,10 @@ public class RadioButtonTest {
         radioButton.setAttributes(createNonDefaultValues(), "radiobutton");
         radioButton.applyAttributes(controller);
 
-        assertNull(radioButton.getIconActive());
-        assertNull(radioButton.getIconInactive());
+        assertNull(radioButton.getActiveIcon());
+        assertNull(radioButton.getInactiveIcon());
         assertEquals(0, radioButton.getIconTransitionDuration(), 0.0001f);
-        assertEquals(0xFFFFFFFF, radioButton.getColor());
+        assertEquals(0xFFFFFFFF, radioButton.getIconColor());
         assertEquals(ImageFilter.LINEAR, radioButton.getIconImageFilter());
         assertTrue(radioButton.isActive());
         assertEquals(action, radioButton.getToggleListener());
@@ -84,10 +84,10 @@ public class RadioButtonTest {
 
         radioButton.applyStyle();
 
-        assertEquals(iconActive, radioButton.getIconActive());
-        assertEquals(iconInactive, radioButton.getIconInactive());
+        assertEquals(iconActive, radioButton.getActiveIcon());
+        assertEquals(iconInactive, radioButton.getInactiveIcon());
         assertEquals(1.0f, radioButton.getIconTransitionDuration(), 0.0001f);
-        assertEquals(0xFF0000FF, radioButton.getColor());
+        assertEquals(0xFF0000FF, radioButton.getIconColor());
         assertEquals(ImageFilter.NEAREST, radioButton.getIconImageFilter());
         assertTrue(radioButton.isActive());
         assertEquals(action, radioButton.getToggleListener());
@@ -97,8 +97,8 @@ public class RadioButtonTest {
     @Test
     public void measure() {
         RadioButton radioButton = new RadioButton();
-        radioButton.setIconActive(iconActive);
-        radioButton.setIconInactive(iconInactive);
+        radioButton.setActiveIcon(iconActive);
+        radioButton.setInactiveIcon(iconInactive);
         radioButton.setActive(true);
         radioButton.onMeasure();
 
@@ -128,8 +128,8 @@ public class RadioButtonTest {
     @Test
     public void fireAction() {
         RadioButton radioButton = new RadioButton();
-        radioButton.setIconActive(iconActive);
-        radioButton.setIconInactive(iconInactive);
+        radioButton.setActiveIcon(iconActive);
+        radioButton.setInactiveIcon(iconInactive);
 
         var action = (UXListener<ActionEvent>) mock(UXListener.class);
         radioButton.setToggleListener(action);
@@ -161,10 +161,10 @@ public class RadioButtonTest {
 
         hash.put(UXHash.getHash("on-toggle"), new UXValueText("onActionWork"));
         hash.put(UXHash.getHash("on-active-change"), new UXValueText("onActiveWork"));
-        hash.put(UXHash.getHash("color"), new UXValueColor(0xFF0000FF));
+        hash.put(UXHash.getHash("icon-color"), new UXValueColor(0xFF0000FF));
         hash.put(UXHash.getHash("icon-image-filter"), new UXValueText(ImageFilter.NEAREST.toString()));
-        hash.put(UXHash.getHash("icon-active"), uxIconActive);
-        hash.put(UXHash.getHash("icon-inactive"), uxIconInactive);
+        hash.put(UXHash.getHash("active-icon"), uxIconActive);
+        hash.put(UXHash.getHash("inactive-icon"), uxIconInactive);
         hash.put(UXHash.getHash("icon-transition-duration"), new UXValueNumber(1.0f));
         hash.put(UXHash.getHash("active"), new UXValueBool(true));
         return hash;

@@ -1,6 +1,9 @@
 package flat.widget;
 
+import flat.uxml.TaskList;
 import flat.widget.enums.*;
+import flat.widget.stages.Dialog;
+import flat.widget.stages.Menu;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,8 +28,11 @@ public abstract class Parent extends Widget {
     }
 
     protected boolean attachChild(Widget child) {
-        if (child == this || this.isChildOf(child) ||
-                (child.getActivity() != null && child.getActivity().getScene() == child)) {
+        if (child == this
+                || this.isChildOf(child)
+                || (child.getActivity() != null && child.getActivity().getScene() == child)
+                || (child instanceof Stage && (getActivity() == null || getActivity().getScene() != this))
+        ) {
             return false;
         }
         if (child.getParent() != null && !child.getParent().detachChild(child)) {
@@ -39,9 +45,9 @@ public abstract class Parent extends Widget {
         return true;
     }
 
-    protected final boolean attachAndAddChild(Widget child) {
+    protected final boolean attachAndAddChild(Widget child, TaskList tasks) {
         if (attachChild(child)) {
-            child.setParent(this);
+            child.setParent(this, tasks);
             return true;
         }
         return false;
@@ -55,16 +61,18 @@ public abstract class Parent extends Widget {
         return true;
     }
 
-    protected final boolean detachAndRemoveChild(Widget widget) {
+    protected final boolean detachAndRemoveChild(Widget widget, TaskList tasks) {
         if (detachChild(widget)) {
-            widget.setParent(null);
+            widget.setParent(null, tasks);
             return true;
         }
         return false;
     }
 
     protected void add(Widget child) {
-        attachAndAddChild(child);
+        TaskList tasks = new TaskList();
+        attachAndAddChild(child, tasks);
+        tasks.run();
     }
 
     protected void add(Widget... children) {
@@ -80,7 +88,9 @@ public abstract class Parent extends Widget {
     }
 
     public void remove(Widget widget) {
-        detachAndRemoveChild(widget);
+        TaskList tasks = new TaskList();
+        detachAndRemoveChild(widget, tasks);
+        tasks.run();
     }
 
     public void removeAll() {
@@ -227,13 +237,7 @@ public abstract class Parent extends Widget {
         setMeasure(mWidth, mHeight);
     }
 
-    protected final void performLayoutFree(float width, float height) {
-        setLayout(width, height);
-        float lWidth = Math.max(0, getLayoutWidth()
-                - getMarginLeft() - getMarginRight() - getPaddingLeft() - getPaddingRight());
-        float lHeight = Math.max(0, getLayoutHeight()
-                - getMarginTop() - getMarginBottom() - getPaddingTop() - getPaddingBottom());
-
+    protected final void performLayoutFree(float lWidth, float lHeight) {
         for (Widget child : getChildrenIterable()) {
             if (child.getVisibility() == Visibility.GONE) continue;
 
@@ -255,14 +259,8 @@ public abstract class Parent extends Widget {
         }
     }
 
-    protected final void performLayoutConstraints(float width, float height
+    protected final void performLayoutConstraints(float lWidth, float lHeight, float lx, float ly
             , VerticalAlign verticalAlign, HorizontalAlign horizontalAlign) {
-        setLayout(width, height);
-
-        float lWidth = Math.max(0, getLayoutWidth()
-                - getMarginLeft() - getMarginRight() - getPaddingLeft() - getPaddingRight());
-        float lHeight = Math.max(0, getLayoutHeight()
-                - getMarginTop() - getMarginBottom() - getPaddingTop() - getPaddingBottom());
 
         for (Widget child : getChildrenIterable()) {
             if (child.getVisibility() == Visibility.GONE) continue;
@@ -271,34 +269,14 @@ public abstract class Parent extends Widget {
             float childHeight = Math.min(Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight()), lHeight);
             child.onLayout(childWidth, childHeight);
 
-            float xPos = 0;
-            if (horizontalAlign == HorizontalAlign.LEFT) {
-                xPos = getPaddingLeft() + getMarginLeft();
-            } else if (horizontalAlign == HorizontalAlign.RIGHT) {
-                xPos = getLayoutWidth() - child.getLayoutWidth() - (getPaddingRight() + getMarginRight());
-            } else if (horizontalAlign == HorizontalAlign.CENTER) {
-                xPos = (getPaddingLeft() + getMarginLeft() + (getLayoutWidth() - child.getLayoutWidth() - (getPaddingRight() + getMarginRight()))) * 0.5f;
-            }
-
-            float yPos = 0;
-            if (verticalAlign == VerticalAlign.TOP) {
-                yPos = getPaddingTop() + getMarginTop();
-            } else if (verticalAlign == VerticalAlign.BOTTOM || verticalAlign == VerticalAlign.BASELINE) {
-                yPos = getLayoutHeight() - child.getLayoutHeight() - (getPaddingBottom() + getMarginBottom());
-            } else if (verticalAlign == VerticalAlign.MIDDLE) {
-                yPos = (getPaddingTop() + getMarginTop() + (getLayoutHeight() - child.getLayoutHeight() - (getPaddingBottom() + getMarginBottom()))) * 0.5f;
-            }
+            float xPos = off(lx, lx + lWidth, child.getLayoutWidth(), horizontalAlign);
+            float yPos = off(ly, ly + lHeight, child.getLayoutHeight(), verticalAlign);
             child.setLayoutPosition(xPos, yPos);
         }
     }
 
 
-    protected final void performSingleLayoutFree(float width, float height, Widget child) {
-        float lWidth = Math.max(0, getLayoutWidth()
-                - getMarginLeft() - getMarginRight() - getPaddingLeft() - getPaddingRight());
-        float lHeight = Math.max(0, getLayoutHeight()
-                - getMarginTop() - getMarginBottom() - getPaddingTop() - getPaddingBottom());
-
+    protected final void performSingleLayoutFree(float lWidth, float lHeight, Widget child) {
         float childWidth;
         if (child.getMeasureWidth() == MATCH_PARENT) {
             childWidth = Math.min(Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth()), lWidth);
@@ -316,47 +294,19 @@ public abstract class Parent extends Widget {
         child.onLayout(childWidth, childHeight);
     }
 
-    protected final void performSingleLayoutConstraints(float width, float height, Widget child
+    protected final void performSingleLayoutConstraints(float lWidth, float lHeight, float lx, float ly, Widget child
             , VerticalAlign verticalAlign, HorizontalAlign horizontalAlign) {
-
-        float lWidth = Math.max(0, getLayoutWidth()
-                - getMarginLeft() - getMarginRight() - getPaddingLeft() - getPaddingRight());
-        float lHeight = Math.max(0, getLayoutHeight()
-                - getMarginTop() - getMarginBottom() - getPaddingTop() - getPaddingBottom());
-
         float childWidth = Math.min(Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth()), lWidth);
         float childHeight = Math.min(Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight()), lHeight);
         child.onLayout(childWidth, childHeight);
 
-        float xPos = 0;
-        if (horizontalAlign == HorizontalAlign.LEFT) {
-            xPos = getPaddingLeft() + getMarginLeft();
-        } else if (horizontalAlign == HorizontalAlign.RIGHT) {
-            xPos = getLayoutWidth() - child.getLayoutWidth() - (getPaddingRight() + getMarginRight());
-        } else if (horizontalAlign == HorizontalAlign.CENTER) {
-            xPos = (getPaddingLeft() + getMarginLeft() + (getLayoutWidth() - child.getLayoutWidth() - (getPaddingRight() + getMarginRight()))) * 0.5f;
-        }
-
-        float yPos = 0;
-        if (verticalAlign == VerticalAlign.TOP) {
-            yPos = getPaddingTop() + getMarginTop();
-        } else if (verticalAlign == VerticalAlign.BOTTOM || verticalAlign == VerticalAlign.BASELINE) {
-            yPos = getLayoutHeight() - child.getLayoutHeight() - (getPaddingBottom() + getMarginBottom());
-        } else if (verticalAlign == VerticalAlign.MIDDLE) {
-            yPos = (getPaddingTop() + getMarginTop() + (getLayoutHeight() - child.getLayoutHeight() - (getPaddingBottom() + getMarginBottom()))) * 0.5f;
-        }
+        float xPos = off(lx, lx + lWidth, child.getLayoutWidth(), horizontalAlign);
+        float yPos = off(ly, ly + lHeight, child.getLayoutHeight(), verticalAlign);
         child.setLayoutPosition(xPos, yPos);
     }
 
-    protected final void performLayoutVertical(float width, float height, List<Widget> orderedList
+    protected final void performLayoutVertical(float lWidth, float lHeight, float lx, float ly, List<Widget> orderedList
             , VerticalAlign verticalAlign, HorizontalAlign horizontalAlign, Direction direction) {
-
-        setLayout(width, height);
-
-        float lWidth = Math.max(0, getLayoutWidth()
-                - getMarginLeft() - getMarginRight() - getPaddingLeft() - getPaddingRight());
-        float lHeight = Math.max(0, getLayoutHeight()
-                - getMarginTop() - getMarginBottom() - getPaddingTop() - getPaddingBottom());
 
         float totalMinimum = 0;
         float totalDefined = 0;
@@ -461,26 +411,14 @@ public abstract class Parent extends Widget {
         }
 
         float xPos = 0;
-        float yPos = 0;
-        if (verticalAlign == VerticalAlign.TOP) {
-            yPos = getPaddingTop() + getMarginTop();
-        } else if (verticalAlign == VerticalAlign.BOTTOM || verticalAlign == VerticalAlign.BASELINE) {
-            yPos = getLayoutHeight() - getPaddingBottom() - getMarginBottom() - totalHeight;
-        } else if (verticalAlign == VerticalAlign.MIDDLE) {
-            yPos = (getPaddingTop() + getMarginTop() + (getLayoutHeight() - getPaddingBottom() - getMarginBottom() - totalHeight)) * 0.5f;
-        }
+        float yPos = off(ly, ly + lHeight, totalHeight, verticalAlign);
 
         if (direction == Direction.VERTICAL) {
             for (int k = 0; k < orderedList.size(); k++) {
                 Widget child = orderedList.get(k);
                 if (child.getVisibility() == Visibility.GONE) continue;
-                if (horizontalAlign == HorizontalAlign.LEFT) {
-                    xPos = getPaddingLeft() + getMarginLeft();
-                } else if (horizontalAlign == HorizontalAlign.RIGHT) {
-                    xPos = getLayoutWidth() - child.getLayoutWidth() - (getPaddingRight() + getMarginRight());
-                } else if (horizontalAlign == HorizontalAlign.CENTER) {
-                    xPos = (getPaddingLeft() + getMarginLeft() + (getLayoutWidth() - child.getLayoutWidth() - (getPaddingRight() + getMarginRight()))) * 0.5f;
-                }
+
+                xPos = off(lx, lx + lWidth, child.getLayoutWidth(), horizontalAlign);
 
                 child.setLayoutPosition(xPos, yPos);
                 yPos += child.getLayoutHeight();
@@ -489,13 +427,8 @@ public abstract class Parent extends Widget {
             for (int k = orderedList.size() - 1; k >= 0; k--) {
                 Widget child = orderedList.get(k);
                 if (child.getVisibility() == Visibility.GONE) continue;
-                if (horizontalAlign == HorizontalAlign.LEFT) {
-                    xPos = getPaddingLeft() + getMarginLeft();
-                } else if (horizontalAlign == HorizontalAlign.RIGHT) {
-                    xPos = getLayoutWidth() - child.getLayoutWidth() - (getPaddingRight() + getMarginRight());
-                } else if (horizontalAlign == HorizontalAlign.CENTER) {
-                    xPos = (getPaddingLeft() + getMarginLeft() + (getLayoutWidth() - child.getLayoutWidth() - (getPaddingRight() + getMarginRight()))) * 0.5f;
-                }
+
+                xPos = off(lx, lx + lWidth, child.getLayoutWidth(), horizontalAlign);
 
                 child.setLayoutPosition(xPos, yPos);
                 yPos += child.getLayoutHeight();
@@ -503,15 +436,8 @@ public abstract class Parent extends Widget {
         }
     }
 
-    protected final void performLayoutHorizontal(float width, float height, List<Widget> orderedList
+    protected final void performLayoutHorizontal(float lWidth, float lHeight, float lx, float ly, List<Widget> orderedList
             , VerticalAlign verticalAlign, HorizontalAlign horizontalAlign, Direction direction) {
-        setLayout(width, height);
-
-        float lWidth = Math.max(0, getLayoutWidth()
-                - getMarginLeft() - getMarginRight() - getPaddingLeft() - getPaddingRight());
-        float lHeight = Math.max(0, getLayoutHeight()
-                - getMarginTop() - getMarginBottom() - getPaddingTop() - getPaddingBottom());
-
         float totalMinimum = 0;
         float totalDefined = 0;
         int countMp = 0;
@@ -614,27 +540,14 @@ public abstract class Parent extends Widget {
             totalWidth += child.getLayoutWidth();
         }
 
-        float xPos = 0;
+        float xPos = off(lx, lx + lWidth, totalWidth, horizontalAlign);
         float yPos = 0;
-        if (horizontalAlign == HorizontalAlign.LEFT) {
-            xPos = getPaddingLeft() + getMarginLeft();
-        } else if (horizontalAlign == HorizontalAlign.RIGHT) {
-            xPos = getLayoutWidth() - getPaddingRight() - getMarginRight() - totalWidth;
-        } else if (horizontalAlign == HorizontalAlign.CENTER) {
-            xPos = (getPaddingLeft() + getMarginLeft() + (getLayoutWidth() - getPaddingRight() - getMarginRight() - totalWidth)) * 0.5f;
-        }
 
         if (direction == Direction.HORIZONTAL) {
             for (int k = 0; k < orderedList.size(); k++) {
                 Widget child = orderedList.get(k);
                 if (child.getVisibility() == Visibility.GONE) continue;
-                if (verticalAlign == VerticalAlign.TOP) {
-                    yPos = getPaddingTop() + getMarginTop();
-                } else if (verticalAlign == VerticalAlign.BOTTOM || verticalAlign == VerticalAlign.BASELINE) {
-                    yPos = getLayoutHeight() - child.getLayoutHeight() - (getPaddingBottom() + getMarginBottom());
-                } else if (verticalAlign == VerticalAlign.MIDDLE) {
-                    yPos = (getPaddingTop() + getMarginTop() + (getLayoutHeight() - child.getLayoutHeight() - (getPaddingBottom() + getMarginBottom()))) * 0.5f;
-                }
+                yPos = off(ly, ly + lHeight, child.getLayoutHeight(), verticalAlign);
 
                 child.setLayoutPosition(xPos, yPos);
                 xPos += child.getLayoutWidth();
@@ -643,13 +556,7 @@ public abstract class Parent extends Widget {
             for (int k = orderedList.size() - 1; k >= 0; k--) {
                 Widget child = orderedList.get(k);
                 if (child.getVisibility() == Visibility.GONE) continue;
-                if (verticalAlign == VerticalAlign.TOP) {
-                    yPos = getPaddingTop() + getMarginTop();
-                } else if (verticalAlign == VerticalAlign.BOTTOM || verticalAlign == VerticalAlign.BASELINE) {
-                    yPos = getLayoutHeight() - child.getLayoutHeight() - (getPaddingBottom() + getMarginBottom());
-                } else if (verticalAlign == VerticalAlign.MIDDLE) {
-                    yPos = (getPaddingTop() + getMarginTop() + (getLayoutHeight() - child.getLayoutHeight() - (getPaddingBottom() + getMarginBottom()))) * 0.5f;
-                }
+                yPos = off(ly, ly + lHeight, child.getLayoutHeight(), verticalAlign);
 
                 child.setLayoutPosition(xPos, yPos);
                 xPos += child.getLayoutWidth();
@@ -657,16 +564,8 @@ public abstract class Parent extends Widget {
         }
     }
 
-
-    protected final float performLayoutVerticalScrollable(float width, float height, List<Widget> orderedList
+    protected final float performLayoutVerticalScrollable(float lWidth, float lHeight, float lx, float ly, List<Widget> orderedList
             , VerticalAlign verticalAlign, HorizontalAlign horizontalAlign, float verticalOffset) {
-
-        setLayout(width, height);
-
-        float lWidth = Math.max(0, getLayoutWidth()
-                - getMarginLeft() - getMarginRight() - getPaddingLeft() - getPaddingRight());
-        float lHeight = Math.max(0, getLayoutHeight()
-                - getMarginTop() - getMarginBottom() - getPaddingTop() - getPaddingBottom());
 
         boolean scroll = false;
         float localDimensionY = 0;
@@ -792,30 +691,156 @@ public abstract class Parent extends Widget {
         }
 
         float xPos = 0;
-        float yPos = 0;
-        if (verticalAlign == VerticalAlign.TOP || scroll) {
-            yPos = getPaddingTop() + getMarginTop() - verticalOffset;
-        } else if (verticalAlign == VerticalAlign.BOTTOM || verticalAlign == VerticalAlign.BASELINE) {
-            yPos = getLayoutHeight() - getPaddingBottom() - getMarginBottom() - totalHeight;
-        } else if (verticalAlign == VerticalAlign.MIDDLE) {
-            yPos = (getPaddingTop() + getMarginTop() + (getLayoutHeight() - getPaddingBottom() - getMarginBottom() - totalHeight)) * 0.5f;
-        }
+        float yPos = scroll ? ly - verticalOffset : off(ly, ly + lHeight, totalHeight, verticalAlign);
 
         for (int k = orderedList.size() - 1; k >= 0; k--) {
             Widget child = orderedList.get(k);
             if (child.getVisibility() == Visibility.GONE) continue;
-            if (horizontalAlign == HorizontalAlign.LEFT) {
-                xPos = getPaddingLeft() + getMarginLeft();
-            } else if (horizontalAlign == HorizontalAlign.RIGHT) {
-                xPos = getLayoutWidth() - child.getLayoutWidth() - (getPaddingRight() + getMarginRight());
-            } else if (horizontalAlign == HorizontalAlign.CENTER) {
-                xPos = (getPaddingLeft() + getMarginLeft() + (getLayoutWidth() - child.getLayoutWidth() - (getPaddingRight() + getMarginRight()))) * 0.5f;
-            }
+            xPos = off(lx, lx + lWidth, child.getLayoutWidth(), horizontalAlign);
 
             child.setLayoutPosition(xPos, yPos);
             yPos += child.getLayoutHeight();
         }
         return Math.max(lHeight, localDimensionY);
+    }
+
+    protected final float performLayoutHorizontalScrollable(float lWidth, float lHeight, float lx, float ly, List<Widget> orderedList
+            , VerticalAlign verticalAlign, HorizontalAlign horizontalAlign, float verticalOffset) {
+
+        boolean scroll = false;
+        float localDimensionX = 0;
+
+        for (Widget child : getChildrenIterable()) {
+            if (child.getVisibility() == Visibility.GONE) continue;
+
+            if (child.getMeasureWidth() != MATCH_PARENT) {
+                localDimensionX += child.getMeasureWidth();
+            }
+        }
+        if (localDimensionX > lWidth) {
+            if (verticalOffset > localDimensionX - lWidth) verticalOffset = localDimensionX - lWidth;
+            if (verticalOffset < 0) verticalOffset = 0;
+            scroll = true;
+            lWidth = localDimensionX;
+        } else {
+            verticalOffset = 0;
+        }
+
+        //-----------------
+        float totalMinimum = 0;
+        float totalDefined = 0;
+        int countMp = 0;
+        float sumWeight = 0;
+        for (Widget child : orderedList) {
+            if (child.getVisibility() == Visibility.GONE) continue;
+
+            if (child.getMeasureWidth() == MATCH_PARENT) {
+                countMp += 1;
+                sumWeight += child.getWeight();
+            } else {
+                totalDefined += Math.max(getDefWidth(child) - child.getLayoutMinWidth(), 0);
+            }
+            totalMinimum += child.getLayoutMinWidth();
+        }
+
+        float minSpace = Math.min(totalMinimum, lWidth);
+        float defSpace = Math.min(totalDefined, lWidth - minSpace);
+
+        // Set Defined Layout
+        for (Widget child : orderedList) {
+            if (child.getVisibility() == Visibility.GONE || child.getMeasureWidth() == MATCH_PARENT) continue;
+
+            float childMin = child.getLayoutMinWidth();
+            float childDef = Math.max(getDefWidth(child) - childMin, 0);
+
+            float childWidthM = totalMinimum == 0 ? 0 : (childMin / totalMinimum) * minSpace;
+            float childWidthD = totalDefined == 0 ? 0 : (childDef / totalDefined) * defSpace;
+
+            float childWidth = childWidthM + childWidthD;
+            float childHeight = Math.min(Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight()), lHeight);
+            child.onLayout(childWidth, childHeight);
+        }
+
+        if (countMp > 0 && (tempSize == null || tempSize.length < countMp)) {
+            tempSize = new float[countMp];
+        }
+
+        int i = 0;
+        for (Widget child : orderedList) {
+            if (child.getVisibility() == Visibility.GONE || child.getMeasureWidth() != MATCH_PARENT) continue;
+            tempSize[i++] = 0;
+        }
+
+        // Find the best fit size
+        float totalSpaceLeft = Math.max(lWidth - minSpace - totalDefined, 0);
+        while (totalSpaceLeft > 0) {
+
+            int nOut = 0;
+            float nWeight = 0;
+            float spaceLeft = totalSpaceLeft;
+
+            int iPos = 0;
+            for (Widget child : orderedList) {
+                if (child.getVisibility() == Visibility.GONE || child.getMeasureWidth() != MATCH_PARENT) continue;
+
+                float childMin = totalMinimum == 0 ? 0 : (child.getLayoutMinWidth() / totalMinimum) * minSpace;
+                if (childMin + tempSize[iPos] < child.getLayoutMaxWidth()) {
+                    float part = (sumWeight == 0 ? 1f / countMp : child.getWeight() / sumWeight);
+                    float size = part * spaceLeft;
+
+                    if (childMin + tempSize[iPos] + size >= child.getLayoutMaxWidth()) {
+                        totalSpaceLeft -= (child.getLayoutMaxWidth() - childMin) - tempSize[iPos];
+                        tempSize[iPos] = (child.getLayoutMaxWidth() - childMin);
+
+                    } else {
+                        nOut += 1;
+                        nWeight += child.getWeight();
+
+                        tempSize[iPos] += size;
+                        totalSpaceLeft -= size;
+                    }
+                }
+                iPos++;
+            }
+
+            if (totalSpaceLeft >= 1f && nOut > 0) {
+                countMp = nOut;
+                sumWeight = nWeight;
+            } else {
+                break;
+            }
+        }
+
+        // Set MatchParent Layout
+        int j = 0;
+        for (Widget child : orderedList) {
+            if (child.getVisibility() == Visibility.GONE || child.getMeasureWidth() != MATCH_PARENT) continue;
+            float childMin = totalMinimum == 0 ? 0 : (child.getLayoutMinWidth() / totalMinimum) * minSpace;
+
+            float childWidth = childMin + tempSize[j++];
+            float childHeight = Math.min(Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight()), lHeight);
+            child.onLayout(childWidth, childHeight);
+        }
+
+        // Set Positions
+        float totalWidth = 0;
+        for (Widget child : orderedList) {
+            if (child.getVisibility() == Visibility.GONE) continue;
+            totalWidth += child.getLayoutWidth();
+        }
+
+        float xPos = scroll ? lx - verticalOffset : off(lx, lx + lWidth, totalWidth, horizontalAlign);
+        float yPos = 0;
+
+        for (int k = 0; k < orderedList.size(); k++) {
+            Widget child = orderedList.get(k);
+            if (child.getVisibility() == Visibility.GONE) continue;
+            yPos = off(ly, ly + lHeight, child.getLayoutHeight(), verticalAlign);
+
+            child.setLayoutPosition(xPos, yPos);
+            xPos += child.getLayoutWidth();
+        }
+        return Math.max(lWidth, localDimensionX);
     }
 
     private float getDefWidth(Widget widget) {
@@ -824,5 +849,17 @@ public abstract class Parent extends Widget {
 
     private float getDefHeight(Widget widget) {
         return Math.min(widget.getLayoutMaxHeight(), widget.getMeasureHeight());
+    }
+
+    private float off(float start, float end, float size, VerticalAlign verticalAlign) {
+        if (verticalAlign == VerticalAlign.BOTTOM) return end - size;
+        if (verticalAlign == VerticalAlign.MIDDLE) return (start + end - size) / 2f;
+        return start;
+    }
+
+    private float off(float start, float end, float size, HorizontalAlign horizontalAlign) {
+        if (horizontalAlign == HorizontalAlign.RIGHT) return end - size;
+        if (horizontalAlign == HorizontalAlign.CENTER) return (start + end - size) / 2f;
+        return start;
     }
 }

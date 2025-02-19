@@ -3,17 +3,17 @@ package flat.widget.layout;
 import flat.animations.StateInfo;
 import flat.graphics.SmartContext;
 import flat.resources.ResourceStream;
-import flat.uxml.Controller;
-import flat.uxml.UXAttrs;
-import flat.uxml.UXNode;
-import flat.widget.Parent;
+import flat.uxml.*;
+import flat.widget.Group;
 import flat.widget.Widget;
 import flat.widget.enums.HorizontalAlign;
 import flat.widget.enums.VerticalAlign;
 import flat.window.Activity;
 import flat.window.Application;
 
-public class Frame extends Parent {
+import java.util.List;
+
+public class Frame extends Group {
 
     private VerticalAlign verticalAlign = VerticalAlign.MIDDLE;
     private HorizontalAlign horizontalAlign = HorizontalAlign.CENTER;
@@ -41,20 +41,38 @@ public class Frame extends Parent {
     }
 
     public void build(Widget root, Controller controller) {
-        this.controller = controller;
-
         removeAll();
         if (root != null) {
             add(root);
         }
+        setController(controller);
     }
 
     protected void setController(Controller controller) {
-        this.controller = controller;
+        if (this.controller != controller) {
+            Controller old = this.controller;
+            this.controller = controller;
+            if (old != null) {
+                old.setActivity(null);
+            }
+            if (this.controller != null) {
+                this.controller.setActivity(getActivity());
+            }
+        }
     }
 
     public Controller getController() {
         return controller;
+    }
+
+    @Override
+    public void applyChildren(UXChildren children) {
+        super.applyChildren(children);
+
+        Widget widget;
+        while ((widget = children.next()) != null ) {
+            add(widget);
+        }
     }
 
     @Override
@@ -74,37 +92,42 @@ public class Frame extends Parent {
 
     @Override
     public void onLayout(float width, float height) {
-        performLayoutConstraints(width, height, verticalAlign, horizontalAlign);
+        setLayout(width, height);
+        performLayoutConstraints(getInWidth(), getInHeight(), getInX(), getInY(), verticalAlign, horizontalAlign);
     }
 
     @Override
-    protected void onActivityChange(Activity prev, Activity current) {
-        super.onActivityChange(prev, current);
-        if (prev == null && current != null) {
-            if (controller != null) {
-                try {
-                    controller.setActivity(getActivity());
-                    controller.onShow();
-                } catch (Exception e) {
-                    Application.handleException(e);
+    protected void onActivityChange(Activity prev, Activity current, TaskList tasks) {
+        super.onActivityChange(prev, current, tasks);
+        if ((prev == null) != (current == null) && controller != null) {
+            tasks.add(() -> {
+                if (controller != null) {
+                    controller.setActivity(this.getActivity());
                 }
-            }
-        } else if (current == null && prev != null) {
-            if (controller != null) {
-                try {
-                    controller.onHide();
-                } catch (Exception e) {
-                    Application.handleException(e);
-                }
-            }
+            });
         }
+    }
+
+    @Override
+    public void add(Widget child) {
+        super.add(child);
+    }
+
+    @Override
+    public void add(Widget... children) {
+        super.add(children);
+    }
+
+    @Override
+    public void add(List<Widget> children) {
+        super.add(children);
     }
 
     @Override
     public void onDraw(SmartContext context) {
         super.onDraw(context);
 
-        if (controller != null) {
+        if (controller != null && controller.isListening()) {
             try {
                 controller.onDraw(context);
             } catch (Exception e) {

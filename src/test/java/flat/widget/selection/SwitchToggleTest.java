@@ -67,11 +67,11 @@ public class SwitchToggleTest {
 
         SwitchToggle switchToggle = new SwitchToggle();
 
-        assertNull(switchToggle.getIconActive());
-        assertNull(switchToggle.getIconInactive());
+        assertNull(switchToggle.getActiveIcon());
+        assertNull(switchToggle.getInactiveIcon());
         assertEquals(0, switchToggle.getIconTransitionDuration(), 0.0001f);
         assertEquals(0, switchToggle.getSlideTransitionDuration(), 0.0001f);
-        assertEquals(0xFFFFFFFF, switchToggle.getColor());
+        assertEquals(0xFFFFFFFF, switchToggle.getIconColor());
         assertEquals(Direction.HORIZONTAL, switchToggle.getDirection());
         assertEquals(ImageFilter.LINEAR, switchToggle.getIconImageFilter());
         assertFalse(switchToggle.isActive());
@@ -81,11 +81,11 @@ public class SwitchToggleTest {
         switchToggle.setAttributes(createNonDefaultValues(), "switchtoggle");
         switchToggle.applyAttributes(controller);
 
-        assertNull(switchToggle.getIconActive());
-        assertNull(switchToggle.getIconInactive());
+        assertNull(switchToggle.getActiveIcon());
+        assertNull(switchToggle.getInactiveIcon());
         assertEquals(0, switchToggle.getIconTransitionDuration(), 0.0001f);
         assertEquals(0, switchToggle.getSlideTransitionDuration(), 0.0001f);
-        assertEquals(0xFFFFFFFF, switchToggle.getColor());
+        assertEquals(0xFFFFFFFF, switchToggle.getIconColor());
         assertEquals(Direction.HORIZONTAL, switchToggle.getDirection());
         assertEquals(ImageFilter.LINEAR, switchToggle.getIconImageFilter());
         assertTrue(switchToggle.isActive());
@@ -94,11 +94,11 @@ public class SwitchToggleTest {
 
         switchToggle.applyStyle();
 
-        assertEquals(iconActive, switchToggle.getIconActive());
-        assertEquals(iconInactive, switchToggle.getIconInactive());
+        assertEquals(iconActive, switchToggle.getActiveIcon());
+        assertEquals(iconInactive, switchToggle.getInactiveIcon());
         assertEquals(1.0f, switchToggle.getIconTransitionDuration(), 0.0001f);
         assertEquals(2.0f, switchToggle.getSlideTransitionDuration(), 0.0001f);
-        assertEquals(0xFF0000FF, switchToggle.getColor());
+        assertEquals(0xFF0000FF, switchToggle.getIconColor());
         assertEquals(Direction.VERTICAL, switchToggle.getDirection());
         assertEquals(ImageFilter.NEAREST, switchToggle.getIconImageFilter());
         assertTrue(switchToggle.isActive());
@@ -109,8 +109,8 @@ public class SwitchToggleTest {
     @Test
     public void measureHorizontal() {
         SwitchToggle switchToggle = new SwitchToggle();
-        switchToggle.setIconActive(iconActive);
-        switchToggle.setIconInactive(iconInactive);
+        switchToggle.setActiveIcon(iconActive);
+        switchToggle.setInactiveIcon(iconInactive);
         switchToggle.setDirection(Direction.HORIZONTAL);
         switchToggle.setActive(true);
         switchToggle.onMeasure();
@@ -141,8 +141,8 @@ public class SwitchToggleTest {
     @Test
     public void measureVertical() {
         SwitchToggle switchToggle = new SwitchToggle();
-        switchToggle.setIconActive(iconActive);
-        switchToggle.setIconInactive(iconInactive);
+        switchToggle.setActiveIcon(iconActive);
+        switchToggle.setInactiveIcon(iconInactive);
         switchToggle.setDirection(Direction.VERTICAL);
         switchToggle.setActive(true);
         switchToggle.onMeasure();
@@ -173,8 +173,8 @@ public class SwitchToggleTest {
     @Test
     public void fireAction() {
         SwitchToggle switchToggle = new SwitchToggle();
-        switchToggle.setIconActive(iconActive);
-        switchToggle.setIconInactive(iconInactive);
+        switchToggle.setActiveIcon(iconActive);
+        switchToggle.setInactiveIcon(iconInactive);
 
         var action = (UXListener<ActionEvent>) mock(UXListener.class);
         switchToggle.setToggleListener(action);
@@ -207,11 +207,11 @@ public class SwitchToggleTest {
 
         hash.put(UXHash.getHash("on-toggle"), new UXValueText("onActionWork"));
         hash.put(UXHash.getHash("on-active-change"), new UXValueText("onActiveWork"));
-        hash.put(UXHash.getHash("color"), new UXValueColor(0xFF0000FF));
+        hash.put(UXHash.getHash("icon-color"), new UXValueColor(0xFF0000FF));
         hash.put(UXHash.getHash("direction"), new UXValueText(Direction.VERTICAL.toString()));
         hash.put(UXHash.getHash("icon-image-filter"), new UXValueText(ImageFilter.NEAREST.toString()));
-        hash.put(UXHash.getHash("icon-active"), uxIconActive);
-        hash.put(UXHash.getHash("icon-inactive"), uxIconInactive);
+        hash.put(UXHash.getHash("active-icon"), uxIconActive);
+        hash.put(UXHash.getHash("inactive-icon"), uxIconInactive);
         hash.put(UXHash.getHash("icon-transition-duration"), new UXValueNumber(1.0f));
         hash.put(UXHash.getHash("slide-transition-duration"), new UXValueNumber(2.0f));
         hash.put(UXHash.getHash("active"), new UXValueBool(true));

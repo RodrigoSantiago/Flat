@@ -155,7 +155,11 @@ public class Application {
 
     private static void assignWindow(Window window) {
         if (assignedWindow != window) {
+            if (assignedWindow != null) {
+                assignedWindow.setAssigned(false);
+            }
             assignedWindow = window;
+            assignedWindow.setAssigned(true);
             WL.WindowAssign(window.getWindowId());
         }
         if (currentVsync != vsync) {

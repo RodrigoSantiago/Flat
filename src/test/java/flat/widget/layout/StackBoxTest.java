@@ -11,8 +11,7 @@ import org.junit.Test;
 
 import java.util.HashMap;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
 
@@ -94,7 +93,7 @@ public class StackBoxTest {
         assertEquals(5, child.getY(), 0.001f);
 
         parent.setHorizontalAlign(HorizontalAlign.RIGHT);
-        parent.setVerticalAlign(VerticalAlign.BASELINE);
+        parent.setVerticalAlign(VerticalAlign.BOTTOM);
         parent.setMargins(2, 3, 4, 5);
         parent.setPadding(3, 4, 5, 6);
         parent.onMeasure();
@@ -164,7 +163,7 @@ public class StackBoxTest {
         assertEquals(5, child2.getY(), 0.001f);
 
         parent.setHorizontalAlign(HorizontalAlign.RIGHT);
-        parent.setVerticalAlign(VerticalAlign.BASELINE);
+        parent.setVerticalAlign(VerticalAlign.BOTTOM);
         parent.setMargins(2, 3, 4, 5);
         parent.setPadding(3, 4, 5, 6);
         parent.onMeasure();
@@ -175,6 +174,41 @@ public class StackBoxTest {
         assertEquals(227, child1.getY(), 0.001f);
         assertEquals(151, child2.getX(), 0.001f);
         assertEquals(287, child2.getY(), 0.001f);
+    }
+
+    @Test
+    public void layoutSingleChild() {
+        StackBox parent = new StackBox();
+        Panel child1 = new Panel();
+        Panel child2 = new Panel();
+        parent.add(child1);
+        parent.add(child2);
+
+        // Child size does not affect Parent
+        parent.setPrefSize(200, 400);
+        child1.setPrefSize(150, 250);
+        child2.setPrefSize(150, 250);
+        parent.onMeasure();
+        assertEquals(200, parent.getMeasureWidth(), 0.0001f);
+        assertEquals(400, parent.getMeasureHeight(), 0.0001f);
+        parent.onLayout(200, 400);
+
+        assertEquals(200, parent.getLayoutWidth(), 0.0001f);
+        assertEquals(400, parent.getLayoutHeight(), 0.0001f);
+        assertEquals(150, child1.getLayoutWidth(), 0.0001f);
+        assertEquals(250, child1.getLayoutHeight(), 0.0001f);
+        assertEquals(150, child2.getLayoutWidth(), 0.0001f);
+        assertEquals(250, child2.getLayoutHeight(), 0.0001f);
+
+        child2.setPrefSize(155, 252);
+        assertTrue(parent.onLayoutSingleChild(child2));
+
+        assertEquals(200, parent.getLayoutWidth(), 0.0001f);
+        assertEquals(400, parent.getLayoutHeight(), 0.0001f);
+        assertEquals(150, child1.getLayoutWidth(), 0.0001f);
+        assertEquals(250, child1.getLayoutHeight(), 0.0001f);
+        assertEquals(155, child2.getLayoutWidth(), 0.0001f);
+        assertEquals(252, child2.getLayoutHeight(), 0.0001f);
     }
 
     private void assertMeasure(Widget widget, float width, float height) {

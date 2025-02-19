@@ -19,4 +19,10 @@ public abstract class Stage extends Group {
     protected void setToShow(Activity activity) {
         activity.getScene().addStage(this);
     }
+
+    protected void setToHide() {
+        if (getParent() instanceof Scene scene) {
+            scene.removeStage(this);
+        }
+    }
 }

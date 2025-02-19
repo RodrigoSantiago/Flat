@@ -219,7 +219,7 @@ public class ImageView extends Widget {
 
     protected float yOff(float start, float end, float height) {
         if (end < start) return (start + end) / 2f;
-        if (verticalAlign == VerticalAlign.BOTTOM || verticalAlign == VerticalAlign.BASELINE) return end - height;
+        if (verticalAlign == VerticalAlign.BOTTOM) return end - height;
         if (verticalAlign == VerticalAlign.MIDDLE) return (start + end - height) / 2f;
         return start;
     }

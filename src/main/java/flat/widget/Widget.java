@@ -19,6 +19,8 @@ import flat.widget.effects.RippleEffect;
 import flat.widget.enums.DropdownAlign;
 import flat.widget.enums.Visibility;
 import flat.window.Activity;
+import flat.window.Application;
+
 import static flat.widget.State.*;
 
 import java.util.*;
@@ -50,6 +52,7 @@ public class Widget {
 
     private int visibility = Visibility.VISIBLE.ordinal();
     private Cursor cursor = Cursor.UNSET;
+    private Cursor currentCursor = Cursor.UNSET;
 
     private Menu contextMenu;
 
@@ -515,7 +518,7 @@ public class Widget {
         return parent;
     }
 
-    void setParent(Parent parent) {
+    void setParent(Parent parent, TaskList tasks) {
         if (parent == this.parent) return;
 
         UXTheme themeA = getCurrentTheme();
@@ -528,6 +531,8 @@ public class Widget {
         Group groupB = parent == null ? null : parent.getCurrentOrGroup();
         Activity activityB = parent == null ? null : parent.getActivity();
 
+        onParentChange(old, this.parent, tasks);
+
         if (groupA != groupB) {
             onGroupChangeLocal(groupA, groupB);
         }
@@ -536,31 +541,13 @@ public class Widget {
             onActivityChangeLocal(activityA, activityB);
         }
 
-        onGroupChange(groupA, groupB);
-
-        if (groupA != groupB) {
-            onGroupChange(groupA, groupB);
-        }
-
         if (activityA != activityB) {
-            onActivityChange(activityA, activityB);
+            onActivityChange(activityA, activityB, tasks);
         }
 
         UXTheme themeB = getCurrentTheme();
         if (themeA != themeB) {
             onThemeChangeLocal();
-        }
-    }
-
-    protected void onParentChange(Parent prev, Parent current) {
-
-    }
-
-    protected void onGroupChange(Group prev, Group current) {
-        if (getCurrentOrGroup() != this && children != null) {
-            for (Widget widget : getChildrenIterable()) {
-                widget.onGroupChange(prev, current);
-            }
         }
     }
 
@@ -579,16 +566,26 @@ public class Widget {
         }
     }
 
-    protected void onActivityChange(Activity prev, Activity current) {
-        setFocused(false);
-        if (prev != null) {
-            if (prev.getFocus() == this) {
-                prev.setFocus(null);
+    void onActivityChangeLocal(Activity prev, Activity current) {
+        this.activity = current;
+
+        if (children != null) {
+            for (Widget widget : getChildrenIterable()) {
+                widget.onActivityChangeLocal(prev, current);
             }
         }
+    }
 
-        if (contextMenu != null) {
-            contextMenu.hide();
+    protected void onParentChange(Parent prev, Parent current, TaskList tasks) {
+        this.currentCursor = getShowCursor();
+    }
+
+    protected void onActivityChange(Activity prev, Activity current, TaskList tasks) {
+        refreshFocus();
+
+        if (contextMenu != null && contextMenu.isShown() && contextMenu.getActivity() != null) {
+            Menu menu = this.contextMenu;
+            tasks.add(() -> menu.hide());
         }
 
         if (ripple != null) {
@@ -601,17 +598,7 @@ public class Widget {
 
         if (children != null) {
             for (Widget widget : getChildrenIterable()) {
-                widget.onActivityChange(prev, current);
-            }
-        }
-    }
-
-    void onActivityChangeLocal(Activity prev, Activity current) {
-        this.activity = current;
-
-        if (children != null) {
-            for (Widget widget : getChildrenIterable()) {
-                widget.onActivityChangeLocal(prev, current);
+                widget.onActivityChange(prev, current, tasks);
             }
         }
     }
@@ -1120,6 +1107,7 @@ public class Widget {
         if (this.paddingTop != paddingTop) {
             this.paddingTop = paddingTop;
 
+            updateRect();
             invalidate(true);
         }
     }
@@ -1132,6 +1120,7 @@ public class Widget {
         if (this.paddingRight != paddingRight) {
             this.paddingRight = paddingRight;
 
+            updateRect();
             invalidate(true);
         }
     }
@@ -1144,6 +1133,7 @@ public class Widget {
         if (this.paddingBottom != paddingBottom) {
             this.paddingBottom = paddingBottom;
 
+            updateRect();
             invalidate(true);
         }
     }
@@ -1156,6 +1146,7 @@ public class Widget {
         if (this.paddingLeft != paddingLeft) {
             this.paddingLeft = paddingLeft;
 
+            updateRect();
             invalidate(true);
         }
     }
@@ -1167,6 +1158,7 @@ public class Widget {
             paddingBottom = bottom;
             paddingLeft = left;
 
+            updateRect();
             invalidate(true);
         }
     }
@@ -1408,8 +1400,12 @@ public class Widget {
         }
     }
 
-    public Cursor getShowCursor() {
-        return cursor == Cursor.UNSET && parent != null ? parent.getShowCursor() : cursor;
+    private Cursor getShowCursor() {
+        return cursor == Cursor.UNSET && parent != null ? ((Widget)parent).getShowCursor() : cursor;
+    }
+
+    public Cursor getCurrentCursor() {
+        return currentCursor;
     }
 
     public Cursor getCursor() {
@@ -1419,6 +1415,7 @@ public class Widget {
     public void setCursor(Cursor cursor) {
         if (this.cursor != cursor) {
             this.cursor = cursor;
+            this.currentCursor = getShowCursor();
         }
     }
 
@@ -1732,9 +1729,8 @@ public class Widget {
             }
         }
 
-        if (pointerListener != null) {
-            pointerListener.handle(event);
-        }
+        UXListener.safeHandle(pointerListener, event);
+
         if (event.getType() != PointerEvent.FILTER) {
             if (parent != null) {
                 parent.firePointer(event);
@@ -1750,45 +1746,39 @@ public class Widget {
             setHovered(false);
         }
 
-        if (hoverListener != null) {
-            hoverListener.handle(event);
-        }
+        UXListener.safeHandle(hoverListener, event);
+
         if (parent != null && event.isRecyclable(parent)) {
             parent.fireHover(event);
         }
     }
 
     public void fireScroll(ScrollEvent event) {
-        if (scrollListener != null) {
-            scrollListener.handle(event);
-        }
+        UXListener.safeHandle(scrollListener, event);
+
         if (parent != null) {
             parent.fireScroll(event);
         }
     }
 
     public void fireDrag(DragEvent event) {
-        if (dragListener != null) {
-            dragListener.handle(event);
-        }
+        UXListener.safeHandle(dragListener, event);
+
         if (parent != null && event.isRecyclable(parent)) {
             parent.fireDrag(event);
         }
     }
 
     public void fireKey(KeyEvent event) {
-        if (keyListener != null) {
-            keyListener.handle(event);
-        }
+        UXListener.safeHandle(keyListener, event);
+
         if (parent != null) {
             parent.fireKey(event);
         }
     }
 
     public void fireFocus(FocusEvent event) {
-        if (focusListener != null) {
-            focusListener.handle(event);
-        }
+        UXListener.safeHandle(focusListener, event);
     }
 
     public void fireResize() {
@@ -1797,6 +1787,6 @@ public class Widget {
 
     @Override
     public String toString() {
-        return "[" + id + "]" + getClass().getSimpleName();
+        return "[" + id + "]" + getClass().getSimpleName() + " - " + super.toString();
     }
 }

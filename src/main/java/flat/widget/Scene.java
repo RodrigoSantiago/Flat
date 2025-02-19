@@ -1,6 +1,7 @@
 package flat.widget;
 
 import flat.graphics.SmartContext;
+import flat.uxml.TaskList;
 import flat.uxml.UXChildren;
 import flat.widget.enums.Visibility;
 import flat.window.Activity;
@@ -48,13 +49,14 @@ public class Scene extends Group {
 
     @Override
     public void onLayout(float width, float height) {
-        performLayoutFree(width, height);
+        setLayout(width, height);
+        performLayoutFree(getInWidth(), getInHeight());
     }
 
     public boolean onLayoutSingleChild(Widget child) {
         if (getChildren().contains(child)) {
             child.onMeasure();
-            performSingleLayoutFree(getLayoutWidth(), getLayoutHeight(), child);
+            performSingleLayoutFree(getInWidth(), getInHeight(), child);
             return true;
         }
         return false;
@@ -93,18 +95,28 @@ public class Scene extends Group {
                 childInvalidate(stage);
             }
 
-        } else if (attachAndAddChild(stage)) {
-            stages.add(stage);
+        } else {
+            TaskList tasks = new TaskList();
+            if (attachAndAddChild(stage, tasks)) {
+                stages.add(stage);
+            }
+            tasks.run();
         }
+    }
+
+    void removeStage(Stage stage) {
+        stages.remove(stage);
+        remove(stage);
     }
 
     @Override
     protected boolean detachChild(Widget child) {
-        if (super.detachChild(child)) {
-            if (child instanceof Stage stage) {
-                stages.remove(stage);
-                stage.hide();
+        if (child instanceof Stage stage) {
+            if (stages.contains(stage)) {
+                return false;
             }
+        }
+        if (super.detachChild(child)) {
             return true;
         }
         return false;

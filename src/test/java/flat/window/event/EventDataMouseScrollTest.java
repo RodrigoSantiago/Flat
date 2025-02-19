@@ -1,5 +1,6 @@
 package flat.window.event;
 
+import flat.events.PointerEvent;
 import flat.events.ScrollEvent;
 import flat.widget.Widget;
 import flat.window.Activity;
@@ -27,6 +28,10 @@ public class EventDataMouseScrollTest {
         Window window = mock(Window.class);
         Widget widget = mock(Widget.class);
 
+        EventDataPointer pointer = new EventDataPointer(-1);
+        pointer.setPosition(5, 15);
+        when(window.getPointer()).thenReturn(pointer);
+
         when(window.getActivity()).thenReturn(activity);
         when(activity.findByPosition(anyFloat(), anyFloat(), anyBoolean())).thenReturn(widget);
         ArgumentCaptor<ScrollEvent> argumentCaptor = ArgumentCaptor.forClass(ScrollEvent.class);
@@ -43,6 +48,8 @@ public class EventDataMouseScrollTest {
         ScrollEvent scrollEvent = argumentCaptor.getValue();
         assertEquals(10f, scrollEvent.getDeltaX(), 0.0001f);
         assertEquals(20f, scrollEvent.getDeltaY(), 0.0001f);
+        assertEquals(5f, scrollEvent.getX(), 0.0001f);
+        assertEquals(15f, scrollEvent.getY(), 0.0001f);
         assertEquals(ScrollEvent.SCROLL, scrollEvent.getType());
     }
 }

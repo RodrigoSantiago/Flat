@@ -118,13 +118,13 @@ public class Activity {
         this.nextScene = UXNode.parse(resourceStream).instance(controller).buildScene(getTheme());
     }
 
-    public void setLayoutBuilder(Scene scene) {
+    public void setLayoutBuilder(Scene scene, Controller controller) {
         if (scene.getActivity() != null) {
             throw new FlatException("The scene is already assigned to an Activity");
         }
 
         if (this.nextScene != scene) {
-            this.nextController = null;
+            this.nextController = controller;
             this.nextScene = scene;
         }
     }
@@ -194,6 +194,7 @@ public class Activity {
             scene.refreshStyle();
         }
         clearUnusedFilters();
+        refreshFocus();
     }
 
     void layout(float width, float height) {
@@ -238,11 +239,7 @@ public class Activity {
         layout(getWindow().getClientWidth(), getWindow().getClientHeight());
 
         if (controller != null) {
-            try {
-                controller.onShow();
-            } catch (Exception e) {
-                Application.handleException(e);
-            }
+            controller.setActivity(this);
         }
     }
 
@@ -259,11 +256,7 @@ public class Activity {
 
     void close() {
         if (controller != null) {
-            try {
-                controller.onHide();
-            } catch (Exception e) {
-                Application.handleException(e);
-            }
+            controller.setActivity(null);
         }
     }
 
@@ -282,12 +275,18 @@ public class Activity {
         drawBackground(context);
         drawWidgets(context);
 
-        if (controller != null) {
+        if (controller != null && controller.isListening()) {
             try {
                 controller.onDraw(context);
             } catch (Exception e) {
                 Application.handleException(e);
             }
+        }
+    }
+
+    private void refreshFocus() {
+        if (focus != null && focus.getActivity() != this) {
+            setFocus(null);
         }
     }
 
@@ -324,11 +323,7 @@ public class Activity {
         for (int i = filtersTemp.size() - 1; i >= 0; i--) {
             var widget = filtersTemp.get(i);
             if (widget.getActivity() == this) {
-                try {
-                    widget.firePointer(event);
-                } catch (Exception e) {
-                    Application.handleException(e);
-                }
+                widget.firePointer(event);
                 if (event.isConsumed()) {
                     break;
                 }
@@ -353,11 +348,7 @@ public class Activity {
         for (int i = filtersTemp.size() - 1; i >= 0; i--) {
             var widget = filtersTemp.get(i);
             if (widget.getActivity() == this) {
-                try {
-                    widget.fireKey(event);
-                } catch (Exception e) {
-                    Application.handleException(e);
-                }
+                widget.fireKey(event);
                 if (event.isConsumed()) {
                     break;
                 }
@@ -402,11 +393,7 @@ public class Activity {
         for (int i = filtersTemp.size() - 1; i >= 0; i--) {
             var widget = filtersTemp.get(i);
             if (widget.getActivity() == this) {
-                try {
-                    widget.fireResize();
-                } catch (Exception e) {
-                    Application.handleException(e);
-                }
+                widget.fireResize();
             }
         }
         filtersTemp.clear();
@@ -430,18 +417,10 @@ public class Activity {
         }
 
         if (oldFocus != null) {
-            try {
-                oldFocus.fireFocus(new FocusEvent(oldFocus, focus));
-            } catch (Exception e) {
-                Application.handleException(e);
-            }
+            oldFocus.fireFocus(new FocusEvent(oldFocus, focus));
         }
         if (focus != null) {
-            try {
-                focus.fireFocus(new FocusEvent(oldFocus, focus));
-            } catch (Exception e) {
-                Application.handleException(e);
-            }
+            focus.fireFocus(new FocusEvent(oldFocus, focus));
         }
     }
 

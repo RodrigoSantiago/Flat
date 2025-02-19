@@ -12,8 +12,4 @@ public class SceneActivity {
     public void onActivityChange(Activity prev, Activity activity) {
         scene.onActivityChangeLocal(prev, activity);
     }
-
-    public void addStage(Stage stage) {
-        scene.addStage(stage);
-    }
 }

@@ -96,7 +96,7 @@ public class LinearBoxTest {
         assertEquals(120, child.getLayoutHeight(), 0.001f);
 
         parent.setHorizontalAlign(HorizontalAlign.RIGHT);
-        parent.setVerticalAlign(VerticalAlign.BASELINE);
+        parent.setVerticalAlign(VerticalAlign.BOTTOM);
         parent.setMargins(2, 3, 4, 5);
         parent.setPadding(3, 4, 5, 6);
         parent.onMeasure();

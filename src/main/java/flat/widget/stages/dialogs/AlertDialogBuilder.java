@@ -70,7 +70,7 @@ public class AlertDialogBuilder {
             dialog.setTheme(theme);
         }
 
-        Controller controller = new Controller(null) {
+        Controller controller = new Controller() {
             @Flat
             public void hide(ActionEvent event) {
                 dialog.hide();
@@ -78,16 +78,12 @@ public class AlertDialogBuilder {
 
             @Override
             public void onShow() {
-                if (onShowListener != null) {
-                    onShowListener.handle(dialog);
-                }
+                UXListener.safeHandle(onShowListener, dialog);
             }
 
             @Override
             public void onHide() {
-                if (onHideListener != null) {
-                    onHideListener.handle(dialog);
-                }
+                UXListener.safeHandle(onHideListener, dialog);
             }
         };
 

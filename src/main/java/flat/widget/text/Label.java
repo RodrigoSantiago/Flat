@@ -225,7 +225,7 @@ public class Label extends Widget {
 
     protected float yOff(float start, float end, float textHeight) {
         if (end < start) return (start + end) / 2f;
-        if (verticalAlign == VerticalAlign.BOTTOM || verticalAlign == VerticalAlign.BASELINE) return end - textHeight;
+        if (verticalAlign == VerticalAlign.BOTTOM) return end - textHeight;
         if (verticalAlign == VerticalAlign.MIDDLE) return (start + end - textHeight) / 2f;
         return start;
     }

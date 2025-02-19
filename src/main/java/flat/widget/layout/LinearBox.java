@@ -50,10 +50,13 @@ public class LinearBox extends Parent {
 
     @Override
     public void onLayout(float width, float height) {
+        setLayout(width, height);
         if (direction == Direction.VERTICAL || direction == Direction.IVERTICAL) {
-            performLayoutVertical(width, height, orderedList, verticalAlign, horizontalAlign, direction);
+            performLayoutVertical(getInWidth(), getInHeight(), getInX(), getInY()
+                    , orderedList, verticalAlign, horizontalAlign, direction);
         } else {
-            performLayoutHorizontal(width, height, orderedList, verticalAlign, horizontalAlign, direction);
+            performLayoutHorizontal(getInWidth(), getInHeight(), getInX(), getInY()
+                    , orderedList, verticalAlign, horizontalAlign, direction);
         }
     }
 
@@ -75,6 +78,13 @@ public class LinearBox extends Parent {
     @Override
     public void add(List<Widget> children) {
         super.add(children);
+    }
+
+    public void moveChild(Widget child, int index) {
+        if (orderedList.contains(child)) {
+            orderedList.remove(child);
+            orderedList.add(index, child);
+        }
     }
     
     @Override

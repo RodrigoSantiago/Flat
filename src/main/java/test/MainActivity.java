@@ -3,12 +3,12 @@ package test;
 import flat.Flat;
 import flat.events.ActionEvent;
 import flat.graphics.SmartContext;
-import flat.math.Affine;
+import flat.graphics.image.PixelMap;
 import flat.uxml.Controller;
 import flat.uxml.ValueChange;
 import flat.widget.layout.LinearBox;
-import flat.widget.stages.Dialog;
-import flat.widget.stages.dialogs.AlertDialogBuilder;
+import flat.widget.layout.Page;
+import flat.widget.layout.Tab;
 import flat.widget.stages.dialogs.ConfirmDialogBuilder;
 import flat.widget.text.Button;
 import flat.widget.text.Label;
@@ -16,36 +16,30 @@ import flat.window.Activity;
 import flat.window.Application;
 import flat.window.WindowSettings;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MainActivity extends Controller {
 
     public MainActivity(Activity activity) {
-        super(activity);
-
-        activity.setTheme("default/themes");
-        activity.setLayoutBuilder("default/screen_test/screen_test.uxml", this);
     }
 
     @Flat public Button button;
     @Flat public Label label;
     @Flat public LinearBox linear;
+    @Flat public Button iconButton;
 
     private int num;
 
     @Flat
     public void linearAction(ActionEvent actionEvent) {
-        linear.setPrefWidth(linear.getPrefWidth() + 5);
+        List<Page> list = new ArrayList<>();
+        new Tab().addPage(list);
+        getActivity().getWindow().setIcon((PixelMap) iconButton.getIcon());
     }
 
     @Flat
-    public void onButtonClick(ActionEvent actionEvent) {
-        Activity activity = getActivity();
-        /*var alert = new AlertDialogBuilder("/default/screen_test/dialog_test.uxml")
-                .title("This is THE Title")
-                .message("This is THE Message")
-                .onShowListener((dg) -> System.out.println("Show"))
-                .onHideListener((dg) -> System.out.println("Hide"))
-                .build();
-        alert.show(getActivity());*/
+    public void onDialogClick(ActionEvent actionEvent) {
         var alert = new ConfirmDialogBuilder("/default/screen_test/dialog_confirm.uxml")
                 .title("This is THE Title")
                 .message("This is THE Message")
@@ -55,24 +49,18 @@ public class MainActivity extends Controller {
                 .onNoListener((dg) -> System.out.println("No"))
                 .build();
         alert.show(getActivity());
+    }
 
-        /*var dialog = new Dialog();
-        dialog.setId("dialog");
-        dialog.build("/default/screen_test/dialog_test.uxml", new Controller(getActivity()) {
-            @Flat
-            public void resize(ActionEvent actionEvent) {
-                dialog.getChildrenIterable().get(0).setPrefWidth(dialog.getChildrenIterable().get(0).getPrefWidth() + 15);
-            }
-            @Flat
-            public void bring(ActionEvent actionEvent) {
-                System.out.println("ola");
-                var dialog2 = new Dialog();
-                dialog2.setId("dialog" + (++num));
-                dialog2.build("/default/screen_test/dialog_test.uxml", null);
-                dialog2.show(activity);
-            }
-        });
-        dialog.show(activity);*/
+    @Flat
+    public void onWindowClick(ActionEvent event) {
+        Application.createWindow(new WindowSettings.Builder()
+                .layout("/default/screen_test/screen_test.uxml")
+                .theme("/default/themes")
+                .controller(MainActivity::new)
+                .size(1000, 800)
+                .multiSamples(8)
+                .transparent(false)
+                .build());
     }
 
     @Flat
@@ -117,18 +105,5 @@ public class MainActivity extends Controller {
         //context.setColor(Color.black);
         //context.setTextBlur(0);
         //context.drawText(32, 200, "Ola Mundo");
-    }
-
-    @Flat
-    public void onAction(ActionEvent event) {
-        System.out.println("action");
-        Application.createWindow(new WindowSettings.Builder()
-                .layout("/default/screen_test/screen_test.uxml")
-                .theme("/default/themes")
-                .controller(MainActivity::new)
-                .size(1000, 800)
-                .multiSamples(8)
-                .transparent(false)
-                .build());
     }
 }

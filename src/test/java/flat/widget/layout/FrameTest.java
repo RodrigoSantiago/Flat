@@ -1,15 +1,13 @@
 package flat.widget.layout;
 
-import flat.events.ActionEvent;
 import flat.resources.ResourceStream;
 import flat.uxml.*;
 import flat.uxml.value.UXValue;
-import flat.uxml.value.UXValueBool;
-import flat.uxml.value.UXValueNumber;
 import flat.uxml.value.UXValueText;
 import flat.widget.Scene;
-import flat.widget.enums.*;
-import flat.widget.stages.Dialog;
+import flat.widget.Widget;
+import flat.widget.enums.HorizontalAlign;
+import flat.widget.enums.VerticalAlign;
 import flat.window.Activity;
 import flat.window.ActivitySupport;
 import org.junit.Test;
@@ -27,6 +25,24 @@ import static org.powermock.api.mockito.PowerMockito.*;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({UXNode.class})
 public class FrameTest {
+
+    @Test
+    public void childrenFromUx() {
+        Frame frame = new Frame();
+        Widget child1 = new Widget();
+        Widget child2 = new Widget();
+
+        UXChildren uxChild = mock(UXChildren.class);
+        when(uxChild.next()).thenReturn(child1).thenReturn(child2).thenReturn(null);
+
+        assertNull(child1.getParent());
+        assertNull(child2.getParent());
+        frame.applyChildren(uxChild);
+        assertEquals(child1, frame.getChildrenIterable().get(0));
+        assertEquals(child2, frame.getChildrenIterable().get(1));
+        assertEquals(frame, child1.getParent());
+        assertEquals(frame, child2.getParent());
+    }
 
     @Test
     public void properties() {
@@ -101,6 +117,72 @@ public class FrameTest {
         scene.remove(frame);
         verify(controller, times(1)).onShow();
         verify(controller, times(1)).onHide();
+    }
+
+    @Test
+    public void showFramehideFrame() {
+        Activity activity = mock(Activity.class);
+        Scene scene = new Scene();
+        ActivitySupport.setActivity(scene, activity);
+        when(activity.getScene()).thenReturn(scene);
+
+        Frame frameA = new Frame();
+        Frame frameB = new Frame();
+
+        Controller controllerA = new Controller() {
+            @Override
+            public void onShow() {
+                frameB.getParent().remove(frameB);
+            }
+        };
+        Controller controllerB = mock(Controller.class);
+        frameA.build(new Panel(), controllerA);
+        frameB.build(new Panel(), controllerB);
+
+        Panel parent = new Panel();
+        parent.add(frameA, frameB);
+
+        scene.add(parent);
+        assertEquals(activity, frameA.getActivity());
+        assertEquals(parent, frameA.getParent());
+        assertNull(frameB.getActivity());
+        assertNull(frameB.getParent());
+
+        verify(controllerB, times(0)).onShow();
+        verify(controllerB, times(0)).onHide();
+    }
+
+    @Test
+    public void showFramehideFrameAfter() {
+        Activity activity = mock(Activity.class);
+        Scene scene = new Scene();
+        ActivitySupport.setActivity(scene, activity);
+        when(activity.getScene()).thenReturn(scene);
+
+        Frame frameA = new Frame();
+        Frame frameB = new Frame();
+
+        Controller controllerA = new Controller() {
+            @Override
+            public void onShow() {
+                frameB.getParent().remove(frameB);
+            }
+        };
+        Controller controllerB = mock(Controller.class);
+        frameA.build(new Panel(), controllerA);
+        frameB.build(new Panel(), controllerB);
+
+        Panel parent = new Panel();
+        parent.add(frameB, frameA);
+
+        scene.add(parent);
+        assertEquals(activity, frameA.getActivity());
+        assertEquals(parent, frameA.getParent());
+        assertNull(frameB.getActivity());
+        assertNull(frameB.getParent());
+
+        verify(controllerB, times(1)).onShow();
+        verify(controllerB, times(1)).onHide();
     }
 
     private HashMap<Integer, UXValue> createNonDefaultValues() {

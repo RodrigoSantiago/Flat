@@ -47,11 +47,7 @@ public class EventDataCharMods extends EventData {
                 boolean spr = (mods & (WLEnums.MOD_SUPER)) != 0;
 
                 String value = new String(Character.toChars(codepoint));
-                try {
-                    widget.fireKey(new KeyEvent(widget, KeyEvent.TYPED, shift, ctrl, alt, spr, value, -1));
-                } catch (Exception e) {
-                    Application.handleException(e);
-                }
+                widget.fireKey(new KeyEvent(widget, KeyEvent.TYPED, shift, ctrl, alt, spr, value, -1));
             }
         } finally {
             release();

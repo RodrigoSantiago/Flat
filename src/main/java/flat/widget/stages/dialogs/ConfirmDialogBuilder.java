@@ -82,7 +82,7 @@ public class ConfirmDialogBuilder {
             dialog.setTheme(theme);
         }
 
-        Controller controller = new Controller(null) {
+        Controller controller = new Controller() {
             @Flat
             public void hide(ActionEvent event) {
                 dialog.hide();
@@ -91,9 +91,7 @@ public class ConfirmDialogBuilder {
             @Flat
             public void onYes(ActionEvent event) {
                 try {
-                    if (onYesListener != null) {
-                        onYesListener.handle(dialog);
-                    }
+                    UXListener.safeHandle(onYesListener, dialog);
                 } finally {
                     dialog.hide();
                 }
@@ -102,9 +100,7 @@ public class ConfirmDialogBuilder {
             @Flat
             public void onNo(ActionEvent event) {
                 try {
-                    if (onNoListener != null) {
-                        onNoListener.handle(dialog);
-                    }
+                    UXListener.safeHandle(onNoListener, dialog);
                 } finally {
                     dialog.hide();
                 }
@@ -112,16 +108,12 @@ public class ConfirmDialogBuilder {
 
             @Override
             public void onShow() {
-                if (onShowListener != null) {
-                    onShowListener.handle(dialog);
-                }
+                UXListener.safeHandle(onShowListener, dialog);
             }
 
             @Override
             public void onHide() {
-                if (onHideListener != null) {
-                    onHideListener.handle(dialog);
-                }
+                UXListener.safeHandle(onHideListener, dialog);
             }
         };
 
