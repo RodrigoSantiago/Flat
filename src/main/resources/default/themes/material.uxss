@@ -350,7 +350,7 @@ slider {
     }
 }
 
-scroll-bar {
+horizontal-scroll-bar {
     color : #FF0000;
     background-color : #ACACAC;
     radius-left : 8;
@@ -361,6 +361,21 @@ scroll-bar {
     min-height : 16;
     min-range : 0.1;
     transition-duration : 0.1;
+    width : match_parent;
+}
+
+vertical-scroll-bar {
+    color : #FF0000;
+    background-color : #ACACAC;
+    radius-left : 8;
+    radius-right : 8;
+    radius-top : 8;
+    radius-bottom : 8;
+    min-width : 16;
+    min-height : 16;
+    min-range : 0.1;
+    transition-duration : 0.1;
+    height : match_parent;
 }
 
 progress-bar {

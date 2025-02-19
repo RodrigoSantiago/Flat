@@ -3,6 +3,7 @@ package flat.widget.value;
 import flat.animations.StateInfo;
 import flat.events.ActionEvent;
 import flat.events.PointerEvent;
+import flat.events.SlideEvent;
 import flat.graphics.Color;
 import flat.graphics.SmartContext;
 import flat.math.Vector2;
@@ -12,7 +13,8 @@ import flat.widget.enums.Direction;
 
 public class ScrollBar extends Widget {
 
-    private UXListener<ActionEvent> slideListener;
+    private UXListener<SlideEvent> slideListener;
+    private UXListener<SlideEvent> slideFilter;
     private UXValueListener<Float> viewOffsetListener;
     private float viewOffset;
     private float viewDimension;
@@ -20,9 +22,11 @@ public class ScrollBar extends Widget {
 
     private float minSize;
     private int color = Color.white;
-    private Direction direction = Direction.VERTICAL;
 
     private float grabOffset;
+
+    ScrollBar() {
+    }
 
     @Override
     public void applyAttributes(Controller controller) {
@@ -32,8 +36,8 @@ public class ScrollBar extends Widget {
         setTotalDimension(attrs.getAttributeSize("total-dimension", getTotalDimension()));
         setViewDimension(attrs.getAttributeSize("view-dimension", getViewDimension()));
         setViewOffset(attrs.getAttributeSize("view-offset", getViewOffset()));
-        setSlideListener(attrs.getAttributeListener("on-slide", ActionEvent.class, controller));
-        setDirection(attrs.getAttributeConstant("direction", getDirection()));
+        setSlideListener(attrs.getAttributeListener("on-slide", SlideEvent.class, controller));
+        setSlideFilter(attrs.getAttributeListener("on-slide-filter", SlideEvent.class, controller));
         setViewOffsetListener(attrs.getAttributeValueListener("on-view-offset-change", Float.class, controller));
     }
 
@@ -51,8 +55,7 @@ public class ScrollBar extends Widget {
     public void onDraw(SmartContext context) {
         drawBackground(context);
 
-        boolean hor = direction == Direction.HORIZONTAL || direction == Direction.IHORIZONTAL;
-        boolean inverse = direction == Direction.IHORIZONTAL || direction == Direction.IVERTICAL;
+        boolean hor = getDirection() == Direction.HORIZONTAL;
 
         final float x = getInX();
         final float y = getInY();
@@ -64,9 +67,6 @@ public class ScrollBar extends Widget {
         float w, h, x1, y1, xc, yc;
         float handleSize = totalDimension == 0 ? 1 : Math.max(minSize, Math.min(1, viewDimension / totalDimension));
         float moveOffset = totalDimension == 0 ? 0 : Math.max(0, Math.min(1 - handleSize, viewOffset / totalDimension));
-        if (inverse) {
-            moveOffset = (1 - handleSize) - moveOffset;
-        }
 
         if (hor) {
             w = width * handleSize;
@@ -89,16 +89,7 @@ public class ScrollBar extends Widget {
     }
 
     public Direction getDirection() {
-        return direction;
-    }
-
-    public void setDirection(Direction direction) {
-        if (direction == null) direction = Direction.VERTICAL;
-
-        if (this.direction != direction) {
-            this.direction = direction;
-            invalidate(true);
-        }
+        return null;
     }
 
     public float getViewOffset() {
@@ -173,10 +164,15 @@ public class ScrollBar extends Widget {
     }
 
     public void slideTo(float dimeionsOffset) {
+        if (dimeionsOffset > totalDimension - viewDimension) dimeionsOffset = totalDimension - viewDimension;
+        if (dimeionsOffset < 0) dimeionsOffset = 0;
+
         float old = getViewOffset();
-        setViewOffset(dimeionsOffset);
-        if (old != getViewOffset()) {
-            fireSlide();
+        if (dimeionsOffset != old && filterSlide(dimeionsOffset)) {
+            setViewOffset(dimeionsOffset);
+            if (old != getViewOffset()) {
+                fireSlide();
+            }
         }
     }
 
@@ -184,17 +180,34 @@ public class ScrollBar extends Widget {
         slideTo(getViewOffset() + dimeionsOffset);
     }
 
-    public UXListener<ActionEvent> getSlideListener() {
+    public UXListener<SlideEvent> getSlideFilter() {
+        return slideFilter;
+    }
+
+    public void setSlideFilter(UXListener<SlideEvent> slideFilter) {
+        this.slideFilter = slideFilter;
+    }
+
+    private boolean filterSlide(float viewOffset) {
+        if (slideFilter != null) {
+            var event = new SlideEvent(this, viewOffset);
+            UXListener.safeHandle(slideFilter, event);
+            return !event.isConsumed();
+        }
+        return true;
+    }
+
+    public UXListener<SlideEvent> getSlideListener() {
         return slideListener;
     }
 
-    public void setSlideListener(UXListener<ActionEvent> scrollListener) {
-        this.slideListener = scrollListener;
+    public void setSlideListener(UXListener<SlideEvent> slideListener) {
+        this.slideListener = slideListener;
     }
 
     private void fireSlide() {
         if (slideListener != null) {
-            UXListener.safeHandle(slideListener, new ActionEvent(this));
+            UXListener.safeHandle(slideListener, new SlideEvent(this, getViewOffset()));
         }
     }
 
@@ -222,8 +235,7 @@ public class ScrollBar extends Widget {
         Vector2 point = new Vector2(event.getX(), event.getY());
         screenToLocal(point);
 
-        boolean hor = direction == Direction.HORIZONTAL || direction == Direction.IHORIZONTAL;
-        boolean inverse = direction == Direction.IHORIZONTAL || direction == Direction.IVERTICAL;
+        boolean hor = getDirection() == Direction.HORIZONTAL;
 
         final float x = getInX();
         final float y = getInY();
@@ -238,13 +250,13 @@ public class ScrollBar extends Widget {
                 Math.max(0, Math.min(1 - handleSize, viewOffset / totalDimension));
 
         if (hor) {
-            pos = inverse ? -(point.x - (x + width) * 0.5f) + (x + width) * 0.5f : point.x;
+            pos = point.x;
             start = x;
             size = width;
             hStart = x + width * moveOffset;
             hSize = width * handleSize;
         } else {
-            pos = inverse ? -(point.y - (y + height) * 0.5f) + (y + height) * 0.5f : point.y;
+            pos = point.y;
             start = y;
             size = height;
             hStart = y + height * moveOffset;
@@ -252,12 +264,12 @@ public class ScrollBar extends Widget {
         }
 
         if (event.getType() == PointerEvent.PRESSED) {
-            grabOffset = Math.max(0, Math.min(1, (pos + (inverse ? start : 0) - hStart) / hSize));
-            float target = ((pos - (inverse ? 0 : start)) / size - handleSize * grabOffset) * totalDimension;
+            grabOffset = Math.max(0, Math.min(1, (pos + ((float) 0) - hStart) / hSize));
+            float target = ((pos - start) / size - handleSize * grabOffset) * totalDimension;
             slideTo(target);
 
         } else if (event.getType() == PointerEvent.DRAGGED) {
-            float target = ((pos - (inverse ? 0 : start)) / size - handleSize * grabOffset) * totalDimension;
+            float target = ((pos - start) / size - handleSize * grabOffset) * totalDimension;
             slideTo(target);
 
         } else if (event.getType() == PointerEvent.RELEASED) {

@@ -1,13 +1,16 @@
 package flat.widget.layout;
 
 import flat.events.ActionEvent;
+import flat.events.SlideEvent;
 import flat.uxml.*;
 import flat.uxml.value.*;
 import flat.widget.Widget;
 import flat.widget.enums.VerticalBarPosition;
 import flat.widget.enums.Policy;
 import flat.widget.enums.HorizontalBarPosition;
+import flat.widget.value.HorizontalScrollBar;
 import flat.widget.value.ScrollBar;
+import flat.widget.value.VerticalScrollBar;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -35,8 +38,17 @@ public class ScrollBoxTest {
     public void properties() {
         Controller controller = mock(Controller.class);
 
-        var action = (UXListener<ActionEvent>) mock(UXListener.class);
-        when(controller.getListenerMethod("onActionWork", ActionEvent.class)).thenReturn(action);
+        var slideHorizontal = (UXListener<SlideEvent>) mock(UXListener.class);
+        when(controller.getListenerMethod("onSlideHorizontalWork", SlideEvent.class)).thenReturn(slideHorizontal);
+
+        var slideVertical = (UXListener<SlideEvent>) mock(UXListener.class);
+        when(controller.getListenerMethod("onSlideVerticalWork", SlideEvent.class)).thenReturn(slideVertical);
+
+        var filterHorizontal = (UXListener<SlideEvent>) mock(UXListener.class);
+        when(controller.getListenerMethod("onFilterHorizontalWork", SlideEvent.class)).thenReturn(filterHorizontal);
+
+        var filterVertical = (UXListener<SlideEvent>) mock(UXListener.class);
+        when(controller.getListenerMethod("onFilterVerticalWork", SlideEvent.class)).thenReturn(filterVertical);
 
         var listenerx = (UXValueListener<Float>) mock(UXValueListener.class);
         when(controller.getValueListenerMethod("onViewOffsetXWork", Float.class)).thenReturn(listenerx);
@@ -52,11 +64,14 @@ public class ScrollBoxTest {
         assertEquals(VerticalBarPosition.RIGHT, scrollBox.getVerticalBarPosition());
         assertEquals(10f, scrollBox.getScrollSensibility(), 0.0001f);
         assertFalse(scrollBox.isFloatingBars());
-        assertNull(scrollBox.getSlideListener());
+        assertNull(scrollBox.getSlideHorizontalFilter());
+        assertNull(scrollBox.getSlideVerticalFilter());
+        assertNull(scrollBox.getSlideHorizontalListener());
+        assertNull(scrollBox.getSlideVerticalListener());
         assertNull(scrollBox.getViewOffsetXListener());
         assertNull(scrollBox.getViewOffsetYListener());
 
-        scrollBox.setAttributes(createNonDefaultValues(), "scrollBox");
+        scrollBox.setAttributes(createNonDefaultValues(), "scroll-box");
         scrollBox.applyAttributes(controller);
 
         assertEquals(Policy.AS_NEEDED, scrollBox.getHorizontalPolicy());
@@ -65,7 +80,10 @@ public class ScrollBoxTest {
         assertEquals(VerticalBarPosition.RIGHT, scrollBox.getVerticalBarPosition());
         assertEquals(10f, scrollBox.getScrollSensibility(), 0.0001f);
         assertFalse(scrollBox.isFloatingBars());
-        assertEquals(action, scrollBox.getSlideListener());
+        assertEquals(filterHorizontal, scrollBox.getSlideHorizontalFilter());
+        assertEquals(filterVertical, scrollBox.getSlideVerticalFilter());
+        assertEquals(slideHorizontal, scrollBox.getSlideHorizontalListener());
+        assertEquals(slideVertical, scrollBox.getSlideVerticalListener());
         assertEquals(listenerx, scrollBox.getViewOffsetXListener());
         assertEquals(listenery, scrollBox.getViewOffsetYListener());
 
@@ -77,7 +95,10 @@ public class ScrollBoxTest {
         assertEquals(VerticalBarPosition.LEFT, scrollBox.getVerticalBarPosition());
         assertEquals(5f, scrollBox.getScrollSensibility(), 0.0001f);
         assertTrue(scrollBox.isFloatingBars());
-        assertEquals(action, scrollBox.getSlideListener());
+        assertEquals(filterHorizontal, scrollBox.getSlideHorizontalFilter());
+        assertEquals(filterVertical, scrollBox.getSlideVerticalFilter());
+        assertEquals(slideHorizontal, scrollBox.getSlideHorizontalListener());
+        assertEquals(slideVertical, scrollBox.getSlideVerticalListener());
         assertEquals(listenerx, scrollBox.getViewOffsetXListener());
         assertEquals(listenery, scrollBox.getViewOffsetYListener());
     }
@@ -86,9 +107,9 @@ public class ScrollBoxTest {
     public void children() {
         ScrollBox scrollBox = new ScrollBox();
 
-        ScrollBar horBar = new ScrollBar();
+        HorizontalScrollBar horBar = new HorizontalScrollBar();
         horBar.setId("hor-bar-id");
-        ScrollBar verBar = new ScrollBar();
+        VerticalScrollBar verBar = new VerticalScrollBar();
         verBar.setId("ver-bar-id");
         Panel content = new Panel();
 
@@ -145,8 +166,8 @@ public class ScrollBoxTest {
     @Test
     public void measureBars() {
         ScrollBox scrollBox = new ScrollBox();
-        ScrollBar horBar = new ScrollBar();
-        ScrollBar verBar = new ScrollBar();
+        HorizontalScrollBar horBar = new HorizontalScrollBar();
+        VerticalScrollBar verBar = new VerticalScrollBar();
         Panel content = new Panel();
         horBar.setPrefSize(Widget.MATCH_PARENT, 16);
         verBar.setPrefSize(16, Widget.MATCH_PARENT);
@@ -186,9 +207,9 @@ public class ScrollBoxTest {
     @Test
     public void positionBar() {
         ScrollBox scrollBox = new ScrollBox();
-        ScrollBar horBar = new ScrollBar();
+        HorizontalScrollBar horBar = new HorizontalScrollBar();
         horBar.setId("horBar");
-        ScrollBar verBar = new ScrollBar();
+        VerticalScrollBar verBar = new VerticalScrollBar();
         verBar.setId("verBar");
         Panel content = new Panel();
         horBar.setPrefSize(Widget.MATCH_PARENT, 16);
@@ -232,8 +253,8 @@ public class ScrollBoxTest {
     @Test
     public void layout() {
         ScrollBox scrollBox = new ScrollBox();
-        ScrollBar horBar = new ScrollBar();
-        ScrollBar verBar = new ScrollBar();
+        HorizontalScrollBar horBar = new HorizontalScrollBar();
+        VerticalScrollBar verBar = new VerticalScrollBar();
         Panel content = new Panel();
         horBar.setPrefSize(Widget.MATCH_PARENT, 16);
         verBar.setPrefSize(16, Widget.MATCH_PARENT);
@@ -347,8 +368,8 @@ public class ScrollBoxTest {
     @Test
     public void layoutFloating() {
         ScrollBox scrollBox = new ScrollBox();
-        ScrollBar horBar = new ScrollBar();
-        ScrollBar verBar = new ScrollBar();
+        HorizontalScrollBar horBar = new HorizontalScrollBar();
+        VerticalScrollBar verBar = new VerticalScrollBar();
         Panel content = new Panel();
         horBar.setPrefSize(Widget.MATCH_PARENT, 16);
         verBar.setPrefSize(16, Widget.MATCH_PARENT);
@@ -463,8 +484,8 @@ public class ScrollBoxTest {
     @Test
     public void fireAction() {
         ScrollBox scrollBox = new ScrollBox();
-        ScrollBar horBar = new ScrollBar();
-        ScrollBar verBar = new ScrollBar();
+        HorizontalScrollBar horBar = new HorizontalScrollBar();
+        VerticalScrollBar verBar = new VerticalScrollBar();
         Panel content = new Panel();
         horBar.setPrefSize(Widget.MATCH_PARENT, 16);
         verBar.setPrefSize(18, Widget.MATCH_PARENT);
@@ -488,8 +509,17 @@ public class ScrollBoxTest {
         assertLayout(horBar, 0, 150 - 16, 250 - 18, 16);
         assertLayout(verBar, 250 - 18, 0, 18, 150);
 
-        var action = (UXListener<ActionEvent>) mock(UXListener.class);
-        scrollBox.setSlideListener(action);
+        var slideHorizontal = (UXListener<SlideEvent>) mock(UXListener.class);
+        scrollBox.setSlideHorizontalListener(slideHorizontal);
+
+        var slideVertical = (UXListener<SlideEvent>) mock(UXListener.class);
+        scrollBox.setSlideVerticalListener(slideVertical);
+
+        var filterHorizontal = (UXListener<SlideEvent>) mock(UXListener.class);
+        scrollBox.setSlideHorizontalFilter(filterHorizontal);
+
+        var filterVertical = (UXListener<SlideEvent>) mock(UXListener.class);
+        scrollBox.setSlideVerticalFilter(filterVertical);
 
         var listenerx = (UXValueListener<Float>) mock(UXValueListener.class);
         scrollBox.setViewOffsetXListener(listenerx);
@@ -529,6 +559,8 @@ public class ScrollBoxTest {
 
         assertEquals(118, scrollBox.getViewOffsetX(), 0.1f);
         assertEquals(56, scrollBox.getViewOffsetY(), 0.1f);
+        verify(listenerx, times(3)).handle(any());
+        verify(listenery, times(3)).handle(any());
 
         content.setPrefSize(200, 120);
         scrollBox.onMeasure();
@@ -541,9 +573,12 @@ public class ScrollBoxTest {
         scrollBox.setViewOffsetX(scrollBox.getViewOffsetX());
         scrollBox.setViewOffsetY(scrollBox.getViewOffsetY());
 
-        verify(action, times(4)).handle(any());
-        verify(listenerx, times(6)).handle(any());
-        verify(listenery, times(6)).handle(any());
+        verify(slideHorizontal, times(3)).handle(any());
+        verify(slideVertical, times(3)).handle(any());
+        verify(filterHorizontal, times(3)).handle(any());
+        verify(filterVertical, times(3)).handle(any());
+        verify(listenerx, times(5)).handle(any());
+        verify(listenery, times(5)).handle(any());
     }
 
     private void assertMeasure(Widget widget, float width, float height) {
@@ -561,9 +596,13 @@ public class ScrollBoxTest {
     private HashMap<Integer, UXValue> createNonDefaultValues() {
         var hash = new HashMap<Integer, UXValue>();
 
-        hash.put(UXHash.getHash("on-slide"), new UXValueText("onActionWork"));
+        hash.put(UXHash.getHash("on-slide-horizontal"), new UXValueText("onSlideHorizontalWork"));
+        hash.put(UXHash.getHash("on-slide-vertical"), new UXValueText("onSlideVerticalWork"));
+        hash.put(UXHash.getHash("on-slide-horizontal-filter"), new UXValueText("onFilterHorizontalWork"));
+        hash.put(UXHash.getHash("on-slide-vertical-filter"), new UXValueText("onFilterVerticalWork"));
         hash.put(UXHash.getHash("on-view-offset-x-change"), new UXValueText("onViewOffsetXWork"));
         hash.put(UXHash.getHash("on-view-offset-y-change"), new UXValueText("onViewOffsetYWork"));
+
         hash.put(UXHash.getHash("view-offset-x"), new UXValueNumber(100));
         hash.put(UXHash.getHash("view-offset-y"), new UXValueNumber(120));
         hash.put(UXHash.getHash("horizontal-policy"), new UXValueText(Policy.ALWAYS.toString()));

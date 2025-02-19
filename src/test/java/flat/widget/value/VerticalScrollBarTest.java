@@ -1,6 +1,7 @@
 package flat.widget.value;
 
 import flat.events.ActionEvent;
+import flat.events.SlideEvent;
 import flat.uxml.*;
 import flat.uxml.value.UXValue;
 import flat.uxml.value.UXValueColor;
@@ -21,7 +22,7 @@ import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
 
-public class ScrollBarTest {
+public class VerticalScrollBarTest {
 
     Controller controller;
     UXBuilder builder;
@@ -36,20 +37,19 @@ public class ScrollBarTest {
     public void properties() {
         Controller controller = mock(Controller.class);
 
-        var action = (UXListener<ActionEvent>) mock(UXListener.class);
-        when(controller.getListenerMethod("onActionWork", ActionEvent.class)).thenReturn(action);
+        var action = (UXListener<SlideEvent>) mock(UXListener.class);
+        when(controller.getListenerMethod("onActionWork", SlideEvent.class)).thenReturn(action);
 
         var listener = (UXValueListener<Float>) mock(UXValueListener.class);
         when(controller.getValueListenerMethod("onViewOffsetWork", Float.class)).thenReturn(listener);
 
-        ScrollBar scrollBar = new ScrollBar();
+        VerticalScrollBar scrollBar = new VerticalScrollBar();
 
         assertEquals(0, scrollBar.getTotalDimension(), 0.1f);
         assertEquals(0, scrollBar.getViewDimension(), 0.1f);
         assertEquals(0, scrollBar.getViewOffset(), 0.1f);
         assertEquals(0f, scrollBar.getMinSize(), 0.0001f);
         assertEquals(0xFFFFFFFF, scrollBar.getColor());
-        assertEquals(Direction.VERTICAL, scrollBar.getDirection());
         assertNull(scrollBar.getSlideListener());
         assertNull(scrollBar.getViewOffsetListener());
 
@@ -61,7 +61,6 @@ public class ScrollBarTest {
         assertEquals(100, scrollBar.getViewOffset(), 0.1f);
         assertEquals(0f, scrollBar.getMinSize(), 0.0001f);
         assertEquals(0xFFFFFFFF, scrollBar.getColor());
-        assertEquals(Direction.HORIZONTAL, scrollBar.getDirection());
         assertEquals(action, scrollBar.getSlideListener());
         assertEquals(listener, scrollBar.getViewOffsetListener());
 
@@ -72,18 +71,16 @@ public class ScrollBarTest {
         assertEquals(100, scrollBar.getViewOffset(), 0.1f);
         assertEquals(0.1f, scrollBar.getMinSize(), 0.0001f);
         assertEquals(0xFF0000FF, scrollBar.getColor());
-        assertEquals(Direction.HORIZONTAL, scrollBar.getDirection());
         assertEquals(action, scrollBar.getSlideListener());
         assertEquals(listener, scrollBar.getViewOffsetListener());
     }
 
     @Test
     public void measure() {
-        ScrollBar scrollBar = new ScrollBar();
+        VerticalScrollBar scrollBar = new VerticalScrollBar();
         scrollBar.setTotalDimension(200);
         scrollBar.setViewDimension(50);
         scrollBar.setViewOffset(100);
-        scrollBar.setDirection(Direction.VERTICAL);
         scrollBar.onMeasure();
 
         assertEquals(0, scrollBar.getMeasureWidth(), 0.1f);
@@ -111,13 +108,12 @@ public class ScrollBarTest {
 
     @Test
     public void fireAction() {
-        ScrollBar scrollBar = new ScrollBar();
+        VerticalScrollBar scrollBar = new VerticalScrollBar();
         scrollBar.setTotalDimension(200);
         scrollBar.setViewDimension(50);
         scrollBar.setViewOffset(100);
-        scrollBar.setDirection(Direction.VERTICAL);
 
-        var action = (UXListener<ActionEvent>) mock(UXListener.class);
+        var action = (UXListener<SlideEvent>) mock(UXListener.class);
         scrollBar.setSlideListener(action);
 
         var listener = (UXValueListener<Float>) mock(UXValueListener.class);
@@ -154,7 +150,6 @@ public class ScrollBarTest {
         hash.put(UXHash.getHash("total-dimension"), new UXValueNumber(200));
         hash.put(UXHash.getHash("view-dimension"), new UXValueNumber(50));
         hash.put(UXHash.getHash("view-offset"), new UXValueNumber(100));
-        hash.put(UXHash.getHash("direction"), new UXValueText(Direction.HORIZONTAL.toString()));
         hash.put(UXHash.getHash("min-size"), new UXValueNumber(0.1f));
         hash.put(UXHash.getHash("color"), new UXValueColor(0xFF0000FF));
         return hash;

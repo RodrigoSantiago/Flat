@@ -1,30 +1,34 @@
 package flat.widget.layout;
 
 import flat.animations.StateInfo;
-import flat.events.ActionEvent;
 import flat.events.ScrollEvent;
+import flat.events.SlideEvent;
 import flat.graphics.SmartContext;
 import flat.math.shapes.Shape;
 import flat.uxml.*;
 import flat.widget.Parent;
 import flat.widget.Widget;
 import flat.widget.enums.*;
-import flat.widget.value.ScrollBar;
+import flat.widget.value.HorizontalScrollBar;
+import flat.widget.value.VerticalScrollBar;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ScrollBox extends Parent {
 
-    private UXListener<ActionEvent> slideListener;
+    private UXListener<SlideEvent> slideHorizontalListener;
+    private UXListener<SlideEvent> slideHorizontalFilter;
+    private UXListener<SlideEvent> slideVerticalListener;
+    private UXListener<SlideEvent> slideVerticalFilter;
     private UXValueListener<Float> viewOffsetXListener;
     private UXValueListener<Float> viewOffsetYListener;
-    private ArrayList<ValueChange<Float>> viewOffsetXQueue = new ArrayList<>();
-    private ArrayList<ValueChange<Float>> viewOffsetYQueue = new ArrayList<>();
+    private final ArrayList<ValueChange<Float>> viewOffsetXQueue = new ArrayList<>();
+    private final ArrayList<ValueChange<Float>> viewOffsetYQueue = new ArrayList<>();
     private float viewOffsetX;
     private float viewOffsetY;
-    private ScrollBar horizontalBar;
-    private ScrollBar verticalBar;
+    private HorizontalScrollBar horizontalBar;
+    private VerticalScrollBar verticalBar;
 
     private Policy horizontalPolicy = Policy.AS_NEEDED;
     private Policy verticalPolicy = Policy.AS_NEEDED;
@@ -40,10 +44,15 @@ public class ScrollBox extends Parent {
     private float viewDimensionY;
     private float viewDimensionX;
 
-    private UXValueListener<Float> scrollX = (change) -> setViewOffsetXBar(change.getValue());
-    private UXValueListener<Float> scrollY = (change) -> setViewOffsetYBar(change.getValue());
-    private UXListener<ActionEvent> slideX = (event) -> fireSlide();
-    private UXListener<ActionEvent> slideY = (event) -> fireSlide();
+    private UXListener<SlideEvent> slideX = (event) -> {
+        event.consume();
+        slideHorizontalTo(event.getViewOffsetDimension());
+    };
+
+    private UXListener<SlideEvent> slideY = (event) -> {
+        event.consume();
+        slideVerticalTo(event.getViewOffsetDimension());
+    };
 
     @Override
     public void applyChildren(UXChildren children) {
@@ -64,7 +73,7 @@ public class ScrollBox extends Parent {
         String horizontalBarId = attrs.getAttributeString("horizontal-bar-id", null);
         if (horizontalBarId != null) {
             for (var child : getChildrenIterable()) {
-                if (horizontalBarId.equals(child.getId()) && child instanceof ScrollBar bar) {
+                if (horizontalBarId.equals(child.getId()) && child instanceof HorizontalScrollBar bar) {
                     setHorizontalBar(bar);
                     break;
                 }
@@ -74,7 +83,7 @@ public class ScrollBox extends Parent {
         String verticalBarId = attrs.getAttributeString("vertical-bar-id", null);
         if (verticalBarId != null) {
             for (var child : getChildrenIterable()) {
-                if (child != horizontalBar && verticalBarId.equals(child.getId()) && child instanceof ScrollBar bar) {
+                if (verticalBarId.equals(child.getId()) && child instanceof VerticalScrollBar bar) {
                     setVerticalBar(bar);
                     break;
                 }
@@ -82,20 +91,17 @@ public class ScrollBox extends Parent {
         }
         setViewOffsetXListener(attrs.getAttributeValueListener("on-view-offset-x-change", Float.class, controller));
         setViewOffsetYListener(attrs.getAttributeValueListener("on-view-offset-y-change", Float.class, controller));
-        setSlideListener(attrs.getAttributeListener("on-slide", ActionEvent.class, controller));
+        setSlideHorizontalListener(attrs.getAttributeListener("on-slide-horizontal", SlideEvent.class, controller));
+        setSlideVerticalListener(attrs.getAttributeListener("on-slide-vertical", SlideEvent.class, controller));
+        setSlideHorizontalFilter(attrs.getAttributeListener("on-slide-horizontal-filter", SlideEvent.class, controller));
+        setSlideVerticalFilter(attrs.getAttributeListener("on-slide-vertical-filter", SlideEvent.class, controller));
 
         if (getHorizontalBar() == null) {
-            var bar = new ScrollBar();
-            bar.setDirection(Direction.HORIZONTAL);
-            bar.setPrefWidth(MATCH_PARENT);
-            setHorizontalBar(bar);
+            setHorizontalBar(new HorizontalScrollBar());
         }
 
         if (getVerticalBar() == null) {
-            var bar = new ScrollBar();
-            bar.setDirection(Direction.VERTICAL);
-            bar.setPrefHeight(MATCH_PARENT);
-            setVerticalBar(bar);
+            setVerticalBar(new VerticalScrollBar());
         }
     }
 
@@ -316,16 +322,14 @@ public class ScrollBox extends Parent {
             horizontalBar.setSlideListener(null);
             horizontalBar.setViewDimension(viewDimensionX);
             horizontalBar.setTotalDimension(totalDimensionX);
-            horizontalBar.setViewOffsetListener(scrollX);
-            horizontalBar.setSlideListener(slideX);
+            horizontalBar.setSlideFilter(slideX);
         }
         if (verticalBar != null) {
             verticalBar.setViewOffsetListener(null);
             verticalBar.setSlideListener(null);
             verticalBar.setViewDimension(viewDimensionY);
             verticalBar.setTotalDimension(totalDimensionY);
-            verticalBar.setViewOffsetListener(scrollY);
-            verticalBar.setSlideListener(slideY);
+            verticalBar.setSlideFilter(slideY);
         }
     }
 
@@ -416,7 +420,7 @@ public class ScrollBox extends Parent {
     public void fireScroll(ScrollEvent event) {
         super.fireScroll(event);
         if (!event.isConsumed()) {
-            slide(0, - event.getDeltaY() * scrollSensibility);
+            slideVertical(- event.getDeltaY() * scrollSensibility);
         }
     }
 
@@ -472,11 +476,11 @@ public class ScrollBox extends Parent {
         }
     }
 
-    public ScrollBar getVerticalBar() {
+    public VerticalScrollBar getVerticalBar() {
         return verticalBar;
     }
 
-    public void setVerticalBar(ScrollBar verticalBar) {
+    public void setVerticalBar(VerticalScrollBar verticalBar) {
         if (this.verticalBar != verticalBar) {
             if (verticalBar == null) {
                 var old = this.verticalBar;
@@ -495,18 +499,17 @@ public class ScrollBox extends Parent {
                     this.verticalBar.setViewDimension(viewDimensionY);
                     this.verticalBar.setTotalDimension(totalDimensionY);
                     this.verticalBar.setViewOffset(viewOffsetY);
-                    this.verticalBar.setViewOffsetListener(scrollY);
-                    this.verticalBar.setSlideListener(slideY);
+                    this.verticalBar.setSlideFilter(slideY);
                 }
             }
         }
     }
 
-    public ScrollBar getHorizontalBar() {
+    public HorizontalScrollBar getHorizontalBar() {
         return horizontalBar;
     }
 
-    public void setHorizontalBar(ScrollBar horizontalBar) {
+    public void setHorizontalBar(HorizontalScrollBar horizontalBar) {
         if (this.horizontalBar != horizontalBar) {
             if (horizontalBar == null) {
                 var old = this.horizontalBar;
@@ -526,8 +529,7 @@ public class ScrollBox extends Parent {
                         this.horizontalBar.setViewDimension(viewDimensionX);
                         this.horizontalBar.setTotalDimension(totalDimensionX);
                         this.horizontalBar.setViewOffset(viewOffsetX);
-                        this.horizontalBar.setViewOffsetListener(scrollX);
-                        this.horizontalBar.setSlideListener(slideX);
+                        this.horizontalBar.setSlideFilter(slideX);
                     }
                 }
             }
@@ -559,23 +561,11 @@ public class ScrollBox extends Parent {
             invalidate(true);
             fireViewOffsetXListener(old);
             if (horizontalBar != null) {
-                horizontalBar.setViewOffset(viewOffsetX);
+                horizontalBar.setViewOffsetListener(null);
+                horizontalBar.setViewOffset(this.viewOffsetX);
             }
-        } else {
-            executeQueueX();
         }
-    }
-
-    private void setViewOffsetXBar(float viewOffsetX) {
-        if (viewOffsetX > totalDimensionX - viewDimensionX) viewOffsetX = totalDimensionX - viewDimensionX;
-        if (viewOffsetX < 0) viewOffsetX = 0;
-
-        if (this.viewOffsetX != viewOffsetX) {
-            float old = this.viewOffsetX;
-            this.viewOffsetX = viewOffsetX;
-            invalidate(true);
-            fireViewOffsetXListener(old);
-        }
+        executeQueueX();
     }
 
     public float getViewOffsetY() {
@@ -592,23 +582,11 @@ public class ScrollBox extends Parent {
             invalidate(true);
             fireViewOffsetYListener(old);
             if (verticalBar != null) {
-                verticalBar.setViewOffset(viewOffsetY);
+                verticalBar.setViewOffsetListener(null);
+                verticalBar.setViewOffset(this.viewOffsetY);
             }
-        } else {
-            executeQueueY();
         }
-    }
-
-    private void setViewOffsetYBar(float viewOffsetY) {
-        if (viewOffsetY > totalDimensionY - viewDimensionY) viewOffsetY = totalDimensionY - viewDimensionY;
-        if (viewOffsetY < 0) viewOffsetY = 0;
-
-        if (this.viewOffsetY != viewOffsetY) {
-            float old = this.viewOffsetY;
-            this.viewOffsetY = viewOffsetY;
-            invalidate(true);
-            fireViewOffsetYListener(old);
-        }
+        executeQueueY();
     }
 
     public UXValueListener<Float> getViewOffsetXListener() {
@@ -627,31 +605,71 @@ public class ScrollBox extends Parent {
         this.viewOffsetYListener = viewOffsetYListener;
     }
 
-    public void slideTo(float offsetX, float offsetY) {
-        float oldX = getViewOffsetX();
-        setViewOffsetX(offsetX);
-        float oldY = getViewOffsetY();
-        setViewOffsetY(offsetY);
-        if (oldX != getViewOffsetX() || oldY != getViewOffsetY()) {
-            fireSlide();
+    public void slideHorizontalTo(float offsetX) {
+        if (offsetX > totalDimensionX - viewDimensionX) offsetX = totalDimensionX - viewDimensionX;
+        if (offsetX < 0) offsetX = 0;
+
+        float old = getViewOffsetX();
+        if (offsetX != old && filterSlideX(offsetX)) {
+            setViewOffsetX(offsetX);
+            fireSlideX();
         }
     }
 
     public void slide(float offsetX, float offsetY) {
-        slideTo(getViewOffsetX() + offsetX, getViewOffsetY() + offsetY);
+        slideHorizontal(offsetX);
+        slideVertical(offsetY);
     }
 
-    public UXListener<ActionEvent> getSlideListener() {
-        return slideListener;
+    public void slideTo(float offsetX, float offsetY) {
+        slideHorizontalTo(offsetX);
+        slideVerticalTo(offsetY);
     }
 
-    public void setSlideListener(UXListener<ActionEvent> slideListener) {
-        this.slideListener = slideListener;
+    public void slideHorizontal(float offsetX) {
+        slideHorizontalTo(getViewOffsetX() + offsetX);
     }
 
-    private void fireSlide() {
-        if (slideListener != null) {
-            UXListener.safeHandle(slideListener, new ActionEvent(this));
+    public void slideVerticalTo(float offsetY) {
+        if (offsetY > totalDimensionY - viewDimensionY) offsetY = totalDimensionY - viewDimensionY;
+        if (offsetY < 0) offsetY = 0;
+
+        float old = getViewOffsetY();
+        if (offsetY != old && filterSlideY(offsetY)) {
+            setViewOffsetY(offsetY);
+            fireSlideY();
+        }
+    }
+
+    public void slideVertical(float offsetY) {
+        slideVerticalTo(getViewOffsetY() + offsetY);
+    }
+
+    public UXListener<SlideEvent> getSlideHorizontalListener() {
+        return slideHorizontalListener;
+    }
+
+    public void setSlideHorizontalListener(UXListener<SlideEvent> slideHorizontalListener) {
+        this.slideHorizontalListener = slideHorizontalListener;
+    }
+
+    private void fireSlideX() {
+        if (slideHorizontalListener != null) {
+            UXListener.safeHandle(slideHorizontalListener, new SlideEvent(this, viewOffsetX));
+        }
+    }
+
+    public UXListener<SlideEvent> getSlideVerticalListener() {
+        return slideVerticalListener;
+    }
+
+    public void setSlideVerticalListener(UXListener<SlideEvent> slideVerticalListener) {
+        this.slideVerticalListener = slideVerticalListener;
+    }
+
+    private void fireSlideY() {
+        if (slideVerticalListener != null) {
+            UXListener.safeHandle(slideVerticalListener, new SlideEvent(this, viewOffsetY));
         }
     }
 
@@ -659,7 +677,6 @@ public class ScrollBox extends Parent {
         if (viewOffsetXListener != null && old != viewOffsetX) {
             if (viewOffsetXQueue.size() > 0) {
                 viewOffsetXQueue.add(new ValueChange<>(this, old, viewOffsetX));
-                executeQueueX();
             } else {
                 UXValueListener.safeHandle(viewOffsetXListener, new ValueChange<>(this, old, viewOffsetX));
             }
@@ -676,7 +693,6 @@ public class ScrollBox extends Parent {
         if (viewOffsetYListener != null && old != viewOffsetY) {
             if (viewOffsetYQueue.size() > 0) {
                 viewOffsetYQueue.add(new ValueChange<>(this, old, viewOffsetY));
-                executeQueueY();
             } else {
                 UXValueListener.safeHandle(viewOffsetYListener, new ValueChange<>(this, old, viewOffsetY));
             }
@@ -687,6 +703,40 @@ public class ScrollBox extends Parent {
         while (viewOffsetYQueue.size() > 0) {
             UXValueListener.safeHandle(viewOffsetYListener, viewOffsetYQueue.remove(0));
         }
+    }
+
+    public UXListener<SlideEvent> getSlideHorizontalFilter() {
+        return slideHorizontalFilter;
+    }
+
+    public void setSlideHorizontalFilter(UXListener<SlideEvent> slideHorizontalFilter) {
+        this.slideHorizontalFilter = slideHorizontalFilter;
+    }
+
+    private boolean filterSlideX(float viewOffsetX) {
+        if (slideHorizontalFilter != null) {
+            var event = new SlideEvent(this, viewOffsetX);
+            UXListener.safeHandle(slideHorizontalFilter, event);
+            return !event.isConsumed();
+        }
+        return true;
+    }
+
+    public UXListener<SlideEvent> getSlideVerticalFilter() {
+        return slideVerticalFilter;
+    }
+
+    public void setSlideVerticalFilter(UXListener<SlideEvent> slideVerticalFilter) {
+        this.slideVerticalFilter = slideVerticalFilter;
+    }
+
+    private boolean filterSlideY(float viewOffsetY) {
+        if (slideVerticalFilter != null) {
+            var event = new SlideEvent(this, viewOffsetY);
+            UXListener.safeHandle(slideVerticalFilter, event);
+            return !event.isConsumed();
+        }
+        return true;
     }
 
     public float getScrollSensibility() {
