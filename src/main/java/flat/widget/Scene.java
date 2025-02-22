@@ -116,10 +116,7 @@ public class Scene extends Group {
                 return false;
             }
         }
-        if (super.detachChild(child)) {
-            return true;
-        }
-        return false;
+        return super.detachChild(child);
     }
 
     @Override

@@ -86,9 +86,20 @@
                     <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
                 </Menu>
             </Button>
-            <ScrollBox width="400" height="400" background-color="yellow">
+            <Button text="Add new item" margin-top="8"
+                    icon="/default/img_test.png"
+                    icon-scale-height="true" icon-spacing="12px"
+                    icon-align="LEFT"
+                    on-action="onAddItem"/>
+            <Button text="Remove the middle item" margin-top="8"
+                    icon="/default/img_test.png"
+                    icon-scale-height="true" icon-spacing="12px"
+                    icon-align="LEFT"
+                    on-action="onRemoveItem"/>
+            <!--ScrollBox width="400" height="400" background-color="yellow">
                 <StackBox><ImageView image="/default/image.png"/></StackBox>
-            </ScrollBox>
+            </ScrollBox-->
+            <ListView id="listView" width="200" height="MATCH_PARENT" max-height="400" margin-top="16"></ListView>
         </LinearBox>
     </LinearBox>
 </Scene>

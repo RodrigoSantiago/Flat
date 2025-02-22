@@ -57,7 +57,7 @@ public class ImageViewTest {
         assertEquals(VerticalAlign.MIDDLE, imageView.getVerticalAlign());
         assertEquals(HorizontalAlign.CENTER, imageView.getHorizontalAlign());
 
-        imageView.setAttributes(createNonDefaultValues(), "imageview");
+        imageView.setAttributes(createNonDefaultValues(), "image-view");
         imageView.applyAttributes(controller);
 
         assertNull(imageView.getImage());

@@ -20,9 +20,9 @@ public class Checkbox extends Widget {
     private SelectionState selectionState = SelectionState.INDETERMINATE;
 
     private ImageFilter iconImageFilter = ImageFilter.LINEAR;
-    private Drawable inactiveIcon;
-    private Drawable activeIcon;
-    private Drawable indeterminateIcon;
+    private Drawable iconInactive;
+    private Drawable iconActive;
+    private Drawable iconIndeterminate;
     private int iconColor = Color.white;
     private float iconTransitionDuration;
 
@@ -51,9 +51,9 @@ public class Checkbox extends Widget {
 
         setIconColor(attrs.getColor("icon-color", info, getIconColor()));
         setIconImageFilter(attrs.getConstant("icon-image-filter", info, getIconImageFilter()));
-        setInactiveIcon(attrs.getResourceAsDrawable("inactive-icon", info, getInactiveIcon(), false));
-        setActiveIcon(attrs.getResourceAsDrawable("active-icon", info, getActiveIcon(), false));
-        setIndeterminateIcon(attrs.getResourceAsDrawable("indeterminate-icon", info, getIndeterminateIcon(), false));
+        setIconInactive(attrs.getResourceAsDrawable("icon-inactive", info, getIconInactive(), false));
+        setIconActive(attrs.getResourceAsDrawable("icon-active", info, getIconActive(), false));
+        setIconIndeterminate(attrs.getResourceAsDrawable("icon-indeterminate", info, getIconIndeterminate(), false));
         setIconTransitionDuration(attrs.getNumber("icon-transition-duration", info, getIconTransitionDuration()));
     }
 
@@ -136,12 +136,12 @@ public class Checkbox extends Widget {
     }
 
     private void updateIconSize() {
-        float iaWidth = activeIcon == null ? 0 : activeIcon.getWidth();
-        float iaHeight = activeIcon == null ? 0 : activeIcon.getHeight();
-        float iiWidth = inactiveIcon == null ? 0 : inactiveIcon.getWidth();
-        float iiHeight = inactiveIcon == null ? 0 : inactiveIcon.getHeight();
-        float idWidth = indeterminateIcon == null ? 0 : indeterminateIcon.getWidth();
-        float idHeight = indeterminateIcon == null ? 0 : indeterminateIcon.getHeight();
+        float iaWidth = iconActive == null ? 0 : iconActive.getWidth();
+        float iaHeight = iconActive == null ? 0 : iconActive.getHeight();
+        float iiWidth = iconInactive == null ? 0 : iconInactive.getWidth();
+        float iiHeight = iconInactive == null ? 0 : iconInactive.getHeight();
+        float idWidth = iconIndeterminate == null ? 0 : iconIndeterminate.getWidth();
+        float idHeight = iconIndeterminate == null ? 0 : iconIndeterminate.getHeight();
         float nextWidth = Math.max(Math.max(iaWidth, iiWidth), idWidth);
         float nextHeight = Math.max(Math.max(iaHeight, iiHeight), idHeight);
         if (nextWidth != iconWidth || nextHeight != iconHeight) {
@@ -154,9 +154,9 @@ public class Checkbox extends Widget {
     }
 
     private void setCurrentIcon() {
-        Drawable icon = isActive() ? activeIcon : isIndeterminate() ? indeterminateIcon : inactiveIcon;
+        Drawable icon = isActive() ? iconActive : isIndeterminate() ? iconIndeterminate : iconInactive;
         if (icon == null) {
-            icon = inactiveIcon;
+            icon = iconInactive;
         }
         if (currentIcon != icon) {
             if (iconTransitionDuration > 0) {
@@ -204,38 +204,38 @@ public class Checkbox extends Widget {
         }
     }
 
-    public Drawable getInactiveIcon() {
-        return inactiveIcon;
+    public Drawable getIconInactive() {
+        return iconInactive;
     }
 
-    public void setInactiveIcon(Drawable inactiveIcon) {
-        if (this.inactiveIcon != inactiveIcon) {
-            this.inactiveIcon = inactiveIcon;
+    public void setIconInactive(Drawable iconInactive) {
+        if (this.iconInactive != iconInactive) {
+            this.iconInactive = iconInactive;
             updateIconSize();
             setCurrentIcon();
         }
     }
 
-    public Drawable getActiveIcon() {
-        return activeIcon;
+    public Drawable getIconActive() {
+        return iconActive;
     }
 
-    public void setActiveIcon(Drawable activeIcon) {
-        if (this.activeIcon != activeIcon) {
-            this.activeIcon = activeIcon;
+    public void setIconActive(Drawable iconActive) {
+        if (this.iconActive != iconActive) {
+            this.iconActive = iconActive;
 
             updateIconSize();
             setCurrentIcon();
         }
     }
 
-    public Drawable getIndeterminateIcon() {
-        return indeterminateIcon;
+    public Drawable getIconIndeterminate() {
+        return iconIndeterminate;
     }
 
-    public void setIndeterminateIcon(Drawable indeterminateIcon) {
-        if (this.indeterminateIcon != indeterminateIcon) {
-            this.indeterminateIcon = indeterminateIcon;
+    public void setIconIndeterminate(Drawable iconIndeterminate) {
+        if (this.iconIndeterminate != iconIndeterminate) {
+            this.iconIndeterminate = iconIndeterminate;
 
             updateIconSize();
             setCurrentIcon();

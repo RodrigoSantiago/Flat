@@ -1,14 +1,15 @@
 package test;
 
 import flat.Flat;
+import flat.data.ObservableList;
 import flat.events.ActionEvent;
 import flat.graphics.SmartContext;
 import flat.graphics.image.PixelMap;
 import flat.uxml.Controller;
 import flat.uxml.ValueChange;
+import flat.widget.Widget;
 import flat.widget.layout.LinearBox;
-import flat.widget.layout.Page;
-import flat.widget.layout.Tab;
+import flat.widget.structure.*;
 import flat.widget.stages.dialogs.ConfirmDialogBuilder;
 import flat.widget.text.Button;
 import flat.widget.text.Label;
@@ -28,6 +29,9 @@ public class MainActivity extends Controller {
     @Flat public Label label;
     @Flat public LinearBox linear;
     @Flat public Button iconButton;
+    @Flat public ListView listView;
+
+    private ObservableList<String> items = new ObservableList<>();
 
     private int num;
 
@@ -78,8 +82,26 @@ public class MainActivity extends Controller {
         System.out.println("From : " + change.getOldValue() + ", To : " + change.getValue());
     }
 
+    @Flat
+    public void onAddItem(ActionEvent event) {
+        items.add("New " + items.size());
+    }
+
+    @Flat
+    public void onRemoveItem(ActionEvent event) {
+        if (items.size() > 0) items.remove(items.size() / 2);
+    }
+
     @Override
     public void onShow() {
+        listView.setAdapter(new ListViewDefaultAdapter<>(items) {
+            @Override
+            public void buildListItem(int index, Widget item) {
+                var label = (ListItem) item;
+                label.setText(items.get(index));
+                label.setLayers(index % 6);
+            }
+        });
     }
 
     float t;

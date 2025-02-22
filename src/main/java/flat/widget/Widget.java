@@ -19,7 +19,6 @@ import flat.widget.effects.RippleEffect;
 import flat.widget.enums.DropdownAlign;
 import flat.widget.enums.Visibility;
 import flat.window.Activity;
-import flat.window.Application;
 
 import static flat.widget.State.*;
 
@@ -1019,11 +1018,11 @@ public class Widget {
         return bg.height;
     }
 
-    public float getX() {
+    public float getLayoutX() {
         return x;
     }
 
-    public float getY() {
+    public float getLayoutY() {
         return y;
     }
 

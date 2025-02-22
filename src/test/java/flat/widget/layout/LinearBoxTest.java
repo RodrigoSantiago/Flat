@@ -58,8 +58,8 @@ public class LinearBoxTest {
         parent.onMeasure();
         parent.onLayout(200, 350);
 
-        assertEquals(0, child.getX(), 0.001f);
-        assertEquals(230, child.getY(), 0.001f);
+        assertEquals(0, child.getLayoutX(), 0.001f);
+        assertEquals(230, child.getLayoutY(), 0.001f);
         assertEquals(100, child.getLayoutWidth(), 0.001f);
         assertEquals(120, child.getLayoutHeight(), 0.001f);
 
@@ -68,8 +68,8 @@ public class LinearBoxTest {
         parent.onMeasure();
         parent.onLayout(200, 350);
 
-        assertEquals(100, child.getX(), 0.001f);
-        assertEquals(0, child.getY(), 0.001f);
+        assertEquals(100, child.getLayoutX(), 0.001f);
+        assertEquals(0, child.getLayoutY(), 0.001f);
         assertEquals(100, child.getLayoutWidth(), 0.001f);
         assertEquals(120, child.getLayoutHeight(), 0.001f);
 
@@ -78,8 +78,8 @@ public class LinearBoxTest {
         parent.onMeasure();
         parent.onLayout(200, 350);
 
-        assertEquals(50, child.getX(), 0.001f);
-        assertEquals(115, child.getY(), 0.001f);
+        assertEquals(50, child.getLayoutX(), 0.001f);
+        assertEquals(115, child.getLayoutY(), 0.001f);
         assertEquals(100, child.getLayoutWidth(), 0.001f);
         assertEquals(120, child.getLayoutHeight(), 0.001f);
 
@@ -90,8 +90,8 @@ public class LinearBoxTest {
         parent.onMeasure();
         parent.onLayout(200, 350);
 
-        assertEquals(11, child.getX(), 0.001f);
-        assertEquals(5, child.getY(), 0.001f);
+        assertEquals(11, child.getLayoutX(), 0.001f);
+        assertEquals(5, child.getLayoutY(), 0.001f);
         assertEquals(100, child.getLayoutWidth(), 0.001f);
         assertEquals(120, child.getLayoutHeight(), 0.001f);
 
@@ -102,8 +102,8 @@ public class LinearBoxTest {
         parent.onMeasure();
         parent.onLayout(200, 350);
 
-        assertEquals(93, child.getX(), 0.001f);
-        assertEquals(221, child.getY(), 0.001f);
+        assertEquals(93, child.getLayoutX(), 0.001f);
+        assertEquals(221, child.getLayoutY(), 0.001f);
         assertEquals(100, child.getLayoutWidth(), 0.001f);
         assertEquals(120, child.getLayoutHeight(), 0.001f);
     }
@@ -1095,8 +1095,8 @@ public class LinearBoxTest {
     }
 
     private void assertLayout(Widget widget, float x, float y, float width, float height) {
-        assertEquals("X", x, widget.getX(), 0.1f);
-        assertEquals("Y", y, widget.getY(), 0.1f);
+        assertEquals("X", x, widget.getLayoutX(), 0.1f);
+        assertEquals("Y", y, widget.getLayoutY(), 0.1f);
         assertEquals("Width", width, widget.getLayoutWidth(), 0.1f);
         assertEquals("Height", height, widget.getLayoutHeight(), 0.1f);
     }

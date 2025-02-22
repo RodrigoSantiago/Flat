@@ -19,6 +19,8 @@ import flat.window.Application;
 
 public class Dialog extends Stage {
 
+    // TODO - Adaptative dialog : The dialog grow and overflow toolbars! Only the space is too small
+
     private VerticalAlign verticalAlign = VerticalAlign.MIDDLE;
     private HorizontalAlign horizontalAlign = HorizontalAlign.CENTER;
     private float showupTransitionDuration = 0;

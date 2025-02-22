@@ -257,9 +257,9 @@ checkbox {
     ripple-overflow : true;
     ripple-enabled : true;
     ripple-color : #00000080;
-    indeterminate-icon : '/default/icons/minus-box.svg';
-    inactive-icon : '/default/icons/checkbox-blank-outline.svg';
-    active-icon : '/default/icons/checkbox-marked.svg';
+    icon-indeterminate : '/default/icons/minus-box.svg';
+    icon-inactive : '/default/icons/checkbox-blank-outline.svg';
+    icon-active : '/default/icons/checkbox-marked.svg';
     cursor : hand;
 }
 
@@ -269,8 +269,8 @@ radio-button {
     ripple-overflow : true;
     ripple-enabled : true;
     ripple-color : #00000080;
-    inactive-icon : '/default/icons/radiobox-blank.svg';
-    active-icon : '/default/icons/radiobox-marked.svg';
+    icon-inactive : '/default/icons/radiobox-blank.svg';
+    icon-active : '/default/icons/radiobox-marked.svg';
     cursor : hand;
 }
 
@@ -290,8 +290,8 @@ switch-toggle {
     shadow : true;
     elevation : 1;
     background-color : #CA5050;
-    active-icon : '/default/icons/switch-shape.svg';
-    inactive-icon : '/default/icons/switch-shape.svg';
+    icon-active : '/default/icons/switch-shape.svg';
+    icon-inactive : '/default/icons/switch-shape.svg';
 
     icon-transition-duration : 0.1;
     slide-transition-duration : 0.1;
@@ -443,6 +443,11 @@ page : label {
     text-size : 16sp;
     ripple-enabled : true;
     ripple-color : #00000060;
+    icon : '/default/icons/slider-icon.svg';
+    icon-color : green;
+    close-icon : '/default/icons/slider-icon.svg';
+    close-icon-color : red;
+    close-icon-cursor : hand;
 }
 
 drawer {
@@ -455,7 +460,26 @@ drawer {
 }
 
 list-view {
+    background-color : #FF8080;
+    item-height : 32;
+}
 
+list-item {
+    background-color : #E0E0E0;
+    min-width : 128;
+    width : match_parent;
+    margin-bottom : 1;
+    icon : '/default/icons/checkbox-marked.svg';
+    icon-width : 24;
+    icon-height : 24;
+    icon-color : red;
+    state-icon-open : '/default/icons/checkbox-marked.svg';
+    state-icon-closed : '/default/icons/checkbox-blank-outline.svg';
+    state-icon-color : blue;
+    state-icon-width : 12;
+    state-icon-height : 12;
+    layer-width : 12;
+    state-icon-cursor : hand;
 }
 
 tree-view {

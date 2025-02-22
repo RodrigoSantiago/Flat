@@ -1,4 +1,4 @@
-package flat.widget.layout;
+package flat.widget.structure;
 
 import flat.animations.StateInfo;
 import flat.events.HoverEvent;
@@ -15,6 +15,7 @@ import flat.uxml.UXChildren;
 import flat.widget.Widget;
 import flat.widget.enums.ImageFilter;
 import flat.widget.enums.VerticalAlign;
+import flat.widget.layout.Frame;
 import flat.window.Application;
 
 import java.util.Objects;
@@ -37,20 +38,20 @@ public class Page extends Widget {
     private int iconColor = Color.white;
     private ImageFilter iconImageFilter = ImageFilter.LINEAR;
     private float iconSpacing;
-    private boolean iconScaleHeight;
+    private float iconWidth;
+    private float iconHeight;
 
     private Drawable closeIcon;
     private int closeIconColor = Color.white;
     private ImageFilter closeIconImageFilter = ImageFilter.LINEAR;
     private float closeIconSpacing;
-    private boolean closeIconScaleHeight;
-
-    private Frame frame;
-
-    private float iconWidth;
-    private float iconHeight;
     private float closeIconWidth;
     private float closeIconHeight;
+
+    private boolean isHoveringClose;
+    private Cursor closeIconCursor = Cursor.UNSET;
+
+    private Frame frame;
     private float x1, y1, x2, y2;
 
     @Override
@@ -96,15 +97,18 @@ public class Page extends Widget {
 
         setIcon(attrs.getResourceAsDrawable("icon", info, getIcon(), false));
         setIconColor(attrs.getColor("icon-color", info, getIconColor()));
-        setIconScaleHeight(attrs.getBool("icon-scale-height", info, getIconScaleHeight()));
+        setIconWidth(attrs.getSize("icon-width", info, getIconWidth()));
+        setIconHeight(attrs.getSize("icon-height", info, getIconHeight()));
         setIconSpacing(attrs.getSize("icon-spacing", info, getIconSpacing()));
         setIconImageFilter(attrs.getConstant("icon-image-filter", info, getIconImageFilter()));
 
         setCloseIcon(attrs.getResourceAsDrawable("close-icon", info, getCloseIcon(), false));
         setCloseIconColor(attrs.getColor("close-icon-color", info, getCloseIconColor()));
-        setCloseIconScaleHeight(attrs.getBool("close-icon-scale-height", info, getCloseIconScaleHeight()));
+        setCloseIconWidth(attrs.getSize("close-icon-width", info, getCloseIconWidth()));
+        setCloseIconHeight(attrs.getSize("close-icon-height", info, getCloseIconHeight()));
         setCloseIconSpacing(attrs.getSize("close-icon-spacing", info, getCloseIconSpacing()));
         setCloseIconImageFilter(attrs.getConstant("close-icon-image-filter", info, getCloseIconImageFilter()));
+        setCloseIconCursor(attrs.getConstant("close-icon-cursor", info, getCloseIconCursor()));
 
         setFont(attrs.getFont("font", info, getFont()));
         setTextSize(attrs.getSize("text-size", info, getTextSize()));
@@ -126,8 +130,13 @@ public class Page extends Widget {
 
         context.setTransform2D(getTransform());
 
-        float spaceForIcon = icon == null ? 0 : iconWidth + iconSpacing;
-        float spaceForCloseIcon = closeIcon == null ? 0 : closeIconWidth + closeIconSpacing;
+        float iW = getLayoutIconWidth();
+        float iH = getLayoutIconHeight();
+        float ciW = getLayoutCloseIconWidth();
+        float ciH = getLayoutCloseIconHeight();
+
+        float spaceForIcon = (iW > 0 ? iW + getIconSpacing() : 0);
+        float spaceForCloseIcon = (ciW > 0 ? ciW + getCloseIconSpacing() : 0);
         float spaceForText = getTextWidth();
 
         if (spaceForIcon + spaceForCloseIcon + spaceForText > width) {
@@ -145,15 +154,15 @@ public class Page extends Widget {
 
         float tw = spaceForText;
         float th = Math.min(height, getTextHeight());
-        float iw = Math.max(spaceForIcon - iconSpacing, 0);
-        float ih = Math.min(height, iconHeight);
-        float iaw = Math.max(spaceForCloseIcon - closeIconSpacing, 0);
-        float iah = Math.min(height, closeIconHeight);
-        if (iw > 0 && ih > 0) {
-            icon.draw(context
+        float iw = Math.min(iW, Math.max(spaceForIcon, 0));
+        float ih = Math.min(height, iH);
+        float ciw = Math.min(ciW, Math.max(spaceForCloseIcon, 0));
+        float cih = Math.min(height, ciH);
+        if (iw > 0 && ih > 0 && getIcon() != null) {
+            getIcon().draw(context
                     , x
                     , yOff(y, y + height, ih)
-                    , iw, ih, iconColor, iconImageFilter);
+                    , iw, ih, getIconColor(), getIconImageFilter());
         }
 
         if (tw > 0 && th > 0) {
@@ -170,11 +179,11 @@ public class Page extends Widget {
                     , getShowText());
         }
 
-        if (iaw > 0 && iah > 0) {
-            closeIcon.draw(context
-                    , x + width - iaw
-                    , yOff(y, y + height, iah)
-                    , iaw, iah, closeIconColor, closeIconImageFilter);
+        if (ciw > 0 && cih > 0 && getCloseIcon() != null) {
+            getCloseIcon().draw(context
+                    , x + width - ciw
+                    , yOff(y, y + height, cih)
+                    , ciw, cih, getCloseIconColor(), getCloseIconImageFilter());
         }
     }
 
@@ -188,31 +197,20 @@ public class Page extends Widget {
         boolean wrapWidth = getLayoutPrefWidth() == WRAP_CONTENT;
         boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
 
-        float space = icon == null ? 0 : iconSpacing;
-        iconWidth = icon == null ? 0 : icon.getWidth();
-        iconHeight = icon == null ? 0 : icon.getHeight();
-        if (icon != null && iconScaleHeight && getTextHeight() > 0) {
-            float diff = iconWidth / iconHeight;
-            iconHeight = getTextHeight();
-            iconWidth = iconHeight * diff;
-        }
-
-        float aSpace = closeIcon == null ? 0 : closeIconSpacing;
-        closeIconWidth = closeIcon == null ? 0 : closeIcon.getWidth();
-        closeIconHeight = closeIcon == null ? 0 : closeIcon.getHeight();
-        if (closeIcon != null && closeIconScaleHeight && getTextHeight() > 0) {
-            float diff = closeIconWidth / closeIconHeight;
-            closeIconHeight = getTextHeight();
-            closeIconWidth = closeIconHeight * diff;
-        }
+        float iW = getLayoutIconWidth();
+        float iH = getLayoutIconHeight();
+        float ciW = getLayoutCloseIconWidth();
+        float ciH = getLayoutCloseIconHeight();
 
         if (wrapWidth) {
-            mWidth = Math.max(getTextWidth() + extraWidth + iconWidth + space + closeIconWidth + aSpace, getLayoutMinWidth());
+            mWidth = Math.max(getTextWidth() + extraWidth
+                    + (iW > 0 ? iW + getIconSpacing() : 0)
+                    + (ciW > 0 ? ciW + getCloseIconSpacing() : 0), getLayoutMinWidth());
         } else {
             mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
         }
         if (wrapHeight) {
-            mHeight = Math.max(Math.max(getTextHeight(), Math.max(iconHeight, closeIconHeight)) + extraHeight, getLayoutMinHeight());
+            mHeight = Math.max(Math.max(getTextHeight(), Math.max(iH, ciH)) + extraHeight, getLayoutMinHeight());
         } else {
             mHeight = Math.max(getLayoutPrefHeight(), getLayoutMinHeight());
         }
@@ -232,10 +230,8 @@ public class Page extends Widget {
         float width = getInWidth();
         float height = getInHeight();
 
-        float spaceForCloseIcon = Math.min(width, closeIcon == null ? 0 : closeIconWidth + closeIconSpacing);
-
-        float iaw = Math.max(spaceForCloseIcon - closeIconSpacing, 0);
-        float iah = Math.min(height, closeIconHeight);
+        float iaw = Math.min(width, getLayoutCloseIconWidth());
+        float iah = Math.min(height, getLayoutCloseIconHeight());
 
         x1 = x + width - iaw;
         x2 = x + width;
@@ -261,12 +257,13 @@ public class Page extends Widget {
     public void fireHover(HoverEvent event) {
         super.fireHover(event);
         if (!event.isConsumed() && event.getType() == HoverEvent.MOVED) {
-            if (isOverActionButton(screenToLocal(event.getX(), event.getY()))) {
-                setCursor(Cursor.HAND);
-            } else {
-                setCursor(Cursor.UNSET);
-            }
+            isHoveringClose = isOverActionButton(screenToLocal(event.getX(), event.getY()));
         }
+    }
+
+    @Override
+    public Cursor getCurrentCursor() {
+        return isHoveringClose && closeIconCursor != Cursor.UNSET ? closeIconCursor : super.getCursor();
     }
 
     private boolean isOverActionButton(Vector2 local) {
@@ -357,17 +354,36 @@ public class Page extends Widget {
         }
     }
 
-    public boolean getIconScaleHeight() {
-        return iconScaleHeight;
+    public float getIconWidth() {
+        return iconWidth;
     }
 
-    public void setIconScaleHeight(boolean iconScaleHeight) {
-        if (this.iconScaleHeight != iconScaleHeight) {
-            this.iconScaleHeight = iconScaleHeight;
+    public void setIconWidth(float iconWidth) {
+        if (this.iconWidth != iconWidth) {
+            this.iconWidth = iconWidth;
             invalidate(isWrapContent());
         }
     }
 
+    private float getLayoutIconWidth() {
+        return icon == null ? 0 : iconWidth == 0 || iconWidth == MATCH_PARENT ? getTextHeight() : iconWidth;
+    }
+    
+    public float getIconHeight() {
+        return iconHeight;
+    }
+
+    public void setIconHeight(float iconHeight) {
+        if (this.iconHeight != iconHeight) {
+            this.iconHeight = iconHeight;
+            invalidate(isWrapContent());
+        }
+    }
+
+    private float getLayoutIconHeight() {
+        return icon == null ? 0 : iconHeight == 0 || iconHeight == MATCH_PARENT ? getTextHeight() : iconHeight;
+    }
+    
     public ImageFilter getIconImageFilter() {
         return iconImageFilter;
     }
@@ -414,15 +430,44 @@ public class Page extends Widget {
         }
     }
 
-    public boolean getCloseIconScaleHeight() {
-        return closeIconScaleHeight;
+    public float getCloseIconWidth() {
+        return closeIconWidth;
     }
 
-    public void setCloseIconScaleHeight(boolean closeIconScaleHeight) {
-        if (this.closeIconScaleHeight != closeIconScaleHeight) {
-            this.closeIconScaleHeight = closeIconScaleHeight;
+    public void setCloseIconWidth(float closeIconWidth) {
+        if (this.closeIconWidth != closeIconWidth) {
+            this.closeIconWidth = closeIconWidth;
             invalidate(isWrapContent());
         }
+    }
+
+    public Cursor getCloseIconCursor() {
+        return closeIconCursor;
+    }
+
+    public void setCloseIconCursor(Cursor closeIconCursor) {
+        if (closeIconCursor == null) closeIconCursor = Cursor.UNSET;
+
+        this.closeIconCursor = closeIconCursor;
+    }
+
+    private float getLayoutCloseIconWidth() {
+        return closeIcon == null ? 0 : closeIconWidth == 0 || closeIconWidth == MATCH_PARENT ? getTextHeight() : closeIconWidth;
+    }
+
+    public float getCloseIconHeight() {
+        return closeIconHeight;
+    }
+
+    public void setCloseIconHeight(float closeIconHeight) {
+        if (this.closeIconHeight != closeIconHeight) {
+            this.closeIconHeight = closeIconHeight;
+            invalidate(isWrapContent());
+        }
+    }
+
+    private float getLayoutCloseIconHeight() {
+        return closeIcon == null ? 0 : closeIconHeight == 0 || closeIconHeight == MATCH_PARENT ? getTextHeight() : closeIconHeight;
     }
 
     public ImageFilter getCloseIconImageFilter() {

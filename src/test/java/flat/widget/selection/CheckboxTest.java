@@ -76,9 +76,9 @@ public class CheckboxTest {
 
         Checkbox checkbox = new Checkbox();
 
-        assertNull(checkbox.getActiveIcon());
-        assertNull(checkbox.getInactiveIcon());
-        assertNull(checkbox.getIndeterminateIcon());
+        assertNull(checkbox.getIconActive());
+        assertNull(checkbox.getIconInactive());
+        assertNull(checkbox.getIconIndeterminate());
         assertEquals(0, checkbox.getIconTransitionDuration(), 0.0001f);
         assertEquals(0xFFFFFFFF, checkbox.getIconColor());
         assertEquals(ImageFilter.LINEAR, checkbox.getIconImageFilter());
@@ -89,9 +89,9 @@ public class CheckboxTest {
         checkbox.setAttributes(createNonDefaultValues(), "checkbox");
         checkbox.applyAttributes(controller);
 
-        assertNull(checkbox.getActiveIcon());
-        assertNull(checkbox.getInactiveIcon());
-        assertNull(checkbox.getIndeterminateIcon());
+        assertNull(checkbox.getIconActive());
+        assertNull(checkbox.getIconInactive());
+        assertNull(checkbox.getIconIndeterminate());
         assertEquals(0, checkbox.getIconTransitionDuration(), 0.0001f);
         assertEquals(0xFFFFFFFF, checkbox.getIconColor());
         assertEquals(ImageFilter.LINEAR, checkbox.getIconImageFilter());
@@ -101,9 +101,9 @@ public class CheckboxTest {
 
         checkbox.applyStyle();
 
-        assertEquals(iconActive, checkbox.getActiveIcon());
-        assertEquals(iconInactive, checkbox.getInactiveIcon());
-        assertEquals(iconIndeterminate, checkbox.getIndeterminateIcon());
+        assertEquals(iconActive, checkbox.getIconActive());
+        assertEquals(iconInactive, checkbox.getIconInactive());
+        assertEquals(iconIndeterminate, checkbox.getIconIndeterminate());
         assertEquals(1.0f, checkbox.getIconTransitionDuration(), 0.0001f);
         assertEquals(0xFF0000FF, checkbox.getIconColor());
         assertEquals(ImageFilter.NEAREST, checkbox.getIconImageFilter());
@@ -115,9 +115,9 @@ public class CheckboxTest {
     @Test
     public void measure() {
         Checkbox checkbox = new Checkbox();
-        checkbox.setActiveIcon(iconActive);
-        checkbox.setInactiveIcon(iconInactive);
-        checkbox.setIndeterminateIcon(iconIndeterminate);
+        checkbox.setIconActive(iconActive);
+        checkbox.setIconInactive(iconInactive);
+        checkbox.setIconIndeterminate(iconIndeterminate);
         checkbox.setSelectionState(SelectionState.ACTIVE);
         checkbox.onMeasure();
 
@@ -147,9 +147,9 @@ public class CheckboxTest {
     @Test
     public void fireAction() {
         Checkbox checkbox = new Checkbox();
-        checkbox.setActiveIcon(iconActive);
-        checkbox.setInactiveIcon(iconInactive);
-        checkbox.setIndeterminateIcon(iconIndeterminate);
+        checkbox.setIconActive(iconActive);
+        checkbox.setIconInactive(iconInactive);
+        checkbox.setIconIndeterminate(iconIndeterminate);
         checkbox.setSelectionState(SelectionState.INDETERMINATE);
 
         var action = (UXListener<ActionEvent>) mock(UXListener.class);
@@ -186,9 +186,9 @@ public class CheckboxTest {
         hash.put(UXHash.getHash("on-selection-state-change"), new UXValueText("onSelectionStateWork"));
         hash.put(UXHash.getHash("icon-color"), new UXValueColor(0xFF0000FF));
         hash.put(UXHash.getHash("icon-image-filter"), new UXValueText(ImageFilter.NEAREST.toString()));
-        hash.put(UXHash.getHash("active-icon"), uxIconActive);
-        hash.put(UXHash.getHash("inactive-icon"), uxIconInactive);
-        hash.put(UXHash.getHash("indeterminate-icon"), uxIconIndeterminate);
+        hash.put(UXHash.getHash("icon-active"), uxIconActive);
+        hash.put(UXHash.getHash("icon-inactive"), uxIconInactive);
+        hash.put(UXHash.getHash("icon-indeterminate"), uxIconIndeterminate);
         hash.put(UXHash.getHash("icon-transition-duration"), new UXValueNumber(1.0f));
         hash.put(UXHash.getHash("selection-state"), new UXValueText(SelectionState.ACTIVE.toString()));
         return hash;

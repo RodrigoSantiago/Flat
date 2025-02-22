@@ -9,7 +9,7 @@ import flat.graphics.image.Drawable;
 import flat.uxml.Controller;
 import flat.uxml.UXAttrs;
 import flat.uxml.UXListener;
-import flat.widget.enums.HorizontalAlign;
+import flat.widget.enums.HorizontalPosition;
 import flat.widget.enums.ImageFilter;
 
 public class Button extends Label {
@@ -17,11 +17,12 @@ public class Button extends Label {
     private UXListener<ActionEvent> actionListener;
 
     private Drawable icon;
+    private float iconWidth;
+    private float iconHeight;
+    private float iconSpacing;
     private int iconColor = Color.white;
     private ImageFilter iconImageFilter = ImageFilter.LINEAR;
-    private float iconSpacing;
-    private boolean iconScaleHeight;
-    private HorizontalAlign iconAlign = HorizontalAlign.LEFT;
+    private HorizontalPosition iconPosition = HorizontalPosition.LEFT;
 
     @Override
     public void applyAttributes(Controller controller) {
@@ -40,93 +41,62 @@ public class Button extends Label {
 
         setIcon(attrs.getResourceAsDrawable("icon", info, getIcon(), false));
         setIconColor(attrs.getColor("icon-color", info, getIconColor()));
-        setIconScaleHeight(attrs.getBool("icon-scale-height", info, getIconScaleHeight()));
-        setIconAlign(attrs.getConstant("icon-align", info, getIconAlign()));
+        setIconWidth(attrs.getSize("icon-width", info, getIconWidth()));
+        setIconHeight(attrs.getSize("icon-height", info, getIconHeight()));
         setIconSpacing(attrs.getSize("icon-spacing", info, getIconSpacing()));
+        setIconPosition(attrs.getConstant("icon-position", info, getIconPosition()));
         setIconImageFilter(attrs.getConstant("icon-image-filter", info, getIconImageFilter()));
     }
 
     @Override
     public void onDraw(SmartContext context) {
-        if (icon == null) {
-            super.onDraw(context);
-            return;
-        }
-
         drawBackground(context);
         drawRipple(context);
 
-        final float x = getInX();
-        final float y = getInY();
-        final float width = getInWidth();
-        final float height = getInHeight();
+        float x = getInX();
+        float y = getInY();
+        float width = getInWidth();
+        float height = getInHeight();
 
         if (width <= 0 || height <= 0) return;
 
         context.setTransform2D(getTransform());
 
-        float imgWidth = icon.getWidth();
-        float imgHeight = icon.getHeight();
-        if (iconScaleHeight && getFont() != null) {
-            float diff = imgWidth / imgHeight;
-            imgHeight = getFont().getHeight(getTextSize());
-            imgWidth = imgHeight * diff;
+        float iW = getLayoutIconWidth();
+        float iH = getLayoutIconHeight();
+
+        float spaceForIcon = iW == 0 ? 0 : iW + getIconSpacing();
+        float spaceForText = getTextWidth();
+
+        if (spaceForIcon > width) {
+            spaceForText = 0;
+            spaceForIcon = width;
+        } else if (spaceForIcon + spaceForText > width) {
+            spaceForText = width - spaceForIcon;
         }
 
-        float textWidth = Math.min(getTextWidth(), Math.max(0, width - iconSpacing - imgWidth));
-        float textHeight = Math.min(getTextHeight(), height);
+        float tw = spaceForText;
+        float th = Math.min(height, getTextHeight());
+        float iw = Math.min(iW, Math.max(spaceForIcon, 0));
+        float ih = Math.min(height, iH);
 
-        if (getShowText() == null || getFont() == null || textWidth <= 0) {
-            float iw = Math.min(imgWidth, width);
-            float ih = Math.min(imgHeight, height);
-            float tw = Math.min(imgWidth + iconSpacing, width);
-            float sp = iconAlign == HorizontalAlign.RIGHT ? Math.min(iconSpacing, width - iw) : 0;
-
-            icon.draw(context
-                    , xOff(x, x + width, tw) + sp
+        if (iw > 0 && ih > 0 && getIcon() != null) {
+            getIcon().draw(context
+                    , getIconPosition() == HorizontalPosition.LEFT ? x : x + spaceForText
                     , yOff(y, y + height, ih)
-                    , iw, ih, iconColor, iconImageFilter);
+                    , iw, ih, getIconColor(), getIconImageFilter());
+        }
 
-        } else {
-            float iw = imgWidth;
-            float ih = Math.min(imgHeight, height);
-
-            float tw = textWidth + iconSpacing + imgWidth;
-            float th = Math.min(Math.max(ih, getTextHeight()), height);
-
-            float xoff = xOff(x, x + width, tw);
-            float yoffGroup = yOff(y, y + height, th);
-            float yoffText = yOff(yoffGroup, yoffGroup + th, textHeight);
-            float yoffImg = yOff(yoffGroup, yoffGroup + th, ih);
-
+        if (tw > 0 && th > 0 && getFont() != null) {
             context.setColor(getTextColor());
             context.setTextFont(getFont());
             context.setTextSize(getTextSize());
             context.setTextBlur(0);
 
-            if (iconAlign == HorizontalAlign.RIGHT) {
-                context.drawTextSlice(
-                          xoff
-                        , yoffText
-                        , textWidth
-                        , textHeight
-                        , getShowText());
-                icon.draw(context
-                        , xoff + textWidth + iconSpacing
-                        , yoffImg
-                        , iw, ih, iconColor, iconImageFilter);
-            } else {
-                icon.draw(context
-                        , xoff
-                        , yoffImg
-                        , iw, ih, iconColor, iconImageFilter);
-                context.drawTextSlice(
-                          xoff + imgWidth + iconSpacing
-                        , yoffText
-                        , textWidth
-                        , textHeight
-                        , getShowText());
-            }
+            context.drawTextSlice(
+                      getIconPosition() == HorizontalPosition.LEFT ? x + spaceForIcon : x
+                    , yOff(y, y + height, th)
+                    , tw, th, getShowText());
         }
     }
 
@@ -145,16 +115,11 @@ public class Button extends Label {
         boolean wrapWidth = getLayoutPrefWidth() == WRAP_CONTENT;
         boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
 
-        float iW = icon.getWidth();
-        float iH = icon.getHeight();
-        if (iconScaleHeight && getFont() != null) {
-            float diff = iW / iH;
-            iH = getFont().getHeight(getTextSize());
-            iW = iH * diff;
-        }
+        float iW = getLayoutIconWidth();
+        float iH = getLayoutIconHeight();
 
         if (wrapWidth) {
-            mWidth = Math.max(getTextWidth() + extraWidth + iW + iconSpacing, getLayoutMinWidth());
+            mWidth = Math.max(getTextWidth() + extraWidth + (iW > 0 ? iW + getIconSpacing() : 0), getLayoutMinWidth());
         } else {
             mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
         }
@@ -226,26 +191,45 @@ public class Button extends Label {
         }
     }
 
-    public boolean getIconScaleHeight() {
-        return iconScaleHeight;
+    public float getIconWidth() {
+        return iconWidth;
     }
 
-    public void setIconScaleHeight(boolean iconScaleHeight) {
-        if (this.iconScaleHeight != iconScaleHeight) {
-            this.iconScaleHeight = iconScaleHeight;
+    public void setIconWidth(float iconWidth) {
+        if (this.iconWidth != iconWidth) {
+            this.iconWidth = iconWidth;
             invalidate(isWrapContent());
         }
     }
 
-    public HorizontalAlign getIconAlign() {
-        return iconAlign;
+    private float getLayoutIconWidth() {
+        return icon == null ? 0 : iconWidth == 0 || iconWidth == MATCH_PARENT ? getTextHeight() : iconWidth;
     }
 
-    public void setIconAlign(HorizontalAlign iconAlign) {
-        if (iconAlign == null) iconAlign = HorizontalAlign.LEFT;
+    public float getIconHeight() {
+        return iconHeight;
+    }
 
-        if (this.iconAlign != iconAlign) {
-            this.iconAlign = iconAlign;
+    public void setIconHeight(float iconHeight) {
+        if (this.iconHeight != iconHeight) {
+            this.iconHeight = iconHeight;
+            invalidate(isWrapContent());
+        }
+    }
+
+    private float getLayoutIconHeight() {
+        return icon == null ? 0 : iconHeight == 0 || iconHeight == MATCH_PARENT ? getTextHeight() : iconHeight;
+    }
+
+    public HorizontalPosition getIconPosition() {
+        return iconPosition;
+    }
+
+    public void setIconPosition(HorizontalPosition iconPosition) {
+        if (iconPosition == null) iconPosition = HorizontalPosition.LEFT;
+
+        if (this.iconPosition != iconPosition) {
+            this.iconPosition = iconPosition;
             invalidate(false);
         }
     }

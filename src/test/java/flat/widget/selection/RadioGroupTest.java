@@ -29,7 +29,7 @@ public class RadioGroupTest {
         assertEquals(Visibility.GONE, radioGroup.getVisibility());
         assertNull(radioGroup.getSelectedListener());
 
-        radioGroup.setAttributes(createNonDefaultValues(), "radiogroup");
+        radioGroup.setAttributes(createNonDefaultValues(), "radio-group");
         radioGroup.applyAttributes(controller);
 
         assertEquals(Visibility.GONE, radioGroup.getVisibility());

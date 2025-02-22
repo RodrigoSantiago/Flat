@@ -23,8 +23,6 @@ public class ScrollBox extends Parent {
     private UXListener<SlideEvent> slideVerticalFilter;
     private UXValueListener<Float> viewOffsetXListener;
     private UXValueListener<Float> viewOffsetYListener;
-    private final ArrayList<ValueChange<Float>> viewOffsetXQueue = new ArrayList<>();
-    private final ArrayList<ValueChange<Float>> viewOffsetYQueue = new ArrayList<>();
     private float viewOffsetX;
     private float viewOffsetY;
     private HorizontalScrollBar horizontalBar;
@@ -54,13 +52,28 @@ public class ScrollBox extends Parent {
         slideVerticalTo(event.getViewOffsetDimension());
     };
 
+    public ScrollBox() {
+        setHorizontalBar(new HorizontalScrollBar());
+        setVerticalBar(new VerticalScrollBar());
+    }
+
     @Override
     public void applyChildren(UXChildren children) {
         super.applyChildren(children);
 
+        UXAttrs attrs = getAttrs();
+        String hBarId = attrs.getAttributeString("horizontal-bar-id", null);
+        String vBarId = attrs.getAttributeString("vertical-bar-id", null);
+
         Widget widget;
-        while ((widget = children.next()) != null) {
-            add(widget);
+        while ((widget = children.next()) != null ) {
+            if (hBarId != null && hBarId.equals(widget.getId()) && widget instanceof HorizontalScrollBar bar) {
+                setHorizontalBar(bar);
+            } else if (vBarId != null && vBarId.equals(widget.getId()) && widget instanceof VerticalScrollBar bar) {
+                setVerticalBar(bar);
+            } else {
+                add(widget);
+            }
         }
     }
 
@@ -69,40 +82,12 @@ public class ScrollBox extends Parent {
         super.applyAttributes(controller);
 
         UXAttrs attrs = getAttrs();
-
-        String horizontalBarId = attrs.getAttributeString("horizontal-bar-id", null);
-        if (horizontalBarId != null) {
-            for (var child : getChildrenIterable()) {
-                if (horizontalBarId.equals(child.getId()) && child instanceof HorizontalScrollBar bar) {
-                    setHorizontalBar(bar);
-                    break;
-                }
-            }
-        }
-
-        String verticalBarId = attrs.getAttributeString("vertical-bar-id", null);
-        if (verticalBarId != null) {
-            for (var child : getChildrenIterable()) {
-                if (verticalBarId.equals(child.getId()) && child instanceof VerticalScrollBar bar) {
-                    setVerticalBar(bar);
-                    break;
-                }
-            }
-        }
         setViewOffsetXListener(attrs.getAttributeValueListener("on-view-offset-x-change", Float.class, controller));
         setViewOffsetYListener(attrs.getAttributeValueListener("on-view-offset-y-change", Float.class, controller));
         setSlideHorizontalListener(attrs.getAttributeListener("on-slide-horizontal", SlideEvent.class, controller));
         setSlideVerticalListener(attrs.getAttributeListener("on-slide-vertical", SlideEvent.class, controller));
         setSlideHorizontalFilter(attrs.getAttributeListener("on-slide-horizontal-filter", SlideEvent.class, controller));
         setSlideVerticalFilter(attrs.getAttributeListener("on-slide-vertical-filter", SlideEvent.class, controller));
-
-        if (getHorizontalBar() == null) {
-            setHorizontalBar(new HorizontalScrollBar());
-        }
-
-        if (getVerticalBar() == null) {
-            setVerticalBar(new VerticalScrollBar());
-        }
     }
 
     @Override
@@ -189,9 +174,13 @@ public class ScrollBox extends Parent {
 
             if (child.getMeasureWidth() != MATCH_PARENT) {
                 localDimensionX = Math.max(localDimensionX, child.getMeasureWidth());
+            } else {
+                localDimensionX = Math.max(localDimensionX, child.getLayoutMinWidth());
             }
             if (child.getMeasureHeight() != MATCH_PARENT) {
                 localDimensionY = Math.max(localDimensionY, child.getMeasureHeight());
+            } else {
+                localDimensionY = Math.max(localDimensionY, child.getLayoutMinHeight());
             }
         }
 
@@ -301,21 +290,13 @@ public class ScrollBox extends Parent {
 
         float oldX = viewOffsetX;
         float oldY = viewOffsetY;
-        viewOffsetX = viewX;
-        viewOffsetY = viewY;
+        if (viewOffsetX != viewX && getActivity() != null) {
+            getActivity().getWindow().runSync(() -> setViewOffsetX(getViewOffsetX()));
+        }
+        if (viewOffsetY != viewY && getActivity() != null) {
+            getActivity().getWindow().runSync(() -> setViewOffsetY(getViewOffsetY()));
+        }
 
-        if (oldX != viewOffsetX) {
-            viewOffsetXQueue.add(new ValueChange<>(this, oldX, viewOffsetX));
-            if (getActivity() != null) {
-                getActivity().getWindow().runSync(this::executeQueueX);
-            }
-        }
-        if (oldY != viewOffsetY) {
-            viewOffsetYQueue.add(new ValueChange<>(this, oldY, viewOffsetY));
-            if (getActivity() != null) {
-                getActivity().getWindow().runSync(this::executeQueueY);
-            }
-        }
 
         if (horizontalBar != null) {
             horizontalBar.setViewOffsetListener(null);
@@ -548,12 +529,11 @@ public class ScrollBox extends Parent {
     }
 
     public float getViewOffsetX() {
-        return viewOffsetX;
+        return Math.max(0, Math.min(viewOffsetX, totalDimensionX - viewDimensionX));
     }
 
     public void setViewOffsetX(float viewOffsetX) {
-        if (viewOffsetX > totalDimensionX - viewDimensionX) viewOffsetX = totalDimensionX - viewDimensionX;
-        if (viewOffsetX < 0) viewOffsetX = 0;
+        viewOffsetX = Math.max(0, Math.min(viewOffsetX, totalDimensionX - viewDimensionX));
 
         if (this.viewOffsetX != viewOffsetX) {
             float old = this.viewOffsetX;
@@ -565,16 +545,14 @@ public class ScrollBox extends Parent {
                 horizontalBar.setViewOffset(this.viewOffsetX);
             }
         }
-        executeQueueX();
     }
 
     public float getViewOffsetY() {
-        return viewOffsetY;
+        return Math.max(0, Math.min(viewOffsetY, totalDimensionY - viewDimensionY));
     }
 
     public void setViewOffsetY(float viewOffsetY) {
-        if (viewOffsetY > totalDimensionY - viewDimensionY) viewOffsetY = totalDimensionY - viewDimensionY;
-        if (viewOffsetY < 0) viewOffsetY = 0;
+        viewOffsetY = Math.max(0, Math.min(viewOffsetY, totalDimensionY - viewDimensionY));
 
         if (this.viewOffsetY != viewOffsetY) {
             float old = this.viewOffsetY;
@@ -586,7 +564,6 @@ public class ScrollBox extends Parent {
                 verticalBar.setViewOffset(this.viewOffsetY);
             }
         }
-        executeQueueY();
     }
 
     public UXValueListener<Float> getViewOffsetXListener() {
@@ -605,17 +582,6 @@ public class ScrollBox extends Parent {
         this.viewOffsetYListener = viewOffsetYListener;
     }
 
-    public void slideHorizontalTo(float offsetX) {
-        if (offsetX > totalDimensionX - viewDimensionX) offsetX = totalDimensionX - viewDimensionX;
-        if (offsetX < 0) offsetX = 0;
-
-        float old = getViewOffsetX();
-        if (offsetX != old && filterSlideX(offsetX)) {
-            setViewOffsetX(offsetX);
-            fireSlideX();
-        }
-    }
-
     public void slide(float offsetX, float offsetY) {
         slideHorizontal(offsetX);
         slideVertical(offsetY);
@@ -626,15 +592,24 @@ public class ScrollBox extends Parent {
         slideVerticalTo(offsetY);
     }
 
+    public void slideHorizontalTo(float offsetX) {
+        offsetX = Math.max(0, Math.min(offsetX, totalDimensionX - viewDimensionX));
+
+        float old = viewOffsetX;
+        if (offsetX != old && filterSlideX(offsetX)) {
+            setViewOffsetX(offsetX);
+            fireSlideX();
+        }
+    }
+
     public void slideHorizontal(float offsetX) {
         slideHorizontalTo(getViewOffsetX() + offsetX);
     }
 
     public void slideVerticalTo(float offsetY) {
-        if (offsetY > totalDimensionY - viewDimensionY) offsetY = totalDimensionY - viewDimensionY;
-        if (offsetY < 0) offsetY = 0;
+        offsetY = Math.max(0, Math.min(offsetY, totalDimensionY - viewDimensionY));
 
-        float old = getViewOffsetY();
+        float old = viewOffsetY;
         if (offsetY != old && filterSlideY(offsetY)) {
             setViewOffsetY(offsetY);
             fireSlideY();
@@ -675,33 +650,13 @@ public class ScrollBox extends Parent {
 
     private void fireViewOffsetXListener(float old) {
         if (viewOffsetXListener != null && old != viewOffsetX) {
-            if (viewOffsetXQueue.size() > 0) {
-                viewOffsetXQueue.add(new ValueChange<>(this, old, viewOffsetX));
-            } else {
-                UXValueListener.safeHandle(viewOffsetXListener, new ValueChange<>(this, old, viewOffsetX));
-            }
-        }
-    }
-
-    private void executeQueueX() {
-        while (viewOffsetXQueue.size() > 0) {
-            UXValueListener.safeHandle(viewOffsetXListener, viewOffsetXQueue.remove(0));
+            UXValueListener.safeHandle(viewOffsetXListener, new ValueChange<>(this, old, viewOffsetX));
         }
     }
 
     private void fireViewOffsetYListener(float old) {
         if (viewOffsetYListener != null && old != viewOffsetY) {
-            if (viewOffsetYQueue.size() > 0) {
-                viewOffsetYQueue.add(new ValueChange<>(this, old, viewOffsetY));
-            } else {
-                UXValueListener.safeHandle(viewOffsetYListener, new ValueChange<>(this, old, viewOffsetY));
-            }
-        }
-    }
-
-    private void executeQueueY() {
-        while (viewOffsetYQueue.size() > 0) {
-            UXValueListener.safeHandle(viewOffsetYListener, viewOffsetYQueue.remove(0));
+            UXValueListener.safeHandle(viewOffsetYListener, new ValueChange<>(this, old, viewOffsetY));
         }
     }
 

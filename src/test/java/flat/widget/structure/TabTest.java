@@ -1,4 +1,4 @@
-package flat.widget.layout;
+package flat.widget.structure;
 
 import flat.graphics.context.Font;
 import flat.uxml.Controller;
@@ -13,6 +13,7 @@ import flat.widget.Widget;
 import flat.widget.enums.HorizontalAlign;
 import flat.widget.enums.VerticalAlign;
 import flat.widget.enums.VerticalPosition;
+import flat.widget.layout.Frame;
 import flat.window.Activity;
 import flat.window.ActivitySupport;
 import org.junit.Before;
@@ -406,8 +407,8 @@ public class TabTest {
     }
 
     private void assertLayout(Widget widget, float x, float y, float width, float height) {
-        assertEquals("X", x, widget.getX(), 0.1f);
-        assertEquals("Y", y, widget.getY(), 0.1f);
+        assertEquals("X", x, widget.getLayoutX(), 0.1f);
+        assertEquals("Y", y, widget.getLayoutY(), 0.1f);
         assertEquals("Width", width, widget.getLayoutWidth(), 0.1f);
         assertEquals("Height", height, widget.getLayoutHeight(), 0.1f);
     }

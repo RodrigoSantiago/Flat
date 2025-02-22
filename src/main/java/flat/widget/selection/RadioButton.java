@@ -19,9 +19,9 @@ public class RadioButton extends Widget {
     private UXValueListener<Boolean> activeListener;
     private boolean active;
 
+    private Drawable iconInactive;
+    private Drawable iconActive;
     private ImageFilter iconImageFilter = ImageFilter.LINEAR;
-    private Drawable inactiveIcon;
-    private Drawable activeIcon;
     private int iconColor = Color.white;
     private float iconTransitionDuration;
 
@@ -63,8 +63,8 @@ public class RadioButton extends Widget {
 
         setIconColor(attrs.getColor("icon-color", info, getIconColor()));
         setIconImageFilter(attrs.getConstant("icon-image-filter", info, getIconImageFilter()));
-        setInactiveIcon(attrs.getResourceAsDrawable("inactive-icon", info, getInactiveIcon(), false));
-        setActiveIcon(attrs.getResourceAsDrawable("active-icon", info, getActiveIcon(), false));
+        setIconInactive(attrs.getResourceAsDrawable("icon-inactive", info, getIconInactive(), false));
+        setIconActive(attrs.getResourceAsDrawable("icon-active", info, getIconActive(), false));
         setIconTransitionDuration(attrs.getNumber("icon-transition-duration", info, getIconTransitionDuration()));
     }
 
@@ -147,10 +147,10 @@ public class RadioButton extends Widget {
     }
 
     private void updateIconSize() {
-        float iaWidth = activeIcon == null ? 0 : activeIcon.getWidth();
-        float iaHeight = activeIcon == null ? 0 : activeIcon.getHeight();
-        float iiWidth = inactiveIcon == null ? 0 : inactiveIcon.getWidth();
-        float iiHeight = inactiveIcon == null ? 0 : inactiveIcon.getHeight();
+        float iaWidth = iconActive == null ? 0 : iconActive.getWidth();
+        float iaHeight = iconActive == null ? 0 : iconActive.getHeight();
+        float iiWidth = iconInactive == null ? 0 : iconInactive.getWidth();
+        float iiHeight = iconInactive == null ? 0 : iconInactive.getHeight();
         float nextWidth = Math.max(iaWidth, iiWidth);
         float nextHeight = Math.max(iaHeight, iiHeight);
         if (nextWidth != iconWidth || nextHeight != iconHeight) {
@@ -163,9 +163,9 @@ public class RadioButton extends Widget {
     }
 
     private void setCurrentIcon() {
-        Drawable icon = isActive() ? activeIcon : inactiveIcon;
+        Drawable icon = isActive() ? iconActive : iconInactive;
         if (icon == null) {
-            icon = isActive() ? inactiveIcon : activeIcon;
+            icon = isActive() ? iconInactive : iconActive;
         }
         if (currentIcon != icon) {
             if (iconTransitionDuration > 0) {
@@ -195,25 +195,25 @@ public class RadioButton extends Widget {
         }
     }
 
-    public Drawable getInactiveIcon() {
-        return inactiveIcon;
+    public Drawable getIconInactive() {
+        return iconInactive;
     }
 
-    public void setInactiveIcon(Drawable inactiveIcon) {
-        if (this.inactiveIcon != inactiveIcon) {
-            this.inactiveIcon = inactiveIcon;
+    public void setIconInactive(Drawable iconInactive) {
+        if (this.iconInactive != iconInactive) {
+            this.iconInactive = iconInactive;
             updateIconSize();
             setCurrentIcon();
         }
     }
 
-    public Drawable getActiveIcon() {
-        return activeIcon;
+    public Drawable getIconActive() {
+        return iconActive;
     }
 
-    public void setActiveIcon(Drawable activeIcon) {
-        if (this.activeIcon != activeIcon) {
-            this.activeIcon = activeIcon;
+    public void setIconActive(Drawable iconActive) {
+        if (this.iconActive != iconActive) {
+            this.iconActive = iconActive;
 
             updateIconSize();
             setCurrentIcon();

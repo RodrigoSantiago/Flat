@@ -207,8 +207,8 @@ public class DialogTest {
         sceneA.onMeasure();
         sceneA.onLayout(800, 600);
 
-        assertEquals(150, dialog.getX(), 0.1f);
-        assertEquals(225, dialog.getY(), 0.1f);
+        assertEquals(150, dialog.getLayoutX(), 0.1f);
+        assertEquals(225, dialog.getLayoutY(), 0.1f);
     }
 
     private HashMap<Integer, UXValue> createNonDefaultValues() {

@@ -1,4 +1,4 @@
-package flat.widget.layout;
+package flat.widget.structure;
 
 import flat.events.ActionEvent;
 import flat.graphics.context.Font;
@@ -11,9 +11,12 @@ import flat.uxml.UXListener;
 import flat.uxml.UXNode;
 import flat.uxml.value.*;
 import flat.widget.Scene;
+import flat.widget.Widget;
 import flat.widget.enums.HorizontalAlign;
 import flat.widget.enums.ImageFilter;
 import flat.widget.enums.VerticalAlign;
+import flat.widget.layout.Frame;
+import flat.widget.text.Button;
 import flat.window.Activity;
 import flat.window.ActivitySupport;
 import org.junit.Before;
@@ -84,16 +87,20 @@ public class PageTest {
         assertEquals(0x000000FF, page.getTextColor());
         assertNull(page.getText());
 
-        assertFalse(page.getIconScaleHeight());
+        assertEquals(0, page.getIconWidth(), 0.001f);
+        assertEquals(0, page.getIconHeight(), 0.001f);
         assertEquals(0, page.getIconSpacing(), 0.1f);
         assertEquals(ImageFilter.LINEAR, page.getIconImageFilter());
         assertNull(page.getIcon());
         assertEquals(0xFFFFFFFF, page.getIconColor());
-        assertFalse(page.getCloseIconScaleHeight());
+        assertEquals(0, page.getCloseIconWidth(), 0.001f);
+        assertEquals(0, page.getCloseIconHeight(), 0.001f);
         assertEquals(0, page.getCloseIconSpacing(), 0.1f);
         assertEquals(ImageFilter.LINEAR, page.getCloseIconImageFilter());
         assertNull(page.getCloseIcon());
         assertEquals(0xFFFFFFFF, page.getCloseIconColor());
+        assertNull(page.getCloseIcon());
+        assertNull(page.getCloseIcon());
 
         page.setAttributes(createNonDefaultValues(), "page");
         page.applyAttributes(controller);
@@ -105,12 +112,14 @@ public class PageTest {
         assertEquals(0x000000FF, page.getTextColor());
         assertEquals("Hello World", page.getText());
 
-        assertFalse(page.getCloseIconScaleHeight());
+        assertEquals(0, page.getIconWidth(), 0.001f);
+        assertEquals(0, page.getIconHeight(), 0.001f);
         assertEquals(0, page.getCloseIconSpacing(), 0.1f);
         assertEquals(ImageFilter.LINEAR, page.getIconImageFilter());
-        assertNull(page.getCloseIcon());
+        assertNull(page.getIcon());
         assertEquals(0xFFFFFFFF, page.getCloseIconColor());
-        assertFalse(page.getCloseIconScaleHeight());
+        assertEquals(0, page.getCloseIconWidth(), 0.001f);
+        assertEquals(0, page.getCloseIconHeight(), 0.001f);
         assertEquals(0, page.getIconSpacing(), 0.1f);
         assertEquals(ImageFilter.LINEAR, page.getCloseIconImageFilter());
         assertNull(page.getCloseIcon());
@@ -125,16 +134,248 @@ public class PageTest {
         assertEquals(0xFF0000FF, page.getTextColor());
         assertEquals("Hello World", page.getText());
 
-        assertTrue(page.getIconScaleHeight());
+        assertEquals(16, page.getIconWidth(), 0.001f);
+        assertEquals(18, page.getIconHeight(), 0.001f);
         assertEquals(24, page.getIconSpacing(), 0.1f);
         assertEquals(ImageFilter.NEAREST, page.getIconImageFilter());
         assertEquals(icon, page.getIcon());
         assertEquals(0xFFFF00FF, page.getIconColor());
-        assertTrue(page.getCloseIconScaleHeight());
+        assertEquals(20, page.getCloseIconWidth(), 0.001f);
+        assertEquals(22, page.getCloseIconHeight(), 0.001f);
         assertEquals(16, page.getCloseIconSpacing(), 0.1f);
         assertEquals(ImageFilter.NEAREST, page.getCloseIconImageFilter());
         assertEquals(closeIcon, page.getCloseIcon());
         assertEquals(0xFF0000FF, page.getCloseIconColor());
+    }
+
+    @Test
+    public void measure() {
+        when(defaultFont.getWidth(any(), anyFloat(), anyFloat())).thenReturn(165f);
+        when(defaultFont.getHeight(anyFloat())).thenReturn(32f);
+
+        Page page = new Page();
+        page.setText("Hello World");
+        page.onMeasure();
+
+        assertEquals(165, page.getMeasureWidth(), 0.1f);
+        assertEquals(32, page.getMeasureHeight(), 0.1f);
+
+        page.setMargins(1, 2, 3, 4);
+        page.setPadding(5, 4, 2, 3);
+        page.onMeasure();
+
+        assertEquals(178, page.getMeasureWidth(), 0.1f);
+        assertEquals(43, page.getMeasureHeight(), 0.1f);
+
+        page.setPrefSize(100, 200);
+        page.onMeasure();
+
+        assertEquals(106, page.getMeasureWidth(), 0.1f);
+        assertEquals(204, page.getMeasureHeight(), 0.1f);
+
+        page.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
+        page.onMeasure();
+
+        assertEquals(Widget.MATCH_PARENT, page.getMeasureWidth(), 0.1f);
+        assertEquals(Widget.MATCH_PARENT, page.getMeasureHeight(), 0.1f);
+    }
+
+    @Test
+    public void iconSize() {
+        when(defaultFont.getWidth(any(), anyFloat(), anyFloat())).thenReturn(165f);
+        when(defaultFont.getHeight(anyFloat())).thenReturn(32f);
+
+        Drawable drawable = mock(Drawable.class);
+        when(drawable.getWidth()).thenReturn(24f);
+        when(drawable.getHeight()).thenReturn(16f);
+
+        Page page = new Page();
+        page.setText("Hello World");
+        page.setIcon(drawable);
+        page.setIconWidth(Widget.WRAP_CONTENT);
+        page.setIconHeight(Widget.WRAP_CONTENT);
+
+        page.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
+        page.onMeasure();
+
+        assertEquals(165 + 32, page.getMeasureWidth(), 0.1f);
+        assertEquals(32, page.getMeasureHeight(), 0.1f);
+
+        page.setIconWidth(58f);
+        page.setIconHeight(64f);
+        page.onMeasure();
+
+        assertEquals(165 + 58f, page.getMeasureWidth(), 0.1f);
+        assertEquals(64, page.getMeasureHeight(), 0.1f);
+
+        page.setIconWidth(32f);
+        page.setIconHeight(16f);
+        page.setMargins(1, 2, 3, 4);
+        page.setPadding(5, 4, 2, 3);
+        page.onMeasure();
+
+        assertEquals(178 + 32, page.getMeasureWidth(), 0.1f);
+        assertEquals(43, page.getMeasureHeight(), 0.1f);
+
+        page.setPrefSize(100, 200);
+        page.onMeasure();
+
+        assertEquals(106, page.getMeasureWidth(), 0.1f);
+        assertEquals(204, page.getMeasureHeight(), 0.1f);
+
+        page.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
+        page.onMeasure();
+
+        assertEquals(Widget.MATCH_PARENT, page.getMeasureWidth(), 0.1f);
+        assertEquals(Widget.MATCH_PARENT, page.getMeasureHeight(), 0.1f);
+    }
+
+    @Test
+    public void closeIconSize() {
+        when(defaultFont.getWidth(any(), anyFloat(), anyFloat())).thenReturn(165f);
+        when(defaultFont.getHeight(anyFloat())).thenReturn(32f);
+
+        Drawable drawable = mock(Drawable.class);
+        when(drawable.getWidth()).thenReturn(24f);
+        when(drawable.getHeight()).thenReturn(16f);
+
+        Page page = new Page();
+        page.setText("Hello World");
+        page.setCloseIcon(drawable);
+        page.setCloseIconWidth(Widget.WRAP_CONTENT);
+        page.setCloseIconHeight(Widget.WRAP_CONTENT);
+
+        page.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
+        page.onMeasure();
+
+        assertEquals(165 + 32, page.getMeasureWidth(), 0.1f);
+        assertEquals(32, page.getMeasureHeight(), 0.1f);
+
+        page.setCloseIconWidth(58f);
+        page.setCloseIconHeight(64f);
+        page.onMeasure();
+
+        assertEquals(165 + 58f, page.getMeasureWidth(), 0.1f);
+        assertEquals(64, page.getMeasureHeight(), 0.1f);
+
+        page.setCloseIconWidth(32f);
+        page.setCloseIconHeight(16f);
+        page.setMargins(1, 2, 3, 4);
+        page.setPadding(5, 4, 2, 3);
+        page.onMeasure();
+
+        assertEquals(178 + 32, page.getMeasureWidth(), 0.1f);
+        assertEquals(43, page.getMeasureHeight(), 0.1f);
+
+        page.setPrefSize(100, 200);
+        page.onMeasure();
+
+        assertEquals(106, page.getMeasureWidth(), 0.1f);
+        assertEquals(204, page.getMeasureHeight(), 0.1f);
+
+        page.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
+        page.onMeasure();
+
+        assertEquals(Widget.MATCH_PARENT, page.getMeasureWidth(), 0.1f);
+        assertEquals(Widget.MATCH_PARENT, page.getMeasureHeight(), 0.1f);
+    }
+
+    @Test
+    public void measureIconSpacing() {
+        when(defaultFont.getWidth(any(), anyFloat(), anyFloat())).thenReturn(165f);
+        when(defaultFont.getHeight(anyFloat())).thenReturn(32f);
+
+        Drawable drawable = mock(Drawable.class);
+        when(drawable.getWidth()).thenReturn(24f);
+        when(drawable.getHeight()).thenReturn(16f);
+
+        Page page = new Page();
+        page.setText("Hello World");
+        page.setIcon(null);
+        page.setIconSpacing(8f);
+        page.setIconWidth(24);
+        page.setIconHeight(16);
+
+        page.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
+        page.onMeasure();
+
+        assertEquals(165, page.getMeasureWidth(), 0.1f);
+        assertEquals(32, page.getMeasureHeight(), 0.1f);
+
+        page.setIcon(drawable);
+        page.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
+        page.onMeasure();
+
+        assertEquals(165 + 24 + 8f, page.getMeasureWidth(), 0.1f);
+        assertEquals(32, page.getMeasureHeight(), 0.1f);
+
+        page.setMargins(1, 2, 3, 4);
+        page.setPadding(5, 4, 2, 3);
+        page.onMeasure();
+
+        assertEquals(178 + 24 + 8f, page.getMeasureWidth(), 0.1f);
+        assertEquals(43, page.getMeasureHeight(), 0.1f);
+
+        page.setPrefSize(100, 200);
+        page.onMeasure();
+
+        assertEquals(106, page.getMeasureWidth(), 0.1f);
+        assertEquals(204, page.getMeasureHeight(), 0.1f);
+
+        page.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
+        page.onMeasure();
+
+        assertEquals(Widget.MATCH_PARENT, page.getMeasureWidth(), 0.1f);
+        assertEquals(Widget.MATCH_PARENT, page.getMeasureHeight(), 0.1f);
+    }
+
+    @Test
+    public void measureCloseIconSpacing() {
+        when(defaultFont.getWidth(any(), anyFloat(), anyFloat())).thenReturn(165f);
+        when(defaultFont.getHeight(anyFloat())).thenReturn(32f);
+
+        Drawable drawable = mock(Drawable.class);
+        when(drawable.getWidth()).thenReturn(24f);
+        when(drawable.getHeight()).thenReturn(16f);
+
+        Page page = new Page();
+        page.setText("Hello World");
+        page.setCloseIcon(null);
+        page.setCloseIconSpacing(8f);
+        page.setCloseIconWidth(24);
+        page.setCloseIconHeight(16);
+
+        page.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
+        page.onMeasure();
+
+        assertEquals(165, page.getMeasureWidth(), 0.1f);
+        assertEquals(32, page.getMeasureHeight(), 0.1f);
+
+        page.setCloseIcon(drawable);
+        page.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
+        page.onMeasure();
+
+        assertEquals(165 + 24 + 8f, page.getMeasureWidth(), 0.1f);
+        assertEquals(32, page.getMeasureHeight(), 0.1f);
+
+        page.setMargins(1, 2, 3, 4);
+        page.setPadding(5, 4, 2, 3);
+        page.onMeasure();
+
+        assertEquals(178 + 24 + 8f, page.getMeasureWidth(), 0.1f);
+        assertEquals(43, page.getMeasureHeight(), 0.1f);
+
+        page.setPrefSize(100, 200);
+        page.onMeasure();
+
+        assertEquals(106, page.getMeasureWidth(), 0.1f);
+        assertEquals(204, page.getMeasureHeight(), 0.1f);
+
+        page.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
+        page.onMeasure();
+
+        assertEquals(Widget.MATCH_PARENT, page.getMeasureWidth(), 0.1f);
+        assertEquals(Widget.MATCH_PARENT, page.getMeasureHeight(), 0.1f);
     }
 
     @Test
@@ -350,13 +591,15 @@ public class PageTest {
 
         hash.put(UXHash.getHash("icon"), uxIcon);
         hash.put(UXHash.getHash("icon-color"), new UXValueColor(0xFFFF00FF));
-        hash.put(UXHash.getHash("icon-scale-height"), new UXValueBool(true));
+        hash.put(UXHash.getHash("icon-width"), new UXValueSizeSp(16));
+        hash.put(UXHash.getHash("icon-height"), new UXValueSizeSp(18));
         hash.put(UXHash.getHash("icon-spacing"), new UXValueSizeSp(24));
         hash.put(UXHash.getHash("icon-image-filter"), new UXValueText(ImageFilter.NEAREST.toString()));
 
         hash.put(UXHash.getHash("close-icon"), uxCloseIcon);
         hash.put(UXHash.getHash("close-icon-color"), new UXValueColor(0xFF0000FF));
-        hash.put(UXHash.getHash("close-icon-scale-height"), new UXValueBool(true));
+        hash.put(UXHash.getHash("close-icon-width"), new UXValueSizeSp(20));
+        hash.put(UXHash.getHash("close-icon-height"), new UXValueSizeSp(22));
         hash.put(UXHash.getHash("close-icon-spacing"), new UXValueSizeSp(16));
         hash.put(UXHash.getHash("close-icon-image-filter"), new UXValueText(ImageFilter.NEAREST.toString()));
 

@@ -1,4 +1,4 @@
-package flat.widget.layout;
+package flat.widget.structure;
 
 import flat.animations.StateInfo;
 import flat.events.ActionEvent;
@@ -136,10 +136,6 @@ public class Tab extends Group {
         }
 
         setMeasure(mWidth, mHeight);
-    }
-
-    private float getDefHeight(Widget widget) {
-        return Math.min(widget.getLayoutMaxHeight(), widget.getMeasureHeight());
     }
 
     @Override

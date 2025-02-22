@@ -48,7 +48,7 @@ public class Frame extends Group {
         setController(controller);
     }
 
-    protected void setController(Controller controller) {
+    public void setController(Controller controller) {
         if (this.controller != controller) {
             Controller old = this.controller;
             this.controller = controller;

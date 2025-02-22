@@ -81,19 +81,19 @@ public class Label extends Widget {
         drawBackground(context);
         drawRipple(context);
 
-        if (showText != null && font != null && textSize > 0 && Color.getAlpha(textColor) > 0) {
+        float x = getInX();
+        float y = getInY();
+        float width = getInWidth();
+        float height = getInHeight();
+
+        if (width <= 0 || height <= 0) return;
+
+        if (showText != null && getFont() != null && getTextSize() > 0 && Color.getAlpha(getTextColor()) > 0) {
             context.setTransform2D(getTransform());
-            context.setColor(textColor);
-            context.setTextFont(font);
-            context.setTextSize(textSize);
+            context.setColor(getTextColor());
+            context.setTextFont(getFont());
+            context.setTextSize(getTextSize());
             context.setTextBlur(0);
-
-            final float x = getInX();
-            final float y = getInY();
-            final float width = getInWidth();
-            final float height = getInHeight();
-
-            if (width <= 0 || height <= 0) return;
 
             context.drawTextSlice(
                     xOff(x, x + width, Math.min(getTextWidth(), width)),
@@ -205,7 +205,7 @@ public class Label extends Widget {
     }
 
     protected float getTextHeight() {
-        return font == null ? 0 : font.getHeight(textSize);
+        return font == null ? textSize : font.getHeight(textSize);
     }
 
     protected String getShowText() {

@@ -10,10 +10,12 @@ import flat.widget.selection.Checkbox;
 import flat.widget.selection.RadioButton;
 import flat.widget.selection.RadioGroup;
 import flat.widget.selection.SwitchToggle;
+import flat.widget.structure.ListView;
+import flat.widget.structure.Page;
+import flat.widget.structure.Tab;
 import flat.widget.text.Button;
 import flat.widget.text.Label;
 import flat.widget.value.HorizontalScrollBar;
-import flat.widget.value.ScrollBar;
 import flat.widget.value.VerticalScrollBar;
 
 import java.util.ArrayList;
@@ -50,6 +52,7 @@ public class UXBuilder {
         UXBuilder.install("Frame", Frame::new);
         UXBuilder.install("Tab", Tab::new);
         UXBuilder.install("Page", Page::new);
+        UXBuilder.install("ListView", ListView::new);
         /*UXBuilder.install("Divider", Divider::new);
         UXBuilder.install("ToggleButton", ToggleButton::new);
         UXBuilder.install("ToggleGroup", RadioGroup::new);

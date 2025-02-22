@@ -52,7 +52,7 @@ public class HorizontalScrollBarTest {
         assertNull(scrollBar.getSlideListener());
         assertNull(scrollBar.getViewOffsetListener());
 
-        scrollBar.setAttributes(createNonDefaultValues(), "scrollbar");
+        scrollBar.setAttributes(createNonDefaultValues(), "horizontal-scroll-bar");
         scrollBar.applyAttributes(controller);
 
         assertEquals(200, scrollBar.getTotalDimension(), 0.1f);

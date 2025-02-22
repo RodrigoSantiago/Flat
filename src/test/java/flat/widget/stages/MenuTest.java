@@ -5,10 +5,8 @@ import flat.uxml.*;
 import flat.uxml.value.UXValue;
 import flat.uxml.value.UXValueNumber;
 import flat.uxml.value.UXValueText;
-import flat.widget.Group;
 import flat.widget.Scene;
 import flat.widget.Widget;
-import flat.widget.WidgetSupport;
 import flat.widget.enums.DropdownAlign;
 import flat.widget.enums.HorizontalAlign;
 import flat.widget.layout.Panel;
@@ -280,58 +278,58 @@ public class MenuTest {
         menu.show(activityA, 200, 300, DropdownAlign.TOP_LEFT);
         menu.onMeasure();
         menu.onLayout(100, 150);
-        assertEquals(200, menu.getX(), 0.1f);
-        assertEquals(300, menu.getY(), 0.1f);
+        assertEquals(200, menu.getLayoutX(), 0.1f);
+        assertEquals(300, menu.getLayoutY(), 0.1f);
         menu.hide();
 
         menu.show(activityA, 200, 300, DropdownAlign.TOP_RIGHT);
         menu.onMeasure();
         menu.onLayout(100, 150);
-        assertEquals(100, menu.getX(), 0.1f);
-        assertEquals(300, menu.getY(), 0.1f);
+        assertEquals(100, menu.getLayoutX(), 0.1f);
+        assertEquals(300, menu.getLayoutY(), 0.1f);
         menu.hide();
 
         menu.show(activityA, 200, 300, DropdownAlign.BOTTOM_LEFT);
         menu.onMeasure();
         menu.onLayout(100, 150);
-        assertEquals(200, menu.getX(), 0.1f);
-        assertEquals(150, menu.getY(), 0.1f);
+        assertEquals(200, menu.getLayoutX(), 0.1f);
+        assertEquals(150, menu.getLayoutY(), 0.1f);
         menu.hide();
 
         menu.show(activityA, 200, 300, DropdownAlign.BOTTOM_RIGHT);
         menu.onMeasure();
         menu.onLayout(100, 150);
-        assertEquals(100, menu.getX(), 0.1f);
-        assertEquals(150, menu.getY(), 0.1f);
+        assertEquals(100, menu.getLayoutX(), 0.1f);
+        assertEquals(150, menu.getLayoutY(), 0.1f);
         menu.hide();
 
         menu.show(activityA, 200, 200, DropdownAlign.SCREEN_SPACE);
         menu.onMeasure();
         menu.onLayout(100, 150);
-        assertEquals(200, menu.getX(), 0.1f);
-        assertEquals(200, menu.getY(), 0.1f);
+        assertEquals(200, menu.getLayoutX(), 0.1f);
+        assertEquals(200, menu.getLayoutY(), 0.1f);
         menu.hide();
 
         menu.show(activityA, 600, 400, DropdownAlign.SCREEN_SPACE);
         menu.onMeasure();
         menu.onLayout(100, 150);
-        assertEquals(500, menu.getX(), 0.1f);
-        assertEquals(250, menu.getY(), 0.1f);
+        assertEquals(500, menu.getLayoutX(), 0.1f);
+        assertEquals(250, menu.getLayoutY(), 0.1f);
         menu.hide();
 
         // Outsite activity
         menu.show(activityA, 800, 600, DropdownAlign.TOP_LEFT);
         menu.onMeasure();
         menu.onLayout(100, 150);
-        assertEquals(700, menu.getX(), 0.1f);
-        assertEquals(450, menu.getY(), 0.1f);
+        assertEquals(700, menu.getLayoutX(), 0.1f);
+        assertEquals(450, menu.getLayoutY(), 0.1f);
         menu.hide();
 
         menu.show(activityA, 50, 50, DropdownAlign.BOTTOM_RIGHT);
         menu.onMeasure();
         menu.onLayout(100, 150);
-        assertEquals(0, menu.getX(), 0.1f);
-        assertEquals(0, menu.getY(), 0.1f);
+        assertEquals(0, menu.getLayoutX(), 0.1f);
+        assertEquals(0, menu.getLayoutY(), 0.1f);
         menu.hide();
 
         // Margins
@@ -339,15 +337,15 @@ public class MenuTest {
         menu.show(activityA, 200, 300, DropdownAlign.TOP_LEFT);
         menu.onMeasure();
         menu.onLayout(100, 150);
-        assertEquals(196, menu.getX(), 0.1f);
-        assertEquals(299, menu.getY(), 0.1f);
+        assertEquals(196, menu.getLayoutX(), 0.1f);
+        assertEquals(299, menu.getLayoutY(), 0.1f);
         menu.hide();
 
         menu.show(activityA, 200, 300, DropdownAlign.BOTTOM_RIGHT);
         menu.onMeasure();
         menu.onLayout(100, 150);
-        assertEquals(96, menu.getX(), 0.1f);
-        assertEquals(149, menu.getY(), 0.1f);
+        assertEquals(96, menu.getLayoutX(), 0.1f);
+        assertEquals(149, menu.getLayoutY(), 0.1f);
         menu.hide();
     }
 
@@ -368,8 +366,8 @@ public class MenuTest {
     }
 
     private void assertLayout(Widget widget, float x, float y, float width, float height) {
-        assertEquals("X", x, widget.getX(), 0.1f);
-        assertEquals("Y", y, widget.getY(), 0.1f);
+        assertEquals("X", x, widget.getLayoutX(), 0.1f);
+        assertEquals("Y", y, widget.getLayoutY(), 0.1f);
         assertEquals("Width", width, widget.getLayoutWidth(), 0.1f);
         assertEquals("Height", height, widget.getLayoutHeight(), 0.1f);
     }

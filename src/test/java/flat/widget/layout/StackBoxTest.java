@@ -60,8 +60,8 @@ public class StackBoxTest {
         assertMeasure(parent, 200, 350);
         parent.onLayout(200, 350);
 
-        assertEquals(0, child.getX(), 0.001f);
-        assertEquals(230, child.getY(), 0.001f);
+        assertEquals(0, child.getLayoutX(), 0.001f);
+        assertEquals(230, child.getLayoutY(), 0.001f);
 
         parent.setHorizontalAlign(HorizontalAlign.RIGHT);
         parent.setVerticalAlign(VerticalAlign.TOP);
@@ -69,8 +69,8 @@ public class StackBoxTest {
         assertMeasure(parent, 200, 350);
         parent.onLayout(200, 350);
 
-        assertEquals(100, child.getX(), 0.001f);
-        assertEquals(0, child.getY(), 0.001f);
+        assertEquals(100, child.getLayoutX(), 0.001f);
+        assertEquals(0, child.getLayoutY(), 0.001f);
 
         parent.setHorizontalAlign(HorizontalAlign.CENTER);
         parent.setVerticalAlign(VerticalAlign.MIDDLE);
@@ -78,8 +78,8 @@ public class StackBoxTest {
         assertMeasure(parent, 200, 350);
         parent.onLayout(200, 350);
 
-        assertEquals(50, child.getX(), 0.001f);
-        assertEquals(115, child.getY(), 0.001f);
+        assertEquals(50, child.getLayoutX(), 0.001f);
+        assertEquals(115, child.getLayoutY(), 0.001f);
 
         parent.setHorizontalAlign(HorizontalAlign.LEFT);
         parent.setVerticalAlign(VerticalAlign.TOP);
@@ -89,8 +89,8 @@ public class StackBoxTest {
         assertMeasure(parent, 208, 356);
         parent.onLayout(208, 356);
 
-        assertEquals(11, child.getX(), 0.001f);
-        assertEquals(5, child.getY(), 0.001f);
+        assertEquals(11, child.getLayoutX(), 0.001f);
+        assertEquals(5, child.getLayoutY(), 0.001f);
 
         parent.setHorizontalAlign(HorizontalAlign.RIGHT);
         parent.setVerticalAlign(VerticalAlign.BOTTOM);
@@ -100,8 +100,8 @@ public class StackBoxTest {
         assertMeasure(parent, 208, 356);
         parent.onLayout(208, 356);
 
-        assertEquals(101, child.getX(), 0.001f);
-        assertEquals(227, child.getY(), 0.001f);
+        assertEquals(101, child.getLayoutX(), 0.001f);
+        assertEquals(227, child.getLayoutY(), 0.001f);
     }
 
     @Test
@@ -121,11 +121,11 @@ public class StackBoxTest {
         assertMeasure(parent, 200, 350);
         parent.onLayout(200, 350);
 
-        assertEquals(0, child1.getX(), 0.001f);
-        assertEquals(230, child1.getY(), 0.001f);
+        assertEquals(0, child1.getLayoutX(), 0.001f);
+        assertEquals(230, child1.getLayoutY(), 0.001f);
 
-        assertEquals(0, child2.getX(), 0.001f);
-        assertEquals(290, child2.getY(), 0.001f);
+        assertEquals(0, child2.getLayoutX(), 0.001f);
+        assertEquals(290, child2.getLayoutY(), 0.001f);
 
         parent.setHorizontalAlign(HorizontalAlign.RIGHT);
         parent.setVerticalAlign(VerticalAlign.TOP);
@@ -133,10 +133,10 @@ public class StackBoxTest {
         assertMeasure(parent, 200, 350);
         parent.onLayout(200, 350);
 
-        assertEquals(100, child1.getX(), 0.001f);
-        assertEquals(0, child1.getY(), 0.001f);
-        assertEquals(150, child2.getX(), 0.001f);
-        assertEquals(0, child2.getY(), 0.001f);
+        assertEquals(100, child1.getLayoutX(), 0.001f);
+        assertEquals(0, child1.getLayoutY(), 0.001f);
+        assertEquals(150, child2.getLayoutX(), 0.001f);
+        assertEquals(0, child2.getLayoutY(), 0.001f);
 
         parent.setHorizontalAlign(HorizontalAlign.CENTER);
         parent.setVerticalAlign(VerticalAlign.MIDDLE);
@@ -144,10 +144,10 @@ public class StackBoxTest {
         assertMeasure(parent, 200, 350);
         parent.onLayout(200, 350);
 
-        assertEquals(50, child1.getX(), 0.001f);
-        assertEquals(115, child1.getY(), 0.001f);
-        assertEquals(75, child2.getX(), 0.001f);
-        assertEquals(145, child2.getY(), 0.001f);
+        assertEquals(50, child1.getLayoutX(), 0.001f);
+        assertEquals(115, child1.getLayoutY(), 0.001f);
+        assertEquals(75, child2.getLayoutX(), 0.001f);
+        assertEquals(145, child2.getLayoutY(), 0.001f);
 
         parent.setHorizontalAlign(HorizontalAlign.LEFT);
         parent.setVerticalAlign(VerticalAlign.TOP);
@@ -157,10 +157,10 @@ public class StackBoxTest {
         assertMeasure(parent, 208, 356);
         parent.onLayout(208, 356);
 
-        assertEquals(11, child1.getX(), 0.001f);
-        assertEquals(5, child1.getY(), 0.001f);
-        assertEquals(11, child2.getX(), 0.001f);
-        assertEquals(5, child2.getY(), 0.001f);
+        assertEquals(11, child1.getLayoutX(), 0.001f);
+        assertEquals(5, child1.getLayoutY(), 0.001f);
+        assertEquals(11, child2.getLayoutX(), 0.001f);
+        assertEquals(5, child2.getLayoutY(), 0.001f);
 
         parent.setHorizontalAlign(HorizontalAlign.RIGHT);
         parent.setVerticalAlign(VerticalAlign.BOTTOM);
@@ -170,10 +170,10 @@ public class StackBoxTest {
         assertMeasure(parent, 208, 356);
         parent.onLayout(208, 356);
 
-        assertEquals(101, child1.getX(), 0.001f);
-        assertEquals(227, child1.getY(), 0.001f);
-        assertEquals(151, child2.getX(), 0.001f);
-        assertEquals(287, child2.getY(), 0.001f);
+        assertEquals(101, child1.getLayoutX(), 0.001f);
+        assertEquals(227, child1.getLayoutY(), 0.001f);
+        assertEquals(151, child2.getLayoutX(), 0.001f);
+        assertEquals(287, child2.getLayoutY(), 0.001f);
     }
 
     @Test
@@ -217,8 +217,8 @@ public class StackBoxTest {
     }
 
     private void assertLayout(Widget widget, float x, float y, float width, float height) {
-        assertEquals("X", x, widget.getX(), 0.1f);
-        assertEquals("Y", y, widget.getY(), 0.1f);
+        assertEquals("X", x, widget.getLayoutX(), 0.1f);
+        assertEquals("Y", y, widget.getLayoutY(), 0.1f);
         assertEquals("Width", width, widget.getLayoutWidth(), 0.1f);
         assertEquals("Height", height, widget.getLayoutHeight(), 0.1f);
     }

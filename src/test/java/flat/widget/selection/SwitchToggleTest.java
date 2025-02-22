@@ -67,8 +67,8 @@ public class SwitchToggleTest {
 
         SwitchToggle switchToggle = new SwitchToggle();
 
-        assertNull(switchToggle.getActiveIcon());
-        assertNull(switchToggle.getInactiveIcon());
+        assertNull(switchToggle.getIconActive());
+        assertNull(switchToggle.getIconInactive());
         assertEquals(0, switchToggle.getIconTransitionDuration(), 0.0001f);
         assertEquals(0, switchToggle.getSlideTransitionDuration(), 0.0001f);
         assertEquals(0xFFFFFFFF, switchToggle.getIconColor());
@@ -78,11 +78,11 @@ public class SwitchToggleTest {
         assertNull(switchToggle.getToggleListener());
         assertNull(switchToggle.getActiveListener());
 
-        switchToggle.setAttributes(createNonDefaultValues(), "switchtoggle");
+        switchToggle.setAttributes(createNonDefaultValues(), "switch-toggle");
         switchToggle.applyAttributes(controller);
 
-        assertNull(switchToggle.getActiveIcon());
-        assertNull(switchToggle.getInactiveIcon());
+        assertNull(switchToggle.getIconActive());
+        assertNull(switchToggle.getIconInactive());
         assertEquals(0, switchToggle.getIconTransitionDuration(), 0.0001f);
         assertEquals(0, switchToggle.getSlideTransitionDuration(), 0.0001f);
         assertEquals(0xFFFFFFFF, switchToggle.getIconColor());
@@ -94,8 +94,8 @@ public class SwitchToggleTest {
 
         switchToggle.applyStyle();
 
-        assertEquals(iconActive, switchToggle.getActiveIcon());
-        assertEquals(iconInactive, switchToggle.getInactiveIcon());
+        assertEquals(iconActive, switchToggle.getIconActive());
+        assertEquals(iconInactive, switchToggle.getIconInactive());
         assertEquals(1.0f, switchToggle.getIconTransitionDuration(), 0.0001f);
         assertEquals(2.0f, switchToggle.getSlideTransitionDuration(), 0.0001f);
         assertEquals(0xFF0000FF, switchToggle.getIconColor());
@@ -109,8 +109,8 @@ public class SwitchToggleTest {
     @Test
     public void measureHorizontal() {
         SwitchToggle switchToggle = new SwitchToggle();
-        switchToggle.setActiveIcon(iconActive);
-        switchToggle.setInactiveIcon(iconInactive);
+        switchToggle.setIconActive(iconActive);
+        switchToggle.setIconInactive(iconInactive);
         switchToggle.setDirection(Direction.HORIZONTAL);
         switchToggle.setActive(true);
         switchToggle.onMeasure();
@@ -141,8 +141,8 @@ public class SwitchToggleTest {
     @Test
     public void measureVertical() {
         SwitchToggle switchToggle = new SwitchToggle();
-        switchToggle.setActiveIcon(iconActive);
-        switchToggle.setInactiveIcon(iconInactive);
+        switchToggle.setIconActive(iconActive);
+        switchToggle.setIconInactive(iconInactive);
         switchToggle.setDirection(Direction.VERTICAL);
         switchToggle.setActive(true);
         switchToggle.onMeasure();
@@ -173,8 +173,8 @@ public class SwitchToggleTest {
     @Test
     public void fireAction() {
         SwitchToggle switchToggle = new SwitchToggle();
-        switchToggle.setActiveIcon(iconActive);
-        switchToggle.setInactiveIcon(iconInactive);
+        switchToggle.setIconActive(iconActive);
+        switchToggle.setIconInactive(iconInactive);
 
         var action = (UXListener<ActionEvent>) mock(UXListener.class);
         switchToggle.setToggleListener(action);
@@ -210,8 +210,8 @@ public class SwitchToggleTest {
         hash.put(UXHash.getHash("icon-color"), new UXValueColor(0xFF0000FF));
         hash.put(UXHash.getHash("direction"), new UXValueText(Direction.VERTICAL.toString()));
         hash.put(UXHash.getHash("icon-image-filter"), new UXValueText(ImageFilter.NEAREST.toString()));
-        hash.put(UXHash.getHash("active-icon"), uxIconActive);
-        hash.put(UXHash.getHash("inactive-icon"), uxIconInactive);
+        hash.put(UXHash.getHash("icon-active"), uxIconActive);
+        hash.put(UXHash.getHash("icon-inactive"), uxIconInactive);
         hash.put(UXHash.getHash("icon-transition-duration"), new UXValueNumber(1.0f));
         hash.put(UXHash.getHash("slide-transition-duration"), new UXValueNumber(2.0f));
         hash.put(UXHash.getHash("active"), new UXValueBool(true));

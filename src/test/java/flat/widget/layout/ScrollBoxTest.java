@@ -1,6 +1,5 @@
 package flat.widget.layout;
 
-import flat.events.ActionEvent;
 import flat.events.SlideEvent;
 import flat.uxml.*;
 import flat.uxml.value.*;
@@ -9,7 +8,6 @@ import flat.widget.enums.VerticalBarPosition;
 import flat.widget.enums.Policy;
 import flat.widget.enums.HorizontalBarPosition;
 import flat.widget.value.HorizontalScrollBar;
-import flat.widget.value.ScrollBar;
 import flat.widget.value.VerticalScrollBar;
 import org.junit.Before;
 import org.junit.Test;
@@ -120,7 +118,7 @@ public class ScrollBoxTest {
         assertNull(verBar.getParent());
         assertNull(content.getParent());
 
-        scrollBox.setAttributes(createBarValues(), "scrollBox");
+        scrollBox.setAttributes(createBarValues(), "scroll-box");
         scrollBox.applyChildren(uxChild);
         scrollBox.applyAttributes(controller);
 
@@ -363,6 +361,18 @@ public class ScrollBoxTest {
         assertEquals(350, scrollBox.getTotalDimensionY(), 0.1f);
         assertEquals(500 - 16, scrollBox.getViewDimensionX(), 0.1f);
         assertEquals(300 - 16, scrollBox.getViewDimensionY(), 0.1f);
+
+        // Same Size
+        content.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
+        content.setMinSize(600, 400);
+        scrollBox.onMeasure();
+        assertMeasure(scrollBox, Widget.MATCH_PARENT, Widget.MATCH_PARENT);
+        scrollBox.onLayout(500, 350);
+        assertLayout(scrollBox, 0, 0, 500, 350);
+        assertEquals(600, scrollBox.getTotalDimensionX(), 0.1f);
+        assertEquals(400, scrollBox.getTotalDimensionY(), 0.1f);
+        assertEquals(484, scrollBox.getViewDimensionX(), 0.1f);
+        assertEquals(334, scrollBox.getViewDimensionY(), 0.1f);
     }
 
     @Test
@@ -479,6 +489,18 @@ public class ScrollBoxTest {
         assertEquals(350, scrollBox.getTotalDimensionY(), 0.1f);
         assertEquals(500, scrollBox.getViewDimensionX(), 0.1f);
         assertEquals(300, scrollBox.getViewDimensionY(), 0.1f);
+
+        // Same Size
+        content.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
+        content.setMinSize(600, 400);
+        scrollBox.onMeasure();
+        assertMeasure(scrollBox, Widget.MATCH_PARENT, Widget.MATCH_PARENT);
+        scrollBox.onLayout(500, 350);
+        assertLayout(scrollBox, 0, 0, 500, 350);
+        assertEquals(600, scrollBox.getTotalDimensionX(), 0.1f);
+        assertEquals(400, scrollBox.getTotalDimensionY(), 0.1f);
+        assertEquals(500, scrollBox.getViewDimensionX(), 0.1f);
+        assertEquals(350, scrollBox.getViewDimensionY(), 0.1f);
     }
 
     @Test
@@ -577,8 +599,8 @@ public class ScrollBoxTest {
         verify(slideVertical, times(3)).handle(any());
         verify(filterHorizontal, times(3)).handle(any());
         verify(filterVertical, times(3)).handle(any());
-        verify(listenerx, times(5)).handle(any());
-        verify(listenery, times(5)).handle(any());
+        verify(listenerx, times(4)).handle(any());
+        verify(listenery, times(4)).handle(any());
     }
 
     private void assertMeasure(Widget widget, float width, float height) {
@@ -587,8 +609,8 @@ public class ScrollBoxTest {
     }
 
     private void assertLayout(Widget widget, float x, float y, float width, float height) {
-        assertEquals("X", x, widget.getX(), 0.1f);
-        assertEquals("Y", y, widget.getY(), 0.1f);
+        assertEquals("X", x, widget.getLayoutX(), 0.1f);
+        assertEquals("Y", y, widget.getLayoutY(), 0.1f);
         assertEquals("Width", width, widget.getLayoutWidth(), 0.1f);
         assertEquals("Height", height, widget.getLayoutHeight(), 0.1f);
     }
