@@ -22,8 +22,8 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import java.util.HashMap;
 
 import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyFloat;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.*;
@@ -57,6 +57,9 @@ public class ButtonTest {
 
         resIcon = mock(ResourceStream.class);
         when(DrawableReader.parse(resIcon)).thenReturn(icon);
+
+        when(defaultFont.getWidth(any(), anyInt(), anyInt(), anyFloat(), anyFloat())).thenReturn(165f);
+        when(defaultFont.getHeight(anyFloat())).thenReturn(32f);
     }
 
     @Test
@@ -106,9 +109,6 @@ public class ButtonTest {
 
     @Test
     public void measure() {
-        when(defaultFont.getWidth(any(), anyFloat(), anyFloat())).thenReturn(165f);
-        when(defaultFont.getHeight(anyFloat())).thenReturn(32f);
-
         Button button = new Button();
         button.setText("Hello World");
         button.onMeasure();
@@ -138,9 +138,6 @@ public class ButtonTest {
 
     @Test
     public void iconSize() {
-        when(defaultFont.getWidth(any(), anyFloat(), anyFloat())).thenReturn(165f);
-        when(defaultFont.getHeight(anyFloat())).thenReturn(32f);
-
         Drawable drawable = mock(Drawable.class);
         when(drawable.getWidth()).thenReturn(24f);
         when(drawable.getHeight()).thenReturn(16f);
@@ -188,9 +185,6 @@ public class ButtonTest {
 
     @Test
     public void measureIconSpacing() {
-        when(defaultFont.getWidth(any(), anyFloat(), anyFloat())).thenReturn(165f);
-        when(defaultFont.getHeight(anyFloat())).thenReturn(32f);
-
         Drawable drawable = mock(Drawable.class);
         when(drawable.getWidth()).thenReturn(24f);
         when(drawable.getHeight()).thenReturn(16f);
@@ -237,9 +231,6 @@ public class ButtonTest {
 
     @Test
     public void measureIconScaleHeight() {
-        when(defaultFont.getWidth(any(), anyFloat(), anyFloat())).thenReturn(165f);
-        when(defaultFont.getHeight(anyFloat())).thenReturn(32f);
-
         Drawable drawable = mock(Drawable.class);
         when(drawable.getWidth()).thenReturn(24f);
         when(drawable.getHeight()).thenReturn(16f);
@@ -275,7 +266,6 @@ public class ButtonTest {
         assertEquals(Widget.MATCH_PARENT, button.getMeasureWidth(), 0.1f);
         assertEquals(Widget.MATCH_PARENT, button.getMeasureHeight(), 0.1f);
     }
-
 
     @Test
     public void fireAction() {

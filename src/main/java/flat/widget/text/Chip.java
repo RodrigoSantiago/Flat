@@ -119,15 +119,9 @@ public class Chip extends Button {
         }
 
         if (tw > 0 && th > 0) {
-            context.setColor(getTextColor());
-            context.setTextFont(getFont());
-            context.setTextSize(getTextSize());
-            context.setTextBlur(0);
-
             float xpos = iconLeft ? boxX + spaceForIcon : spaceForCloseIcon + boxX;
             float ypos = yOff(y, y + height, th);
-
-            context.drawTextSlice(xpos, ypos, tw, th, getShowText());
+            drawText(context, xpos, ypos, tw, th);
         }
 
         if (ciw > 0 && cih > 0 && getCloseIcon() != null) {
@@ -217,6 +211,7 @@ public class Chip extends Button {
             if (isRippleEnabled()) {
                 getRipple().setSize(Math.max(Math.abs(x1 - x2), Math.abs(y1 - y2)) * 0.5f);
                 getRipple().fire((x1 + x2) / 2f, (y1 + y2) / 2f);
+                getRipple().release();
             }
         } else {
             super.fireRipple(x, y);

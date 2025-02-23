@@ -3,6 +3,7 @@ package flat.widget.text;
 import flat.animations.StateInfo;
 import flat.graphics.Color;
 import flat.graphics.SmartContext;
+import flat.graphics.context.Context;
 import flat.graphics.context.Font;
 import flat.uxml.Controller;
 import flat.uxml.UXAttrs;
@@ -10,6 +11,9 @@ import flat.widget.Widget;
 import flat.widget.enums.HorizontalAlign;
 import flat.widget.enums.VerticalAlign;
 
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 public class Label extends Widget {
@@ -25,8 +29,13 @@ public class Label extends Widget {
     private HorizontalAlign horizontalAlign = HorizontalAlign.LEFT;
 
     private String showText;
-    private boolean invalidTextSize;
+    private boolean invalidTextSize; // TODO - MULTLINE??
     private float textWidth;
+    private TextRender textRender = new TextRender();
+
+    public Label() {
+        textRender.setFont(font);
+    }
 
     @Override
     public void applyAttributes(Controller controller) {
@@ -88,17 +97,22 @@ public class Label extends Widget {
 
         if (width <= 0 || height <= 0) return;
 
-        if (showText != null && getFont() != null && getTextSize() > 0 && Color.getAlpha(getTextColor()) > 0) {
+        if (getFont() != null && getTextSize() > 0 && Color.getAlpha(getTextColor()) > 0) {
+            float xpos = xOff(x, x + width, Math.min(getTextWidth(), width));
+            float ypos = yOff(y, y + height, Math.min(getTextHeight(), height));
+            drawText(context, xpos, ypos, width, height);
+        }
+    }
+
+    protected void drawText(SmartContext context, float x, float y, float width, float height) {
+        if (getFont() != null && getTextSize() > 0 && Color.getAlpha(getTextColor()) > 0) {
             context.setTransform2D(getTransform());
             context.setColor(getTextColor());
             context.setTextFont(getFont());
             context.setTextSize(getTextSize());
             context.setTextBlur(0);
 
-            context.drawTextSlice(
-                    xOff(x, x + width, Math.min(getTextWidth(), width)),
-                    yOff(y, y + height, Math.min(getTextHeight(), height)),
-                    width, height, showText);
+            textRender.drawText(context, getTextSize(), x, y, width, height, horizontalAlign);
         }
     }
 
@@ -110,6 +124,7 @@ public class Label extends Widget {
         if (!Objects.equals(this.text, text)) {
             this.text = text;
             showText = text == null ? null : textAllCaps ? text.toUpperCase() : text;
+            textRender.setText(showText);
             invalidate(isWrapContent());
             invalidateTextSize();
         }
@@ -123,6 +138,7 @@ public class Label extends Widget {
         if (this.textAllCaps != textAllCaps) {
             this.textAllCaps = textAllCaps;
             showText = text == null ? null : textAllCaps ? text.toUpperCase() : text;
+            textRender.setText(showText);
             invalidate(isWrapContent());
             invalidateTextSize();
         }
@@ -135,6 +151,7 @@ public class Label extends Widget {
     public void setFont(Font font) {
         if (this.font != font) {
             this.font = font;
+            textRender.setFont(font);
             invalidate(isWrapContent());
             invalidateTextSize();
         }
@@ -199,13 +216,13 @@ public class Label extends Widget {
             if (showText == null || font == null) {
                 return textWidth = 0;
             }
-            textWidth = font.getWidth(showText, textSize, 1);
+            textWidth = textRender.getTextWidth(textSize);
         }
         return textWidth;
     }
 
     protected float getTextHeight() {
-        return font == null ? textSize : font.getHeight(textSize);
+        return textRender.getTextHeight(textSize);
     }
 
     protected String getShowText() {

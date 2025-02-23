@@ -80,7 +80,7 @@ public class PageTest {
 
         Page page = new Page();
 
-        assertEquals(VerticalAlign.MIDDLE, page.getVerticalAlign());
+        assertEquals(VerticalAlign.TOP, page.getVerticalAlign());
         assertFalse(page.isTextAllCaps());
         assertEquals(defaultFont, page.getFont());
         assertEquals(16f, page.getTextSize(), 0.1f);
@@ -103,7 +103,7 @@ public class PageTest {
         page.setAttributes(createNonDefaultValues(), "page");
         page.applyAttributes(controller);
 
-        assertEquals(VerticalAlign.MIDDLE, page.getVerticalAlign());
+        assertEquals(VerticalAlign.TOP, page.getVerticalAlign());
         assertFalse(page.isTextAllCaps());
         assertEquals(defaultFont, page.getFont());
         assertEquals(16f, page.getTextSize(), 0.1f);

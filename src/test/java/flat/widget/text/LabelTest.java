@@ -17,8 +17,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import java.util.HashMap;
 
 import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyFloat;
+import static org.mockito.ArgumentMatchers.*;
 import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(PowerMockRunner.class)
@@ -93,7 +92,7 @@ public class LabelTest {
 
     @Test
     public void measure() {
-        when(defaultFont.getWidth(any(), anyFloat(), anyFloat())).thenReturn(165f);
+        when(defaultFont.getWidth(any(), anyInt(), anyInt(), anyFloat(), anyFloat())).thenReturn(165f);
         when(defaultFont.getHeight(anyFloat())).thenReturn(32f);
 
         Label label = new Label();

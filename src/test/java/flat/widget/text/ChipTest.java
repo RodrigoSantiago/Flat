@@ -26,8 +26,10 @@ import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyFloat;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(PowerMockRunner.class)
@@ -66,6 +68,9 @@ public class ChipTest {
 
         resCloseIcon = mock(ResourceStream.class);
         when(DrawableReader.parse(resCloseIcon)).thenReturn(closeIcon);
+
+        when(defaultFont.getWidth(any(), anyInt(), anyInt(), anyFloat(), anyFloat())).thenReturn(165f);
+        when(defaultFont.getHeight(anyFloat())).thenReturn(32f);
     }
 
     @Test
@@ -115,9 +120,6 @@ public class ChipTest {
 
     @Test
     public void measure() {
-        when(defaultFont.getWidth(any(), anyFloat(), anyFloat())).thenReturn(165f);
-        when(defaultFont.getHeight(anyFloat())).thenReturn(32f);
-
         Chip chip = new Chip();
         chip.setText("Hello World");
         chip.onMeasure();
@@ -147,9 +149,6 @@ public class ChipTest {
 
     @Test
     public void iconSize() {
-        when(defaultFont.getWidth(any(), anyFloat(), anyFloat())).thenReturn(165f);
-        when(defaultFont.getHeight(anyFloat())).thenReturn(32f);
-
         Drawable drawable = mock(Drawable.class);
         when(drawable.getWidth()).thenReturn(24f);
         when(drawable.getHeight()).thenReturn(16f);
@@ -197,9 +196,6 @@ public class ChipTest {
 
     @Test
     public void closeIconSize() {
-        when(defaultFont.getWidth(any(), anyFloat(), anyFloat())).thenReturn(165f);
-        when(defaultFont.getHeight(anyFloat())).thenReturn(32f);
-
         Drawable drawable = mock(Drawable.class);
         when(drawable.getWidth()).thenReturn(24f);
         when(drawable.getHeight()).thenReturn(16f);
@@ -247,9 +243,6 @@ public class ChipTest {
 
     @Test
     public void measureIconSpacing() {
-        when(defaultFont.getWidth(any(), anyFloat(), anyFloat())).thenReturn(165f);
-        when(defaultFont.getHeight(anyFloat())).thenReturn(32f);
-
         Drawable drawable = mock(Drawable.class);
         when(drawable.getWidth()).thenReturn(24f);
         when(drawable.getHeight()).thenReturn(16f);
@@ -296,9 +289,6 @@ public class ChipTest {
 
     @Test
     public void measureCloseIconSpacing() {
-        when(defaultFont.getWidth(any(), anyFloat(), anyFloat())).thenReturn(165f);
-        when(defaultFont.getHeight(anyFloat())).thenReturn(32f);
-
         Drawable drawable = mock(Drawable.class);
         when(drawable.getWidth()).thenReturn(24f);
         when(drawable.getHeight()).thenReturn(16f);
@@ -341,6 +331,18 @@ public class ChipTest {
 
         assertEquals(Widget.MATCH_PARENT, chip.getMeasureWidth(), 0.1f);
         assertEquals(Widget.MATCH_PARENT, chip.getMeasureHeight(), 0.1f);
+    }
+
+    @Test
+    public void fireAction() {
+        Chip chip = new Chip();
+        chip.setText("Hello World");
+
+        var closeAction = (UXListener<ActionEvent>) mock(UXListener.class);
+        chip.setRequestCloseListener(closeAction);
+
+        chip.requestClose();
+        verify(closeAction, times(1)).handle(any());
     }
 
     private HashMap<Integer, UXValue> createNonDefaultValues() {

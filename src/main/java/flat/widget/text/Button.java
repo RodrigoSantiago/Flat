@@ -102,15 +102,9 @@ public class Button extends Label {
         }
 
         if (tw > 0 && th > 0 && getFont() != null) {
-            context.setColor(getTextColor());
-            context.setTextFont(getFont());
-            context.setTextSize(getTextSize());
-            context.setTextBlur(0);
-
-            context.drawTextSlice(
-                    iconLeft ? boxX + spaceForIcon : boxX
-                    , yOff(y, y + height, th)
-                    , tw, th, getShowText());
+            float xpos = iconLeft ? boxX + spaceForIcon : boxX;
+            float ypos = yOff(y, y + height, th);
+            drawText(context, xpos, ypos, tw, th);
         }
     }
 

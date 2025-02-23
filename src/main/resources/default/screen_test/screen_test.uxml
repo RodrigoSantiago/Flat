@@ -61,12 +61,11 @@
                    padding-left="8" padding-right="8" padding-top="8" padding-bottom="8"
                    margin-left="32" margin-right="32" margin-top="32" margin-bottom="32" vertical-align="TOP">
             <Label text="Title" background-color="#0000c8" text-color="white"/>
-            <Button text="Big Dialog Button" text-size="24px" font="SANS" margin-top="8"
+            <Button text="Big Dialog Button" text-size="12px" font="SANS" margin-top="8"
                     icon="/default/img_test.png"
-                    icon-scale-height="true" icon-spacing="24px"
+                    icon-scale-height="true" icon-spacing="12px"
                     icon-align="RIGHT"
-                    horizontal-align="RIGHT"
-                    height="80px" width="MATCH_PARENT" on-action="onDialogClick"/>
+                    horizontal-align="RIGHT" width="MATCH_PARENT" on-action="onDialogClick"/>
             <Button text="Big Window Button" margin-top="8"
                     icon="/default/img_test.png"
                     icon-scale-height="true" icon-spacing="12px"
@@ -86,7 +85,8 @@
                     <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
                 </Menu>
             </Button>
-            <Chip text="This is a Chip" margin-top="8"
+            <Label text="Multiação&#10;Complex Line&#10;Text" background-color="#0000c8" text-color="white" width="300" horizontal-align="right"/>
+            <Chip text="This is a Multiação" margin-top="8"
                   icon="/default/img_test.png" icon-spacing="12px"
                   icon-align="LEFT" on-action="onRemoveItem"
                   icon-clip-circle="true"
@@ -100,19 +100,19 @@
                   close-icon-color="black"
                   icon-position="RIGHT"/>
 
-            <Chip text="This is a Chip" margin-top="8" width="256"
+            <Chip text="This is a Chip&#10;a" margin-top="8" width="256"
                   icon="/default/img_test.png" icon-spacing="12px"
                   icon-position="LEFT" horizontal-align="left"
                   icon-clip-circle="true"
                   close-icon="/default/icons/close_24dp.png"
                   close-icon-color="black"/>
-            <Chip text="This is a Chip" margin-top="8" width="256"
+            <Chip text="This is a Chip&#10;b" margin-top="8" width="256"
                   icon="/default/img_test.png" icon-spacing="12px"
                   icon-position="LEFT" horizontal-align="center"
                   icon-clip-circle="true"
                   close-icon="/default/icons/close_24dp.png"
                   close-icon-color="black"/>
-            <Chip text="This is a Chip" margin-top="8" width="256"
+            <Chip text="This is a Chip&#10;c" margin-top="8" width="256"
                   icon="/default/img_test.png" icon-spacing="12px"
                   iicon-position="LEFT" horizontal-align="right"
                   icon-clip-circle="true"

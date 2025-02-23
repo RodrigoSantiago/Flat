@@ -156,12 +156,14 @@ chip : label {
     ripple-enabled : true;
     ripple-color : #00000080;
     shadow-enabled : true;
-    radius-top : 18;
-    radius-left : 18;
-    radius-right : 18;
-    radius-bottom : 18;
+    radius-top : 100;
+    radius-left : 100;
+    radius-right : 100;
+    radius-bottom : 100;
     padding-left : 4;
     padding-right : 4;
+    padding-top : 4;
+    padding-bottom : 4;
     icon-spacing : 8;
     action-spacing : 8;
 
