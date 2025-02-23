@@ -354,15 +354,14 @@ public class ListView extends Parent {
         drawRipple(context);
 
         float maxPos = getInY() + getInHeight();
-        Shape oldClip = backgroundClip(context);
+        context.pushClip(getBackgroundShape());
         for (Widget child : items) {
             child.onDraw(context);
             if (child.getLayoutY() > maxPos) {
                 break;
             }
         }
-        context.setTransform2D(null);
-        context.setClip(oldClip);
+        context.popClip();
 
         if (verticalBar != null && verticalBar.getViewDimension() < verticalBar.getTotalDimension()) {
             verticalBar.onDraw(context);

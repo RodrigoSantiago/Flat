@@ -276,16 +276,13 @@ public class Tab extends Group {
             }
 
             context.setTransform2D(getTransform());
-            context.setColor(0xFF0000FF);
-            context.drawShape(clipShape, true);
-            Shape oldClip = context.intersectClip(clipShape);
+            context.pushClip(clipShape);
             for (Widget child : pages) {
                 if (child.getVisibility() == Visibility.VISIBLE) {
                     child.onDraw(context);
                 }
             }
-            context.setTransform2D(null);
-            context.setClip(oldClip);
+            context.popClip();
             if (content != null && content.getVisibility() == Visibility.VISIBLE) {
                 content.onDraw(context);
             }

@@ -291,11 +291,6 @@ public class Widget {
         }
     }
 
-    protected Shape backgroundClip(SmartContext context) {
-        context.setTransform2D(getTransform());
-        return context.intersectClip(bg);
-    }
-
     /**
      * Calculate the best size (internal)
      *
@@ -1579,6 +1574,10 @@ public class Widget {
 
             invalidate(false);
         }
+    }
+
+    public RoundRectangle getBackgroundShape() {
+        return new RoundRectangle(bg);
     }
 
     public boolean isShadowEnabled() {

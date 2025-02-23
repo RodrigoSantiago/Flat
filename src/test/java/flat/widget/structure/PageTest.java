@@ -99,8 +99,6 @@ public class PageTest {
         assertEquals(ImageFilter.LINEAR, page.getCloseIconImageFilter());
         assertNull(page.getCloseIcon());
         assertEquals(0xFFFFFFFF, page.getCloseIconColor());
-        assertNull(page.getCloseIcon());
-        assertNull(page.getCloseIcon());
 
         page.setAttributes(createNonDefaultValues(), "page");
         page.applyAttributes(controller);
@@ -114,13 +112,13 @@ public class PageTest {
 
         assertEquals(0, page.getIconWidth(), 0.001f);
         assertEquals(0, page.getIconHeight(), 0.001f);
-        assertEquals(0, page.getCloseIconSpacing(), 0.1f);
+        assertEquals(0, page.getIconSpacing(), 0.1f);
         assertEquals(ImageFilter.LINEAR, page.getIconImageFilter());
         assertNull(page.getIcon());
-        assertEquals(0xFFFFFFFF, page.getCloseIconColor());
+        assertEquals(0xFFFFFFFF, page.getIconColor());
         assertEquals(0, page.getCloseIconWidth(), 0.001f);
         assertEquals(0, page.getCloseIconHeight(), 0.001f);
-        assertEquals(0, page.getIconSpacing(), 0.1f);
+        assertEquals(0, page.getCloseIconSpacing(), 0.1f);
         assertEquals(ImageFilter.LINEAR, page.getCloseIconImageFilter());
         assertNull(page.getCloseIcon());
         assertEquals(0xFFFFFFFF, page.getCloseIconColor());

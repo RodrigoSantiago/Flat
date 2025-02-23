@@ -95,14 +95,13 @@ public class Menu extends Stage {
         drawRipple(context);
 
         if (isScrollable()) {
-            Shape oldClip = backgroundClip(context);
+            context.pushClip(getBackgroundShape());
             for (Widget child : getChildrenIterable()) {
                 if (child.getVisibility() == Visibility.VISIBLE) {
                     child.onDraw(context);
                 }
             }
-            context.setTransform2D(null);
-            context.setClip(oldClip);
+            context.popClip();
         } else {
             drawChildren(context);
         }

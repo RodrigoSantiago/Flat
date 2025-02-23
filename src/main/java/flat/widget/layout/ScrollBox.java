@@ -355,12 +355,13 @@ public class ScrollBox extends Parent {
         drawBackground(context);
         drawRipple(context);
 
-        Shape oldClip = backgroundClip(context);
+        context.pushClip(getBackgroundShape());
         for (Widget child : getChildrenIterable()) {
             if (child != horizontalBar && child != verticalBar && child.getVisibility() == Visibility.VISIBLE) {
                 child.onDraw(context);
             }
         }
+        context.popClip();
 
         if (horizontalBar != null && horizontalVisible) {
             horizontalBar.onDraw(context);
@@ -369,9 +370,6 @@ public class ScrollBox extends Parent {
         if (verticalBar != null && verticalVisible) {
             verticalBar.onDraw(context);
         }
-
-        context.setTransform2D(null);
-        context.setClip(oldClip);
     }
 
     @Override

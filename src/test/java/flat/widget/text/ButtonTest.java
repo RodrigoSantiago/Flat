@@ -73,6 +73,7 @@ public class ButtonTest {
         assertEquals(HorizontalPosition.LEFT, button.getIconPosition());
         assertEquals(0, button.getIconSpacing(), 0.1f);
         assertEquals(ImageFilter.LINEAR, button.getIconImageFilter());
+        assertFalse(button.isIconClipCircle());
         assertNull(button.getIcon());
         assertEquals(0xFFFFFFFF, button.getIconColor());
         assertNull(button.getActionListener());
@@ -85,6 +86,7 @@ public class ButtonTest {
         assertEquals(HorizontalPosition.LEFT, button.getIconPosition());
         assertEquals(0, button.getIconSpacing(), 0.1f);
         assertEquals(ImageFilter.LINEAR, button.getIconImageFilter());
+        assertFalse(button.isIconClipCircle());
         assertNull(button.getIcon());
         assertEquals(0xFFFFFFFF, button.getIconColor());
         assertEquals(action, button.getActionListener());
@@ -96,6 +98,7 @@ public class ButtonTest {
         assertEquals(HorizontalPosition.RIGHT, button.getIconPosition());
         assertEquals(24, button.getIconSpacing(), 0.1f);
         assertEquals(ImageFilter.NEAREST, button.getIconImageFilter());
+        assertTrue(button.isIconClipCircle());
         assertEquals(icon, button.getIcon());
         assertEquals(0xFFFF00FF, button.getIconColor());
         assertEquals(action, button.getActionListener());
@@ -302,6 +305,7 @@ public class ButtonTest {
         hash.put(UXHash.getHash("icon-position"), new UXValueText(HorizontalPosition.RIGHT.toString()));
         hash.put(UXHash.getHash("icon-spacing"), new UXValueSizeSp(24));
         hash.put(UXHash.getHash("icon-image-filter"), new UXValueText(ImageFilter.NEAREST.toString()));
+        hash.put(UXHash.getHash("icon-clip-circle"), new UXValueBool(true));
         hash.put(UXHash.getHash("on-action"), new UXValueText("onActionWork"));
         return hash;
     }

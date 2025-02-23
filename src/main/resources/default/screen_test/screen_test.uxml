@@ -86,11 +86,68 @@
                     <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
                 </Menu>
             </Button>
-            <Button text="Add new item" margin-top="8"
+            <Chip text="This is a Chip" margin-top="8"
+                  icon="/default/img_test.png" icon-spacing="12px"
+                  icon-align="LEFT" on-action="onRemoveItem"
+                  icon-clip-circle="true"
+                  close-icon="/default/icons/close_24dp.png"
+                  close-icon-color="black"/>
+            <Chip text="This is a Chip" margin-top="8"
+                  icon="/default/img_test.png" icon-spacing="12px"
+                  icon-align="LEFT" on-action="onRemoveItem"
+                  icon-clip-circle="true"
+                  close-icon="/default/icons/close_24dp.png"
+                  close-icon-color="black"
+                  icon-position="RIGHT"/>
+
+            <Chip text="This is a Chip" margin-top="8" width="256"
+                  icon="/default/img_test.png" icon-spacing="12px"
+                  icon-position="LEFT" horizontal-align="left"
+                  icon-clip-circle="true"
+                  close-icon="/default/icons/close_24dp.png"
+                  close-icon-color="black"/>
+            <Chip text="This is a Chip" margin-top="8" width="256"
+                  icon="/default/img_test.png" icon-spacing="12px"
+                  icon-position="LEFT" horizontal-align="center"
+                  icon-clip-circle="true"
+                  close-icon="/default/icons/close_24dp.png"
+                  close-icon-color="black"/>
+            <Chip text="This is a Chip" margin-top="8" width="256"
+                  icon="/default/img_test.png" icon-spacing="12px"
+                  iicon-position="LEFT" horizontal-align="right"
+                  icon-clip-circle="true"
+                  close-icon="/default/icons/close_24dp.png"
+                  close-icon-color="black"/>
+
+            <Chip text="This is a Chip" margin-top="8" width="256"
+                  icon="/default/img_test.png" icon-spacing="12px"
+                  icon-position="RIGHT" horizontal-align="left"
+                  icon-clip-circle="true"
+                  close-icon="/default/icons/close_24dp.png"
+                  close-icon-color="black"/>
+            <Chip text="This is a Chip" margin-top="8" width="256"
+                  icon="/default/img_test.png" icon-spacing="12px"
+                  icon-position="RIGHT" horizontal-align="center"
+                  icon-clip-circle="true"
+                  close-icon="/default/icons/close_24dp.png"
+                  close-icon-color="black"/>
+            <Chip text="This is a Chip" margin-top="8" width="256"
+                  icon="/default/img_test.png" icon-spacing="12px"
+                  icon-position="RIGHT" horizontal-align="right"
+                  icon-clip-circle="true"
+                  close-icon="/default/icons/close_24dp.png"
+                  close-icon-color="black"/>
+
+            <Button text="Pos Right" margin-top="8" width="256" horizontal-align="center"
                     icon="/default/img_test.png"
                     icon-scale-height="true" icon-spacing="12px"
-                    icon-align="LEFT"
+                    icon-position="RIGHT"/>
+            <Button text="Add new item" margin-top="8" width="256" horizontal-align="right"
+                    icon="/default/img_test.png"
+                    icon-scale-height="true" icon-spacing="12px"
+                    icon-align="RIGHT"
                     on-action="onAddItem"/>
+
             <Button text="Remove the middle item" margin-top="8"
                     icon="/default/img_test.png"
                     icon-scale-height="true" icon-spacing="12px"

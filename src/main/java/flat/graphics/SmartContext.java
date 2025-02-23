@@ -25,7 +25,8 @@ public class SmartContext {
 
     // -- 2D
     private Affine transform2D = new Affine();
-    private Shape clipArea;
+    private ArrayList<Shape> clipShapes = new ArrayList<>();
+    private ArrayList<Rectangle> clipBox = new ArrayList<>();
     private Stroke stroker;
     private float textSize;
     private float textBlur;
@@ -99,7 +100,6 @@ public class SmartContext {
         context.setClearDepth(depth);
         context.setClearStencil(stencil);
         context.clear(true, true, true);
-        clipArea = null;
     }
 
     // ---- Properties ---- //
@@ -175,52 +175,72 @@ public class SmartContext {
      * Clear the clipping
      */
     public void clearClip() {
-        clipArea = null;
+        clipShapes.clear();
+        clipBox.clear();
         context.svgClearClip(false);
     }
 
-    public Shape intersectClip(Shape shape) {
-        if (clipArea == null) {
-            clipArea = new Path(shape.pathIterator(transform2D));
+    public void pushClip(Shape shape) {
+        Path real = new Path(shape.pathIterator(transform2D));
+        Path inverse = new Path();
+        inverse.moveTo(0, 0);
+        inverse.lineTo(getWidth(), 0);
+        inverse.lineTo(getWidth(), getHeight());
+        inverse.lineTo(0, getHeight());
+        inverse.closePath();
+        inverse.append(real, false);
 
-            context.svgClearClip(true);
-            if (!clipArea.isEmpty()) {
-                context.svgTransform(null);
-                context.svgClip(clipArea);
-                context.svgTransform(transform2D);
-            }
-            return null;
+        Rectangle bounds = real.bounds();
+
+        clipShapes.add(inverse);
+        if (clipBox.size() == 0) {
+            clipBox.add(bounds);
         } else {
-            Shape old = clipArea;
+            Rectangle currentBounds = clipBox.get(clipBox.size() - 1);
+            if (currentBounds != null) {
+                float inX = Math.max(currentBounds.x, bounds.x);
+                float inY = Math.max(currentBounds.y, bounds.y);
+                float inWidth = Math.min(currentBounds.x + currentBounds.width, bounds.x + bounds.width) - inX;
+                float inHeight = Math.min(currentBounds.y + currentBounds.height, bounds.y + bounds.height) - inY;
 
-            Area area = new Area(clipArea);
-            area.intersect(new Area(shape.pathIterator(transform2D)));
-            clipArea = area;
-
-            context.svgClearClip(true);
-            if (!clipArea.isEmpty()) {
-                context.svgTransform(null);
-                context.svgClip(clipArea);
-                context.svgTransform(transform2D);
-            }
-            return old;
-        }
-    }
-
-    public void setClip(Shape shape) {
-        if (shape == null) {
-            clearClip();
-        } else {
-            clipArea = shape;
-            context.svgClearClip(true);
-            if (!clipArea.isEmpty()) {
-                context.svgClip(clipArea);
+                if (inWidth > 0 && inHeight > 0) {
+                    clipBox.add(new Rectangle(inX, inY, inWidth, inHeight));
+                } else {
+                    clipBox.add(null);
+                }
+            } else {
+                clipBox.add(null);
             }
         }
+
+        updateClip();
     }
 
-    public Area getClip() {
-        return new Area(clipArea);
+    public void popClip() {
+        if (clipShapes.size() > 0) {
+            clipShapes.remove(clipShapes.size() - 1);
+            clipBox.remove(clipBox.size() - 1);
+        }
+        updateClip();
+    }
+
+    private void updateClip() {
+        if (clipBox.size() == 0) {
+            context.svgClearClip(false);
+
+        } else if (clipBox.get(clipBox.size() - 1) == null) {
+            context.svgClearClip(true);
+
+        } else {
+            context.svgClearClip(false);
+            context.svgTransform(null);
+            for (int i = 0; i < clipShapes.size(); i++) {
+                context.svgClip(clipShapes.get(0));
+            }
+            context.svgTransform(transform2D);
+
+        }
+
     }
 
     public void setAntialiasEnabled(boolean enabled) {

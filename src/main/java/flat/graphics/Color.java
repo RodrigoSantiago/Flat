@@ -17,6 +17,7 @@ public final class Color {
     public static final int blue = 0x0000FFFF;
     public static final int teal = 0x008080FF;
     public static final int aqua = 0x00FFFFFF;
+    public static final int transparent = 0x00000000;
 
     public static int getRed(int rgba) {
         return ((rgba >> 24) & 0xFF);

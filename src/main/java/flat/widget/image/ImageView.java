@@ -110,7 +110,7 @@ public class ImageView extends Widget {
 
             Shape oldClip = null;
             if (hasRadius || overflow) {
-                oldClip = backgroundClip(context);
+                context.pushClip(getBackgroundShape());
             }
             context.setTransform2D(getTransform());
             image.draw(context
@@ -118,8 +118,7 @@ public class ImageView extends Widget {
                     , yOff(y, y + height, dH)
                     , dW, dH, color, imageFilter);
             if (hasRadius || overflow) {
-                context.setTransform2D(null);
-                context.setClip(oldClip);
+                context.popClip();
             }
         }
     }

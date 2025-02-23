@@ -153,9 +153,9 @@ text-area {
 }
 
 chip : label {
-    ripple : true;
+    ripple-enabled : true;
     ripple-color : #00000080;
-    shadow : true;
+    shadow-enabled : true;
     radius-top : 18;
     radius-left : 18;
     radius-right : 18;
@@ -165,11 +165,14 @@ chip : label {
     icon-spacing : 8;
     action-spacing : 8;
 
-    min-height : 36;
+    min-height : 30;
     text-size : 14sp;
     background-color : #FFFFFFFF;
     transition-duration : 0.1;
     vertical-align : middle;
+    close-icon-cursor : hand;
+    close-icon-bg-color : #00000030;
+    close-icon-spacing : 8px;
 
     enabled {
         elevation : 1;
