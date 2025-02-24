@@ -58,51 +58,15 @@ toggle-button : button {
 }
 
 text-field {
+    font : font("Roboto");
+    text-size : 24sp;
+    text-color : #000000FF;
+    text-hint-color : #00000080;
+    vertical-align : top;
+    horizontal-align : left;
+    background-color :#FFFFFF;
     cursor : ibeam;
     focusable : true;
-
-    text-size : 16sp;
-    text-color : #000000;
-    label-text-size : 16sp;
-    label-text-color : #00000080;
-    high-label-text-size : 12sp;
-    high-label-text-color : #FF0000FF;
-    help-text-size : 12sp;
-    help-text-color : #FF0000;
-    placeholder-text-color : #00000080;
-    cursor-color : #FF0000;
-
-    padding-top : 20;
-    padding-right : 12;
-    padding-bottom : 16;
-    padding-left : 12;
-
-    radius-top : 4;
-    radius-right : 4;
-
-    margin-bottom : 24;
-
-    leading-spacing : 12;
-    act-ripple : true;
-    act-ripple-color : #0000FFFF;
-    act-spacing : 12;
-
-    background-color : #CCCCCCFF;
-    selection-color : #60A0FF;
-    transition-duration : 0.1;
-    border-color : #000000AC;
-    border-width : 1;
-
-    border-discret : true;
-
-    hovered {
-        background-color : #FFFFFF;
-    }
-    focused {
-        background-color : #EEEEEE;
-        border-color : #FF0000;
-        border-width : 2;
-    }
 }
 
 text-area {

@@ -3,7 +3,6 @@ package flat.widget.text;
 import flat.animations.StateInfo;
 import flat.graphics.Color;
 import flat.graphics.SmartContext;
-import flat.graphics.context.Context;
 import flat.graphics.context.Font;
 import flat.uxml.Controller;
 import flat.uxml.UXAttrs;
@@ -11,9 +10,6 @@ import flat.widget.Widget;
 import flat.widget.enums.HorizontalAlign;
 import flat.widget.enums.VerticalAlign;
 
-import java.nio.Buffer;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 public class Label extends Widget {
@@ -29,12 +25,13 @@ public class Label extends Widget {
     private HorizontalAlign horizontalAlign = HorizontalAlign.LEFT;
 
     private String showText;
-    private boolean invalidTextSize; // TODO - MULTLINE??
+    private boolean invalidTextSize;
     private float textWidth;
-    private TextRender textRender = new TextRender();
+    private final TextRender textRender = new TextRender();
 
     public Label() {
         textRender.setFont(font);
+        textRender.setTextSize(textSize);
     }
 
     @Override
@@ -112,7 +109,7 @@ public class Label extends Widget {
             context.setTextSize(getTextSize());
             context.setTextBlur(0);
 
-            textRender.drawText(context, getTextSize(), x, y, width, height, horizontalAlign);
+            textRender.drawText(context, x, y, width, height, horizontalAlign);
         }
     }
 
@@ -164,6 +161,7 @@ public class Label extends Widget {
     public void setTextSize(float textSize) {
         if (this.textSize != textSize) {
             this.textSize = textSize;
+            textRender.setTextSize(textSize);
             invalidate(isWrapContent());
             invalidateTextSize();
         }
@@ -213,16 +211,13 @@ public class Label extends Widget {
     protected float getTextWidth() {
         if (invalidTextSize) {
             invalidTextSize = false;
-            if (showText == null || font == null) {
-                return textWidth = 0;
-            }
-            textWidth = textRender.getTextWidth(textSize);
+            textWidth = textRender.getTextWidth();
         }
         return textWidth;
     }
 
     protected float getTextHeight() {
-        return textRender.getTextHeight(textSize);
+        return textRender.getTextHeight();
     }
 
     protected String getShowText() {

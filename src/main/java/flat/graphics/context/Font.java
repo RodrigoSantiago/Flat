@@ -1,6 +1,8 @@
 package flat.graphics.context;
 
 import flat.backend.SVG;
+import flat.graphics.context.enums.PixelFormat;
+import flat.graphics.image.PixelMap;
 import flat.graphics.text.FontPosture;
 import flat.graphics.text.FontStyle;
 import flat.graphics.text.FontWeight;
@@ -220,14 +222,26 @@ public class Font {
         return size <= 0 ? 0 : SVG.FontGetTextWidthBuffer(fontID, text, offset, length, size / this.size, spacing);
     }
 
-    public int getCursorOffset(String text, float size, float spacing, float x, boolean half) {
+    public CaretData getCaretOffset(String text, float size, float spacing, float x, boolean half) {
         checkDisposed();
-        return size <= 0 ? 0 : SVG.FontGetOffset(fontID, text, size / this.size, spacing, x, half);
+        if (size < 0) {
+            return new CaretData(0, 0);
+        } else {
+            float[] data = new float[2];
+            SVG.FontGetOffset(fontID, text, size / this.size, spacing, x, half, data);
+            return new CaretData((int) data[0], data[1]);
+        }
     }
 
-    public int getCursorOffset(Buffer text, int offset, int length, float size, float spacing, float x, boolean half) {
+    public CaretData getCaretOffset(Buffer text, int offset, int length, float size, float spacing, float x, boolean half) {
         checkDisposed();
-        return size <= 0 ? 0 : SVG.FontGetOffsetBuffer(fontID, text, offset, length, size / this.size, spacing, x, half);
+        if (size < 0) {
+            return new CaretData(0, 0);
+        } else {
+            float[] data = new float[2];
+            SVG.FontGetOffsetBuffer(fontID, text, offset, length, size / this.size, spacing, x, half, data);
+            return new CaretData((int) data[0], data[1]);
+        }
     }
 
     public float getSize() {
@@ -308,6 +322,23 @@ public class Font {
             return path;
         } else {
             return new Path();
+        }
+    }
+
+    public PixelMap createImageFromAtlas(Context context) {
+        int[] data = new int[4];
+        int imageId = (int) SVG.FontPaintGetAtlas(getInternalPaintID(context), data);
+        int w = data[0];
+        int h = data[1];
+        byte[] imageData = new byte[w * h];
+        if (imageId == 0) {
+            return new PixelMap(imageData, w, h, PixelFormat.RED);
+        } else {
+            Texture2D tex = new Texture2D(context, imageId, w, h, 0, PixelFormat.RED);
+            tex.begin(0);
+            tex.getData(0, imageData, 0);
+            tex.end();
+            return new PixelMap(imageData, w, h, PixelFormat.RED);
         }
     }
 
@@ -395,6 +426,24 @@ public class Font {
                     SVG.FontUnload(fontID);
                 });
             }
+        }
+    }
+
+    public static class CaretData {
+        public final int index;
+        public final float width;
+
+        public CaretData(int index, float width) {
+            this.index = index;
+            this.width = width;
+        }
+
+        public int getIndex() {
+            return index;
+        }
+
+        public float getWidth() {
+            return width;
         }
     }
 }

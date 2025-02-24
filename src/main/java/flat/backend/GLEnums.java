@@ -177,6 +177,8 @@ public class GLEnums {
     public static final int _TT_TEXTURE_2D_ARRAY = 0x8C1A;
 
     //----TEXTURE FORMAT
+    public static final int TF_RED = 0x1903;                    //form = r,    type = GL_UNSIGNED_BYTE
+    public static final int TF_RG = 0x8227;                     //form = rg,   type = GL_UNSIGNED_BYTE
     public static final int TF_RGB = 0x1907;                    //form = rgb,  type = GL_UNSIGNED_BYTE
     public static final int TF_RGBA = 0x1908;                   //form = rgba, type = GL_UNSIGNED_BYTE
     public static final int TF_DEPTH_COMPONENT32F = 0x8CAC;     //form = dc,   type = GL_FLOAT

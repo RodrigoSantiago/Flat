@@ -194,18 +194,6 @@ public class Chip extends Button {
     }
 
     @Override
-    public void firePointer(PointerEvent event) {
-        super.firePointer(event);
-        if (!event.isConsumed() && event.getType() == PointerEvent.RELEASED && event.getPointerID() == 1) {
-            if (isOverActionButton(screenToLocal(event.getX(), event.getY()))) {
-                requestClose();
-            } else {
-                action();
-            }
-        }
-    }
-
-    @Override
     public void fireRipple(float x, float y) {
         if (isOverActionButton(screenToLocal(x, y))) {
             if (isRippleEnabled()) {
@@ -232,6 +220,15 @@ public class Chip extends Button {
         }
     }
 
+    @Override
+    public void action() {
+        if (isHoveringClose) {
+            requestClose();
+        } else {
+            super.action();
+        }
+    }
+
     public void requestClose() {
         fireRequestClose();
     }
@@ -244,6 +241,10 @@ public class Chip extends Button {
                 isHoveringClose = !isHoveringClose;
                 invalidate(false);
             }
+        }
+        if (!event.isConsumed() && event.getType() == HoverEvent.EXITED) {
+            isHoveringClose = false;
+            invalidate(false);
         }
     }
 

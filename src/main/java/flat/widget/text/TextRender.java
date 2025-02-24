@@ -2,50 +2,124 @@ package flat.widget.text;
 
 import flat.graphics.SmartContext;
 import flat.graphics.context.Font;
-import flat.math.Affine;
-import flat.math.Vector2;
 import flat.widget.enums.HorizontalAlign;
-import flat.widget.enums.VerticalAlign;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class TextRender {
 
     private Font font;
+    private float textSize;
+    private byte[] textBytes = new byte[16];
     private ByteBuffer buffer;
     private ArrayList<Line> lines;
     private int byteSize;
     private float width;
 
+    public void setFont(Font font) {
+        this.font = font;
+    }
+
+    public void setTextSize(float textSize) {
+        this.textSize = textSize;
+    }
+
+    private void ensureCapacity(int requiredCapacity) {
+        if (requiredCapacity > textBytes.length) {
+            int newCapacity = Integer.highestOneBit(requiredCapacity);
+            if (newCapacity < requiredCapacity) {
+                newCapacity <<= 1;
+            }
+            textBytes = Arrays.copyOf(textBytes, newCapacity);
+        }
+    }
+
     public void setText(String text) {
+        if (text == null || text.length() == 0) {
+            byteSize = 0;
+        } else {
+            byte[] newTextBytes = text.getBytes(StandardCharsets.UTF_8);
+            ensureCapacity(newTextBytes.length);
+            System.arraycopy(newTextBytes, 0, textBytes, 0, newTextBytes.length);
+            byteSize = newTextBytes.length;
+        }
+
+        updateLines();
+    }
+
+    public String getText(CaretData caretStart, CaretData caretEnd) {
+        byte[] bytes = new byte[caretEnd.offset - caretStart.offset];
+        for (int i = 0; i < bytes.length; i++) {
+            bytes[i] = textBytes[caretStart.offset + i];
+        }
+        return new String(bytes);
+    }
+
+    public void editText(CaretData caretStart, CaretData caretEnd, String replace, CaretData newCaret) {
+        byte[] replaceBytes = replace.getBytes(StandardCharsets.UTF_8);
+        int start = caretStart.offset;
+        int length = caretEnd.offset - start;
+        int end = start + length;
+
+        if (length == 0 && replaceBytes.length == 0) {
+            return;
+        }
+
+        int newSize = byteSize - length + replaceBytes.length;
+        ensureCapacity(newSize);
+
+        if (replaceBytes.length != length) {
+            int remainingLength = byteSize - end;
+
+            if (remainingLength > 0) {
+                if (replaceBytes.length < length) {
+                    for (int i = 0; i < remainingLength; i++) {
+                        textBytes[start + replaceBytes.length + i] = textBytes[end + i];
+                    }
+                } else {
+                    for (int i = remainingLength - 1; i >= 0; i--) {
+                        textBytes[start + replaceBytes.length + i] = textBytes[end + i];
+                    }
+                }
+            }
+        }
+
+        System.arraycopy(replaceBytes, 0, textBytes, start, replaceBytes.length);
+        byteSize = newSize;
+        updateLines();
+
+        if (lines == null) {
+            newCaret.lineChar = 0;
+            newCaret.line = 0;
+            newCaret.offset = 0;
+            newCaret.width = 0;
+        } else {
+            int offset = start + replaceBytes.length;
+            updateCaret(newCaret, offset);
+        }
+    }
+
+    private void updateLines() {
         if (lines != null) {
             lines.clear();
         }
 
-        if (text == null || text.length() == 0) {
-            byteSize = 0;
+        if (byteSize == 0) {
             return;
         }
 
-        byte[] bytes = text.getBytes(StandardCharsets.UTF_8);
-        if (buffer == null) {
-            buffer = ByteBuffer.allocateDirect(bytes.length);
-        } else if (buffer.capacity() < bytes.length) {
-            int newCapacity = Integer.highestOneBit(bytes.length);
-            if (newCapacity < bytes.length) {
-                newCapacity <<= 1;
-            }
-            buffer = ByteBuffer.allocateDirect(newCapacity);
+        if (buffer == null || buffer.capacity() < byteSize) {
+            buffer = ByteBuffer.allocateDirect(byteSize);
         }
         buffer.position(0);
-        buffer.put(bytes);
-        byteSize = bytes.length;
+        buffer.put(textBytes, 0, byteSize);
 
         int prev = 0;
-        for (int i = 0; i < bytes.length; i++) {
-            if (bytes[i] == '\n') {
+        for (int i = 0; i < byteSize; i++) {
+            if (textBytes[i] == '\n') {
                 if (lines == null) {
                     lines = new ArrayList<>();
                 }
@@ -55,42 +129,47 @@ public class TextRender {
         }
 
         if (lines != null) {
-            lines.add(new Line(prev, bytes.length - prev));
+            lines.add(new Line(prev, byteSize - prev));
         }
     }
 
-    public void setFont(Font font) {
-        this.font = font;
-    }
-
-    public float getTextWidth(float textSize) {
+    public float getTextWidth() {
         if (byteSize == 0 || font == null) {
-            return 0;
-        }
-        if (lines == null || lines.isEmpty()) {
-            return font.getWidth(buffer, 0, byteSize, textSize, 1);
-        }
-        width = 0;
-        for (int i = 0; i < lines.size(); i++) {
-            var line = lines.get(i);
-            if (line.length == 0) {
-                line.width = 0;
-            } else {
-                line.width = font.getWidth(buffer, line.start, line.length, textSize, 1);
+            width = 0;
+
+        } else if (lines == null || lines.isEmpty()) {
+            width = font.getWidth(buffer, 0, byteSize, textSize, 1);
+
+        } else {
+            width = 0;
+            for (int i = 0; i < lines.size(); i++) {
+                var line = lines.get(i);
+                if (line.length == 0) {
+                    line.width = 0;
+                } else {
+                    line.width = font.getWidth(buffer, line.start, line.length, textSize, 1);
+                }
+                width = Math.max(width, line.width);
             }
-            width = Math.max(width, line.width);
         }
         return width;
     }
 
-    public float getTextHeight(float textSize) {
+    public float getTextHeight() {
+        float height;
         if (font == null) {
-            return textSize * (lines == null || lines.size() == 0 ? 1 : lines.size());
+            height = textSize;
+        } else {
+            height = font.getHeight(textSize);
         }
-        return font.getHeight(textSize) * (lines == null || lines.size() == 0 ? 1 : lines.size());
+        return height * (lines == null || lines.isEmpty() ? 1 : lines.size());
     }
 
-    public void drawText(SmartContext context, float textSize, float x, float y, float width, float height, HorizontalAlign align) {
+    public void drawText(SmartContext context, float x, float y, float width, float height, HorizontalAlign align) {
+        drawText(context, x, y, width, height, align, 0, lines == null || lines.isEmpty() ? 1 : lines.size());
+    }
+
+    public void drawText(SmartContext context, float x, float y, float width, float height, HorizontalAlign align, int startLine, int endLine) {
         if (byteSize == 0 || font == null) {
             return;
         }
@@ -99,7 +178,7 @@ public class TextRender {
             return;
         }
         float lineHeight = font.getHeight(textSize);
-        for (int i = 0; i < lines.size(); i++) {
+        for (int i = startLine; i < lines.size() && i < endLine; i++) {
             var line = lines.get(i);
             if (line.length == 0) {
                 continue;
@@ -121,6 +200,211 @@ public class TextRender {
             if (wd > 0 && hg > 0) {
                 context.drawTextSlice(xpos, ypos, wd, hg, buffer, line.start, line.length);
             }
+        }
+    }
+
+    public void getCaret(float px, float py, float x, float y, HorizontalAlign align, CaretData caretPos) {
+        if (byteSize == 0 || font == null) {
+            caretPos.lineChar = 0;
+            caretPos.line = 0;
+            caretPos.offset = 0;
+            caretPos.width = 0;
+            return;
+        }
+
+        if (lines == null || lines.isEmpty()) {
+            var caret = font.getCaretOffset(buffer, 0, byteSize, textSize, 1, px - x, true);
+            caretPos.lineChar = caret.getIndex();
+            caretPos.line = 0;
+            caretPos.offset = caret.getIndex();
+            caretPos.width = caret.getWidth();
+            return;
+        }
+
+        float lineHeight = font.getHeight(textSize);
+        int lineIndex = Math.min(lines.size() - 1, Math.max(0, (int) Math.floor((py - y) / lineHeight)));
+        var line = lines.get(lineIndex);
+
+        float xpos = x;
+        if (align == HorizontalAlign.RIGHT) {
+            float off = Math.max(0, this.width - line.width);
+            xpos = x + off;
+        } else if (align == HorizontalAlign.CENTER) {
+            float off = Math.max(0, this.width - line.width) * 0.5f;
+            xpos = x + off;
+        }
+
+        var caret = font.getCaretOffset(buffer, line.start, line.length, textSize, 1, px - xpos, true);
+        caretPos.lineChar = caret.getIndex();
+        caretPos.line = lineIndex;
+        caretPos.offset = line.start + caret.getIndex();
+        caretPos.width = caret.getWidth();
+    }
+
+    public float getCaretHorizontalOffset(CaretData caret, HorizontalAlign align) {
+        if (byteSize == 0 || font == null) {
+            return 0;
+        }
+
+        float w = this.width;
+        if (lines != null && !lines.isEmpty()) {
+            w = lines.get(caret.line).width;
+        }
+
+        float xpos = 0;
+        if (align == HorizontalAlign.RIGHT) {
+            xpos = Math.max(0, this.width - w);
+        } else if (align == HorizontalAlign.CENTER) {
+            xpos = Math.max(0, this.width - w) * 0.5f;
+        }
+
+        return caret.width + xpos;
+    }
+
+    private void updateCaret(CaretData caret, int offset) {
+        if (lines == null || lines.isEmpty() || font == null) {
+            caret.lineChar = 0;
+            caret.line = 0;
+            caret.offset = 0;
+            caret.width = 0;
+            return;
+        }
+
+        int startLine = Math.max(0, caret.line + Math.min(0, offset - caret.offset));
+        int lineIndex = lines.size() - 1;
+        for (int i = startLine; i < lines.size(); i++) {
+            var line = lines.get(i);
+            if (line.start + line.length >= offset) {
+                lineIndex = i;
+                break;
+            }
+        }
+        var line = lines.get(lineIndex);
+        var newCaret = font.getCaretOffset(buffer, line.start, offset - line.start, textSize, 1, 9999, true);
+        caret.lineChar = newCaret.getIndex();
+        caret.line = lineIndex;
+        caret.offset = line.start + newCaret.getIndex();
+        caret.width = newCaret.getWidth();
+    }
+
+    public void moveCaretBegin(CaretData caret) {
+        if (caret.offset == 0) return;
+
+        int offset = 0;
+        updateCaret(caret, offset);
+    }
+
+    public void moveCaretEnd(CaretData caret) {
+        if (caret.offset == byteSize) return;
+
+        int offset = byteSize;
+        updateCaret(caret, offset);
+    }
+
+    public void moveCaretBackwards(CaretData caret) {
+        if (caret.offset == 0) return;
+
+        int offset = getPrevCharIndex(caret.offset);
+        updateCaret(caret, offset);
+    }
+
+    public void moveCaretFoward(CaretData caret) {
+        if (caret.offset == byteSize) return;
+
+        int offset = getNextCharIndex(caret.offset);
+        updateCaret(caret, offset);
+    }
+
+    public void moveCaretVertical(CaretData caret, HorizontalAlign align, int lines) {
+        float px = getCaretHorizontalOffset(caret, align);
+        float py = (caret.line + 0.5f + lines) * (font == null ? textSize : font.getHeight(textSize));
+        getCaret(px, py, 0, 0, align, caret);
+    }
+
+    public void moveCaretBackwardsLine(CaretData caret) {
+        if (caret.offset == 0) return;
+
+        int offset = lines == null || lines.size() == 0 ? 0 : lines.get(caret.line).start;
+        updateCaret(caret, offset);
+    }
+
+    public void moveCaretFowardsLine(CaretData caret) {
+        if (caret.offset == byteSize) return;
+
+        int offset;
+        if (lines == null || lines.size() == 0) {
+            offset = byteSize;
+        } else {
+            var line = lines.get(caret.line);
+            offset = line.start + line.length;
+        }
+        updateCaret(caret, offset);
+    }
+
+    private int getNextCharIndex(int currentIndex) {
+        if (currentIndex < 0 || currentIndex >= byteSize) {
+            throw new IndexOutOfBoundsException("Invalid currentIndex.");
+        }
+
+        int nextIndex = currentIndex;
+
+        while (nextIndex < textBytes.length) {
+            int byteValue = textBytes[nextIndex] & 0xFF;
+
+            if (byteValue <= 0x7F) {
+                nextIndex++;
+                break;
+            } else if ((byteValue & 0xC0) == 0xC0) {
+                int byteCount = getUtf8ByteCount(byteValue);
+                nextIndex += byteCount;
+                break;
+            }
+        }
+        return nextIndex;
+    }
+
+    private int getPrevCharIndex(int currentIndex) {
+        if (currentIndex <= 0 || currentIndex > byteSize) {
+            throw new IndexOutOfBoundsException("Invalid currentIndex.");
+        }
+
+        int prevIndex = currentIndex - 1;
+
+        while (prevIndex > 0) {
+            int byteValue = textBytes[prevIndex] & 0xFF;
+
+            if ((byteValue & 0xC0) != 0x80) {
+                return prevIndex;
+            }
+
+            prevIndex--;
+        }
+
+        return prevIndex;
+    }
+
+    private int getUtf8ByteCount(int byteValue) {
+        if ((byteValue & 0xE0) == 0xC0) {
+            return 2;
+        } else if ((byteValue & 0xF0) == 0xE0) {
+            return 3;
+        } else if ((byteValue & 0xF8) == 0xF0) {
+            return 4;
+        }
+        return 1;
+    }
+
+    public static class CaretData {
+        public int lineChar;
+        public int line;
+        public int offset;
+        public float width;
+
+        public void set(CaretData other) {
+            this.lineChar = other.lineChar;
+            this.line = other.line;
+            this.offset = other.offset;
+            this.width = other.width;
         }
     }
 

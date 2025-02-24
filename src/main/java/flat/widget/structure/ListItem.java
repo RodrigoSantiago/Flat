@@ -6,7 +6,6 @@ import flat.events.HoverEvent;
 import flat.events.PointerEvent;
 import flat.graphics.Color;
 import flat.graphics.SmartContext;
-import flat.graphics.context.Font;
 import flat.graphics.cursor.Cursor;
 import flat.graphics.image.Drawable;
 import flat.math.Mathf;
@@ -15,29 +14,12 @@ import flat.math.stroke.BasicStroke;
 import flat.uxml.Controller;
 import flat.uxml.UXAttrs;
 import flat.uxml.UXListener;
-import flat.widget.Widget;
 import flat.widget.enums.ImageFilter;
+import flat.widget.text.Button;
 
-import java.util.Objects;
+public class ListItem extends Button {
 
-public class ListItem extends Widget {
-
-    private UXListener<ActionEvent> actionListener;
     private UXListener<ActionEvent> changeStateListener;
-
-    private String text;
-
-    private boolean textAllCaps;
-    private Font font = Font.getDefault();
-    private float textSize = 16f;
-    private int textColor = 0x000000FF;
-
-    private Drawable icon;
-    private int iconColor = Color.white;
-    private ImageFilter iconImageFilter = ImageFilter.LINEAR;
-    private float iconSpacing;
-    private float iconWidth;
-    private float iconHeight;
 
     private boolean open;
     private Drawable stateIconOpen;
@@ -52,10 +34,6 @@ public class ListItem extends Widget {
     private float layerWidth = 8f;
     private int layerLineColor = Color.black;
     private float layerLineWidth = 1f;
-
-    private String showText;
-    private boolean invalidTextSize;
-    private float textWidth;
 
     private boolean isHoveringState;
     private Cursor stateIconCursor = Cursor.UNSET;
@@ -74,8 +52,6 @@ public class ListItem extends Widget {
         super.applyAttributes(controller);
         UXAttrs attrs = getAttrs();
 
-        setText(attrs.getAttributeString("text", getText()));
-        setActionListener(attrs.getAttributeListener("on-action", ActionEvent.class, controller));
         setChangeStateListener(attrs.getAttributeListener("on-change-state", ActionEvent.class, controller));
     }
 
@@ -86,21 +62,10 @@ public class ListItem extends Widget {
         UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
 
-        setFont(attrs.getFont("font", info, getFont()));
-        setTextSize(attrs.getSize("text-size", info, getTextSize()));
-        setTextColor(attrs.getColor("text-color", info, getTextColor()));
-        setTextAllCaps(attrs.getBool("text-all-caps", info, isTextAllCaps()));
 
         setLayerLineColor(attrs.getColor("layer-line-color", info, getLayerLineColor()));
         setLayerLineWidth(attrs.getSize("layer-line-width", info, getLayerLineWidth()));
         setLayerWidth(attrs.getSize("layer-width", info, getLayerWidth()));
-
-        setIcon(attrs.getResourceAsDrawable("icon", info, getIcon(), false));
-        setIconColor(attrs.getColor("icon-color", info, getIconColor()));
-        setIconWidth(attrs.getSize("icon-width", info, getIconWidth()));
-        setIconHeight(attrs.getSize("icon-height", info, getIconHeight()));
-        setIconSpacing(attrs.getSize("icon-spacing", info, getIconSpacing()));
-        setIconImageFilter(attrs.getConstant("icon-image-filter", info, getIconImageFilter()));
 
         setStateIconOpen(attrs.getResourceAsDrawable("state-icon-open", info, getStateIconOpen(), false));
         setStateIconClosed(attrs.getResourceAsDrawable("state-icon-closed", info, getStateIconClosed(), false));
@@ -224,17 +189,7 @@ public class ListItem extends Widget {
         }
 
         if (tw > 0 && th > 0) {
-            context.setColor(getTextColor());
-            context.setTextFont(getFont());
-            context.setTextSize(getTextSize());
-            context.setTextBlur(0);
-
-            context.drawTextSlice(
-                    inX + spaceForStateIcon + spaceForIcon
-                    , yOff(y, y + height, th)
-                    , tw
-                    , th
-                    , getShowText());
+            drawText(context, inX + spaceForStateIcon + spaceForIcon, yOff(y, y + height, th), tw, th);
         }
     }
 
@@ -297,143 +252,6 @@ public class ListItem extends Widget {
     public void setLayerLineWidth(float layerLineWidth) {
         if (this.layerLineWidth != layerLineWidth) {
             this.layerLineWidth = layerLineWidth;
-            invalidate(false);
-        }
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        if (!Objects.equals(this.text, text)) {
-            this.text = text;
-            showText = text == null ? null : textAllCaps ? text.toUpperCase() : text;
-            invalidate(isWrapContent());
-            invalidateTextSize();
-        }
-    }
-
-    public boolean isTextAllCaps() {
-        return textAllCaps;
-    }
-
-    public void setTextAllCaps(boolean textAllCaps) {
-        if (this.textAllCaps != textAllCaps) {
-            this.textAllCaps = textAllCaps;
-            showText = text == null ? null : textAllCaps ? text.toUpperCase() : text;
-            invalidate(isWrapContent());
-            invalidateTextSize();
-        }
-    }
-
-    public Font getFont() {
-        return font;
-    }
-
-    public void setFont(Font font) {
-        if (this.font != font) {
-            this.font = font;
-            invalidate(isWrapContent());
-            invalidateTextSize();
-        }
-    }
-
-    public float getTextSize() {
-        return textSize;
-    }
-
-    public void setTextSize(float textSize) {
-        if (this.textSize != textSize) {
-            this.textSize = textSize;
-            invalidate(isWrapContent());
-            invalidateTextSize();
-        }
-    }
-
-    public int getTextColor() {
-        return textColor;
-    }
-
-    public void setTextColor(int textColor) {
-        if (this.textColor != textColor) {
-            this.textColor = textColor;
-            invalidate(false);
-        }
-    }
-
-    public int getIconColor() {
-        return iconColor;
-    }
-
-    public void setIconColor(int iconColor) {
-        if (this.iconColor != iconColor) {
-            this.iconColor = iconColor;
-            invalidate(false);
-        }
-    }
-
-    public Drawable getIcon() {
-        return icon;
-    }
-
-    public void setIcon(Drawable icon) {
-        if (this.icon != icon) {
-            this.icon = icon;
-            invalidate(isWrapContent());
-        }
-    }
-
-    public float getIconSpacing() {
-        return iconSpacing;
-    }
-
-    public void setIconSpacing(float iconSpacing) {
-        if (this.iconSpacing != iconSpacing) {
-            this.iconSpacing = iconSpacing;
-            invalidate(isWrapContent());
-        }
-    }
-
-    public float getIconWidth() {
-        return iconWidth;
-    }
-
-    public void setIconWidth(float iconWidth) {
-        if (this.iconWidth != iconWidth) {
-            this.iconWidth = iconWidth;
-            invalidate(isWrapContent());
-        }
-    }
-
-    private float getLayoutIconWidth() {
-        return icon == null ? 0 : iconWidth == 0 || iconWidth == MATCH_PARENT ? getTextHeight() : iconWidth;
-    }
-
-    public float getIconHeight() {
-        return iconHeight;
-    }
-
-    public void setIconHeight(float iconHeight) {
-        if (this.iconHeight != iconHeight) {
-            this.iconHeight = iconHeight;
-            invalidate(isWrapContent());
-        }
-    }
-
-    private float getLayoutIconHeight() {
-        return icon == null ? 0 : iconHeight == 0 || iconHeight == MATCH_PARENT ? getTextHeight() : iconHeight;
-    }
-
-    public ImageFilter getIconImageFilter() {
-        return iconImageFilter;
-    }
-
-    public void setIconImageFilter(ImageFilter iconImageFilter) {
-        if (iconImageFilter == null) iconImageFilter = ImageFilter.LINEAR;
-
-        if (this.iconImageFilter != iconImageFilter) {
-            this.iconImageFilter = iconImageFilter;
             invalidate(false);
         }
     }
@@ -540,28 +358,6 @@ public class ListItem extends Widget {
         this.stateIconCursor = stateIconCursor;
     }
 
-    private void invalidateTextSize() {
-        invalidTextSize = true;
-    }
-
-    public UXListener<ActionEvent> getActionListener() {
-        return actionListener;
-    }
-
-    public void setActionListener(UXListener<ActionEvent> actionListener) {
-        this.actionListener = actionListener;
-    }
-
-    public void action() {
-        fireAction();
-    }
-
-    private void fireAction() {
-        if (actionListener != null) {
-            UXListener.safeHandle(actionListener, new ActionEvent(this));
-        }
-    }
-
     public UXListener<ActionEvent> getChangeStateListener() {
         return changeStateListener;
     }
@@ -622,29 +418,6 @@ public class ListItem extends Widget {
         x2 = x + getLayers() * getLayerWidth() + iaw;
         y1 = yOff(y, y + height, iah);
         y2 = yOff(y, y + height, iah) + iah;
-    }
-
-    protected float getTextWidth() {
-        if (invalidTextSize) {
-            invalidTextSize = false;
-            if (showText == null || font == null) {
-                return textWidth = 0;
-            }
-            textWidth = font.getWidth(showText, textSize, 1);
-        }
-        return textWidth;
-    }
-
-    protected float getTextHeight() {
-        return font == null ? 0 : font.getHeight(textSize);
-    }
-
-    protected String getShowText() {
-        return showText;
-    }
-
-    protected boolean isWrapContent() {
-        return getPrefWidth() == WRAP_CONTENT || getPrefHeight() == WRAP_CONTENT;
     }
 
     protected float yOff(float start, float end, float size) {

@@ -16,6 +16,7 @@ import flat.widget.structure.Tab;
 import flat.widget.text.Button;
 import flat.widget.text.Chip;
 import flat.widget.text.Label;
+import flat.widget.text.TextField;
 import flat.widget.value.HorizontalScrollBar;
 import flat.widget.value.VerticalScrollBar;
 
@@ -55,6 +56,7 @@ public class UXBuilder {
         UXBuilder.install("Page", Page::new);
         UXBuilder.install("ListView", ListView::new);
         UXBuilder.install("Chip", Chip::new);
+        UXBuilder.install("TextField", TextField::new);
         /*UXBuilder.install("Divider", Divider::new);
         UXBuilder.install("ToggleButton", ToggleButton::new);
         UXBuilder.install("ToggleGroup", RadioGroup::new);
@@ -64,7 +66,6 @@ public class UXBuilder {
         UXBuilder.install("ProgressCircle", ProgressCircle::new);
         UXBuilder.install("Grid", Grid::new);
         UXBuilder.install("Cell", Cell::new);
-        UXBuilder.install("TextField", TextField::new);
         UXBuilder.install("TextArea", TextArea::new);
         UXBuilder.install("Drawer", Drawer::new);
         UXBuilder.install("MenuItem", MenuItem::new);

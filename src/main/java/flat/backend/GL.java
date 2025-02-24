@@ -172,6 +172,11 @@ public class GL {
     public static native void TextureDataI(int trgTT, int level, int formatTF, int width, int height, int border, int[] data, int offset);
     public static native void TextureDataF(int trgTT, int level, int formatTF, int width, int height, int border, float[] data, int offset);
     public static native void TextureDataBuffer(int trgTT, int level, int formatTF, int width, int height, int border, Buffer buffer, int offset);
+    public static native void TexGetImageB(int trgTT, int level, int formatTF, byte[] data, int offset);
+    public static native void TexGetImageS(int trgTT, int level, int formatTF, short[] data, int offset);
+    public static native void TexGetImageI(int trgTT, int level, int formatTF, int[] data, int offset);
+    public static native void TexGetImageF(int trgTT, int level, int formatTF, float[] data, int offset);
+    public static native void TexGetImageBuffer(int trgTT, int level, int formatTF, Buffer buffer, int offset);
 
     public static native void TextureSubData(int trgTT, int level, int x, int y, int width, int height, int dataFormatTF, long offset);
     public static native void TextureSubDataB(int trgTT, int level, int x, int y, int width, int height, int dataFormatTF, byte[] data, int offset);

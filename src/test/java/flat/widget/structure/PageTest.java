@@ -28,8 +28,8 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import java.util.HashMap;
 
 import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyFloat;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.*;
@@ -72,6 +72,9 @@ public class PageTest {
 
         resCloseIcon = mock(ResourceStream.class);
         when(DrawableReader.parse(resCloseIcon)).thenReturn(closeIcon);
+
+        when(defaultFont.getWidth(any(), anyInt(), anyInt(), anyFloat(), anyFloat())).thenReturn(165f);
+        when(defaultFont.getHeight(anyFloat())).thenReturn(32f);
     }
 
     @Test
@@ -148,9 +151,6 @@ public class PageTest {
 
     @Test
     public void measure() {
-        when(defaultFont.getWidth(any(), anyFloat(), anyFloat())).thenReturn(165f);
-        when(defaultFont.getHeight(anyFloat())).thenReturn(32f);
-
         Page page = new Page();
         page.setText("Hello World");
         page.onMeasure();
@@ -180,9 +180,6 @@ public class PageTest {
 
     @Test
     public void iconSize() {
-        when(defaultFont.getWidth(any(), anyFloat(), anyFloat())).thenReturn(165f);
-        when(defaultFont.getHeight(anyFloat())).thenReturn(32f);
-
         Drawable drawable = mock(Drawable.class);
         when(drawable.getWidth()).thenReturn(24f);
         when(drawable.getHeight()).thenReturn(16f);
@@ -230,9 +227,6 @@ public class PageTest {
 
     @Test
     public void closeIconSize() {
-        when(defaultFont.getWidth(any(), anyFloat(), anyFloat())).thenReturn(165f);
-        when(defaultFont.getHeight(anyFloat())).thenReturn(32f);
-
         Drawable drawable = mock(Drawable.class);
         when(drawable.getWidth()).thenReturn(24f);
         when(drawable.getHeight()).thenReturn(16f);
@@ -280,9 +274,6 @@ public class PageTest {
 
     @Test
     public void measureIconSpacing() {
-        when(defaultFont.getWidth(any(), anyFloat(), anyFloat())).thenReturn(165f);
-        when(defaultFont.getHeight(anyFloat())).thenReturn(32f);
-
         Drawable drawable = mock(Drawable.class);
         when(drawable.getWidth()).thenReturn(24f);
         when(drawable.getHeight()).thenReturn(16f);
@@ -329,9 +320,6 @@ public class PageTest {
 
     @Test
     public void measureCloseIconSpacing() {
-        when(defaultFont.getWidth(any(), anyFloat(), anyFloat())).thenReturn(165f);
-        when(defaultFont.getHeight(anyFloat())).thenReturn(32f);
-
         Drawable drawable = mock(Drawable.class);
         when(drawable.getWidth()).thenReturn(24f);
         when(drawable.getHeight()).thenReturn(16f);

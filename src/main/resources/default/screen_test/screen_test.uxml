@@ -60,6 +60,35 @@
         <LinearBox direction="vertical" background-color="#C0C0C0" width="MATCH_PARENT" height="MATCH_PARENT"
                    padding-left="8" padding-right="8" padding-top="8" padding-bottom="8"
                    margin-left="32" margin-right="32" margin-top="32" margin-bottom="32" vertical-align="TOP">
+            <Button text="Add new item" margin-top="8" width="256" horizontal-align="right"
+                    icon="/default/img_test.png"
+                    icon-scale-height="true" icon-spacing="12px"
+                    icon-align="RIGHT"
+                    on-action="onAddItem"/>
+
+            <Button text="Remove the middle item" margin-top="8"
+                    icon="/default/img_test.png"
+                    icon-scale-height="true" icon-spacing="12px"
+                    icon-align="LEFT"
+                    on-action="onRemoveItem"/>
+            <!--ScrollBox width="400" height="400" background-color="yellow">
+                <StackBox><ImageView image="/default/image.png"/></StackBox>
+            </ScrollBox-->
+            <ListView id="listView" width="200" height="MATCH_PARENT" max-height="400" margin-top="16"></ListView>
+            <TextField text="Ola Mundo&#10;OutraLinha&#10;OutraLinhaasa asa" width="300" horizontal-align="left" max-height="200" margin-top="16"
+                       padding-top="16" padding-bottom="16" padding-left="16" padding-right="16">
+                <Menu width="100" height="200" background-color="blue">
+                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
+                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
+                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
+                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
+                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
+                </Menu>
+            </TextField>
+        </LinearBox>
+        <LinearBox direction="vertical" background-color="#C0C0C0" width="MATCH_PARENT" height="MATCH_PARENT"
+                   padding-left="8" padding-right="8" padding-top="8" padding-bottom="8"
+                   margin-left="32" margin-right="32" margin-top="32" margin-bottom="32" vertical-align="TOP">
             <Label text="Title" background-color="#0000c8" text-color="white"/>
             <Button text="Big Dialog Button" text-size="12px" font="SANS" margin-top="8"
                     icon="/default/img_test.png"
@@ -73,8 +102,9 @@
                     horizontal-align="RIGHT"
                     background-color="#1E1F22" text-color="#FFFFFF"
                     on-action="onWindowClick"/>
-            <Button text="Context Menu" margin-top="16"
-                    horizontal-align="RIGHT">
+            <Button text="Context Menu - Save Image" margin-top="16"
+                    horizontal-align="RIGHT"
+                    on-action="export">
                 <Menu width="100" height="200" background-color="blue">
                     <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
                     <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
@@ -86,6 +116,7 @@
                 </Menu>
             </Button>
             <Label text="Multiação&#10;Complex Line&#10;Text" background-color="#0000c8" text-color="white" width="300" horizontal-align="right"/>
+            <Label text="Texto apenas largo" background-color="#0000c8" text-color="white" width="300" horizontal-align="center"/>
             <Chip text="This is a Multiação" margin-top="8"
                   icon="/default/img_test.png" icon-spacing="12px"
                   icon-align="LEFT" on-action="onRemoveItem"
@@ -142,21 +173,6 @@
                     icon="/default/img_test.png"
                     icon-scale-height="true" icon-spacing="12px"
                     icon-position="RIGHT"/>
-            <Button text="Add new item" margin-top="8" width="256" horizontal-align="right"
-                    icon="/default/img_test.png"
-                    icon-scale-height="true" icon-spacing="12px"
-                    icon-align="RIGHT"
-                    on-action="onAddItem"/>
-
-            <Button text="Remove the middle item" margin-top="8"
-                    icon="/default/img_test.png"
-                    icon-scale-height="true" icon-spacing="12px"
-                    icon-align="LEFT"
-                    on-action="onRemoveItem"/>
-            <!--ScrollBox width="400" height="400" background-color="yellow">
-                <StackBox><ImageView image="/default/image.png"/></StackBox>
-            </ScrollBox-->
-            <ListView id="listView" width="200" height="MATCH_PARENT" max-height="400" margin-top="16"></ListView>
         </LinearBox>
     </LinearBox>
 </Scene>

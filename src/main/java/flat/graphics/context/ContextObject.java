@@ -10,6 +10,7 @@ abstract class ContextObject {
 
     public ContextObject(Context context) {
         this.context = context;
+        this.context.checkDisposed();
     }
 
     public Context getContext() {

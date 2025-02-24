@@ -520,6 +520,18 @@ public class Window {
         WL.Focus(windowId);
     }
 
+    public String getClipboard() {
+        checkDisposed();
+
+        return WL.GetClipboardString(windowId);
+    }
+
+    public void setClipboard(String clipboard) {
+        checkDisposed();
+
+        WL.SetClipboardString(windowId, clipboard);
+    }
+
     public boolean requestClose() {
         return onRequestClose(false);
     }

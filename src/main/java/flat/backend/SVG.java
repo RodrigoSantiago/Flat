@@ -78,8 +78,8 @@ public class SVG {
     public static native int FontGetGlyphCount(long font);
     public static native float FontGetTextWidth(long font, String string, float size, float spacing);
     public static native float FontGetTextWidthBuffer(long font, Buffer string, int offset, int length, float size, float spacing);
-    public static native int FontGetOffset(long font, String string, float size, float spacing, float x, boolean half);
-    public static native int FontGetOffsetBuffer(long font, Buffer string, int offset, int length, float size, float spacing, float x, boolean half);
+    public static native void FontGetOffset(long font, String string, float size, float spacing, float x, boolean half, float[] cursor);
+    public static native void FontGetOffsetBuffer(long font, Buffer string, int offset, int length, float size, float spacing, float x, boolean half, float[] cursor);
 
     public static native void SetFont(long context, long fontPaint);
     public static native void SetFontScale(long context, float size);

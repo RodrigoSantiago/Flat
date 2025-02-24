@@ -5,6 +5,7 @@ import flat.exception.FlatException;
 import flat.graphics.context.Paint;
 import flat.graphics.context.enums.LineCap;
 import flat.graphics.context.enums.LineJoin;
+import flat.graphics.context.enums.PixelFormat;
 import flat.math.shapes.Path;
 import flat.math.shapes.Rectangle;
 import flat.math.shapes.Shape;
@@ -60,7 +61,7 @@ public class DrawableReader {
         if (readImage == null) {
             throw new FlatException("Invalid image format " + stream.getResourceName());
         }
-        return new PixelMap(readImage, imageData[0], imageData[1]);
+        return new PixelMap(readImage, imageData[0], imageData[1], PixelFormat.RGBA);
     }
 
 

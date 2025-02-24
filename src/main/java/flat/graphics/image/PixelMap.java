@@ -15,13 +15,20 @@ import java.util.HashMap;
 public class PixelMap implements Drawable {
 
     private HashMap<Context, Texture2D> textures = new HashMap<>();
+    private PixelFormat format;
     private int width, height;
     private byte[] data;
 
-    PixelMap(byte[] data, int width, int height) {
+    public PixelMap(byte[] data, int width, int height, PixelFormat format) {
         this.width = width;
         this.height = height;
         this.data = data;
+        this.format = format;
+
+        int required = width * height * PixelFormat.getPixelBytes(format);
+        if (data.length < required) {
+            throw new RuntimeException("The image data is too short. Provided : " + data.length + ", Required : " + required);
+        }
     }
 
     public byte[] getData() {
@@ -33,7 +40,7 @@ public class PixelMap implements Drawable {
         if (texture == null) {
             texture = new Texture2D(context);
             texture.begin(0);
-            texture.setSize(width, height, PixelFormat.RGBA);
+            texture.setSize(width, height, format);
             texture.setData(0, data, 0, 0, 0, width, height);
             texture.setLevels(0);
             texture.generateMipmapLevels();
@@ -49,6 +56,10 @@ public class PixelMap implements Drawable {
             }
         }
         return texture;
+    }
+
+    public PixelFormat getFormat() {
+        return format;
     }
 
     @Override

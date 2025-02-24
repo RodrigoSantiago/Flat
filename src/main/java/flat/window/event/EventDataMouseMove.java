@@ -37,7 +37,7 @@ public class EventDataMouseMove extends EventData {
             pointer.setPosition(x, y);
             Widget widget = window.getActivity().findByPosition(x, y, false);
 
-            move(window, pointer, widget);
+            move(window, pointer, widget); // TODO - Move while dragging???
 
             if (pointer.isPressed()) {
                 drag(window, pointer, widget);
@@ -69,5 +69,8 @@ public class EventDataMouseMove extends EventData {
         }
 
         pointer.performPointerDrag();
+        if (pointer.pressed != null) {
+            window.setCursor(pointer.pressed.getCurrentCursor());
+        }
     }
 }

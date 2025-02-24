@@ -27,6 +27,7 @@ public class Application {
     private static ResourcesManager resources;
     private static boolean loopActive;
     private static long lastLoopTime;
+    private static float loopTime;
 
     private static boolean finalized;
 
@@ -200,7 +201,7 @@ public class Application {
         updateWindowList();
 
         long now = System.nanoTime();
-        float loopTime = (now - lastLoopTime) / 1_000_000_000.0f;
+        loopTime = (now - lastLoopTime) / 1_000_000_000.0f;
         lastLoopTime = now;
 
         boolean anyAnimation = false;
@@ -263,6 +264,10 @@ public class Application {
         synchronized (vsyncRun) {
             vsyncRun.add(task);
         }
+    }
+
+    public static float getLoopTime() {
+        return loopTime;
     }
 
     public static List<Window> getAssignedWindows() {

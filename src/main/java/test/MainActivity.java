@@ -3,7 +3,9 @@ package test;
 import flat.Flat;
 import flat.data.ObservableList;
 import flat.events.ActionEvent;
+import flat.graphics.Color;
 import flat.graphics.SmartContext;
+import flat.graphics.context.Font;
 import flat.graphics.image.PixelMap;
 import flat.uxml.Controller;
 import flat.uxml.ValueChange;
@@ -17,6 +19,10 @@ import flat.window.Activity;
 import flat.window.Application;
 import flat.window.WindowSettings;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -127,5 +133,36 @@ public class MainActivity extends Controller {
         //context.setColor(Color.black);
         //context.setTextBlur(0);
         //context.drawText(32, 200, "Ola Mundo");
+        if (save) {
+            save = false;
+            Font font = Font.getDefault();
+            var ctx = context.getContext();
+            PixelMap pixelMap = font.createImageFromAtlas(context.getContext());
+            saveImage(pixelMap.getData(), (int) pixelMap.getWidth(), (int) pixelMap.getHeight(), "C:\\Nova\\image-2.png");
+        }
+
+    }
+    public static void saveImage(byte[] rgbData, int width, int height, String filePath) {
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int index = y * width + x;
+                int c = Color.rgbaToColor(255, rgbData[index] & 0xFF, rgbData[index] & 0xFF, rgbData[index] & 0xFF);
+                image.setRGB(x, y, c);
+            }
+        }
+
+        try {
+            ImageIO.write(image, "png", new File(filePath));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    boolean save = false;
+    @Flat
+    public void export(ActionEvent event) {
+        save = true;
     }
 }

@@ -26,6 +26,15 @@ public final class Texture2D extends Texture {
         assignDispose(() -> GL.TextureDestroy(textureId));
     }
 
+    Texture2D(Context context, int id, int width, int height, int levels, PixelFormat format) {
+        super(context);
+        this.textureId = id;
+        this.width = width;
+        this.height = height;
+        this.levels = levels;
+        this.format = format;
+    }
+
     int getInternalID() {
         return textureId;
     }
@@ -60,20 +69,44 @@ public final class Texture2D extends Texture {
         return (int) Math.max(1, Math.floor(height / Math.pow(2,level)));
     }
 
+    public void getData(int level, Buffer buffer, int offset) {
+        boundCheck();
+        dataBoundsCheck(buffer.capacity() - offset, width, height);
+
+        GL.TexGetImageBuffer(GLEnums.TT_TEXTURE_2D, level, format.getInternalEnum(), buffer, offset);
+    }
+
+    public void getData(int level, int[] data, int offset) {
+        boundCheck();
+        dataBoundsCheck(data.length - offset, width, height);
+
+        GL.TexGetImageI(GLEnums.TT_TEXTURE_2D, level, format.getInternalEnum(), data, offset);
+    }
+
+    public void getData(int level, byte[] data, int offset) {
+        boundCheck();
+        dataBoundsCheck(data.length - offset, width, height);
+
+        GL.TexGetImageB(GLEnums.TT_TEXTURE_2D, level, format.getInternalEnum(), data, offset);
+    }
+
     public void setData(int level, Buffer buffer, int offset, int x, int y, int width, int height) {
         boundCheck();
+        dataBoundsCheck(buffer.capacity() - offset, width, height);
 
         GL.TextureSubDataBuffer(GLEnums.TT_TEXTURE_2D, level, x, y, width, height, format.getInternalEnum(), buffer, offset);
     }
 
     public void setData(int level, int[] data, int offset, int x, int y, int width, int height) {
         boundCheck();
+        dataBoundsCheck(data.length - offset, width, height);
 
         GL.TextureSubDataI(GLEnums.TT_TEXTURE_2D, level, x, y, width, height, format.getInternalEnum(), data, offset);
     }
 
     public void setData(int level, byte[] data, int offset, int x, int y, int width, int height) {
         boundCheck();
+        dataBoundsCheck(data.length - offset, width, height);
 
         GL.TextureSubDataB(GLEnums.TT_TEXTURE_2D, level, x, y, width, height, format.getInternalEnum(), data, offset);
     }
@@ -125,5 +158,12 @@ public final class Texture2D extends Texture {
 
     public WrapMode getWrapModeY() {
         return wrapModeY;
+    }
+
+    private void dataBoundsCheck(int length, int width, int height) {
+        int required = width * height * PixelFormat.getPixelBytes(format);
+        if (length < required) {
+            throw new RuntimeException("The image data is too short. Provided : " + length + ", Required : " + required);
+        }
     }
 }
