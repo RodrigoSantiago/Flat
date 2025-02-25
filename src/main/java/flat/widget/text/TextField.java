@@ -8,22 +8,27 @@ import flat.graphics.SmartContext;
 import flat.graphics.context.Font;
 import flat.math.Vector2;
 import flat.math.stroke.BasicStroke;
-import flat.uxml.Controller;
-import flat.uxml.UXAttrs;
+import flat.uxml.*;
+import flat.widget.Parent;
 import flat.widget.Widget;
 import flat.widget.enums.HorizontalAlign;
 import flat.widget.enums.VerticalAlign;
+import flat.widget.layout.Scrollable;
+import flat.widget.text.data.CaretData;
+import flat.widget.text.data.TextRender;
+import flat.widget.value.HorizontalScrollBar;
+import flat.widget.value.VerticalScrollBar;
 import flat.window.Activity;
 import flat.window.Application;
 
 import java.util.Objects;
 
-public class TextField extends Widget {
+public class TextField extends Scrollable {
 
     private String text;
     private String textHint;
 
-    private Font font = Font.getDefault();
+    private Font textFont = Font.getDefault();
     private float textSize = 16f;
     private int textColor = 0x000000FF;
     private int textHintColor = 0x000000FF;
@@ -37,19 +42,11 @@ public class TextField extends Widget {
     private float textHintWidth;
     private final TextRender textRender = new TextRender();
     private final TextRender textHintRender = new TextRender();
-    private TextRender.CaretData startCaret = new TextRender.CaretData();
-    private TextRender.CaretData endCaret = new TextRender.CaretData();
+    private CaretData startCaret = new CaretData();
+    private CaretData endCaret = new CaretData();
 
     private CaretBlink caretBlink = new CaretBlink();
     private boolean showCaret;
-
-    private float viewOffsetX;
-    private float viewDimensionX;
-    private float totalDimensionX;
-
-    private float viewOffsetY;
-    private float viewDimensionY;
-    private float totalDimensionY;
 
     private int keyCopy = KeyCode.KEY_C;
     private int keyPaste = KeyCode.KEY_V;
@@ -61,10 +58,28 @@ public class TextField extends Widget {
     private int keyMenu  = KeyCode.KEY_MENU;
 
     public TextField() {
-        textRender.setFont(font);
-        textHintRender.setFont(font);
+        textRender.setFont(textFont);
+        textHintRender.setFont(textFont);
         textRender.setTextSize(textSize);
         textHintRender.setTextSize(textSize);
+    }
+
+    @Override
+    public void applyChildren(UXChildren children) {
+        super.applyChildren(children);
+
+        UXAttrs attrs = getAttrs();
+        String hBarId = attrs.getAttributeString("horizontal-bar-id", null);
+        String vBarId = attrs.getAttributeString("vertical-bar-id", null);
+
+        Widget widget;
+        while ((widget = children.next()) != null ) {
+            if (hBarId != null && hBarId.equals(widget.getId()) && widget instanceof HorizontalScrollBar bar) {
+                setHorizontalBar(bar);
+            } else if (vBarId != null && vBarId.equals(widget.getId()) && widget instanceof VerticalScrollBar bar) {
+                setVerticalBar(bar);
+            }
+        }
     }
 
     @Override
@@ -83,7 +98,7 @@ public class TextField extends Widget {
         UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
 
-        setFont(attrs.getFont("font", info, getFont()));
+        setTextFont(attrs.getFont("text-font", info, getTextFont()));
         setTextSize(attrs.getSize("text-size", info, getTextSize()));
         setTextColor(attrs.getColor("text-color", info, getTextColor()));
         setTextHintColor(attrs.getColor("text-hint-color", info, getTextHintColor()));
@@ -96,6 +111,13 @@ public class TextField extends Widget {
     public void onMeasure() {
         float extraWidth = getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
         float extraHeight = getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
+
+        if (getHorizontalBar() != null) {
+            getHorizontalBar().onMeasure();
+        }
+        if (getVerticalBar() != null) {
+            getVerticalBar().onMeasure();
+        }
 
         float mWidth;
         float mHeight;
@@ -117,16 +139,18 @@ public class TextField extends Widget {
     }
 
     @Override
-    public void onLayout(float width, float height) {
-        super.onLayout(width, height);
-        updateTextSize();
+    public Vector2 onLayoutLocalDimension(float width, float height) {
+        return new Vector2(getTextWidth(), getTextHeight());
     }
 
-    private void updateTextSize() {
-        viewDimensionX = getInWidth();
-        viewDimensionY = getInHeight();
-        totalDimensionX = Math.max(viewDimensionX, getTextWidth());
-        totalDimensionY = Math.max(viewDimensionY, getTextHeight());
+    @Override
+    public void setLayoutScrollOffset(float xx, float yy) {
+
+    }
+
+    @Override
+    public void onLayout(float width, float height) {
+        super.onLayout(width, height);
     }
 
     @Override
@@ -142,65 +166,89 @@ public class TextField extends Widget {
         if (width <= 0 || height <= 0) return;
 
         if (getText() == null || getText().length() == 0 && getTextHint() != null) {
-            if (getFont() != null && getTextSize() > 0 && Color.getAlpha(getTextHintColor()) > 0) {
-                float xpos = xOff(x, x + width, Math.min(getTextHintWidth(), width));
-                float ypos = yOff(y, y + height, Math.min(getTextHintHeight(), height));
-
-                context.setTransform2D(getTransform());
-                context.setColor(getTextHintColor());
-                context.setTextFont(getFont());
-                context.setTextSize(getTextSize());
-                context.setTextBlur(0);
-                textHintRender.drawText(context, x, y, width, height, horizontalAlign);
+            if (getTextFont() == null || getTextSize() <= 0 || Color.getAlpha(getTextHintColor()) == 0) {
+                return;
             }
+            float xpos = getTextHintWidth() < width ? xOff(x, x + width, getTextHintWidth()) : x;
+            float ypos = getTextHintHeight() < height ? yOff(y, y + height, getTextHintHeight()) : y;
+
+            context.setTransform2D(getTransform());
+            context.setColor(getTextHintColor());
+            context.setTextFont(getTextFont());
+            context.setTextSize(getTextSize());
+            context.setTextBlur(0);
+
+            float lineH = getLineHeight();
+            context.setColor(getTextHintColor());
+            int start = Math.max(0, (int) Math.floor((getViewOffsetY() - getInY()) / lineH) - 1);
+            int end = start + Math.max(0, (int) Math.ceil(getHeight() / lineH) + 2);
+            textHintRender.drawText(context, xpos, ypos, width * 9999, height * 9999, horizontalAlign, start, end);
+
+            if (showCaret) {
+                float caretX = textHintRender.getCaretHorizontalOffset(endCaret, horizontalAlign) + xpos;
+                context.setColor(getTextColor());
+                context.setStroker(new BasicStroke(2));
+                context.drawLine(caretX, ypos + endCaret.line * lineH, caretX, ypos + (endCaret.line + 1) * lineH);
+            }
+
         } else {
-            if (getFont() != null && getTextSize() > 0 && Color.getAlpha(getTextColor()) > 0) {
-                if (totalDimensionX > viewDimensionX + 0.01f || totalDimensionY > viewDimensionY + 0.01f) {
-                    context.pushClip(getBackgroundShape());
-                }
-                x -= viewOffsetX;
-                y -= viewOffsetY;
-                float xpos = getTextWidth() < width ? xOff(x, x + width, getTextWidth()) : x;
-                float ypos = getTextHeight() < height ? yOff(y, y + height, getTextHeight()) : y;
+            if (getTextFont() == null || getTextSize() <= 0 || Color.getAlpha(getTextColor()) == 0) {
+                return;
+            }
+            if (isHorizontalDimensionScroll() || isVerticalDimensionScroll()) {
+                context.pushClip(getBackgroundShape());
+            }
+            x -= getViewOffsetX();
+            y -= getViewOffsetY();
+            float xpos = getTextWidth() < width ? xOff(x, x + width, getTextWidth()) : x;
+            float ypos = getTextHeight() < height ? yOff(y, y + height, getTextHeight()) : y;
 
-                context.setTransform2D(getTransform());
-                context.setColor(getTextColor());
-                context.setTextFont(getFont());
-                context.setTextSize(getTextSize());
-                context.setTextBlur(0);
+            context.setTransform2D(getTransform());
+            context.setColor(getTextColor());
+            context.setTextFont(getTextFont());
+            context.setTextSize(getTextSize());
+            context.setTextBlur(0);
 
-                float lineH = getLineHeight();
-                var first = startCaret.offset <= endCaret.offset ? startCaret : endCaret;
-                var second = startCaret.offset <= endCaret.offset ? endCaret : startCaret;
-                float firstX = textRender.getCaretHorizontalOffset(first, horizontalAlign) + xpos;
-                float secondX = textRender.getCaretHorizontalOffset(second, horizontalAlign) + xpos;
+            float lineH = getLineHeight();
+            var first = startCaret.offset <= endCaret.offset ? startCaret : endCaret;
+            var second = startCaret.offset <= endCaret.offset ? endCaret : startCaret;
+            float firstX = textRender.getCaretHorizontalOffset(first, horizontalAlign) + xpos;
+            float secondX = textRender.getCaretHorizontalOffset(second, horizontalAlign) + xpos;
 
-                context.setColor(Color.aqua);
-                if (first.line == second.line) {
-                    context.drawRect(firstX, ypos + first.line * lineH, secondX - firstX, lineH, true);
-                } else {
-                    context.drawRect(firstX, ypos + first.line * lineH, totalDimensionX - (firstX - x), lineH, true);
-                    context.drawRect(x, y + second.line * lineH, secondX - x, lineH, true);
-                    if (first.line + 1 < second.line) {
-                        context.drawRect(x, y + (first.line + 1) * lineH, totalDimensionX, (second.line - first.line - 1) * lineH, true);
-                    }
-                }
-
-                context.setColor(getTextColor());
-                int start = Math.max(0, (int) Math.floor((viewOffsetY - getInY()) / lineH) - 1);
-                int end = start + Math.max(0, (int) Math.ceil(getHeight() / lineH) + 2);
-                textRender.drawText(context, xpos, ypos, width * 9999, height * 9999, horizontalAlign, start, end);
-
-                if (showCaret) {
-                    float caretX = textRender.getCaretHorizontalOffset(endCaret, horizontalAlign) + xpos;
-                    context.setColor(getTextColor());
-                    context.setStroker(new BasicStroke(2));
-                    context.drawLine(caretX, ypos + endCaret.line * lineH, caretX, ypos + (endCaret.line + 1) * lineH);
-                }
-                if (totalDimensionX > viewDimensionX + 0.01f || totalDimensionY > viewDimensionY + 0.01f) {
-                    context.popClip();
+            context.setColor(Color.aqua);
+            if (first.line == second.line) {
+                context.drawRect(firstX, ypos + first.line * lineH, secondX - firstX, lineH, true);
+            } else {
+                context.drawRect(firstX, ypos + first.line * lineH, getTotalDimensionX() - (firstX - x), lineH, true);
+                context.drawRect(x, y + second.line * lineH, secondX - x, lineH, true);
+                if (first.line + 1 < second.line) {
+                    context.drawRect(x, y + (first.line + 1) * lineH,
+                            getTotalDimensionX(), (second.line - first.line - 1) * lineH, true);
                 }
             }
+
+            context.setColor(getTextColor());
+            int start = Math.max(0, (int) Math.floor((getViewOffsetY() - getInY()) / lineH) - 1);
+            int end = start + Math.max(0, (int) Math.ceil(getHeight() / lineH) + 2);
+            textRender.drawText(context, xpos, ypos, width * 9999, height * 9999, horizontalAlign, start, end);
+
+            if (showCaret) {
+                float caretX = textRender.getCaretHorizontalOffset(endCaret, horizontalAlign) + xpos;
+                context.setColor(getTextColor());
+                context.setStroker(new BasicStroke(2));
+                context.drawLine(caretX, ypos + endCaret.line * lineH, caretX, ypos + (endCaret.line + 1) * lineH);
+            }
+            if (isHorizontalDimensionScroll() || isVerticalDimensionScroll()) {
+                context.popClip();
+            }
+        }
+
+        if (getHorizontalBar() != null && isHorizontalVisible()) {
+            getHorizontalBar().onDraw(context);
+        }
+
+        if (getVerticalBar() != null && isVerticalVisible()) {
+            getVerticalBar().onDraw(context);
         }
     }
 
@@ -215,13 +263,13 @@ public class TextField extends Widget {
     @Override
     public void firePointer(PointerEvent event) {
         super.firePointer(event);
-        if (!event.isConsumed() && getFont() != null) {
+        if (!event.isConsumed() && event.getSource() == this && event.getPointerID() == 1 && getTextFont() != null) {
             float x = getInX();
             float y = getInY();
             float width = getInWidth();
             float height = getInHeight();
-            x -= viewOffsetX;
-            y -= viewOffsetY;
+            x -= getViewOffsetX();
+            y -= getViewOffsetY();
             float xpos = getTextWidth() < width ? xOff(x, x + width, getTextWidth()) : x;
             float ypos = getTextHeight() < height ? yOff(y, y + height, getTextHeight()) : y;
 
@@ -289,10 +337,10 @@ public class TextField extends Widget {
                 textRender.moveCaretVertical(endCaret, horizontalAlign, -1);
                 if (!event.isShiftDown()) startCaret.set(endCaret);
             } else if (event.getKeycode() == KeyCode.KEY_PAGE_DOWN) {
-                textRender.moveCaretVertical(endCaret, horizontalAlign, (int) (viewDimensionY / getLineHeight()));
+                textRender.moveCaretVertical(endCaret, horizontalAlign, (int) (getViewDimensionY() / getLineHeight()));
                 if (!event.isShiftDown()) startCaret.set(endCaret);
             } else if (event.getKeycode() == KeyCode.KEY_PAGE_UP) {
-                textRender.moveCaretVertical(endCaret, horizontalAlign, (int) -(viewDimensionY / getLineHeight()));
+                textRender.moveCaretVertical(endCaret, horizontalAlign, (int) -(getViewDimensionY() / getLineHeight()));
                 if (!event.isShiftDown()) startCaret.set(endCaret);
             } else if (event.getKeycode() == KeyCode.KEY_HOME) {
                 textRender.moveCaretBackwardsLine(endCaret);
@@ -317,9 +365,10 @@ public class TextField extends Widget {
         }
     }
 
-    private void editText(TextRender.CaretData first, TextRender.CaretData second, String text) {
+    private void editText(CaretData first, CaretData second, String text) {
         textRender.editText(first, second, text, endCaret);
         startCaret.set(endCaret);
+        this.text = textRender.getText();
         invalidateTextSize();
         setCaretVisible();
         slideToCaret(1);
@@ -330,8 +379,8 @@ public class TextField extends Widget {
         float y = getInY();
         float width = getInWidth();
         float height = getInHeight();
-        float px = x - viewOffsetX;
-        float py = y - viewOffsetY;
+        float px = x - getViewOffsetX();
+        float py = y - getViewOffsetY();
         float xpos = getTextWidth() < width ? xOff(x, x + width, getTextWidth()) : px;
         float ypos = getTextHeight() < height ? yOff(y, y + height, getTextHeight()) : py;
 
@@ -491,6 +540,7 @@ public class TextField extends Widget {
         if (!Objects.equals(this.text, text)) {
             this.text = text;
             textRender.setText(text);
+            actionClearSelection();
             invalidate(isWrapContent());
             invalidateTextSize();
         }
@@ -509,15 +559,15 @@ public class TextField extends Widget {
         }
     }
 
-    public Font getFont() {
-        return font;
+    public Font getTextFont() {
+        return textFont;
     }
 
-    public void setFont(Font font) {
-        if (this.font != font) {
-            this.font = font;
-            textRender.setFont(font);
-            textHintRender.setFont(font);
+    public void setTextFont(Font textFont) {
+        if (this.textFont != textFont) {
+            this.textFont = textFont;
+            textRender.setFont(textFont);
+            textHintRender.setFont(textFont);
             invalidate(isWrapContent());
             invalidateTextSize();
             invalidateTextHintSize();
@@ -525,7 +575,7 @@ public class TextField extends Widget {
     }
 
     protected float getLineHeight() {
-        return font == null ? textSize : font.getHeight(textSize);
+        return textFont == null ? textSize : textFont.getHeight(textSize);
     }
 
     public float getTextSize() {
@@ -568,7 +618,7 @@ public class TextField extends Widget {
     private void invalidateTextSize() {
         invalidate(true);
         invalidTextSize = true;
-        updateTextSize();
+        getTextWidth();
     }
 
     private void invalidateTextHintSize() {
@@ -601,102 +651,26 @@ public class TextField extends Widget {
         }
     }
 
-    public float getViewOffsetX() {
-        return Math.max(0, Math.min(viewOffsetX, totalDimensionX - viewDimensionX));
-    }
-
-    public void setViewOffsetX(float viewOffsetX) {
-        viewOffsetX = Math.max(0, Math.min(viewOffsetX, totalDimensionX - viewDimensionX));
-
-        if (this.viewOffsetX != viewOffsetX) {
-            float old = this.viewOffsetX;
-            this.viewOffsetX = viewOffsetX;
-            invalidate(true);
-            /*fireViewOffsetXListener(old);
-            if (horizontalBar != null) {
-                horizontalBar.setViewOffsetListener(null);
-                horizontalBar.setViewOffset(this.viewOffsetX);
-            }*/
-        }
-    }
-
-    public float getViewOffsetY() {
-        return Math.max(0, Math.min(viewOffsetY, totalDimensionY - viewDimensionY));
-    }
-
-    public void setViewOffsetY(float viewOffsetY) {
-        viewOffsetY = Math.max(0, Math.min(viewOffsetY, totalDimensionY - viewDimensionY));
-
-        if (this.viewOffsetY != viewOffsetY) {
-            float old = this.viewOffsetY;
-            this.viewOffsetY = viewOffsetY;
-            invalidate(true);
-            /*fireViewOffsetYListener(old);
-            if (verticalBar != null) {
-                verticalBar.setViewOffsetListener(null);
-                verticalBar.setViewOffset(this.viewOffsetY);
-            }*/
-        }
-    }
-
-    public void slide(float offsetX, float offsetY) {
-        slideHorizontal(offsetX);
-        slideVertical(offsetY);
-    }
-
-    public void slideTo(float offsetX, float offsetY) {
-        slideHorizontalTo(offsetX);
-        slideVerticalTo(offsetY);
-    }
-
-    public void slideHorizontalTo(float offsetX) {
-        offsetX = Math.max(0, Math.min(offsetX, totalDimensionX - viewDimensionX));
-
-        float old = viewOffsetX;
-        if (offsetX != old /*&& filterSlideX(offsetX)*/) {
-            setViewOffsetX(offsetX);
-            //fireSlideX();
-        }
-    }
-
-    public void slideHorizontal(float offsetX) {
-        slideHorizontalTo(getViewOffsetX() + offsetX);
-    }
-
-    public void slideVerticalTo(float offsetY) {
-        offsetY = Math.max(0, Math.min(offsetY, totalDimensionY - viewDimensionY));
-
-        float old = viewOffsetY;
-        if (offsetY != old /*&& filterSlideY(offsetY)*/) {
-            setViewOffsetY(offsetY);
-            //fireSlideY();
-        }
-    }
-
-    public void slideVertical(float offsetY) {
-        slideVerticalTo(getViewOffsetY() + offsetY);
-    }
-
     public void slideToCaret(float speed) {
         float lineH = getLineHeight();
         float caretX = textRender.getCaretHorizontalOffset(endCaret, horizontalAlign);
         float caretYMin = endCaret.line * lineH;
         float caretYMax = (endCaret.line + 1) * lineH;
 
-        float targetX = viewOffsetX;
-        if (caretX < viewOffsetX) {
+        float targetX = getViewOffsetX();
+        if (caretX < targetX) {
             targetX = caretX;
-        } else if (caretX > viewOffsetX + viewDimensionX) {
-            targetX = caretX - viewDimensionX;
+        } else if (caretX > targetX + getViewDimensionX()) {
+            targetX = caretX - getViewDimensionX();
         }
 
-        float targetY = viewOffsetY;
-        if (caretYMin < viewOffsetY) {
+        float targetY = getViewOffsetY();
+        if (caretYMin < targetY) {
             targetY = caretYMin;
-        } else if (caretYMax > viewOffsetY + viewDimensionY) {
-            targetY = caretYMax - viewDimensionY;
+        } else if (caretYMax > targetY + getViewDimensionY()) {
+            targetY = caretYMax - getViewDimensionY();
         }
-        slideTo(targetX * speed + viewOffsetX * (1 - speed), targetY * speed + viewOffsetY * (1 - speed));
+        slideTo(targetX * speed + getViewOffsetX() * (1 - speed), targetY * speed + getViewOffsetY() * (1 - speed));
     }
 
     protected float getTextWidth() {

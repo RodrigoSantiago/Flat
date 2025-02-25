@@ -135,43 +135,42 @@ public class ListViewTest {
     public void adapter() {
         ListViewAdapter adapter = mock(ListViewAdapter.class);
         when(adapter.createListItem()).thenReturn(new Panel());
+        when(adapter.size()).thenReturn(5);
 
         ListViewAdapter adapter2 = mock(ListViewAdapter.class);
         when(adapter2.createListItem()).thenReturn(new Panel());
-        when(adapter2.size()).thenReturn(5);
+        when(adapter2.size()).thenReturn(20);
 
         ListView listView = new ListView();
         listView.setItemHeight(8);    // ceil((16 * 1.25) / 8) + 1 = 4
         listView.setAdapter(adapter);
         verify(adapter, times(4)).createListItem();
-        verify(adapter, times(0)).buildListItem(anyInt(), any());
-        verify(adapter, times(0)).clearListItem(anyInt(), any());
+        verify(adapter, times(4)).buildListItem(anyInt(), any());
+
+        listView.refreshItems();
+        verify(adapter, times(4)).createListItem();
+        verify(adapter, times(8)).buildListItem(anyInt(), any());
 
         listView.setPrefSize(200, 100);
         listView.setItemHeight(20);    // ceil((100 * 1.25) / 20) + 1 = 8
         listView.setAdapter(adapter);
-        when(adapter.getListView()).thenReturn(listView);
         listView.refreshItems();
 
-        verify(adapter, times(8)).createListItem();
-        verify(adapter, times(0)).buildListItem(anyInt(), any());
-        verify(adapter, times(8)).clearListItem(anyInt(), any());
+        verify(adapter, times(5)).createListItem();               // 4 + 1
+        verify(adapter, times(13)).buildListItem(anyInt(), any()); // 4 + 4 + 5
 
         when(adapter.size()).thenReturn(6);
         listView.refreshItems();
 
-        verify(adapter, times(8)).createListItem();
-        verify(adapter, times(6)).buildListItem(anyInt(), any());
-        verify(adapter, times(10)).clearListItem(anyInt(), any());
+        verify(adapter, times(6)).createListItem();
+        verify(adapter, times(19)).buildListItem(anyInt(), any()); // 4 + 4 + 5 + 6
 
         listView.setAdapter(adapter2);
 
-        verify(adapter, times(8)).createListItem();
-        verify(adapter, times(6)).buildListItem(anyInt(), any());
-        verify(adapter, times(10)).clearListItem(anyInt(), any());
+        verify(adapter, times(6)).createListItem();
+        verify(adapter, times(19)).buildListItem(anyInt(), any());
         verify(adapter2, times(8)).createListItem();
-        verify(adapter2, times(5)).buildListItem(anyInt(), any());
-        verify(adapter2, times(3)).clearListItem(anyInt(), any());
+        verify(adapter2, times(8)).buildListItem(anyInt(), any());
     }
 
     @Test

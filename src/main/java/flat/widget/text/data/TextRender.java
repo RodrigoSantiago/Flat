@@ -1,4 +1,4 @@
-package flat.widget.text;
+package flat.widget.text.data;
 
 import flat.graphics.SmartContext;
 import flat.graphics.context.Font;
@@ -17,6 +17,7 @@ public class TextRender {
     private ByteBuffer buffer;
     private ArrayList<Line> lines;
     private int byteSize;
+    private int lineCount = 1;
     private float width;
 
     public void setFont(Font font) {
@@ -48,6 +49,10 @@ public class TextRender {
         }
 
         updateLines();
+    }
+
+    public String getText() {
+        return new String(textBytes, 0, byteSize, StandardCharsets.UTF_8);
     }
 
     public String getText(CaretData caretStart, CaretData caretEnd) {
@@ -103,16 +108,13 @@ public class TextRender {
     }
 
     private void updateLines() {
-        if (lines != null) {
-            lines.clear();
-        }
-
+        lineCount = 1;
         if (byteSize == 0) {
             return;
         }
 
-        if (buffer == null || buffer.capacity() < byteSize) {
-            buffer = ByteBuffer.allocateDirect(byteSize);
+        if (buffer == null || buffer.capacity() < textBytes.length) {
+            buffer = ByteBuffer.allocateDirect(textBytes.length);
         }
         buffer.position(0);
         buffer.put(textBytes, 0, byteSize);
@@ -122,14 +124,26 @@ public class TextRender {
             if (textBytes[i] == '\n') {
                 if (lines == null) {
                     lines = new ArrayList<>();
+                    lines.add(new Line(prev, i - prev));
+
+                } else if (lines.size() < lineCount) {
+                    lines.add(new Line(prev, i - prev));
+
+                } else {
+                    lines.get(lineCount - 1).reset(prev, i - prev);
                 }
-                lines.add(new Line(prev, i - prev));
+                lineCount++;
                 prev = i + 1;
             }
         }
 
         if (lines != null) {
-            lines.add(new Line(prev, byteSize - prev));
+            if (lines.size() < lineCount) {
+                lines.add(new Line(prev, byteSize - prev));
+
+            } else {
+                lines.get(lineCount - 1).reset(prev, byteSize - prev);
+            }
         }
     }
 
@@ -137,12 +151,12 @@ public class TextRender {
         if (byteSize == 0 || font == null) {
             width = 0;
 
-        } else if (lines == null || lines.isEmpty()) {
+        } else if (lineCount == 1) {
             width = font.getWidth(buffer, 0, byteSize, textSize, 1);
 
         } else {
             width = 0;
-            for (int i = 0; i < lines.size(); i++) {
+            for (int i = 0; i < lineCount; i++) {
                 var line = lines.get(i);
                 if (line.length == 0) {
                     line.width = 0;
@@ -162,23 +176,23 @@ public class TextRender {
         } else {
             height = font.getHeight(textSize);
         }
-        return height * (lines == null || lines.isEmpty() ? 1 : lines.size());
+        return height * lineCount;
     }
 
     public void drawText(SmartContext context, float x, float y, float width, float height, HorizontalAlign align) {
-        drawText(context, x, y, width, height, align, 0, lines == null || lines.isEmpty() ? 1 : lines.size());
+        drawText(context, x, y, width, height, align, 0, lineCount);
     }
 
     public void drawText(SmartContext context, float x, float y, float width, float height, HorizontalAlign align, int startLine, int endLine) {
         if (byteSize == 0 || font == null) {
             return;
         }
-        if (lines == null || lines.isEmpty()) {
+        if (lineCount == 1) {
             context.drawTextSlice(x, y, width, height, buffer, 0, byteSize);
             return;
         }
         float lineHeight = font.getHeight(textSize);
-        for (int i = startLine; i < lines.size() && i < endLine; i++) {
+        for (int i = startLine; i < lineCount && i < endLine; i++) {
             var line = lines.get(i);
             if (line.length == 0) {
                 continue;
@@ -212,7 +226,7 @@ public class TextRender {
             return;
         }
 
-        if (lines == null || lines.isEmpty()) {
+        if (lineCount == 1) {
             var caret = font.getCaretOffset(buffer, 0, byteSize, textSize, 1, px - x, true);
             caretPos.lineChar = caret.getIndex();
             caretPos.line = 0;
@@ -222,7 +236,7 @@ public class TextRender {
         }
 
         float lineHeight = font.getHeight(textSize);
-        int lineIndex = Math.min(lines.size() - 1, Math.max(0, (int) Math.floor((py - y) / lineHeight)));
+        int lineIndex = Math.min(lineCount - 1, Math.max(0, (int) Math.floor((py - y) / lineHeight)));
         var line = lines.get(lineIndex);
 
         float xpos = x;
@@ -246,23 +260,20 @@ public class TextRender {
             return 0;
         }
 
-        float w = this.width;
-        if (lines != null && !lines.isEmpty()) {
-            w = lines.get(caret.line).width;
-        }
+        float w = lineCount == 1 ? width : lines.get(caret.line).width;
 
         float xpos = 0;
         if (align == HorizontalAlign.RIGHT) {
-            xpos = Math.max(0, this.width - w);
+            xpos = Math.max(0, width - w);
         } else if (align == HorizontalAlign.CENTER) {
-            xpos = Math.max(0, this.width - w) * 0.5f;
+            xpos = Math.max(0, width - w) * 0.5f;
         }
 
         return caret.width + xpos;
     }
 
     private void updateCaret(CaretData caret, int offset) {
-        if (lines == null || lines.isEmpty() || font == null) {
+        if (byteSize == 0 || font == null) {
             caret.lineChar = 0;
             caret.line = 0;
             caret.offset = 0;
@@ -270,9 +281,18 @@ public class TextRender {
             return;
         }
 
+        if (lineCount == 1) {
+            var newCaret = font.getCaretOffset(buffer, 0, offset, textSize, 1, 9999, true);
+            caret.lineChar = newCaret.getIndex();
+            caret.line = 0;
+            caret.offset = newCaret.getIndex();
+            caret.width = newCaret.getWidth();
+            return;
+        }
+
         int startLine = Math.max(0, caret.line + Math.min(0, offset - caret.offset));
-        int lineIndex = lines.size() - 1;
-        for (int i = startLine; i < lines.size(); i++) {
+        int lineIndex = lineCount - 1;
+        for (int i = startLine; i < lineCount; i++) {
             var line = lines.get(i);
             if (line.start + line.length >= offset) {
                 lineIndex = i;
@@ -324,7 +344,7 @@ public class TextRender {
     public void moveCaretBackwardsLine(CaretData caret) {
         if (caret.offset == 0) return;
 
-        int offset = lines == null || lines.size() == 0 ? 0 : lines.get(caret.line).start;
+        int offset = lineCount == 1 ? 0 : lines.get(caret.line).start;
         updateCaret(caret, offset);
     }
 
@@ -332,7 +352,7 @@ public class TextRender {
         if (caret.offset == byteSize) return;
 
         int offset;
-        if (lines == null || lines.size() == 0) {
+        if (lineCount == 1) {
             offset = byteSize;
         } else {
             var line = lines.get(caret.line);
@@ -394,28 +414,4 @@ public class TextRender {
         return 1;
     }
 
-    public static class CaretData {
-        public int lineChar;
-        public int line;
-        public int offset;
-        public float width;
-
-        public void set(CaretData other) {
-            this.lineChar = other.lineChar;
-            this.line = other.line;
-            this.offset = other.offset;
-            this.width = other.width;
-        }
-    }
-
-    private static class Line {
-        int start;
-        int length;
-        float width;
-
-        public Line(int start, int length) {
-            this.start = start;
-            this.length = length;
-        }
-    }
 }

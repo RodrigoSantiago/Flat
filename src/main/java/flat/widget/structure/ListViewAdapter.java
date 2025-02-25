@@ -16,10 +16,6 @@ public abstract class ListViewAdapter<T> {
 
     }
 
-    public void clearListItem(int index, Widget item) {
-
-    }
-
     public ListView getListView() {
         return listView;
     }

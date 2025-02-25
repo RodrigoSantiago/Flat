@@ -9,6 +9,7 @@ import flat.uxml.UXAttrs;
 import flat.widget.Widget;
 import flat.widget.enums.HorizontalAlign;
 import flat.widget.enums.VerticalAlign;
+import flat.widget.text.data.TextRender;
 
 import java.util.Objects;
 

@@ -1,5 +1,6 @@
 package flat.window.event;
 
+import flat.graphics.cursor.Cursor;
 import flat.widget.Widget;
 import flat.window.Window;
 
@@ -37,7 +38,7 @@ public class EventDataMouseMove extends EventData {
             pointer.setPosition(x, y);
             Widget widget = window.getActivity().findByPosition(x, y, false);
 
-            move(window, pointer, widget); // TODO - Move while dragging???
+            move(window, pointer, widget);
 
             if (pointer.isPressed()) {
                 drag(window, pointer, widget);
@@ -69,7 +70,7 @@ public class EventDataMouseMove extends EventData {
         }
 
         pointer.performPointerDrag();
-        if (pointer.pressed != null) {
+        if (pointer.pressed != null && pointer.pressed.getCurrentCursor() != Cursor.UNSET) {
             window.setCursor(pointer.pressed.getCurrentCursor());
         }
     }

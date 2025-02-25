@@ -5,60 +5,34 @@ import flat.animations.StateInfo;
 import flat.events.ScrollEvent;
 import flat.events.SlideEvent;
 import flat.graphics.SmartContext;
+import flat.math.Vector2;
 import flat.math.shapes.Shape;
 import flat.uxml.*;
 import flat.widget.Parent;
 import flat.widget.Widget;
 import flat.widget.enums.Visibility;
+import flat.widget.layout.Scrollable;
 import flat.widget.value.HorizontalScrollBar;
 import flat.widget.value.VerticalScrollBar;
 import flat.window.Activity;
 
 import java.util.ArrayList;
 
-public class ListView extends Parent {
+public class ListView extends Scrollable {
 
     private final ArrayList<Widget> items = new ArrayList<>();
 
-    private UXListener<SlideEvent> slideHorizontalListener;
-    private UXListener<SlideEvent> slideHorizontalFilter;
-    private UXListener<SlideEvent> slideVerticalListener;
-    private UXListener<SlideEvent> slideVerticalFilter;
-    private UXValueListener<Float> viewOffsetXListener;
-    private UXValueListener<Float> viewOffsetYListener;
-
     private ListViewAdapter<?> adapter;
     private float itemHeight = 8;
-    private float scrollSensibility = 10;
 
-    private float viewOffsetY;
-    private float viewDimensionY;
     private float viewDimensionExtraY;
-    private float totalDimensionY;
     private float viewBackOffsetY;
-
-    private float viewOffsetX;
-    private float viewDimensionX;
-    private float totalDimensionX;
 
     private int startIndex;
     private int endIndex;
     private int totalIndex;
 
     private RefreshAnimation refresh = new RefreshAnimation();
-
-    private HorizontalScrollBar horizontalBar;
-    private VerticalScrollBar verticalBar;
-    
-    private UXListener<SlideEvent> slideX = (event) -> {
-        event.consume();
-        slideHorizontalTo(event.getViewOffsetDimension());
-    };
-
-    private UXListener<SlideEvent> slideY = (event) -> {
-        event.consume();
-        slideVerticalTo(event.getViewOffsetDimension());
-    };
 
     public ListView() {
         setHorizontalBar(new HorizontalScrollBar());
@@ -116,25 +90,30 @@ public class ListView extends Parent {
     }
 
     private void updateDimensions() {
-        int count = adapter == null ? 0 : adapter.size();
+        int count = getRealItemsCount();
+
         float bestHeight = getInHeight() > 0 ? getInHeight()
                 : getHeight() > 0 ? getHeight()
                 : getPrefHeight() > 0 && getPrefHeight() != MATCH_PARENT ? getPrefHeight()
                 : 16;
         bestHeight = Math.max(bestHeight, 16);
-        totalDimensionY = itemHeight * count;
-        viewDimensionY = getInHeight();
+        setTotalDimensionY(itemHeight * count);
         viewDimensionExtraY = getActivity() == null ? bestHeight * 1.25f : getActivity().getHeight();
-        viewOffsetY = Math.max(0, Math.min(viewOffsetY, totalDimensionY - viewDimensionY));
 
-        startIndex = Math.max(0, (int) Math.floor(viewOffsetY / itemHeight));
+        startIndex = Math.max(0, (int) Math.floor((getViewOffsetY() - getInY()) / itemHeight));
         totalIndex = Math.max(0, (int) Math.ceil(viewDimensionExtraY / itemHeight)) + 1;
         endIndex = startIndex + totalIndex;
+        if (endIndex > count) {
+            endIndex = count;
+            totalIndex = endIndex - startIndex;
+        }
 
-        viewBackOffsetY = -((viewOffsetY / itemHeight) % 1f) * itemHeight;
+        viewBackOffsetY = -((getViewOffsetY() / itemHeight) % 1f) * itemHeight;
 
         if (items.size() < totalIndex) {
             createItem(totalIndex - items.size());
+        } else if (items.size() > totalIndex) {
+            destroyItem(items.size() - totalIndex);
         }
         setViewOffsetX(getViewOffsetX());
         setViewOffsetY(getViewOffsetY());
@@ -153,16 +132,25 @@ public class ListView extends Parent {
         }
     }
 
+    private void destroyItem(int count) {
+        for (int i = 0; i < count; i++) {
+            remove(items.remove(items.size() - 1));
+        }
+    }
+
     public void refreshItems() {
-        refreshItems(startIndex, totalIndex);
+        refreshItems(startIndex, -1);
     }
 
     public void refreshItems(int start) {
-        refreshItems(start, totalIndex);
+        refreshItems(start, -1);
     }
 
     public void refreshItems(int start, int length) {
         updateDimensions();
+        if (length == -1) {
+            length = totalIndex;
+        }
         int end = start + length;
         if (end < startIndex || start >= endIndex) {
             return;
@@ -179,8 +167,6 @@ public class ListView extends Parent {
         if (index >= startIndex && index < endIndex && index - startIndex < items.size()) {
             if (index < adapter.size()) {
                 adapter.buildListItem(index, items.get(index - startIndex));
-            } else {
-                adapter.clearListItem(index, items.get(index - startIndex));
             }
         }
     }
@@ -190,36 +176,7 @@ public class ListView extends Parent {
         if (items.contains(child)) {
             return false;
         }
-        if (child == horizontalBar) {
-            return false;
-        }
-        if (child == verticalBar) {
-            return false;
-        }
         return super.detachChild(child);
-    }
-
-    @Override
-    public Widget findByPosition(float x, float y, boolean includeDisabled) {
-        if ((includeDisabled || isEnabled()) && (getVisibility() != Visibility.GONE)) {
-            if (contains(x, y)) {
-                if (verticalBar != null) {
-                    Widget found = verticalBar.findByPosition(x, y, includeDisabled);
-                    if (found != null) return found;
-                }
-                if (horizontalBar != null) {
-                    Widget found = horizontalBar.findByPosition(x, y, includeDisabled);
-                    if (found != null) return found;
-                }
-
-                for (Widget child : getChildrenIterableReverse()) {
-                    Widget found = child.findByPosition(x, y, includeDisabled);
-                    if (found != null) return found;
-                }
-                return isClickable() ? this : null;
-            }
-        }
-        return null;
     }
 
     @Override
@@ -232,11 +189,11 @@ public class ListView extends Parent {
         boolean wrapWidth = getLayoutPrefWidth() == WRAP_CONTENT;
         boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
 
-        if (horizontalBar != null) {
-            horizontalBar.onMeasure();
+        if (getHorizontalBar() != null) {
+            getHorizontalBar().onMeasure();
         }
-        if (verticalBar != null) {
-            verticalBar.onMeasure();
+        if (getVerticalBar() != null) {
+            getVerticalBar().onMeasure();
         }
 
         for (Widget child : items) {
@@ -270,9 +227,7 @@ public class ListView extends Parent {
     }
 
     @Override
-    public void onLayout(float width, float height) {
-        setLayout(width, height);
-
+    public Vector2 onLayoutLocalDimension(float width, float height) {
         float localDimensionX = 0;
         for (int i = 0; i < items.size(); i++) {
             var child = items.get(i);
@@ -283,92 +238,48 @@ public class ListView extends Parent {
                 localDimensionX = Math.max(localDimensionX, child.getLayoutMinWidth());
             }
         }
-        viewDimensionX = getInWidth();
-        totalDimensionX = Math.max(viewDimensionX, localDimensionX);
+        return new Vector2(localDimensionX, itemHeight * getRealItemsCount());
+    }
 
+    @Override
+    public void setLayoutScrollOffset(float xx, float yy) {
         for (int i = 0; i < items.size(); i++) {
             var child = items.get(i);
 
-            float childWidth = Math.min(Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth()), totalDimensionX);
+            float childWidth = Math.min(Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth()), getTotalDimensionX());
             child.onLayout(childWidth, itemHeight);
-            child.setLayoutPosition(getInX() - viewOffsetX, getInY() + itemHeight * i + viewBackOffsetY);
+            child.setLayoutPosition(xx, yy + itemHeight * (i + startIndex));
         }
+    }
 
-        if (verticalBar != null) {
-            float childWidth;
-            if (verticalBar.getMeasureWidth() == MATCH_PARENT) {
-                childWidth = Math.min(getInWidth(), verticalBar.getLayoutMaxWidth());
-            } else {
-                childWidth = Math.min(verticalBar.getMeasureWidth(), verticalBar.getLayoutMaxWidth());
-            }
-
-            float childHeight;
-            if (verticalBar.getMeasureHeight() == MATCH_PARENT) {
-                childHeight = Math.min(getInHeight(), verticalBar.getLayoutMaxHeight());
-            } else {
-                childHeight = Math.min(verticalBar.getMeasureHeight(), verticalBar.getLayoutMaxHeight());
-            }
-            verticalBar.onLayout(childWidth, childHeight);
-            verticalBar.setLayoutPosition(getInX() + getInWidth() - verticalBar.getLayoutWidth(), getInY());
-
-            verticalBar.setViewOffsetListener(null);
-            verticalBar.setSlideListener(null);
-            verticalBar.setViewDimension(viewDimensionY);
-            verticalBar.setTotalDimension(totalDimensionY);
-            verticalBar.setSlideFilter(slideY);
-        }
-
-        if (horizontalBar != null) {
-            float childWidth;
-            if (horizontalBar.getMeasureWidth() == MATCH_PARENT) {
-                childWidth = Math.min(viewDimensionX, horizontalBar.getLayoutMaxWidth());
-            } else {
-                childWidth = Math.min(horizontalBar.getMeasureWidth(), horizontalBar.getLayoutMaxWidth());
-            }
-
-            float childHeight;
-            if (horizontalBar.getMeasureHeight() == MATCH_PARENT) {
-                childHeight = Math.min(viewDimensionY, horizontalBar.getLayoutMaxHeight());
-            } else {
-                childHeight = Math.min(horizontalBar.getMeasureHeight(), horizontalBar.getLayoutMaxHeight());
-            }
-            float barY = (verticalBar != null && viewDimensionY < totalDimensionY ? verticalBar.getLayoutWidth() : 0);
-            horizontalBar.onLayout(childWidth - barY, childHeight);
-            horizontalBar.setLayoutPosition(getInX(), getInY() + getInHeight() - horizontalBar.getLayoutHeight());
-
-            horizontalBar.setViewOffsetListener(null);
-            horizontalBar.setSlideListener(null);
-            horizontalBar.setViewDimension(viewDimensionX);
-            horizontalBar.setTotalDimension(totalDimensionX);
-            horizontalBar.setSlideFilter(slideX);
-        }
+    @Override
+    public void onLayout(float width, float height) {
+        super.onLayout(width, height);
 
         invalidateItems();
     }
 
     @Override
     public void onDraw(SmartContext context) {
-        if (getInWidth() <= 0 || getInHeight() <= 0) return;
-
         drawBackground(context);
         drawRipple(context);
 
-        float maxPos = getInY() + getInHeight();
+        if (getInWidth() <= 0 || getInHeight() <= 0) return;
+
+        int realCount = getRealItemsCount();
+
         context.pushClip(getBackgroundShape());
-        for (Widget child : items) {
-            child.onDraw(context);
-            if (child.getLayoutY() > maxPos) {
-                break;
-            }
+        for (int i = 0; i < items.size(); i++) {
+            items.get(i).onDraw(context);
         }
         context.popClip();
 
-        if (verticalBar != null && verticalBar.getViewDimension() < verticalBar.getTotalDimension()) {
-            verticalBar.onDraw(context);
+        if (getHorizontalBar() != null && isHorizontalVisible()) {
+            getHorizontalBar().onDraw(context);
         }
 
-        if (horizontalBar != null && horizontalBar.getViewDimension() < horizontalBar.getTotalDimension()) {
-            horizontalBar.onDraw(context);
+        if (getVerticalBar() != null && isVerticalVisible()) {
+            getVerticalBar().onDraw(context);
         }
     }
 
@@ -376,46 +287,8 @@ public class ListView extends Parent {
     public void fireScroll(ScrollEvent event) {
         super.fireScroll(event);
         if (!event.isConsumed()) {
-            slideVertical(- event.getDeltaY() * scrollSensibility);
+            slideVertical(- event.getDeltaY() * getScrollSensibility());
         }
-    }
-
-    public void slide(float offsetX, float offsetY) {
-        slideHorizontal(offsetX);
-        slideVertical(offsetY);
-    }
-
-    public void slideTo(float offsetX, float offsetY) {
-        slideHorizontalTo(offsetX);
-        slideVerticalTo(offsetY);
-    }
-
-    public void slideHorizontalTo(float offsetX) {
-        offsetX = Math.max(0, Math.min(offsetX, totalDimensionX - viewDimensionX));
-
-        float old = getViewOffsetX();
-        if (offsetX != old && filterSlideX(offsetX)) {
-            setViewOffsetX(offsetX);
-            fireSlideX();
-        }
-    }
-
-    public void slideHorizontal(float offsetX) {
-        slideHorizontalTo(getViewOffsetX() + offsetX);
-    }
-
-    public void slideVerticalTo(float offsetY) {
-        offsetY = Math.max(0, Math.min(offsetY, totalDimensionY - viewDimensionY));
-
-        float old = getViewOffsetY();
-        if (offsetY != old && filterSlideY(offsetY)) {
-            setViewOffsetY(offsetY);
-            fireSlideY();
-        }
-    }
-
-    public void slideVertical(float offsetY) {
-        slideVerticalTo(getViewOffsetY() + offsetY);
     }
 
     public ListViewAdapter<?> getAdapter() {
@@ -452,218 +325,8 @@ public class ListView extends Parent {
         }
     }
 
-    public float getViewOffsetY() {
-        return viewOffsetY;
-    }
-
-    public void setViewOffsetY(float viewOffsetY) {
-        viewOffsetY = Math.max(0, Math.min(viewOffsetY, totalDimensionY - viewDimensionY));
-
-        if (this.viewOffsetY != viewOffsetY) {
-            float old = this.viewOffsetY;
-            this.viewOffsetY = viewOffsetY;
-            invalidate(true);
-            invalidateItems();
-            fireViewOffsetYListener(old);
-            if (verticalBar != null) {
-                verticalBar.setViewOffsetListener(null);
-                verticalBar.setViewOffset(this.viewOffsetY);
-            }
-        }
-    }
-
-    public float getViewOffsetX() {
-        return viewOffsetX;
-    }
-
-    public void setViewOffsetX(float viewOffsetX) {
-        viewOffsetX = Math.max(0, Math.min(viewOffsetX, totalDimensionX - viewDimensionX));
-
-        if (this.viewOffsetX != viewOffsetX) {
-            float old = this.viewOffsetX;
-            this.viewOffsetX = viewOffsetX;
-            invalidate(true);
-            // invalidateItems();
-            fireViewOffsetXListener(old);
-            if (horizontalBar != null) {
-                horizontalBar.setViewOffsetListener(null);
-                horizontalBar.setViewOffset(this.viewOffsetX);
-            }
-        }
-    }
-
-    public float getViewDimensionY() {
-        return viewDimensionY;
-    }
-
-    public float getTotalDimensionY() {
-        return totalDimensionY;
-    }
-
-    public float getViewDimensionX() {
-        return viewDimensionX;
-    }
-
-    public float getTotalDimensionX() {
-        return totalDimensionX;
-    }
-
-    public float getScrollSensibility() {
-        return scrollSensibility;
-    }
-
-    public void setScrollSensibility(float scrollSensibility) {
-        this.scrollSensibility = scrollSensibility;
-    }
-
-    public HorizontalScrollBar getHorizontalBar() {
-        return horizontalBar;
-    }
-
-    public void setHorizontalBar(HorizontalScrollBar horizontalBar) {
-        if (this.horizontalBar != horizontalBar) {
-            if (horizontalBar == null) {
-                var old = this.horizontalBar;
-                this.horizontalBar = null;
-                remove(old);
-            } else {
-                add(horizontalBar);
-                if (horizontalBar.getParent() == this) {
-                    var old = this.horizontalBar;
-                    this.horizontalBar = horizontalBar;
-                    if (old != null) {
-                        remove(old);
-                    }
-                    if (this.horizontalBar != null) {
-                        this.horizontalBar.setViewOffsetListener(null);
-                        this.horizontalBar.setSlideListener(null);
-                        this.horizontalBar.setViewDimension(viewDimensionX);
-                        this.horizontalBar.setTotalDimension(totalDimensionX);
-                        this.horizontalBar.setViewOffset(viewOffsetX);
-                        this.horizontalBar.setSlideFilter(slideX);
-                    }
-                }
-            }
-        }
-    }
-
-    public VerticalScrollBar getVerticalBar() {
-        return verticalBar;
-    }
-
-    public void setVerticalBar(VerticalScrollBar verticalBar) {
-        if (this.verticalBar != verticalBar) {
-            if (verticalBar == null) {
-                var old = this.verticalBar;
-                this.verticalBar = null;
-                remove(old);
-            } else {
-                add(verticalBar);
-                if (verticalBar.getParent() == this) {
-                    var old = this.verticalBar;
-                    this.verticalBar = verticalBar;
-                    if (old != null) {
-                        remove(old);
-                    }
-                    this.verticalBar.setViewOffsetListener(null);
-                    this.verticalBar.setSlideListener(null);
-                    this.verticalBar.setViewDimension(viewDimensionY);
-                    this.verticalBar.setTotalDimension(totalDimensionY);
-                    this.verticalBar.setViewOffset(viewOffsetY);
-                    this.verticalBar.setSlideFilter(slideY);
-                }
-            }
-        }
-    }
-
-    public UXListener<SlideEvent> getSlideHorizontalListener() {
-        return slideHorizontalListener;
-    }
-
-    public void setSlideHorizontalListener(UXListener<SlideEvent> slideHorizontalListener) {
-        this.slideHorizontalListener = slideHorizontalListener;
-    }
-
-    private void fireSlideX() {
-        if (slideHorizontalListener != null) {
-            UXListener.safeHandle(slideHorizontalListener, new SlideEvent(this, viewOffsetX));
-        }
-    }
-
-    public UXListener<SlideEvent> getSlideVerticalListener() {
-        return slideVerticalListener;
-    }
-
-    public void setSlideVerticalListener(UXListener<SlideEvent> slideVerticalListener) {
-        this.slideVerticalListener = slideVerticalListener;
-    }
-
-    private void fireSlideY() {
-        if (slideVerticalListener != null) {
-            UXListener.safeHandle(slideVerticalListener, new SlideEvent(this, viewOffsetY));
-        }
-    }
-
-    public UXValueListener<Float> getViewOffsetXListener() {
-        return viewOffsetXListener;
-    }
-
-    public void setViewOffsetXListener(UXValueListener<Float> viewOffsetXListener) {
-        this.viewOffsetXListener = viewOffsetXListener;
-    }
-
-    private void fireViewOffsetXListener(float old) {
-        if (viewOffsetXListener != null && old != viewOffsetX) {
-            UXValueListener.safeHandle(viewOffsetXListener, new ValueChange<>(this, old, viewOffsetX));
-        }
-    }
-
-    public UXValueListener<Float> getViewOffsetYListener() {
-        return viewOffsetYListener;
-    }
-
-    public void setViewOffsetYListener(UXValueListener<Float> viewOffsetYListener) {
-        this.viewOffsetYListener = viewOffsetYListener;
-    }
-
-    private void fireViewOffsetYListener(float old) {
-        if (viewOffsetYListener != null && old != viewOffsetY) {
-            UXValueListener.safeHandle(viewOffsetYListener, new ValueChange<>(this, old, viewOffsetY));
-        }
-    }
-
-    public UXListener<SlideEvent> getSlideHorizontalFilter() {
-        return slideHorizontalFilter;
-    }
-
-    public void setSlideHorizontalFilter(UXListener<SlideEvent> slideHorizontalFilter) {
-        this.slideHorizontalFilter = slideHorizontalFilter;
-    }
-
-    private boolean filterSlideX(float viewOffsetX) {
-        if (slideHorizontalFilter != null) {
-            var event = new SlideEvent(this, viewOffsetX);
-            UXListener.safeHandle(slideHorizontalFilter, event);
-            return !event.isConsumed();
-        }
-        return true;
-    }
-
-    public UXListener<SlideEvent> getSlideVerticalFilter() {
-        return slideVerticalFilter;
-    }
-
-    public void setSlideVerticalFilter(UXListener<SlideEvent> slideVerticalFilter) {
-        this.slideVerticalFilter = slideVerticalFilter;
-    }
-
-    private boolean filterSlideY(float viewOffsetY) {
-        if (slideVerticalFilter != null) {
-            var event = new SlideEvent(this, viewOffsetY);
-            UXListener.safeHandle(slideVerticalFilter, event);
-            return !event.isConsumed();
-        }
-        return true;
+    private int getRealItemsCount() {
+        return adapter == null ? 0 : adapter.size();
     }
 
     private class RefreshAnimation extends NormalizedAnimation {

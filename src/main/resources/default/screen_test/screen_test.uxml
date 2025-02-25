@@ -71,12 +71,15 @@
                     icon-scale-height="true" icon-spacing="12px"
                     icon-align="LEFT"
                     on-action="onRemoveItem"/>
-            <!--ScrollBox width="400" height="400" background-color="yellow">
-                <StackBox><ImageView image="/default/image.png"/></StackBox>
-            </ScrollBox-->
-            <ListView id="listView" width="200" height="MATCH_PARENT" max-height="400" margin-top="16"></ListView>
-            <TextField text="Ola Mundo&#10;OutraLinha&#10;OutraLinhaasa asa" width="300" horizontal-align="left" max-height="200" margin-top="16"
-                       padding-top="16" padding-bottom="16" padding-left="16" padding-right="16">
+            <LinearBox direction="horizontal" width="MATCH_PARENT" height="MATCH_PARENT" max-height="400" margin-top="16">
+                <ListView id="listView" width="200" height="MATCH_PARENT" margin-right="16"
+                          padding-top="16" padding-bottom="16" padding-left="16" padding-right="16"></ListView>
+                <ScrollBox width="400" height="400" background-color="yellow">
+                    <StackBox><ImageView image="/default/image.png"/></StackBox>
+                </ScrollBox>
+            </LinearBox>
+            <TextField text="Ola Mundo&#10;OutraLinha&#10;OutraLinhaasa asa" width="300" horizontal-align="center" max-height="200" margin-top="16"
+                       padding-top="16" padding-bottom="16" padding-left="16" padding-right="16" text-hint="I">
                 <Menu width="100" height="200" background-color="blue">
                     <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
                     <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>

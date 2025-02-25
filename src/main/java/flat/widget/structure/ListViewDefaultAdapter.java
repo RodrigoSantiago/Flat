@@ -41,12 +41,4 @@ public class ListViewDefaultAdapter<T> extends ListViewAdapter<T> {
         label.setIndex(index);
         label.setText(String.valueOf(data.get(index)));
     }
-
-    @Override
-    public void clearListItem(int index, Widget item) {
-        var label = (ListItem) item;
-        label.setIndex(-1);
-        label.setText("");
-        label.setLayers(0);
-    }
 }
