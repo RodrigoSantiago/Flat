@@ -55,7 +55,7 @@ public class TextRender {
         return new String(textBytes, 0, byteSize, StandardCharsets.UTF_8);
     }
 
-    public String getText(CaretData caretStart, CaretData caretEnd) {
+    public String getText(Caret caretStart, Caret caretEnd) {
         byte[] bytes = new byte[caretEnd.offset - caretStart.offset];
         for (int i = 0; i < bytes.length; i++) {
             bytes[i] = textBytes[caretStart.offset + i];
@@ -63,7 +63,7 @@ public class TextRender {
         return new String(bytes);
     }
 
-    public void editText(CaretData caretStart, CaretData caretEnd, String replace, CaretData newCaret) {
+    public void editText(Caret caretStart, Caret caretEnd, String replace, Caret newCaret) {
         byte[] replaceBytes = replace.getBytes(StandardCharsets.UTF_8);
         int start = caretStart.offset;
         int length = caretEnd.offset - start;
@@ -96,15 +96,8 @@ public class TextRender {
         byteSize = newSize;
         updateLines();
 
-        if (lines == null) {
-            newCaret.lineChar = 0;
-            newCaret.line = 0;
-            newCaret.offset = 0;
-            newCaret.width = 0;
-        } else {
-            int offset = start + replaceBytes.length;
-            updateCaret(newCaret, offset);
-        }
+        int offset = start + replaceBytes.length;
+        updateCaret(newCaret, offset);
     }
 
     private void updateLines() {
@@ -217,7 +210,7 @@ public class TextRender {
         }
     }
 
-    public void getCaret(float px, float py, float x, float y, HorizontalAlign align, CaretData caretPos) {
+    public void getCaret(float px, float py, float x, float y, HorizontalAlign align, Caret caretPos) {
         if (byteSize == 0 || font == null) {
             caretPos.lineChar = 0;
             caretPos.line = 0;
@@ -255,7 +248,7 @@ public class TextRender {
         caretPos.width = caret.getWidth();
     }
 
-    public float getCaretHorizontalOffset(CaretData caret, HorizontalAlign align) {
+    public float getCaretHorizontalOffset(Caret caret, HorizontalAlign align) {
         if (byteSize == 0 || font == null) {
             return 0;
         }
@@ -272,7 +265,7 @@ public class TextRender {
         return caret.width + xpos;
     }
 
-    private void updateCaret(CaretData caret, int offset) {
+    private void updateCaret(Caret caret, int offset) {
         if (byteSize == 0 || font == null) {
             caret.lineChar = 0;
             caret.line = 0;
@@ -307,48 +300,48 @@ public class TextRender {
         caret.width = newCaret.getWidth();
     }
 
-    public void moveCaretBegin(CaretData caret) {
+    public void moveCaretBegin(Caret caret) {
         if (caret.offset == 0) return;
 
         int offset = 0;
         updateCaret(caret, offset);
     }
 
-    public void moveCaretEnd(CaretData caret) {
+    public void moveCaretEnd(Caret caret) {
         if (caret.offset == byteSize) return;
 
         int offset = byteSize;
         updateCaret(caret, offset);
     }
 
-    public void moveCaretBackwards(CaretData caret) {
+    public void moveCaretBackwards(Caret caret) {
         if (caret.offset == 0) return;
 
         int offset = getPrevCharIndex(caret.offset);
         updateCaret(caret, offset);
     }
 
-    public void moveCaretFoward(CaretData caret) {
+    public void moveCaretFoward(Caret caret) {
         if (caret.offset == byteSize) return;
 
         int offset = getNextCharIndex(caret.offset);
         updateCaret(caret, offset);
     }
 
-    public void moveCaretVertical(CaretData caret, HorizontalAlign align, int lines) {
+    public void moveCaretVertical(Caret caret, HorizontalAlign align, int lines) {
         float px = getCaretHorizontalOffset(caret, align);
         float py = (caret.line + 0.5f + lines) * (font == null ? textSize : font.getHeight(textSize));
         getCaret(px, py, 0, 0, align, caret);
     }
 
-    public void moveCaretBackwardsLine(CaretData caret) {
+    public void moveCaretBackwardsLine(Caret caret) {
         if (caret.offset == 0) return;
 
         int offset = lineCount == 1 ? 0 : lines.get(caret.line).start;
         updateCaret(caret, offset);
     }
 
-    public void moveCaretFowardsLine(CaretData caret) {
+    public void moveCaretFowardsLine(Caret caret) {
         if (caret.offset == byteSize) return;
 
         int offset;

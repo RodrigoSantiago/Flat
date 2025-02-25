@@ -9,12 +9,11 @@ import flat.graphics.context.Font;
 import flat.math.Vector2;
 import flat.math.stroke.BasicStroke;
 import flat.uxml.*;
-import flat.widget.Parent;
 import flat.widget.Widget;
 import flat.widget.enums.HorizontalAlign;
 import flat.widget.enums.VerticalAlign;
 import flat.widget.layout.Scrollable;
-import flat.widget.text.data.CaretData;
+import flat.widget.text.data.Caret;
 import flat.widget.text.data.TextRender;
 import flat.widget.value.HorizontalScrollBar;
 import flat.widget.value.VerticalScrollBar;
@@ -25,6 +24,8 @@ import java.util.Objects;
 
 public class TextField extends Scrollable {
 
+    private UXValueListener<String> textChangeListener;
+    private UXListener<TextEvent> textChangeFilter;
     private String text;
     private String textHint;
 
@@ -32,6 +33,7 @@ public class TextField extends Scrollable {
     private float textSize = 16f;
     private int textColor = 0x000000FF;
     private int textHintColor = 0x000000FF;
+    private int textSelectedColor = 0x00000080;
 
     private VerticalAlign verticalAlign = VerticalAlign.TOP;
     private HorizontalAlign horizontalAlign = HorizontalAlign.LEFT;
@@ -42,10 +44,10 @@ public class TextField extends Scrollable {
     private float textHintWidth;
     private final TextRender textRender = new TextRender();
     private final TextRender textHintRender = new TextRender();
-    private CaretData startCaret = new CaretData();
-    private CaretData endCaret = new CaretData();
+    private final Caret startCaret = new Caret();
+    private final Caret endCaret = new Caret();
 
-    private CaretBlink caretBlink = new CaretBlink();
+    private final CaretBlink caretBlink = new CaretBlink();
     private boolean showCaret;
 
     private int keyCopy = KeyCode.KEY_C;
@@ -89,6 +91,8 @@ public class TextField extends Scrollable {
 
         setText(attrs.getAttributeString("text", getText()));
         setTextHint(attrs.getAttributeString("text-hint", getTextHint()));
+        setTextChangeListener(attrs.getAttributeValueListener("on-text-change", String.class, controller));
+        setTextChangeFilter(attrs.getAttributeListener("on-text-change-filter", TextEvent.class, controller));
     }
 
     @Override
@@ -101,6 +105,7 @@ public class TextField extends Scrollable {
         setTextFont(attrs.getFont("text-font", info, getTextFont()));
         setTextSize(attrs.getSize("text-size", info, getTextSize()));
         setTextColor(attrs.getColor("text-color", info, getTextColor()));
+        setTextSelectedColor(attrs.getColor("text-selected-color", info, getTextSelectedColor()));
         setTextHintColor(attrs.getColor("text-hint-color", info, getTextHintColor()));
 
         setVerticalAlign(attrs.getConstant("vertical-align", info, getVerticalAlign()));
@@ -153,6 +158,14 @@ public class TextField extends Scrollable {
         super.onLayout(width, height);
     }
 
+    private Caret getFirstCaret() {
+        return startCaret.getOffset() <= endCaret.getOffset() ? startCaret : endCaret;
+    }
+
+    private Caret getSecondCaret() {
+        return startCaret.getOffset() <= endCaret.getOffset() ? endCaret : startCaret;
+    }
+
     @Override
     public void onDraw(SmartContext context) {
         drawBackground(context);
@@ -163,7 +176,7 @@ public class TextField extends Scrollable {
         float width = getInWidth();
         float height = getInHeight();
 
-        if (width <= 0 || height <= 0) return;
+        if (getOutWidth() <= 0 || getOutHeight() <= 0) return;
 
         if (getText() == null || getText().length() == 0 && getTextHint() != null) {
             if (getTextFont() == null || getTextSize() <= 0 || Color.getAlpha(getTextHintColor()) == 0) {
@@ -188,11 +201,13 @@ public class TextField extends Scrollable {
                 float caretX = textHintRender.getCaretHorizontalOffset(endCaret, horizontalAlign) + xpos;
                 context.setColor(getTextColor());
                 context.setStroker(new BasicStroke(2));
-                context.drawLine(caretX, ypos + endCaret.line * lineH, caretX, ypos + (endCaret.line + 1) * lineH);
+                context.drawLine(
+                        caretX, ypos + endCaret.getLine() * lineH
+                        , caretX, ypos + (endCaret.getLine() + 1) * lineH);
             }
 
         } else {
-            if (getTextFont() == null || getTextSize() <= 0 || Color.getAlpha(getTextColor()) == 0) {
+            if (getTextFont() == null || getTextSize() <= 0) {
                 return;
             }
             if (isHorizontalDimensionScroll() || isVerticalDimensionScroll()) {
@@ -209,34 +224,41 @@ public class TextField extends Scrollable {
             context.setTextSize(getTextSize());
             context.setTextBlur(0);
 
+            Caret first = getFirstCaret();
+            Caret second = getSecondCaret();
+
             float lineH = getLineHeight();
-            var first = startCaret.offset <= endCaret.offset ? startCaret : endCaret;
-            var second = startCaret.offset <= endCaret.offset ? endCaret : startCaret;
             float firstX = textRender.getCaretHorizontalOffset(first, horizontalAlign) + xpos;
             float secondX = textRender.getCaretHorizontalOffset(second, horizontalAlign) + xpos;
 
-            context.setColor(Color.aqua);
-            if (first.line == second.line) {
-                context.drawRect(firstX, ypos + first.line * lineH, secondX - firstX, lineH, true);
+            // Text Selection
+            context.setColor(textSelectedColor);
+            if (first.getLine() == second.getLine()) {
+                context.drawRect(firstX, ypos + first.getLine() * lineH, secondX - firstX, lineH, true);
             } else {
-                context.drawRect(firstX, ypos + first.line * lineH, getTotalDimensionX() - (firstX - x), lineH, true);
-                context.drawRect(x, y + second.line * lineH, secondX - x, lineH, true);
-                if (first.line + 1 < second.line) {
-                    context.drawRect(x, y + (first.line + 1) * lineH,
-                            getTotalDimensionX(), (second.line - first.line - 1) * lineH, true);
+                context.drawRect(firstX, ypos + first.getLine() * lineH, getTotalDimensionX() - (firstX - x), lineH, true);
+                context.drawRect(x, y + second.getLine() * lineH, secondX - x, lineH, true);
+                if (first.getLine() + 1 < second.getLine()) {
+                    context.drawRect(
+                            x, y + (first.getLine() + 1) * lineH
+                            , getTotalDimensionX(), (second.getLine() - first.getLine() - 1) * lineH, true);
                 }
             }
 
+            // Text
             context.setColor(getTextColor());
             int start = Math.max(0, (int) Math.floor((getViewOffsetY() - getInY()) / lineH) - 1);
             int end = start + Math.max(0, (int) Math.ceil(getHeight() / lineH) + 2);
             textRender.drawText(context, xpos, ypos, width * 9999, height * 9999, horizontalAlign, start, end);
 
+            // Caret
             if (showCaret) {
                 float caretX = textRender.getCaretHorizontalOffset(endCaret, horizontalAlign) + xpos;
                 context.setColor(getTextColor());
                 context.setStroker(new BasicStroke(2));
-                context.drawLine(caretX, ypos + endCaret.line * lineH, caretX, ypos + (endCaret.line + 1) * lineH);
+                context.drawLine(
+                        caretX, ypos + endCaret.getLine() * lineH
+                        , caretX, ypos + (endCaret.getLine() + 1) * lineH);
             }
             if (isHorizontalDimensionScroll() || isVerticalDimensionScroll()) {
                 context.popClip();
@@ -294,8 +316,8 @@ public class TextField extends Scrollable {
             return;
         }
 
-        var first = startCaret.offset <= endCaret.offset ? startCaret : endCaret;
-        var second = startCaret.offset <= endCaret.offset ? endCaret : startCaret;
+        var first = getFirstCaret();
+        var second = getSecondCaret();
 
         if (event.getType() == KeyEvent.TYPED) {
             editText(first, second, new String(Character.toChars(event.getKeycode())));
@@ -309,15 +331,15 @@ public class TextField extends Scrollable {
             } else if (event.getKeycode() == KeyCode.KEY_TAB) {
                 editText(first, second, "\t");
             } else if (event.getKeycode() == keyBackspace) {
-                actionDeleteBackwards();
+                actionDeleteBackwards(first, second);
             } else if (event.getKeycode() == keyDelete) {
-                actionDeleteFowards();
+                actionDeleteFowards(first, second);
             } else if (event.isCtrlDown() && event.getKeycode() == keyPaste) {
-                actionPaste();
+                actionPaste(first, second);
             } else if (event.isCtrlDown() && event.getKeycode() == keyCopy) {
-                actionCopy();
+                actionCopy(first, second);
             } else if (event.isCtrlDown() && event.getKeycode() == keyCut) {
-                actionCut();
+                actionCut(first, second);
             } else if (event.isCtrlDown() && event.getKeycode() == keySelectAll) {
                 actionSelectAll();
             } else if (event.getKeycode() == keyClearSelection) {
@@ -365,13 +387,24 @@ public class TextField extends Scrollable {
         }
     }
 
-    private void editText(CaretData first, CaretData second, String text) {
+    private void editText(Caret first, Caret second, String text) {
+        var event = filterText(first, second, text);
+        if (event != null) {
+            if (event.isConsumed() || event.getText() == null) {
+                return;
+            } else {
+                text = event.getText();
+            }
+        }
         textRender.editText(first, second, text, endCaret);
         startCaret.set(endCaret);
+        String old = this.text;
         this.text = textRender.getText();
         invalidateTextSize();
         setCaretVisible();
         slideToCaret(1);
+
+        fireTextChange(old);
     }
 
     private void actionShowContextMenu() {
@@ -385,7 +418,7 @@ public class TextField extends Scrollable {
         float ypos = getTextHeight() < height ? yOff(y, y + height, getTextHeight()) : py;
 
         float caretX = textRender.getCaretHorizontalOffset(endCaret, horizontalAlign) + xpos;
-        float caretY = endCaret.line * getLineHeight() + ypos;
+        float caretY = endCaret.getLine() * getLineHeight() + ypos;
         var pos = localToScreen(Math.min(x + width, Math.max(x, caretX)), Math.min(y + height, Math.max(y, caretY)));
         showContextMenu(pos.x, pos.y);
     }
@@ -401,27 +434,21 @@ public class TextField extends Scrollable {
         invalidate(false);
     }
 
-    private void actionDeleteBackwards() {
-        var first = startCaret.offset <= endCaret.offset ? startCaret : endCaret;
-        var second = startCaret.offset <= endCaret.offset ? endCaret : startCaret;
-        if (first.offset == second.offset) {
+    private void actionDeleteBackwards(Caret first, Caret second) {
+        if (first.getOffset() == second.getOffset()) {
             textRender.moveCaretBackwards(first);
         }
         editText(first, second, "");
     }
 
-    private void actionDeleteFowards() {
-        var first = startCaret.offset <= endCaret.offset ? startCaret : endCaret;
-        var second = startCaret.offset <= endCaret.offset ? endCaret : startCaret;
-        if (first.offset == second.offset) {
+    private void actionDeleteFowards(Caret first, Caret second) {
+        if (first.getOffset() == second.getOffset()) {
             textRender.moveCaretFoward(second);
         }
         editText(first, second, "");
     }
 
-    private void actionCut() {
-        var first = startCaret.offset <= endCaret.offset ? startCaret : endCaret;
-        var second = startCaret.offset <= endCaret.offset ? endCaret : startCaret;
+    private void actionCut(Caret first, Caret second) {
         String str = textRender.getText(first, second);
         if (str != null && !str.isEmpty()) {
             getActivity().getWindow().setClipboard(str);
@@ -429,18 +456,14 @@ public class TextField extends Scrollable {
         editText(first, second, "");
     }
 
-    private void actionCopy() {
-        var first = startCaret.offset <= endCaret.offset ? startCaret : endCaret;
-        var second = startCaret.offset <= endCaret.offset ? endCaret : startCaret;
+    private void actionCopy(Caret first, Caret second) {
         String str = textRender.getText(first, second);
         if (str != null && !str.isEmpty()) {
             getActivity().getWindow().setClipboard(str);
         }
     }
 
-    private void actionPaste() {
-        var first = startCaret.offset <= endCaret.offset ? startCaret : endCaret;
-        var second = startCaret.offset <= endCaret.offset ? endCaret : startCaret;
+    private void actionPaste(Caret first, Caret second) {
         String str = getActivity().getWindow().getClipboard();
         if (str != null && !str.isEmpty()) {
             editText(first, second, str);
@@ -538,11 +561,31 @@ public class TextField extends Scrollable {
 
     public void setText(String text) {
         if (!Objects.equals(this.text, text)) {
+            Caret caretA = new Caret();
+            Caret caretB = new Caret();
+            textRender.moveCaretBegin(caretA);
+            textRender.moveCaretEnd(caretB);
+
+            var event = filterText(caretA, caretB, text);
+
+            if (event != null) {
+                if (event.isConsumed() || event.getText() == null) {
+                    return;
+                } else {
+                    text = event.getText();
+                }
+            }
+
+            String old = this.text;
             this.text = text;
             textRender.setText(text);
-            actionClearSelection();
+            textRender.moveCaretBegin(startCaret);
+            textRender.moveCaretBegin(endCaret);
+
             invalidate(isWrapContent());
             invalidateTextSize();
+
+            fireTextChange(old);
         }
     }
 
@@ -604,6 +647,17 @@ public class TextField extends Scrollable {
         }
     }
 
+    public int getTextSelectedColor() {
+        return textSelectedColor;
+    }
+
+    public void setTextSelectedColor(int textSelectedColor) {
+        if (this.textSelectedColor != textSelectedColor) {
+            this.textSelectedColor = textSelectedColor;
+            invalidate(false);
+        }
+    }
+
     public int getTextHintColor() {
         return textHintColor;
     }
@@ -654,8 +708,8 @@ public class TextField extends Scrollable {
     public void slideToCaret(float speed) {
         float lineH = getLineHeight();
         float caretX = textRender.getCaretHorizontalOffset(endCaret, horizontalAlign);
-        float caretYMin = endCaret.line * lineH;
-        float caretYMax = (endCaret.line + 1) * lineH;
+        float caretYMin = endCaret.getLine() * lineH;
+        float caretYMax = (endCaret.getLine() + 1) * lineH;
 
         float targetX = getViewOffsetX();
         if (caretX < targetX) {
@@ -671,6 +725,37 @@ public class TextField extends Scrollable {
             targetY = caretYMax - getViewDimensionY();
         }
         slideTo(targetX * speed + getViewOffsetX() * (1 - speed), targetY * speed + getViewOffsetY() * (1 - speed));
+    }
+
+    public UXListener<TextEvent> getTextChangeFilter() {
+        return textChangeFilter;
+    }
+
+    public void setTextChangeFilter(UXListener<TextEvent> textChangeFilter) {
+        this.textChangeFilter = textChangeFilter;
+    }
+
+    private TextEvent filterText(Caret first, Caret second, String text) {
+        if (textChangeFilter != null) {
+            TextEvent event = new TextEvent(this, first, second, text);
+            UXListener.safeHandle(textChangeFilter, event);
+            return event;
+        }
+        return null;
+    }
+
+    public UXValueListener<String> getTextChangeListener() {
+        return textChangeListener;
+    }
+
+    public void setTextChangeListener(UXValueListener<String> textChangeListener) {
+        this.textChangeListener = textChangeListener;
+    }
+
+    private void fireTextChange(String old) {
+        if (textChangeListener != null && !Objects.equals(old, text)) {
+            UXValueListener.safeHandle(textChangeListener, new ValueChange<>(this, old, text));
+        }
     }
 
     protected float getTextWidth() {

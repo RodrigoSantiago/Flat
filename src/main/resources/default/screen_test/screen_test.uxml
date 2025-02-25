@@ -79,7 +79,8 @@
                 </ScrollBox>
             </LinearBox>
             <TextField text="Ola Mundo&#10;OutraLinha&#10;OutraLinhaasa asa" width="300" horizontal-align="center" max-height="200" margin-top="16"
-                       padding-top="16" padding-bottom="16" padding-left="16" padding-right="16" text-hint="I">
+                       padding-top="16" padding-bottom="16" padding-left="16" padding-right="16" text-hint="I"
+            text-selected-color="aqua" on-text-change="hello" on-text-change-filter="filter">
                 <Menu width="100" height="200" background-color="blue">
                     <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
                     <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>

@@ -30,4 +30,11 @@ public class ScrollEvent extends Event {
     public float getY() {
         return y;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder s = new StringBuilder("(").append(getSource()).append(") ScrollEvent ");
+        s.append("[SCROLL]");
+        return s.toString();
+    }
 }

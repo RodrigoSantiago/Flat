@@ -3,6 +3,7 @@ package test;
 import flat.Flat;
 import flat.data.ObservableList;
 import flat.events.ActionEvent;
+import flat.events.TextEvent;
 import flat.graphics.Color;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Font;
@@ -164,5 +165,16 @@ public class MainActivity extends Controller {
     @Flat
     public void export(ActionEvent event) {
         save = true;
+    }
+
+    @Flat
+    public void hello(ValueChange<String> event) {
+        System.out.println(event.getOldValue());
+        System.out.println(event.getValue());
+    }
+
+    @Flat
+    public void filter(TextEvent event) {
+        event.setText(event.getText().replaceAll("a", ""));
     }
 }
