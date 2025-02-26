@@ -1,13 +1,11 @@
 package flat.widget.structure;
 
-import flat.events.ActionEvent;
 import flat.graphics.context.Font;
 import flat.graphics.image.Drawable;
 import flat.graphics.image.DrawableReader;
 import flat.resources.ResourceStream;
 import flat.uxml.Controller;
 import flat.uxml.UXHash;
-import flat.uxml.UXListener;
 import flat.uxml.UXNode;
 import flat.uxml.value.*;
 import flat.widget.Scene;
@@ -16,7 +14,6 @@ import flat.widget.enums.HorizontalAlign;
 import flat.widget.enums.ImageFilter;
 import flat.widget.enums.VerticalAlign;
 import flat.widget.layout.Frame;
-import flat.widget.text.Button;
 import flat.window.Activity;
 import flat.window.ActivitySupport;
 import org.junit.Before;
@@ -85,7 +82,7 @@ public class PageTest {
 
         assertEquals(VerticalAlign.TOP, page.getVerticalAlign());
         assertFalse(page.isTextAllCaps());
-        assertEquals(defaultFont, page.getFont());
+        assertEquals(defaultFont, page.getTextFont());
         assertEquals(16f, page.getTextSize(), 0.1f);
         assertEquals(0x000000FF, page.getTextColor());
         assertNull(page.getText());
@@ -108,7 +105,7 @@ public class PageTest {
 
         assertEquals(VerticalAlign.TOP, page.getVerticalAlign());
         assertFalse(page.isTextAllCaps());
-        assertEquals(defaultFont, page.getFont());
+        assertEquals(defaultFont, page.getTextFont());
         assertEquals(16f, page.getTextSize(), 0.1f);
         assertEquals(0x000000FF, page.getTextColor());
         assertEquals("Hello World", page.getText());
@@ -130,7 +127,7 @@ public class PageTest {
 
         assertEquals(VerticalAlign.BOTTOM, page.getVerticalAlign());
         assertTrue(page.isTextAllCaps());
-        assertEquals(boldFont, page.getFont());
+        assertEquals(boldFont, page.getTextFont());
         assertEquals(24f, page.getTextSize(), 0.1f);
         assertEquals(0xFF0000FF, page.getTextColor());
         assertEquals("Hello World", page.getText());
@@ -593,7 +590,7 @@ public class PageTest {
         hash.put(UXHash.getHash("vertical-align"), new UXValueText(VerticalAlign.BOTTOM.toString()));
         hash.put(UXHash.getHash("text"), new UXValueText("Hello World"));
         hash.put(UXHash.getHash("text-all-caps"), new UXValueBool(true));
-        hash.put(UXHash.getHash("font"), uxBoldFont);
+        hash.put(UXHash.getHash("text-font"), uxBoldFont);
         hash.put(UXHash.getHash("text-size"), new UXValueSizeSp(24));
         hash.put(UXHash.getHash("text-color"), new UXValueColor(0xFF0000FF));
 

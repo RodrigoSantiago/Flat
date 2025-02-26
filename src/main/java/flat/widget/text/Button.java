@@ -6,9 +6,7 @@ import flat.events.PointerEvent;
 import flat.graphics.Color;
 import flat.graphics.SmartContext;
 import flat.graphics.image.Drawable;
-import flat.math.shapes.Circle;
 import flat.math.shapes.Ellipse;
-import flat.math.shapes.Shape;
 import flat.uxml.Controller;
 import flat.uxml.UXAttrs;
 import flat.uxml.UXListener;
@@ -101,7 +99,7 @@ public class Button extends Label {
             }
         }
 
-        if (tw > 0 && th > 0 && getFont() != null) {
+        if (tw > 0 && th > 0 && getTextFont() != null) {
             float xpos = iconLeft ? boxX + spaceForIcon : boxX;
             float ypos = yOff(y, y + height, th);
             drawText(context, xpos, ypos, tw, th);

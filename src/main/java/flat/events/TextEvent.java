@@ -1,28 +1,28 @@
 package flat.events;
 
 import flat.widget.Widget;
-import flat.widget.text.data.Caret;
 
 public class TextEvent extends Event {
 
-    public static final EventType CHANGE = new EventType();
+    public static final Type CHANGE = new Type("CHANGE");
+    public static final Type FILTER = new Type("FILTER");
 
-    private Caret start;
-    private Caret end;
+    private final int start;
+    private final int end;
     private String text;
 
-    public TextEvent(Widget source, Caret start, Caret end, String text) {
-        super(source, CHANGE);
+    public TextEvent(Widget source, Type type, int start, int end, String text) {
+        super(source, type);
         this.start = start;
         this.end = end;
         this.text = text;
     }
 
-    public Caret getStart() {
+    public int getStart() {
         return start;
     }
 
-    public Caret getEnd() {
+    public int getEnd() {
         return end;
     }
 
@@ -36,7 +36,13 @@ public class TextEvent extends Event {
 
     @Override
     public String toString() {
-        return "TextEvent [CHANGE]";
+        return "(" + getSource() + ") TextEvent " + getType();
+    }
+
+    public static class Type extends EventType {
+        Type(String name) {
+            super(name);
+        }
     }
 }
 

@@ -97,8 +97,7 @@ public class ScrollBar extends Widget {
     }
 
     public void setViewOffset(float viewOffset) {
-        if (viewOffset > totalDimension - viewDimension) viewOffset = totalDimension - viewDimension;
-        if (viewOffset < 0) viewOffset = 0;
+        viewOffset = Math.max(0, Math.min(viewOffset, totalDimension - viewDimension));
 
         if (this.viewOffset != viewOffset) {
             float old = this.viewOffset;
@@ -164,15 +163,12 @@ public class ScrollBar extends Widget {
     }
 
     public void slideTo(float dimeionsOffset) {
-        if (dimeionsOffset > totalDimension - viewDimension) dimeionsOffset = totalDimension - viewDimension;
-        if (dimeionsOffset < 0) dimeionsOffset = 0;
+        dimeionsOffset = Math.max(0, Math.min(dimeionsOffset, totalDimension - viewDimension));
 
         float old = getViewOffset();
         if (dimeionsOffset != old && filterSlide(dimeionsOffset)) {
             setViewOffset(dimeionsOffset);
-            if (old != getViewOffset()) {
-                fireSlide();
-            }
+            fireSlide();
         }
     }
 
@@ -190,7 +186,7 @@ public class ScrollBar extends Widget {
 
     private boolean filterSlide(float viewOffset) {
         if (slideFilter != null) {
-            var event = new SlideEvent(this, viewOffset);
+            var event = new SlideEvent(this, SlideEvent.FILTER, viewOffset);
             UXListener.safeHandle(slideFilter, event);
             return !event.isConsumed();
         }
@@ -207,7 +203,7 @@ public class ScrollBar extends Widget {
 
     private void fireSlide() {
         if (slideListener != null) {
-            UXListener.safeHandle(slideListener, new SlideEvent(this, getViewOffset()));
+            UXListener.safeHandle(slideListener, new SlideEvent(this, SlideEvent.SLIDE, getViewOffset()));
         }
     }
 

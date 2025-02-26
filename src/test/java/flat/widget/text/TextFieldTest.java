@@ -59,6 +59,9 @@ public class TextFieldTest {
         var filter = (UXListener<TextEvent>) mock(UXListener.class);
         when(controller.getListenerMethod("onTextChangeFilter", TextEvent.class)).thenReturn(filter);
 
+        var inputFilter = (UXListener<TextEvent>) mock(UXListener.class);
+        when(controller.getListenerMethod("onTextInputFilter", TextEvent.class)).thenReturn(inputFilter);
+
         assertEquals(HorizontalAlign.LEFT, textField.getHorizontalAlign());
         assertEquals(VerticalAlign.TOP, textField.getVerticalAlign());
         assertEquals(defaultFont, textField.getTextFont());
@@ -70,6 +73,7 @@ public class TextFieldTest {
         assertNull(textField.getTextHint());
         assertNull(textField.getTextChangeFilter());
         assertNull(textField.getTextChangeListener());
+        assertNull(textField.getTextInputFilter());
 
         textField.setAttributes(createNonDefaultValues(), "text-field");
         textField.applyAttributes(controller);
@@ -85,6 +89,7 @@ public class TextFieldTest {
         assertEquals("B", textField.getTextHint());
         assertEquals(filter, textField.getTextChangeFilter());
         assertEquals(action, textField.getTextChangeListener());
+        assertEquals(inputFilter, textField.getTextInputFilter());
 
         textField.applyStyle();
 
@@ -99,6 +104,7 @@ public class TextFieldTest {
         assertEquals("B", textField.getTextHint());
         assertEquals(filter, textField.getTextChangeFilter());
         assertEquals(action, textField.getTextChangeListener());
+        assertEquals(inputFilter, textField.getTextInputFilter());
     }
 
     @Test
@@ -168,6 +174,7 @@ public class TextFieldTest {
         hash.put(UXHash.getHash("text-selected-color"), new UXValueColor(0xFFFF00FF));
         hash.put(UXHash.getHash("on-text-change"), new UXValueText("onTextChangeWork"));
         hash.put(UXHash.getHash("on-text-change-filter"), new UXValueText("onTextChangeFilter"));
+        hash.put(UXHash.getHash("on-text-input-filter"), new UXValueText("onTextInputFilter"));
         return hash;
     }
 }

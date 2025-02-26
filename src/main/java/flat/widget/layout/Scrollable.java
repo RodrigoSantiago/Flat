@@ -42,12 +42,12 @@ public abstract class Scrollable extends Parent {
 
     private final UXListener<SlideEvent> slideX = (event) -> {
         event.consume();
-        slideHorizontalTo(event.getViewOffsetDimension());
+        slideHorizontalTo(event.getValue());
     };
 
     private final UXListener<SlideEvent> slideY = (event) -> {
         event.consume();
-        slideVerticalTo(event.getViewOffsetDimension());
+        slideVerticalTo(event.getValue());
     };
 
     public Scrollable() {
@@ -471,7 +471,7 @@ public abstract class Scrollable extends Parent {
 
     private void fireSlideX() {
         if (slideHorizontalListener != null) {
-            UXListener.safeHandle(slideHorizontalListener, new SlideEvent(this, viewOffsetX));
+            UXListener.safeHandle(slideHorizontalListener, new SlideEvent(this, SlideEvent.SLIDE, viewOffsetX));
         }
     }
 
@@ -485,7 +485,7 @@ public abstract class Scrollable extends Parent {
 
     private void fireSlideY() {
         if (slideVerticalListener != null) {
-            UXListener.safeHandle(slideVerticalListener, new SlideEvent(this, viewOffsetY));
+            UXListener.safeHandle(slideVerticalListener, new SlideEvent(this, SlideEvent.SLIDE, viewOffsetY));
         }
     }
 
@@ -511,7 +511,7 @@ public abstract class Scrollable extends Parent {
 
     private boolean filterSlideX(float viewOffsetX) {
         if (slideHorizontalFilter != null) {
-            var event = new SlideEvent(this, viewOffsetX);
+            var event = new SlideEvent(this, SlideEvent.FILTER, viewOffsetX);
             UXListener.safeHandle(slideHorizontalFilter, event);
             return !event.isConsumed();
         }
@@ -528,7 +528,7 @@ public abstract class Scrollable extends Parent {
 
     private boolean filterSlideY(float viewOffsetY) {
         if (slideVerticalFilter != null) {
-            var event = new SlideEvent(this, viewOffsetY);
+            var event = new SlideEvent(this, SlideEvent.FILTER, viewOffsetY);
             UXListener.safeHandle(slideVerticalFilter, event);
             return !event.isConsumed();
         }

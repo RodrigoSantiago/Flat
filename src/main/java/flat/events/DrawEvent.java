@@ -4,7 +4,7 @@ import flat.graphics.SmartContext;
 import flat.widget.Widget;
 
 public class DrawEvent extends Event {
-    public static final EventType DRAW = new EventType();
+    public static final Type DRAW = new Type("DRAW");
 
     private final SmartContext smartContext;
 
@@ -19,6 +19,12 @@ public class DrawEvent extends Event {
 
     @Override
     public String toString() {
-        return "DrawEvent [DRAW]";
+        return "(" + getSource() + ") DrawEvent [DRAW]";
+    }
+
+    public static class Type extends EventType {
+        Type(String name) {
+            super(name);
+        }
     }
 }

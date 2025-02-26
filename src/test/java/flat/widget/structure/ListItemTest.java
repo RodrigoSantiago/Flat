@@ -90,7 +90,7 @@ public class ListItemTest {
         ListItem listItem = new ListItem();
 
         assertFalse(listItem.isTextAllCaps());
-        assertEquals(defaultFont, listItem.getFont());
+        assertEquals(defaultFont, listItem.getTextFont());
         assertEquals(16f, listItem.getTextSize(), 0.1f);
         assertEquals(0x000000FF, listItem.getTextColor());
         assertNull(listItem.getText());
@@ -115,7 +115,7 @@ public class ListItemTest {
         listItem.applyAttributes(controller);
 
         assertFalse(listItem.isTextAllCaps());
-        assertEquals(defaultFont, listItem.getFont());
+        assertEquals(defaultFont, listItem.getTextFont());
         assertEquals(16f, listItem.getTextSize(), 0.1f);
         assertEquals(0x000000FF, listItem.getTextColor());
         assertEquals("Hello World", listItem.getText());
@@ -139,7 +139,7 @@ public class ListItemTest {
         listItem.applyStyle();
 
         assertTrue(listItem.isTextAllCaps());
-        assertEquals(boldFont, listItem.getFont());
+        assertEquals(boldFont, listItem.getTextFont());
         assertEquals(24f, listItem.getTextSize(), 0.1f);
         assertEquals(0xFF0000FF, listItem.getTextColor());
         assertEquals("Hello World", listItem.getText());
@@ -416,7 +416,7 @@ public class ListItemTest {
 
         hash.put(UXHash.getHash("text"), new UXValueText("Hello World"));
         hash.put(UXHash.getHash("text-all-caps"), new UXValueBool(true));
-        hash.put(UXHash.getHash("font"), uxBoldFont);
+        hash.put(UXHash.getHash("text-font"), uxBoldFont);
         hash.put(UXHash.getHash("text-size"), new UXValueSizeSp(24));
         hash.put(UXHash.getHash("text-color"), new UXValueColor(0xFF0000FF));
         hash.put(UXHash.getHash("on-action"), new UXValueText("onActionWork"));

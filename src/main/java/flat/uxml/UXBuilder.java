@@ -13,11 +13,9 @@ import flat.widget.selection.SwitchToggle;
 import flat.widget.structure.ListView;
 import flat.widget.structure.Page;
 import flat.widget.structure.Tab;
-import flat.widget.text.Button;
-import flat.widget.text.Chip;
-import flat.widget.text.Label;
-import flat.widget.text.TextField;
+import flat.widget.text.*;
 import flat.widget.value.HorizontalScrollBar;
+import flat.widget.value.Slider;
 import flat.widget.value.VerticalScrollBar;
 
 import java.util.ArrayList;
@@ -57,16 +55,16 @@ public class UXBuilder {
         UXBuilder.install("ListView", ListView::new);
         UXBuilder.install("Chip", Chip::new);
         UXBuilder.install("TextField", TextField::new);
+        UXBuilder.install("Slider", Slider::new);
+        // UXBuilder.install("TextArea", TextArea::new); - must be efficient
         /*UXBuilder.install("Divider", Divider::new);
         UXBuilder.install("ToggleButton", ToggleButton::new);
         UXBuilder.install("ToggleGroup", RadioGroup::new);
         UXBuilder.install("Canvas", Canvas::new);
-        UXBuilder.install("Slider", Slider::new);
         UXBuilder.install("ProgressBar", ProgressBar::new);
         UXBuilder.install("ProgressCircle", ProgressCircle::new);
         UXBuilder.install("Grid", Grid::new);
         UXBuilder.install("Cell", Cell::new);
-        UXBuilder.install("TextArea", TextArea::new);
         UXBuilder.install("Drawer", Drawer::new);
         UXBuilder.install("MenuItem", MenuItem::new);
         UXBuilder.install("DropdownMenu", DropdownMenu::new);

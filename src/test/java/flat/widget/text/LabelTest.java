@@ -52,7 +52,7 @@ public class LabelTest {
         assertEquals(HorizontalAlign.LEFT, label.getHorizontalAlign());
         assertEquals(VerticalAlign.TOP, label.getVerticalAlign());
         assertFalse(label.isTextAllCaps());
-        assertEquals(defaultFont, label.getFont());
+        assertEquals(defaultFont, label.getTextFont());
         assertEquals(16f, label.getTextSize(), 0.1f);
         assertEquals(0x000000FF, label.getTextColor());
         assertNull(label.getText());
@@ -63,7 +63,7 @@ public class LabelTest {
         assertEquals(HorizontalAlign.LEFT, label.getHorizontalAlign());
         assertEquals(VerticalAlign.TOP, label.getVerticalAlign());
         assertFalse(label.isTextAllCaps());
-        assertEquals(defaultFont, label.getFont());
+        assertEquals(defaultFont, label.getTextFont());
         assertEquals(16f, label.getTextSize(), 0.1f);
         assertEquals(0x000000FF, label.getTextColor());
         assertEquals("Hello World", label.getText());
@@ -73,7 +73,7 @@ public class LabelTest {
         assertEquals(HorizontalAlign.RIGHT, label.getHorizontalAlign());
         assertEquals(VerticalAlign.BOTTOM, label.getVerticalAlign());
         assertTrue(label.isTextAllCaps());
-        assertEquals(boldFont, label.getFont());
+        assertEquals(boldFont, label.getTextFont());
         assertEquals(24f, label.getTextSize(), 0.1f);
         assertEquals(0xFF0000FF, label.getTextColor());
         assertEquals("Hello World", label.getText());
@@ -131,7 +131,7 @@ public class LabelTest {
         hash.put(UXHash.getHash("vertical-align"), new UXValueText(VerticalAlign.BOTTOM.toString()));
         hash.put(UXHash.getHash("text"), new UXValueText("Hello World"));
         hash.put(UXHash.getHash("text-all-caps"), new UXValueBool(true));
-        hash.put(UXHash.getHash("font"), uxBoldFont);
+        hash.put(UXHash.getHash("text-font"), uxBoldFont);
         hash.put(UXHash.getHash("text-size"), new UXValueSizeSp(24));
         hash.put(UXHash.getHash("text-color"), new UXValueColor(0xFF0000FF));
         return hash;

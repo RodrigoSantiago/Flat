@@ -3,27 +3,27 @@ package flat.events;
 import flat.widget.Widget;
 
 public class DragEvent extends Event {
-    public static final EventType STARTED = new EventType();
-    public static final EventType DONE    = new EventType();
-    public static final EventType DROPPED = new EventType();
-    public static final EventType ENTERED = new EventType();
-    public static final EventType EXITED  = new EventType();
-    public static final EventType OVER    = new EventType();
+    public static final Type STARTED = new Type("STARTED");
+    public static final Type DONE    = new Type("DONE");
+    public static final Type DROPPED = new Type("DROPPED");
+    public static final Type ENTERED = new Type("ENTERED");
+    public static final Type EXITED  = new Type("EXITED");
+    public static final Type OVER    = new Type("OVER");
 
     private Object data;
-    private float x, y;
+    private final float x, y;
     private Widget dragHandler;
     private Widget dragAccepted;
     private boolean canceled;
 
-    public DragEvent(Widget source, EventType type, Object data, float x, float y) {
+    public DragEvent(Widget source, Type type, Object data, float x, float y) {
         super(source, type);
         this.data = data;
         this.x = x;
         this.y = y;
     }
 
-    public DragEvent(Widget source, EventType type, Object data, float x, float y, Widget dragHandler, Widget dragAccepted) {
+    public DragEvent(Widget source, Type type, Object data, float x, float y, Widget dragHandler, Widget dragAccepted) {
         super(source, type);
         this.data = data;
         this.x = x;
@@ -86,14 +86,12 @@ public class DragEvent extends Event {
 
     @Override
     public String toString() {
-        StringBuilder s = new StringBuilder("(").append(getSource()).append(") DragEvent ");
-        if (getType() == STARTED) s.append("[STARTED]");
-        else if (getType() == DONE) s.append("[DONE]");
-        else if (getType() == DROPPED) s.append("[DROPPED]");
-        else if (getType() == ENTERED) s.append("[ENTERED]");
-        else if (getType() == EXITED) s.append("[EXITED]");
-        else if (getType() == OVER) s.append("[OVER]");
-        s.append(", [").append(x).append(", ").append(y).append("]");
-        return s.toString();
+        return "(" + getSource() + ") DragEvent " + getType() + ", [" + x + ", " + y + "]";
+    }
+
+    private static class Type extends EventType {
+        Type(String name) {
+            super(name);
+        }
     }
 }

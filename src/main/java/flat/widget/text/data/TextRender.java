@@ -18,6 +18,8 @@ public class TextRender {
     private ArrayList<Line> lines;
     private int byteSize;
     private int lineCount = 1;
+    private int totalCharacters;
+    private int maxCharacters;
     private float width;
 
     public void setFont(Font font) {
@@ -26,6 +28,10 @@ public class TextRender {
 
     public void setTextSize(float textSize) {
         this.textSize = textSize;
+    }
+
+    public void setMaxCharacters(int maxCharacters) {
+        this.maxCharacters = maxCharacters;
     }
 
     private void ensureCapacity(int requiredCapacity) {
@@ -41,11 +47,19 @@ public class TextRender {
     public void setText(String text) {
         if (text == null || text.length() == 0) {
             byteSize = 0;
+            totalCharacters = 0;
         } else {
             byte[] newTextBytes = text.getBytes(StandardCharsets.UTF_8);
-            ensureCapacity(newTextBytes.length);
-            System.arraycopy(newTextBytes, 0, textBytes, 0, newTextBytes.length);
-            byteSize = newTextBytes.length;
+            int len = newTextBytes.length;
+            totalCharacters = countChars(newTextBytes, 0, len);
+            if (maxCharacters > 0 && totalCharacters > maxCharacters) {
+                len = findLength(newTextBytes, 0, len, maxCharacters);
+                totalCharacters = maxCharacters;
+            }
+
+            ensureCapacity(len);
+            System.arraycopy(newTextBytes, 0, textBytes, 0, len);
+            byteSize = len;
         }
 
         updateLines();
@@ -63,14 +77,37 @@ public class TextRender {
         return new String(bytes);
     }
 
-    public void editText(Caret caretStart, Caret caretEnd, String replace, Caret newCaret) {
+    public void trim(int length) {
+        if (totalCharacters > length) {
+            byteSize = findLength(textBytes, 0, byteSize, length);
+            totalCharacters = length;
+            updateLines();
+        }
+    }
+
+    public int getTotalCharacters() {
+        return totalCharacters;
+    }
+
+    public int getTotalBytes() {
+        return byteSize;
+    }
+
+    public boolean editText(Caret caretStart, Caret caretEnd, String replace, Caret newCaret) {
         byte[] replaceBytes = replace.getBytes(StandardCharsets.UTF_8);
         int start = caretStart.offset;
         int length = caretEnd.offset - start;
         int end = start + length;
 
         if (length == 0 && replaceBytes.length == 0) {
-            return;
+            return false;
+        }
+
+        int newCharacters = countChars(replaceBytes, 0, replaceBytes.length);
+        int oldCharacters = countChars(textBytes, start, end);
+
+        if (maxCharacters > 0 && totalCharacters - oldCharacters + newCharacters > maxCharacters) {
+            return false;
         }
 
         int newSize = byteSize - length + replaceBytes.length;
@@ -94,10 +131,13 @@ public class TextRender {
 
         System.arraycopy(replaceBytes, 0, textBytes, start, replaceBytes.length);
         byteSize = newSize;
+        totalCharacters = totalCharacters - oldCharacters + newCharacters;
         updateLines();
 
         int offset = start + replaceBytes.length;
         updateCaret(newCaret, offset);
+
+        return true;
     }
 
     private void updateLines() {
@@ -341,6 +381,11 @@ public class TextRender {
         updateCaret(caret, offset);
     }
 
+    public void moveCaret(Caret caret, int by) {
+        int offset = Math.min(byteSize, Math.max(0, caret.offset + by));
+        updateCaret(caret, offset);
+    }
+
     public void moveCaretFowardsLine(Caret caret) {
         if (caret.offset == byteSize) return;
 
@@ -352,6 +397,43 @@ public class TextRender {
             offset = line.start + line.length;
         }
         updateCaret(caret, offset);
+    }
+
+    private int findLength(byte[] arr, int off, int end, int max) {
+        int count = 0;
+        int nextIndex = off;
+        while (nextIndex < end) {
+            if (count == max) {
+                break;
+            }
+            count++;
+            int byteValue = arr[nextIndex] & 0xFF;
+
+            if (byteValue <= 0x7F) {
+                nextIndex++;
+            } else if ((byteValue & 0xC0) == 0xC0) {
+                int byteCount = getUtf8ByteCount(byteValue);
+                nextIndex += byteCount;
+            }
+        }
+        return Math.min(nextIndex, end);
+    }
+
+    private int countChars(byte[] arr, int off, int end) {
+        int count = 0;
+        int nextIndex = off;
+        while (nextIndex < end) {
+            count++;
+            int byteValue = arr[nextIndex] & 0xFF;
+
+            if (byteValue <= 0x7F) {
+                nextIndex++;
+            } else if ((byteValue & 0xC0) == 0xC0) {
+                int byteCount = getUtf8ByteCount(byteValue);
+                nextIndex += byteCount;
+            }
+        }
+        return count;
     }
 
     private int getNextCharIndex(int currentIndex) {

@@ -4,21 +4,28 @@ import flat.widget.Widget;
 
 public class SlideEvent extends Event {
 
-    public static final EventType SLIDE = new EventType();
+    public static final Type SLIDE = new Type("SLIDE");
+    public static final Type FILTER = new Type("FILTER");
 
-    private float viewOffsetDimension;
+    private final float value;
 
-    public SlideEvent(Widget source, float viewOffsetDimension) {
-        super(source, SLIDE);
-        this.viewOffsetDimension = viewOffsetDimension;
+    public SlideEvent(Widget source, Type type, float value) {
+        super(source, type);
+        this.value = value;
     }
 
-    public float getViewOffsetDimension() {
-        return viewOffsetDimension;
+    public float getValue() {
+        return value;
     }
 
     @Override
     public String toString() {
-        return "SlideEvent [SLIDE]";
+        return "(" + getSource() + ")" + "SlideEvent " + getType();
+    }
+
+    public static class Type extends EventType {
+        Type(String name) {
+            super(name);
+        }
     }
 }

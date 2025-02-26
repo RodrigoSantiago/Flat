@@ -78,9 +78,20 @@
                     <StackBox><ImageView image="/default/image.png"/></StackBox>
                 </ScrollBox>
             </LinearBox>
+            <TextArea text="123" width="300" horizontal-align="center" max-height="200" margin-top="16"
+                       padding-top="16" padding-bottom="16" padding-left="16" padding-right="16" text-hint="I"
+            text-selected-color="aqua" on-text-change="hello" on-text-change-filter="filter" id="textField" max-characters="15">
+                <Menu width="100" height="200" background-color="blue">
+                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
+                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
+                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
+                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
+                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
+                </Menu>
+            </TextArea>
             <TextField text="Ola Mundo&#10;OutraLinha&#10;OutraLinhaasa asa" width="300" horizontal-align="center" max-height="200" margin-top="16"
                        padding-top="16" padding-bottom="16" padding-left="16" padding-right="16" text-hint="I"
-            text-selected-color="aqua" on-text-change="hello" on-text-change-filter="filter">
+                       text-selected-color="aqua" on-text-change="hello" on-text-change-filter="filter" floating-bars="true">
                 <Menu width="100" height="200" background-color="blue">
                     <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
                     <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
@@ -89,12 +100,15 @@
                     <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
                 </Menu>
             </TextField>
+            <Button text="Set Max to 10" margin-top="16"
+                    horizontal-align="RIGHT"
+                    on-action="setmax"/>
         </LinearBox>
         <LinearBox direction="vertical" background-color="#C0C0C0" width="MATCH_PARENT" height="MATCH_PARENT"
                    padding-left="8" padding-right="8" padding-top="8" padding-bottom="8"
                    margin-left="32" margin-right="32" margin-top="32" margin-bottom="32" vertical-align="TOP">
             <Label text="Title" background-color="#0000c8" text-color="white"/>
-            <Button text="Big Dialog Button" text-size="12px" font="SANS" margin-top="8"
+            <Button text="Big Dialog Button" text-size="12px" text-font="SANS" margin-top="8"
                     icon="/default/img_test.png"
                     icon-scale-height="true" icon-spacing="12px"
                     icon-align="RIGHT"
@@ -147,12 +161,6 @@
                   icon-clip-circle="true"
                   close-icon="/default/icons/close_24dp.png"
                   close-icon-color="black"/>
-            <Chip text="This is a Chip&#10;c" margin-top="8" width="256"
-                  icon="/default/img_test.png" icon-spacing="12px"
-                  iicon-position="LEFT" horizontal-align="right"
-                  icon-clip-circle="true"
-                  close-icon="/default/icons/close_24dp.png"
-                  close-icon-color="black"/>
 
             <Chip text="This is a Chip" margin-top="8" width="256"
                   icon="/default/img_test.png" icon-spacing="12px"
@@ -177,6 +185,8 @@
                     icon="/default/img_test.png"
                     icon-scale-height="true" icon-spacing="12px"
                     icon-position="RIGHT"/>
+            <Slider width="64" height="32" min-value="0" max-value="10" steps="1" direction="ihorizontal"></Slider>
+            <Slider width="32" height="64" min-value="0" max-value="10" steps="1" direction="ivertical"></Slider>
         </LinearBox>
     </LinearBox>
 </Scene>

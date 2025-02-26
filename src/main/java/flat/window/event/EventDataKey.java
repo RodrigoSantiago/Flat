@@ -43,7 +43,7 @@ public class EventDataKey extends EventData {
             Activity activity = window.getActivity();
             Widget widget = activity.getKeyFocus();
             if (widget != null) {
-                EventType eventType =
+                KeyEvent.Type eventType =
                         (action == WLEnums.PRESS) ? KeyEvent.PRESSED :
                                 (action == WLEnums.RELEASE) ? KeyEvent.RELEASED : KeyEvent.REPEATED;
 

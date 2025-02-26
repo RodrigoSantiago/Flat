@@ -18,7 +18,7 @@ public class Label extends Widget {
     private String text;
 
     private boolean textAllCaps;
-    private Font font = Font.getDefault();
+    private Font textFont = Font.getDefault();
     private float textSize = 16f;
     private int textColor = 0x000000FF;
 
@@ -31,7 +31,7 @@ public class Label extends Widget {
     private final TextRender textRender = new TextRender();
 
     public Label() {
-        textRender.setFont(font);
+        textRender.setFont(textFont);
         textRender.setTextSize(textSize);
     }
 
@@ -50,7 +50,7 @@ public class Label extends Widget {
         UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
 
-        setFont(attrs.getFont("font", info, getFont()));
+        setTextFont(attrs.getFont("text-font", info, getTextFont()));
         setTextSize(attrs.getSize("text-size", info, getTextSize()));
         setTextColor(attrs.getColor("text-color", info, getTextColor()));
         setTextAllCaps(attrs.getBool("text-all-caps", info, isTextAllCaps()));
@@ -95,7 +95,7 @@ public class Label extends Widget {
 
         if (width <= 0 || height <= 0) return;
 
-        if (getFont() != null && getTextSize() > 0 && Color.getAlpha(getTextColor()) > 0) {
+        if (getTextFont() != null && getTextSize() > 0 && Color.getAlpha(getTextColor()) > 0) {
             float xpos = xOff(x, x + width, Math.min(getTextWidth(), width));
             float ypos = yOff(y, y + height, Math.min(getTextHeight(), height));
             drawText(context, xpos, ypos, width, height);
@@ -103,10 +103,10 @@ public class Label extends Widget {
     }
 
     protected void drawText(SmartContext context, float x, float y, float width, float height) {
-        if (getFont() != null && getTextSize() > 0 && Color.getAlpha(getTextColor()) > 0) {
+        if (getTextFont() != null && getTextSize() > 0 && Color.getAlpha(getTextColor()) > 0) {
             context.setTransform2D(getTransform());
             context.setColor(getTextColor());
-            context.setTextFont(getFont());
+            context.setTextFont(getTextFont());
             context.setTextSize(getTextSize());
             context.setTextBlur(0);
 
@@ -142,14 +142,14 @@ public class Label extends Widget {
         }
     }
 
-    public Font getFont() {
-        return font;
+    public Font getTextFont() {
+        return textFont;
     }
 
-    public void setFont(Font font) {
-        if (this.font != font) {
-            this.font = font;
-            textRender.setFont(font);
+    public void setTextFont(Font textFont) {
+        if (this.textFont != textFont) {
+            this.textFont = textFont;
+            textRender.setFont(textFont);
             invalidate(isWrapContent());
             invalidateTextSize();
         }

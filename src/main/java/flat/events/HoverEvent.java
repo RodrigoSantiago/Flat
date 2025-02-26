@@ -3,13 +3,13 @@ package flat.events;
 import flat.widget.Widget;
 
 public class HoverEvent extends Event {
-    public static final EventType MOVED = new EventType();
-    public static final EventType ENTERED = new EventType();
-    public static final EventType EXITED = new EventType();
+    public static final Type MOVED = new Type("MOVED");
+    public static final Type ENTERED = new Type("ENTERED");
+    public static final Type EXITED = new Type("EXITED");
 
-    private float x, y;
+    private final float x, y;
 
-    public HoverEvent(Widget source, EventType type, float x, float y) {
+    public HoverEvent(Widget source, Type type, float x, float y) {
         super(source, type);
         this.x = x;
         this.y = y;
@@ -29,10 +29,12 @@ public class HoverEvent extends Event {
 
     @Override
     public String toString() {
-        StringBuilder s = new StringBuilder("(").append(getSource()).append(") HoverEvent ");
-        if (getType() == MOVED) s.append("[MOVED]");
-        else if (getType() == ENTERED) s.append("[ENTERED]");
-        else if (getType() == EXITED) s.append("[EXITED]");
-        return s.toString();
+        return "(" + getSource() + ") HoverEvent " + getType() + ", [" + x + ", " + y + "]";
+    }
+
+    public static class Type extends EventType {
+        Type(String name) {
+            super(name);
+        }
     }
 }

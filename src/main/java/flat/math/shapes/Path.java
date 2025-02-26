@@ -250,6 +250,9 @@ public class Path implements PathConsumer, Shape, Cloneable {
     }
 
     public void closePath() {
+        if (typeSize > 0 && types[typeSize - 1] == PathIterator.SEG_MOVETO) {
+            return;
+        }
         if (typeSize == 0 || types[typeSize - 1] != PathIterator.SEG_CLOSE) {
             checkBuf(0, true);
             types[typeSize++] = PathIterator.SEG_CLOSE;

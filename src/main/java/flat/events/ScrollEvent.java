@@ -3,11 +3,11 @@ package flat.events;
 import flat.widget.Widget;
 
 public class ScrollEvent extends Event {
-    public static final EventType SCROLL = new EventType();
+    public static final Type SCROLL = new Type("SCROLL");
 
-    private float deltaX, deltaY, x, y;
+    private final float deltaX, deltaY, x, y;
 
-    public ScrollEvent(Widget source, EventType type, float deltaX, float deltaY, float x, float y) {
+    public ScrollEvent(Widget source, Type type, float deltaX, float deltaY, float x, float y) {
         super(source, type);
         this.deltaX = deltaX;
         this.deltaY = deltaY;
@@ -33,8 +33,12 @@ public class ScrollEvent extends Event {
 
     @Override
     public String toString() {
-        StringBuilder s = new StringBuilder("(").append(getSource()).append(") ScrollEvent ");
-        s.append("[SCROLL]");
-        return s.toString();
+        return "(" + getSource() + ") ScrollEvent " + getType();
+    }
+
+    public static class Type extends EventType {
+        Type(String name) {
+            super(name);
+        }
     }
 }

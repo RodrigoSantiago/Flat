@@ -7,7 +7,7 @@ widget {
 */
 
 label {
-    font : font("Roboto");
+    text-font : font("Roboto");
     text-size : 24sp;
     text-color : #000000FF;
     text-all-caps : false;
@@ -16,7 +16,7 @@ label {
 }
 
 button : label {
-    font : font("Roboto", bold);
+    text-font : font("Roboto", bold);
     ripple-enabled : true;
     ripple-color : #00000080;
     shadow-enabled : true;
@@ -58,7 +58,7 @@ toggle-button : button {
 }
 
 text-field {
-    font : font("Roboto");
+    text-font : font("Roboto");
     text-size : 24sp;
     text-color : #000000FF;
     text-hint-color : #00000080;
@@ -273,31 +273,18 @@ switch-toggle {
 
 slider {
     focusable : true;
-    height : 2;
-    width : 128;
-    padding-top : 18;
-    padding-left : 18;
-    padding-bottom : 18;
-    padding-right : 18;
-    radius-top : 2;
-    radius-left : 2;
-    radius-right : 2;
-    radius-bottom : 2;
-    ripple : true;
+    ripple-enabled : true;
     ripple-color : #00000080;
+    ripple-overflow : true;
 
-    color : #FF0000;
     background-color : #CCCCCC;
-    icon : '/default/icons/slider-icon.svg';
-
-    label-enabled : true;
-    label-font : font("Roboto", bold);
-    label-text-size : 16;
-    label-text-color : #FFFFFF;
-    label-position : 32;
-    label-decimal : 0;
-    label-time-out : 0.4;
-    label-icon : '/default/icons/slider-label.svg';
+    icon : '/default/icons/switch-shape.svg';
+    icon-width : 24;
+    icon-height : 24;
+    icon-color : red;
+    line-width : 2;
+    line-color : gray;
+    line-filled-color : red;
 
     transition-duration : 0.1;
 
@@ -523,7 +510,7 @@ dropdown-menu : menu {
 }
 
 toolbar {
-    font : font("Roboto", "bold");
+    text-font : font("Roboto", "bold");
     text-size : 20sp;
     text-color : #000000FF;
     padding-left : 16;

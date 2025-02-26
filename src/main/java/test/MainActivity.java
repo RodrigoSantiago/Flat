@@ -8,6 +8,8 @@ import flat.graphics.Color;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Font;
 import flat.graphics.image.PixelMap;
+import flat.math.shapes.Path;
+import flat.math.stroke.BasicStroke;
 import flat.uxml.Controller;
 import flat.uxml.ValueChange;
 import flat.widget.Widget;
@@ -16,6 +18,7 @@ import flat.widget.structure.*;
 import flat.widget.stages.dialogs.ConfirmDialogBuilder;
 import flat.widget.text.Button;
 import flat.widget.text.Label;
+import flat.widget.text.TextField;
 import flat.window.Activity;
 import flat.window.Application;
 import flat.window.WindowSettings;
@@ -115,6 +118,15 @@ public class MainActivity extends Controller {
     @Override
     public void onDraw(SmartContext context) {
         super.onDraw(context);
+        context.setTransform2D(null);
+        context.setStroker(new BasicStroke(10, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        context.setColor(0xFF0000FF);
+        Path a = new Path();
+        a.moveTo(200, 200);
+        a.closePath();
+        a.moveTo(300, 300);
+        a.lineTo(310, 310);
+        context.drawShape(a, false);
         //t += 1 / 120f;
         //if (t > 1) t = 0;
         //context.setTransform2D(null);
@@ -169,12 +181,48 @@ public class MainActivity extends Controller {
 
     @Flat
     public void hello(ValueChange<String> event) {
-        System.out.println(event.getOldValue());
-        System.out.println(event.getValue());
+       // System.out.println(event.getOldValue());
+        //System.out.println(event.getValue());
     }
 
     @Flat
     public void filter(TextEvent event) {
-        event.setText(event.getText().replaceAll("a", ""));
+        event.setText(formatCep(event.getText()));
+    }
+
+    private String formatCep(String text) {
+        if (text.matches("^\\d{5}-\\d{3}$")) return text;
+        text = text.replaceAll("\\D", "");
+        String finalText = text.length() > 0 ? "" + text.charAt(0) : ""; // 64 123 - 555
+        if (text.length() > 1) {
+            finalText += text.charAt(1);
+        }
+        if (text.length() > 2) {
+            finalText += text.charAt(2);
+        }
+        if (text.length() > 3) {
+            finalText += text.charAt(3);
+        }
+        if (text.length() > 4) {
+            finalText += text.charAt(4);
+        }
+        if (text.length() > 5) {
+            finalText += "-" + text.charAt(5);
+        }
+        if (text.length() > 6) {
+            finalText += text.charAt(6);
+        }
+        if (text.length() > 7) {
+            finalText += text.charAt(7);
+        }
+
+        return finalText;
+    }
+
+    @Flat public TextField textField;
+
+    @Flat
+    public void setmax(ActionEvent event) {
+        textField.setMaxCharacters(10);
     }
 }
