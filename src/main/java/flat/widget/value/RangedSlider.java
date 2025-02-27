@@ -12,11 +12,14 @@ import flat.widget.Widget;
 import flat.widget.enums.Direction;
 import flat.widget.enums.ImageFilter;
 
-public class Slider extends Widget {
+public class RangedSlider extends Widget {
 
-    private UXListener<SlideEvent> slideListener;
-    private UXListener<SlideEvent> slideFilter;
-    private UXValueListener<Float> valueListener;
+    private UXListener<SlideEvent> startSlideListener;
+    private UXListener<SlideEvent> startSlideFilter;
+    private UXValueListener<Float> startValueListener;
+    private UXListener<SlideEvent> endSlideListener;
+    private UXListener<SlideEvent> endSlideFilter;
+    private UXValueListener<Float> endValueListener;
     
     private Direction direction = Direction.HORIZONTAL;
 
@@ -34,7 +37,10 @@ public class Slider extends Widget {
     private float maxValue = 1;
     private float steps;
 
-    private float value;
+    private float startValue;
+    private float endValue;
+
+    private int grabIndex;
 
     @Override
     public void applyAttributes(Controller controller) {
@@ -43,10 +49,13 @@ public class Slider extends Widget {
 
         setRangeLimits(attrs.getAttributeNumber("min-value", getMinValue()), attrs.getAttributeNumber("max-value", getMaxValue()));
         setSteps(attrs.getAttributeNumber("steps", getSteps()));
-        setValue(attrs.getAttributeNumber("value", getValue()));
-        setSlideListener(attrs.getAttributeListener("on-slide", SlideEvent.class, controller));
-        setSlideFilter(attrs.getAttributeListener("on-slide-filter", SlideEvent.class, controller));
-        setValueListener(attrs.getAttributeValueListener("on-value-change", Float.class, controller));
+        setValue(attrs.getAttributeNumber("start-value", getStartValue()), attrs.getAttributeNumber("end-value", getEndValue()));
+        setStartSlideListener(attrs.getAttributeListener("on-start-slide", SlideEvent.class, controller));
+        setStartSlideFilter(attrs.getAttributeListener("on-start-slide-filter", SlideEvent.class, controller));
+        setStartValueListener(attrs.getAttributeValueListener("on-start-value-change", Float.class, controller));
+        setEndSlideListener(attrs.getAttributeListener("on-end-slide", SlideEvent.class, controller));
+        setEndSlideFilter(attrs.getAttributeListener("on-end-slide-filter", SlideEvent.class, controller));
+        setEndValueListener(attrs.getAttributeValueListener("on-end-value-change", Float.class, controller));
     }
 
     @Override
@@ -120,20 +129,32 @@ public class Slider extends Widget {
         }
 
         float diff = maxValue - minValue;
-        float pos = diff == 0 ? 0 : value / diff;
+        float posStart = diff == 0 ? 0 : startValue / diff;
+        float posEnd = diff == 0 ? 0 : endValue / diff;
         if (rev) {
-            pos = 1 - pos;
+            posStart = 1 - posStart;
+            posEnd = 1 - posEnd;
         }
         context.setTransform2D(getTransform());
 
-        float xpos;
-        float ypos;
+        float xposStart;
+        float yposStart;
         if (hor) {
-            xpos = (lineStart * (1 - pos) + lineEnd * pos);
-            ypos = (y + height * 0.5f);
+            xposStart = (lineStart * (1 - posStart) + lineEnd * posStart);
+            yposStart = (y + height * 0.5f);
         } else {
-            xpos = (x + width * 0.5f);
-            ypos = (lineStart * (1 - pos) + lineEnd * pos);
+            xposStart = (x + width * 0.5f);
+            yposStart = (lineStart * (1 - posStart) + lineEnd * posStart);
+        }
+
+        float xposEnd;
+        float yposEnd;
+        if (hor) {
+            xposEnd = (lineStart * (1 - posEnd) + lineEnd * posEnd);
+            yposEnd = (y + height * 0.5f);
+        } else {
+            xposEnd = (x + width * 0.5f);
+            yposEnd = (lineStart * (1 - posEnd) + lineEnd * posEnd);
         }
 
         float lineWidth = Math.min(getLineWidth(), Math.min(width, height));
@@ -141,35 +162,34 @@ public class Slider extends Widget {
         context.setStroker(new BasicStroke(lineWidth));
         if (hor) {
             context.setColor(getLineColor());
-            context.drawLine(lineStart, ypos, lineEnd, ypos);
-            if (getValue() > getMinValue()) {
+            context.drawLine(lineStart, yposStart, lineEnd, yposStart);
+
+            if (getStartValue() != getEndValue()) {
                 context.setColor(getLineFilledColor());
-                if (rev) {
-                    context.drawLine(xpos, ypos, lineEnd, ypos);
-                } else {
-                    context.drawLine(lineStart, ypos, xpos, ypos);
-                }
+                context.drawLine(xposStart, yposStart, xposEnd, yposStart);
             }
         } else {
             context.setColor(getLineColor());
-            context.drawLine(xpos, lineStart, xpos, lineEnd);
-            if (getValue() > getMinValue()) {
+            context.drawLine(xposStart, lineStart, xposStart, lineEnd);
+
+            if (getStartValue() != getEndValue()) {
                 context.setColor(getLineFilledColor());
-                if (rev) {
-                    context.drawLine(xpos, ypos, xpos, lineEnd);
-                } else {
-                    context.drawLine(xpos, lineStart, xpos, ypos);
-                }
+                context.drawLine(xposStart, yposStart, xposStart, yposEnd);
             }
         }
 
         if (iw > 0 && ih > 0 && getIcon() != null) {
-            getIcon().draw(context, xpos - iw * 0.5f, ypos - ih * 0.5f, iw, ih, getIconColor(), getIconImageFilter());
+            getIcon().draw(context, xposStart - iw * 0.5f, yposStart - ih * 0.5f, iw, ih, getIconColor(), getIconImageFilter());
+            getIcon().draw(context, xposEnd - iw * 0.5f, yposEnd - ih * 0.5f, iw, ih, getIconColor(), getIconImageFilter());
         }
         if (isRippleEnabled()) {
             getRipple().release();
             getRipple().setSize(Math.min(Math.max(iw, ih) * 0.7f, Math.min(getLayoutWidth(), getLayoutHeight()) * 0.5f));
-            getRipple().setPosition(xpos, ypos);
+            if (grabIndex == 0) {
+                getRipple().setPosition(xposStart, yposStart);
+            } else {
+                getRipple().setPosition(xposEnd, yposEnd);
+            }
             drawRipple(context);
         }
     }
@@ -186,6 +206,7 @@ public class Slider extends Widget {
             float height = getInHeight();
             float iw = Math.min(width, getLayoutIconWidth());
             float ih = Math.min(height, getLayoutIconHeight());
+            float range = getMaxValue() - getMinValue();
 
             boolean hor = direction == Direction.HORIZONTAL || direction == Direction.IHORIZONTAL;
             boolean rev = direction == Direction.IHORIZONTAL || direction == Direction.IVERTICAL;
@@ -199,31 +220,79 @@ public class Slider extends Widget {
                 lineStart = y + ih * 0.5f;
                 lineEnd = y + height - ih * 0.5f;
             }
-
             float lineSize = lineEnd - lineStart;
-
             float pos = lineSize == 0 ? 0 : ((hor ? point.x : point.y) - lineStart) / lineSize;
             if (rev) {
                 pos = 1 - pos;
             }
-            if (event.getType() == PointerEvent.PRESSED || event.getType() == PointerEvent.DRAGGED) {
-                slideTo(getMinValue() * (1 - pos) + getMaxValue() * pos);
+
+            if (event.getType() == PointerEvent.PRESSED) {
+                float val = getMinValue() * (1 - pos) + getMaxValue() * pos;
+                float diff = Math.abs(getStartValue() - val) - Math.abs(getEndValue() - val);
+                if (diff < -0.001f) {
+                    grabIndex = 0;
+                } else if (diff > 0.001f) {
+                    grabIndex = 1;
+                } else if (getStartValue() == getMinValue()) {
+                    grabIndex = 1;
+                } else if (getStartValue() == getMaxValue()) {
+                    grabIndex = 0;
+                } else {
+                    grabIndex = val <= getStartValue() ? 0 : 1;
+                }
+                if (grabIndex == 0) {
+                    slideStartTo(val);
+                } else {
+                    slideEndTo(val);
+                }
+            }
+
+            if (event.getType() == PointerEvent.DRAGGED) {
+                float val = getMinValue() * (1 - pos) + getMaxValue() * pos;
+                if (grabIndex == 0) {
+                    slideStartTo(val);
+                } else {
+                    slideEndTo(val);
+                }
             }
         }
     }
 
-    public void slide(float offset) {
-        slideTo(getValue() + offset);
+    private float constraintStart(float value) {
+        value = steps <= 0 ? value : Math.round(value / steps) * steps;
+        return Math.max(minValue, Math.min(maxValue,  Math.min(getEndValue(), value)));
     }
 
-    public void slideTo(float value) {
+    private float constraintEnd(float value) {
         value = steps <= 0 ? value : Math.round(value / steps) * steps;
-        value = Math.max(minValue, Math.min(maxValue, value));
+        return Math.max(getStartValue(), Math.max(minValue, Math.min(maxValue, value)));
+    }
 
-        float old = getValue();
-        if (value != old && filterSlide(value)) {
-            setValue(value);
-            fireSlide();
+    public void slideStart(float offset) {
+        slideStartTo(getStartValue() + offset);
+    }
+
+    public void slideStartTo(float value) {
+        value = constraintStart(value);
+
+        float old = getStartValue();
+        if (value != old && filterStartSlide(value)) {
+            setStartValue(value);
+            fireStartSlide();
+        }
+    }
+
+    public void slideEnd(float offset) {
+        slideEndTo(getEndValue() + offset);
+    }
+
+    public void slideEndTo(float value) {
+        value = constraintEnd(value);
+
+        float old = getEndValue();
+        if (value != old && filterEndSlide(value)) {
+            setEndValue(value);
+            fireEndSlide();
         }
     }
 
@@ -339,30 +408,64 @@ public class Slider extends Widget {
         return maxValue;
     }
 
+    public void setValue(float start, float end) {
+        start = steps <= 0 ? start : Math.round(start / steps) * steps;
+        start = Math.max(minValue, Math.min(maxValue, start));
+
+        end = steps <= 0 ? end : Math.round(end / steps) * steps;
+        end = Math.max(minValue, Math.min(maxValue, end));
+
+
+        if (start != this.startValue || end != this.endValue) {
+            float oldStart = this.startValue;
+            float oldEnd = this.endValue;
+            this.startValue = Math.min(start, end);
+            this.endValue = Math.max(start, end);
+
+            invalidate(false);
+            fireStartValueListener(oldStart);
+            fireEndValueListener(oldEnd);
+        }
+    }
+
     public void setRangeLimits(float minValue, float maxValue) {
         float cMinValue = Math.min(minValue, maxValue);
         float cMaxValue = Math.max(minValue, maxValue);
         if (cMinValue != this.minValue || cMaxValue != this.maxValue) {
             this.minValue = cMinValue;
             this.maxValue = cMaxValue;
-            setValue(getValue());
+            setValue(getStartValue(), getEndValue());
             invalidate(false);
         }
     }
 
-    public float getValue() {
-        return value;
+    public float getStartValue() {
+        return startValue;
     }
 
-    public void setValue(float value) {
-        value = steps <= 0 ? value : Math.round(value / steps) * steps;
-        value = Math.max(minValue, Math.min(maxValue, value));
+    public void setStartValue(float startValue) {
+        startValue = constraintStart(startValue);
 
-        if (this.value != value) {
-            float old = this.value;
-            this.value = value;
+        if (this.startValue != startValue) {
+            float old = this.startValue;
+            this.startValue = startValue;
             invalidate(false);
-            fireValueListener(old);
+            fireStartValueListener(old);
+        }
+    }
+
+    public float getEndValue() {
+        return endValue;
+    }
+
+    public void setEndValue(float endValue) {
+        endValue = constraintEnd(endValue);
+
+        if (this.endValue != endValue) {
+            float old = this.endValue;
+            this.endValue = endValue;
+            invalidate(false);
+            fireEndValueListener(old);
         }
     }
 
@@ -373,7 +476,7 @@ public class Slider extends Widget {
     public void setSteps(float steps) {
         if (this.steps != steps) {
             this.steps = steps;
-            setValue(getValue());
+            setStartValue(getStartValue());
             invalidate(false);
         }
     }
@@ -385,48 +488,93 @@ public class Slider extends Widget {
         }
     }
 
-    public UXListener<SlideEvent> getSlideFilter() {
-        return slideFilter;
+    public UXListener<SlideEvent> getStartSlideFilter() {
+        return startSlideFilter;
     }
 
-    public void setSlideFilter(UXListener<SlideEvent> slideFilter) {
-        this.slideFilter = slideFilter;
+    public void setStartSlideFilter(UXListener<SlideEvent> startSlideFilter) {
+        this.startSlideFilter = startSlideFilter;
     }
 
-    private boolean filterSlide(float viewOffset) {
-        if (slideFilter != null) {
+    private boolean filterStartSlide(float viewOffset) {
+        if (startSlideFilter != null) {
             var event = new SlideEvent(this, SlideEvent.FILTER, viewOffset);
-            UXListener.safeHandle(slideFilter, event);
+            UXListener.safeHandle(startSlideFilter, event);
             return !event.isConsumed();
         }
         return true;
     }
 
-    public UXListener<SlideEvent> getSlideListener() {
-        return slideListener;
+    public UXListener<SlideEvent> getStartSlideListener() {
+        return startSlideListener;
     }
 
-    public void setSlideListener(UXListener<SlideEvent> slideListener) {
-        this.slideListener = slideListener;
+    public void setStartSlideListener(UXListener<SlideEvent> startSlideListener) {
+        this.startSlideListener = startSlideListener;
     }
 
-    private void fireSlide() {
-        if (slideListener != null) {
-            UXListener.safeHandle(slideListener, new SlideEvent(this, SlideEvent.SLIDE, value));
+    private void fireStartSlide() {
+        if (startSlideListener != null) {
+            UXListener.safeHandle(startSlideListener, new SlideEvent(this, SlideEvent.SLIDE, startValue));
         }
     }
 
-    public void setValueListener(UXValueListener<Float> valueListener) {
-        this.valueListener = valueListener;
+    public void setStartValueListener(UXValueListener<Float> startValueListener) {
+        this.startValueListener = startValueListener;
     }
 
-    public UXValueListener<Float> getValueListener() {
-        return valueListener;
+    public UXValueListener<Float> getStartValueListener() {
+        return startValueListener;
     }
 
-    private void fireValueListener(float old) {
-        if (valueListener != null && old != value) {
-            UXValueListener.safeHandle(valueListener, new ValueChange<>(this, old, value));
+    private void fireStartValueListener(float old) {
+        if (startValueListener != null && old != startValue) {
+            UXValueListener.safeHandle(startValueListener, new ValueChange<>(this, old, startValue));
+        }
+    }
+
+    public UXListener<SlideEvent> getEndSlideFilter() {
+        return endSlideFilter;
+    }
+
+    public void setEndSlideFilter(UXListener<SlideEvent> endSlideFilter) {
+        this.endSlideFilter = endSlideFilter;
+    }
+
+    private boolean filterEndSlide(float viewOffset) {
+        if (endSlideFilter != null) {
+            var event = new SlideEvent(this, SlideEvent.FILTER, viewOffset);
+            UXListener.safeHandle(endSlideFilter, event);
+            return !event.isConsumed();
+        }
+        return true;
+    }
+
+    public UXListener<SlideEvent> getEndSlideListener() {
+        return endSlideListener;
+    }
+
+    public void setEndSlideListener(UXListener<SlideEvent> endSlideListener) {
+        this.endSlideListener = endSlideListener;
+    }
+
+    private void fireEndSlide() {
+        if (endSlideListener != null) {
+            UXListener.safeHandle(endSlideListener, new SlideEvent(this, SlideEvent.SLIDE, endValue));
+        }
+    }
+
+    public void setEndValueListener(UXValueListener<Float> endValueListener) {
+        this.endValueListener = endValueListener;
+    }
+
+    public UXValueListener<Float> getEndValueListener() {
+        return endValueListener;
+    }
+
+    private void fireEndValueListener(float old) {
+        if (endValueListener != null && old != endValue) {
+            UXValueListener.safeHandle(endValueListener, new ValueChange<>(this, old, endValue));
         }
     }
 

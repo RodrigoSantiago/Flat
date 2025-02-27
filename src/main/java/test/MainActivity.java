@@ -19,6 +19,7 @@ import flat.widget.stages.dialogs.ConfirmDialogBuilder;
 import flat.widget.text.Button;
 import flat.widget.text.Label;
 import flat.widget.text.TextField;
+import flat.widget.value.ProgressBar;
 import flat.window.Activity;
 import flat.window.Application;
 import flat.window.WindowSettings;
@@ -118,7 +119,7 @@ public class MainActivity extends Controller {
     @Override
     public void onDraw(SmartContext context) {
         super.onDraw(context);
-        context.setTransform2D(null);
+        /*context.setTransform2D(null);
         context.setStroker(new BasicStroke(10, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         context.setColor(0xFF0000FF);
         Path a = new Path();
@@ -126,7 +127,7 @@ public class MainActivity extends Controller {
         a.closePath();
         a.moveTo(300, 300);
         a.lineTo(310, 310);
-        context.drawShape(a, false);
+        context.drawShape(a, false);*/
         //t += 1 / 120f;
         //if (t > 1) t = 0;
         //context.setTransform2D(null);
@@ -174,15 +175,27 @@ public class MainActivity extends Controller {
     }
 
     boolean save = false;
+
+    @Flat ProgressBar progressBar;
+    @Flat ProgressBar progressBar2;
+
     @Flat
     public void export(ActionEvent event) {
         save = true;
     }
 
     @Flat
-    public void hello(ValueChange<String> event) {
-       // System.out.println(event.getOldValue());
-        //System.out.println(event.getValue());
+    public void setProgress(ActionEvent event) {
+        if (progressBar.getValue() >= 0.99f) {
+            progressBar.setValue(-0.1f);
+        } else {
+            progressBar.setValue(progressBar.getValue() + 0.25f);
+        }
+        if (progressBar2.getValue() >= 0.99f) {
+            progressBar2.setValue(-0.1f);
+        } else {
+            progressBar2.setValue(progressBar2.getValue() + 0.25f);
+        }
     }
 
     @Flat

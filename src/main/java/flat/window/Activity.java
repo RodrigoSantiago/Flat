@@ -448,7 +448,7 @@ public class Activity {
         for (int i = 0; i < animations.size(); i++) {
             Animation anim = animations.get(i);
             if (anim.getSource() != this) {
-                animations.remove(i--);
+                animations.remove(i--); // todo animation.onRemoved();
                 continue;
             }
 

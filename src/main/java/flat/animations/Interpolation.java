@@ -1,5 +1,9 @@
 package flat.animations;
 
+import flat.animations.interpolation.Exp;
+import flat.animations.interpolation.ExpIn;
+import flat.animations.interpolation.ExpOut;
+
 public interface Interpolation {
 
     float apply(float t);
@@ -72,6 +76,18 @@ public interface Interpolation {
         float part = 1f / (AnimationKernel.kernel3.length - 1);
         return AnimationKernel.kernel3[index] + ((t - (index * part)) / part) * (AnimationKernel.kernel3[index + 1] - AnimationKernel.kernel3[index]);
     };
+
+    Interpolation exp10 = new Exp(2, 10);
+    Interpolation exp10In = new ExpIn(2, 10);
+    Interpolation exp10Out = new ExpOut(2, 10);
+
+    Interpolation exp8 = new Exp(2, 8);
+    Interpolation exp8In = new ExpIn(2, 8);
+    Interpolation exp8Out = new ExpOut(2, 8);
+
+    Interpolation exp5 = new Exp(2, 5);
+    Interpolation exp5In = new ExpIn(2, 5);
+    Interpolation exp5Out = new ExpOut(2, 5);
 
     static float mix(float a, float b, float t) {
         return a * (1 - t) + b * t;

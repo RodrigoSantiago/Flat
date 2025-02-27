@@ -299,7 +299,7 @@ public class Tab extends Group {
             Vector2 pos = screenToLocal(event.getX(), event.getY());
             if ((pagesVerticalPosition == VerticalPosition.TOP && pos.y < getInY() + pagesHeight) ||
                 (pagesVerticalPosition == VerticalPosition.BOTTOM && pos.y > getInY() + getInHeight() - pagesHeight)) {
-                slide(event.getDeltaY() * scrollSensibility);
+                slide(-event.getDeltaY() * scrollSensibility);
             }
         }
     }

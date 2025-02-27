@@ -14,9 +14,7 @@ import flat.widget.structure.ListView;
 import flat.widget.structure.Page;
 import flat.widget.structure.Tab;
 import flat.widget.text.*;
-import flat.widget.value.HorizontalScrollBar;
-import flat.widget.value.Slider;
-import flat.widget.value.VerticalScrollBar;
+import flat.widget.value.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,13 +54,16 @@ public class UXBuilder {
         UXBuilder.install("Chip", Chip::new);
         UXBuilder.install("TextField", TextField::new);
         UXBuilder.install("Slider", Slider::new);
+        UXBuilder.install("RangedSlider", RangedSlider::new);
+        UXBuilder.install("ProgressBar", ProgressBar::new);
+        UXBuilder.install("ProgressCircle", ProgressCircle::new);
+        // DropDownField
+        // SearchField
         // UXBuilder.install("TextArea", TextArea::new); - must be efficient
         /*UXBuilder.install("Divider", Divider::new);
         UXBuilder.install("ToggleButton", ToggleButton::new);
         UXBuilder.install("ToggleGroup", RadioGroup::new);
         UXBuilder.install("Canvas", Canvas::new);
-        UXBuilder.install("ProgressBar", ProgressBar::new);
-        UXBuilder.install("ProgressCircle", ProgressCircle::new);
         UXBuilder.install("Grid", Grid::new);
         UXBuilder.install("Cell", Cell::new);
         UXBuilder.install("Drawer", Drawer::new);

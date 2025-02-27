@@ -285,6 +285,7 @@ slider {
     line-width : 2;
     line-color : gray;
     line-filled-color : red;
+    cursor : hand;
 
     transition-duration : 0.1;
 
@@ -304,6 +305,9 @@ slider {
         expansion : 16;
         expansion-color : #FF000030;
     }
+}
+ranged-slider : slider {
+
 }
 
 horizontal-scroll-bar {
@@ -337,20 +341,14 @@ vertical-scroll-bar {
 progress-bar {
     height : 4;
     width : 240;
-    color : #FFFFFF;
-    background-color : #EEEEEE;
+    color : #0000FF;
+    filled-color : #FF0000;
     animation-duration : 3.0;
 }
 
-progress-circle {
+progress-circle : progress-bar {
     height : 48;
     width : 48;
-    indicator-size : 4;
-    animation-duration : 8.0;
-    color-0 : #FFFFFF;
-    color-1 : #FFFFFF;
-    color-2 : #FFFFFF;
-    color-3 : #FFFFFF;
 }
 
 /*

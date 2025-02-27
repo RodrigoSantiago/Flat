@@ -147,7 +147,7 @@ public abstract class Scrollable extends Parent {
             } else {
                 childHeight = Math.min(horizontalBar.getMeasureHeight(), horizontalBar.getLayoutMaxHeight());
             }
-            horizontalBar.onLayout(childWidth, childHeight);
+            horizontalBar.onLayout(Math.min(getOutWidth(), childWidth), Math.min(getOutHeight(), childHeight));
             float xx = (verticalBarPosition == VerticalBarPosition.LEFT) ? barSizeX : 0;
             if (horizontalBarPosition == HorizontalBarPosition.TOP) {
                 horizontalBar.setLayoutPosition(getOutX() + xx, getOutY());
@@ -176,7 +176,7 @@ public abstract class Scrollable extends Parent {
             } else {
                 childHeight = Math.min(verticalBar.getMeasureHeight(), verticalBar.getLayoutMaxHeight());
             }
-            verticalBar.onLayout(childWidth, childHeight);
+            verticalBar.onLayout(Math.min(getOutWidth(), childWidth), Math.min(getOutHeight(), childHeight));
             if (verticalBarPosition == VerticalBarPosition.LEFT) {
                 verticalBar.setLayoutPosition(getOutX(), getOutY());
             } else {

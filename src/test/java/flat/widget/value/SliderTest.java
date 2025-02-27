@@ -1,6 +1,5 @@
 package flat.widget.value;
 
-import flat.events.ActionEvent;
 import flat.events.SlideEvent;
 import flat.graphics.image.Drawable;
 import flat.graphics.image.DrawableReader;
@@ -190,14 +189,16 @@ public class SliderTest {
         slider.setIconWidth(16);
         slider.setIconHeight(18);
         slider.setIcon(icon);
-        slider.setValueRange(-5, 5);
+        slider.setRangeLimits(-5, 5);
         slider.setValue(0);
         slider.setDirection(Direction.HORIZONTAL);
 
         var slideListener = (UXListener<SlideEvent>) mock(UXListener.class);
         var slideFilter = (UXListener<SlideEvent>) mock(UXListener.class);
+        var valueListener = (UXValueListener<Float>) mock(UXValueListener.class);
         slider.setSlideListener(slideListener);
         slider.setSlideFilter(slideFilter);
+        slider.setValueListener(valueListener);
 
         assertEquals(0, slider.getValue(), 0.001f);
         slider.slideTo(3);
@@ -217,9 +218,12 @@ public class SliderTest {
 
         slider.slideTo(0);
         assertEquals(5, slider.getValue(), 0.001f);
+        slider.setValue(1);
+        slider.setValue(2);
 
         verify(slideListener, times(3)).handle(any());
         verify(slideFilter, times(4)).handle(any());
+        verify(valueListener, times(5)).handle(any());
     }
 
     private HashMap<Integer, UXValue> createNonDefaultValues() {
