@@ -27,9 +27,9 @@ public class Chip extends Button {
     private float closeIconWidth;
     private float closeIconHeight;
     private int closeIconBgColor = Color.transparent;
+    private Cursor closeIconCursor = Cursor.UNSET;
 
     private boolean isHoveringClose;
-    private Cursor closeIconCursor = Cursor.UNSET;
 
     private float x1, y1, x2, y2;
 
@@ -40,7 +40,6 @@ public class Chip extends Button {
         UXAttrs attrs = getAttrs();
         setRequestCloseListener(attrs.getAttributeListener("on-request-close", ActionEvent.class, controller));
     }
-
 
     @Override
     public void applyStyle() {

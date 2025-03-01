@@ -11,6 +11,7 @@ import flat.graphics.image.PixelMap;
 import flat.math.shapes.Path;
 import flat.math.stroke.BasicStroke;
 import flat.uxml.Controller;
+import flat.uxml.UXValueListener;
 import flat.uxml.ValueChange;
 import flat.widget.Widget;
 import flat.widget.layout.LinearBox;
@@ -201,6 +202,11 @@ public class MainActivity extends Controller {
     @Flat
     public void filter(TextEvent event) {
         event.setText(formatCep(event.getText()));
+    }
+
+    @Flat
+    public void textCHANGE(ValueChange<String> event) {
+        System.out.println("aqui");
     }
 
     private String formatCep(String text) {

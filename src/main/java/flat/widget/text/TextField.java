@@ -1,91 +1,42 @@
 package flat.widget.text;
 
-import flat.animations.NormalizedAnimation;
+import flat.animations.Animation;
 import flat.animations.StateInfo;
-import flat.events.*;
-import flat.graphics.Color;
+import flat.events.FocusEvent;
+import flat.events.PointerEvent;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Font;
 import flat.math.Vector2;
+import flat.math.shapes.RoundRectangle;
 import flat.math.stroke.BasicStroke;
-import flat.uxml.*;
-import flat.widget.Widget;
-import flat.widget.enums.HorizontalAlign;
-import flat.widget.enums.VerticalAlign;
-import flat.widget.layout.Scrollable;
-import flat.widget.text.data.Caret;
+import flat.uxml.Controller;
+import flat.uxml.UXAttrs;
 import flat.widget.text.data.TextRender;
-import flat.widget.value.HorizontalScrollBar;
-import flat.widget.value.VerticalScrollBar;
 import flat.window.Activity;
-import flat.window.Application;
 
 import java.util.Objects;
 
-public class TextField extends Scrollable {
+public class TextField extends TextView {
 
-    private UXValueListener<String> textChangeListener;
-    private UXListener<TextEvent> textChangeFilter;
-    private UXListener<TextEvent> textInputFilter;
-    private String text;
-    private String textHint;
+    private String title;
+    private int titleColor = 0x000000FF;
+    private float titleTransitionDuration = 1f;
+    private float titleSize = 8f;
+    private float titleSpacing;
+    private boolean titleLocked;
 
-    private Font textFont = Font.getDefault();
-    private float textSize = 16f;
-    private int textColor = 0x000000FF;
-    private int textHintColor = 0x000000FF;
-    private int textSelectedColor = 0x00000080;
-    private float caretBlinkDuration = 0.5f; // todo - implement
+    private int textDividerColor = 0x000000FF;
+    private float textDividerSize = 0f;
 
-    private VerticalAlign verticalAlign = VerticalAlign.TOP;
-    private HorizontalAlign horizontalAlign = HorizontalAlign.LEFT;
+    private float titleWidth;
+    private boolean invalidTitleSize;
 
-    private boolean invalidTextSize;
-    private boolean invalidTextHintSize;
-    private float textWidth;
-    private float textHintWidth;
-    private final TextRender textRender = new TextRender();
-    private final TextRender textHintRender = new TextRender();
-    private final Caret startCaret = new Caret();
-    private final Caret endCaret = new Caret();
-
-    private final CaretBlink caretBlink = new CaretBlink();
-    private boolean showCaret;
-
-    private int keyCopy = KeyCode.KEY_C;
-    private int keyPaste = KeyCode.KEY_V;
-    private int keyCut = KeyCode.KEY_X;
-    private int keySelectAll = KeyCode.KEY_A;
-    private int keyClearSelection = KeyCode.KEY_ESCAPE;
-    private int keyBackspace = KeyCode.KEY_BACKSPACE;
-    private int keyDelete = KeyCode.KEY_DELETE;
-    private int keyMenu  = KeyCode.KEY_MENU;
-
-    private int maxCharacters = 0;
+    private final TextRender titleRender = new TextRender();
+    private final TitleToTitleAnimation titleToTitle = new TitleToTitleAnimation();
 
     public TextField() {
-        textRender.setFont(textFont);
-        textHintRender.setFont(textFont);
-        textRender.setTextSize(textSize);
-        textHintRender.setTextSize(textSize);
-    }
-
-    @Override
-    public void applyChildren(UXChildren children) {
-        super.applyChildren(children);
-
-        UXAttrs attrs = getAttrs();
-        String hBarId = attrs.getAttributeString("horizontal-bar-id", null);
-        String vBarId = attrs.getAttributeString("vertical-bar-id", null);
-
-        Widget widget;
-        while ((widget = children.next()) != null ) {
-            if (hBarId != null && hBarId.equals(widget.getId()) && widget instanceof HorizontalScrollBar bar) {
-                setHorizontalBar(bar);
-            } else if (vBarId != null && vBarId.equals(widget.getId()) && widget instanceof VerticalScrollBar bar) {
-                setVerticalBar(bar);
-            }
-        }
+        titleRender.setFont(getTextFont());
+        titleRender.setTextSize(getTitleSize());
     }
 
     @Override
@@ -93,12 +44,7 @@ public class TextField extends Scrollable {
         super.applyAttributes(controller);
         UXAttrs attrs = getAttrs();
 
-        setMaxCharacters((int) attrs.getAttributeNumber("max-characters", getMaxCharacters()));
-        setText(attrs.getAttributeString("text", getText()));
-        setTextHint(attrs.getAttributeString("text-hint", getTextHint()));
-        setTextChangeListener(attrs.getAttributeValueListener("on-text-change", String.class, controller));
-        setTextChangeFilter(attrs.getAttributeListener("on-text-change-filter", TextEvent.class, controller));
-        setTextInputFilter(attrs.getAttributeListener("on-text-input-filter", TextEvent.class, controller));
+        setTitle(attrs.getAttributeString("title", getTitle()));
     }
 
     @Override
@@ -108,14 +54,18 @@ public class TextField extends Scrollable {
         UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
 
-        setTextFont(attrs.getFont("text-font", info, getTextFont()));
-        setTextSize(attrs.getSize("text-size", info, getTextSize()));
-        setTextColor(attrs.getColor("text-color", info, getTextColor()));
-        setTextSelectedColor(attrs.getColor("text-selected-color", info, getTextSelectedColor()));
-        setTextHintColor(attrs.getColor("text-hint-color", info, getTextHintColor()));
+        setTitleColor(attrs.getColor("title-color", info, getTitleColor()));
+        setTitleSpacing(attrs.getSize("title-spacing", info, getTitleSpacing()));
+        setTitleSize(attrs.getSize("title-size", info, getTitleSize()));
+        setTitleLocked(attrs.getBool("title-locked", info, isTitleLocked()));
+        setTitleTransitionDuration(attrs.getNumber("title-transition-duration", info, getTitleTransitionDuration()));
 
-        setVerticalAlign(attrs.getConstant("vertical-align", info, getVerticalAlign()));
-        setHorizontalAlign(attrs.getConstant("horizontal-align", info, getHorizontalAlign()));
+        setTextDividerColor(attrs.getColor("text-divider-color", info, getTextDividerColor()));
+        setTextDividerSize(attrs.getSize("text-divider-size", info, getTextDividerSize()));
+
+        if (!titleToTitle.isPlaying()) {
+            titleToTitle.setPose(isTitleFloating() ? 1 : 0);
+        }
     }
 
     @Override
@@ -141,7 +91,8 @@ public class TextField extends Scrollable {
             mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
         }
         if (wrapHeight) {
-            mHeight = Math.max(getTextHeight() + extraHeight, getLayoutMinHeight());
+            float titleHeight = hasTitle() ? getTitleHeight() + getTitleSpacing() : 0;
+            mHeight = Math.max(getTextHeight() + titleHeight + extraHeight, getLayoutMinHeight());
         } else {
             mHeight = Math.max(getLayoutPrefHeight(), getLayoutMinHeight());
         }
@@ -150,26 +101,14 @@ public class TextField extends Scrollable {
     }
 
     @Override
-    public Vector2 onLayoutLocalDimension(float width, float height) {
-        return new Vector2(getTextWidth(), getTextHeight());
+    public Vector2 onLayoutViewDimension(float width, float height) {
+        float titleHeight = hasTitle() ? getTitleHeight() + getTitleSpacing() : 0;
+        return new Vector2(getInWidth(), Math.max(0, getInHeight() - titleHeight));
     }
 
     @Override
-    public void setLayoutScrollOffset(float xx, float yy) {
-
-    }
-
-    @Override
-    public void onLayout(float width, float height) {
-        super.onLayout(width, height);
-    }
-
-    private Caret getFirstCaret() {
-        return startCaret.getOffset() <= endCaret.getOffset() ? startCaret : endCaret;
-    }
-
-    private Caret getSecondCaret() {
-        return startCaret.getOffset() <= endCaret.getOffset() ? endCaret : startCaret;
+    public Vector2 onLayoutTotalDimension(float width, float height) {
+        return super.onLayoutTotalDimension(width, height);
     }
 
     @Override
@@ -177,99 +116,33 @@ public class TextField extends Scrollable {
         drawBackground(context);
         drawRipple(context);
 
+        if (getOutWidth() <= 0 || getOutHeight() <= 0) return;
+
         float x = getInX();
         float y = getInY();
         float width = getInWidth();
         float height = getInHeight();
 
-        if (getOutWidth() <= 0 || getOutHeight() <= 0) return;
+        float titleHeight = hasTitle() ? getTitleHeight() + getTitleSpacing() : 0;
 
-        if (getText() == null || getText().length() == 0 && getTextHint() != null) {
-            if (getTextFont() == null || getTextSize() <= 0 || Color.getAlpha(getTextHintColor()) == 0) {
-                return;
-            }
-            float xpos = getTextHintWidth() < width ? xOff(x, x + width, getTextHintWidth()) : x;
-            float ypos = getTextHintHeight() < height ? yOff(y, y + height, getTextHintHeight()) : y;
+        if (isHorizontalDimensionScroll() || isVerticalDimensionScroll()) {
+            float off = getPaddingTop() + titleHeight;
+            RoundRectangle bg = getBackgroundShape();
+            bg.y += off;
+            bg.height = bg.height - off;
 
-            context.setTransform2D(getTransform());
-            context.setColor(getTextHintColor());
-            context.setTextFont(getTextFont());
-            context.setTextSize(getTextSize());
-            context.setTextBlur(0);
-
-            float lineH = getLineHeight();
-            context.setColor(getTextHintColor());
-            int start = Math.max(0, (int) Math.floor((getViewOffsetY() - getInY()) / lineH) - 1);
-            int end = start + Math.max(0, (int) Math.ceil(getHeight() / lineH) + 2);
-            textHintRender.drawText(context, xpos, ypos, width * 9999, height * 9999, horizontalAlign, start, end);
-
-            if (showCaret) {
-                float caretX = textHintRender.getCaretHorizontalOffset(endCaret, horizontalAlign) + xpos;
-                context.setColor(getTextColor());
-                context.setStroker(new BasicStroke(2));
-                context.drawLine(
-                        caretX, ypos + endCaret.getLine() * lineH
-                        , caretX, ypos + (endCaret.getLine() + 1) * lineH);
+            if (bg.height > 0) {
+                context.pushClip(bg);
+                onDrawText(context, x, y + titleHeight, width, Math.max(0, getInHeight() - titleHeight));
+                context.popClip();
             }
 
         } else {
-            if (getTextFont() == null || getTextSize() <= 0) {
-                return;
-            }
-            if (isHorizontalDimensionScroll() || isVerticalDimensionScroll()) {
-                context.pushClip(getBackgroundShape());
-            }
-            x -= getViewOffsetX();
-            y -= getViewOffsetY();
-            float xpos = getTextWidth() < width ? xOff(x, x + width, getTextWidth()) : x;
-            float ypos = getTextHeight() < height ? yOff(y, y + height, getTextHeight()) : y;
-
-            context.setTransform2D(getTransform());
-            context.setColor(getTextColor());
-            context.setTextFont(getTextFont());
-            context.setTextSize(getTextSize());
-            context.setTextBlur(0);
-
-            Caret first = getFirstCaret();
-            Caret second = getSecondCaret();
-
-            float lineH = getLineHeight();
-            float firstX = textRender.getCaretHorizontalOffset(first, horizontalAlign) + xpos;
-            float secondX = textRender.getCaretHorizontalOffset(second, horizontalAlign) + xpos;
-
-            // Text Selection
-            context.setColor(textSelectedColor);
-            if (first.getLine() == second.getLine()) {
-                context.drawRect(firstX, ypos + first.getLine() * lineH, secondX - firstX, lineH, true);
-            } else {
-                context.drawRect(firstX, ypos + first.getLine() * lineH, getTotalDimensionX() - (firstX - x), lineH, true);
-                context.drawRect(x, y + second.getLine() * lineH, secondX - x, lineH, true);
-                if (first.getLine() + 1 < second.getLine()) {
-                    context.drawRect(
-                            x, y + (first.getLine() + 1) * lineH
-                            , getTotalDimensionX(), (second.getLine() - first.getLine() - 1) * lineH, true);
-                }
-            }
-
-            // Text
-            context.setColor(getTextColor());
-            int start = Math.max(0, (int) Math.floor((getViewOffsetY() - getInY()) / lineH) - 1);
-            int end = start + Math.max(0, (int) Math.ceil(getHeight() / lineH) + 2);
-            textRender.drawText(context, xpos, ypos, width * 9999, height * 9999, horizontalAlign, start, end);
-
-            // Caret
-            if (showCaret) {
-                float caretX = textRender.getCaretHorizontalOffset(endCaret, horizontalAlign) + xpos;
-                context.setColor(getTextColor());
-                context.setStroker(new BasicStroke(2));
-                context.drawLine(
-                        caretX, ypos + endCaret.getLine() * lineH
-                        , caretX, ypos + (endCaret.getLine() + 1) * lineH);
-            }
-            if (isHorizontalDimensionScroll() || isVerticalDimensionScroll()) {
-                context.popClip();
-            }
+            onDrawText(context, x, y + titleHeight, width, Math.max(0, getInHeight() - titleHeight));
         }
+
+        onDrawTitle(context, x, y, width, height);
+        onDrawTextDivider(context, getOutX(), getOutY() + getOutHeight(), getOutWidth(), getTextDividerSize());
 
         if (getHorizontalBar() != null && isHorizontalVisible()) {
             getHorizontalBar().onDraw(context);
@@ -280,639 +153,263 @@ public class TextField extends Scrollable {
         }
     }
 
-    @Override
-    public void fireScroll(ScrollEvent event) {
-        super.fireScroll(event);
-        if (!event.isConsumed()) {
-            slideVertical(- event.getDeltaY() * 10);
+    protected void onDrawTitle(SmartContext context, float x, float y, float width, float height) {
+        if (getTitle() != null && width > 0 && height > 0) {
+            float anim = titleToTitle.isPlaying() ? titleToTitle.getPose() : isTitleFloating() ? 1 : 0;
+
+            float scale = getTextSize() / getTitleSize();
+
+            float xpos1 = getTitleWidth() < width ? xOff(x, x + width, getTitleWidth()) : x;
+            float ypos1 = getInY();
+
+            float xpos2 = getTitleWidth() * scale < width ? xOff(x, x + width, getTitleWidth() * scale) : x;
+            float ypos2 = getInY() + (getTitleHeight() + getTitleSpacing()) * 0.5f;
+
+            float xoff = xpos1 * anim + xpos2 * (1 - anim);
+            float yoff = ypos1 * anim + ypos2 * (1 - anim);
+            float scl = 1 * anim + scale * (1 - anim);
+
+            context.setTransform2D(getTransform().preTranslate(xoff, yoff).scale(scl, scl));
+            context.setColor(getTitleColor());
+            context.setTextFont(getTextFont());
+            context.setTextSize(getTitleSize());
+            context.setTextBlur(0);
+            titleRender.drawText(context, 0, 0, width / scl, Math.min(getTitleHeight() * scl, height) / scl,
+                    getHorizontalAlign(), 0, 1);
         }
     }
 
-    @Override
-    public void firePointer(PointerEvent event) {
-        super.firePointer(event);
-        if (!event.isConsumed() && event.getSource() == this && event.getPointerID() == 1 && getTextFont() != null) {
-            float x = getInX();
-            float y = getInY();
-            float width = getInWidth();
-            float height = getInHeight();
-            x -= getViewOffsetX();
-            y -= getViewOffsetY();
-            float xpos = getTextWidth() < width ? xOff(x, x + width, getTextWidth()) : x;
-            float ypos = getTextHeight() < height ? yOff(y, y + height, getTextHeight()) : y;
-
-            Vector2 point = screenToLocal(event.getX(), event.getY());
-            if (event.getType() == PointerEvent.PRESSED) {
-                textRender.getCaret(point.x, point.y, xpos, ypos, horizontalAlign, startCaret);
-                endCaret.set(startCaret);
-                setCaretVisible();
-            } else if (event.getType() == PointerEvent.DRAGGED) {
-                textRender.getCaret(point.x, point.y, xpos, ypos, horizontalAlign, endCaret);
-                setCaretVisible();
-                slideToCaret(Application.getLoopTime() * 10f);
-            }
-            invalidate(false);
-        }
-    }
-
-    @Override
-    public void fireKey(KeyEvent event) {
-        super.fireKey(event);
-        if (event.isConsumed()) {
-            return;
-        }
-
-        var first = getFirstCaret();
-        var second = getSecondCaret();
-
-        if (event.getType() == KeyEvent.TYPED) {
-            editText(first, second, new String(Character.toChars(event.getKeycode())));
-        }
-
-        if (event.getKeycode() != KeyCode.KEY_UNKNOWN &&
-                (event.getType() == KeyEvent.PRESSED || event.getType() == KeyEvent.REPEATED)) {
-
-            if (event.getKeycode() == KeyCode.KEY_ENTER) {
-                editText(first, second, "\n");
-            } else if (event.getKeycode() == KeyCode.KEY_TAB) {
-                editText(first, second, "\t");
-            } else if (event.getKeycode() == keyBackspace) {
-                actionDeleteBackwards(first, second);
-            } else if (event.getKeycode() == keyDelete) {
-                actionDeleteFowards(first, second);
-            } else if (event.isCtrlDown() && event.getKeycode() == keyPaste) {
-                actionPaste(first, second);
-            } else if (event.isCtrlDown() && event.getKeycode() == keyCopy) {
-                actionCopy(first, second);
-            } else if (event.isCtrlDown() && event.getKeycode() == keyCut) {
-                actionCut(first, second);
-            } else if (event.isCtrlDown() && event.getKeycode() == keySelectAll) {
-                actionSelectAll();
-            } else if (event.getKeycode() == keyClearSelection) {
-                actionClearSelection();
-            } else if (event.getKeycode() == keyMenu) {
-                actionShowContextMenu();
-            } else if (event.getKeycode() == KeyCode.KEY_LEFT) {
-                textRender.moveCaretBackwards(endCaret);
-                if (!event.isShiftDown()) startCaret.set(endCaret);
-            } else if (event.getKeycode() == KeyCode.KEY_RIGHT) {
-                textRender.moveCaretFoward(endCaret);
-                if (!event.isShiftDown()) startCaret.set(endCaret);
-            } else if (event.getKeycode() == KeyCode.KEY_DOWN) {
-                textRender.moveCaretVertical(endCaret, horizontalAlign, 1);
-                if (!event.isShiftDown()) startCaret.set(endCaret);
-            } else if (event.getKeycode() == KeyCode.KEY_UP) {
-                textRender.moveCaretVertical(endCaret, horizontalAlign, -1);
-                if (!event.isShiftDown()) startCaret.set(endCaret);
-            } else if (event.getKeycode() == KeyCode.KEY_PAGE_DOWN) {
-                textRender.moveCaretVertical(endCaret, horizontalAlign, (int) (getViewDimensionY() / getLineHeight()));
-                if (!event.isShiftDown()) startCaret.set(endCaret);
-            } else if (event.getKeycode() == KeyCode.KEY_PAGE_UP) {
-                textRender.moveCaretVertical(endCaret, horizontalAlign, (int) -(getViewDimensionY() / getLineHeight()));
-                if (!event.isShiftDown()) startCaret.set(endCaret);
-            } else if (event.getKeycode() == KeyCode.KEY_HOME) {
-                textRender.moveCaretBackwardsLine(endCaret);
-                if (!event.isShiftDown()) startCaret.set(endCaret);
-            } else if (event.getKeycode() == KeyCode.KEY_END) {
-                textRender.moveCaretFowardsLine(endCaret);
-                if (!event.isShiftDown()) startCaret.set(endCaret);
-            } else {
-                return;
-            }
-            setCaretVisible();
-            slideToCaret(1);
+    protected void onDrawTextDivider(SmartContext context, float x, float y, float width, float height) {
+        if (width > 0 && height > 0) {
+            context.setTransform2D(getTransform());
+            context.setStroker(new BasicStroke(height));
+            context.setColor(getTextDividerColor());
+            context.drawLine(x, y, x + width, y);
         }
     }
 
     @Override
     public void fireFocus(FocusEvent event) {
         super.fireFocus(event);
-        if (!isFocused()) {
-            actionClearSelection();
-            setCaretHidden();
+        invalidateTitleFloating();
+    }
+
+    @Override
+    protected float getVisibleTextX() {
+        return getInX();
+    }
+
+    @Override
+    protected float getVisibleTextY() {
+        float titleHeight = hasTitle() ? getTitleHeight() + getTitleSpacing() : 0;
+        return getInY() + titleHeight;
+    }
+
+    @Override
+    protected float getVisibleTextHeight() {
+        float titleHeight = hasTitle() ? getTitleHeight() + getTitleSpacing() : 0;
+        return Math.max(0, getInHeight() - titleHeight);
+    }
+
+    @Override
+    protected float getVisibleTextWidth() {
+        return getInWidth();
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        if (!Objects.equals(this.title, title)) {
+            this.title = title;
+            titleRender.setText(title);
+            invalidateTitleSize();
         }
     }
 
-    protected void editText(Caret first, Caret second, String text) {
-        var event = filterInputText(first.getOffset(), second.getOffset(), text);
-        if (event != null) {
-            if (event.isConsumed() || event.getText() == null) {
-                return;
-            } else {
-                text = event.getText();
-            }
-        }
-
-        Caret caret = new Caret();
-        caret.set(endCaret);
-        if (!textRender.editText(first, second, text, caret)) {
-            return;
-        }
-
-        String old = this.text;
-        String txt = textRender.getText();
-        if (textChangeFilter != null) {
-            var textEvent = filterText(0, textRender.getTotalBytes(), txt);
-            if (textEvent != null) {
-                if (textEvent.isConsumed()) {
-                    textRender.setText(old);
-                    return;
-                }
-                String newTxt = textEvent.getText();
-                if (!Objects.equals(newTxt, txt)) {
-                    int before = textRender.getTotalCharacters();
-                    textRender.setText(newTxt);
-                    int after = textRender.getTotalCharacters();
-                    if (after < before) {
-                        textRender.moveCaret(caret, 0);
-                    } else if (after > before) {
-                        textRender.moveCaret(caret, after - before);
-                    }
-                    if (maxCharacters > 0) {
-                        txt = textRender.getText();
-                    } else {
-                        txt = newTxt;
-                    }
-                }
-            }
-        }
-        this.text = txt;
-
-        startCaret.set(caret);
-        endCaret.set(caret);
-
-        invalidateTextSize();
-        setCaretVisible();
-        slideToCaret(1);
-
-        fireTextChange(old);
+    public float getTitleSize() {
+        return titleSize;
     }
 
-    private void actionShowContextMenu() {
-        float x = getInX();
-        float y = getInY();
-        float width = getInWidth();
-        float height = getInHeight();
-        float px = x - getViewOffsetX();
-        float py = y - getViewOffsetY();
-        float xpos = getTextWidth() < width ? xOff(x, x + width, getTextWidth()) : px;
-        float ypos = getTextHeight() < height ? yOff(y, y + height, getTextHeight()) : py;
-
-        float caretX = textRender.getCaretHorizontalOffset(endCaret, horizontalAlign) + xpos;
-        float caretY = endCaret.getLine() * getLineHeight() + ypos;
-        var pos = localToScreen(Math.min(x + width, Math.max(x, caretX)), Math.min(y + height, Math.max(y, caretY)));
-        showContextMenu(pos.x, pos.y);
-    }
-
-    private void actionClearSelection() {
-        startCaret.set(endCaret);
-        invalidate(false);
-    }
-
-    private void actionSelectAll() {
-        textRender.moveCaretBegin(startCaret);
-        textRender.moveCaretEnd(endCaret);
-        invalidate(false);
-    }
-
-    private void actionDeleteBackwards(Caret first, Caret second) {
-        if (first.getOffset() == second.getOffset()) {
-            textRender.moveCaretBackwards(first);
-        }
-        editText(first, second, "");
-    }
-
-    private void actionDeleteFowards(Caret first, Caret second) {
-        if (first.getOffset() == second.getOffset()) {
-            textRender.moveCaretFoward(second);
-        }
-        editText(first, second, "");
-    }
-
-    private void actionCut(Caret first, Caret second) {
-        String str = textRender.getText(first, second);
-        if (str != null && !str.isEmpty()) {
-            getActivity().getWindow().setClipboard(str);
-        }
-        editText(first, second, "");
-    }
-
-    private void actionCopy(Caret first, Caret second) {
-        String str = textRender.getText(first, second);
-        if (str != null && !str.isEmpty()) {
-            getActivity().getWindow().setClipboard(str);
+    public void setTitleSize(float titleSize) {
+        if (this.titleSize != titleSize) {
+            this.titleSize = titleSize;
+            titleRender.setTextSize(titleSize);
+            invalidateTitleSize();
         }
     }
 
-    private void actionPaste(Caret first, Caret second) {
-        String str = getActivity().getWindow().getClipboard();
-        if (str != null && !str.isEmpty()) {
-            editText(first, second, str);
-            Application.runVsync(() -> slideToCaret(1));
+    public boolean isTitleLocked() {
+        return titleLocked;
+    }
+
+    public void setTitleLocked(boolean titleLocked) {
+        if (this.titleLocked != titleLocked) {
+            this.titleLocked = titleLocked;
+            invalidateTitleFloating();
+            invalidate(false);
         }
     }
 
-    private void setCaretVisible() {
-        showCaret = true;
-        invalidate(false);
-        caretBlink.setLoops(-1);
-        caretBlink.setDuration(1.0f);
-        caretBlink.play(getActivity(), 0);
-    }
-
-    private void setCaretHidden() {
-        showCaret = false;
-        invalidate(false);
-        caretBlink.stop(false);
-    }
-
-    private void blinkCaret() {
-        showCaret = isFocused() && !showCaret;
-        invalidate(false);
-        caretBlink.play(getActivity(), 0);
-    }
-
-    public int getKeyCopy() {
-        return keyCopy;
-    }
-
-    public void setKeyCopy(int keyCopy) {
-        this.keyCopy = keyCopy;
-    }
-
-    public int getKeyPaste() {
-        return keyPaste;
-    }
-
-    public void setKeyPaste(int keyPaste) {
-        this.keyPaste = keyPaste;
-    }
-
-    public int getKeyCut() {
-        return keyCut;
-    }
-
-    public void setKeyCut(int keyCut) {
-        this.keyCut = keyCut;
-    }
-
-    public int getKeySelectAll() {
-        return keySelectAll;
-    }
-
-    public void setKeySelectAll(int keySelectAll) {
-        this.keySelectAll = keySelectAll;
-    }
-
-    public int getKeyClearSelection() {
-        return keyClearSelection;
-    }
-
-    public void setKeyClearSelection(int keyClearSelection) {
-        this.keyClearSelection = keyClearSelection;
-    }
-
-    public int getKeyBackspace() {
-        return keyBackspace;
-    }
-
-    public void setKeyBackspace(int keyBackspace) {
-        this.keyBackspace = keyBackspace;
-    }
-
-    public int getKeyDelete() {
-        return keyDelete;
-    }
-
-    public void setKeyDelete(int keyDelete) {
-        this.keyDelete = keyDelete;
-    }
-
-    public int getKeyMenu() {
-        return keyMenu;
-    }
-
-    public void setKeyMenu(int keyMenu) {
-        this.keyMenu = keyMenu;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        if (!Objects.equals(this.text, text)) {
-            var event = filterInputText(0, textRender.getTotalBytes(), text);
-
-            if (event != null) {
-                if (event.isConsumed() || event.getText() == null) {
-                    return;
-                } else {
-                    text = event.getText();
-                }
-            }
-
-            String old = this.text;
-
-            if (textChangeFilter != null) {
-                var textEvent = filterText(0, textRender.getTotalBytes(), text);
-                if (textEvent != null) {
-                    if (textEvent.isConsumed()) {
-                        return;
-                    } else {
-                        text = textEvent.getText();
-                    }
-                }
-            }
-
-            if (text != null && maxCharacters > 0) {
-                textRender.setText(text);
-                this.text = textRender.getText();
-            } else {
-                this.text = text;
-                textRender.setText(text);
-            }
-
-            textRender.moveCaretBegin(startCaret);
-            textRender.moveCaretBegin(endCaret);
-
-            invalidate(isWrapContent());
-            invalidateTextSize();
-
-            fireTextChange(old);
-        }
-    }
-
-    public String getTextHint() {
-        return textHint;
-    }
-
-    public void setTextHint(String textHint) {
-        if (!Objects.equals(this.textHint, textHint)) {
-            this.textHint = textHint;
-            textHintRender.setText(textHint);
-            invalidate(isWrapContent());
-            invalidateTextHintSize();
-        }
-    }
-
-    public int getMaxCharacters() {
-        return maxCharacters;
-    }
-
-    public void setMaxCharacters(int maxCharacters) {
-        if (this.maxCharacters != maxCharacters) {
-            this.maxCharacters = maxCharacters;
-            textRender.setMaxCharacters(maxCharacters);
-            if (maxCharacters > 0 && maxCharacters < textRender.getTotalCharacters()) {
-                textRender.trim(maxCharacters);
-
-                String old = this.text;
-                this.text = textRender.getText();
-
-                textRender.moveCaretBegin(startCaret);
-                textRender.moveCaretBegin(endCaret);
-
-                invalidate(isWrapContent());
-                invalidateTextSize();
-                fireTextChange(old);
-            }
-        }
-    }
-
-    public Font getTextFont() {
-        return textFont;
-    }
-
+    @Override
     public void setTextFont(Font textFont) {
-        if (this.textFont != textFont) {
-            this.textFont = textFont;
-            textRender.setFont(textFont);
-            textHintRender.setFont(textFont);
-            invalidate(isWrapContent());
-            invalidateTextSize();
-            invalidateTextHintSize();
+        if (this.getTextFont() != textFont) {
+            titleRender.setFont(textFont);
+            invalidateTitleSize();
+            super.setTextFont(textFont);
         }
     }
 
-    protected float getLineHeight() {
-        return textFont == null ? textSize : textFont.getHeight(textSize);
+    @Override
+    protected void invalidateTextSize() {
+        super.invalidateTextSize();
+        invalidateTitleFloating();
     }
 
-    public float getTextSize() {
-        return textSize;
+    public int getTitleColor() {
+        return titleColor;
     }
 
-    public void setTextSize(float textSize) {
-        if (this.textSize != textSize) {
-            this.textSize = textSize;
-            textRender.setTextSize(textSize);
-            textHintRender.setTextSize(textSize);
-            invalidate(isWrapContent());
-            invalidateTextSize();
-            invalidateTextHintSize();
-        }
-    }
-
-    public int getTextColor() {
-        return textColor;
-    }
-
-    public void setTextColor(int textColor) {
-        if (this.textColor != textColor) {
-            this.textColor = textColor;
+    public void setTitleColor(int titleColor) {
+        if (this.titleColor != titleColor) {
+            this.titleColor = titleColor;
             invalidate(false);
         }
     }
 
-    public int getTextSelectedColor() {
-        return textSelectedColor;
+    public float getTitleTransitionDuration() {
+        return titleTransitionDuration;
     }
 
-    public void setTextSelectedColor(int textSelectedColor) {
-        if (this.textSelectedColor != textSelectedColor) {
-            this.textSelectedColor = textSelectedColor;
+    public void setTitleTransitionDuration(float titleTransitionDuration) {
+        if (this.titleTransitionDuration != titleTransitionDuration) {
+            this.titleTransitionDuration = titleTransitionDuration;
+            invalidateTitleFloating();
+        }
+    }
+
+    public float getTitleSpacing() {
+        return titleSpacing;
+    }
+
+    public void setTitleSpacing(float titleSpacing) {
+        if (this.titleSpacing != titleSpacing) {
+            this.titleSpacing = titleSpacing;
             invalidate(false);
         }
     }
 
-    public int getTextHintColor() {
-        return textHintColor;
+    public boolean isTitleFloating() {
+        return getTitle() != null && !getTitle().isEmpty() && (isFocused() || !isTextEmpty() || isTitleLocked());
     }
 
-    public void setTextHintColor(int textHintColor) {
-        if (this.textHintColor != textHintColor) {
-            this.textHintColor = textHintColor;
+    public int getTextDividerColor() {
+        return textDividerColor;
+    }
+
+    public void setTextDividerColor(int textDividerColor) {
+        if (this.textDividerColor != textDividerColor) {
+            this.textDividerColor = textDividerColor;
             invalidate(false);
         }
     }
 
-    private void invalidateTextSize() {
+    public float getTextDividerSize() {
+        return textDividerSize;
+    }
+
+    public void setTextDividerSize(float textDividerSize) {
+        if (this.textDividerSize != textDividerSize) {
+            this.textDividerSize = textDividerSize;
+            invalidate(false);
+        }
+    }
+
+    private void invalidateTitleFloating() {
+        titleToTitle.play();
+    }
+
+    private void invalidateTitleSize() {
+        invalidTitleSize = true;
+        invalidateTitleFloating();
         invalidate(true);
-        invalidTextSize = true;
-        getTextWidth();
     }
 
-    private void invalidateTextHintSize() {
-        invalidTextHintSize = true;
-    }
-
-    public VerticalAlign getVerticalAlign() {
-        return verticalAlign;
-    }
-
-    public void setVerticalAlign(VerticalAlign verticalAlign) {
-        if (verticalAlign == null) verticalAlign = VerticalAlign.TOP;
-
-        if (this.verticalAlign != verticalAlign) {
-            this.verticalAlign = verticalAlign;
-            invalidate(false);
+    protected float getTitleWidth() {
+        if (invalidTitleSize) {
+            invalidTitleSize = false;
+            titleWidth = titleRender.getTextWidth();
         }
+        return titleWidth;
     }
 
-    public HorizontalAlign getHorizontalAlign() {
-        return horizontalAlign;
+    protected boolean hasTitle() {
+        return title != null && !title.isEmpty() && titleSize > 0;
     }
 
-    public void setHorizontalAlign(HorizontalAlign horizontalAlign) {
-        if (horizontalAlign == null) horizontalAlign = HorizontalAlign.LEFT;
-
-        if (this.horizontalAlign != horizontalAlign) {
-            this.horizontalAlign = horizontalAlign;
-            invalidate(false);
-        }
+    protected float getTitleHeight() {
+        return titleRender.getTextHeight();
     }
 
-    public void slideToCaret(float speed) {
-        float lineH = getLineHeight();
-        float caretX = textRender.getCaretHorizontalOffset(endCaret, horizontalAlign);
-        float caretYMin = endCaret.getLine() * lineH;
-        float caretYMax = (endCaret.getLine() + 1) * lineH;
-        float caretY = (caretYMax + caretYMin) * 0.5F;
+    protected class TitleToTitleAnimation implements Animation {
 
-        float targetX = getViewOffsetX();
-        if (caretX < targetX) {
-            targetX = caretX;
-        } else if (caretX > targetX + getViewDimensionX()) {
-            targetX = caretX - getViewDimensionX();
-        }
+        private boolean playing;
+        private float pose;
 
-        float targetY = getViewOffsetY();
-        if (caretYMin < targetY) {
-            targetY = caretYMin;
-            if (caretYMax > targetY + getViewDimensionY()) {
-                targetY = caretY;
-            }
-        } else if (caretYMax > targetY + getViewDimensionY()) {
-            targetY = caretYMax - getViewDimensionY();
-            if (caretYMin < targetY) {
-                targetY = caretY;
+        public void play() {
+            if (getActivity() != null) {
+                playing = true;
+                getActivity().addAnimation(this);
             }
         }
-        slideTo(targetX * speed + getViewOffsetX() * (1 - speed), targetY * speed + getViewOffsetY() * (1 - speed));
-    }
 
-    public UXListener<TextEvent> getTextChangeFilter() {
-        return textChangeFilter;
-    }
-
-    public void setTextChangeFilter(UXListener<TextEvent> textChangeFilter) {
-        this.textChangeFilter = textChangeFilter;
-    }
-
-    private TextEvent filterText(int start, int end, String text) {
-        if (textChangeFilter != null) {
-            TextEvent event = new TextEvent(this, TextEvent.FILTER, start, end, text);
-            UXListener.safeHandle(textChangeFilter, event);
-            return event;
+        public void stop() {
+            playing = false;
         }
-        return null;
-    }
 
-    public UXListener<TextEvent> getTextInputFilter() {
-        return textInputFilter;
-    }
-
-    public void setTextInputFilter(UXListener<TextEvent> textInputFilter) {
-        this.textInputFilter = textInputFilter;
-    }
-
-    private TextEvent filterInputText(int start, int end, String text) {
-        if (textInputFilter != null) {
-            TextEvent event = new TextEvent(this, TextEvent.FILTER, start, end, text);
-            UXListener.safeHandle(textInputFilter, event);
-            return event;
+        public void setPose(float pose) {
+            this.pose = pose;
         }
-        return null;
-    }
 
-    public UXValueListener<String> getTextChangeListener() {
-        return textChangeListener;
-    }
-
-    public void setTextChangeListener(UXValueListener<String> textChangeListener) {
-        this.textChangeListener = textChangeListener;
-    }
-
-    private void fireTextChange(String old) {
-        if (textChangeListener != null && !Objects.equals(old, text)) {
-            UXValueListener.safeHandle(textChangeListener, new ValueChange<>(this, old, text));
+        public float getPose() {
+            return pose;
         }
-    }
 
-    protected float getTextWidth() {
-        if (invalidTextSize) {
-            invalidTextSize = false;
-            textWidth = textRender.getTextWidth();
-        }
-        return textWidth;
-    }
-
-    protected float getTextHeight() {
-        return textRender.getTextHeight();
-    }
-
-    protected float getTextHintWidth() {
-        if (invalidTextHintSize) {
-            invalidTextHintSize = false;
-            textHintWidth = textHintRender.getTextWidth();
-        }
-        return textHintWidth;
-    }
-
-    protected float getTextHintHeight() {
-        return textHintRender.getTextHeight();
-    }
-
-    protected boolean isWrapContent() {
-        return getPrefWidth() == WRAP_CONTENT || getPrefHeight() == WRAP_CONTENT;
-    }
-
-    protected float xOff(float start, float end, float textWidth) {
-        if (end < start) return (start + end) / 2f;
-        if (horizontalAlign == HorizontalAlign.RIGHT) return end - textWidth;
-        if (horizontalAlign == HorizontalAlign.CENTER) return (start + end - textWidth) / 2f;
-        return start;
-    }
-
-    protected float yOff(float start, float end, float textHeight) {
-        if (end < start) return (start + end) / 2f;
-        if (verticalAlign == VerticalAlign.BOTTOM) return end - textHeight;
-        if (verticalAlign == VerticalAlign.MIDDLE) return (start + end - textHeight) / 2f;
-        return start;
-    }
-
-    private class CaretBlink extends NormalizedAnimation {
         @Override
         public Activity getSource() {
             return getActivity();
         }
 
         @Override
-        protected void compute(float t) {
-            if (t >= 0.5f) {
-                blinkCaret();
+        public boolean isPlaying() {
+            return playing;
+        }
+
+        @Override
+        public void handle(float seconds) {
+            if (isTitleFloating()) {
+                if (titleTransitionDuration == 0) {
+                    pose = 1;
+                } else {
+                    pose += seconds / titleTransitionDuration;
+                }
+                if (pose >= 1) {
+                    pose = 1;
+                    stop();
+                }
+            } else {
+                if (titleTransitionDuration == 0) {
+                    pose = 0;
+                } else {
+                    pose -= seconds / titleTransitionDuration;
+                }
+                if (pose <= 0) {
+                    pose = 0;
+                    stop();
+                }
             }
+            invalidate(false);
         }
     }
 }

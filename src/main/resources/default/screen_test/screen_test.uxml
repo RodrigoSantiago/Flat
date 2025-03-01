@@ -74,24 +74,22 @@
             <LinearBox direction="horizontal" width="MATCH_PARENT" height="MATCH_PARENT" max-height="400" margin-top="16">
                 <ListView id="listView" width="200" height="MATCH_PARENT" margin-right="16"
                           padding-top="16" padding-bottom="16" padding-left="16" padding-right="16"></ListView>
-                <ScrollBox width="400" height="400" background-color="yellow">
+                <ScrollBox width="400" height="200" background-color="yellow">
                     <StackBox><ImageView image="/default/image.png"/></StackBox>
                 </ScrollBox>
             </LinearBox>
-            <TextArea text="123" width="300" horizontal-align="center" max-height="200" margin-top="16"
-                       padding-top="16" padding-bottom="16" padding-left="16" padding-right="16" text-hint="I"
-            text-selected-color="aqua" on-text-change="hello" on-text-change-filter="filter" id="textField" max-characters="15">
-                <Menu width="100" height="200" background-color="blue">
-                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
-                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
-                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
-                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
-                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
-                </Menu>
-            </TextArea>
+            <DropDown text="Texto SImples" width="300" horizontal-align="right" vertical-align="MIDDLE"
+                      padding-top="8" padding-bottom="8" padding-left="8" padding-right="8"
+                      margin-top="16" margin-bottom="16" margin-left="16" margin-right="16" title="Text Title"
+                      text-selected-color="aqua"  floating-bars="true" editable="true" on-text-change="textCHANGE"
+                      title-locked="false">
+                Opção1&#10;OutraLinha
+                Opção2
+                Opção3
+            </DropDown>
             <TextField text="Ola Mundo&#10;OutraLinha&#10;OutraLinhaasa asa" width="300" horizontal-align="center" max-height="200" margin-top="16"
-                       padding-top="16" padding-bottom="16" padding-left="16" padding-right="16" text-hint="I"
-                       text-selected-color="aqua" on-text-change="hello" on-text-change-filter="filter" floating-bars="true">
+                       padding-top="16" padding-bottom="16" padding-left="16" padding-right="16" title="I'm a hint"
+                       text-selected-color="aqua" floating-bars="true" editable="true" min-height="150">
                 <Menu width="100" height="200" background-color="blue">
                     <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
                     <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
@@ -100,12 +98,18 @@
                     <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
                 </Menu>
             </TextField>
+            <TextField text="Texto SImples" width="300" horizontal-align="LEFT" vertical-align="MIDDLE"
+                       padding-top="8" padding-bottom="8" padding-left="8" padding-right="8"
+                       margin-top="16" margin-bottom="16" margin-left="16" margin-right="16" title="Text Title"
+                       text-selected-color="aqua"  floating-bars="true" editable="true" on-text-change="textCHANGE"
+                       title-locked="true">
+            </TextField>
             <Button text="Set Max to 10" margin-top="16"
                     horizontal-align="RIGHT"
                     on-action="setmax"/>
         </LinearBox>
         <LinearBox direction="vertical" background-color="#C0C0C0" width="MATCH_PARENT" height="MATCH_PARENT"
-                   padding-left="8" padding-right="8" padding-top="8" padding-bottom="8"
+                   padding-left="8" padding-right="8" padding-top="16" padding-bottom="8"
                    margin-left="32" margin-right="32" margin-top="32" margin-bottom="32" vertical-align="TOP">
             <Label text="Title" background-color="#0000c8" text-color="white"/>
             <Button text="Big Dialog Button" text-size="12px" text-font="SANS" margin-top="8"
@@ -123,15 +127,6 @@
             <Button text="Context Menu - Save Image" margin-top="16"
                     horizontal-align="RIGHT"
                     on-action="export">
-                <Menu width="100" height="200" background-color="blue">
-                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
-                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
-                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
-                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
-                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
-                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
-                    <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
-                </Menu>
             </Button>
             <Label text="Multiação&#10;Complex Line&#10;Text" background-color="#0000c8" text-color="white" width="300" horizontal-align="right"/>
             <Label text="Texto apenas largo" background-color="#0000c8" text-color="white" width="300" horizontal-align="center"/>
@@ -149,24 +144,46 @@
                   close-icon-color="black"
                   icon-position="RIGHT"/>
 
-            <Chip text="This is a Chip&#10;a" margin-top="8" width="256"
-                  icon="/default/img_test.png" icon-spacing="12px"
-                  icon-position="LEFT" horizontal-align="left"
-                  icon-clip-circle="true"
-                  close-icon="/default/icons/close_24dp.png"
-                  close-icon-color="black"/>
-            <Chip text="This is a Chip&#10;b" margin-top="8" width="256"
-                  icon="/default/img_test.png" icon-spacing="12px"
-                  icon-position="LEFT" horizontal-align="center"
-                  icon-clip-circle="true"
-                  close-icon="/default/icons/close_24dp.png"
-                  close-icon-color="black"/>
-            <Chip text="This is a Chip" margin-top="8" width="256"
+            <Chip text="This is a Chip has DROP" margin-top="8" width="256"
                   icon="/default/img_test.png" icon-spacing="12px"
                   icon-position="RIGHT" horizontal-align="right"
                   icon-clip-circle="true"
                   close-icon="/default/icons/close_24dp.png"
-                  close-icon-color="black"/>
+                  close-icon-color="black">
+
+                <Menu width="300">
+                    <MenuItem text="MenuItem Z" shortcut-text="Ctrl+C"
+                              icon="/default/img_test.png" icon-spacing="12px" horizontal-align="left"/>
+                    <MenuItem text="MenuItem Y" shortcut-text="Ctrl+C"
+                              icon="/default/img_test.png" icon-spacing="12px" horizontal-align="left"/>
+                    <MenuItem text="MenuItem X" shortcut-text="Ctrl+C"
+                              icon="/default/img_test.png" icon-spacing="12px" horizontal-align="left">
+                        <Menu width="300">
+                            <MenuItem text="MenuItem A" shortcut-text="Ctrl+C"
+                                      icon="/default/img_test.png" icon-spacing="12px" horizontal-align="left"/>
+                            <MenuItem text="MenuItem B" shortcut-text="Ctrl+C"
+                                      icon="/default/img_test.png" icon-spacing="12px" horizontal-align="left">
+                                <Menu width="300">
+                                    <MenuItem text="MenuItem A" shortcut-text="Ctrl+C"
+                                              icon="/default/img_test.png" icon-spacing="12px" horizontal-align="left"/>
+                                    <Divider/>
+                                    <MenuItem text="MenuItem B" shortcut-text="Ctrl+C"
+                                              icon="/default/img_test.png" icon-spacing="12px" horizontal-align="left"/>
+                                    <Divider/>
+                                    <MenuItem text="MenuItem C" shortcut-text="Ctrl+C"
+                                              icon="/default/img_test.png" icon-spacing="12px" horizontal-align="left"/>
+                                </Menu>
+                            </MenuItem>
+                            <Divider/>
+                            <MenuItem text="MenuItem C" shortcut-text="Ctrl+C"
+                                      icon="/default/img_test.png" icon-spacing="12px" horizontal-align="left"/>
+                        </Menu>
+                    </MenuItem>
+                </Menu>
+
+            </Chip>
+            <MenuItem text="MenuItem" shortcut-text="Ctrl+C" shortcut-spacing="8"
+                      icon="/default/img_test.png" icon-spacing="12px" horizontal-align="left"/>
 
             <Button text="Set progress value" margin-top="8" width="256" horizontal-align="center"
                     icon="/default/img_test.png"

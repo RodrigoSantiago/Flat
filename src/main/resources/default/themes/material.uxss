@@ -67,6 +67,18 @@ text-field {
     background-color :#FFFFFF;
     cursor : ibeam;
     focusable : true;
+    title-transition-duration : 0.25;
+    title-spacing : 2;
+    text-divider-size : 1;
+    text-divider-color : blue;
+}
+
+drop-down : text-field {
+    text-size : 16sp;
+    action-icon : '/default/icons/radiobox-marked.svg';
+    action-icon-color : red;
+    action-icon-bg-color : #FF000080;
+    action-icon-cursor : hand;
 }
 
 text-area {
@@ -463,13 +475,15 @@ menu {
 }
 
 menu-item : label {
-    ripple : true;
+    ripple-enabled : true;
     ripple-color : #00000080;
     text-size : 14sp;
     height : 48;
     width : match_parent;
     padding-left : 16;
     padding-right : 16;
+    shortcut-text-size : 12sp;
+    shortcut-text-color : #00000080;
 
     elevation : 0;
     background-color : #FFFFFF;

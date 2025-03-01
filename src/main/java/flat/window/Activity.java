@@ -420,7 +420,7 @@ public class Activity {
             oldFocus.fireFocus(new FocusEvent(oldFocus, focus));
         }
         if (focus != null) {
-            focus.fireFocus(new FocusEvent(oldFocus, focus));
+            focus.fireFocus(new FocusEvent(focus, focus));
         }
     }
 

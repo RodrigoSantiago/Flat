@@ -135,12 +135,12 @@ public abstract class NormalizedAnimation implements Animation {
     }
 
     @Override
-    public void handle(float time) {
+    public void handle(float seconds) {
         if (playing) {
             if (!firstAfterPlay) {
                 firstAfterPlay = true;
             } else {
-                _reaming -= time * delta;
+                _reaming -= seconds * delta;
             }
             if (_reaming <= 0) {
                 if (_reaming == 0 || _loops == 0) {

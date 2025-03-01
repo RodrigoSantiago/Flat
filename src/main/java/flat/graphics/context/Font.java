@@ -236,7 +236,7 @@ public class Font {
     public CaretData getCaretOffset(Buffer text, int offset, int length, float size, float spacing, float x, boolean half) {
         checkDisposed();
         if (size < 0) {
-            return new CaretData(0, 0);
+            return new CaretData(x > 0 ? length : 0, 0);
         } else {
             float[] data = new float[2];
             SVG.FontGetOffsetBuffer(fontID, text, offset, length, size / this.size, spacing, x, half, data);

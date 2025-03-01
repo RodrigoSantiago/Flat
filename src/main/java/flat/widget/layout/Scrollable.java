@@ -87,7 +87,11 @@ public abstract class Scrollable extends Parent {
         setFloatingBars(attrs.getBool("floating-bars", info, isFloatingBars()));
     }
 
-    public Vector2 onLayoutLocalDimension(float width, float height) {
+    public Vector2 onLayoutViewDimension(float width, float height) {
+        return new Vector2(getInWidth(), getInHeight());
+    }
+
+    public Vector2 onLayoutTotalDimension(float width, float height) {
         return new Vector2(0, 0);
     }
 
@@ -98,10 +102,11 @@ public abstract class Scrollable extends Parent {
     @Override
     public void onLayout(float width, float height) {
         setLayout(width, height);
-        Vector2 localDimension = onLayoutLocalDimension(width, height);
+        Vector2 localDimension = onLayoutTotalDimension(width, height);
+        Vector2 viewDimension = onLayoutViewDimension(width, height);
 
-        viewDimensionX = getInWidth();
-        viewDimensionY = getInHeight();
+        viewDimensionX = viewDimension.x;
+        viewDimensionY = viewDimension.y;
 
         float barSizeX = verticalBar == null || floatingBars ? 0 :
                 Math.min(viewDimensionX, Math.min(verticalBar.getMeasureWidth(), verticalBar.getLayoutMaxWidth()));
@@ -134,9 +139,13 @@ public abstract class Scrollable extends Parent {
         totalDimensionY = Math.max(viewDimensionY, localDimension.y);
 
         if (horizontalBar != null) {
+            float verticalBarOff = verticalBar != null && isVerticalLocalVisible
+                    ? Math.min(viewDimensionX, Math.min(verticalBar.getMeasureWidth(), verticalBar.getLayoutMaxWidth()))
+                    : 0;
+
             float childWidth;
             if (horizontalBar.getMeasureWidth() == MATCH_PARENT) {
-                childWidth = Math.min(getOutWidth() - barSizeX, horizontalBar.getLayoutMaxWidth());
+                childWidth = Math.min(getOutWidth() - verticalBarOff, horizontalBar.getLayoutMaxWidth());
             } else {
                 childWidth = Math.min(horizontalBar.getMeasureWidth(), horizontalBar.getLayoutMaxWidth());
             }
@@ -148,7 +157,7 @@ public abstract class Scrollable extends Parent {
                 childHeight = Math.min(horizontalBar.getMeasureHeight(), horizontalBar.getLayoutMaxHeight());
             }
             horizontalBar.onLayout(Math.min(getOutWidth(), childWidth), Math.min(getOutHeight(), childHeight));
-            float xx = (verticalBarPosition == VerticalBarPosition.LEFT) ? barSizeX : 0;
+            float xx = (verticalBarPosition == VerticalBarPosition.LEFT) ? verticalBarOff : 0;
             if (horizontalBarPosition == HorizontalBarPosition.TOP) {
                 horizontalBar.setLayoutPosition(getOutX() + xx, getOutY());
             } else {
@@ -227,18 +236,20 @@ public abstract class Scrollable extends Parent {
     public Widget findByPosition(float x, float y, boolean includeDisabled) {
         if ((includeDisabled || isEnabled()) && (getVisibility() != Visibility.GONE)) {
             if (contains(x, y)) {
-                if (verticalBar != null) {
+                if (isVerticalVisible() && verticalBar != null) {
                     Widget found = verticalBar.findByPosition(x, y, includeDisabled);
                     if (found != null) return found;
                 }
-                if (horizontalBar != null) {
+                if (isHorizontalVisible() && horizontalBar != null) {
                     Widget found = horizontalBar.findByPosition(x, y, includeDisabled);
                     if (found != null) return found;
                 }
 
                 for (Widget child : getChildrenIterableReverse()) {
-                    Widget found = child.findByPosition(x, y, includeDisabled);
-                    if (found != null) return found;
+                    if (child != horizontalBar && child != verticalBar) {
+                        Widget found = child.findByPosition(x, y, includeDisabled);
+                        if (found != null) return found;
+                    }
                 }
                 return isClickable() ? this : null;
             }

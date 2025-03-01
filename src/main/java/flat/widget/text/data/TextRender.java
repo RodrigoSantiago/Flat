@@ -44,7 +44,8 @@ public class TextRender {
         }
     }
 
-    public void setText(String text) {
+    public boolean setText(String text) {
+        boolean complete = true;
         if (text == null || text.length() == 0) {
             byteSize = 0;
             totalCharacters = 0;
@@ -55,6 +56,7 @@ public class TextRender {
             if (maxCharacters > 0 && totalCharacters > maxCharacters) {
                 len = findLength(newTextBytes, 0, len, maxCharacters);
                 totalCharacters = maxCharacters;
+                complete = false;
             }
 
             ensureCapacity(len);
@@ -63,6 +65,7 @@ public class TextRender {
         }
 
         updateLines();
+        return complete;
     }
 
     public String getText() {
@@ -77,12 +80,14 @@ public class TextRender {
         return new String(bytes);
     }
 
-    public void trim(int length) {
+    public boolean trim(int length) {
         if (totalCharacters > length) {
             byteSize = findLength(textBytes, 0, byteSize, length);
             totalCharacters = length;
             updateLines();
+            return true;
         }
+        return false;
     }
 
     public int getTotalCharacters() {

@@ -324,16 +324,16 @@ public class ProgressBar extends Widget {
         }
 
         @Override
-        public void handle(float time) {
+        public void handle(float seconds) {
             if (animationDuration <= 0 || value >= 0) {
                 t3 = 0;
                 t2 = 0;
                 t1 = 0;
                 playing = false;
             } else {
-                t1 = Math.min(1, t1 + time / animationDuration);
-                t2 = Math.min(1, t2 + time / animationDuration);
-                t3 += time / animationDuration;
+                t1 = Math.min(1, t1 + seconds / animationDuration);
+                t2 = Math.min(1, t2 + seconds / animationDuration);
+                t3 += seconds / animationDuration;
                 if (t2 >= 1) {
                     t2 = 0;
                     t1 = 0;
@@ -365,12 +365,12 @@ public class ProgressBar extends Widget {
         }
 
         @Override
-        public void handle(float time) {
+        public void handle(float seconds) {
             if (value >= 0 && smoothTransitionDuration > 0) {
                 if (visibleValue > value) {
-                    visibleValue = Math.max(value, visibleValue - time / smoothTransitionDuration);
+                    visibleValue = Math.max(value, visibleValue - seconds / smoothTransitionDuration);
                 } else if (visibleValue < value) {
-                    visibleValue = Math.min(value, visibleValue + time / smoothTransitionDuration);
+                    visibleValue = Math.min(value, visibleValue + seconds / smoothTransitionDuration);
                 }
                 if (visibleValue == value) {
                     playing = false;

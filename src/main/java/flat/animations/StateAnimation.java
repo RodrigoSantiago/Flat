@@ -34,8 +34,8 @@ public final class StateAnimation implements Animation, StateInfo {
     }
 
     @Override
-    public void handle(float time) {
-        float pass = time / duration;
+    public void handle(float seconds) {
+        float pass = seconds / duration;
         if (!firstTimeAfterPlay) {
             pass = 0;
             firstTimeAfterPlay = true;

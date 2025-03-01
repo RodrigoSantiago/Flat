@@ -99,7 +99,7 @@ public class ScrollBox extends Scrollable {
     }
 
     @Override
-    public Vector2 onLayoutLocalDimension(float width, float height) {
+    public Vector2 onLayoutTotalDimension(float width, float height) {
         float localDimensionX = 0;
         float localDimensionY = 0;
 

@@ -8,6 +8,6 @@ public interface Animation {
 
     boolean isPlaying();
 
-    void handle(float milis);
+    void handle(float seconds);
 
 }

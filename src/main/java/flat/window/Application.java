@@ -223,7 +223,7 @@ public class Application {
         runVsyncTasks();
 
         if (assignedWindow != null) {
-            WL.HandleEvents(anyAnimation || vsync > 0 ? 0 : 0.25f);
+            WL.HandleEvents(vsync > 0 ? 0 : anyAnimation ? 1 / 120f : 0.25f);
         } else {
             loopActive = false;
         }

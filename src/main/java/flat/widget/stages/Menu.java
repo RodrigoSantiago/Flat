@@ -47,9 +47,19 @@ public class Menu extends Stage {
     @Override
     public void applyChildren(UXChildren children) {
         Widget widget;
-        while ((widget = children.next()) != null ) {
-            add(widget);
+        while ((widget = children.next()) != null) {
+            if (widget instanceof MenuItem menuItem) {
+                addMenuitem(menuItem);
+            }
+            if (widget instanceof Divider divider) {
+                addDivider(divider);
+            }
         }
+    }
+
+    @Override
+    public void setContextMenu(Menu contextMenu) {
+
     }
 
     @Override
@@ -107,19 +117,32 @@ public class Menu extends Stage {
         }
     }
 
-    @Override
-    public void add(Widget child) {
+    public void addMenuitem(MenuItem child) {
         super.add(child);
     }
 
-    @Override
-    public void add(Widget... children) {
+    public void addMenuitem(MenuItem... children) {
         super.add(children);
     }
 
-    @Override
-    public void add(List<Widget> children) {
+    public void addMenuitem(List<MenuItem> children) {
+        for (MenuItem child : children) {
+            addMenuitem(child);
+        }
+    }
+
+    public void addDivider(Divider child) {
+        super.add(child);
+    }
+
+    public void addDivider(Divider... children) {
         super.add(children);
+    }
+
+    public void addDivider(List<Divider> children) {
+        for (Divider child : children) {
+            addDivider(child);
+        }
     }
 
     @Override
@@ -152,7 +175,7 @@ public class Menu extends Stage {
     public void firePointer(PointerEvent event) {
         super.firePointer(event);
         if (!event.isConsumed() && event.getType() == PointerEvent.FILTER) {
-            if (event.getSource() != this && !event.getSource().isChildOf(this)) {
+            if (!isSourceMenuFrom(event.getSource())) {
                 hide();
             }
         }
@@ -283,13 +306,23 @@ public class Menu extends Stage {
         }
     }
 
-    protected void showSubMenu(Menu menu, float x, float y, DropdownAlign align) {
+    protected boolean isSourceMenuFrom(Widget widget) {
+        if (widget == this || widget.isChildOf(this)) return true;
+
+        if (childMenu != null) {
+            return childMenu.isSourceMenuFrom(widget);
+        } else {
+            return false;
+        }
+    }
+
+    protected void showSubMenu(Menu menu, float x, float y, float width, float height, DropdownAlign align) {
         if (childMenu != null) {
             hideSubMenu();
         }
         childMenu = menu;
         childMenu.parentMenu = this;
-        childMenu.show(getActivity(), x, y, align);
+        childMenu.show(getActivity(), x, y, width, height, align);
     }
 
     protected void hideSubMenu() {
@@ -299,19 +332,27 @@ public class Menu extends Stage {
     }
 
     public void show(Activity activity, float x, float y, DropdownAlign align) {
+        show(activity, x , y, 0, 0, align);
+    }
+
+    public void show(Activity activity, float x, float y, float width, float height, DropdownAlign align) {
         if (!isShown()) {
             show = true;
             setToShow(activity);
             activity.addPointerFilter(this);
             activity.addResizeFilter(this);
-            onShow(activity, x, y, align);
+            onShow(activity, x, y, width, height, align);
         }
     }
 
     public void show(Menu menu, float x, float y, DropdownAlign align) {
+        show(menu, x, y, 0, 0, align);
+    }
+
+    public void show(Menu menu, float x, float y, float width, float height, DropdownAlign align) {
         if (!isShown() && menu.isShown() && menu.getActivity() != null
                 && !menu.isChildMenuOf(this) && !menu.isChildOf(this) && !this.isChildOf(menu)) {
-            menu.showSubMenu(this, x, y, align);
+            menu.showSubMenu(this, x, y, width, height, align);
         }
     }
 
@@ -328,7 +369,7 @@ public class Menu extends Stage {
         }
     }
 
-    private void onShow(Activity act, float x, float y, DropdownAlign align) {
+    private void onShow(Activity act, float x, float y, float width, float height, DropdownAlign align) {
         refreshStyle();
 
         onMeasure();
@@ -343,14 +384,19 @@ public class Menu extends Stage {
                 align = y < act.getHeight() * 0.5f ? DropdownAlign.TOP_RIGHT : DropdownAlign.BOTTOM_RIGHT;
             }
         } else if (align == DropdownAlign.TOP_LEFT_ADAPTATIVE) {
+            x += width;
             if (x + getWidth() + getMarginRight() > act.getWidth()) {
                 if (y + getHeight() + getMarginBottom() > act.getHeight()) {
+                    y += height;
+                    x -= width;
                     align = DropdownAlign.BOTTOM_RIGHT;
                 } else {
+                    x -= width;
                     align = DropdownAlign.TOP_RIGHT;
                 }
             } else {
                 if (y + getHeight() + getMarginBottom() > act.getHeight()) {
+                    y += height;
                     align = DropdownAlign.BOTTOM_LEFT;
                 } else {
                     align = DropdownAlign.TOP_LEFT;

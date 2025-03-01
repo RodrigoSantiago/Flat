@@ -2,6 +2,7 @@ package flat.uxml;
 
 import flat.uxml.value.UXValue;
 import flat.widget.layout.*;
+import flat.widget.stages.Divider;
 import flat.widget.stages.Menu;
 import flat.widget.Scene;
 import flat.widget.Widget;
@@ -10,6 +11,7 @@ import flat.widget.selection.Checkbox;
 import flat.widget.selection.RadioButton;
 import flat.widget.selection.RadioGroup;
 import flat.widget.selection.SwitchToggle;
+import flat.widget.stages.MenuItem;
 import flat.widget.structure.ListView;
 import flat.widget.structure.Page;
 import flat.widget.structure.Tab;
@@ -52,22 +54,24 @@ public class UXBuilder {
         UXBuilder.install("Page", Page::new);
         UXBuilder.install("ListView", ListView::new);
         UXBuilder.install("Chip", Chip::new);
-        UXBuilder.install("TextField", TextField::new);
         UXBuilder.install("Slider", Slider::new);
         UXBuilder.install("RangedSlider", RangedSlider::new);
         UXBuilder.install("ProgressBar", ProgressBar::new);
         UXBuilder.install("ProgressCircle", ProgressCircle::new);
+        UXBuilder.install("MenuItem", MenuItem::new);
+        UXBuilder.install("Divider", Divider::new);
+        UXBuilder.install("TextField", TextField::new);
+        UXBuilder.install("DropDown", DropDown::new);
         // DropDownField
         // SearchField
         // UXBuilder.install("TextArea", TextArea::new); - must be efficient
-        /*UXBuilder.install("Divider", Divider::new);
+        /*
         UXBuilder.install("ToggleButton", ToggleButton::new);
         UXBuilder.install("ToggleGroup", RadioGroup::new);
         UXBuilder.install("Canvas", Canvas::new);
         UXBuilder.install("Grid", Grid::new);
         UXBuilder.install("Cell", Cell::new);
         UXBuilder.install("Drawer", Drawer::new);
-        UXBuilder.install("MenuItem", MenuItem::new);
         UXBuilder.install("DropdownMenu", DropdownMenu::new);
         UXBuilder.install("ToolBar", ToolBar::new);
         UXBuilder.install("ToolItem", ToolItem::new);

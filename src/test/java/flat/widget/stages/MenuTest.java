@@ -86,9 +86,9 @@ public class MenuTest {
     @Test
     public void measure() {
         Menu menu = new Menu();
-        Panel content = new Panel();
+        Divider content = new Divider();
         content.setPrefSize(500, 350);
-        menu.add(content);
+        menu.addDivider(content);
         menu.onMeasure();
 
         assertEquals(500, menu.getMeasureWidth(), 0.1f);
@@ -117,9 +117,9 @@ public class MenuTest {
     @Test
     public void layout() {
         Menu menu = new Menu();
-        Panel content = new Panel();
+        Divider content = new Divider();
         content.setPrefSize(500, 350);
-        menu.add(content);
+        menu.addDivider(content);
 
         // Same Size
         menu.onMeasure();

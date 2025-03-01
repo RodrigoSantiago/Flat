@@ -693,7 +693,7 @@ public abstract class Parent extends Widget {
         float xPos = 0;
         float yPos = scroll ? ly - verticalOffset : off(ly, ly + lHeight, totalHeight, verticalAlign);
 
-        for (int k = orderedList.size() - 1; k >= 0; k--) {
+        for (int k = 0; k < orderedList.size(); k++) {
             Widget child = orderedList.get(k);
             if (child.getVisibility() == Visibility.GONE) continue;
             xPos = off(lx, lx + lWidth, child.getLayoutWidth(), horizontalAlign);
