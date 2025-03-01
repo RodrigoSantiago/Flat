@@ -168,14 +168,8 @@ public class TextDropDown extends TextInputField {
     }
 
     public void action() {
-        if (getActionListener() != null) {
-            ActionEvent actionEvent = new ActionEvent(this);
-            UXListener.safeHandle(getActionListener(), actionEvent);
-            if (actionEvent.isConsumed()) {
-                return;
-            }
-        }
         showSubMenu();
+        super.action();
     }
 
     public UXListener<TextEvent> getOptionSelectedListener() {

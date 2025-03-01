@@ -21,7 +21,7 @@ import flat.window.Application;
 
 import java.util.Objects;
 
-public abstract class TextView extends Scrollable {
+public class TextArea extends Scrollable {
 
     private UXValueListener<String> textChangeListener;
     private UXListener<TextEvent> textChangeFilter;
@@ -61,7 +61,7 @@ public abstract class TextView extends Scrollable {
 
     private int maxCharacters = 0;
 
-    public TextView() {
+    public TextArea() {
         textRender.setFont(textFont);
         textRender.setTextSize(textSize);
     }

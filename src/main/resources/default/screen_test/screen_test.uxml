@@ -104,6 +104,12 @@
                             icon="/default/icons/radiobox-marked.svg" icon-spacing="8" icon-color="gray"
                        text-selected-color="aqua"  floating-bars="true" editable="true">
             </TextInputField>
+            <TextArea text="Texto SImples" width="300" horizontal-align="LEFT" vertical-align="MIDDLE"
+                            padding-top="8" padding-bottom="8" padding-left="8" padding-right="8"
+                            margin-top="16" margin-bottom="16" margin-left="16" margin-right="16" title="This is a Field"
+                            icon="/default/icons/radiobox-marked.svg" icon-spacing="8" icon-color="gray"
+                            text-selected-color="aqua"  floating-bars="true" editable="true">
+            </TextArea>
             <Button text="Set Max to 10" margin-top="16"
                     horizontal-align="RIGHT"
                     on-action="setmax"/>
@@ -126,8 +132,9 @@
                     on-action="onWindowClick"/>
             <Button text="Context Menu - Save Image" margin-top="16"
                     horizontal-align="RIGHT"
-                    on-action="export">
-            </Button>
+                    on-action="export"/>
+            <ToggleButton margin-top="16">
+            </ToggleButton>
             <Label text="Multiação&#10;Complex Line&#10;Text" background-color="#0000c8" text-color="white" width="300" horizontal-align="right"/>
             <Label text="Texto apenas largo" background-color="#0000c8" text-color="white" width="300" horizontal-align="center"/>
             <Chip text="This is a Multiação" margin-top="8"

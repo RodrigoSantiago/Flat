@@ -3,7 +3,6 @@ package flat.widget.text;
 import flat.animations.Animation;
 import flat.animations.StateInfo;
 import flat.events.FocusEvent;
-import flat.events.PointerEvent;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Font;
 import flat.math.Vector2;
@@ -16,7 +15,7 @@ import flat.window.Activity;
 
 import java.util.Objects;
 
-public class TextField extends TextView {
+public class TextField extends TextArea {
 
     private String title;
     private int titleColor = 0x000000FF;

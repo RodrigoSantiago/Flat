@@ -40,6 +40,7 @@ public class UXBuilder {
         UXBuilder.install("StackBox", StackBox::new);
         UXBuilder.install("Label", Label::new);
         UXBuilder.install("Button", Button::new);
+        UXBuilder.install("ToggleButton", ToggleButton::new);
         UXBuilder.install("Checkbox", Checkbox::new);
         UXBuilder.install("RadioButton", RadioButton::new);
         UXBuilder.install("RadioGroup", RadioGroup::new);
@@ -63,20 +64,18 @@ public class UXBuilder {
         UXBuilder.install("TextField", TextField::new);
         UXBuilder.install("TextInputField", TextInputField::new);
         UXBuilder.install("TextDropDown", TextDropDown::new);
-        // DropDownField
-        // SearchField
-        // UXBuilder.install("TextArea", TextArea::new); - must be efficient
+        UXBuilder.install("TextArea", TextArea::new);
         /*
-        UXBuilder.install("ToggleButton", ToggleButton::new);
         UXBuilder.install("ToggleGroup", RadioGroup::new);
         UXBuilder.install("Canvas", Canvas::new);
         UXBuilder.install("Grid", Grid::new);
         UXBuilder.install("Cell", Cell::new);
         UXBuilder.install("Drawer", Drawer::new);
-        UXBuilder.install("DropdownMenu", DropdownMenu::new);
         UXBuilder.install("ToolBar", ToolBar::new);
-        UXBuilder.install("ToolItem", ToolItem::new);
-        UXBuilder.install("OverflowMenu", OverflowMenu::new);*/
+        UXBuilder.install("ToolItem", ToolItem::new);*/
+        // RichText text + multiple fonts + images + Emoji icons
+        // MonoText text + multiple monospaced fonts
+        // RawText text + monospaced infinity reading efficiency
     }
 
     public UXBuilder(UXNode root) {
