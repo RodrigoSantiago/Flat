@@ -78,7 +78,7 @@
                     <StackBox><ImageView image="/default/image.png"/></StackBox>
                 </ScrollBox>
             </LinearBox>
-            <DropDown text="Texto SImples" width="300" horizontal-align="right" vertical-align="MIDDLE"
+            <TextDropDown text="Texto SImples" width="300" horizontal-align="right" vertical-align="MIDDLE"
                       padding-top="8" padding-bottom="8" padding-left="8" padding-right="8"
                       margin-top="16" margin-bottom="16" margin-left="16" margin-right="16" title="Text Title"
                       text-selected-color="aqua"  floating-bars="true" editable="true" on-text-change="textCHANGE"
@@ -86,7 +86,7 @@
                 Opção1&#10;OutraLinha
                 Opção2
                 Opção3
-            </DropDown>
+            </TextDropDown>
             <TextField text="Ola Mundo&#10;OutraLinha&#10;OutraLinhaasa asa" width="300" horizontal-align="center" max-height="200" margin-top="16"
                        padding-top="16" padding-bottom="16" padding-left="16" padding-right="16" title="I'm a hint"
                        text-selected-color="aqua" floating-bars="true" editable="true" min-height="150">
@@ -98,12 +98,12 @@
                     <Label background-color="#FF0000" text="Ola Mundo" margin-top="8" id="label" width="150"/>
                 </Menu>
             </TextField>
-            <TextField text="Texto SImples" width="300" horizontal-align="LEFT" vertical-align="MIDDLE"
+            <TextInputField text="Texto SImples" width="300" horizontal-align="LEFT" vertical-align="MIDDLE"
                        padding-top="8" padding-bottom="8" padding-left="8" padding-right="8"
-                       margin-top="16" margin-bottom="16" margin-left="16" margin-right="16" title="Text Title"
-                       text-selected-color="aqua"  floating-bars="true" editable="true" on-text-change="textCHANGE"
-                       title-locked="true">
-            </TextField>
+                       margin-top="16" margin-bottom="16" margin-left="16" margin-right="16" title="This is a Field"
+                            icon="/default/icons/radiobox-marked.svg" icon-spacing="8" icon-color="gray"
+                       text-selected-color="aqua"  floating-bars="true" editable="true">
+            </TextInputField>
             <Button text="Set Max to 10" margin-top="16"
                     horizontal-align="RIGHT"
                     on-action="setmax"/>

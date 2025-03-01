@@ -4,7 +4,6 @@ import flat.animations.StateInfo;
 import flat.events.ActionEvent;
 import flat.events.HoverEvent;
 import flat.events.PointerEvent;
-import flat.events.TextEvent;
 import flat.graphics.Color;
 import flat.graphics.SmartContext;
 import flat.graphics.cursor.Cursor;
@@ -14,20 +13,18 @@ import flat.math.shapes.RoundRectangle;
 import flat.uxml.Controller;
 import flat.uxml.UXAttrs;
 import flat.uxml.UXListener;
-import flat.widget.enums.DropdownAlign;
 import flat.widget.enums.ImageFilter;
-import flat.widget.stages.Menu;
-import flat.widget.stages.MenuItem;
-import flat.window.Activity;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-public class DropDown extends TextField {
+public class TextInputField extends TextField {
 
     private UXListener<ActionEvent> actionListener;
-    private UXListener<TextEvent> optionSelectedListener;
+
+    private Drawable icon;
+    private int iconColor = Color.white;
+    private ImageFilter iconImageFilter = ImageFilter.LINEAR;
+    private float iconSpacing;
+    private float iconWidth;
+    private float iconHeight;
 
     private Drawable actionIcon;
     private int actionIconColor = Color.white;
@@ -39,46 +36,30 @@ public class DropDown extends TextField {
     private Cursor actionIconCursor = Cursor.UNSET;
     private boolean isHoveringAction;
 
-    private boolean invalidSubmenuItems;
-
-    private Menu subMenu;
-    private List<String> options = new ArrayList<>();
-    private List<String> unmodifiableOptions;
-    private List<MenuItem> menuItems = new ArrayList<>();
-
     private float x1, y1, x2, y2;
 
-    public DropDown() {
-        unmodifiableOptions = Collections.unmodifiableList(options);
-        updateSubmenu();
-    }
 
     @Override
     public void applyAttributes(Controller controller) {
         super.applyAttributes(controller);
         UXAttrs attrs = getAttrs();
-        String content = attrs.getAttributeString("content", null);
-        if (content != null) {
-            List<String> opts = new ArrayList<>();
-            for (var option : content.trim().split("\n")) {
-                option = option.trim();
-                if (!option.isEmpty()) {
-                    opts.add(option);
-                }
-            }
-            setOptions(opts);
-        }
 
         setActionListener(attrs.getAttributeListener("on-action", ActionEvent.class, controller));
-        setOptionSelectedListener(attrs.getAttributeListener("on-option-selected", TextEvent.class, controller));
     }
-    
+
     @Override
     public void applyStyle() {
         super.applyStyle();
 
         UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
+
+        setIcon(attrs.getResourceAsDrawable("icon", info, getIcon(), false));
+        setIconColor(attrs.getColor("icon-color", info, getIconColor()));
+        setIconWidth(attrs.getSize("icon-width", info, getIconWidth()));
+        setIconHeight(attrs.getSize("icon-height", info, getIconHeight()));
+        setIconSpacing(attrs.getSize("icon-spacing", info, getIconSpacing()));
+        setIconImageFilter(attrs.getConstant("icon-image-filter", info, getIconImageFilter()));
 
         setActionIcon(attrs.getResourceAsDrawable("action-icon", info, getActionIcon(), false));
         setActionIconColor(attrs.getColor("action-icon-color", info, getActionIconColor()));
@@ -106,20 +87,25 @@ public class DropDown extends TextField {
         float mHeight;
         boolean wrapWidth = getLayoutPrefWidth() == WRAP_CONTENT;
         boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
-        float iconWidth = getLayoutActionIconWidth();
-        float iconHeight = getLayoutActionIconHeight();
-        if (iconWidth > 0) {
-            iconWidth += getActionIconSpacing();
+        float iw = getLayoutIconWidth();
+        float ih = getLayoutIconHeight();
+        float iaw = getLayoutActionIconWidth();
+        float iah = getLayoutActionIconHeight();
+        if (iw > 0) {
+            iw += getIconSpacing();
+        }
+        if (iaw > 0) {
+            iaw += getActionIconSpacing();
         }
 
         if (wrapWidth) {
-            mWidth = Math.max(getTextWidth() + iconWidth + extraWidth, getLayoutMinWidth());
+            mWidth = Math.max(getTextWidth() + iw + iaw + extraWidth, getLayoutMinWidth());
         } else {
             mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
         }
         if (wrapHeight) {
             float titleHeight = hasTitle() ? getTitleHeight() + getTitleSpacing() : 0;
-            mHeight = Math.max(Math.max(getTextHeight(), iconHeight) + titleHeight + extraHeight, getLayoutMinHeight());
+            mHeight = Math.max(Math.max(getTextHeight(), Math.max(ih, iah)) + titleHeight + extraHeight, getLayoutMinHeight());
         } else {
             mHeight = Math.max(getLayoutPrefHeight(), getLayoutMinHeight());
         }
@@ -129,12 +115,13 @@ public class DropDown extends TextField {
 
     @Override
     public Vector2 onLayoutViewDimension(float width, float height) {
-        if (getLayoutActionIconWidth() > 0) {
-            Vector2 fromBase = super.onLayoutViewDimension(width, height);
-            fromBase.x = Math.max(0, fromBase.x - getLayoutActionIconWidth() - getActionIconSpacing());
-            return fromBase;
-        }
-        return super.onLayoutViewDimension(width, height);
+        float iw = getLayoutIconWidth();
+        float aiw = getLayoutActionIconWidth();
+        float exWidth = (iw > 0 ? iw + getIconSpacing() : 0) + (aiw <= 0 ? 0 : aiw + getActionIconSpacing());
+
+        Vector2 fromBase = super.onLayoutViewDimension(width, height);
+        fromBase.x -= exWidth;
+        return fromBase;
     }
 
     @Override
@@ -156,13 +143,33 @@ public class DropDown extends TextField {
         float y = getInY();
         float width = getInWidth();
         float height = getInHeight();
+        float fieldHeight = Math.max(0, getInHeight() - titleHeight);
+
+        float iw = getLayoutIconWidth();
+        float ih = getLayoutIconHeight();
+
+        if (iw > 0 && ih > 0 && getIcon() != null) {
+            iw = Math.min(width, iw);
+            ih = Math.min(fieldHeight, ih);
+            float xpos = x;
+            float ypos = yOff(y, y + height, ih);
+
+            getIcon().draw(context, xpos, ypos, iw, ih, getIconColor(), getIconImageFilter());
+        }
+
+        if (iw > 0) {
+            x += iw + getIconSpacing();
+            width = Math.max(0, width - iw - getIconSpacing());
+        }
 
         float aiw = getLayoutActionIconWidth();
         float aih = getLayoutActionIconHeight();
 
         if (aiw > 0 && aih > 0 && getActionIcon() != null) {
-            float xpos = x + width - Math.min(width, aiw);
-            float ypos = yOff(y + titleHeight, y + height, Math.min(height - titleHeight, aih));
+            aiw = Math.min(width, aiw);
+            aih = Math.min(fieldHeight, aih);
+            float xpos = x + width - aiw;
+            float ypos = yOff(y, y + height, aih);
 
             if (isHoveringAction) {
                 context.setColor(getActionIconBgColor());
@@ -178,11 +185,19 @@ public class DropDown extends TextField {
         if (isHorizontalDimensionScroll() || isVerticalDimensionScroll()) {
             float off = getPaddingTop() + titleHeight;
             RoundRectangle bg = getBackgroundShape();
-            bg.y += off;
-            bg.height = bg.height - off;
-            bg.width = Math.max(0, bg.width - aiw - getActionIconSpacing() - getPaddingRight());
+            if (hasTitle()) {
+                bg.y += getPaddingTop() + titleHeight;
+                bg.height -= getPaddingTop() + titleHeight;
+            }
+            if (getIcon() != null) {
+                bg.x += iw + getIconSpacing();
+                bg.width -= iw + getIconSpacing();
+            }
+            if (getActionIcon() != null) {
+                bg.width -= aiw + getActionIconSpacing();
+            }
 
-            if (bg.height > 0) {
+            if (bg.width > 0 && bg.height > 0) {
                 context.pushClip(bg);
                 onDrawText(context, x, y + titleHeight, width, Math.max(0, getInHeight() - titleHeight));
                 context.popClip();
@@ -220,115 +235,6 @@ public class DropDown extends TextField {
         y2 = yOff(y, y + height, iah) + iah;
     }
 
-    public List<String> getUnmodifiableOptions() {
-        return unmodifiableOptions;
-    }
-
-    public void setOptions(List<String> options) {
-        this.options.clear();
-        this.options.addAll(options);
-        updateSubmenu();
-    }
-
-    public void addOption(String option) {
-        options.add(option);
-        updateSubmenu();
-    }
-
-    public void addOption(List<String> options) {
-        this.options.addAll(options);
-        updateSubmenu();
-    }
-
-    public void addOption(String... options) {
-        for (var option : options) {
-            addOption(option);
-        }
-        updateSubmenu();
-    }
-
-    public void removeOption(String option) {
-        options.remove(option);
-        updateSubmenu();
-    }
-
-    public void clearOptions() {
-        options.clear();
-        updateSubmenu();
-    }
-
-    private void updateSubmenu() {
-        if (subMenu != null && subMenu.isShown()) {
-            createMenuItems();
-        } else {
-            invalidSubmenuItems = true;
-        }
-    }
-
-    private void createMenuItems() {
-        if (subMenu == null) {
-            subMenu = new Menu();
-        }
-        for (var menuItem : menuItems) {
-            menuItem.setActionListener(null);
-        }
-        menuItems.clear();
-        subMenu.removeAll();
-        for (var option : options) {
-            MenuItem menuItem = new MenuItem();
-            menuItem.setStyle(getStyle());
-            menuItem.setText(option);
-            menuItem.setActionListener(this::onMenuItemAction);
-            subMenu.addMenuitem(menuItem);
-            menuItems.add(menuItem);
-        }
-        invalidSubmenuItems = false;
-    }
-
-    protected Menu getSubMenu() {
-        createMenuItems();
-        return subMenu;
-    }
-
-    private void onMenuItemAction(ActionEvent actionEvent) {
-        int index = menuItems.indexOf(actionEvent.getSource());
-        if (index > -1) {
-            selectOption(index);
-        }
-        hideSubMenu();
-    }
-
-    public void showSubMenu() {
-        if (invalidSubmenuItems) {
-            createMenuItems();
-        }
-
-        Activity act = getActivity();
-        if (act != null && subMenu != null) {
-            float x = getOutX();
-            float y = getOutY();
-            float width = getOutWidth();
-            float height = getOutHeight();
-            Vector2 screen1 = localToScreen(x, y);
-            Vector2 screen2 = localToScreen(x + width, y + height);
-            subMenu.setMinWidth(getWidth());
-            subMenu.show(act, screen2.x, screen2.y, DropdownAlign.TOP_RIGHT);
-        }
-    }
-
-    public void hideSubMenu() {
-        if (subMenu != null) {
-            subMenu.hide();
-        }
-    }
-
-    public void selectOption(int index) {
-        if (index >= 0 && index < options.size()) {
-            setText(options.get(index));
-            fireOptionSelected(options.get(index));
-        }
-    }
-
     @Override
     public void fireHover(HoverEvent event) {
         super.fireHover(event);
@@ -355,13 +261,15 @@ public class DropDown extends TextField {
 
     @Override
     protected float getVisibleTextX() {
-        return getInX();
+        float iw = getLayoutIconWidth();
+        return getInX() + (iw > 0 ? iw + getIconSpacing() : 0);
     }
 
     @Override
     protected float getVisibleTextWidth() {
+        float iw = getLayoutIconWidth();
         float aiw = getLayoutActionIconWidth();
-        return getInWidth() - (aiw <= 0 ? 0 : aiw + getActionIconSpacing());
+        return getInWidth() - (iw > 0 ? iw + getIconSpacing() : 0) - (aiw <= 0 ? 0 : aiw + getActionIconSpacing());
     }
 
     @Override
@@ -377,7 +285,6 @@ public class DropDown extends TextField {
     }
 
     public void action() {
-        showSubMenu();
         fireAction();
     }
 
@@ -399,18 +306,79 @@ public class DropDown extends TextField {
         return actionIcon != null && !(local.x < x1 || local.x > x2 || local.y < y1 || local.y > y2);
     }
 
-    public UXListener<TextEvent> getOptionSelectedListener() {
-        return optionSelectedListener;
+    public Drawable getIcon() {
+        return icon;
     }
 
-    public void setOptionSelectedListener(UXListener<TextEvent> optionSelectedListener) {
-        this.optionSelectedListener = optionSelectedListener;
+    public void setIcon(Drawable icon) {
+        if (this.icon != icon) {
+            this.icon = icon;
+            invalidate(isWrapContent());
+        }
     }
 
-    private void fireOptionSelected(String option) {
-        if (optionSelectedListener != null) {
-            UXListener.safeHandle(optionSelectedListener,
-                    new TextEvent(this, TextEvent.CHANGE, 0, getLastCaretPosition(), option));
+    public float getIconWidth() {
+        return iconWidth;
+    }
+
+    public void setIconWidth(float iconWidth) {
+        if (this.iconWidth != iconWidth) {
+            this.iconWidth = iconWidth;
+            invalidate(isWrapContent());
+        }
+    }
+
+    private float getLayoutIconWidth() {
+        return icon == null ? 0 : iconWidth == 0 || iconWidth == MATCH_PARENT ? getLineHeight() : iconWidth;
+    }
+
+    public float getIconHeight() {
+        return iconHeight;
+    }
+
+    public void setIconHeight(float iconHeight) {
+        if (this.iconHeight != iconHeight) {
+            this.iconHeight = iconHeight;
+            invalidate(false);
+        }
+    }
+
+    private float getLayoutIconHeight() {
+        return icon == null ? 0 : iconHeight == 0 || iconHeight == MATCH_PARENT ? getLineHeight() : iconHeight;
+    }
+
+    public float getIconSpacing() {
+        return iconSpacing;
+    }
+
+    public void setIconSpacing(float iconSpacing) {
+        if (this.iconSpacing != iconSpacing) {
+            this.iconSpacing = iconSpacing;
+            invalidate(isWrapContent());
+        }
+    }
+
+    public int getIconColor() {
+        return iconColor;
+    }
+
+    public void setIconColor(int iconColor) {
+        if (this.iconColor != iconColor) {
+            this.iconColor = iconColor;
+            invalidate(false);
+        }
+    }
+
+    public ImageFilter getIconImageFilter() {
+        return iconImageFilter;
+    }
+
+    public void setIconImageFilter(ImageFilter iconImageFilter) {
+        if (iconImageFilter == null) iconImageFilter = ImageFilter.LINEAR;
+
+        if (this.iconImageFilter != iconImageFilter) {
+            this.iconImageFilter = iconImageFilter;
+            invalidate(false);
         }
     }
 

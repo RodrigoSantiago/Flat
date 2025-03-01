@@ -61,7 +61,8 @@ public class UXBuilder {
         UXBuilder.install("MenuItem", MenuItem::new);
         UXBuilder.install("Divider", Divider::new);
         UXBuilder.install("TextField", TextField::new);
-        UXBuilder.install("DropDown", DropDown::new);
+        UXBuilder.install("TextInputField", TextInputField::new);
+        UXBuilder.install("TextDropDown", TextDropDown::new);
         // DropDownField
         // SearchField
         // UXBuilder.install("TextArea", TextArea::new); - must be efficient

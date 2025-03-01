@@ -73,12 +73,16 @@ text-field {
     text-divider-color : blue;
 }
 
-drop-down : text-field {
+text-input-field : text-field {
     text-size : 16sp;
     action-icon : '/default/icons/radiobox-marked.svg';
     action-icon-color : red;
     action-icon-bg-color : #FF000080;
     action-icon-cursor : hand;
+    action-icon-spacing : 8;
+}
+
+text-drop-down : text-input-field {
 }
 
 text-area {
