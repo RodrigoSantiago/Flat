@@ -24,10 +24,10 @@ public class SVG {
     public static native void SetAntiAlias(long context, boolean aa);
     public static native void SetStroke(long context, float width, int cap, int join, float mitter, float[] dash, float dashPhase);
     public static native void SetPaintColor(long context, int color);
-    public static native void SetPaintLinearGradient(long context, float[] affine, float x1, float y1, float x2, float y2, int count, float[] stops, int[] colors, int cycleMethod);
-    public static native void SetPaintRadialGradient(long context, float[] affine, float x1, float y1, float radiusIn, float radiusOut, float fx, float fy, int count, float[] stops, int[] colors, int cycleMethod);
-    public static native void SetPaintBoxGradient(long context, float[] affine, float x, float y, float width, float height, float corners, float blur, int count, float[] stops, int[] colors, int cycleMethod);
-    public static native void SetPaintImage(long context, int textureID, float[] affineImg, int color);
+    public static native void SetPaintLinearGradient(long context, float x1, float y1, float x2, float y2, int count, float[] data, int cycleMethod);
+    public static native void SetPaintRadialGradient(long context, float x1, float y1, float fx, float fy, float rIn, float rOut, int count, float[] data, int cycleMethod);
+    public static native void SetPaintBoxGradient(long context, float x, float y, float w, float h, float corners, float blur, float alpha, int color, float[] data);
+    public static native void SetPaintImage(long context, int textureID, int color, float[] data, int cycleMethod);
 
     //---------------------------
     //         Transforms

@@ -7,6 +7,10 @@ import flat.events.TextEvent;
 import flat.graphics.Color;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Font;
+import flat.graphics.context.Paint;
+import flat.graphics.context.paints.GradientStop;
+import flat.graphics.context.paints.LinearGradient;
+import flat.graphics.context.paints.RadialGradient;
 import flat.graphics.image.PixelMap;
 import flat.math.shapes.Path;
 import flat.math.stroke.BasicStroke;
@@ -120,6 +124,17 @@ public class MainActivity extends Controller {
     @Override
     public void onDraw(SmartContext context) {
         super.onDraw(context);
+        t += 0.01f;
+        if (t > 1) t = 1;
+        RadialGradient linearGradient = new RadialGradient.Builder(50, 50, 0, 50)
+                .focus(25, 25)
+                .stop(new GradientStop(0, Color.red))
+                .stop(new GradientStop(1, Color.blue))
+                .cycleMethod(Paint.CycleMethod.CLAMP)
+                .build();
+        context.setTransform2D(null);
+        context.setPaint(linearGradient);
+        context.drawRect(0, 0, 200, 200, true);
         /*context.setTransform2D(null);
         context.setStroker(new BasicStroke(10, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         context.setColor(0xFF0000FF);

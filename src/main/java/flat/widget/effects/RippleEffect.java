@@ -4,6 +4,8 @@ import flat.animations.Interpolation;
 import flat.animations.NormalizedAnimation;
 import flat.graphics.SmartContext;
 import flat.graphics.context.Paint;
+import flat.graphics.context.paints.GradientStop;
+import flat.graphics.context.paints.RadialGradient;
 import flat.math.shapes.Circle;
 import flat.math.shapes.Shape;
 import flat.window.Activity;
@@ -50,12 +52,15 @@ public class RippleEffect {
         float max = Math.min(360, Math.max(8, ripple.radius));
         float pos = animation.getInterpolatedPosition();
         float radius = (min * (1 - pos)) + max * (pos);
-
-        context.setPaint(Paint.radial(ripple.x, ripple.y, radius, radius, 0, 0,
-                stops, colors, Paint.CycleMethod.CLAMP));
         if (clip == null) {
+            context.setColor(colors[0]);
             context.drawCircle(ripple.x, ripple.y, radius, true);
         } else {
+            context.setPaint(new RadialGradient.Builder(ripple.x, ripple.y, radius, radius)
+                    .stop(new GradientStop(0, colors[0]))
+                    .stop(new GradientStop(1, colors[1]))
+                    .cycleMethod(Paint.CycleMethod.CLAMP)
+                    .build());
             context.drawShape(clip, true);
         }
     }

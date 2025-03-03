@@ -4,6 +4,8 @@ import flat.backend.*;
 import flat.exception.FlatException;
 import flat.graphics.SmartContext;
 import flat.graphics.context.enums.*;
+import flat.graphics.context.paints.ColorPaint;
+import flat.graphics.context.paints.ImagePattern;
 import flat.math.Affine;
 import flat.math.Mathf;
 import flat.math.shapes.PathIterator;
@@ -219,7 +221,7 @@ public class Context {
         // ---- SVG ---- //
         svgMode = false;
         svgAntialias = false;
-        svgPaint = Paint.color(0x000000FF);
+        svgPaint = new ColorPaint(0x000000FF);
         svgStrokeWidth = 1f;
         svgLineCap = LineCap.BUTT;
         svgLineJoin = LineJoin.ROUND;
@@ -1212,17 +1214,7 @@ public class Context {
     }
 
     private void svgApplyTransformGradients() {
-        if (svgPaint.isColor()) {
-            SVG.SetPaintColor(svgId, svgPaint.color);
-        } else if (svgPaint.isLinearGradient()) {
-            SVG.SetPaintLinearGradient(svgId, svgPaint.transform, svgPaint.x1, svgPaint.y1, svgPaint.x2, svgPaint.y2, svgPaint.stops.length, svgPaint.stops, svgPaint.colors, svgPaint.cycleMethod.ordinal());
-        } else if (svgPaint.isRadialGradient()) {
-            SVG.SetPaintRadialGradient(svgId, svgPaint.transform, svgPaint.x1, svgPaint.y1, svgPaint.x2, svgPaint.y2, svgPaint.fx, svgPaint.fy, svgPaint.stops.length, svgPaint.stops, svgPaint.colors, svgPaint.cycleMethod.ordinal());
-        } else if (svgPaint.isBoxShadow()) {
-            SVG.SetPaintBoxGradient(svgId, svgPaint.transform, svgPaint.x1, svgPaint.y1, svgPaint.x2, svgPaint.y2, svgPaint.corners, svgPaint.blur, svgPaint.stops.length, svgPaint.stops, svgPaint.colors, svgPaint.cycleMethod.ordinal());
-        } else if (svgPaint.isImagePattern()) {
-            SVG.SetPaintImage(svgId, svgPaint.texture.getInternalID(), svgPaint.transformImage, svgPaint.color);
-        }
+        svgPaint.setInternal(svgId);
 
         SVG.TransformSet(svgId,
                 svgTransform.m00, svgTransform.m10,

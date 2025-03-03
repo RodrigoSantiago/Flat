@@ -2,15 +2,16 @@ package flat.graphics;
 
 import flat.graphics.context.*;
 import flat.graphics.context.enums.BlendFunction;
+import flat.graphics.context.paints.ColorPaint;
+import flat.graphics.context.paints.GaussianShadow;
+import flat.graphics.context.paints.ImagePattern;
 import flat.graphics.image.PixelMap;
 import flat.graphics.material.Material;
 import flat.graphics.material.MaterialValue;
 import flat.graphics.mesh.Mesh;
 import flat.math.Affine;
 import flat.math.Matrix4;
-import flat.math.operations.Area;
 import flat.math.shapes.*;
-import flat.math.stroke.BasicStroke;
 
 import java.nio.Buffer;
 import java.util.ArrayList;
@@ -252,7 +253,7 @@ public class SmartContext {
     }
 
     public void setColor(int color) {
-        setPaint(Paint.color(color));
+        setPaint(new ColorPaint(color));
     }
 
     public void setPaint(Paint paint) {
@@ -437,28 +438,49 @@ public class SmartContext {
         final float h = height + blur * 2;
 
         if (cTop == cRight && cBottom == cLeft && cLeft == cTop) {
-            context.svgPaint(Paint.shadow(x, y, x + width, y + height,
-                    Math.min(width / 2f, Math.min(height / 2f, cTop + blur / 2f)), blur * 2, alpha));
+            context.svgPaint(new GaussianShadow.Builder(x, y, width, height)
+                    .corners(Math.min(width / 2f, Math.min(height / 2f, cTop + blur / 2f)))
+                    .blur(blur * 2)
+                    .alpha(alpha)
+                    .color(Color.black)
+                    .build());
             drawRect(x1, y1, w, h, true);
         } else {
             final float hw = w / 2f;
             final float hh = h / 2f;
             final float xm = x1 + hw;
             final float ym = y1 + hh;
-            context.svgPaint(Paint.shadow(x, y, x + width, y + height,
-                    Math.min(width / 2f, Math.min(height / 2f, cTop + blur)), blur * 2, alpha));
+            context.svgPaint(new GaussianShadow.Builder(x, y, width, height)
+                    .corners(Math.min(width / 2f, Math.min(height / 2f, cTop + blur)))
+                    .blur(blur * 2)
+                    .alpha(alpha)
+                    .color(Color.black)
+                    .build());
             drawRect(x1, y1, hw, hh, true);
 
-            context.svgPaint(Paint.shadow(x, y, x + width, y + height,
-                    Math.min(width / 2f, Math.min(height / 2f, cRight + blur)), blur * 2, alpha));
+            context.svgPaint(new GaussianShadow.Builder(x, y, width, height)
+                    .corners(Math.min(width / 2f, Math.min(height / 2f, cRight + blur)))
+                    .blur(blur * 2)
+                    .alpha(alpha)
+                    .color(Color.black)
+                    .build());
             drawRect(xm, y1, hw, hh, true);
 
-            context.svgPaint(Paint.shadow(x, y, x + width, y + height,
-                    Math.min(width / 2f, Math.min(height / 2f, cBottom + blur)), blur * 2, alpha));
+            context.svgPaint(new GaussianShadow.Builder(x, y, width, height)
+                    .corners(Math.min(width / 2f, Math.min(height / 2f, cBottom + blur)))
+                    .blur(blur * 2)
+                    .alpha(alpha)
+                    .color(Color.black)
+                    .build());
             drawRect(xm, ym, hw, hh, true);
 
-            context.svgPaint(Paint.shadow(x, y, x + width, y + height,
-                    Math.min(width / 2f, Math.min(height / 2f, cLeft + blur)), blur * 2, alpha));
+
+            context.svgPaint(new GaussianShadow.Builder(x, y, width, height)
+                    .corners( Math.min(width / 2f, Math.min(height / 2f, cLeft + blur)))
+                    .blur(blur * 2)
+                    .alpha(alpha)
+                    .color(Color.black)
+                    .build());
             drawRect(x1, ym, hw, hh, true);
         }
 
@@ -542,7 +564,11 @@ public class SmartContext {
             srcY2 = v;
         }
         Paint paint = context.svgPaint();
-        context.svgPaint(Paint.image(srcX1, srcY1, srcX2, srcY2, dstX1, dstY1, dstX2, dstY2, texture, color, transform));
+        context.svgPaint(new ImagePattern.Builder(texture)
+                .source(srcX1, srcY1, srcX2, srcY2)
+                .destin(dstX1, dstY1, dstX2, dstY2)
+                .color(color)
+                .build());
         drawRect(dstX1, dstY1, dstX2 - dstX1, dstY2 - dstY1, true);
         context.svgPaint(paint);
     }

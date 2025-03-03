@@ -6,6 +6,7 @@ import flat.graphics.context.Paint;
 import flat.graphics.context.enums.LineCap;
 import flat.graphics.context.enums.LineJoin;
 import flat.graphics.context.enums.PixelFormat;
+import flat.graphics.context.paints.ColorPaint;
 import flat.math.shapes.Path;
 import flat.math.shapes.Rectangle;
 import flat.math.shapes.Shape;
@@ -136,11 +137,11 @@ public class DrawableReader {
         }
         Node fillNode = map.getNamedItem("fill");
         if (fillNode != null) {
-            fillPaint = Paint.color(Parser.color(fillNode.getNodeValue()));
+            fillPaint = new ColorPaint(Parser.color(fillNode.getNodeValue()));
         }
         Node strokeNode = map.getNamedItem("stroke");
         if (strokeNode != null) {
-            strokePaint = Paint.color(Parser.color(strokeNode.getNodeValue()));
+            strokePaint = new ColorPaint(Parser.color(strokeNode.getNodeValue()));
         }
         Node strokeWidth = map.getNamedItem("stroke-width");
         Node strokeCap = map.getNamedItem("stroke-cap");
