@@ -7,7 +7,6 @@ import flat.uxml.value.*;
 import flat.widget.Widget;
 import flat.widget.enums.HorizontalAlign;
 import flat.widget.enums.VerticalAlign;
-import flat.widget.structure.ListView;
 import flat.widget.value.HorizontalScrollBar;
 import flat.widget.value.VerticalScrollBar;
 import org.junit.Before;
@@ -95,7 +94,7 @@ public class TextFieldTest {
         assertNull(textField.getTextChangeListener());
         assertNull(textField.getTextInputFilter());
 
-        textField.setAttributes(createNonDefaultValues(), "text-field");
+        textField.setAttributes(createNonDefaultValues(), null);
         textField.applyAttributes(controller);
 
         assertEquals(HorizontalAlign.LEFT, textField.getHorizontalAlign());

@@ -60,7 +60,7 @@ public class ToolItemTest {
         assertEquals(ImageFilter.LINEAR, toolItem.getIconImageFilter());
         assertNull(toolItem.getActionListener());
 
-        toolItem.setAttributes(createNonDefaultValues(), "tool-item");
+        toolItem.setAttributes(createNonDefaultValues(), null);
         toolItem.applyAttributes(controller);
 
         assertNull(toolItem.getIcon());

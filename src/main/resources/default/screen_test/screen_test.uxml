@@ -9,8 +9,8 @@
             <ToolItem icon="/default/icons/checkbox-blank-outline.svg" menu-text="Tool Item Test A" on-action="here"
                       menu-icon="/default/icons/checkbox-blank-outline.svg" menu-icon-color="red" menu-icon-spacing="16"
             />
-            <ToolItem icon="/default/icons/checkbox-marked.svg" menu-text="Tool Item Test B"/>
-            <ToolItem icon="/default/icons/checkbox-marked.svg" menu-text="Tool Item Test C"/>
+            <ToolItem icon="/default/icons/checkbox-marked.svg" menu-text="Tool Item Test B" style="shiny round"/>
+            <ToolItem icon="/default/icons/checkbox-marked.svg" menu-text="Tool Item Test C" style="dark shiny round"/>
             <ToolItem icon="/default/icons/checkbox-marked.svg" menu-text="Tool Item Test D"/>
             <ToolItem icon="/default/icons/checkbox-marked.svg" menu-text="Tool Item Test E" menu-shortcut-text="Ctrl+C"/>
             <ToolItem icon="/default/icons/checkbox-marked.svg" menu-text="Tool Item Test F"/>

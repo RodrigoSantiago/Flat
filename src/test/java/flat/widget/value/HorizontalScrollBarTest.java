@@ -1,6 +1,5 @@
 package flat.widget.value;
 
-import flat.events.ActionEvent;
 import flat.events.SlideEvent;
 import flat.uxml.*;
 import flat.uxml.value.UXValue;
@@ -52,7 +51,7 @@ public class HorizontalScrollBarTest {
         assertNull(scrollBar.getSlideListener());
         assertNull(scrollBar.getViewOffsetListener());
 
-        scrollBar.setAttributes(createNonDefaultValues(), "horizontal-scroll-bar");
+        scrollBar.setAttributes(createNonDefaultValues(), null);
         scrollBar.applyAttributes(controller);
 
         assertEquals(200, scrollBar.getTotalDimension(), 0.1f);

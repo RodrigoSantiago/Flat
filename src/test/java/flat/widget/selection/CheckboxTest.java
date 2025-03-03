@@ -86,7 +86,7 @@ public class CheckboxTest {
         assertNull(checkbox.getToggleListener());
         assertNull(checkbox.getSelectionStateListener());
 
-        checkbox.setAttributes(createNonDefaultValues(), "checkbox");
+        checkbox.setAttributes(createNonDefaultValues(), null);
         checkbox.applyAttributes(controller);
 
         assertNull(checkbox.getIconActive());

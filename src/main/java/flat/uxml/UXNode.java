@@ -5,19 +5,11 @@ import flat.resources.ResourceStream;
 import flat.uxml.node.UXNodeAttribute;
 import flat.uxml.node.UXNodeElement;
 import flat.uxml.node.UXNodeParser;
-import flat.uxml.sheet.UXSheetParser;
 import flat.uxml.value.UXValue;
 import flat.uxml.value.UXValueBool;
 import flat.uxml.value.UXValueText;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,13 +17,13 @@ import java.util.List;
 
 public class UXNode {
     private String name;
-    private String style;
+    private List<String> styles;
     private HashMap<Integer, UXValue> values;
     private List<UXNode> children;
 
-    public UXNode(String name, String style, HashMap<Integer, UXValue> values, List<UXNode> children) {
+    public UXNode(String name, List<String> styles, HashMap<Integer, UXValue> values, List<UXNode> children) {
         this.name = name;
-        this.style = style;
+        this.styles = styles;
         this.values = values;
         this.children = children;
     }
@@ -44,8 +36,8 @@ public class UXNode {
         return name;
     }
 
-    public String getStyle() {
-        return style;
+    public List<String> getStyles() {
+        return styles;
     }
 
     public HashMap<Integer, UXValue> getValues() {
@@ -142,10 +134,14 @@ public class UXNode {
                             values.put(entry.getKey(), entry.getValue());
                         }
                     }
+
+                    List<String> styles;
                     if (style == null) {
-                        style = include.getStyle();
+                        styles = include.getStyles();
+                    } else {
+                        styles = List.of(style.trim().split("\\s+"));
                     }
-                    return new UXNode(include.getName(), style, values, include.getChildren());
+                    return new UXNode(include.getName(), styles, values, include.getChildren());
                 }
             }
             return null;
@@ -160,6 +156,12 @@ public class UXNode {
             }
         }
 
-        return new UXNode(name, style, values, children);
+        List<String> styles;
+        if (style == null) {
+            styles = new ArrayList<>();
+        } else {
+            styles = List.of(style.trim().split("\\s+"));
+        }
+        return new UXNode(name, styles, values, children);
     }
 }

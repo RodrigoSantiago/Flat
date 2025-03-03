@@ -9,7 +9,6 @@ import flat.uxml.*;
 import flat.uxml.value.*;
 import flat.widget.Widget;
 import flat.widget.layout.Panel;
-import flat.widget.layout.ScrollBox;
 import flat.widget.value.HorizontalScrollBar;
 import flat.widget.value.VerticalScrollBar;
 import org.junit.Before;
@@ -108,7 +107,7 @@ public class ListViewTest {
         assertNull(listView.getViewOffsetXListener());
         assertNull(listView.getViewOffsetYListener());
 
-        listView.setAttributes(createNonDefaultValues(), "list-view");
+        listView.setAttributes(createNonDefaultValues(), null);
         listView.applyAttributes(controller);
 
         assertEquals(8, listView.getItemHeight(), 0.001f);

@@ -10,7 +10,6 @@ import flat.uxml.UXHash;
 import flat.uxml.UXListener;
 import flat.uxml.value.*;
 import flat.widget.Widget;
-import flat.widget.enums.HorizontalAlign;
 import flat.widget.enums.HorizontalPosition;
 import flat.widget.enums.ImageFilter;
 import org.junit.Before;
@@ -81,7 +80,7 @@ public class ButtonTest {
         assertEquals(0xFFFFFFFF, button.getIconColor());
         assertNull(button.getActionListener());
 
-        button.setAttributes(createNonDefaultValues(), "button");
+        button.setAttributes(createNonDefaultValues(), null);
         button.applyAttributes(controller);
 
         assertEquals(0, button.getIconWidth(), 0.001f);

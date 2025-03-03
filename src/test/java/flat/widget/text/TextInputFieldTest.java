@@ -107,7 +107,7 @@ public class TextInputFieldTest {
         assertEquals(0, textField.getActionIconHeight(), 0.001f);
         assertNull(textField.getActionListener());
 
-        textField.setAttributes(createNonDefaultValues(), "text-input-field");
+        textField.setAttributes(createNonDefaultValues(), null);
         textField.applyAttributes(controller);
 
         assertNull(textField.getIcon());

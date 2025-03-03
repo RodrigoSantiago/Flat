@@ -67,7 +67,8 @@ public class UXNodeTest {
         UXNode node = UXNode.parse(mockStream("<scene style=\"500dp\"/>"));
         assertNotNull(node);
         assertNode(node, "scene");
-        assertEquals("Style name nexpected", "500dp", node.getStyle());
+        assertEquals(1, node.getStyles().size());
+        assertEquals("500dp", node.getStyles().get(0));
         assertChild(node);
     }
 

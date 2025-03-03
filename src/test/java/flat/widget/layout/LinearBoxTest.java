@@ -41,7 +41,7 @@ public class LinearBoxTest {
     @Test
     public void alignDirectionStyles() {
         LinearBox box = new LinearBox();
-        box.setAttributes(createNonDefaultValues(), "stack-box");
+        box.setAttributes(createNonDefaultValues(), null);
         box.applyStyle();
 
         assertEquals(HorizontalAlign.LEFT, box.getHorizontalAlign());

@@ -1,6 +1,5 @@
 package flat.widget.value;
 
-import flat.events.SlideEvent;
 import flat.uxml.Controller;
 import flat.uxml.UXHash;
 import flat.uxml.value.*;
@@ -27,7 +26,7 @@ public class ProgressBarTest {
         assertEquals(0, progressBar.getSmoothTransitionDuration(), 0.001f);
         assertEquals(2, progressBar.getAnimationDuration(), 0.001f);
 
-        progressBar.setAttributes(createNonDefaultValues(), "progress-bar");
+        progressBar.setAttributes(createNonDefaultValues(), null);
         progressBar.applyAttributes(controller);
 
         assertEquals(ProgressLineMode.REGULAR, progressBar.getLineMode());

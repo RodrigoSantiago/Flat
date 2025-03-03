@@ -114,7 +114,6 @@ public class TextDropDown extends TextInputField {
         subMenu.removeAll();
         for (var option : options) {
             MenuItem menuItem = new MenuItem();
-            menuItem.setStyle(getStyle());
             menuItem.setText(option);
             menuItem.setActionListener(this::onMenuItemAction);
             subMenu.addMenuItem(menuItem);

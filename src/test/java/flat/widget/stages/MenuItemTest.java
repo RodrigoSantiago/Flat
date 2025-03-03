@@ -78,7 +78,7 @@ public class MenuItemTest {
         assertEquals(0x000000FF, menuitem.getShortcutTextColor());
         assertNull(menuitem.getShortcutText());
 
-        menuitem.setAttributes(createNonDefaultValues(), "menu-item");
+        menuitem.setAttributes(createNonDefaultValues(), null);
         menuitem.applyAttributes(controller);
 
         assertEquals(defaultFont, menuitem.getShortcutTextFont());

@@ -55,7 +55,7 @@ public class TabTest {
         assertEquals(0, tab.getPagesPrefHeight(), 0.1f);
         assertEquals(10, tab.getScrollSensibility(), 0.1f);
 
-        tab.setAttributes(createNonDefaultValues(), "tab");
+        tab.setAttributes(createNonDefaultValues(), null);
         tab.applyAttributes(controller);
 
         assertEquals(HorizontalAlign.LEFT, tab.getHorizontalAlign());

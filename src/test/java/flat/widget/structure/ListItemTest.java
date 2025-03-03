@@ -111,7 +111,7 @@ public class ListItemTest {
         assertNull(listItem.getActionListener());
         assertNull(listItem.getChangeStateListener());
 
-        listItem.setAttributes(createNonDefaultValues(), "listItem");
+        listItem.setAttributes(createNonDefaultValues(), null);
         listItem.applyAttributes(controller);
 
         assertFalse(listItem.isTextAllCaps());

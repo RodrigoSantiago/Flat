@@ -92,7 +92,7 @@ public class ChipTest {
         assertEquals(Cursor.UNSET, chip.getCloseIconCursor());
         assertNull(chip.getRequestCloseListener());
 
-        chip.setAttributes(createNonDefaultValues(), "chip");
+        chip.setAttributes(createNonDefaultValues(), null);
         chip.applyAttributes(controller);
 
         assertEquals(0, chip.getCloseIconWidth(), 0.001f);

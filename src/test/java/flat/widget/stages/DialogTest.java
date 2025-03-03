@@ -61,7 +61,7 @@ public class DialogTest {
         assertEquals(VerticalAlign.MIDDLE, dialog.getVerticalAlign());
         assertEquals(0, dialog.getShowupTransitionDuration(), 0.001f);
 
-        dialog.setAttributes(createNonDefaultValues(), "dialog");
+        dialog.setAttributes(createNonDefaultValues(), null);
         dialog.applyAttributes(controller);
 
         assertEquals(HorizontalAlign.CENTER, dialog.getHorizontalAlign());

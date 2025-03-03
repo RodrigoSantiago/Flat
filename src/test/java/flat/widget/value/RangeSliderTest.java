@@ -93,7 +93,7 @@ public class RangeSliderTest {
         assertNull(slider.getEndSlideFilter());
         assertNull(slider.getEndValueListener());
 
-        slider.setAttributes(createNonDefaultValues(), "ranged-slider");
+        slider.setAttributes(createNonDefaultValues(), null);
         slider.applyAttributes(controller);
 
         assertEquals(20, slider.getMaxValue(), 0.001f);

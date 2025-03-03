@@ -1,12 +1,10 @@
 package flat.widget.image;
 
-import flat.events.ActionEvent;
 import flat.graphics.image.Drawable;
 import flat.graphics.image.DrawableReader;
 import flat.resources.ResourceStream;
 import flat.uxml.Controller;
 import flat.uxml.UXHash;
-import flat.uxml.UXListener;
 import flat.uxml.value.UXValue;
 import flat.uxml.value.UXValueColor;
 import flat.uxml.value.UXValueText;
@@ -57,7 +55,7 @@ public class ImageViewTest {
         assertEquals(VerticalAlign.MIDDLE, imageView.getVerticalAlign());
         assertEquals(HorizontalAlign.CENTER, imageView.getHorizontalAlign());
 
-        imageView.setAttributes(createNonDefaultValues(), "image-view");
+        imageView.setAttributes(createNonDefaultValues(), null);
         imageView.applyAttributes(controller);
 
         assertNull(imageView.getImage());

@@ -55,7 +55,7 @@ public class GridTest {
         assertEquals(0, grid.getColumnWidth(0), 0.001f);
         assertEquals(0, grid.getRowHeight(0), 0.001f);
 
-        grid.setAttributes(createNonDefaultValues(), "grid");
+        grid.setAttributes(createNonDefaultValues(), null);
         grid.applyAttributes(controller);
 
         assertEquals(0, grid.getHorizontalSpacing(), 0.001f);

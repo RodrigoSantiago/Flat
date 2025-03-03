@@ -100,7 +100,7 @@ public class PageTest {
         assertNull(page.getCloseIcon());
         assertEquals(0xFFFFFFFF, page.getCloseIconColor());
 
-        page.setAttributes(createNonDefaultValues(), "page");
+        page.setAttributes(createNonDefaultValues(), null);
         page.applyAttributes(controller);
 
         assertEquals(VerticalAlign.TOP, page.getVerticalAlign());

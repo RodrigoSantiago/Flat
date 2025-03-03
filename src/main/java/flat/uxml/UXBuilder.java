@@ -131,7 +131,7 @@ public class UXBuilder {
             widget.setId(id);
 
             // Attributes
-            widget.setAttributes(node.getValues(), node.getStyle());
+            widget.setAttributes(node.getValues(), node.getStyles());
 
             // Children
             UXChildren children = new UXChildren(this);

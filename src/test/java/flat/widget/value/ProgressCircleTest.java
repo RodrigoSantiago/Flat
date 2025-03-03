@@ -26,7 +26,7 @@ public class ProgressCircleTest {
         assertEquals(0, progressCircle.getSmoothTransitionDuration(), 0.001f);
         assertEquals(2, progressCircle.getAnimationDuration(), 0.001f);
 
-        progressCircle.setAttributes(createNonDefaultValues(), "progress-bar");
+        progressCircle.setAttributes(createNonDefaultValues(), null);
         progressCircle.applyAttributes(controller);
 
         assertEquals(ProgressLineMode.REGULAR, progressCircle.getLineMode());

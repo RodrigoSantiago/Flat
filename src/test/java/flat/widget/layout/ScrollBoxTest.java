@@ -70,7 +70,7 @@ public class ScrollBoxTest {
         assertNull(scrollBox.getViewOffsetXListener());
         assertNull(scrollBox.getViewOffsetYListener());
 
-        scrollBox.setAttributes(createNonDefaultValues(), "scroll-box");
+        scrollBox.setAttributes(createNonDefaultValues(), null);
         scrollBox.applyAttributes(controller);
 
         assertEquals(Policy.AS_NEEDED, scrollBox.getHorizontalPolicy());

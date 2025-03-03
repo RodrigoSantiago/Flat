@@ -86,7 +86,7 @@ public class ToolBarTest {
         assertNotNull(toolBar.getNavigationItem());
         assertNotNull(toolBar.getOverflowItem());
 
-        toolBar.setAttributes(createNonDefaultValues(), "tool-bar");
+        toolBar.setAttributes(createNonDefaultValues(), null);
         toolBar.applyAttributes(controller);
 
         assertEquals("Title", toolBar.getTitle());
@@ -154,7 +154,7 @@ public class ToolBarTest {
         assertNull(itemA.getParent());
         assertNull(itemB.getParent());
 
-        toolBar.setAttributes(createOverflowNavigation(), "tool-bar");
+        toolBar.setAttributes(createOverflowNavigation(), null);
         toolBar.applyChildren(uxChild);
 
         assertEquals(2, toolBar.getChildrenIterable().size());

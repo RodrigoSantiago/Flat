@@ -113,9 +113,13 @@ public class Widget {
         attrs = new UXAttrs(this, UXAttrs.convertToKebabCase(getClass().getSimpleName()));
     }
 
-    public void setAttributes(HashMap<Integer, UXValue> attributes, String style) {
+    public void setAttributes(HashMap<Integer, UXValue> attributes, List<String> styles) {
         attrs.setAttributes(attributes);
-        attrs.setName(style);
+        if (styles != null) {
+            for (String style : styles) {
+                attrs.addStyleName(style);
+            }
+        }
     }
 
     public void applyAttributes(Controller controller) {
@@ -742,26 +746,41 @@ public class Widget {
         return this.attrs;
     }
 
-    public String getStyle() {
-        return this.attrs.getName();
+    public List<String> getStyles() {
+        return this.attrs.getStyleNames();
     }
 
-    public void setStyle(String style) {
-        if (!Objects.equals(this.attrs.getName(), style)) {
-            attrs.setName(style);
+    public void addStyle(String style) {
+        if (attrs.addStyleName(style)) {
             applyStyle();
         }
     }
 
-    public String getBaseStyle() {
-        return this.attrs.getBase();
-    }
+    public void addStyles(List<String> styles) {
+        if (styles == null || styles.isEmpty()) {
+            return;
+        }
 
-    public void setBaseStyle(String style) {
-        if (!Objects.equals(this.attrs.getBase(), style)) {
-            attrs.setBase(style);
+        boolean change = false;
+        for (String style : styles) {
+            change = attrs.addStyleName(style) || change;
+        }
+        if (change) {
             applyStyle();
         }
+    }
+
+    public void setStyles(List<String> styles) {
+        attrs.cleatStyles();
+        for (String style : styles) {
+            attrs.addStyleName(style);
+        }
+        applyStyle();
+    }
+
+    public void clearStyles() {
+        attrs.cleatStyles();
+        applyStyle();
     }
 
     public void setFollowStyleProperty(String name, boolean follow) {

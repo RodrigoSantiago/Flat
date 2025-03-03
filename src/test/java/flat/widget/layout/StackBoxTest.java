@@ -39,7 +39,7 @@ public class StackBoxTest {
     @Test
     public void alignStyles() {
         StackBox box = new StackBox();
-        box.setAttributes(createNonDefaultValues(), "stack-box");
+        box.setAttributes(createNonDefaultValues(), null);
         box.applyStyle();
 
         assertEquals(HorizontalAlign.LEFT, box.getHorizontalAlign());

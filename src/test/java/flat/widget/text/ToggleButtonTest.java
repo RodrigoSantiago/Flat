@@ -76,7 +76,7 @@ public class ToggleButtonTest {
         assertNull(button.getToggleListener());
         assertNull(button.getActiveListener());
 
-        button.setAttributes(createNonDefaultValues(), "toggle-button");
+        button.setAttributes(createNonDefaultValues(), null);
         button.applyAttributes(controller);
 
         assertTrue(button.isActive());

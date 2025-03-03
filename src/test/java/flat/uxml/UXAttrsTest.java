@@ -17,7 +17,9 @@ import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -97,22 +99,21 @@ public class UXAttrsTest {
     @Test
     public void constructor() {
         UXAttrs attrs = new UXAttrs(widget, "test");
-        attrs.setName("name");
+        attrs.addStyleName("name");
         attrs.setTheme(theme);
 
         assertEquals(theme, attrs.getTheme());
 
-        assertEquals("test", attrs.getBase());
-        assertEquals("name", attrs.getName());
+        assertList(attrs.getStyleNames(), "test", "name");
 
-        assertEquals(nameStyle, attrs.getStyle());
-        assertEquals(base, attrs.getBaseStyle());
+        assertEquals(base, attrs.getStyles().get(0));
+        assertEquals(nameStyle, attrs.getStyles().get(1));
     }
 
     @Test
     public void contains() {
         UXAttrs attrs = new UXAttrs(widget, "test");
-        attrs.setName("name");
+        attrs.addStyleName("name");
         attrs.setTheme(theme);
 
         assertTrue(attrs.contains("property-base"));
@@ -123,7 +124,7 @@ public class UXAttrsTest {
     @Test
     public void containsChange() {
         UXAttrs attrs = new UXAttrs(widget, "test");
-        attrs.setName("name");
+        attrs.addStyleName("name");
         attrs.setTheme(theme);
 
         assertFalse(attrs.containsChange((byte) 0b00000001, (byte) 0b00000011));
@@ -135,7 +136,7 @@ public class UXAttrsTest {
     @Test
     public void containsAttribute() {
         UXAttrs attrs = new UXAttrs(widget, "test");
-        attrs.setName("name");
+        attrs.addStyleName("name");
         attrs.setTheme(theme);
         attrs.addAttribute("property-added", new UXValueNumber(100));
 
@@ -164,7 +165,7 @@ public class UXAttrsTest {
     @Test
     public void getAttributeValues() {
         UXAttrs attrs = new UXAttrs(widget, "test");
-        attrs.setName("name");
+        attrs.addStyleName("name");
         attrs.setTheme(theme);
         attrs.addAttribute("property-added", new UXValueNumber(100));
 
@@ -185,7 +186,7 @@ public class UXAttrsTest {
     @Test
     public void getStyleValues() {
         UXAttrs attrs = new UXAttrs(widget, "test");
-        attrs.setName("name");
+        attrs.addStyleName("name");
         attrs.setTheme(theme);
         attrs.addAttribute("property-added", new UXValueNumber(100));
 
@@ -217,7 +218,7 @@ public class UXAttrsTest {
     @Test
     public void mixStyleValues() {
         UXAttrs attrs = new UXAttrs(widget, "test");
-        attrs.setName("name");
+        attrs.addStyleName("name");
         attrs.setTheme(theme);
 
         StateInfo stateInfo = mock(StateInfo.class);
@@ -231,7 +232,7 @@ public class UXAttrsTest {
     @Test
     public void mixDifferentValues() {
         UXAttrs attrs = new UXAttrs(widget, "test");
-        attrs.setName("name");
+        attrs.addStyleName("name");
         attrs.setTheme(theme);
 
         StateInfo stateInfo = mock(StateInfo.class);
@@ -246,7 +247,7 @@ public class UXAttrsTest {
     @Test
     public void getListeners() {
         UXAttrs attrs = new UXAttrs(widget, "test");
-        attrs.setName("name");
+        attrs.addStyleName("name");
         attrs.setTheme(theme);
         attrs.addAttribute("on-click", new UXValueText("method"));
 
@@ -261,6 +262,18 @@ public class UXAttrsTest {
         assertNull(fallback);
 
         verify(controller, times(1)).getListenerMethod("method", PointerEvent.class);
+    }
+
+    private void assertList(List<String> actual, String... expected) {
+        ArrayList<String> all = new ArrayList<>(actual);
+        for (int i = 0; i < expected.length; i++) {
+            if (!all.remove(expected[i])) {
+                fail("Style not found : '" + expected[i] + "' in a total of " + actual.size());
+            }
+        }
+        if (all.size() > 0) {
+            fail("Style not expected : '" + all.get(0) + "' in a excedent of " + all.size());
+        }
     }
 
 }

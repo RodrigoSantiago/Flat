@@ -17,7 +17,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.times;
@@ -54,7 +53,7 @@ public class FrameTest {
         assertEquals(HorizontalAlign.CENTER, frame.getHorizontalAlign());
         assertEquals(VerticalAlign.MIDDLE, frame.getVerticalAlign());
 
-        frame.setAttributes(createNonDefaultValues(), "frame");
+        frame.setAttributes(createNonDefaultValues(), null);
         frame.applyAttributes(controller);
 
         assertEquals(HorizontalAlign.CENTER, frame.getHorizontalAlign());

@@ -70,7 +70,7 @@ public class RadioButtonTest {
         assertNull(radioButton.getToggleListener());
         assertNull(radioButton.getActiveListener());
 
-        radioButton.setAttributes(createNonDefaultValues(), "radio-button");
+        radioButton.setAttributes(createNonDefaultValues(), null);
         radioButton.applyAttributes(controller);
 
         assertNull(radioButton.getIconActive());

@@ -65,7 +65,7 @@ public class MenuTest {
         assertNull(menu.getSlideListener());
         assertNull(menu.getViewOffsetListener());
 
-        menu.setAttributes(createNonDefaultValues(), "menu");
+        menu.setAttributes(createNonDefaultValues(), null);
         menu.applyAttributes(controller);
 
         assertEquals(HorizontalAlign.CENTER, menu.getHorizontalAlign());

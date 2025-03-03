@@ -1,6 +1,5 @@
 package flat.widget.value;
 
-import flat.events.ActionEvent;
 import flat.events.SlideEvent;
 import flat.uxml.*;
 import flat.uxml.value.UXValue;
@@ -8,7 +7,6 @@ import flat.uxml.value.UXValueColor;
 import flat.uxml.value.UXValueNumber;
 import flat.uxml.value.UXValueText;
 import flat.widget.Widget;
-import flat.widget.enums.Direction;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -53,7 +51,7 @@ public class VerticalScrollBarTest {
         assertNull(scrollBar.getSlideListener());
         assertNull(scrollBar.getViewOffsetListener());
 
-        scrollBar.setAttributes(createNonDefaultValues(), "vertical-scroll-bar");
+        scrollBar.setAttributes(createNonDefaultValues(), null);
         scrollBar.applyAttributes(controller);
 
         assertEquals(200, scrollBar.getTotalDimension(), 0.1f);

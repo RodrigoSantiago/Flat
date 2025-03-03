@@ -25,7 +25,7 @@ public class WidgetTest {
 
         Widget widget = new Widget();
         widget.setTheme(theme);
-        widget.setAttributes(null, "widget");
+        widget.setAttributes(null, null);
         widget.applyAttributes(controller);
         widget.applyStyle();
     }
@@ -40,7 +40,7 @@ public class WidgetTest {
 
         Widget widget = new Widget();
         widget.setTheme(theme);
-        widget.setAttributes(null, "widget");
+        widget.setAttributes(null, null);
         widget.applyAttributes(controller);
         widget.applyStyle();
         widget.activity = activity;
@@ -111,7 +111,7 @@ public class WidgetTest {
 
         Widget widget = new Widget();
         widget.setTheme(theme);
-        widget.setAttributes(hash, "widget");
+        widget.setAttributes(hash, null);
         widget.applyAttributes(controller);
         widget.applyStyle();
 
@@ -179,7 +179,7 @@ public class WidgetTest {
 
         Widget widget = new Widget();
         widget.setTheme(theme);
-        widget.setAttributes(hash, "widget");
+        widget.setAttributes(hash, null);
         widget.applyAttributes(controller);
         widget.applyStyle();
 
@@ -298,7 +298,7 @@ public class WidgetTest {
 
         Widget widget = new Widget();
         widget.setTheme(theme);
-        widget.setAttributes(hash, "widget");
+        widget.setAttributes(hash, null);
         widget.applyAttributes(controller);
         widget.applyStyle();
 

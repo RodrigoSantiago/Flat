@@ -71,10 +71,10 @@ public class ToolBar extends Group {
         subtitleRender.setTextSize(subtitleSize);
         unmodifiableToolItems = Collections.unmodifiableList(toolItems);
         var overflow = new ToolItem();
-        overflow.setStyle("tool-item-overflow");
+        overflow.addStyle("tool-item-overflow");
         setOverflowItem(overflow);
         var navigation = new ToolItem();
-        navigation.setStyle("tool-item-navigation");
+        navigation.addStyle("tool-item-navigation");
         setNavigationItem(navigation);
     }
 
@@ -351,7 +351,7 @@ public class ToolBar extends Group {
             MenuItem menuItem = i >= menuItems.size() ? null : menuItems.get(i);
             if (menuItem == null) {
                 menuItem = new MenuItem();
-                menuItem.setStyle("tool-bar-menu-item");
+                menuItem.addStyle("tool-bar-menu-item");
                 menuItem.setActionListener(this::onToolItemAction);
                 if (divider == null && hasExtraContextMenuItems()) {
                     divider = new Divider();

@@ -78,7 +78,7 @@ public class SwitchToggleTest {
         assertNull(switchToggle.getToggleListener());
         assertNull(switchToggle.getActiveListener());
 
-        switchToggle.setAttributes(createNonDefaultValues(), "switch-toggle");
+        switchToggle.setAttributes(createNonDefaultValues(), null);
         switchToggle.applyAttributes(controller);
 
         assertNull(switchToggle.getIconActive());

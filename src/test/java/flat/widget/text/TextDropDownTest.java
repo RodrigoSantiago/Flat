@@ -70,7 +70,7 @@ public class TextDropDownTest {
 
         assertNull(textField.getOptionSelectedListener());
 
-        textField.setAttributes(createNonDefaultValues(), "text-drop-down");
+        textField.setAttributes(createNonDefaultValues(), null);
         textField.applyAttributes(controller);
 
         assertEquals(selected, textField.getOptionSelectedListener());

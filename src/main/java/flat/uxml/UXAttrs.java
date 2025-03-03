@@ -11,24 +11,26 @@ import flat.widget.State;
 import flat.widget.Widget;
 import flat.window.Activity;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 
 public class UXAttrs {
 
     private final Widget widget;
-    private String base;
-    private String name;
+    private ArrayList<String> styleNames = new ArrayList<>();
+    private ArrayList<UXStyle> styles = new ArrayList<>();
     private Activity activity;
     private UXTheme theme;
-    private UXStyle style;
-    private UXStyle baseStyle;
     private BitArray bitArray;
     private HashMap<Integer, UXValue> attributes;
+    private boolean invalidStyles;
 
     public UXAttrs(Widget widget, String base) {
         this.widget = widget;
-        this.base = base;
+        styleNames.add(base);
     }
 
     public static String convertToKebabCase(String camelCase) {
@@ -42,32 +44,48 @@ public class UXAttrs {
                 .toLowerCase();
     }
 
-    public void setName(String name) {
-        if (!Objects.equals(this.name, name)) {
-            this.name = name;
-            updateStyle();
+    public boolean addStyleName(String name) {
+        if (!styleNames.contains(name)) {
+            styleNames.add(name);
+            invalidStyles = true;
+            return true;
         }
+        return false;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setBase(String base) {
-        if (!Objects.equals(this.base, base)) {
-            this.base = base;
-            updateStyle();
+    public boolean removeStyleName(String name) {
+        if (styleNames.remove(name)) {
+            invalidStyles = true;
+            return true;
         }
+        return false;
     }
 
-    public String getBase() {
-        return base;
+    public void cleatStyles() {
+        styleNames.clear();
+        invalidStyles = true;
+    }
+
+    public int getStyleNameCount() {
+        return styleNames.size();
+    }
+
+    public String getStyleName(int index) {
+        return styleNames.get(index);
+    }
+
+    public List<String> getStyleNames() {
+        return new ArrayList<>(styleNames);
+    }
+
+    public List<UXStyle> getStyles() {
+        return new ArrayList<>(getUpdatedStyles());
     }
 
     public void setTheme(UXTheme theme) {
         if (this.theme != theme) {
             this.theme = theme;
-            updateStyle();
+            invalidStyles = true;
         }
     }
 
@@ -79,30 +97,40 @@ public class UXAttrs {
         return widget.getActivity();
     }
 
-    public UXStyle getStyle() {
-        return style;
-    }
-
-    public UXStyle getBaseStyle() {
-        return baseStyle;
-    }
-
-    private void updateStyle() {
-        this.baseStyle = theme != null ? theme.getStyle(base) : null;
-        this.style = theme != null && !Objects.equals(base, name) ? theme.getStyle(name) : null;
+    private ArrayList<UXStyle> getUpdatedStyles() {
+        if (invalidStyles && theme != null) {
+            invalidStyles = false;
+            styles.clear();
+            for (String styleName : styleNames) {
+                UXStyle style = theme.getStyle(styleName);
+                if (style != null) {
+                    styles.add(style);
+                }
+            }
+        }
+        return styles;
     }
 
     public boolean contains(String name) {
         Integer hash = UXHash.getHash(name);
-        return ((attributes != null && attributes.containsKey(hash))
-                || (style != null && style.contains(hash))
-                || (baseStyle != null && baseStyle.contains(hash))
-        );
+        if (attributes != null && attributes.containsKey(hash)) {
+            return true;
+        }
+        for (UXStyle style : getUpdatedStyles()) {
+            if (style.contains(hash)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean containsChange(byte stateA, byte stateB) {
-        return (style != null && style.containsChange(stateA, stateB)) ||
-                (baseStyle != null && baseStyle.containsChange(stateA, stateB));
+        for (UXStyle style : getUpdatedStyles()) {
+            if (style.containsChange(stateA, stateB)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public UXValue getAttribute(String name) {
@@ -362,16 +390,28 @@ public class UXAttrs {
                 return att;
             }
         }
-        UXValue[] sValue = style != null ? style.get(hash) : null;
-        UXValue[] pValue = baseStyle != null ? baseStyle.get(hash) : null;
-        float dpi = activity == null ? 160 : activity.getDensity();
-        return mixStyle(state, sValue, pValue, dpi);
+
+        UXValue[] currentValues = null;
+        var currentStyles = getUpdatedStyles();
+        for (int i = currentStyles.size() - 1; i >= 0; i--) {
+            UXValue[] values = currentStyles.get(i).get(hash);
+            if (values != null) {
+                currentValues = values;
+                break;
+            }
+        }
+        if (currentValues == null) {
+            return null;
+        } else {
+            float dpi = activity == null ? 160 : activity.getDensity();
+            return mixStyle(state, currentValues, dpi);
+        }
     }
 
-    private UXValue mixStyle(StateInfo state, UXValue[] sValue, UXValue[] pValue, float dpi) {
+    private UXValue mixStyle(StateInfo state, UXValue[] values, float dpi) {
         UXValue fullMix = null;
         for (int i = 0; i < 8; i++) {
-            UXValue value = sValue != null && sValue[i] != null ? sValue[i] : pValue != null ? pValue[i] : null;
+            UXValue value = values[i];
             if (fullMix == null) {
                 fullMix = value;
             } else {

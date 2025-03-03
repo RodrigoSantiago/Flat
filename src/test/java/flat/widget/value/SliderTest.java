@@ -79,7 +79,7 @@ public class SliderTest {
         assertNull(slider.getSlideFilter());
         assertNull(slider.getValueListener());
 
-        slider.setAttributes(createNonDefaultValues(), "slider");
+        slider.setAttributes(createNonDefaultValues(), null);
         slider.applyAttributes(controller);
 
         assertEquals(20, slider.getMaxValue(), 0.001f);

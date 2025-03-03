@@ -57,7 +57,7 @@ public class LabelTest {
         assertEquals(0x000000FF, label.getTextColor());
         assertNull(label.getText());
 
-        label.setAttributes(createNonDefaultValues(), "label");
+        label.setAttributes(createNonDefaultValues(), null);
         label.applyAttributes(null);
 
         assertEquals(HorizontalAlign.LEFT, label.getHorizontalAlign());
