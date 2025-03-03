@@ -36,9 +36,8 @@ public class Scene extends Group {
     public void applyChildren(UXChildren children) {
         super.applyChildren(children);
 
-        Widget widget;
-        while ((widget = children.next()) != null ) {
-            add(widget);
+        for (var child : children) {
+            add(child.getWidget());
         }
     }
 

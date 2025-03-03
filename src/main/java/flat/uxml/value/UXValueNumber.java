@@ -42,6 +42,11 @@ public class UXValueNumber extends UXValue {
     }
 
     @Override
+    public float[] asSizeList(UXTheme theme, float dpi) {
+        return new float[] {asSize(theme, dpi)};
+    }
+
+    @Override
     public float asAngle(UXTheme theme) {
         return value;
     }

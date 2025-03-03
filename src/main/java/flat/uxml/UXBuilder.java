@@ -65,9 +65,9 @@ public class UXBuilder {
         UXBuilder.install("TextArea", TextArea::new);
         UXBuilder.install("ToolBar", ToolBar::new);
         UXBuilder.install("ToolItem", ToolItem::new);
+        UXBuilder.install("Grid", Grid::new);
         /*
         UXBuilder.install("Canvas", Canvas::new);
-        UXBuilder.install("Grid", Grid::new);
         UXBuilder.install("Cell", Cell::new);
         UXBuilder.install("Drawer", Drawer::new);*/
         // RichText text + multiple fonts + images + Emoji icons
@@ -140,9 +140,9 @@ public class UXBuilder {
                 Widget child = buildRecursive(uxChild);
                 if (child != null) {
                     if (child instanceof Menu menu) {
-                        children.addMenu(menu);
+                        children.setMenu(menu);
                     } else {
-                        children.add(child);
+                        children.add(child, uxChild.getValues());
                     }
                 }
             }

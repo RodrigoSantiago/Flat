@@ -1,5 +1,6 @@
 package flat.widget.layout;
 
+import flat.uxml.UXChild;
 import flat.uxml.UXChildren;
 import flat.uxml.UXHash;
 import flat.uxml.value.UXValue;
@@ -9,6 +10,7 @@ import flat.widget.enums.HorizontalAlign;
 import flat.widget.enums.VerticalAlign;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import static org.junit.Assert.*;
@@ -23,8 +25,7 @@ public class StackBoxTest {
         Widget child1 = new Widget();
         Widget child2 = new Widget();
 
-        UXChildren uxChild = mock(UXChildren.class);
-        when(uxChild.next()).thenReturn(child1).thenReturn(child2).thenReturn(null);
+        UXChildren uxChild = mockChildren(child1, child2);
 
         assertNull(child1.getParent());
         assertNull(child2.getParent());
@@ -228,5 +229,15 @@ public class StackBoxTest {
         hash.put(UXHash.getHash("horizontal-align"), new UXValueText(HorizontalAlign.LEFT.toString()));
         hash.put(UXHash.getHash("vertical-align"), new UXValueText(VerticalAlign.TOP.toString()));
         return hash;
+    }
+
+    private UXChildren mockChildren(Widget... widgets) {
+        UXChildren uxChild = mock(UXChildren.class);
+        ArrayList<UXChild> children = new ArrayList<>();
+        for (var widget : widgets) {
+            children.add(new UXChild(widget, null));
+        }
+        when(uxChild.iterator()).thenReturn(children.iterator());
+        return uxChild;
     }
 }

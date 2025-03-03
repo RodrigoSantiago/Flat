@@ -82,6 +82,26 @@ public class UXValueVariable extends UXValue {
     }
 
     @Override
+    public float[] asSizeList(UXTheme theme, float dpi) {
+        UXValue variable = getVariable(theme);
+        if (variable != null) {
+            return variable.asSizeList(theme, dpi);
+        } else {
+            return super.asSizeList(theme, dpi);
+        }
+    }
+
+    @Override
+    public UXValue[] getValues(UXTheme theme) {
+        UXValue variable = getVariable(theme);
+        if (variable != null) {
+            return variable.getValues(theme);
+        } else {
+            return super.getValues(theme);
+        }
+    }
+
+    @Override
     public float asAngle(UXTheme theme) {
         UXValue variable = getVariable(theme);
         if (variable != null) {

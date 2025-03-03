@@ -45,11 +45,11 @@ public class Menu extends Stage {
     @Override
     public void applyChildren(UXChildren children) {
         Widget widget;
-        while ((widget = children.next()) != null) {
-            if (widget instanceof MenuItem menuItem) {
+
+        for (var child : children) {
+            if (child.getWidget() instanceof MenuItem menuItem) {
                 addMenuItem(menuItem);
-            }
-            if (widget instanceof Divider divider) {
+            } else if (child.getWidget() instanceof Divider divider) {
                 addDivider(divider);
             }
         }

@@ -52,6 +52,7 @@ public class UXValueText extends UXValue {
         return controller != null ? controller.getListenerMethod(text, argument) : null;
     }
 
+    @Override
     public <T> UXValueListener<T> asValueListener(UXTheme theme, Class<T> argument, Controller controller) {
         return controller != null ? controller.getValueListenerMethod(text, argument) : null;
     }

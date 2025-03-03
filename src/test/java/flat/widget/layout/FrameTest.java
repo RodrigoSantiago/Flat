@@ -15,12 +15,15 @@ import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.*;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({UXNode.class})
@@ -32,8 +35,7 @@ public class FrameTest {
         Widget child1 = new Widget();
         Widget child2 = new Widget();
 
-        UXChildren uxChild = mock(UXChildren.class);
-        when(uxChild.next()).thenReturn(child1).thenReturn(child2).thenReturn(null);
+        UXChildren uxChild = mockChildren(child1, child2);
 
         assertNull(child1.getParent());
         assertNull(child2.getParent());
@@ -183,6 +185,16 @@ public class FrameTest {
 
         verify(controllerB, times(1)).onShow();
         verify(controllerB, times(1)).onHide();
+    }
+
+    private UXChildren mockChildren(Widget... widgets) {
+        UXChildren uxChild = mock(UXChildren.class);
+        ArrayList<UXChild> children = new ArrayList<>();
+        for (var widget : widgets) {
+            children.add(new UXChild(widget, null));
+        }
+        when(uxChild.iterator()).thenReturn(children.iterator());
+        return uxChild;
     }
 
     private HashMap<Integer, UXValue> createNonDefaultValues() {

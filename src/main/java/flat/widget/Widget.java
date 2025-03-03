@@ -10,7 +10,6 @@ import flat.graphics.cursor.Cursor;
 import flat.math.Affine;
 import flat.math.Vector2;
 import flat.math.shapes.RoundRectangle;
-import flat.math.shapes.Shape;
 import flat.math.stroke.BasicStroke;
 import flat.uxml.*;
 import flat.uxml.value.UXValue;
@@ -221,7 +220,7 @@ public class Widget {
     }
 
     public void applyChildren(UXChildren children) {
-        Menu menu = children.nextMenu();
+        Menu menu = children.getMenu();
         if (menu != null) {
             setContextMenu(menu);
         }

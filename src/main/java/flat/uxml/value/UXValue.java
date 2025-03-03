@@ -50,6 +50,14 @@ public class UXValue {
         return 0;
     }
 
+    public float[] asSizeList(UXTheme theme, float dpi) {
+        return null;
+    }
+
+    public UXValue[] getValues(UXTheme theme) {
+        return null;
+    }
+
     public float asAngle(UXTheme theme) {
         return 0;
     }

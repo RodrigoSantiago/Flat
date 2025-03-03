@@ -5,6 +5,8 @@ import flat.uxml.UXChildren;
 import flat.widget.Widget;
 import flat.widget.layout.Frame;
 import flat.widget.text.Chip;
+import flat.widget.value.HorizontalScrollBar;
+import flat.widget.value.VerticalScrollBar;
 import flat.window.Application;
 
 public class Page extends Chip {
@@ -17,9 +19,9 @@ public class Page extends Chip {
 
         Frame autoFrame = null;
         Widget widget;
-        while ((widget = children.next()) != null ) {
-            if (autoFrame == null && widget instanceof Frame firstFrame) {
-                if (!children.hasNext()) {
+        for (var child : children) {
+            if (autoFrame == null && child.getWidget() instanceof Frame firstFrame) {
+                if (children.getChildrenCount() == 1) {
                     autoFrame = firstFrame;
                     break;
                 }
@@ -28,7 +30,7 @@ public class Page extends Chip {
                     autoFrame = new Frame();
                     autoFrame.setPrefSize(MATCH_PARENT, MATCH_PARENT);
                 }
-                autoFrame.add(widget);
+                autoFrame.add(child.getWidget());
             }
         }
         if (autoFrame != null) {

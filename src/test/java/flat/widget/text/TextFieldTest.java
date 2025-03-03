@@ -7,12 +7,17 @@ import flat.uxml.value.*;
 import flat.widget.Widget;
 import flat.widget.enums.HorizontalAlign;
 import flat.widget.enums.VerticalAlign;
+import flat.widget.structure.ListView;
+import flat.widget.value.HorizontalScrollBar;
+import flat.widget.value.VerticalScrollBar;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import static org.junit.Assert.*;
@@ -245,6 +250,28 @@ public class TextFieldTest {
         assertEquals(Widget.MATCH_PARENT, textField.getMeasureHeight(), 0.1f);
     }
 
+    @Test
+    public void childrenFromUx() {
+        TextField textField = new TextField();
+        HorizontalScrollBar horBar = new HorizontalScrollBar();
+        VerticalScrollBar verBar = new VerticalScrollBar();
+
+        UXChildren uxChild = mockChildren(
+                new Widget[] {horBar, verBar},
+                new String[] {"horizontal-bar", "vertical-bar"});
+
+        assertNull(horBar.getParent());
+        assertNull(verBar.getParent());
+
+        textField.applyChildren(uxChild);
+
+        assertEquals(textField, horBar.getParent());
+        assertEquals(textField, verBar.getParent());
+
+        assertEquals(horBar, textField.getHorizontalBar());
+        assertEquals(verBar, textField.getVerticalBar());
+    }
+
     public void mockFont(int offset, int length, int charIndex, float width) {
         when(defaultFont.getCaretOffset(any(), eq(offset), eq(length), anyFloat(), anyFloat(), anyFloat(), anyBoolean()))
                 .thenReturn(new Font.CaretData(charIndex, width));
@@ -281,5 +308,21 @@ public class TextFieldTest {
         hash.put(UXHash.getHash("on-text-change-filter"), new UXValueText("onTextChangeFilter"));
         hash.put(UXHash.getHash("on-text-input-filter"), new UXValueText("onTextInputFilter"));
         return hash;
+    }
+
+    private UXChildren mockChildren(Widget[] widgets, String[] booleans) {
+        UXChildren uxChild = mock(UXChildren.class);
+        ArrayList<UXChild> children = new ArrayList<>();
+        for (int i = 0; i < widgets.length; i++) {
+            var widget = widgets[i];
+            HashMap<Integer, UXValue> attributes = null;
+            if (booleans != null && i < booleans.length) {
+                attributes = new HashMap<>();
+                attributes.put(UXHash.getHash(booleans[i]), new UXValueBool(true));
+            }
+            children.add(new UXChild(widget, attributes));
+        }
+        PowerMockito.when(uxChild.iterator()).thenReturn(children.iterator());
+        return uxChild;
     }
 }

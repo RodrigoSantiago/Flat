@@ -226,6 +226,11 @@ public class UXAttrs {
         return value != null ? value.asValueListener(theme, argument, controller) : null;
     }
 
+    public float[] getAttributeSizeList(String name, float[] def) {
+        UXValue value = getAttribute(name);
+        return value != null ? value.asSizeList(theme, activity == null ? 160 : activity.getDensity()) : def;
+    }
+
     public String getString(String name) {
         return getString(name, null, null);
     }
@@ -338,6 +343,15 @@ public class UXAttrs {
             }
         }
         return def;
+    }
+
+    public float[] getSizeList(String name) {
+        return getSizeList(name, null, null);
+    }
+
+    public float[] getSizeList(String name, StateInfo state, float[] def) {
+        UXValue value = getValue(UXHash.getHash(name), state);
+        return value != null ? value.asSizeList(theme, activity == null ? 160 : activity.getDensity()) : def;
     }
 
     private UXValue getValue(Integer hash, StateInfo state) {

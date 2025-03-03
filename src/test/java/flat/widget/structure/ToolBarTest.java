@@ -6,10 +6,7 @@ import flat.graphics.image.Drawable;
 import flat.graphics.image.DrawableReader;
 import flat.resources.ResourceStream;
 import flat.uxml.*;
-import flat.uxml.value.UXValue;
-import flat.uxml.value.UXValueColor;
-import flat.uxml.value.UXValueSizeDp;
-import flat.uxml.value.UXValueText;
+import flat.uxml.value.*;
 import flat.widget.Widget;
 import flat.widget.layout.Panel;
 import flat.widget.stages.Menu;
@@ -20,6 +17,7 @@ import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import static org.junit.Assert.*;
@@ -125,8 +123,7 @@ public class ToolBarTest {
         ToolItem itemB = new ToolItem();
         Panel panel = new Panel();
 
-        UXChildren uxChild = mock(UXChildren.class);
-        when(uxChild.next()).thenReturn(itemA).thenReturn(itemB).thenReturn(panel).thenReturn(null);
+        UXChildren uxChild = mockChildren(itemA, itemB, panel);
 
         assertNull(itemA.getParent());
         assertNull(itemB.getParent());
@@ -150,8 +147,9 @@ public class ToolBarTest {
         ToolItem itemB = new ToolItem();
         itemB.setId("itemB");
 
-        UXChildren uxChild = mock(UXChildren.class);
-        when(uxChild.next()).thenReturn(itemA).thenReturn(itemB).thenReturn(null);
+        UXChildren uxChild = mockChildren(
+                new Widget[]{itemA, itemB},
+                new String[]{"overflow-item", "navigation-item"});
 
         assertNull(itemA.getParent());
         assertNull(itemB.getParent());
@@ -435,6 +433,32 @@ public class ToolBarTest {
         hash.put(UXHash.getHash("overflow-item-id"), new UXValueText("itemA"));
         hash.put(UXHash.getHash("navigation-item-id"),  new UXValueText("itemB"));
         return hash;
+    }
+
+    private UXChildren mockChildren(Widget... widgets) {
+        UXChildren uxChild = mock(UXChildren.class);
+        ArrayList<UXChild> children = new ArrayList<>();
+        for (var widget : widgets) {
+            children.add(new UXChild(widget, null));
+        }
+        when(uxChild.iterator()).thenReturn(children.iterator());
+        return uxChild;
+    }
+
+    private UXChildren mockChildren(Widget[] widgets, String[] booleans) {
+        UXChildren uxChild = mock(UXChildren.class);
+        ArrayList<UXChild> children = new ArrayList<>();
+        for (int i = 0; i < widgets.length; i++) {
+            var widget = widgets[i];
+            HashMap<Integer, UXValue> attributes = null;
+            if (booleans != null && i < booleans.length) {
+                attributes = new HashMap<>();
+                attributes.put(UXHash.getHash(booleans[i]), new UXValueBool(true));
+            }
+            children.add(new UXChild(widget, attributes));
+        }
+        when(uxChild.iterator()).thenReturn(children.iterator());
+        return uxChild;
     }
 
 }

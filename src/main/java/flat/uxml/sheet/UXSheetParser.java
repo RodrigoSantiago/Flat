@@ -11,6 +11,7 @@ import flat.widget.Widget;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class UXSheetParser {
 
@@ -109,7 +110,7 @@ public class UXSheetParser {
         if (text.length() == 0) return new UXValueText(text);
 
         int init = text.codePointAt(0);
-        if (isCharacter(init) || init == '+' || init == '#' || init == '$' || init == '@') {
+        //if (isCharacter(init) || init == '+' || init == '#' || init == '$' || init == '@') {
             read();
             if (readNext()) {
                 UXValue value = parseValue();
@@ -125,7 +126,7 @@ public class UXSheetParser {
                 }
                 return new UXValueXML(text, value);
             }
-        }
+        //}
         return new UXValueText(text);
     }
 
@@ -263,24 +264,12 @@ public class UXSheetParser {
 
         if (currentType == TEXT) {
             String functionName = currentText;
-            List<Object> values =  new ArrayList<>();
+            List<UXValue> values = new ArrayList<>();
 
             int state = 0;
             while (nextType != SEMICOLON && nextType != CBRACE && readNext()) {
                 if (state == 0 && currentType == PARAM) {
                     state = 1;
-
-                } else if (state == 1 && currentType == TEXT) {
-                    state = 2;
-                    values.add(currentText);
-
-                } else if (state == 1 && currentType == STRING) {
-                    state = 2;
-                    values.add(parseString(currentText));
-
-                } else if (state == 1 && currentType == NUMBER) {
-                    state = 2;
-                    values.add(parseNumber(currentText));
 
                 } else if (state == 2 && currentType == COMMA) {
                     state = 1;
@@ -288,7 +277,11 @@ public class UXSheetParser {
                 } else if (state == 2 && currentType == CPARAM) {
                     return parseFunction(functionName, values);
 
-                } else {
+                } else if (state == 1) {
+                    state = 2;
+                    values.add(parseValue());
+
+                }  else {
                     log(ErroLog.UNEXPECTED_TOKEN);
                 }
             }
@@ -583,6 +576,29 @@ public class UXSheetParser {
         }
     }
 
+    private UXValue parseSizeArray(String text) {
+        try {
+            String[] values = text.split(" ");
+            UXValue[] numbers = new UXValue[values.length];
+            for (int i = 0; i < values.length; i++) {
+                String val = values[i].trim();
+                if (val.startsWith("$")) {
+                    numbers[i] = new UXValueVariable(val);
+                } else if (val.equalsIgnoreCase("MATCH_PARENT")) {
+                    numbers[i] = new UXValueNumber(Widget.MATCH_PARENT);
+                } else if (val.equalsIgnoreCase("WRAP_CONTENT")) {
+                    numbers[i] = new UXValueNumber(Widget.WRAP_CONTENT);
+                } else {
+                    numbers[i] = parseNumber(val);
+                }
+            }
+            return new UXValueSizeList(numbers);
+        } catch (Exception ignored) {
+            log(ErroLog.INVALID_SIZE_LIST);
+            return new UXValue();
+        }
+    }
+
     private UXValue parseHex(String source) {
         try {
             int color;
@@ -601,8 +617,11 @@ public class UXSheetParser {
         }
     }
 
-    private UXValue parseFunction(String source, List<Object> values) {
-        if (source.equalsIgnoreCase("rgb")) {
+    private UXValue parseFunction(String source, List<UXValue> values) {
+        if (source.equalsIgnoreCase("list")) {
+            return new UXValueSizeList(values.toArray(new UXValue[0]));
+
+        } else if (source.equalsIgnoreCase("rgb")) {
             if (values.size() == 3 && values.get(0) instanceof UXValueNumber v0
                     && values.get(1) instanceof UXValueNumber v1
                     && values.get(2) instanceof UXValueNumber v2) {
@@ -635,25 +654,22 @@ public class UXSheetParser {
             FontStyle style = null;
             for (var value : values) {
                 if (value instanceof UXValueText name) {
-                    if (family != null) log(ErroLog.INVALID_FONT);
-                    family = name.asString(null);
-                } else if (value instanceof String str) {
+                    var str = name.asString(null);
                     var w = FontWeight.parse(str.toUpperCase());
                     var p = FontPosture.parse(str.toUpperCase());
                     var s = FontStyle.parse(str.toUpperCase());
                     if (w != null) {
                         if (weight != null) log(ErroLog.INVALID_FONT);
                         weight = w;
-                    }
-                    if (p != null) {
+                    } else if (p != null) {
                         if (posture != null) log(ErroLog.INVALID_FONT);
                         posture = p;
-                    }
-                    if (s != null) {
+                    } else if (s != null) {
                         if (style != null) log(ErroLog.INVALID_FONT);
                         style = s;
-                    }
-                    if (w == null && p == null && s == null) {
+                    } else if (family == null) {
+                        family = str;
+                    } else {
                         log(ErroLog.INVALID_FONT);
                     }
                 } else if (value instanceof UXValueNumber number) {
@@ -693,5 +709,6 @@ public class UXSheetParser {
         public static final String REPEATED_VARIABLE = "Repeated Variable";
         public static final String INVALID_PROCESSOR = "Invalid processor";
         public static final String IMPORT_NOT_FOUND = "Import not found for ";
+        public static final String INVALID_SIZE_LIST = "Invalid size list";
     }
 }

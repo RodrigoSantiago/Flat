@@ -57,7 +57,13 @@
                 <Tab width="MATCH_PARENT" height="MATCH_PARENT" background-color="#C8C800" pages-vertical-position="top"
                 radius-top="4" radius-bottom="16" radius-right="8" radius-left="20">
                     <Page text="This is a Page" background-color="#FFC8C8">
-                        <Label text="Page 1" width="200"/>
+                        <Grid width="MATCH_PARENT" height="MATCH_PARENT" background-color="red"
+                              columns="list(0, 0, 0)" rows="list(0, 0, 0)" horizontal-spacing="16" vertical-spacing="8">
+                            <Button text="A" cell-x="0" cell-y="0" width="MATCH_PARENT" height="MATCH_PARENT"/>
+                            <Button text="B" cell-x="1" cell-y="1" cell-w="2" width="MATCH_PARENT" height="MATCH_PARENT"/>
+                            <Button text="C" cell-x="2" cell-y="2" width="MATCH_PARENT" height="MATCH_PARENT"/>
+                            <Button text="D" cell-x="1" cell-y="0" cell-h="3" width="64" height="MATCH_PARENT"/>
+                        </Grid>
                     </Page>
                     <Page text="This is a Page" background-color="#FFC8C8">
                         <Label text="Page 2" width="200"/>

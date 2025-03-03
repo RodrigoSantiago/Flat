@@ -49,9 +49,8 @@ public class Tab extends Group {
     public void applyChildren(UXChildren children) {
         super.applyChildren(children);
 
-        Widget widget;
-        while ((widget = children.next()) != null ) {
-            if (widget instanceof Page page) {
+        for (var child : children) {
+            if (child.getWidget() instanceof Page page) {
                 addPage(page);
             }
         }

@@ -107,15 +107,11 @@ public class ToolBar extends Group {
         super.applyChildren(children);
         List<ToolItem> items = new ArrayList<>();
 
-        UXAttrs attrs = getAttrs();
-        String overflowId = attrs.getAttributeString("overflow-item-id", null);
-        String navigationId = attrs.getAttributeString("navigation-item-id", null);
-        Widget widget;
-        while ((widget = children.next()) != null) {
-            if (widget instanceof ToolItem item) {
-                if (overflowId != null && overflowId.equals(widget.getId())) {
+        for (var child : children) {
+            if (child.getWidget() instanceof ToolItem item) {
+                if (child.getAttributeBool("overflow-item", false)) {
                     setOverflowItem(item);
-                } else if (navigationId != null && navigationId.equals(widget.getId())) {
+                } else if (child.getAttributeBool("navigation-item", false)) {
                     setNavigationItem(item);
                 } else {
                     items.add(item);

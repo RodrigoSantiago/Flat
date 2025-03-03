@@ -1,8 +1,11 @@
 package flat.widget.layout;
 
+import flat.uxml.UXChild;
 import flat.uxml.UXChildren;
 import flat.widget.Widget;
 import org.junit.Test;
+
+import java.util.ArrayList;
 
 import static org.junit.Assert.*;
 import static org.powermock.api.mockito.PowerMockito.mock;
@@ -15,8 +18,7 @@ public class PanelTest {
         Panel panel = new Panel();
         Widget child = new Widget();
 
-        UXChildren uxChild = mock(UXChildren.class);
-        when(uxChild.next()).thenReturn(child).thenReturn(null);
+        UXChildren uxChild = mockChildren(child);
 
         assertNull(child.getParent());
         panel.applyChildren(uxChild);
@@ -30,8 +32,7 @@ public class PanelTest {
         Widget child1 = new Widget();
         Widget child2 = new Widget();
 
-        UXChildren uxChild = mock(UXChildren.class);
-        when(uxChild.next()).thenReturn(child1).thenReturn(child2).thenReturn(null);
+        UXChildren uxChild = mockChildren(child1, child2);
 
         assertNull(child1.getParent());
         assertNull(child2.getParent());
@@ -703,5 +704,15 @@ public class PanelTest {
         assertEquals(250, child1.getLayoutHeight(), 0.0001f);
         assertEquals(155, child2.getLayoutWidth(), 0.0001f);
         assertEquals(252, child2.getLayoutHeight(), 0.0001f);
+    }
+
+    private UXChildren mockChildren(Widget... widgets) {
+        UXChildren uxChild = mock(UXChildren.class);
+        ArrayList<UXChild> children = new ArrayList<>();
+        for (var widget : widgets) {
+            children.add(new UXChild(widget, null));
+        }
+        when(uxChild.iterator()).thenReturn(children.iterator());
+        return uxChild;
     }
 }

@@ -19,18 +19,15 @@ public class ScrollBox extends Scrollable {
     public void applyChildren(UXChildren children) {
         super.applyChildren(children);
 
-        UXAttrs attrs = getAttrs();
-        String hBarId = attrs.getAttributeString("horizontal-bar-id", null);
-        String vBarId = attrs.getAttributeString("vertical-bar-id", null);
-
-        Widget widget;
-        while ((widget = children.next()) != null ) {
-            if (hBarId != null && hBarId.equals(widget.getId()) && widget instanceof HorizontalScrollBar bar) {
+        for (var child : children) {
+            if (child.getAttributeBool("horizontal-bar", false) &&
+                    child.getWidget() instanceof HorizontalScrollBar bar) {
                 setHorizontalBar(bar);
-            } else if (vBarId != null && vBarId.equals(widget.getId()) && widget instanceof VerticalScrollBar bar) {
+            } else if (child.getAttributeBool("vertical-bar", false) &&
+                    child.getWidget() instanceof VerticalScrollBar bar) {
                 setVerticalBar(bar);
             } else {
-                add(widget);
+                add(child.getWidget());
             }
         }
     }

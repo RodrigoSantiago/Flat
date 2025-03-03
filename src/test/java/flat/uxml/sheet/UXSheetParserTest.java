@@ -543,8 +543,8 @@ public class UXSheetParserTest {
                     color-off : rgb(#FFFFFF, 255);
                 }
                 style-font {
-                    font-on : font("Arial");
-                    font-off : font(Arial);
+                    font-on : font("Time News");
+                    font-off : font(Time News);
                     font-off2 : font(450, 150sp);
                 }
                 style-rgba {
@@ -555,18 +555,21 @@ public class UXSheetParserTest {
                     function-off : function("something");
                     function-incomplete : font("something";
                 }
+                style-list {
+                    list-on : list(1, 2dp, MATCH_PARENT, WRAP_CONTENT, "10", $var, @locale);
+                }
                 """
         );
         reader.parse();
 
-        assertEquals(4, reader.getStyles().size());
+        assertEquals(5, reader.getStyles().size());
         assertStyle(reader.getStyles(), "style", null,
                 "color-on", new UXValueColor(0xFFFFFFFF),
                 "color-off", new UXValue()
         );
         assertStyle(reader.getStyles(), "style-font", null,
-                "font-on", new UXValueFont("Arial", null, null, null),
-                "font-off", new UXValueFont(null, null, null, null),
+                "font-on", new UXValueFont("Time News", null, null, null),
+                "font-off", new UXValueFont("Time", null, null, null),
                 "font-off2", new UXValueFont(null, null, null, null)
         );
         assertStyle(reader.getStyles(), "style-rgba", null,
@@ -577,13 +580,18 @@ public class UXSheetParserTest {
                 "function-off", new UXValue(),
                 "function-incomplete", new UXValueFont("something", null, null, null)
         );
+        assertStyle(reader.getStyles(), "style-list", null,
+                "list-on", new UXValueSizeList(new UXValue[] {
+                        new UXValueNumber(1), new UXValueSizeDp(2),
+                        new UXValueNumber(Widget.MATCH_PARENT), new UXValueNumber(Widget.WRAP_CONTENT),
+                        new UXValueText("10"), new UXValueVariable("$var"), new UXValueLocale("@locale")
+                })
+        );
 
         assertEquals(0, reader.getVariables().size());
         assertLog(reader.getLogs(),
-                UXSheetParser.ErroLog.UNEXPECTED_TOKEN, 2,
-                UXSheetParser.ErroLog.UNEXPECTED_TOKEN, 2,
                 UXSheetParser.ErroLog.INVALID_COLOR, 2,
-                UXSheetParser.ErroLog.INVALID_FONT, 6,
+                UXSheetParser.ErroLog.UNEXPECTED_TOKEN, 6,
                 UXSheetParser.ErroLog.INVALID_FONT, 7,
                 UXSheetParser.ErroLog.INVALID_FONT, 7,
                 UXSheetParser.ErroLog.INVALID_COLOR, 11,

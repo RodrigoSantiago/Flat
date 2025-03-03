@@ -6,18 +6,19 @@ import flat.graphics.image.Drawable;
 import flat.graphics.image.DrawableReader;
 import flat.resources.ResourceStream;
 import flat.uxml.*;
-import flat.uxml.value.UXValue;
-import flat.uxml.value.UXValueNumber;
-import flat.uxml.value.UXValueSizeSp;
-import flat.uxml.value.UXValueText;
+import flat.uxml.value.*;
 import flat.widget.Widget;
 import flat.widget.layout.Panel;
+import flat.widget.layout.ScrollBox;
+import flat.widget.value.HorizontalScrollBar;
+import flat.widget.value.VerticalScrollBar;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
@@ -289,6 +290,28 @@ public class ListViewTest {
         assertEquals(250, listView.getTotalDimensionY(), 0.001f);
     }
 
+    @Test
+    public void childrenFromUx() {
+        ListView listView = new ListView();
+        HorizontalScrollBar horBar = new HorizontalScrollBar();
+        VerticalScrollBar verBar = new VerticalScrollBar();
+
+        UXChildren uxChild = mockChildren(
+                new Widget[] {horBar, verBar},
+                new String[] {"horizontal-bar", "vertical-bar"});
+
+        assertNull(horBar.getParent());
+        assertNull(verBar.getParent());
+
+        listView.applyChildren(uxChild);
+
+        assertEquals(listView, horBar.getParent());
+        assertEquals(listView, verBar.getParent());
+
+        assertEquals(horBar, listView.getHorizontalBar());
+        assertEquals(verBar, listView.getVerticalBar());
+    }
+
     private HashMap<Integer, UXValue> createNonDefaultValues() {
         var hash = new HashMap<Integer, UXValue>();
 
@@ -303,6 +326,22 @@ public class ListViewTest {
         hash.put(UXHash.getHash("scroll-sensibility"), new UXValueNumber(5));
 
         return hash;
+    }
+
+    private UXChildren mockChildren(Widget[] widgets, String[] booleans) {
+        UXChildren uxChild = mock(UXChildren.class);
+        ArrayList<UXChild> children = new ArrayList<>();
+        for (int i = 0; i < widgets.length; i++) {
+            var widget = widgets[i];
+            HashMap<Integer, UXValue> attributes = null;
+            if (booleans != null && i < booleans.length) {
+                attributes = new HashMap<>();
+                attributes.put(UXHash.getHash(booleans[i]), new UXValueBool(true));
+            }
+            children.add(new UXChild(widget, attributes));
+        }
+        when(uxChild.iterator()).thenReturn(children.iterator());
+        return uxChild;
     }
 
 }

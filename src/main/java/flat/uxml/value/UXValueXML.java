@@ -64,6 +64,16 @@ public class UXValueXML extends  UXValue {
     }
 
     @Override
+    public float[] asSizeList(UXTheme theme, float dpi) {
+        return value.asSizeList(theme, dpi);
+    }
+
+    @Override
+    public UXValue[] getValues(UXTheme theme) {
+        return value.getValues(theme);
+    }
+
+    @Override
     public float asAngle(UXTheme theme) {
         return value.asAngle(theme);
     }
