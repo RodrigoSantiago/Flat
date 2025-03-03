@@ -509,6 +509,12 @@ tool-item {
     ripple-color : #FFFFFF;
     ripple-overflow : true;
     cursor : hand;
+    width : 24;
+    height : 24;
+    margin-top : 4;
+    margin-left : 4;
+    margin-right : 4;
+    margin-bottom : 4;
 }
 
 tool-item-navigation : tool-item {

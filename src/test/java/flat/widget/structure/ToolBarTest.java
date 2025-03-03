@@ -12,6 +12,8 @@ import flat.uxml.value.UXValueSizeDp;
 import flat.uxml.value.UXValueText;
 import flat.widget.Widget;
 import flat.widget.layout.Panel;
+import flat.widget.stages.Menu;
+import flat.widget.stages.MenuItem;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -72,9 +74,6 @@ public class ToolBarTest {
 
         ToolBar toolBar = new ToolBar();
 
-        assertEquals(0, toolBar.getIconsWidth(), 0.001f);
-        assertEquals(0, toolBar.getIconsHeight(), 0.001f);
-        assertEquals(0, toolBar.getIconsSpacing(), 0.001f);
         assertNull(toolBar.getTitle());
         assertNull(toolBar.getSubtitle());
         assertEquals(16, toolBar.getTitleSize(), 0.001f);
@@ -90,9 +89,6 @@ public class ToolBarTest {
         toolBar.setAttributes(createNonDefaultValues(), "tool-bar");
         toolBar.applyAttributes(controller);
 
-        assertEquals(0, toolBar.getIconsWidth(), 0.001f);
-        assertEquals(0, toolBar.getIconsHeight(), 0.001f);
-        assertEquals(0, toolBar.getIconsSpacing(), 0.001f);
         assertEquals("Title", toolBar.getTitle());
         assertEquals("Subtitle", toolBar.getSubtitle());
         assertEquals(16, toolBar.getTitleSize(), 0.001f);
@@ -107,9 +103,6 @@ public class ToolBarTest {
 
         toolBar.applyStyle();
 
-        assertEquals(18f, toolBar.getIconsWidth(), 0.001f);
-        assertEquals(22f, toolBar.getIconsHeight(), 0.001f);
-        assertEquals(26f, toolBar.getIconsSpacing(), 0.001f);
         assertEquals("Title", toolBar.getTitle());
         assertEquals("Subtitle", toolBar.getSubtitle());
         assertEquals(32f, toolBar.getTitleSize(), 0.001f);
@@ -176,30 +169,28 @@ public class ToolBarTest {
     @Test
     public void measure() {
         ToolBar toolBar = new ToolBar();
-        toolBar.setIconsWidth(16);
-        toolBar.setIconsHeight(18);
         toolBar.setNavigationItem(null);
         toolBar.setOverflowItem(null);
         toolBar.onMeasure();
-        assertMeasure(toolBar, 0, 18);
+        assertMeasure(toolBar, 0, 0);
 
-        toolBar.setNavigationItem(new ToolItem());
+        toolBar.setNavigationItem(createItem(16, 18));
         toolBar.onMeasure();
         assertMeasure(toolBar, 16, 18);
 
-        toolBar.setOverflowItem(new ToolItem());
+        toolBar.setOverflowItem(createItem(16, 18));
         toolBar.onMeasure();
         assertMeasure(toolBar, 32, 18);
 
-        toolBar.addToolItem(new ToolItem());
+        toolBar.addToolItem(createItem(16, 18));
         toolBar.onMeasure();
         assertMeasure(toolBar, 48, 18);
 
-        toolBar.addToolItem(new ToolItem());
+        toolBar.addToolItem(createItem(16, 18));
         toolBar.onMeasure();
         assertMeasure(toolBar, 64, 18);
 
-        toolBar.setIconsSpacing(3);
+        toolBar.addToolItem(createItem(12, 21));
         toolBar.onMeasure();
         assertMeasure(toolBar, 76, 21);
 
@@ -223,50 +214,160 @@ public class ToolBarTest {
 
     @Test
     public void layout() {
+        var nav = createItem(16, 18);
+        var ove = createItem(16, 18);
+        var item1 = createItem(16, 18);
+        var item2 = createItem(16, 18);
+        var item3 = createItem(16, 18);
+        Menu menu = new Menu();
+        MenuItem menuItem = new MenuItem();
+        menu.addMenuItem(menuItem);
+
         ToolBar toolBar = new ToolBar();
-        toolBar.setIconsWidth(16);
-        toolBar.setIconsHeight(18);
-        toolBar.setNavigationItem(null);
-        toolBar.setOverflowItem(null);
-        toolBar.onMeasure();
-        assertMeasure(toolBar, 0, 18);
-
-        toolBar.setNavigationItem(new ToolItem());
-        toolBar.onMeasure();
-        assertMeasure(toolBar, 16, 18);
-
-        toolBar.setOverflowItem(new ToolItem());
+        toolBar.setNavigationItem(nav);
+        toolBar.setOverflowItem(ove);
+        toolBar.setContextMenu(menu);
         toolBar.onMeasure();
         assertMeasure(toolBar, 32, 18);
+        toolBar.onLayout(64, 18);
+        assertLayout(nav, 0, 0, 16, 18);
+        assertLayout(ove, 48, 0, 16, 18);
 
-        toolBar.addToolItem(new ToolItem());
+        toolBar.addToolItem(item1);
+        toolBar.addToolItem(item2);
+        toolBar.addToolItem(item3);
+
+        // No text, Big Size, Overflow Always
         toolBar.onMeasure();
-        assertMeasure(toolBar, 48, 18);
+        assertMeasure(toolBar, 80, 18);
+        toolBar.onLayout(100, 18);
+        assertLayout(nav, 0, 0, 16, 18);
+        assertLayout(item1, 36, 0, 16, 18);
+        assertLayout(item2, 52, 0, 16, 18);
+        assertLayout(item3, 68, 0, 16, 18);
+        assertLayout(ove, 84, 0, 16, 18);
 
-        toolBar.addToolItem(new ToolItem());
+        // No text, Big Size
+        toolBar.setContextMenu(null);
         toolBar.onMeasure();
-        assertMeasure(toolBar, 64, 18);
+        assertMeasure(toolBar, 80, 18);
+        toolBar.onLayout(100, 18);
+        assertLayout(nav, 0, 0, 16, 18);
+        assertLayout(item1, 52, 0, 16, 18);
+        assertLayout(item2, 68, 0, 16, 18);
+        assertLayout(item3, 84, 0, 16, 18);
 
-        toolBar.setIconsSpacing(3);
+        // No text, Fit Size
         toolBar.onMeasure();
-        assertMeasure(toolBar, 76, 21);
+        assertMeasure(toolBar, 80, 18);
+        toolBar.onLayout(64, 18);
+        assertLayout(nav, 0, 0, 16, 18);
+        assertLayout(item1, 16, 0, 16, 18);
+        assertLayout(item2, 32, 0, 16, 18);
+        assertLayout(item3, 48, 0, 16, 18);
 
+        // No text, Hide 2
+        toolBar.onMeasure();
+        assertMeasure(toolBar, 80, 18);
+        toolBar.onLayout(60, 18);
+        assertLayout(nav, 0, 0, 16, 18);
+        assertLayout(item1, 28, 0, 16, 18);
+        assertLayout(item2, 44, 0, 16, 18); // Hidden
+        assertLayout(item3, 60, 0, 16, 18); // Hidden
+        assertLayout(ove, 44, 0, 16, 18);
+
+        // No text, All
+        toolBar.onMeasure();
+        assertMeasure(toolBar, 80, 18);
+        toolBar.onLayout(32, 18);
+        assertLayout(nav, 0, 0, 16, 18);
+        assertLayout(item1, 16, 0, 16, 18); // Hidden
+        assertLayout(item2, 32, 0, 16, 18); // Hidden
+        assertLayout(item3, 48, 0, 16, 18); // Hidden
+        assertLayout(ove, 16, 0, 16, 18);
+    }
+
+    @Test
+    public void layoutText() {
+        var nav = createItem(16, 18);
+        var ove = createItem(16, 18);
+        var item1 = createItem(16, 18);
+        var item2 = createItem(16, 18);
+        var item3 = createItem(16, 18);
+        Menu menu = new Menu();
+        MenuItem menuItem = new MenuItem();
+        menu.addMenuItem(menuItem);
+
+        ToolBar toolBar = new ToolBar();
+        toolBar.setNavigationItem(nav);
+        toolBar.setOverflowItem(ove);
+        toolBar.setContextMenu(menu);
         toolBar.setTitle("Title");
-        toolBar.onMeasure();
-        assertMeasure(toolBar, 76 + 128, 21);
-
         toolBar.setSubtitle("Subtitle");
         toolBar.onMeasure();
-        assertMeasure(toolBar, 76 + 128, 16 + 8);
+        assertMeasure(toolBar, 160, 24);
+        toolBar.onLayout(160, 24);
+        assertLayout(nav, 0, 0, 16, 18);
+        assertLayout(ove, 144, 0, 16, 18);
 
-        toolBar.setMargins(1, 2, 3, 4);
-        toolBar.setPadding(5, 4, 2, 3);
-        toolBar.onMeasure();
-        assertMeasure(toolBar, 76 + 128 + 13, 16 + 8 + 11);
+        toolBar.addToolItem(item1);
+        toolBar.addToolItem(item2);
+        toolBar.addToolItem(item3);
 
-        toolBar.setPrefSize(100, 200);
+        // text, Big Size, Overflow Always
         toolBar.onMeasure();
-        assertMeasure(toolBar, 106, 204);
+        assertMeasure(toolBar, 208, 24);
+        toolBar.onLayout(220, 24);
+        assertLayout(nav, 0, 0, 16, 18);
+        assertLayout(item1, 156, 0, 16, 18);
+        assertLayout(item2, 172, 0, 16, 18);
+        assertLayout(item3, 188, 0, 16, 18);
+        assertLayout(ove, 204, 0, 16, 18);
+
+        // text, Big Size
+        toolBar.setContextMenu(null);
+        toolBar.onMeasure();
+        assertMeasure(toolBar, 208, 24);
+        toolBar.onLayout(220, 24);
+        assertLayout(nav, 0, 0, 16, 18);
+        assertLayout(item1, 172, 0, 16, 18);
+        assertLayout(item2, 188, 0, 16, 18);
+        assertLayout(item3, 204, 0, 16, 18);
+
+        // text, Fit Size
+        toolBar.onMeasure();
+        assertMeasure(toolBar, 208, 24);
+        toolBar.onLayout(192, 24);
+        assertLayout(nav, 0, 0, 16, 18);
+        assertLayout(item1, 144, 0, 16, 18);
+        assertLayout(item2, 160, 0, 16, 18);
+        assertLayout(item3, 176, 0, 16, 18);
+
+        // text, Hide 2
+        toolBar.onMeasure();
+        assertMeasure(toolBar, 208, 24);
+        toolBar.onLayout(190, 24);
+        assertLayout(nav, 0, 0, 16, 18);
+        assertLayout(item1, 158, 0, 16, 18);
+        assertLayout(item2, 174, 0, 16, 18); // Hidden
+        assertLayout(item3, 190, 0, 16, 18); // Hidden
+        assertLayout(ove, 174, 0, 16, 18);
+
+        // text, All
+        toolBar.onMeasure();
+        assertMeasure(toolBar, 208, 24);
+        toolBar.onLayout(164, 24);
+        assertLayout(nav, 0, 0, 16, 18);
+        assertLayout(item1, 148, 0, 16, 18); // Hidden
+        assertLayout(item2, 164, 0, 16, 18); // Hidden
+        assertLayout(item3, 180, 0, 16, 18); // Hidden
+        assertLayout(ove, 148, 0, 16, 18);
+    }
+
+    private ToolItem createItem(float width, float height) {
+        ToolItem toolItem = new ToolItem();
+        toolItem.setPrefSize(width, height);
+        return toolItem;
     }
 
     private void assertMeasure(Widget widget, float width, float height) {

@@ -56,14 +56,6 @@ public class ToolItem extends Widget {
         float width = getInWidth();
         float height = getInHeight();
 
-        if (getParent() instanceof ToolBar toolBar) {
-            float pad = toolBar.getIconsSpacing() / 2f;
-            x += pad;
-            y += pad;
-            width = Math.max(0, width - pad * 2f);
-            height = Math.max(0, height - pad * 2f);
-        }
-
         if (width <= 0 || height <= 0 || getIcon() == null) return;
 
         context.setTransform2D(getTransform());

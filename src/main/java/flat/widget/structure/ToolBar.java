@@ -36,10 +36,6 @@ public class ToolBar extends Group {
     private int titleColor = Color.black;
     private int subtitleColor = Color.black;
 
-    public float iconsWidth;
-    public float iconsHeight;
-    public float iconsSpacing;
-
     private boolean invalidTitleSize;
     private boolean invalidSubtitleSize;
     private float titleWidth;
@@ -63,6 +59,7 @@ public class ToolBar extends Group {
     private boolean navigationVisible;
     private int drawVisibleItems;
     private int prevHiddenItems;
+    private float itemsWidth;
 
     private VerticalAlign verticalAlign = VerticalAlign.TOP;
     private HorizontalAlign horizontalAlign = HorizontalAlign.LEFT;
@@ -97,7 +94,6 @@ public class ToolBar extends Group {
                 }
             }
             this.overflowMenu = contextMenu;
-            updateMenuItems();
         }
     }
 
@@ -146,9 +142,6 @@ public class ToolBar extends Group {
         UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
 
-        setIconsWidth(attrs.getSize("icons-width", info, getIconsWidth()));
-        setIconsHeight(attrs.getSize("icons-height", info, getIconsHeight()));
-        setIconsSpacing(attrs.getSize("icons-spacing", info, getIconsSpacing()));
         setTitleFont(attrs.getFont("title-font", info, getTitleFont()));
         setSubtitleFont(attrs.getFont("subtitle-font", info, getSubtitleFont()));
         setTitleSize(attrs.getSize("title-size", info, getTitleSize()));
@@ -169,30 +162,37 @@ public class ToolBar extends Group {
         boolean wrapWidth = getLayoutPrefWidth() == WRAP_CONTENT;
         boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
 
-        float iW = getLayoutIconsWidth() + getIconsSpacing();
-        float iH = getLayoutIconsHeight() + getIconsSpacing();
-        float ow = hasOverflow() ? iW : 0;
-        float nw = hasNavigation() ? iW : 0;
-
+        float iw = 0;
+        float ih = 0;
         for (ToolItem item : toolItems) {
             item.onMeasure();
+            iw += item.getMeasureWidth();
+            ih = Math.max(ih, item.getMeasureHeight());
         }
+
+        float ow = 0;
         if (overflowItem != null) {
             overflowItem.onMeasure();
+            ow = overflowItem.getMeasureWidth();
+            ih = Math.max(ih, overflowItem.getMeasureHeight());
         }
+
+        float nw = 0;
         if (navigationItem != null) {
             navigationItem.onMeasure();
+            nw = navigationItem.getMeasureWidth();
+            ih = Math.max(ih, navigationItem.getMeasureHeight());
         }
 
         if (wrapWidth) {
             float tw = Math.max(getTitleWidth(), getSubtitleWidth());
-            mWidth = Math.max(tw + extraWidth + ow + nw + toolItems.size() * iW, getLayoutMinWidth());
+            mWidth = Math.max(tw + extraWidth + ow + nw + iw, getLayoutMinWidth());
         } else {
             mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
         }
         if (wrapHeight) {
             float th = getTitleHeight() + getSubtitleHeight();
-            mHeight = Math.max(Math.max(th, iH) + extraHeight, getLayoutMinHeight());
+            mHeight = Math.max(Math.max(th, ih) + extraHeight, getLayoutMinHeight());
         } else {
             mHeight = Math.max(getLayoutPrefHeight(), getLayoutMinHeight());
         }
@@ -203,16 +203,92 @@ public class ToolBar extends Group {
     @Override
     public void onLayout(float width, float height) {
         setLayout(width, height);
+        float inWidth = getInWidth();
+        float inHeight = getInHeight();
 
+        float texWidth = Math.min(inWidth, Math.max(getTitleWidth(), getSubtitleWidth()));
 
-        updateNavigationButton();
-        updateOverflowButton();
-        updateItems();
+        float navWidth;
+        if (navigationItem != null) {
+            navigationVisible = true;
+            float defWidth = Math.min(navigationItem.getMeasureWidth(), navigationItem.getLayoutMaxWidth());
+            navWidth = Math.min(inWidth, defWidth);
+            navigationItem.setActionListener(this::onNavigationBtnAction);
+        } else {
+            navigationVisible = false;
+            navWidth = 0;
+        }
 
-        if (checkNeedUpdateMenuItems()) {
-            if (getActivity() != null) {
-                getActivity().getWindow().runSync(this::updateMenuItems);
+        boolean isAlwaysVisible = hasExtraContextMenuItems();
+        float oveWidth;
+        if (overflowItem != null) {
+            float defWidth = Math.min(overflowItem.getMeasureWidth(), overflowItem.getLayoutMaxWidth());
+            float maxWidth = Math.max(0, defWidth == MATCH_PARENT ? inWidth - navWidth - texWidth : inWidth - navWidth);
+            oveWidth = Math.min(maxWidth, defWidth);
+            overflowItem.setActionListener(this::onOverflowBtnAction);
+        } else {
+            oveWidth = 0;
+        }
+
+        float itemsTotal = Math.max(0, inWidth - texWidth - navWidth - (isAlwaysVisible ? oveWidth : 0));
+        float itemsSpace = 0;
+
+        int maxVisibleItems = toolItems.size();
+        for (int i = 0; i < toolItems.size(); i++) {
+            ToolItem item = toolItems.get(i);
+            float defWidth = Math.min(item.getMeasureWidth(), item.getLayoutMaxWidth());
+            float itemSpace = defWidth == MATCH_PARENT ? Math.min(itemsTotal, defWidth) : defWidth;
+            if (itemsSpace + itemSpace > itemsTotal + 0.0001f) {
+                maxVisibleItems = i;
+                break;
+            } else {
+                itemsSpace += itemSpace;
             }
+        }
+
+        if (isAlwaysVisible && oveWidth > 0) {
+            overflowVisible = true;
+        } else if (!isAlwaysVisible && oveWidth > 0 && maxVisibleItems < toolItems.size()) {
+            overflowVisible = true;
+            itemsTotal = Math.max(0, inWidth - texWidth - navWidth - oveWidth);
+            itemsSpace = 0;
+            maxVisibleItems = toolItems.size();
+            for (int i = 0; i < toolItems.size(); i++) {
+                ToolItem item = toolItems.get(i);
+                float defWidth = Math.min(item.getMeasureWidth(), item.getLayoutMaxWidth());
+                float itemSpace = defWidth == MATCH_PARENT ? Math.min(itemsTotal, defWidth) : defWidth;
+                if (itemsSpace + itemSpace > itemsTotal + 0.0001f) {
+                    maxVisibleItems = i;
+                    break;
+                } else {
+                    itemsSpace += itemSpace;
+                }
+            }
+        } else {
+            overflowVisible = false;
+        }
+        drawVisibleItems = maxVisibleItems;
+
+        if (overflowVisible && overflowItem != null) {
+            float h = Math.min(inHeight, Math.min(overflowItem.getMeasureHeight(), overflowItem.getLayoutMaxHeight()));
+            overflowItem.onLayout(oveWidth, h);
+            overflowItem.setLayoutPosition(getInX() + getInWidth() - oveWidth, getInY());
+        }
+        if (navigationVisible && navigationItem != null) {
+            float h = Math.min(inHeight, Math.min(navigationItem.getMeasureHeight(), navigationItem.getLayoutMaxHeight()));
+            navigationItem.onLayout(navWidth, h);
+            navigationItem.setLayoutPosition(getInX(), getInY());
+        }
+        itemsWidth = itemsSpace;
+        float xpos = Math.max(0, getInX() + inWidth - (overflowVisible ? oveWidth : 0) - itemsSpace);
+        for (int i = 0; i < toolItems.size(); i++) {
+            ToolItem item = toolItems.get(i);
+            float defWidth = Math.min(item.getMeasureWidth(), item.getLayoutMaxWidth());
+            float w = defWidth == MATCH_PARENT ? Math.min(itemsTotal, defWidth) : defWidth;
+            float h = Math.min(inHeight, Math.min(item.getMeasureHeight(), item.getLayoutMaxHeight()));
+            item.onLayout(w, h);
+            item.setLayoutPosition(xpos, getInY());
+            xpos += w;
         }
     }
 
@@ -224,11 +300,11 @@ public class ToolBar extends Group {
                 Widget found = toolItem.findByPosition(x, y, includeDisabled);
                 if (found != null) return found;
             }
-            if (overflowVisible) {
+            if (overflowVisible && overflowItem != null) {
                 Widget found = overflowItem.findByPosition(x, y, includeDisabled);
                 if (found != null) return found;
             }
-            if (navigationVisible) {
+            if (navigationVisible && navigationItem != null) {
                 Widget found = navigationItem.findByPosition(x, y, includeDisabled);
                 if (found != null) return found;
             }
@@ -236,48 +312,6 @@ public class ToolBar extends Group {
             return isClickable() ? this : null;
         } else {
             return null;
-        }
-    }
-
-    private void updateItems() {
-        boolean isStyleEnouth = true;
-
-        float tw = Math.max(getTitleWidth(), getSubtitleWidth());
-        float iw = getLayoutIconsWidth() + getIconsSpacing();
-        float ow = isOverflowButtonVisible() ? iw : 0;
-        float nw = hasNavigation() ? iw : 0;
-        float itemsSpace = Math.max(0, getInWidth() - tw - ow - nw);
-
-        int maxVisibleItems = iw == 0 ? 0 : (int) (itemsSpace / iw);
-        float sx = getInWidth() + getInX() - (Math.min(maxVisibleItems, toolItems.size()) * iw + ow);
-        for (int i = 0; i < toolItems.size(); i++) {
-            ToolItem item = toolItems.get(i);
-            item.onLayout(localIconWidth(), localIconHeight());
-            item.setLayoutPosition(sx + (i * iw), getInY());
-        }
-        drawVisibleItems = Math.min(toolItems.size(), maxVisibleItems);
-    }
-
-    private void updateNavigationButton() {
-        if (navigationItem != null) {
-            navigationVisible = true;
-            navigationItem.onLayout(localIconWidth(), localIconHeight());
-            navigationItem.setLayoutPosition(getInX(), getInY());
-            navigationItem.setActionListener(this::onNavigationBtnAction);
-        } else {
-            navigationVisible = false;
-        }
-    }
-
-    private void updateOverflowButton() {
-        if (isOverflowButtonVisible()) {
-            overflowVisible = true;
-            float iw = hasNavigation() ? Math.min(localIconWidth(), getInWidth() - getLayoutIconsWidth()) : localIconWidth();
-            overflowItem.onLayout(iw, localIconHeight());
-            overflowItem.setLayoutPosition(getInX() + getInWidth() - iw, getInY());
-            overflowItem.setActionListener(this::onOverflowBtnAction);
-        } else {
-            overflowVisible = false;
         }
     }
 
@@ -290,34 +324,9 @@ public class ToolBar extends Group {
         return false;
     }
 
-    private boolean isOverflowButtonVisible() {
-        if (overflowItem == null) {
-            return false;
-        }
-        if (hasExtraContextMenuItems()) {
-            return true;
-        }
-
-        float tw = Math.max(getTitleWidth(), getSubtitleWidth());
-        float iw = getLayoutIconsWidth() + getIconsSpacing();
-        float nw = hasNavigation() ? iw : 0;
-        float itemsSpace = Math.max(0, getInWidth() - tw - nw);
-        int maxVisibleItems = iw == 0 ? 0 : (int) (itemsSpace / iw);
-
-        return maxVisibleItems < toolItems.size();
-    }
-
     private void updateMenuItemName(ToolItem toolItem) {
         if (overflowMenu != null) {
-            float tw = Math.max(getTitleWidth(), getSubtitleWidth());
-            float iw = getLayoutIconsWidth() + getIconsSpacing();
-            float ow = isOverflowButtonVisible() ? iw : 0;
-            float nw = hasNavigation() ? iw : 0;
-            float itemsSpace = Math.max(0, getInWidth() - tw - ow - nw);
-            int maxVisibleItems = iw == 0 ? 0 : (int) (itemsSpace / iw);
-
-            int hiddenItems = Math.max(0, toolItems.size() - maxVisibleItems);
-
+            int hiddenItems = Math.max(0, toolItems.size() - drawVisibleItems);
             for (int i = 0; i < hiddenItems; i++) {
                 ToolItem item = toolItems.get(toolItems.size() - 1 - i);
                 if (item == toolItem) {
@@ -332,32 +341,13 @@ public class ToolBar extends Group {
         }
     }
 
-    private boolean checkNeedUpdateMenuItems() {
-        float tw = Math.max(getTitleWidth(), getSubtitleWidth());
-        float iw = getLayoutIconsWidth() + getIconsSpacing();
-        float ow = isOverflowButtonVisible() ? iw : 0;
-        float nw = hasNavigation() ? iw : 0;
-        float itemsSpace = Math.max(0, getInWidth() - tw - ow - nw);
-        int maxVisibleItems = iw == 0 ? 0 : (int) (itemsSpace / iw);
-
-        int hiddenItems = Math.max(0, toolItems.size() - maxVisibleItems);
-        return hiddenItems != prevHiddenItems || (overflowMenu == null && hiddenItems > 0);
-    }
-
     private void updateMenuItems() {
         if (overflowMenu == null) {
             overflowMenu = new Menu();
             setContextMenu(overflowMenu);
         }
 
-        float tw = Math.max(getTitleWidth(), getSubtitleWidth());
-        float iw = getLayoutIconsWidth() + getIconsSpacing();
-        float ow = isOverflowButtonVisible() ? iw : 0;
-        float nw = hasNavigation() ? iw : 0;
-        float itemsSpace = Math.max(0, getInWidth() - tw - ow - nw);
-        int maxVisibleItems = iw == 0 ? 0 : (int) (itemsSpace / iw);
-
-        int hiddenItems = Math.max(0, toolItems.size() - maxVisibleItems);
+        int hiddenItems = Math.max(0, toolItems.size() - drawVisibleItems);
         prevHiddenItems = hiddenItems;
 
         // Add or Update
@@ -404,11 +394,12 @@ public class ToolBar extends Group {
             ToolItem toolItem = toolItems.get(i);
             toolItem.onDraw(context);
         }
-        if (overflowVisible) {
-            getOverflowItem().onDraw(context);
+
+        if (overflowVisible && overflowItem != null) {
+            overflowItem.onDraw(context);
         }
-        if (navigationVisible) {
-            getNavigationItem().onDraw(context);
+        if (navigationVisible && navigationItem != null) {
+            navigationItem.onDraw(context);
         }
 
         float x = getInX();
@@ -426,13 +417,11 @@ public class ToolBar extends Group {
             float subtitleH = (hasSubtitle ? getSubtitleHeight() : 0);
             float tw = Math.max(hasTitle ? getTitleWidth() : 0, hasSubtitle ? getSubtitleWidth() : 0);
             float th = (hasTitle ? getTitleHeight() : 0) + (hasSubtitle ? getSubtitleHeight() : 0);
-            float iw = getLayoutIconsWidth() + getIconsSpacing();
-            float ow = hasOverflow() ? iw : 0;
-            float nw = hasNavigation() ? iw : 0;
-            float itemsSpace = Math.max(0, drawVisibleItems * iw);
+            float ow = overflowVisible && overflowItem != null ? overflowItem.getLayoutWidth() : 0;
+            float nw = navigationVisible && navigationItem != null ? navigationItem.getLayoutWidth() : 0;
 
             float boxX = x + nw;
-            float boxWidth = Math.max(0, width - ow - nw - itemsSpace);
+            float boxWidth = Math.max(0, width - ow - nw - itemsWidth);
             float boxHeight = Math.min(height, titleH + subtitleH);
 
             context.setTransform2D(getTransform());
@@ -460,14 +449,6 @@ public class ToolBar extends Group {
                 }
             }
         }
-    }
-
-    private float localIconWidth() {
-        return Math.min(getInWidth(), getLayoutIconsWidth() + getIconsSpacing());
-    }
-    
-    private float localIconHeight() {
-        return Math.min(getInHeight(), getLayoutIconsHeight() + getIconsSpacing());
     }
 
     public ToolItem getOverflowItem() {
@@ -533,11 +514,11 @@ public class ToolBar extends Group {
     }
 
     private void onOverflowBtnAction(ActionEvent actionEvent) {
-        if (overflowMenu != null && getActivity() != null) {
-            float x = getInX() + getInWidth() - getIconsSpacing() * 0.5f - getIconsWidth() * 0.5f;
-            float y = getInY() + getIconsSpacing() * 0.5f + getIconsHeight() * 0.5f;
-            Vector2 center = new Vector2(x, y);
-            localToScreen(center);
+        if (overflowItem != null && overflowMenu != null && getActivity() != null) {
+            updateMenuItems();
+            Vector2 center = localToScreen(
+                    overflowItem.getLayoutX() + overflowItem.getLayoutWidth() * 0.5f,
+                    overflowItem.getLayoutY() + overflowItem.getLayoutHeight() * 0.5f);
             overflowMenu.show(getActivity(), center.x, center.y, DropdownAlign.SCREEN_SPACE);
         }
     }
@@ -595,47 +576,6 @@ public class ToolBar extends Group {
 
     void invalidateToolItem(ToolItem item) {
         updateMenuItemName(item);
-    }
-
-    public float getIconsWidth() {
-        return iconsWidth;
-    }
-
-    public void setIconsWidth(float iconsWidth) {
-        if (this.iconsWidth != iconsWidth) {
-            this.iconsWidth = iconsWidth;
-            invalidate(true);
-        }
-    }
-
-    private float getLayoutIconsWidth() {
-        return iconsWidth == 0 || iconsWidth == MATCH_PARENT ? getTitleFontHeight() : iconsWidth;
-    }
-
-    public float getIconsHeight() {
-        return iconsHeight;
-    }
-
-    public void setIconsHeight(float iconsHeight) {
-        if (this.iconsHeight != iconsHeight) {
-            this.iconsHeight = iconsHeight;
-            invalidate(true);
-        }
-    }
-
-    private float getLayoutIconsHeight() {
-        return iconsHeight == 0 || iconsHeight == MATCH_PARENT ? getTitleFontHeight() : iconsHeight;
-    }
-
-    public float getIconsSpacing() {
-        return iconsSpacing;
-    }
-
-    public void setIconsSpacing(float iconsSpacing) {
-        if (this.iconsSpacing != iconsSpacing) {
-            this.iconsSpacing = iconsSpacing;
-            invalidate(true);
-        }
     }
 
     public String getTitle() {
