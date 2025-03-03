@@ -1,6 +1,7 @@
 package flat.widget.layout;
 
 import flat.animations.StateInfo;
+import flat.exception.FlatException;
 import flat.graphics.SmartContext;
 import flat.uxml.Controller;
 import flat.uxml.TaskList;
@@ -210,6 +211,10 @@ public class Grid extends Parent {
         invalidate(true);
     }
 
+    public void add(Widget widget, int x, int y) {
+        add(widget, x, y, 1, 1);
+    }
+
     public void add(Widget widget, int x, int y, int w, int h) {
         w = Math.max(1, w);
         h = Math.max(1, h);
@@ -220,6 +225,64 @@ public class Grid extends Parent {
             cells.put(widget, orderedCells.size() - 1);
             tasks.run();
         }
+    }
+
+    public Cell getCell(Widget child) {
+        Integer index = cells.get(child);
+        if (index != null) {
+            return orderedCells.get(index);
+        }
+        return null;
+    }
+
+    public int getColumnCount() {
+        return columnCount;
+    }
+
+    public int getRowCount() {
+        return rowCount;
+    }
+
+    public float getColumnWidth(int index) {
+        if (index < 0 || index >= columnCount) {
+            throw new FlatException("Index out of bounds : " + index + " of " + columnCount);
+        }
+        return columns[index];
+    }
+
+    public float getRowHeight(int index) {
+        if (index < 0 || index >= rowCount) {
+            throw new FlatException("Index out of bounds : " + index + " of " + rowCount);
+        }
+        return rows[index];
+    }
+
+    public float getColumnLayoutWidth(int index) {
+        if (index < 0 || index >= columnCount) {
+            throw new FlatException("Index out of bounds : " + index + " of " + columnCount);
+        }
+        return layoutColumns[index].width;
+    }
+
+    public float getColumnLayoutX(int index) {
+        if (index < 0 || index >= columnCount) {
+            throw new FlatException("Index out of bounds : " + index + " of " + columnCount);
+        }
+        return layoutColumns[index].x;
+    }
+
+    public float getRowLayoutHeight(int index) {
+        if (index < 0 || index >= rowCount) {
+            throw new FlatException("Index out of bounds : " + index + " of " + rowCount);
+        }
+        return layoutRows[index].height;
+    }
+
+    public float getRowLayoutY(int index) {
+        if (index < 0 || index >= rowCount) {
+            throw new FlatException("Index out of bounds : " + index + " of " + rowCount);
+        }
+        return layoutRows[index].y;
     }
 
     @Override
@@ -423,7 +486,8 @@ public class Grid extends Parent {
         if (index != null) {
             Cell cell = orderedCells.get((int) index);
             if (cell.x >= 0 && cell.x < columnCount && cell.y >= 0 && cell.y < rowCount) {
-                if (columns[cell.x] == WRAP_CONTENT || columns[cell.y] == WRAP_CONTENT) {
+                if (columns[cell.x] == WRAP_CONTENT || columns[cell.x] == MATCH_PARENT ||
+                        columns[cell.y] == WRAP_CONTENT || columns[cell.y] == MATCH_PARENT) {
                     return false;
                 }
                 
@@ -472,39 +536,6 @@ public class Grid extends Parent {
         if (this.verticalSpacing != verticalSpacing) {
             this.verticalSpacing = verticalSpacing;
             invalidate(true);
-        }
-    }
-
-    private static class Cell {
-        private final Widget widget;
-        private final int x, y, w, h;
-
-        public Cell(Widget widget, int x, int y, int w, int h) {
-            this.widget = widget;
-            this.x = x;
-            this.y = y;
-            this.w = w;
-            this.h = h;
-        }
-
-        public Widget getWidget() {
-            return widget;
-        }
-
-        public int getX() {
-            return x;
-        }
-
-        public int getY() {
-            return y;
-        }
-
-        public int getW() {
-            return w;
-        }
-
-        public int getH() {
-            return h;
         }
     }
 

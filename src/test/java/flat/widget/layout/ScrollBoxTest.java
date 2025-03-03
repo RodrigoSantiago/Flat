@@ -117,9 +117,7 @@ public class ScrollBoxTest {
         assertNull(verBar.getParent());
         assertNull(content.getParent());
 
-        scrollBox.setAttributes(createBarValues(), "scroll-box");
         scrollBox.applyChildren(uxChild);
-        scrollBox.applyAttributes(controller);
 
         assertEquals(scrollBox, horBar.getParent());
         assertEquals(scrollBox, verBar.getParent());
@@ -632,14 +630,6 @@ public class ScrollBoxTest {
         hash.put(UXHash.getHash("vertical-bar-position"), new UXValueText(VerticalBarPosition.LEFT.toString()));
         hash.put(UXHash.getHash("scroll-sensibility"), new UXValueNumber(5));
         hash.put(UXHash.getHash("floating-bars"), new UXValueBool(true));
-        return hash;
-    }
-
-    private HashMap<Integer, UXValue> createBarValues() {
-        var hash = new HashMap<Integer, UXValue>();
-
-        hash.put(UXHash.getHash("horizontal-bar-id"), new UXValueText("hor-bar-id"));
-        hash.put(UXHash.getHash("vertical-bar-id"), new UXValueText("ver-bar-id"));
         return hash;
     }
 

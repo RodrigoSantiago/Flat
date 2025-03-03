@@ -68,7 +68,6 @@ public class UXBuilder {
         UXBuilder.install("Grid", Grid::new);
         /*
         UXBuilder.install("Canvas", Canvas::new);
-        UXBuilder.install("Cell", Cell::new);
         UXBuilder.install("Drawer", Drawer::new);*/
         // RichText text + multiple fonts + images + Emoji icons
         // MonoText text + multiple monospaced fonts
