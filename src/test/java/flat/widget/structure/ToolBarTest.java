@@ -24,6 +24,8 @@ import java.util.HashMap;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.*;
 import static org.powermock.api.mockito.PowerMockito.when;
 
@@ -362,6 +364,21 @@ public class ToolBarTest {
         assertLayout(item2, 164, 0, 16, 18); // Hidden
         assertLayout(item3, 180, 0, 16, 18); // Hidden
         assertLayout(ove, 148, 0, 16, 18);
+    }
+
+    @Test
+    public void action() {
+        var action = (UXListener<ActionEvent>) mock(UXListener.class);
+
+        var nav = createItem(16, 18);
+        ToolBar toolBar = new ToolBar();
+        toolBar.setNavigationAction(action);
+        toolBar.setNavigationItem(nav);
+
+        toolBar.navigationAction();
+        nav.action();
+
+        verify(action, times(2)).handle(any());
     }
 
     private ToolItem createItem(float width, float height) {

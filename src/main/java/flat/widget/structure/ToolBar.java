@@ -483,6 +483,7 @@ public class ToolBar extends Group {
             if (navigationItem != null) {
                 add(navigationItem);
                 if (navigationItem.getParent() == this) {
+                    navigationItem.setActionListener(this::onNavigationBtnAction);
                     var old = this.navigationItem;
                     this.navigationItem = navigationItem;
                     if (old != null) {
