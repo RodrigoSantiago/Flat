@@ -117,7 +117,7 @@ public class TextDropDown extends TextInputField {
             menuItem.setStyle(getStyle());
             menuItem.setText(option);
             menuItem.setActionListener(this::onMenuItemAction);
-            subMenu.addMenuitem(menuItem);
+            subMenu.addMenuItem(menuItem);
             menuItems.add(menuItem);
         }
         invalidSubmenuItems = false;

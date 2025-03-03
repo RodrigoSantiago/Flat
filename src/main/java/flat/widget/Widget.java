@@ -1785,6 +1785,6 @@ public class Widget {
 
     @Override
     public String toString() {
-        return "[" + id + "]" + getClass().getSimpleName() + " - " + super.toString();
+        return "[" + id + "]" + getClass().getSimpleName() + "@" + Integer.toHexString(super.hashCode());
     }
 }

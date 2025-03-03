@@ -1,4 +1,23 @@
 <Scene background-color="#C8C8C8" id="main-scene">
+    <LinearBox direction="vertical" width="MATCH_PARENT" height="MATCH_PARENT">
+        <ToolBar width="MATCH_PARENT" icons-width="24" icons-height="24" icons-spacing="8"
+            overflow-icon="/default/icons/baseline-more_vert.svg" overflow-color="#FFFFFF"
+                 navigation-icon="/default/icons/menu.svg" navigation-color="#FFFFFF"
+            title="Title super grande que altere algo"  horizontal-align="CENTER" vertical-align="BOTTOM"
+            margin-left="100" margin-right="100" overflow-id="overflow" navigation-id="navigation"
+                 on-navigation="here">
+            <ToolItem icon="/default/icons/checkbox-blank-outline.svg" menu-text="Tool Item Test A" on-action="here"
+                      menu-icon="/default/icons/checkbox-blank-outline.svg" menu-icon-color="red" menu-icon-spacing="16"
+            />
+            <ToolItem icon="/default/icons/checkbox-marked.svg" menu-text="Tool Item Test B"/>
+            <ToolItem icon="/default/icons/checkbox-marked.svg" menu-text="Tool Item Test C"/>
+            <ToolItem icon="/default/icons/checkbox-marked.svg" menu-text="Tool Item Test D"/>
+            <ToolItem icon="/default/icons/checkbox-marked.svg" menu-text="Tool Item Test E" menu-shortcut-text="Ctrl+C"/>
+            <ToolItem icon="/default/icons/checkbox-marked.svg" menu-text="Tool Item Test F"/>
+            <Menu>
+                <MenuItem text="Exemplo"></MenuItem>
+            </Menu>
+        </ToolBar>
     <LinearBox direction="horizontal" width="MATCH_PARENT" height="MATCH_PARENT">
         <LinearBox direction="vertical" background-color="#C0C0C0" width="MATCH_PARENT" height="MATCH_PARENT"
                    padding-left="8" padding-right="8" padding-top="8" padding-bottom="8"
@@ -201,5 +220,6 @@
             <ProgressBar id="progressBar" smooth-transition-duration="10" animation-duration="4" line-mode="SPLIT"></ProgressBar>
             <ProgressCircle id="progressBar2" smooth-transition-duration="1" animation-duration="4" line-mode="SPLIT" background-color="red"></ProgressCircle>
         </LinearBox>
+    </LinearBox>
     </LinearBox>
 </Scene>

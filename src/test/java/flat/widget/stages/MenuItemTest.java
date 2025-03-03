@@ -324,11 +324,11 @@ public class MenuItemTest {
 
         Menu parent = new Menu();
         MenuItem menuItem = new MenuItem();
-        parent.addMenuitem(menuItem);
+        parent.addMenuItem(menuItem);
 
         Menu subMenu = new Menu();
         MenuItem subMenuItem = new MenuItem();
-        subMenu.addMenuitem(subMenuItem);
+        subMenu.addMenuItem(subMenuItem);
 
         menuItem.setSubMenu(subMenu);
 

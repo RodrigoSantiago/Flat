@@ -447,6 +447,7 @@ menu-item : label {
     padding-right : 16;
     shortcut-text-size : 12sp;
     shortcut-text-color : #00000080;
+    cursor : hand;
 
     elevation : 0;
     background-color : #FFFFFF;
@@ -484,59 +485,36 @@ dropdown-menu : menu {
 
 }
 
-toolbar {
+tool-bar {
     text-font : font("Roboto", "bold");
     text-size : 20sp;
     text-color : #000000FF;
-    padding-left : 16;
-    padding-right : 16;
-    padding-top : 16;
-    padding-bottom : 16;
-    shadow : true;
+    padding-left : 4;
+    padding-right : 4;
+    padding-top : 8;
+    padding-bottom : 8;
+    shadow-enabled : true;
     elevation : 4;
+    background-color : red;
+    title-size : 16sp;
+    title-color : #000000FF;
+    subtitle-size : 8sp;
+    subtitle-color : #000000FF;
+    height : 90;
 }
 
-toolbar-item {
-    ripple : true;
-    ripple-color : #00000080;
+tool-item {
+    icon-color : white;
+    ripple-enabled : true;
+    ripple-color : #FFFFFF;
     ripple-overflow : true;
-    shadow : false;
-    radius-top : 12;
-    radius-left : 12;
-    radius-right : 12;
-    radius-bottom : 12;
-    margin-right : 24;
-    min-width : 24;
-    min-height : 24;
-    transition-duration : 0.1;
-    vertical-align : middle;
-    horizontal-align : center;
-    show-action : true;
+    cursor : hand;
 }
 
-toolbar-right-button : button {
-
+tool-item-navigation : tool-item {
+    icon : '/default/icons/menu.svg';
 }
 
-toolbar-menu : menu {
-    width : 200;
-}
-
-toolbar-menuitem : menu-item {
-    min-width : 32;
-}
-
-overflow-menu : button {
-    ripple : true;
-    ripple-color : #00000080;
-    shadow : false;
-    radius-top : 12;
-    radius-left : 12;
-    radius-right : 12;
-    radius-bottom : 12;
-    max-width : 16;
-    min-height : 24;
-    transition-duration : 0.1;
-    vertical-align : middle;
-    horizontal-align : center;
+tool-item-overflow : tool-item {
+    icon : '/default/icons/baseline-more_vert.svg';
 }

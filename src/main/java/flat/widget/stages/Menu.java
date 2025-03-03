@@ -6,11 +6,9 @@ import flat.animations.StateInfo;
 import flat.events.ActionEvent;
 import flat.events.PointerEvent;
 import flat.events.ScrollEvent;
+import flat.exception.FlatException;
 import flat.graphics.SmartContext;
-import flat.math.shapes.Shape;
 import flat.uxml.*;
-import flat.widget.Group;
-import flat.widget.Parent;
 import flat.widget.Stage;
 import flat.widget.Widget;
 import flat.widget.enums.DropdownAlign;
@@ -49,7 +47,7 @@ public class Menu extends Stage {
         Widget widget;
         while ((widget = children.next()) != null) {
             if (widget instanceof MenuItem menuItem) {
-                addMenuitem(menuItem);
+                addMenuItem(menuItem);
             }
             if (widget instanceof Divider divider) {
                 addDivider(divider);
@@ -117,17 +115,19 @@ public class Menu extends Stage {
         }
     }
 
-    public void addMenuitem(MenuItem child) {
+    public void addMenuItem(MenuItem child) {
         super.add(child);
     }
 
-    public void addMenuitem(MenuItem... children) {
-        super.add(children);
+    public void addMenuItem(MenuItem... children) {
+        for (MenuItem child : children) {
+            addMenuItem(child);
+        }
     }
 
-    public void addMenuitem(List<MenuItem> children) {
+    public void addMenuItem(List<MenuItem> children) {
         for (MenuItem child : children) {
-            addMenuitem(child);
+            addMenuItem(child);
         }
     }
 
@@ -136,12 +136,24 @@ public class Menu extends Stage {
     }
 
     public void addDivider(Divider... children) {
-        super.add(children);
+        for (Divider child : children) {
+            addDivider(child);
+        }
     }
 
     public void addDivider(List<Divider> children) {
         for (Divider child : children) {
             addDivider(child);
+        }
+    }
+
+    public void moveChild(Widget child, int index) {
+        if (index < 0 || index >= orderedList.size()) {
+            throw new FlatException("Invalid child index position");
+        }
+        if (orderedList.contains(child)) {
+            orderedList.remove(child);
+            orderedList.add(index, child);
         }
     }
 

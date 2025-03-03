@@ -244,4 +244,9 @@ public class MainActivity extends Controller {
     public void setmax(ActionEvent event) {
         textField.setMaxCharacters(10);
     }
+
+    @Flat
+    public void here(ActionEvent event) {
+        System.out.println("Here " + event);
+    }
 }

@@ -45,7 +45,7 @@ public class MenuItem extends Button {
     public void applyChildren(UXChildren children) {
         Menu menu = children.nextMenu();
         if (menu != null) {
-            this.subMenu = menu;
+            this.subMenu = menu; // todo - it cam be simple the context menu any way
         }
     }
 

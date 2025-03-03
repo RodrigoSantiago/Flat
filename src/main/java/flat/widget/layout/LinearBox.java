@@ -1,6 +1,7 @@
 package flat.widget.layout;
 
 import flat.animations.StateInfo;
+import flat.exception.FlatException;
 import flat.uxml.UXChildren;
 import flat.widget.Parent;
 import flat.widget.enums.*;
@@ -81,6 +82,9 @@ public class LinearBox extends Parent {
     }
 
     public void moveChild(Widget child, int index) {
+        if (index < 0 || index >= orderedList.size()) {
+            throw new FlatException("Invalid child index position");
+        }
         if (orderedList.contains(child)) {
             orderedList.remove(child);
             orderedList.add(index, child);

@@ -12,9 +12,7 @@ import flat.widget.selection.RadioButton;
 import flat.widget.selection.RadioGroup;
 import flat.widget.selection.SwitchToggle;
 import flat.widget.stages.MenuItem;
-import flat.widget.structure.ListView;
-import flat.widget.structure.Page;
-import flat.widget.structure.Tab;
+import flat.widget.structure.*;
 import flat.widget.text.*;
 import flat.widget.value.*;
 
@@ -65,14 +63,13 @@ public class UXBuilder {
         UXBuilder.install("TextInputField", TextInputField::new);
         UXBuilder.install("TextDropDown", TextDropDown::new);
         UXBuilder.install("TextArea", TextArea::new);
+        UXBuilder.install("ToolBar", ToolBar::new);
+        UXBuilder.install("ToolItem", ToolItem::new);
         /*
-        UXBuilder.install("ToggleGroup", RadioGroup::new);
         UXBuilder.install("Canvas", Canvas::new);
         UXBuilder.install("Grid", Grid::new);
         UXBuilder.install("Cell", Cell::new);
-        UXBuilder.install("Drawer", Drawer::new);
-        UXBuilder.install("ToolBar", ToolBar::new);
-        UXBuilder.install("ToolItem", ToolItem::new);*/
+        UXBuilder.install("Drawer", Drawer::new);*/
         // RichText text + multiple fonts + images + Emoji icons
         // MonoText text + multiple monospaced fonts
         // RawText text + monospaced infinity reading efficiency
@@ -131,6 +128,8 @@ public class UXBuilder {
 
         if (widgetFactory != null) {
             Widget widget = widgetFactory.build();
+            String id = getId(node);
+            widget.setId(id);
 
             // Attributes
             widget.setAttributes(node.getValues(), node.getStyle());
@@ -150,9 +149,17 @@ public class UXBuilder {
             widget.applyChildren(children);
 
             // Link
-            widgets.add(new KeyValue(node, widget));
+            widgets.add(new KeyValue(id, widget));
 
             return widget;
+        }
+        return null;
+    }
+
+    private String getId(UXNode node) {
+        UXValue uxValue = node.getValues().get(UXHash.getHash("id"));
+        if (uxValue != null) {
+            return uxValue.asString(null);
         }
         return null;
     }
@@ -176,11 +183,8 @@ public class UXBuilder {
         public String id;
         public Widget widget;
 
-        public KeyValue(UXNode node, Widget widget) {
-            UXValue uxValue = node.getValues().get(UXHash.getHash("id"));
-            if (uxValue != null) {
-                this.id = uxValue.asString(null);
-            }
+        public KeyValue(String id, Widget widget) {
+            this.id = id;
             this.widget = widget;
         }
     }
