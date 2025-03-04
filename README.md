@@ -30,14 +30,14 @@ A `Window` always have an `Activity` which is a bridge between `Window` and `Wid
 The Controller class is resposible to handle Activity events, and it should be extended. 
 Controllers can also be used to control a `Dialog` and a `Frame`
 
-The UXBuilder can assign variables and methods based upon widget's id. The field must be assigned with the annotation `@Flat`. All the fields will be assigned after the onLoad event.
+The UXBuilder can assign variables and methods based upon widget's id. The field must be assigned with the annotation `@Flat`. All the fields will be assigned after the onShow event.
 ```java
 public class MainController extends Controller {
    @Flat 
    private Button button;
 
    @Override
-   public void onLoad() {
+   public void onShow() {
        button.setFollowStyleProperty("background-color", false);
        button.setBackgroundColor(Color.blue);
    }
