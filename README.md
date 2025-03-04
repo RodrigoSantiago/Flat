@@ -288,9 +288,10 @@ style {
 ````
 
 ### Todo - List
- - [ ] Pickers
+- [ ] Wiki
+- [ ] Pickers
    - [ ] Date Picker
    - [ ] Time Picker
    - [ ] Color Picker
    - [ ] Font Picker
- - [ ] Add "paint" to all "color" css-like styles
+- [ ] Add "paint" to all "color" css-like styles
