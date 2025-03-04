@@ -25,7 +25,7 @@ public class Menu extends Stage {
     private UXListener<ActionEvent> slideListener;
     private UXValueListener<Float> viewOffsetListener;
     private HorizontalAlign horizontalAlign = HorizontalAlign.CENTER;
-    private float showupTransitionDuration = 0;
+    private float showTransitionDuration = 0;
     private float scrollSensibility = 10f;
 
     private float viewOffset;
@@ -33,7 +33,7 @@ public class Menu extends Stage {
     private float totalDimension;
     private float targetX, targetY;
     private float animX, animY;
-    private final ShowupAnimation showupAnimation = new ShowupAnimation();
+    private final ShowAnimation showAnimation = new ShowAnimation();
 
     private final ArrayList<Widget> orderedList = new ArrayList<>();
     private float[] tempSize;
@@ -77,7 +77,7 @@ public class Menu extends Stage {
         StateInfo info = getStateInfo();
         setHorizontalAlign(attrs.getConstant("horizontal-align", info, getHorizontalAlign()));
         setScrollSensibility(attrs.getNumber("scroll-sensibility", info, getScrollSensibility()));
-        setShowupTransitionDuration(attrs.getNumber("showup-transition-duration", info, getShowupTransitionDuration()));
+        setShowTransitionDuration(attrs.getNumber("show-transition-duration", info, getShowTransitionDuration()));
     }
 
     @Override
@@ -212,15 +212,15 @@ public class Menu extends Stage {
         }
     }
 
-    public float getShowupTransitionDuration() {
-        return showupTransitionDuration;
+    public float getShowTransitionDuration() {
+        return showTransitionDuration;
     }
 
-    public void setShowupTransitionDuration(float showupTransitionDuration) {
-        if (this.showupTransitionDuration != showupTransitionDuration) {
-            this.showupTransitionDuration = showupTransitionDuration;
+    public void setShowTransitionDuration(float showTransitionDuration) {
+        if (this.showTransitionDuration != showTransitionDuration) {
+            this.showTransitionDuration = showTransitionDuration;
 
-            showupAnimation.stop();
+            showAnimation.stop();
         }
     }
 
@@ -438,18 +438,18 @@ public class Menu extends Stage {
         animX = (x - targetX) / mW;
         animY = (y - targetY) / mH;
 
-        if (showupTransitionDuration > 0) {
-            showupAnimation.setDuration(showupTransitionDuration);
-            showupAnimation.play(act);
+        if (showTransitionDuration > 0) {
+            showAnimation.setDuration(showTransitionDuration);
+            showAnimation.play(act);
         }
     }
 
-    private class ShowupAnimation extends NormalizedAnimation {
+    private class ShowAnimation extends NormalizedAnimation {
 
         private float scaleX, scaleY, centerX, centerY;
         private boolean followX, followY, followCX, followCY;
 
-        public ShowupAnimation() {
+        public ShowAnimation() {
             super(Interpolation.circleOut);
         }
 

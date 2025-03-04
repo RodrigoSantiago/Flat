@@ -60,7 +60,7 @@ public class MenuTest {
         Menu menu = new Menu();
 
         assertEquals(HorizontalAlign.CENTER, menu.getHorizontalAlign());
-        assertEquals(0, menu.getShowupTransitionDuration(), 0.001f);
+        assertEquals(0, menu.getShowTransitionDuration(), 0.001f);
         assertEquals(10, menu.getScrollSensibility(), 0.001f);
         assertNull(menu.getSlideListener());
         assertNull(menu.getViewOffsetListener());
@@ -69,7 +69,7 @@ public class MenuTest {
         menu.applyAttributes(controller);
 
         assertEquals(HorizontalAlign.CENTER, menu.getHorizontalAlign());
-        assertEquals(0, menu.getShowupTransitionDuration(), 0.001f);
+        assertEquals(0, menu.getShowTransitionDuration(), 0.001f);
         assertEquals(10, menu.getScrollSensibility(), 0.001f);
         assertEquals(action, menu.getSlideListener());
         assertEquals(listener, menu.getViewOffsetListener());
@@ -77,7 +77,7 @@ public class MenuTest {
         menu.applyStyle();
 
         assertEquals(HorizontalAlign.RIGHT, menu.getHorizontalAlign());
-        assertEquals(0.25f, menu.getShowupTransitionDuration(), 0.001f);
+        assertEquals(0.25f, menu.getShowTransitionDuration(), 0.001f);
         assertEquals(5, menu.getScrollSensibility(), 0.001f);
         assertEquals(action, menu.getSlideListener());
         assertEquals(listener, menu.getViewOffsetListener());
@@ -353,7 +353,7 @@ public class MenuTest {
         var hash = new HashMap<Integer, UXValue>();
 
         hash.put(UXHash.getHash("horizontal-align"), new UXValueText(HorizontalAlign.RIGHT.toString()));
-        hash.put(UXHash.getHash("showup-transition-duration"), new UXValueNumber(0.25f));
+        hash.put(UXHash.getHash("show-transition-duration"), new UXValueNumber(0.25f));
         hash.put(UXHash.getHash("scroll-sensibility"), new UXValueNumber(5));
         hash.put(UXHash.getHash("on-slide"), new UXValueText("onActionWork"));
         hash.put(UXHash.getHash("on-view-offset-change"), new UXValueText("onViewOffsetWork"));
