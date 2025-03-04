@@ -85,7 +85,7 @@ public static void main(String[] args) {
 A new Window can be created later using `Application.createWindow`
 
 ### Style-Properties and Attributes
-All proprties have two names : CamelCaase for Java and kebab-case for CSS-Like and String
+All proprties have two names : CamelCase for Java and kebab-case for CSS-Like and Strings
 
 A Style-Property is a property that will change according to the current Style, Theme and Widget's State.
 To set the Style-property manually, always `setFollowStyleProperty` to false.
