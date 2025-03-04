@@ -1,7 +1,7 @@
 package flat.uxml;
 
 import flat.Flat;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.window.Activity;
 import flat.window.Application;
 
@@ -95,7 +95,7 @@ public class Controller {
 
     }
 
-    public void onDraw(SmartContext context) {
+    public void onDraw(Graphics graphics) {
 
     }
 

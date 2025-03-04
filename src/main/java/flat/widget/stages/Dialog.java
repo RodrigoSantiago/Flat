@@ -5,11 +5,9 @@ import flat.animations.NormalizedAnimation;
 import flat.animations.StateInfo;
 import flat.events.DragEvent;
 import flat.events.PointerEvent;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.resources.ResourceStream;
 import flat.uxml.*;
-import flat.widget.Group;
-import flat.widget.Parent;
 import flat.widget.Stage;
 import flat.widget.Widget;
 import flat.widget.enums.HorizontalAlign;
@@ -94,12 +92,12 @@ public class Dialog extends Stage {
     }
 
     @Override
-    public void onDraw(SmartContext context) {
-        super.onDraw(context);
+    public void onDraw(Graphics graphics) {
+        super.onDraw(graphics);
 
         if (controller != null && controller.isListening()) {
             try {
-                controller.onDraw(context);
+                controller.onDraw(graphics);
             } catch (Exception e) {
                 Application.handleException(e);
             }

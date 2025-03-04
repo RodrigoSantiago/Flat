@@ -2,10 +2,9 @@ package flat.graphics.context;
 
 import flat.backend.*;
 import flat.exception.FlatException;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.graphics.context.enums.*;
 import flat.graphics.context.paints.ColorPaint;
-import flat.graphics.context.paints.ImagePattern;
 import flat.math.Affine;
 import flat.math.Mathf;
 import flat.math.shapes.PathIterator;
@@ -23,7 +22,7 @@ public class Context {
     public final long svgId;
 
     private Window window;
-    private SmartContext smartContext;
+    private Graphics graphics;
     private Thread thread;
     private boolean disposed;
 
@@ -125,11 +124,11 @@ public class Context {
         }
     }
 
-    public SmartContext getSmartContext() {
-        if (smartContext == null) {
-            this.smartContext = new SmartContext(this);
+    public Graphics getSmartContext() {
+        if (graphics == null) {
+            this.graphics = new Graphics(this);
         }
-        return smartContext;
+        return graphics;
     }
 
     Runnable createSyncDestroyTask(Runnable task) {
@@ -249,7 +248,7 @@ public class Context {
         }
         disposeTasks.clear();
 
-        smartContext = null;
+        graphics = null;
         frame = null;
         shaderProgram = null;
         vertexArray = null;

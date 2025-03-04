@@ -5,17 +5,13 @@ import flat.data.ObservableList;
 import flat.events.ActionEvent;
 import flat.events.TextEvent;
 import flat.graphics.Color;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.graphics.context.Font;
 import flat.graphics.context.Paint;
 import flat.graphics.context.paints.GradientStop;
-import flat.graphics.context.paints.LinearGradient;
 import flat.graphics.context.paints.RadialGradient;
 import flat.graphics.image.PixelMap;
-import flat.math.shapes.Path;
-import flat.math.stroke.BasicStroke;
 import flat.uxml.Controller;
-import flat.uxml.UXValueListener;
 import flat.uxml.ValueChange;
 import flat.widget.Widget;
 import flat.widget.layout.LinearBox;
@@ -122,8 +118,8 @@ public class MainActivity extends Controller {
 
     float t;
     @Override
-    public void onDraw(SmartContext context) {
-        super.onDraw(context);
+    public void onDraw(Graphics graphics) {
+        super.onDraw(graphics);
         t += 0.01f;
         if (t > 1) t = 1;
         RadialGradient linearGradient = new RadialGradient.Builder(50, 50, 0, 50)
@@ -132,42 +128,42 @@ public class MainActivity extends Controller {
                 .stop(new GradientStop(1, Color.blue))
                 .cycleMethod(Paint.CycleMethod.CLAMP)
                 .build();
-        context.setTransform2D(null);
-        context.setPaint(linearGradient);
-        context.drawRect(0, 0, 200, 200, true);
-        /*context.setTransform2D(null);
-        context.setStroker(new BasicStroke(10, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-        context.setColor(0xFF0000FF);
+        graphics.setTransform2D(null);
+        graphics.setPaint(linearGradient);
+        graphics.drawRect(0, 0, 200, 200, true);
+        /*graphics.setTransform2D(null);
+        graphics.setStroker(new BasicStroke(10, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        graphics.setColor(0xFF0000FF);
         Path a = new Path();
         a.moveTo(200, 200);
         a.closePath();
         a.moveTo(300, 300);
         a.lineTo(310, 310);
-        context.drawShape(a, false);*/
+        graphics.drawShape(a, false);*/
         //t += 1 / 120f;
         //if (t > 1) t = 0;
-        //context.setTransform2D(null);
-        //context.setTextSize(64);
-        //context.setTextFont(Font.getDefault());
-        //context.setColor(Color.black);
-        //context.setTextBlur(1);
-        //context.drawText(32, 300, "Ola Mundo");
+        //graphics.setTransform2D(null);
+        //graphics.setTextSize(64);
+        //graphics.setTextFont(Font.getDefault());
+        //graphics.setColor(Color.black);
+        //graphics.setTextBlur(1);
+        //graphics.drawText(32, 300, "Ola Mundo");
 
-        /*context.setStroker(new BasicStroke(5.5f));
-        context.setAntialiasEnabled(false);
-        context.setColor(0x00000080);
-        context.setAntialiasEnabled(false);
-        context.drawLine(100, 100, 500, 600);
-        context.setAntialiasEnabled(true);
-        context.drawLine(100, 500, 500, 100);*/
-        //context.setColor(Color.black);
-        //context.setTextBlur(0);
-        //context.drawText(32, 200, "Ola Mundo");
+        /*graphics.setStroker(new BasicStroke(5.5f));
+        graphics.setAntialiasEnabled(false);
+        graphics.setColor(0x00000080);
+        graphics.setAntialiasEnabled(false);
+        graphics.drawLine(100, 100, 500, 600);
+        graphics.setAntialiasEnabled(true);
+        graphics.drawLine(100, 500, 500, 100);*/
+        //graphics.setColor(Color.black);
+        //graphics.setTextBlur(0);
+        //graphics.drawText(32, 200, "Ola Mundo");
         if (save) {
             save = false;
             Font font = Font.getDefault();
-            var ctx = context.getContext();
-            PixelMap pixelMap = font.createImageFromAtlas(context.getContext());
+            var ctx = graphics.getContext();
+            PixelMap pixelMap = font.createImageFromAtlas(graphics.getContext());
             saveImage(pixelMap.getData(), (int) pixelMap.getWidth(), (int) pixelMap.getHeight(), "C:\\Nova\\image-2.png");
         }
 

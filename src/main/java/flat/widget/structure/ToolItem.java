@@ -4,7 +4,7 @@ import flat.animations.StateInfo;
 import flat.events.ActionEvent;
 import flat.events.PointerEvent;
 import flat.graphics.Color;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.graphics.image.Drawable;
 import flat.uxml.Controller;
 import flat.uxml.UXAttrs;
@@ -47,9 +47,9 @@ public class ToolItem extends Widget {
     }
 
     @Override
-    public void onDraw(SmartContext context) {
-        drawBackground(context);
-        drawRipple(context);
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
+        drawRipple(graphics);
 
         float x = getInX();
         float y = getInY();
@@ -58,8 +58,8 @@ public class ToolItem extends Widget {
 
         if (width <= 0 || height <= 0 || getIcon() == null) return;
 
-        context.setTransform2D(getTransform());
-        getIcon().draw(context, x, y, width, height, getIconColor(), getIconImageFilter());
+        graphics.setTransform2D(getTransform());
+        getIcon().draw(graphics, x, y, width, height, getIconColor(), getIconImageFilter());
     }
 
     @Override

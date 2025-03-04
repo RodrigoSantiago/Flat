@@ -1,10 +1,9 @@
 package flat.widget.layout;
 
 import flat.events.ScrollEvent;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.math.Vector2;
 import flat.uxml.Controller;
-import flat.uxml.UXAttrs;
 import flat.uxml.UXChildren;
 import flat.widget.Widget;
 import flat.widget.enums.Visibility;
@@ -170,27 +169,27 @@ public class ScrollBox extends Scrollable {
     }
 
     @Override
-    public void onDraw(SmartContext context) {
-        drawBackground(context);
-        drawRipple(context);
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
+        drawRipple(graphics);
 
         if (getInWidth() <= 0 || getInHeight() <= 0) return;
 
-        context.pushClip(getBackgroundShape());
+        graphics.pushClip(getBackgroundShape());
         for (Widget child : getChildrenIterable()) {
             if (child.getVisibility() == Visibility.VISIBLE &&
                     child != getHorizontalBar() && child != getVerticalBar()) {
-                child.onDraw(context);
+                child.onDraw(graphics);
             }
         }
-        context.popClip();
+        graphics.popClip();
 
         if (getHorizontalBar() != null && isHorizontalVisible()) {
-            getHorizontalBar().onDraw(context);
+            getHorizontalBar().onDraw(graphics);
         }
 
         if (getVerticalBar() != null && isVerticalVisible()) {
-            getVerticalBar().onDraw(context);
+            getVerticalBar().onDraw(graphics);
         }
     }
 

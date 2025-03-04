@@ -5,7 +5,7 @@ import flat.events.ActionEvent;
 import flat.events.HoverEvent;
 import flat.events.PointerEvent;
 import flat.graphics.Color;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.graphics.cursor.Cursor;
 import flat.graphics.image.Drawable;
 import flat.math.Mathf;
@@ -116,9 +116,9 @@ public class ListItem extends Button {
     }
 
     @Override
-    public void onDraw(SmartContext context) {
-        drawBackground(context);
-        drawRipple(context);
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
+        drawRipple(graphics);
 
         float x = getInX();
         float y = getInY();
@@ -127,9 +127,9 @@ public class ListItem extends Button {
 
         if (width <= 0 || height <= 0) return;
 
-        context.setTransform2D(getTransform());
-        context.setStroker(new BasicStroke(getLayerLineWidth()));
-        context.setColor(getLayerLineColor());
+        graphics.setTransform2D(getTransform());
+        graphics.setStroker(new BasicStroke(getLayerLineWidth()));
+        graphics.setColor(getLayerLineColor());
 
         float inX = x;
         float lw = getLayerWidth();
@@ -138,7 +138,7 @@ public class ListItem extends Button {
                 return;
             }
             float xpos = Mathf.floor(inX + lw * 0.5f) + 0.5f;
-            context.drawLine(xpos, getLayoutHeight() * -0.25f, xpos, getLayoutHeight() * 0.75f);
+            graphics.drawLine(xpos, getLayoutHeight() * -0.25f, xpos, getLayoutHeight() * 0.75f);
             inX += lw;
         }
 
@@ -175,21 +175,21 @@ public class ListItem extends Button {
         float sih = Math.min(height, siH);
 
         if (siw > 0 && sih > 0 && stateIcon != null) {
-            stateIcon.draw(context
+            stateIcon.draw(graphics
                     , inX
                     , yOff(y, y + height, sih)
                     , siw, sih, getStateIconColor(), getStateIconImageFilter());
         }
 
         if (iw > 0 && ih > 0 && getIcon() != null) {
-            getIcon().draw(context
+            getIcon().draw(graphics
                     , inX + spaceForStateIcon
                     , yOff(y, y + height, ih)
                     , iw, ih, getIconColor(), getIconImageFilter());
         }
 
         if (tw > 0 && th > 0) {
-            drawText(context, inX + spaceForStateIcon + spaceForIcon, yOff(y, y + height, th), tw, th);
+            drawText(graphics, inX + spaceForStateIcon + spaceForIcon, yOff(y, y + height, th), tw, th);
         }
     }
 

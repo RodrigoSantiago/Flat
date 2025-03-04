@@ -1,6 +1,6 @@
 package flat.widget.text.data;
 
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.graphics.context.Font;
 import flat.widget.enums.HorizontalAlign;
 
@@ -217,11 +217,11 @@ public class TextRender {
         return height * lineCount;
     }
 
-    public void drawText(SmartContext context, float x, float y, float width, float height, HorizontalAlign align) {
+    public void drawText(Graphics context, float x, float y, float width, float height, HorizontalAlign align) {
         drawText(context, x, y, width, height, align, 0, lineCount);
     }
 
-    public void drawText(SmartContext context, float x, float y, float width, float height, HorizontalAlign align, int startLine, int endLine) {
+    public void drawText(Graphics context, float x, float y, float width, float height, HorizontalAlign align, int startLine, int endLine) {
         if (byteSize == 0 || font == null) {
             return;
         }

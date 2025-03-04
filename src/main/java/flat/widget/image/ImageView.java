@@ -2,7 +2,7 @@ package flat.widget.image;
 
 import flat.animations.StateInfo;
 import flat.graphics.Color;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.graphics.image.Drawable;
 import flat.math.shapes.Shape;
 import flat.uxml.UXAttrs;
@@ -65,9 +65,9 @@ public class ImageView extends Widget {
     }
 
     @Override
-    public void onDraw(SmartContext context) {
-        drawBackground(context);
-        drawRipple(context);
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
+        drawRipple(graphics);
 
         float dW = imgWidth;
         float dH = imgHeight;
@@ -110,15 +110,15 @@ public class ImageView extends Widget {
 
             Shape oldClip = null;
             if (hasRadius || overflow) {
-                context.pushClip(getBackgroundShape());
+                graphics.pushClip(getBackgroundShape());
             }
-            context.setTransform2D(getTransform());
-            image.draw(context
+            graphics.setTransform2D(getTransform());
+            image.draw(graphics
                     , xOff(x, x + width, dW)
                     , yOff(y, y + height, dH)
                     , dW, dH, color, imageFilter);
             if (hasRadius || overflow) {
-                context.popClip();
+                graphics.popClip();
             }
         }
     }

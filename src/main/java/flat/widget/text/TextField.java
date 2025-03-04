@@ -3,7 +3,7 @@ package flat.widget.text;
 import flat.animations.Animation;
 import flat.animations.StateInfo;
 import flat.events.FocusEvent;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.graphics.context.Font;
 import flat.math.Vector2;
 import flat.math.shapes.RoundRectangle;
@@ -111,9 +111,9 @@ public class TextField extends TextArea {
     }
 
     @Override
-    public void onDraw(SmartContext context) {
-        drawBackground(context);
-        drawRipple(context);
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
+        drawRipple(graphics);
 
         if (getOutWidth() <= 0 || getOutHeight() <= 0) return;
 
@@ -131,28 +131,28 @@ public class TextField extends TextArea {
             bg.height = bg.height - off;
 
             if (bg.height > 0) {
-                context.pushClip(bg);
-                onDrawText(context, x, y + titleHeight, width, Math.max(0, getInHeight() - titleHeight));
-                context.popClip();
+                graphics.pushClip(bg);
+                onDrawText(graphics, x, y + titleHeight, width, Math.max(0, getInHeight() - titleHeight));
+                graphics.popClip();
             }
 
         } else {
-            onDrawText(context, x, y + titleHeight, width, Math.max(0, getInHeight() - titleHeight));
+            onDrawText(graphics, x, y + titleHeight, width, Math.max(0, getInHeight() - titleHeight));
         }
 
-        onDrawTitle(context, x, y, width, height);
-        onDrawTextDivider(context, getOutX(), getOutY() + getOutHeight(), getOutWidth(), getTextDividerSize());
+        onDrawTitle(graphics, x, y, width, height);
+        onDrawTextDivider(graphics, getOutX(), getOutY() + getOutHeight(), getOutWidth(), getTextDividerSize());
 
         if (getHorizontalBar() != null && isHorizontalVisible()) {
-            getHorizontalBar().onDraw(context);
+            getHorizontalBar().onDraw(graphics);
         }
 
         if (getVerticalBar() != null && isVerticalVisible()) {
-            getVerticalBar().onDraw(context);
+            getVerticalBar().onDraw(graphics);
         }
     }
 
-    protected void onDrawTitle(SmartContext context, float x, float y, float width, float height) {
+    protected void onDrawTitle(Graphics context, float x, float y, float width, float height) {
         if (getTitle() != null && width > 0 && height > 0) {
             float anim = titleToTitle.isPlaying() ? titleToTitle.getPose() : isTitleFloating() ? 1 : 0;
 
@@ -178,7 +178,7 @@ public class TextField extends TextArea {
         }
     }
 
-    protected void onDrawTextDivider(SmartContext context, float x, float y, float width, float height) {
+    protected void onDrawTextDivider(Graphics context, float x, float y, float width, float height) {
         if (width > 0 && height > 0) {
             context.setTransform2D(getTransform());
             context.setStroker(new BasicStroke(height));

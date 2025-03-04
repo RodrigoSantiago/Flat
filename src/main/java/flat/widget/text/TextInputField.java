@@ -5,7 +5,7 @@ import flat.events.ActionEvent;
 import flat.events.HoverEvent;
 import flat.events.PointerEvent;
 import flat.graphics.Color;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.graphics.cursor.Cursor;
 import flat.graphics.image.Drawable;
 import flat.math.Vector2;
@@ -131,9 +131,9 @@ public class TextInputField extends TextField {
     }
 
     @Override
-    public void onDraw(SmartContext context) {
-        drawBackground(context);
-        drawRipple(context);
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
+        drawRipple(graphics);
 
         if (getOutWidth() <= 0 || getOutHeight() <= 0) return;
 
@@ -154,7 +154,7 @@ public class TextInputField extends TextField {
             float xpos = x;
             float ypos = yOff(y, y + height, ih);
 
-            getIcon().draw(context, xpos, ypos, iw, ih, getIconColor(), getIconImageFilter());
+            getIcon().draw(graphics, xpos, ypos, iw, ih, getIconColor(), getIconImageFilter());
         }
 
         if (iw > 0) {
@@ -172,10 +172,10 @@ public class TextInputField extends TextField {
             float ypos = yOff(y, y + height, aih);
 
             if (isHoveringAction) {
-                context.setColor(getActionIconBgColor());
-                context.drawEllipse(xpos, ypos, aiw, aih, true);
+                graphics.setColor(getActionIconBgColor());
+                graphics.drawEllipse(xpos, ypos, aiw, aih, true);
             }
-            getActionIcon().draw(context, xpos, ypos, aiw, aih, getActionIconColor(), getActionIconImageFilter());
+            getActionIcon().draw(graphics, xpos, ypos, aiw, aih, getActionIconColor(), getActionIconImageFilter());
         }
 
         if (aiw > 0) {
@@ -198,24 +198,24 @@ public class TextInputField extends TextField {
             }
 
             if (bg.width > 0 && bg.height > 0) {
-                context.pushClip(bg);
-                onDrawText(context, x, y + titleHeight, width, Math.max(0, getInHeight() - titleHeight));
-                context.popClip();
+                graphics.pushClip(bg);
+                onDrawText(graphics, x, y + titleHeight, width, Math.max(0, getInHeight() - titleHeight));
+                graphics.popClip();
             }
 
         } else {
-            onDrawText(context, x, y + titleHeight, width, Math.max(0, getInHeight() - titleHeight));
+            onDrawText(graphics, x, y + titleHeight, width, Math.max(0, getInHeight() - titleHeight));
         }
 
-        onDrawTitle(context, x, y, width, height);
-        onDrawTextDivider(context, getOutX(), getOutY() + getOutHeight(), getOutWidth(), getTextDividerSize());
+        onDrawTitle(graphics, x, y, width, height);
+        onDrawTextDivider(graphics, getOutX(), getOutY() + getOutHeight(), getOutWidth(), getTextDividerSize());
 
         if (getHorizontalBar() != null && isHorizontalVisible()) {
-            getHorizontalBar().onDraw(context);
+            getHorizontalBar().onDraw(graphics);
         }
 
         if (getVerticalBar() != null && isVerticalVisible()) {
-            getVerticalBar().onDraw(context);
+            getVerticalBar().onDraw(graphics);
         }
     }
 

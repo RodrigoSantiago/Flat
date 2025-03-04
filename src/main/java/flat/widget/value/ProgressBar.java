@@ -4,7 +4,7 @@ import flat.animations.Animation;
 import flat.animations.Interpolation;
 import flat.animations.StateInfo;
 import flat.graphics.Color;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.math.stroke.BasicStroke;
 import flat.uxml.Controller;
 import flat.uxml.UXAttrs;
@@ -75,9 +75,9 @@ public class ProgressBar extends Widget {
     }
 
     @Override
-    public void onDraw(SmartContext context) {
-        drawBackground(context);
-        drawRipple(context);
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
+        drawRipple(graphics);
 
         final float x = getInX();
         final float y = getInY();
@@ -87,8 +87,8 @@ public class ProgressBar extends Widget {
         if (width <= 0 || height <= 0) return;
 
         float lineWidth = Math.min(getLineWidth(), Math.min(width, height));
-        context.setTransform2D(getTransform());
-        context.setStroker(new BasicStroke(lineWidth, getLineMode() == ProgressLineMode.REGULAR ? 0 : 1, 0));
+        graphics.setTransform2D(getTransform());
+        graphics.setStroker(new BasicStroke(lineWidth, getLineMode() == ProgressLineMode.REGULAR ? 0 : 1, 0));
 
         float lineRadius = lineWidth * 0.5f;
 
@@ -103,39 +103,39 @@ public class ProgressBar extends Widget {
             float x3 = x + width;
 
             if (getLineMode() == ProgressLineMode.REGULAR) {
-                context.setColor(getLineColor());
-                context.drawLine(x0, yPos, x3, yPos);
+                graphics.setColor(getLineColor());
+                graphics.drawLine(x0, yPos, x3, yPos);
 
-                context.setColor(getLineFilledColor());
-                context.drawLine(x1, y + height * 0.5f, x2, y + height * 0.5f);
+                graphics.setColor(getLineFilledColor());
+                graphics.drawLine(x1, y + height * 0.5f, x2, y + height * 0.5f);
             } else if (getLineMode() == ProgressLineMode.ROUND) {
                 float secx1 = x0 + Math.min(lineRadius, width * 0.5f);
                 float secx2 = Math.max(x3 - lineRadius, secx1);
-                context.setColor(getLineColor());
-                context.drawLine(secx1, yPos, secx2, yPos);
+                graphics.setColor(getLineColor());
+                graphics.drawLine(secx1, yPos, secx2, yPos);
 
                 float mainx1 = x1 + Math.min(lineRadius, width * 0.5f);
                 float mainx2 = Math.max(x2 - lineRadius, mainx1);
-                context.setColor(getLineFilledColor());
-                context.drawLine(mainx1, yPos, mainx2, yPos);
+                graphics.setColor(getLineFilledColor());
+                graphics.drawLine(mainx1, yPos, mainx2, yPos);
             } else {
                 float mainx1 = x1 + Math.min(lineRadius, width * 0.5f);
                 float mainx2 = Math.max(x2 - lineRadius, mainx1);
-                context.setColor(getLineFilledColor());
-                context.drawLine(mainx1, yPos, mainx2, yPos);
+                graphics.setColor(getLineFilledColor());
+                graphics.drawLine(mainx1, yPos, mainx2, yPos);
 
                 float secx1 = Math.min(x + width, x0 + lineRadius);
                 float secx2 = Math.max(x, x1 - lineRadius * 2f);
                 if (secx1 < secx2) {
-                    context.setColor(getLineColor());
-                    context.drawLine(secx1, yPos, secx2, yPos);
+                    graphics.setColor(getLineColor());
+                    graphics.drawLine(secx1, yPos, secx2, yPos);
                 }
 
                 float secx3 = Math.min(x + width, x2 + lineRadius * 2f);
                 float secx4 = Math.max(x, x3 - lineRadius);
                 if (secx3 < secx4) {
-                    context.setColor(getLineColor());
-                    context.drawLine(secx3, yPos, secx4, yPos);
+                    graphics.setColor(getLineColor());
+                    graphics.drawLine(secx3, yPos, secx4, yPos);
                 }
 
             }
@@ -145,42 +145,42 @@ public class ProgressBar extends Widget {
             float x3 = x + width;
 
             if (getLineMode() == ProgressLineMode.REGULAR) {
-                context.setColor(getLineColor());
-                context.drawLine(x1, yPos, x3, yPos);
+                graphics.setColor(getLineColor());
+                graphics.drawLine(x1, yPos, x3, yPos);
 
-                context.setColor(getLineFilledColor());
-                context.drawLine(x1, yPos, x2, yPos);
+                graphics.setColor(getLineFilledColor());
+                graphics.drawLine(x1, yPos, x2, yPos);
 
             } else if (getLineMode() == ProgressLineMode.ROUND) {
 
                 float mainx1 = Math.min(x1 + lineRadius, x + width * 0.5f);
                 float secx2 = Math.max(x3 - lineRadius, mainx1);
-                context.setColor(getLineColor());
-                context.drawLine(mainx1, yPos, secx2, yPos);
+                graphics.setColor(getLineColor());
+                graphics.drawLine(mainx1, yPos, secx2, yPos);
 
                 float mainx2 = Math.max(x2 - lineRadius, mainx1);
-                context.setColor(getLineFilledColor());
+                graphics.setColor(getLineFilledColor());
                 if (mainx1 == mainx2) {
-                    context.drawEllipse(x - lineRadius, yPos - lineRadius, lineRadius * 2, lineRadius * 2, true);
+                    graphics.drawEllipse(x - lineRadius, yPos - lineRadius, lineRadius * 2, lineRadius * 2, true);
                 } else {
-                    context.drawLine(mainx1, yPos, mainx2, yPos);
+                    graphics.drawLine(mainx1, yPos, mainx2, yPos);
                 }
 
             } else {
                 float mainx1 = Math.min(x1 + lineRadius, x + width * 0.5f);
                 float mainx2 = Math.max(x2 - lineRadius, mainx1);
-                context.setColor(getLineFilledColor());
+                graphics.setColor(getLineFilledColor());
                 if (mainx1 == mainx2 && getValue() > 0) {
-                    context.drawEllipse(x, yPos - lineRadius, lineRadius * 2, lineRadius * 2, true);
+                    graphics.drawEllipse(x, yPos - lineRadius, lineRadius * 2, lineRadius * 2, true);
                 } else {
-                    context.drawLine(mainx1, yPos, mainx2, yPos);
+                    graphics.drawLine(mainx1, yPos, mainx2, yPos);
                 }
 
                 float secx1 = x2 + lineRadius * 2f;
                 float secx2 = x3 - lineRadius;
                 if (secx1 < secx2) {
-                    context.setColor(getLineColor());
-                    context.drawLine(secx1, yPos, secx2, yPos);
+                    graphics.setColor(getLineColor());
+                    graphics.drawLine(secx1, yPos, secx2, yPos);
                 }
             }
         }

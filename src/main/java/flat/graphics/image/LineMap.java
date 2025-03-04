@@ -1,6 +1,6 @@
 package flat.graphics.image;
 
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.graphics.context.Paint;
 import flat.math.Affine;
 import flat.math.shapes.Rectangle;
@@ -34,7 +34,7 @@ public class LineMap implements Drawable {
     }
 
     @Override
-    public void draw(SmartContext context, float x, float y, float width, float height, int color, ImageFilter filter) {
+    public void draw(Graphics context, float x, float y, float width, float height, int color, ImageFilter filter) {
         Affine affine = context.getTransform2D();
         context.setTransform2D(
                 context.getTransform2D()
@@ -65,7 +65,7 @@ public class LineMap implements Drawable {
     }
 
     @Override
-    public void draw(SmartContext context, float x, float y, float frame, ImageFilter filter) {
+    public void draw(Graphics context, float x, float y, float frame, ImageFilter filter) {
         draw(context, x, y, getWidth(), getHeight(), 0xFFFFFFFF, filter);
     }
 

@@ -5,7 +5,7 @@ import flat.animations.StateInfo;
 import flat.events.ActionEvent;
 import flat.events.PointerEvent;
 import flat.graphics.Color;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.graphics.image.Drawable;
 import flat.uxml.*;
 import flat.widget.Widget;
@@ -61,8 +61,8 @@ public class SwitchToggle extends Widget {
     }
 
     @Override
-    public void onDraw(SmartContext context) {
-        drawBackground(context);
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
 
         final float x = getInX();
         final float y = getInY();
@@ -98,7 +98,7 @@ public class SwitchToggle extends Widget {
         float px = cx1 * (1 - slide) + cx2 * slide;
         float py = cy1 * (1 - slide) + cy2 * slide;
 
-        context.setTransform2D(getTransform());
+        graphics.setTransform2D(getTransform());
 
         float pos = iconChangeAnimation.isPlaying() ? iconChangeAnimation.getInterpolatedPosition() : 1f;
         float prevAlpha = pos < 0.5f ? 1 : 1 - (pos - 0.5f) / 0.5f;
@@ -112,7 +112,7 @@ public class SwitchToggle extends Widget {
             float icoHeight = Math.min(prevIcon.getHeight(), height);
 
             int colorAlpha = Color.multiplyColorAlpha(iconColor, prevAlpha);
-            prevIcon.draw(context
+            prevIcon.draw(graphics
                     , px - icoWidth * 0.5f
                     , py - icoHeight * 0.5f
                     , icoWidth, icoHeight, colorAlpha, iconImageFilter);
@@ -123,7 +123,7 @@ public class SwitchToggle extends Widget {
             float icoHeight = Math.min(currentIcon.getHeight(), height);
 
             int colorAlpha = Color.multiplyColorAlpha(iconColor, currentAlpha);
-            currentIcon.draw(context
+            currentIcon.draw(graphics
                     , px - icoWidth * 0.5f
                     , py - icoHeight * 0.5f
                     , icoWidth, icoHeight, colorAlpha, iconImageFilter);
@@ -132,7 +132,7 @@ public class SwitchToggle extends Widget {
         if (isRippleEnabled()) {
             getRipple().setSize((hor ? getLayoutHeight() : getLayoutWidth()) * 0.5f);
             getRipple().setPosition(px, py);
-            drawRipple(context);
+            drawRipple(graphics);
         }
     }
 

@@ -3,12 +3,11 @@ package flat.widget.text;
 import flat.animations.Animation;
 import flat.animations.StateInfo;
 import flat.events.*;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.graphics.context.Font;
 import flat.math.Vector2;
 import flat.math.stroke.BasicStroke;
 import flat.uxml.*;
-import flat.widget.Widget;
 import flat.widget.enums.HorizontalAlign;
 import flat.widget.enums.VerticalAlign;
 import flat.widget.layout.Scrollable;
@@ -175,9 +174,9 @@ public class TextArea extends Scrollable {
     }
 
     @Override
-    public void onDraw(SmartContext context) {
-        drawBackground(context);
-        drawRipple(context);
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
+        drawRipple(graphics);
 
         float x = getInX();
         float y = getInY();
@@ -185,25 +184,25 @@ public class TextArea extends Scrollable {
         float height = getInHeight();
 
         if (isHorizontalDimensionScroll() || isVerticalDimensionScroll()) {
-            context.pushClip(getBackgroundShape());
+            graphics.pushClip(getBackgroundShape());
         }
 
-        onDrawText(context, x, y, width, height);
+        onDrawText(graphics, x, y, width, height);
 
         if (isHorizontalDimensionScroll() || isVerticalDimensionScroll()) {
-            context.popClip();
+            graphics.popClip();
         }
 
         if (getHorizontalBar() != null && isHorizontalVisible()) {
-            getHorizontalBar().onDraw(context);
+            getHorizontalBar().onDraw(graphics);
         }
 
         if (getVerticalBar() != null && isVerticalVisible()) {
-            getVerticalBar().onDraw(context);
+            getVerticalBar().onDraw(graphics);
         }
     }
 
-    protected void onDrawText(SmartContext context, float x, float y, float width, float height) {
+    protected void onDrawText(Graphics context, float x, float y, float width, float height) {
         if (getOutWidth() <= 0 || getOutHeight() <= 0 || getTextFont() == null || getTextSize() <= 0) {
             return;
         }

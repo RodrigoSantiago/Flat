@@ -4,13 +4,10 @@ import flat.animations.NormalizedAnimation;
 import flat.animations.StateInfo;
 import flat.events.ScrollEvent;
 import flat.events.SlideEvent;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.math.Vector2;
-import flat.math.shapes.Shape;
 import flat.uxml.*;
-import flat.widget.Parent;
 import flat.widget.Widget;
-import flat.widget.enums.Visibility;
 import flat.widget.layout.Scrollable;
 import flat.widget.value.HorizontalScrollBar;
 import flat.widget.value.VerticalScrollBar;
@@ -256,26 +253,26 @@ public class ListView extends Scrollable {
     }
 
     @Override
-    public void onDraw(SmartContext context) {
-        drawBackground(context);
-        drawRipple(context);
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
+        drawRipple(graphics);
 
         if (getInWidth() <= 0 || getInHeight() <= 0) return;
 
         int realCount = getRealItemsCount();
 
-        context.pushClip(getBackgroundShape());
+        graphics.pushClip(getBackgroundShape());
         for (int i = 0; i < items.size(); i++) {
-            items.get(i).onDraw(context);
+            items.get(i).onDraw(graphics);
         }
-        context.popClip();
+        graphics.popClip();
 
         if (getHorizontalBar() != null && isHorizontalVisible()) {
-            getHorizontalBar().onDraw(context);
+            getHorizontalBar().onDraw(graphics);
         }
 
         if (getVerticalBar() != null && isVerticalVisible()) {
-            getVerticalBar().onDraw(context);
+            getVerticalBar().onDraw(graphics);
         }
     }
 

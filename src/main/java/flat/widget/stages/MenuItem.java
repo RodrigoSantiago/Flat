@@ -3,7 +3,7 @@ package flat.widget.stages;
 import flat.animations.StateInfo;
 import flat.events.HoverEvent;
 import flat.graphics.Color;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.graphics.context.Font;
 import flat.math.Vector2;
 import flat.math.shapes.Ellipse;
@@ -108,9 +108,9 @@ public class MenuItem extends Button {
     }
 
     @Override
-    public void onDraw(SmartContext context) {
-        drawBackground(context);
-        drawRipple(context);
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
+        drawRipple(graphics);
 
         final float x = getInX();
         final float y = getInY();
@@ -119,7 +119,7 @@ public class MenuItem extends Button {
 
         if (width <= 0 || height <= 0) return;
 
-        context.setTransform2D(getTransform());
+        graphics.setTransform2D(getTransform());
 
         float iW = getLayoutIconWidth();
         float iH = getLayoutIconHeight();
@@ -159,18 +159,18 @@ public class MenuItem extends Button {
             float ypos = yOff(y, y + height, ih);
 
             if (isIconClipCircle()) {
-                context.pushClip(new Ellipse(xpos, ypos, iw, ih));
+                graphics.pushClip(new Ellipse(xpos, ypos, iw, ih));
             }
-            getIcon().draw(context, xpos, ypos, iw, ih, getIconColor(), getIconImageFilter());
+            getIcon().draw(graphics, xpos, ypos, iw, ih, getIconColor(), getIconImageFilter());
             if (isIconClipCircle()) {
-                context.popClip();
+                graphics.popClip();
             }
         }
 
         if (tw > 0 && th > 0) {
             float xpos = iconLeft ? boxX + spaceForIcon : spaceForShortcutIcon + boxX;
             float ypos = yOff(y, y + height, th);
-            drawText(context, xpos, ypos, tw, th);
+            drawText(graphics, xpos, ypos, tw, th);
         }
 
         if (subMenu != null && spaceForShortcutIcon > 0) {
@@ -180,18 +180,18 @@ public class MenuItem extends Button {
             submenuIcon.lineTo(x + width - spaceForShortcutIcon, yoff + spaceForShortcutIcon * 0.5f);
             submenuIcon.lineTo(x + width - spaceForShortcutIcon, yoff - spaceForShortcutIcon * 0.5f);
             submenuIcon.closePath();
-            context.setColor(getShortcutTextColor());
-            context.drawShape(submenuIcon, true);
+            graphics.setColor(getShortcutTextColor());
+            graphics.drawShape(submenuIcon, true);
 
         } else if (ciw > 0 && cih > 0 && getShortcutText() != null) {
             float xpos = iconLeft ? x + width - ciw : x;
             float ypos = yOff(y, y + height, cih);
 
-            drawShortcutText(context, xpos, ypos, ciw, cih);
+            drawShortcutText(graphics, xpos, ypos, ciw, cih);
         }
     }
 
-    protected void drawShortcutText(SmartContext context, float x, float y, float width, float height) {
+    protected void drawShortcutText(Graphics context, float x, float y, float width, float height) {
         if (getShortcutTextFont() != null && getShortcutTextSize() > 0 && Color.getAlpha(getShortcutTextColor()) > 0) {
             context.setTransform2D(getTransform());
             context.setColor(getShortcutTextColor());

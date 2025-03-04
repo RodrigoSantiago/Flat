@@ -2,7 +2,7 @@ package flat.widget.text;
 
 import flat.animations.StateInfo;
 import flat.graphics.Color;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.graphics.context.Font;
 import flat.uxml.Controller;
 import flat.uxml.UXAttrs;
@@ -84,9 +84,9 @@ public class Label extends Widget {
     }
 
     @Override
-    public void onDraw(SmartContext context) {
-        drawBackground(context);
-        drawRipple(context);
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
+        drawRipple(graphics);
 
         float x = getInX();
         float y = getInY();
@@ -98,19 +98,19 @@ public class Label extends Widget {
         if (getTextFont() != null && getTextSize() > 0 && Color.getAlpha(getTextColor()) > 0) {
             float xpos = xOff(x, x + width, Math.min(getTextWidth(), width));
             float ypos = yOff(y, y + height, Math.min(getTextHeight(), height));
-            drawText(context, xpos, ypos, width, height);
+            drawText(graphics, xpos, ypos, width, height);
         }
     }
 
-    protected void drawText(SmartContext context, float x, float y, float width, float height) {
+    protected void drawText(Graphics graphics, float x, float y, float width, float height) {
         if (getTextFont() != null && getTextSize() > 0 && Color.getAlpha(getTextColor()) > 0) {
-            context.setTransform2D(getTransform());
-            context.setColor(getTextColor());
-            context.setTextFont(getTextFont());
-            context.setTextSize(getTextSize());
-            context.setTextBlur(0);
+            graphics.setTransform2D(getTransform());
+            graphics.setColor(getTextColor());
+            graphics.setTextFont(getTextFont());
+            graphics.setTextSize(getTextSize());
+            graphics.setTextBlur(0);
 
-            textRender.drawText(context, x, y, width, height, horizontalAlign);
+            textRender.drawText(graphics, x, y, width, height, horizontalAlign);
         }
     }
 

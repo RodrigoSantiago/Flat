@@ -5,7 +5,7 @@ import flat.animations.StateInfo;
 import flat.events.ActionEvent;
 import flat.events.PointerEvent;
 import flat.graphics.Color;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.graphics.image.Drawable;
 import flat.uxml.*;
 import flat.widget.Widget;
@@ -58,9 +58,9 @@ public class Checkbox extends Widget {
     }
 
     @Override
-    public void onDraw(SmartContext context) {
-        drawBackground(context);
-        drawRipple(context);
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
+        drawRipple(graphics);
 
         final float x = getInX();
         final float y = getInY();
@@ -69,7 +69,7 @@ public class Checkbox extends Widget {
 
         if (width <= 0 || height <= 0) return;
 
-        context.setTransform2D(getTransform());
+        graphics.setTransform2D(getTransform());
 
         float pos = iconChangeAnimation.isPlaying() ? iconChangeAnimation.getInterpolatedPosition() : 1f;
         float prevAlpha = pos < 0.5f ? 1 : 1 - (pos - 0.5f) / 0.5f;
@@ -84,7 +84,7 @@ public class Checkbox extends Widget {
             float xOff = x + (width - icoWidth) * 0.5f;
             float yOff = y + (height - icoHeight) * 0.5f;
             int colorAlpha = Color.multiplyColorAlpha(iconColor, prevAlpha);
-            prevIcon.draw(context
+            prevIcon.draw(graphics
                     , xOff
                     , yOff
                     , icoWidth, icoHeight, colorAlpha, iconImageFilter);
@@ -96,7 +96,7 @@ public class Checkbox extends Widget {
             float xOff = x + (width - icoWidth) * 0.5f;
             float yOff = y + (height - icoHeight) * 0.5f;
             int colorAlpha = Color.multiplyColorAlpha(iconColor, currentAlpha);
-            currentIcon.draw(context
+            currentIcon.draw(graphics
                     , xOff
                     , yOff
                     , icoWidth, icoHeight, colorAlpha, iconImageFilter);

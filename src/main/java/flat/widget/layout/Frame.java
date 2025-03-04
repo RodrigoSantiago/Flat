@@ -1,7 +1,7 @@
 package flat.widget.layout;
 
 import flat.animations.StateInfo;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.resources.ResourceStream;
 import flat.uxml.*;
 import flat.widget.Group;
@@ -123,12 +123,12 @@ public class Frame extends Group {
     }
 
     @Override
-    public void onDraw(SmartContext context) {
-        super.onDraw(context);
+    public void onDraw(Graphics graphics) {
+        super.onDraw(graphics);
 
         if (controller != null && controller.isListening()) {
             try {
-                controller.onDraw(context);
+                controller.onDraw(graphics);
             } catch (Exception e) {
                 Application.handleException(e);
             }

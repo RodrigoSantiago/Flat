@@ -4,7 +4,7 @@ import flat.animations.StateInfo;
 import flat.events.ActionEvent;
 import flat.events.PointerEvent;
 import flat.graphics.Color;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.graphics.image.Drawable;
 import flat.math.shapes.Ellipse;
 import flat.uxml.Controller;
@@ -52,9 +52,9 @@ public class Button extends Label {
     }
 
     @Override
-    public void onDraw(SmartContext context) {
-        drawBackground(context);
-        drawRipple(context);
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
+        drawRipple(graphics);
 
         float x = getInX();
         float y = getInY();
@@ -63,7 +63,7 @@ public class Button extends Label {
 
         if (width <= 0 || height <= 0) return;
 
-        context.setTransform2D(getTransform());
+        graphics.setTransform2D(getTransform());
 
         float iW = getLayoutIconWidth();
         float iH = getLayoutIconHeight();
@@ -91,18 +91,18 @@ public class Button extends Label {
             float xpos = iconLeft ? boxX : boxX + spaceForText + Math.max(0, spaceForIcon - iW);
             float ypos = yOff(y, y + height, ih);
             if (isIconClipCircle()) {
-                context.pushClip(new Ellipse(xpos, ypos, iw, ih));
+                graphics.pushClip(new Ellipse(xpos, ypos, iw, ih));
             }
-            getIcon().draw(context, xpos, ypos, iw, ih, getIconColor(), getIconImageFilter());
+            getIcon().draw(graphics, xpos, ypos, iw, ih, getIconColor(), getIconImageFilter());
             if (isIconClipCircle()) {
-                context.popClip();
+                graphics.popClip();
             }
         }
 
         if (tw > 0 && th > 0 && getTextFont() != null) {
             float xpos = iconLeft ? boxX + spaceForIcon : boxX;
             float ypos = yOff(y, y + height, th);
-            drawText(context, xpos, ypos, tw, th);
+            drawText(graphics, xpos, ypos, tw, th);
         }
     }
 

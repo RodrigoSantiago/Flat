@@ -2,7 +2,7 @@ package flat.widget.layout;
 
 import flat.animations.StateInfo;
 import flat.exception.FlatException;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.uxml.Controller;
 import flat.uxml.TaskList;
 import flat.uxml.UXAttrs;
@@ -511,10 +511,10 @@ public class Grid extends Parent {
     }
 
     @Override
-    public void onDraw(SmartContext context) {
-        drawBackground(context);
-        drawRipple(context);
-        drawChildren(context);
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
+        drawRipple(graphics);
+        drawChildren(graphics);
     }
 
     public float getHorizontalSpacing() {

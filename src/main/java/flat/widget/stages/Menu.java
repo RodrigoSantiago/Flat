@@ -7,7 +7,7 @@ import flat.events.ActionEvent;
 import flat.events.PointerEvent;
 import flat.events.ScrollEvent;
 import flat.exception.FlatException;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.uxml.*;
 import flat.widget.Stage;
 import flat.widget.Widget;
@@ -96,22 +96,22 @@ public class Menu extends Stage {
     }
 
     @Override
-    public void onDraw(SmartContext context) {
+    public void onDraw(Graphics graphics) {
         if (getInWidth() <= 0 || getInHeight() <= 0) return;
 
-        drawBackground(context);
-        drawRipple(context);
+        drawBackground(graphics);
+        drawRipple(graphics);
 
         if (isScrollable()) {
-            context.pushClip(getBackgroundShape());
+            graphics.pushClip(getBackgroundShape());
             for (Widget child : getChildrenIterable()) {
                 if (child.getVisibility() == Visibility.VISIBLE) {
-                    child.onDraw(context);
+                    child.onDraw(graphics);
                 }
             }
-            context.popClip();
+            graphics.popClip();
         } else {
-            drawChildren(context);
+            drawChildren(graphics);
         }
     }
 

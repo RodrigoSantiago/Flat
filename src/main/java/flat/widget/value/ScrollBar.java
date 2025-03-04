@@ -1,11 +1,10 @@
 package flat.widget.value;
 
 import flat.animations.StateInfo;
-import flat.events.ActionEvent;
 import flat.events.PointerEvent;
 import flat.events.SlideEvent;
 import flat.graphics.Color;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.math.Vector2;
 import flat.uxml.*;
 import flat.widget.Widget;
@@ -52,8 +51,8 @@ public class ScrollBar extends Widget {
     }
 
     @Override
-    public void onDraw(SmartContext context) {
-        drawBackground(context);
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
 
         boolean hor = getDirection() == Direction.HORIZONTAL;
 
@@ -82,9 +81,9 @@ public class ScrollBar extends Widget {
             y1 = y + height * moveOffset;
         }
 
-        context.setTransform2D(getTransform());
-        context.setColor(color);
-        context.drawRoundRect(x1, y1, w, h, getRadiusTop(), getRadiusRight(), getRadiusBottom(), getRadiusLeft(), true);
+        graphics.setTransform2D(getTransform());
+        graphics.setColor(color);
+        graphics.drawRoundRect(x1, y1, w, h, getRadiusTop(), getRadiusRight(), getRadiusBottom(), getRadiusLeft(), true);
 
     }
 

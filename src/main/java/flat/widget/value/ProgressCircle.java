@@ -1,6 +1,6 @@
 package flat.widget.value;
 
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.math.shapes.Arc;
 import flat.math.stroke.BasicStroke;
 import flat.widget.enums.ProgressLineMode;
@@ -34,9 +34,9 @@ public class ProgressCircle extends ProgressBar {
     }
 
     @Override
-    public void onDraw(SmartContext context) {
-        drawBackground(context);
-        drawRipple(context);
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
+        drawRipple(graphics);
 
         float x = getInX();
         float y = getInY();
@@ -53,8 +53,8 @@ public class ProgressCircle extends ProgressBar {
 
         if (width <= 0 || height <= 0) return;
 
-        context.setTransform2D(getTransform());
-        context.setStroker(new BasicStroke(lineWidth, getLineMode() == ProgressLineMode.REGULAR ? 0 : 1, 2));
+        graphics.setTransform2D(getTransform());
+        graphics.setStroker(new BasicStroke(lineWidth, getLineMode() == ProgressLineMode.REGULAR ? 0 : 1, 2));
         float baseAngle = 90;
         float radius = (float) Math.sqrt(width * width + height * height) * 0.5f;
 
@@ -66,10 +66,10 @@ public class ProgressCircle extends ProgressBar {
             float t3 = indeterminateAnimation.getT3() * 120f % 360;
 
             if (getLineMode() == ProgressLineMode.REGULAR || getLineMode() == ProgressLineMode.ROUND) {
-                context.setColor(getLineColor());
-                context.drawEllipse(x, y, width, height, false);
+                graphics.setColor(getLineColor());
+                graphics.drawEllipse(x, y, width, height, false);
             } else {
-                context.setColor(getLineColor());
+                graphics.setColor(getLineColor());
                 float x2 = 360 * t2 + t3 + 360 * (t1 - t2);
                 float x3 = 360 * t2 + t3 + 360;
 
@@ -77,21 +77,21 @@ public class ProgressCircle extends ProgressBar {
                 float secx2 = x3 - angleOffset * 4f;
                 if (secx1 < secx2) {
                     arc.set(x, y, width, height, secx1, secx2 - secx1, Arc.Type.OPEN);
-                    context.drawShape(arc, false);
+                    graphics.drawShape(arc, false);
                 }
             }
 
-            context.setColor(getLineFilledColor());
+            graphics.setColor(getLineFilledColor());
             arc.set(x, y, width, height, 360 * t2 + t3, 360 * (t1 - t2), Arc.Type.OPEN);
-            context.drawShape(arc, false);
+            graphics.drawShape(arc, false);
         } else {
 
             if (getLineMode() == ProgressLineMode.REGULAR || getLineMode() == ProgressLineMode.ROUND
                     || visibleValue <= 0 || visibleValue >= 1) {
-                context.setColor(getLineColor());
-                context.drawEllipse(x, y, width, height, false);
+                graphics.setColor(getLineColor());
+                graphics.drawEllipse(x, y, width, height, false);
             } else {
-                context.setColor(getLineColor());
+                graphics.setColor(getLineColor());
 
                 float x2 = baseAngle - 360 * visibleValue;
                 float x3 = baseAngle - 360;
@@ -99,13 +99,13 @@ public class ProgressCircle extends ProgressBar {
                 float secx2 = x3 + angleOffset * 4f;
                 if (secx1 > secx2) {
                     arc.set(x, y, width, height, secx1, secx2 - secx1, Arc.Type.OPEN);
-                    context.drawShape(arc, false);
+                    graphics.drawShape(arc, false);
                 }
             }
 
-            context.setColor(getLineFilledColor());
+            graphics.setColor(getLineFilledColor());
             arc.set(x, y, width, height, baseAngle, -360 * visibleValue, Arc.Type.OPEN);
-            context.drawShape(arc, false);
+            graphics.drawShape(arc, false);
 
         }
     }

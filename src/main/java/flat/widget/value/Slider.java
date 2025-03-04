@@ -4,7 +4,7 @@ import flat.animations.StateInfo;
 import flat.events.PointerEvent;
 import flat.events.SlideEvent;
 import flat.graphics.Color;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.graphics.image.Drawable;
 import flat.math.stroke.BasicStroke;
 import flat.uxml.*;
@@ -93,8 +93,8 @@ public class Slider extends Widget {
     }
 
     @Override
-    public void onDraw(SmartContext context) {
-        drawBackground(context);
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
 
         float x = getInX();
         float y = getInY();
@@ -124,7 +124,7 @@ public class Slider extends Widget {
         if (rev) {
             pos = 1 - pos;
         }
-        context.setTransform2D(getTransform());
+        graphics.setTransform2D(getTransform());
 
         float xpos;
         float ypos;
@@ -138,39 +138,39 @@ public class Slider extends Widget {
 
         float lineWidth = Math.min(getLineWidth(), Math.min(width, height));
 
-        context.setStroker(new BasicStroke(lineWidth));
+        graphics.setStroker(new BasicStroke(lineWidth));
         if (hor) {
-            context.setColor(getLineColor());
-            context.drawLine(lineStart, ypos, lineEnd, ypos);
+            graphics.setColor(getLineColor());
+            graphics.drawLine(lineStart, ypos, lineEnd, ypos);
             if (getValue() > getMinValue()) {
-                context.setColor(getLineFilledColor());
+                graphics.setColor(getLineFilledColor());
                 if (rev) {
-                    context.drawLine(xpos, ypos, lineEnd, ypos);
+                    graphics.drawLine(xpos, ypos, lineEnd, ypos);
                 } else {
-                    context.drawLine(lineStart, ypos, xpos, ypos);
+                    graphics.drawLine(lineStart, ypos, xpos, ypos);
                 }
             }
         } else {
-            context.setColor(getLineColor());
-            context.drawLine(xpos, lineStart, xpos, lineEnd);
+            graphics.setColor(getLineColor());
+            graphics.drawLine(xpos, lineStart, xpos, lineEnd);
             if (getValue() > getMinValue()) {
-                context.setColor(getLineFilledColor());
+                graphics.setColor(getLineFilledColor());
                 if (rev) {
-                    context.drawLine(xpos, ypos, xpos, lineEnd);
+                    graphics.drawLine(xpos, ypos, xpos, lineEnd);
                 } else {
-                    context.drawLine(xpos, lineStart, xpos, ypos);
+                    graphics.drawLine(xpos, lineStart, xpos, ypos);
                 }
             }
         }
 
         if (iw > 0 && ih > 0 && getIcon() != null) {
-            getIcon().draw(context, xpos - iw * 0.5f, ypos - ih * 0.5f, iw, ih, getIconColor(), getIconImageFilter());
+            getIcon().draw(graphics, xpos - iw * 0.5f, ypos - ih * 0.5f, iw, ih, getIconColor(), getIconImageFilter());
         }
         if (isRippleEnabled()) {
             getRipple().release();
             getRipple().setSize(Math.min(Math.max(iw, ih) * 0.7f, Math.min(getLayoutWidth(), getLayoutHeight()) * 0.5f));
             getRipple().setPosition(xpos, ypos);
-            drawRipple(context);
+            drawRipple(graphics);
         }
     }
 

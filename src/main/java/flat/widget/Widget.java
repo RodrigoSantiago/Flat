@@ -5,7 +5,7 @@ import flat.animations.StateBitset;
 import flat.animations.StateInfo;
 import flat.events.*;
 import flat.graphics.Color;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.graphics.cursor.Cursor;
 import flat.math.Affine;
 import flat.math.Vector2;
@@ -230,13 +230,13 @@ public class Widget {
         }
     }
 
-    public void onDraw(SmartContext context) {
-        drawBackground(context);
-        drawRipple(context);
-        drawChildren(context);
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
+        drawRipple(graphics);
+        drawChildren(graphics);
     }
 
-    protected void drawBackground(SmartContext context) {
+    protected void drawBackground(Graphics graphics) {
         if (bg.width <= 0 || bg.height <= 0) {
             return;
         }
@@ -249,8 +249,8 @@ public class Widget {
 
         // Draw Background Shadow
         if (bgOpacity > 0 && shadowEnabled) {
-            context.setTransform2D(getTransform().preTranslate(0, Math.max(0, elevation)));
-            context.drawRoundRectShadow(
+            graphics.setTransform2D(getTransform().preTranslate(0, Math.max(0, elevation)));
+            graphics.drawRoundRectShadow(
                     bg.x - b, bg.y - b, bg.width + b * 2, bg.height + b * 2,
                     bg.arcTop + b, bg.arcRight + b, bg.arcBottom + b, bg.arcLeft + b,
                     elevation * 2, 0.55f * bgOpacity);
@@ -258,37 +258,37 @@ public class Widget {
 
         // Draw Background
         if (bgOpacity > 0) {
-            context.setTransform2D(getTransform());
-            context.setColor(backgroundColor);
-            context.drawRoundRect(bg, true);
+            graphics.setTransform2D(getTransform());
+            graphics.setColor(backgroundColor);
+            graphics.drawRoundRect(bg, true);
         }
 
         // Draw Border
         if (borderOpacity > 0 && borderWidth > 0) {
-            context.setTransform2D(getTransform());
-            context.setColor(borderColor);
-            context.setStroker(new BasicStroke(borderWidth));
-            context.drawRoundRect(
+            graphics.setTransform2D(getTransform());
+            graphics.setColor(borderColor);
+            graphics.setStroker(new BasicStroke(borderWidth));
+            graphics.drawRoundRect(
                     bg.x - b2, bg.y - b2, bg.width + b, bg.height + b,
                     bg.arcTop + b2, bg.arcRight + b2, bg.arcBottom + b2, bg.arcLeft + b2,
                     false);
         }
     }
 
-    protected void drawRipple(SmartContext context) {
+    protected void drawRipple(Graphics graphics) {
         float rippleOpacity = Color.getOpacity(rippleColor);
 
         if (rippleOpacity > 0 && rippleEnabled && ripple.isVisible()) {
-            context.setTransform2D(getTransform());
-            ripple.drawRipple(context, rippleOverflow ? null : bg, rippleColor);
+            graphics.setTransform2D(getTransform());
+            ripple.drawRipple(graphics, rippleOverflow ? null : bg, rippleColor);
         }
     }
 
-    protected void drawChildren(SmartContext context) {
+    protected void drawChildren(Graphics graphics) {
         if (children != null) {
             for (Widget child : getChildrenIterable()) {
                 if (child.getVisibility() == Visibility.VISIBLE) {
-                    child.onDraw(context);
+                    child.onDraw(graphics);
                 }
             }
         }

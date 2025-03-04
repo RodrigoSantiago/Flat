@@ -3,10 +3,9 @@ package flat.widget.structure;
 import flat.animations.StateInfo;
 import flat.events.ActionEvent;
 import flat.events.ScrollEvent;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.math.Vector2;
 import flat.math.shapes.RoundRectangle;
-import flat.math.shapes.Shape;
 import flat.uxml.*;
 import flat.widget.Children;
 import flat.widget.Group;
@@ -247,11 +246,11 @@ public class Tab extends Group {
 
     RoundRectangle clipShape = new RoundRectangle();
     @Override
-    public void onDraw(SmartContext context) {
+    public void onDraw(Graphics graphics) {
         if (getInWidth() <= 0 || getInHeight() <= 0) return;
 
-        drawBackground(context);
-        drawRipple(context);
+        drawBackground(graphics);
+        drawRipple(graphics);
 
         if (isPagesScrollable()) {
             if (pagesVerticalPosition == VerticalPosition.TOP) {
@@ -274,19 +273,19 @@ public class Tab extends Group {
                 clipShape.arcLeft = getRadiusLeft();
             }
 
-            context.setTransform2D(getTransform());
-            context.pushClip(clipShape);
+            graphics.setTransform2D(getTransform());
+            graphics.pushClip(clipShape);
             for (Widget child : pages) {
                 if (child.getVisibility() == Visibility.VISIBLE) {
-                    child.onDraw(context);
+                    child.onDraw(graphics);
                 }
             }
-            context.popClip();
+            graphics.popClip();
             if (content != null && content.getVisibility() == Visibility.VISIBLE) {
-                content.onDraw(context);
+                content.onDraw(graphics);
             }
         } else {
-            drawChildren(context);
+            drawChildren(graphics);
         }
     }
 

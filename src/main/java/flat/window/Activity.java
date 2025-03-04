@@ -6,7 +6,7 @@ import flat.events.KeyCode;
 import flat.events.KeyEvent;
 import flat.events.PointerEvent;
 import flat.exception.FlatException;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.graphics.context.Context;
 import flat.resources.ResourceStream;
 import flat.uxml.*;
@@ -224,7 +224,7 @@ public class Activity {
         }
     }
 
-    boolean draw(SmartContext context) {
+    boolean draw(Graphics context) {
         if (invalided) {
             invalided = false;
             onDraw(context);
@@ -260,24 +260,24 @@ public class Activity {
         }
     }
 
-    private void drawBackground(SmartContext context) {
-        context.setAntialiasEnabled(true);
-        context.setView(0, 0, (int) getWidth(), (int) getHeight());
-        context.clear(scene.getBackgroundColor(), 1, 0);
-        context.clearClip();
+    private void drawBackground(Graphics graphics) {
+        graphics.setAntialiasEnabled(true);
+        graphics.setView(0, 0, (int) getWidth(), (int) getHeight());
+        graphics.clear(scene.getBackgroundColor(), 1, 0);
+        graphics.clearClip();
     }
 
-    private void drawWidgets(SmartContext context) {
-        scene.onDraw(context);
+    private void drawWidgets(Graphics graphics) {
+        scene.onDraw(graphics);
     }
 
-    private void onDraw(SmartContext context) {
-        drawBackground(context);
-        drawWidgets(context);
+    private void onDraw(Graphics graphics) {
+        drawBackground(graphics);
+        drawWidgets(graphics);
 
         if (controller != null && controller.isListening()) {
             try {
-                controller.onDraw(context);
+                controller.onDraw(graphics);
             } catch (Exception e) {
                 Application.handleException(e);
             }

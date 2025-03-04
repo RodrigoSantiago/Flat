@@ -17,7 +17,7 @@ import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SmartContext {
+public class Graphics {
 
     private final Context context;
 
@@ -38,7 +38,7 @@ public class SmartContext {
     private ShaderProgram shader3D;
     private List<MaterialValue> matValues3D = new ArrayList<>();
 
-    public SmartContext(Context context) {
+    public Graphics(Context context) {
         this.context = context;
 
         context.setBlendEnabled(true);

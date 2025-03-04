@@ -3,7 +3,7 @@ package flat.widget.structure;
 import flat.animations.StateInfo;
 import flat.events.ActionEvent;
 import flat.graphics.Color;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.graphics.context.Font;
 import flat.math.Vector2;
 import flat.uxml.*;
@@ -382,20 +382,20 @@ public class ToolBar extends Group {
     }
 
     @Override
-    public void onDraw(SmartContext context) {
-        drawBackground(context);
-        drawRipple(context);
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
+        drawRipple(graphics);
 
         for (int i = 0; i < toolItems.size() && i < drawVisibleItems; i++) {
             ToolItem toolItem = toolItems.get(i);
-            toolItem.onDraw(context);
+            toolItem.onDraw(graphics);
         }
 
         if (overflowVisible && overflowItem != null) {
-            overflowItem.onDraw(context);
+            overflowItem.onDraw(graphics);
         }
         if (navigationVisible && navigationItem != null) {
-            navigationItem.onDraw(context);
+            navigationItem.onDraw(graphics);
         }
 
         float x = getInX();
@@ -420,28 +420,28 @@ public class ToolBar extends Group {
             float boxWidth = Math.max(0, width - ow - nw - itemsWidth);
             float boxHeight = Math.min(height, titleH + subtitleH);
 
-            context.setTransform2D(getTransform());
-            context.setTextBlur(0);
+            graphics.setTransform2D(getTransform());
+            graphics.setTextBlur(0);
             if (hasTitle) {
-                context.setColor(getTitleColor());
-                context.setTextFont(getTitleFont());
-                context.setTextSize(getTitleSize());
+                graphics.setColor(getTitleColor());
+                graphics.setTextFont(getTitleFont());
+                graphics.setTextSize(getTitleSize());
 
                 float xpos = xOff(boxX, boxX + boxWidth, Math.min(getTitleWidth(), boxWidth));
                 float ypos = yOff(y, y + height, boxHeight);
                 if (boxWidth > 0 && height > 0) {
-                    titleRender.drawText(context, xpos, ypos, boxWidth, boxHeight, getHorizontalAlign());
+                    titleRender.drawText(graphics, xpos, ypos, boxWidth, boxHeight, getHorizontalAlign());
                 }
             }
             if (hasSubtitle) {
-                context.setColor(getSubtitleColor());
-                context.setTextFont(getSubtitleFont());
-                context.setTextSize(getSubtitleSize());
+                graphics.setColor(getSubtitleColor());
+                graphics.setTextFont(getSubtitleFont());
+                graphics.setTextSize(getSubtitleSize());
 
                 float xpos = xOff(boxX, boxX + boxWidth, Math.min(getSubtitleWidth(), boxWidth));
                 float ypos = yOff(y, y + height, boxHeight) + titleH;
                 if (boxWidth > 0 && boxHeight - titleH > 0) {
-                    subtitleRender.drawText(context, xpos, ypos, boxWidth, boxHeight - titleH, getHorizontalAlign());
+                    subtitleRender.drawText(graphics, xpos, ypos, boxWidth, boxHeight - titleH, getHorizontalAlign());
                 }
             }
         }

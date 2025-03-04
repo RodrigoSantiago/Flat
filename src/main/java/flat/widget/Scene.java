@@ -1,6 +1,6 @@
 package flat.widget;
 
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.uxml.TaskList;
 import flat.uxml.UXChildren;
 import flat.widget.enums.Visibility;
@@ -77,9 +77,9 @@ public class Scene extends Group {
     }
 
     @Override
-    public void onDraw(SmartContext context) {
+    public void onDraw(Graphics graphics) {
         if (getVisibility() == Visibility.VISIBLE) {
-            super.onDraw(context);
+            super.onDraw(graphics);
         }
     }
 

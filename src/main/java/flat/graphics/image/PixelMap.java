@@ -1,6 +1,6 @@
 package flat.graphics.image;
 
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.graphics.context.Context;
 import flat.graphics.context.Texture2D;
 import flat.graphics.context.enums.MagFilter;
@@ -9,7 +9,6 @@ import flat.graphics.context.enums.PixelFormat;
 import flat.graphics.context.enums.WrapMode;
 import flat.widget.enums.ImageFilter;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class PixelMap implements Drawable {
@@ -78,7 +77,7 @@ public class PixelMap implements Drawable {
     }
 
     @Override
-    public void draw(SmartContext context, float x, float y, float width, float height, int color, ImageFilter filter) {
+    public void draw(Graphics context, float x, float y, float width, float height, int color, ImageFilter filter) {
         var texture = readTexture(context.getContext());
         if ((texture.getMagFilter() == MagFilter.NEAREST) != (filter == ImageFilter.NEAREST)) {
             texture.begin(0);
@@ -91,7 +90,7 @@ public class PixelMap implements Drawable {
     }
 
     @Override
-    public void draw(SmartContext context, float x, float y, float frame, ImageFilter filter) {
+    public void draw(Graphics context, float x, float y, float frame, ImageFilter filter) {
         draw(context, x, y, getWidth(), getHeight(), 0xFFFFFFFF, filter);
     }
 }

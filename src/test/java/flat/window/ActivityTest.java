@@ -3,7 +3,7 @@ package flat.window;
 import flat.animations.Animation;
 import flat.events.KeyCode;
 import flat.events.KeyEvent;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.graphics.context.Context;
 import flat.resources.ResourceStream;
 import flat.uxml.*;
@@ -242,7 +242,7 @@ public class ActivityTest {
 
     @Test
     public void performDraw() {
-        SmartContext smartContext = mock(SmartContext.class);
+        Graphics graphics = mock(Graphics.class);
         UXTheme theme = mock(UXTheme.class);
         Scene scene = mock(Scene.class);
         when(scene.getActivityScene()).thenReturn(mock(ActivityScene.class));
@@ -257,25 +257,25 @@ public class ActivityTest {
 
         activity.show();
 
-        activity.draw(smartContext);
-        verify(smartContext, times(1)).setView(0, 0, 200, 100);
-        verify(smartContext, times(1)).clear(0x0, 1, 0);
-        verify(smartContext, times(1)).clearClip();
-        verify(scene, times(1)).onDraw(smartContext);
+        activity.draw(graphics);
+        verify(graphics, times(1)).setView(0, 0, 200, 100);
+        verify(graphics, times(1)).clear(0x0, 1, 0);
+        verify(graphics, times(1)).clearClip();
+        verify(scene, times(1)).onDraw(graphics);
 
-        activity.draw(smartContext);
-        verify(smartContext, times(1)).setView(0, 0, 200, 100);
-        verify(smartContext, times(1)).clear(0x0, 1, 0);
-        verify(smartContext, times(1)).clearClip();
-        verify(scene, times(1)).onDraw(smartContext);
+        activity.draw(graphics);
+        verify(graphics, times(1)).setView(0, 0, 200, 100);
+        verify(graphics, times(1)).clear(0x0, 1, 0);
+        verify(graphics, times(1)).clearClip();
+        verify(scene, times(1)).onDraw(graphics);
 
         activity.invalidate();
 
-        activity.draw(smartContext);
-        verify(smartContext, times(2)).setView(0, 0, 200, 100);
-        verify(smartContext, times(2)).clear(0x0, 1, 0);
-        verify(smartContext, times(2)).clearClip();
-        verify(scene, times(2)).onDraw(smartContext);
+        activity.draw(graphics);
+        verify(graphics, times(2)).setView(0, 0, 200, 100);
+        verify(graphics, times(2)).clear(0x0, 1, 0);
+        verify(graphics, times(2)).clearClip();
+        verify(scene, times(2)).onDraw(graphics);
     }
 
     @Test

@@ -2,7 +2,7 @@ package flat.widget.effects;
 
 import flat.animations.Interpolation;
 import flat.animations.NormalizedAnimation;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.graphics.context.Paint;
 import flat.graphics.context.paints.GradientStop;
 import flat.graphics.context.paints.RadialGradient;
@@ -43,7 +43,7 @@ public class RippleEffect {
         return animation.isPlaying();
     }
 
-    public void drawRipple(SmartContext context, Shape clip, int color) {
+    public void drawRipple(Graphics context, Shape clip, int color) {
         float a = (((color & 0xFF) / 255f) * (1 - animation.getPosition()));
         colors[0] = (color & 0xFFFFFF00) | ((int) (a * 255));
         colors[1] = (color & 0xFFFFFF00);

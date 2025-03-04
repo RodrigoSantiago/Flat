@@ -3,9 +3,8 @@ package flat.widget.text;
 import flat.animations.StateInfo;
 import flat.events.ActionEvent;
 import flat.events.HoverEvent;
-import flat.events.PointerEvent;
 import flat.graphics.Color;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.graphics.cursor.Cursor;
 import flat.graphics.image.Drawable;
 import flat.math.Vector2;
@@ -59,9 +58,9 @@ public class Chip extends Button {
     }
 
     @Override
-    public void onDraw(SmartContext context) {
-        drawBackground(context);
-        drawRipple(context);
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
+        drawRipple(graphics);
 
         final float x = getInX();
         final float y = getInY();
@@ -70,7 +69,7 @@ public class Chip extends Button {
 
         if (width <= 0 || height <= 0) return;
 
-        context.setTransform2D(getTransform());
+        graphics.setTransform2D(getTransform());
 
         float iW = getLayoutIconWidth();
         float iH = getLayoutIconHeight();
@@ -109,18 +108,18 @@ public class Chip extends Button {
             float ypos = yOff(y, y + height, ih);
 
             if (isIconClipCircle()) {
-                context.pushClip(new Ellipse(xpos, ypos, iw, ih));
+                graphics.pushClip(new Ellipse(xpos, ypos, iw, ih));
             }
-            getIcon().draw(context, xpos, ypos, iw, ih, getIconColor(), getIconImageFilter());
+            getIcon().draw(graphics, xpos, ypos, iw, ih, getIconColor(), getIconImageFilter());
             if (isIconClipCircle()) {
-                context.popClip();
+                graphics.popClip();
             }
         }
 
         if (tw > 0 && th > 0) {
             float xpos = iconLeft ? boxX + spaceForIcon : spaceForCloseIcon + boxX;
             float ypos = yOff(y, y + height, th);
-            drawText(context, xpos, ypos, tw, th);
+            drawText(graphics, xpos, ypos, tw, th);
         }
 
         if (ciw > 0 && cih > 0 && getCloseIcon() != null) {
@@ -128,10 +127,10 @@ public class Chip extends Button {
             float ypos = yOff(y, y + height, cih);
 
             if (isHoveringClose) {
-                context.setColor(getCloseIconBgColor());
-                context.drawEllipse(xpos, ypos, ciw, cih, true);
+                graphics.setColor(getCloseIconBgColor());
+                graphics.drawEllipse(xpos, ypos, ciw, cih, true);
             }
-            getCloseIcon().draw(context, xpos, ypos, ciw, cih, getCloseIconColor(), getCloseIconImageFilter());
+            getCloseIcon().draw(graphics, xpos, ypos, ciw, cih, getCloseIconColor(), getCloseIconImageFilter());
         }
     }
 

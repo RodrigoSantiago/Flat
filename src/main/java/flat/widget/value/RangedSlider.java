@@ -4,7 +4,7 @@ import flat.animations.StateInfo;
 import flat.events.PointerEvent;
 import flat.events.SlideEvent;
 import flat.graphics.Color;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.graphics.image.Drawable;
 import flat.math.stroke.BasicStroke;
 import flat.uxml.*;
@@ -102,8 +102,8 @@ public class RangedSlider extends Widget {
     }
 
     @Override
-    public void onDraw(SmartContext context) {
-        drawBackground(context);
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
 
         float x = getInX();
         float y = getInY();
@@ -135,7 +135,7 @@ public class RangedSlider extends Widget {
             posStart = 1 - posStart;
             posEnd = 1 - posEnd;
         }
-        context.setTransform2D(getTransform());
+        graphics.setTransform2D(getTransform());
 
         float xposStart;
         float yposStart;
@@ -159,28 +159,28 @@ public class RangedSlider extends Widget {
 
         float lineWidth = Math.min(getLineWidth(), Math.min(width, height));
 
-        context.setStroker(new BasicStroke(lineWidth));
+        graphics.setStroker(new BasicStroke(lineWidth));
         if (hor) {
-            context.setColor(getLineColor());
-            context.drawLine(lineStart, yposStart, lineEnd, yposStart);
+            graphics.setColor(getLineColor());
+            graphics.drawLine(lineStart, yposStart, lineEnd, yposStart);
 
             if (getStartValue() != getEndValue()) {
-                context.setColor(getLineFilledColor());
-                context.drawLine(xposStart, yposStart, xposEnd, yposStart);
+                graphics.setColor(getLineFilledColor());
+                graphics.drawLine(xposStart, yposStart, xposEnd, yposStart);
             }
         } else {
-            context.setColor(getLineColor());
-            context.drawLine(xposStart, lineStart, xposStart, lineEnd);
+            graphics.setColor(getLineColor());
+            graphics.drawLine(xposStart, lineStart, xposStart, lineEnd);
 
             if (getStartValue() != getEndValue()) {
-                context.setColor(getLineFilledColor());
-                context.drawLine(xposStart, yposStart, xposStart, yposEnd);
+                graphics.setColor(getLineFilledColor());
+                graphics.drawLine(xposStart, yposStart, xposStart, yposEnd);
             }
         }
 
         if (iw > 0 && ih > 0 && getIcon() != null) {
-            getIcon().draw(context, xposStart - iw * 0.5f, yposStart - ih * 0.5f, iw, ih, getIconColor(), getIconImageFilter());
-            getIcon().draw(context, xposEnd - iw * 0.5f, yposEnd - ih * 0.5f, iw, ih, getIconColor(), getIconImageFilter());
+            getIcon().draw(graphics, xposStart - iw * 0.5f, yposStart - ih * 0.5f, iw, ih, getIconColor(), getIconImageFilter());
+            getIcon().draw(graphics, xposEnd - iw * 0.5f, yposEnd - ih * 0.5f, iw, ih, getIconColor(), getIconImageFilter());
         }
         if (isRippleEnabled()) {
             getRipple().release();
@@ -190,7 +190,7 @@ public class RangedSlider extends Widget {
             } else {
                 getRipple().setPosition(xposEnd, yposEnd);
             }
-            drawRipple(context);
+            drawRipple(graphics);
         }
     }
 
