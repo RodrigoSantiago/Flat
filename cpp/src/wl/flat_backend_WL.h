@@ -10,10 +10,10 @@ extern "C" {
 /*
  * Class:     flat_backend_WL
  * Method:    Init
- * Signature: (IIIZ)J
+ * Signature: ()J
  */
 JNIEXPORT jlong JNICALL Java_flat_backend_WL_Init
-  (JNIEnv *, jclass, jint, jint, jint, jboolean);
+  (JNIEnv *, jclass);
 
 /*
  * Class:     flat_backend_WL
@@ -25,27 +25,28 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_Finish
 
 /*
  * Class:     flat_backend_WL
- * Method:    ContextCreate
- * Signature: (I)J
+ * Method:    WindowCreate
+ * Signature: (IIIZ)J
  */
-JNIEXPORT jlong JNICALL Java_flat_backend_WL_ContextCreate
-  (JNIEnv *, jclass, jint);
+JNIEXPORT jlong JNICALL Java_flat_backend_WL_WindowCreate
+        (JNIEnv *, jclass, jint, jint, jint, jboolean);
 
 /*
  * Class:     flat_backend_WL
- * Method:    ContextAssign
+ * Method:    WindowAssign
  * Signature: (J)V
  */
-JNIEXPORT void JNICALL Java_flat_backend_WL_ContextAssign
-  (JNIEnv *, jclass, jlong);
+JNIEXPORT void JNICALL Java_flat_backend_WL_WindowAssign
+        (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     flat_backend_WL
- * Method:    ContextDestroy
+ * Method:    WindowDestroy
  * Signature: (J)V
  */
-JNIEXPORT void JNICALL Java_flat_backend_WL_ContextDestroy
-  (JNIEnv *, jclass, jlong);
+JNIEXPORT void JNICALL Java_flat_backend_WL_WindowDestroy
+        (JNIEnv *, jclass, jlong);
+
 
 /*
  * Class:     flat_backend_WL
@@ -53,15 +54,15 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_ContextDestroy
  * Signature: ()V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_SwapBuffers
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     flat_backend_WL
  * Method:    HandleEvents
- * Signature: ()V
+ * Signature: (D)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_HandleEvents
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jdouble);
 
 /*
  * Class:     flat_backend_WL
@@ -73,315 +74,299 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetVsync
 
 /*
  * Class:     flat_backend_WL
- * Method:    IsTransparent
- * Signature: ()Z
+ * Method:    PostEmptyEvent
+ * Signature: ()V
  */
-JNIEXPORT jboolean JNICALL Java_flat_backend_WL_IsTransparent
-  (JNIEnv *, jclass);
+JNIEXPORT void JNICALL Java_flat_backend_WL_PostEmptyEvent
+        (JNIEnv *, jclass);
 
 /*
  * Class:     flat_backend_WL
  * Method:    SetFullscreen
- * Signature: (Z)V
+ * Signature: (JZ)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_SetFullscreen
-  (JNIEnv *, jclass, jboolean);
+  (JNIEnv *, jclass, jlong, jboolean);
 
 /*
  * Class:     flat_backend_WL
  * Method:    IsFullscreen
- * Signature: ()Z
+ * Signature: (J)Z
  */
 JNIEXPORT jboolean JNICALL Java_flat_backend_WL_IsFullscreen
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     flat_backend_WL
  * Method:    SetResizable
- * Signature: (Z)V
+ * Signature: (JZ)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_SetResizable
-  (JNIEnv *, jclass, jboolean);
+  (JNIEnv *, jclass, jlong, jboolean);
 
 /*
  * Class:     flat_backend_WL
  * Method:    IsResizable
- * Signature: ()Z
+ * Signature: (J)Z
  */
 JNIEXPORT jboolean JNICALL Java_flat_backend_WL_IsResizable
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     flat_backend_WL
  * Method:    SetDecorated
- * Signature: (Z)V
+ * Signature: (JZ)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_SetDecorated
-  (JNIEnv *, jclass, jboolean);
+  (JNIEnv *, jclass, jlong, jboolean);
 
 /*
  * Class:     flat_backend_WL
  * Method:    IsDecorated
- * Signature: ()Z
+ * Signature: (J)Z
  */
 JNIEXPORT jboolean JNICALL Java_flat_backend_WL_IsDecorated
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jlong);
+
+/*
+ * Class:     flat_backend_WL
+ * Method:    IsTransparent
+ * Signature: (J)Z
+ */
+JNIEXPORT jboolean JNICALL Java_flat_backend_WL_IsTransparent
+        (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     flat_backend_WL
  * Method:    SetTitle
- * Signature: (Ljava/lang/String;)V
+ * Signature: (JLjava/lang/String;)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_SetTitle
-  (JNIEnv *, jclass, jstring);
-
-/*
- * Class:     flat_backend_WL
- * Method:    GetTitle
- * Signature: ()Ljava/lang/String;
- */
-JNIEXPORT jstring JNICALL Java_flat_backend_WL_GetTitle
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jlong, jstring);
 
 /*
  * Class:     flat_backend_WL
  * Method:    SetIcon
- * Signature: ([BII)V
+ * Signature: (J[BII)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_SetIcon
-  (JNIEnv *, jclass, jbyteArray, jint, jint);
+  (JNIEnv *, jclass, jlong, jbyteArray, jint, jint);
 
 /*
  * Class:     flat_backend_WL
  * Method:    SetPosition
- * Signature: (II)V
+ * Signature: (JII)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_SetPosition
-  (JNIEnv *, jclass, jint, jint);
+  (JNIEnv *, jclass, jlong, jint, jint);
 
 /*
  * Class:     flat_backend_WL
  * Method:    GetX
- * Signature: ()I
+ * Signature: (J)I
  */
 JNIEXPORT jint JNICALL Java_flat_backend_WL_GetX
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     flat_backend_WL
  * Method:    GetY
- * Signature: ()I
+ * Signature: (J)I
  */
 JNIEXPORT jint JNICALL Java_flat_backend_WL_GetY
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     flat_backend_WL
  * Method:    SetSize
- * Signature: (II)V
+ * Signature: (JII)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_SetSize
-  (JNIEnv *, jclass, jint, jint);
+  (JNIEnv *, jclass, jlong, jint, jint);
 
 /*
  * Class:     flat_backend_WL
  * Method:    GetWidth
- * Signature: ()I
+ * Signature: (J)I
  */
 JNIEXPORT jint JNICALL Java_flat_backend_WL_GetWidth
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     flat_backend_WL
  * Method:    GetHeight
- * Signature: ()I
+ * Signature: (J)I
  */
 JNIEXPORT jint JNICALL Java_flat_backend_WL_GetHeight
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     flat_backend_WL
  * Method:    GetClientWidth
- * Signature: ()I
+ * Signature: (J)I
  */
 JNIEXPORT jint JNICALL Java_flat_backend_WL_GetClientWidth
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     flat_backend_WL
  * Method:    GetClientHeight
- * Signature: ()I
+ * Signature: (J)I
  */
 JNIEXPORT jint JNICALL Java_flat_backend_WL_GetClientHeight
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     flat_backend_WL
  * Method:    GetPhysicalWidth
- * Signature: ()D
+ * Signature: (J)D
  */
 JNIEXPORT jdouble JNICALL Java_flat_backend_WL_GetPhysicalWidth
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     flat_backend_WL
  * Method:    GetPhysicalHeight
- * Signature: ()D
+ * Signature: (J)D
  */
 JNIEXPORT jdouble JNICALL Java_flat_backend_WL_GetPhysicalHeight
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     flat_backend_WL
  * Method:    GetDpi
- * Signature: ()D
+ * Signature: (J)D
  */
 JNIEXPORT jdouble JNICALL Java_flat_backend_WL_GetDpi
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     flat_backend_WL
  * Method:    SetSizeLimits
- * Signature: (IIII)V
+ * Signature: (JIIII)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_SetSizeLimits
-  (JNIEnv *, jclass, jint, jint, jint, jint);
-
-/*
- * Class:     flat_backend_WL
- * Method:    GetMinWidth
- * Signature: ()I
- */
-JNIEXPORT jint JNICALL Java_flat_backend_WL_GetMinWidth
-  (JNIEnv *, jclass);
-
-/*
- * Class:     flat_backend_WL
- * Method:    GetMinHeight
- * Signature: ()I
- */
-JNIEXPORT jint JNICALL Java_flat_backend_WL_GetMinHeight
-  (JNIEnv *, jclass);
-
-/*
- * Class:     flat_backend_WL
- * Method:    GetMaxWidth
- * Signature: ()I
- */
-JNIEXPORT jint JNICALL Java_flat_backend_WL_GetMaxWidth
-  (JNIEnv *, jclass);
-
-/*
- * Class:     flat_backend_WL
- * Method:    GetMaxHeight
- * Signature: ()I
- */
-JNIEXPORT jint JNICALL Java_flat_backend_WL_GetMaxHeight
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jlong, jint, jint, jint, jint);
 
 /*
  * Class:     flat_backend_WL
  * Method:    Show
- * Signature: ()V
+ * Signature: (J)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_Show
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     flat_backend_WL
  * Method:    Hide
- * Signature: ()V
+ * Signature: (J)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_Hide
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     flat_backend_WL
  * Method:    Close
- * Signature: ()V
+ * Signature: (J)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_Close
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     flat_backend_WL
  * Method:    Maximize
- * Signature: ()V
+ * Signature: (J)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_Maximize
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     flat_backend_WL
  * Method:    Minimize
- * Signature: ()V
+ * Signature: (J)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_Minimize
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     flat_backend_WL
  * Method:    Restore
- * Signature: ()V
+ * Signature: (J)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_Restore
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     flat_backend_WL
  * Method:    Focus
- * Signature: ()V
+ * Signature: (J)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_Focus
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     flat_backend_WL
  * Method:    IsShown
- * Signature: ()Z
+ * Signature: (J)Z
  */
 JNIEXPORT jboolean JNICALL Java_flat_backend_WL_IsShown
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     flat_backend_WL
  * Method:    IsClosed
- * Signature: ()Z
+ * Signature: (J)Z
  */
 JNIEXPORT jboolean JNICALL Java_flat_backend_WL_IsClosed
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     flat_backend_WL
  * Method:    IsMaximized
- * Signature: ()Z
+ * Signature: (J)Z
  */
 JNIEXPORT jboolean JNICALL Java_flat_backend_WL_IsMaximized
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     flat_backend_WL
  * Method:    IsMinimized
- * Signature: ()Z
+ * Signature: (J)Z
  */
 JNIEXPORT jboolean JNICALL Java_flat_backend_WL_IsMinimized
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     flat_backend_WL
  * Method:    GetInputMode
- * Signature: (I)I
+ * Signature: (JI)I
  */
 JNIEXPORT jint JNICALL Java_flat_backend_WL_GetInputMode
-  (JNIEnv *, jclass, jint);
+  (JNIEnv *, jclass, jlong, jint);
 
 /*
  * Class:     flat_backend_WL
  * Method:    SetInputMode
- * Signature: (II)V
+ * Signature: (JII)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_SetInputMode
-  (JNIEnv *, jclass, jint, jint);
+  (JNIEnv *, jclass, jlong, jint, jint);
+
+/*
+ * Class:     flat_backend_WL
+ * Method:    SetClipboardString
+ * Signature: (JLjava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_flat_backend_WL_SetClipboardString
+  (JNIEnv *, jclass, jlong, jstring);
+
+/*
+ * Class:     flat_backend_WL
+ * Method:    GetClipboardString
+ * Signature: (J)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_flat_backend_WL_GetClipboardString
+        (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     flat_backend_WL
@@ -394,42 +379,42 @@ JNIEXPORT jstring JNICALL Java_flat_backend_WL_GetKeyName
 /*
  * Class:     flat_backend_WL
  * Method:    GetKey
- * Signature: (I)I
+ * Signature: (JI)I
  */
 JNIEXPORT jint JNICALL Java_flat_backend_WL_GetKey
-  (JNIEnv *, jclass, jint);
+  (JNIEnv *, jclass, jlong, jint);
 
 /*
  * Class:     flat_backend_WL
  * Method:    GetMouseButton
- * Signature: (I)I
+ * Signature: (JI)I
  */
 JNIEXPORT jint JNICALL Java_flat_backend_WL_GetMouseButton
-  (JNIEnv *, jclass, jint);
+  (JNIEnv *, jclass, jlong, jint);
 
 /*
  * Class:     flat_backend_WL
  * Method:    GetCursorX
- * Signature: ()D
+ * Signature: (J)D
  */
 JNIEXPORT jdouble JNICALL Java_flat_backend_WL_GetCursorX
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     flat_backend_WL
  * Method:    GetCursorY
- * Signature: ()D
+ * Signature: (J)D
  */
 JNIEXPORT jdouble JNICALL Java_flat_backend_WL_GetCursorY
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     flat_backend_WL
  * Method:    SetCursorPos
- * Signature: (DD)V
+ * Signature: (JDD)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_SetCursorPos
-  (JNIEnv *, jclass, jdouble, jdouble);
+  (JNIEnv *, jclass, jlong, jdouble, jdouble);
 
 /*
  * Class:     flat_backend_WL
@@ -458,10 +443,10 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_DestroyCursor
 /*
  * Class:     flat_backend_WL
  * Method:    SetCursor
- * Signature: (J)V
+ * Signature: (JJ)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_SetCursor
-  (JNIEnv *, jclass, jlong);
+  (JNIEnv *, jclass, jlong, jlong);
 
 /*
  * Class:     flat_backend_WL
@@ -514,7 +499,7 @@ JNIEXPORT jstring JNICALL Java_flat_backend_WL_GetJoystickName
 /*
  * Class:     flat_backend_WL
  * Method:    SetWindowPosCallback
- * Signature: (Lflat/backend/WLEnuns/WindowPosCallback;)V
+ * Signature: (Lflat/backend/WLEnums/WindowPosCallback;)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_SetWindowPosCallback
   (JNIEnv *, jclass, jobject);
@@ -522,7 +507,7 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetWindowPosCallback
 /*
  * Class:     flat_backend_WL
  * Method:    SetWindowSizeCallback
- * Signature: (Lflat/backend/WLEnuns/WindowSizeCallback;)V
+ * Signature: (Lflat/backend/WLEnums/WindowSizeCallback;)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_SetWindowSizeCallback
   (JNIEnv *, jclass, jobject);
@@ -530,7 +515,7 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetWindowSizeCallback
 /*
  * Class:     flat_backend_WL
  * Method:    SetWindowCloseCallback
- * Signature: (Lflat/backend/WLEnuns/WindowCloseCallback;)V
+ * Signature: (Lflat/backend/WLEnums/WindowCloseCallback;)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_SetWindowCloseCallback
   (JNIEnv *, jclass, jobject);
@@ -538,7 +523,7 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetWindowCloseCallback
 /*
  * Class:     flat_backend_WL
  * Method:    SetWindowRefreshCallback
- * Signature: (Lflat/backend/WLEnuns/WindowRefreshCallback;)V
+ * Signature: (Lflat/backend/WLEnums/WindowRefreshCallback;)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_SetWindowRefreshCallback
   (JNIEnv *, jclass, jobject);
@@ -546,7 +531,7 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetWindowRefreshCallback
 /*
  * Class:     flat_backend_WL
  * Method:    SetWindowFocusCallback
- * Signature: (Lflat/backend/WLEnuns/WindowFocusCallback;)V
+ * Signature: (Lflat/backend/WLEnums/WindowFocusCallback;)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_SetWindowFocusCallback
   (JNIEnv *, jclass, jobject);
@@ -554,7 +539,7 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetWindowFocusCallback
 /*
  * Class:     flat_backend_WL
  * Method:    SetWindowIconifyCallback
- * Signature: (Lflat/backend/WLEnuns/WindowIconifyCallback;)V
+ * Signature: (Lflat/backend/WLEnums/WindowIconifyCallback;)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_SetWindowIconifyCallback
   (JNIEnv *, jclass, jobject);
@@ -562,7 +547,7 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetWindowIconifyCallback
 /*
  * Class:     flat_backend_WL
  * Method:    SetFramebufferSizeCallback
- * Signature: (Lflat/backend/WLEnuns/WindowBufferSizeCallback;)V
+ * Signature: (Lflat/backend/WLEnums/WindowBufferSizeCallback;)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_SetFramebufferSizeCallback
   (JNIEnv *, jclass, jobject);
@@ -570,7 +555,7 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetFramebufferSizeCallback
 /*
  * Class:     flat_backend_WL
  * Method:    SetKeyCallback
- * Signature: (Lflat/backend/WLEnuns/KeyCallback;)V
+ * Signature: (Lflat/backend/WLEnums/KeyCallback;)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_SetKeyCallback
   (JNIEnv *, jclass, jobject);
@@ -578,7 +563,7 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetKeyCallback
 /*
  * Class:     flat_backend_WL
  * Method:    SetCharCallback
- * Signature: (Lflat/backend/WLEnuns/CharCallback;)V
+ * Signature: (Lflat/backend/WLEnums/CharCallback;)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_SetCharCallback
   (JNIEnv *, jclass, jobject);
@@ -586,7 +571,7 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetCharCallback
 /*
  * Class:     flat_backend_WL
  * Method:    SetCharModsCallback
- * Signature: (Lflat/backend/WLEnuns/CharModsCallback;)V
+ * Signature: (Lflat/backend/WLEnums/CharModsCallback;)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_SetCharModsCallback
   (JNIEnv *, jclass, jobject);
@@ -594,7 +579,7 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetCharModsCallback
 /*
  * Class:     flat_backend_WL
  * Method:    SetMouseButtonCallback
- * Signature: (Lflat/backend/WLEnuns/MouseButtonCallback;)V
+ * Signature: (Lflat/backend/WLEnums/MouseButtonCallback;)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_SetMouseButtonCallback
   (JNIEnv *, jclass, jobject);
@@ -602,7 +587,7 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetMouseButtonCallback
 /*
  * Class:     flat_backend_WL
  * Method:    SetCursorPosCallback
- * Signature: (Lflat/backend/WLEnuns/CursorPosCallback;)V
+ * Signature: (Lflat/backend/WLEnums/CursorPosCallback;)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_SetCursorPosCallback
   (JNIEnv *, jclass, jobject);
@@ -610,7 +595,7 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetCursorPosCallback
 /*
  * Class:     flat_backend_WL
  * Method:    SetCursorEnterCallback
- * Signature: (Lflat/backend/WLEnuns/CursorEnterCallback;)V
+ * Signature: (Lflat/backend/WLEnums/CursorEnterCallback;)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_SetCursorEnterCallback
   (JNIEnv *, jclass, jobject);
@@ -618,7 +603,7 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetCursorEnterCallback
 /*
  * Class:     flat_backend_WL
  * Method:    SetScrollCallback
- * Signature: (Lflat/backend/WLEnuns/ScrollCallback;)V
+ * Signature: (Lflat/backend/WLEnums/ScrollCallback;)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_SetScrollCallback
   (JNIEnv *, jclass, jobject);
@@ -626,7 +611,7 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetScrollCallback
 /*
  * Class:     flat_backend_WL
  * Method:    SetDropCallback
- * Signature: (Lflat/backend/WLEnuns/DropCallback;)V
+ * Signature: (Lflat/backend/WLEnums/DropCallback;)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_SetDropCallback
   (JNIEnv *, jclass, jobject);
@@ -634,11 +619,18 @@ JNIEXPORT void JNICALL Java_flat_backend_WL_SetDropCallback
 /*
  * Class:     flat_backend_WL
  * Method:    SetJoystickCallback
- * Signature: (Lflat/backend/WLEnuns/JoyCallback;)V
+ * Signature: (Lflat/backend/WLEnums/JoyCallback;)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_WL_SetJoystickCallback
   (JNIEnv *, jclass, jobject);
 
+/*
+ * Class:     flat_backend_WL
+ * Method:    SetErrorCallback
+ * Signature: (Lflat/backend/WLEnums/ErrorCallback;)V
+ */
+JNIEXPORT void JNICALL Java_flat_backend_WL_SetErrorCallback
+        (JNIEnv *, jclass, jobject);
 #ifdef __cplusplus
 }
 #endif

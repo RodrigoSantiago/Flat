@@ -18,7 +18,7 @@ const char *vertexSource =
         "void main() {\n"
         "   oPos = iPos;\n"
         "   oTex = iTex;\n"
-        "   vec2 pos;"
+        "   vec2 pos;\n"
         "   pos.x = iPos.x * mat[0][0] + iPos.y * mat[0][2] + mat[1][1];\n"
         "   pos.y = iPos.x * mat[0][1] + iPos.y * mat[1][0] + mat[1][2];\n"
         "	gl_Position = vec4(pos.x * 2.0 / view.x - 1.0, 1.0 - pos.y * 2.0 / view.y, 0, 1);\n"
@@ -38,8 +38,10 @@ const char *fragmentSource =
         "};\n"
         "uniform int stc;\n"
         "uniform int sdf;\n"
+        "uniform int dbg;\n"
         "uniform sampler2D tex;\n"
         "uniform sampler2D fnt;\n"
+        "uniform vec2 fntSize;\n"
         "in vec2 oPos;\n"
         "in vec2 oTex;\n"
         "float roundrect(vec2 pt, vec2 ext, float rad) {\n"
@@ -62,6 +64,9 @@ const char *fragmentSource =
         "    }\n"
         "    return distance(coord, focus) / gradLength;\n"
         "}\n"
+        "float expin(float a, float power) {\n"
+        "	 return 1 - pow(1 - a, power);\n"
+        "}\n"
         "void main() {\n"
         "    if (stc == 1) {\n"
         "        FragColor = vec4(1);\n"
@@ -72,15 +77,17 @@ const char *fragmentSource =
         "            float t;\n"
         "            if (extra[2] == 0) {\n"
         "                t = (roundrect(cPt, shape.xy, shape.z) + shape.w * 0.5) / shape.w;\n"
-        "            } else {"
+        "            } else {\n"
         "                t = focuscircle(cPt / (shape.z * 2.0), extra.xy);\n"
         "            }\n"
-        "            if (data[2] == 1) {\n"
+        "            if (data[2] == 0) {\n"
+        "                t = clamp(t, 0.0, 1.0);\n"
+        "            } else if (data[2] == 1) {\n"
         "                t = t - floor(t);\n"
         "            } else if (data[2] == 2) {\n"
         "                t = (int(t) % 2 == 0) ? t - floor(t) : 1 - (t - floor(t));\n"
         "            } else {\n"
-        "                t = clamp(t, 0.0, 1.0);\n"
+        "                t = expin(clamp(t, 0.0, 1.0), 2);\n"
         "            }\n"
         "            color = mix(color, colors[1], clamp((t - stops[0].x) / (stops[0].y - stops[0].x), 0.0, 1.0));\n"
         "            if(data[3] > 1) color = mix(color, colors[2], clamp((t - stops[0].y) / (stops[0].z - stops[0].y), 0.0, 1.0));\n"
@@ -100,23 +107,31 @@ const char *fragmentSource =
         "        }\n"
         "        if (data[0] == 1 || data[0] == 3) {\n"
         "            vec2 tPt = (imageMat * vec3(oPos, 1.0)).xy;\n"
-        "            texel = texture(tex, tPt);\n"
+        "            if (data[2] == 0) {\n"
+        "                tPt = clamp(tPt, vec2(0.0), vec2(1.0));\n"
+        "            } else if (data[2] == 1) {\n"
+        "                tPt = tPt - floor(tPt);\n"
+        "            } else if (data[2] == 2) {\n"
+        "                tPt = vec2((int(tPt.x) % 2 == 0) ? tPt.x - floor(tPt.x) : 1 - (tPt.x - floor(tPt.x)),\n"
+        "                           (int(tPt.y) % 2 == 0) ? tPt.y - floor(tPt.y) : 1 - (tPt.y - floor(tPt.y)));\n"
+        "            }\n"
+        "            color *= texture(tex, tPt);\n"
         "        }\n"
-        "        float a = color.a + texel.a * (1 - color.a);\n"
+        "        float a = color.a;\n"
         "        if (data[0] > 1) {\n"
-        "            if (sdf == 1) {\n"
-        "                float r = texture(fnt, oTex).r;"
-        "                float d = (r - 0.5) * 2;\n"
-        "                ivec2 sz = textureSize(fnt, 0);"
-        "                float dx = dFdx(oTex.x) * sz.x;\n"
-        "                float dy = dFdy(oTex.y) * sz.y;\n"
-        "                float toPixels = 8.0 * inversesqrt(dx * dx + dy * dy);"
-        "                a = a * clamp(mix(r, d * toPixels + 0.5, extra[3]), 0.0, 1.0);"
+        "            ivec2 sz = textureSize(fnt, 0);\n"
+        "            float dist = texture(fnt, oTex / sz).r;\n"
+        "            if (dbg == 1) {\n"
+        "                a = 1;\n"
+        "            } else if (sdf == 1) {\n"
+        "                float screenSpaceScale = fwidth(oTex).x * 0.05 + extra[3] * 0.5;\n"
+        "                float aliasing = smoothstep(0.5 - screenSpaceScale, 0.5 + screenSpaceScale, dist);\n"
+        "                a = a * aliasing;\n"
         "            } else {\n"
-        "                a = a * texture(fnt, oTex).r;\n"
+        "                a = a * dist;\n"
         "            }\n"
         "        }\n"
-        "        FragColor = vec4(color.rgb * color.a + texel.rgb * texel.a * (1 - color.a), a);\n"
+        "        FragColor = vec4(color.rgb * a, a);\n"
         "    }\n"
         "}\0";
 
@@ -130,7 +145,7 @@ typedef struct fvGLData {
     GLuint image0, image1;
 
     GLuint shader;
-    GLint viewID, matID, texID, fntID, sdfID, stcID;
+    GLint viewID, matID, texID, fntID, sdfID, stcID, dbgID;
 
     int aa, sdf;
     unsigned int width, height;
@@ -190,6 +205,7 @@ void* renderCreate() {
     ctx->fntID = glGetUniformLocation(ctx->shader, "fnt");
     ctx->sdfID = glGetUniformLocation(ctx->shader, "sdf");
     ctx->stcID = glGetUniformLocation(ctx->shader, "stc");
+    ctx->dbgID = glGetUniformLocation(ctx->shader, "dbg");
     ctx->width = 0;
     ctx->height = 0;
 
@@ -276,6 +292,7 @@ void renderBegin(void *data, unsigned int width, unsigned int height) {
     glUniform1i(ctx->fntID, 1);
     glUniform1i(ctx->sdfID, 0);
     glUniform1i(ctx->stcID, 0);
+    glUniform1i(ctx->dbgID, fvIsDebug());
 
     glBindVertexArray(ctx->vao);
 
@@ -290,7 +307,7 @@ void renderBegin(void *data, unsigned int width, unsigned int height) {
     glStencilMask(0xFF);
 
     glEnable(GL_BLEND);
-    glBlendFuncSeparate(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -325,6 +342,11 @@ void renderClearClip(void* data, int clip) {
     glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 }
 
+void renderUnbindImage(void *data) {
+    fvGLData *ctx = (fvGLData *) data;
+    ctx->image0 = 0;
+}
+
 void render__triangles(int pos, int length) {
     glDrawElements(GL_TRIANGLES, (GLsizei) (length), GL_UNSIGNED_INT, (void*) (pos * sizeof(int)));
 }
@@ -349,7 +371,7 @@ void renderFlush(void *data,
 
         fvPaint &p = paints[i];
         int aa = p.aa;
-        int sd = p.sdf;
+        int sd = p.font == NULL ? 0 : p.font->sdf;
         int cv = p.convex;
         int wr = p.winding;
         int op = p.paintOp;
@@ -390,9 +412,11 @@ void renderFlush(void *data,
                 glBindTexture(GL_TEXTURE_2D, ctx->image0 = p.image0);
             }
 
-            if (ctx->image1 != p.image1) {
+            // Font
+            GLuint fntImg = p.font == NULL ? 0 : p.font->imageID;
+            if (ctx->image1 != fntImg) {
                 glActiveTexture(GL_TEXTURE1);
-                glBindTexture(GL_TEXTURE_2D, ctx->image1 = p.image1);
+                glBindTexture(GL_TEXTURE_2D, ctx->image1 = fntImg);
                 if (ctx->sdf != sd) {
                     ctx->sdf = sd;
                     if (ctx->sdf) {
@@ -467,32 +491,59 @@ void renderFlush(void *data,
     }
 }
 
-unsigned long renderCreateFontTexture(void* data, int width, int height) {
-    GLint prev;
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &prev);
+unsigned long renderCreateFontTexture(int width, int height) {
+    glActiveTexture(GL_TEXTURE0);
 
     GLuint img;
     glGenTextures(1, &img);
     glBindTexture(GL_TEXTURE_2D, img);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    glBindTexture(GL_TEXTURE_2D, prev);
+    glBindTexture(GL_TEXTURE_2D, 0);
     return img;
 }
 
+unsigned long renderResizeFontTexture(unsigned long oldImageID, int oldWidth, int oldHeight, int width, int height) {
+    glActiveTexture(GL_TEXTURE0);
+
+    GLuint newImg;
+    glGenTextures(1, &newImg);
+    glBindTexture(GL_TEXTURE_2D, newImg);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glBindTexture(GL_TEXTURE_2D, oldImageID);
+
+    unsigned char* oldData = (unsigned char *) malloc(oldWidth * oldHeight * sizeof(unsigned char));
+
+    glGetTexImage(GL_TEXTURE_2D, 0, GL_RED, GL_UNSIGNED_BYTE, oldData);
+
+    glBindTexture(GL_TEXTURE_2D, newImg);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, oldWidth, oldHeight, GL_RED, GL_UNSIGNED_BYTE, oldData);
+
+    free(oldData);
+
+    GLuint oldImgID = oldImageID;
+    glDeleteTextures(1, &oldImgID);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    return newImg;
+}
+
 void renderUpdateFontTexture(unsigned long imageID, void* data, int x, int y, int width, int height) {
-    GLint  prev;
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &prev);
+    glActiveTexture(GL_TEXTURE0);
 
     glBindTexture(GL_TEXTURE_2D, imageID);
-
     glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, GL_RED, GL_UNSIGNED_BYTE, data);
-
-    glBindTexture(GL_TEXTURE_2D, prev);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void renderDestroyFontTexture(unsigned long imageID) {

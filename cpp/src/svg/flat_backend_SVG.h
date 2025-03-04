@@ -23,6 +23,15 @@ JNIEXPORT jlong JNICALL Java_flat_backend_SVG_Create
 JNIEXPORT void JNICALL Java_flat_backend_SVG_Destroy
   (JNIEnv *, jclass, jlong);
 
+
+/*
+ * Class:     flat_backend_SVG
+ * Method:    SetDebug
+ * Signature: (Z)V
+ */
+JNIEXPORT void JNICALL Java_flat_backend_SVG_SetDebug
+  (JNIEnv *, jclass, jboolean);
+
 /*
  * Class:     flat_backend_SVG
  * Method:    BeginFrame
@@ -74,34 +83,34 @@ JNIEXPORT void JNICALL Java_flat_backend_SVG_SetPaintColor
 /*
  * Class:     flat_backend_SVG
  * Method:    SetPaintLinearGradient
- * Signature: (J[FFFFFI[F[II)V
+ * Signature: (JFFFFI[FI)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_SVG_SetPaintLinearGradient
-  (JNIEnv *, jclass, jlong, jfloatArray, jfloat, jfloat, jfloat, jfloat, jint, jfloatArray, jintArray, jint);
+  (JNIEnv *, jclass, jlong, jfloat, jfloat, jfloat, jfloat, jint, jfloatArray, jint);
 
 /*
  * Class:     flat_backend_SVG
  * Method:    SetPaintRadialGradient
- * Signature: (J[FFFFFFFI[F[II)V
+ * Signature: (JFFFFFFI[FI)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_SVG_SetPaintRadialGradient
-  (JNIEnv *, jclass, jlong, jfloatArray, jfloat, jfloat, jfloat, jfloat, jfloat, jfloat, jint, jfloatArray, jintArray, jint);
+  (JNIEnv *, jclass, jlong, jfloat, jfloat, jfloat, jfloat, jfloat, jfloat, jint, jfloatArray, jint);
 
 /*
  * Class:     flat_backend_SVG
  * Method:    SetPaintBoxGradient
- * Signature: (J[FFFFFFFI[F[II)V
+ * Signature: (JFFFFFFFI[F)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_SVG_SetPaintBoxGradient
-  (JNIEnv *, jclass, jlong, jfloatArray, jfloat, jfloat, jfloat, jfloat, jfloat, jfloat, jint, jfloatArray, jintArray, jint);
+  (JNIEnv *, jclass, jlong, jfloat, jfloat, jfloat, jfloat, jfloat, jfloat, jfloat, jint, jfloatArray);
 
 /*
  * Class:     flat_backend_SVG
  * Method:    SetPaintImage
- * Signature: (JI[FI)V
+ * Signature: (JII[FI)V
  */
 JNIEXPORT void JNICALL Java_flat_backend_SVG_SetPaintImage
-  (JNIEnv *, jclass, jlong, jint, jfloatArray, jint);
+  (JNIEnv *, jclass, jlong, jint, jint, jfloatArray, jint);
 
 /*
  * Class:     flat_backend_SVG
@@ -209,51 +218,68 @@ JNIEXPORT void JNICALL Java_flat_backend_SVG_RoundRect
 
 /*
  * Class:     flat_backend_SVG
- * Method:    FontCreate
+ * Method:    FontLoad
  * Signature: ([BFI)J
  */
-JNIEXPORT jlong JNICALL Java_flat_backend_SVG_FontCreate
-  (JNIEnv *, jclass, jbyteArray, jfloat, jint);
+JNIEXPORT jlong JNICALL Java_flat_backend_SVG_FontLoad
+        (JNIEnv *, jclass, jbyteArray, jfloat, jint);
 
 /*
  * Class:     flat_backend_SVG
- * Method:    FontLoadAllGlyphs
+ * Method:    FontUnload
  * Signature: (J)V
  */
-JNIEXPORT void JNICALL Java_flat_backend_SVG_FontLoadAllGlyphs
+JNIEXPORT void JNICALL Java_flat_backend_SVG_FontUnload
+        (JNIEnv *, jclass, jlong);
+
+/*
+ * Class:     flat_backend_SVG
+ * Method:    FontPaintCreate
+ * Signature: (J)V
+ */
+JNIEXPORT jlong JNICALL Java_flat_backend_SVG_FontPaintCreate
   (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     flat_backend_SVG
- * Method:    FontLoadGlyphs
- * Signature: (JLjava/lang/String;)V
+ * Method:    FontPaintDestroy
+ * Signature: (J)V
  */
-JNIEXPORT void JNICALL Java_flat_backend_SVG_FontLoadGlyphs
-  (JNIEnv *, jclass, jlong, jstring);
+JNIEXPORT void JNICALL Java_flat_backend_SVG_FontPaintDestroy
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     flat_backend_SVG
- * Method:    FontLoadGlyphsBuffer
- * Signature: (JLjava/nio/Buffer;II)V
+ * Method:    FontPaintGetAtlas
+ * Signature: (J[I)V
  */
-JNIEXPORT void JNICALL Java_flat_backend_SVG_FontLoadGlyphsBuffer
-  (JNIEnv *, jclass, jlong, jobject, jint, jint);
+JNIEXPORT jlong JNICALL Java_flat_backend_SVG_FontPaintGetAtlas
+  (JNIEnv *, jclass, jlong, jintArray);
 
 /*
  * Class:     flat_backend_SVG
- * Method:    FontGetGlyphs
- * Signature: (JLjava/lang/String;[F)I
+ * Method:    FontGetGlyphShape
+ * Signature: (J)[F
  */
-JNIEXPORT jint JNICALL Java_flat_backend_SVG_FontGetGlyphs
-  (JNIEnv *, jclass, jlong, jstring, jfloatArray);
+JNIEXPORT jfloatArray JNICALL Java_flat_backend_SVG_FontGetGlyphShape
+  (JNIEnv *, jclass, jlong, jint);
+
+
+/*
+ * Class:     flat_backend_SVG
+ * Method:    FontGetGlyph
+ * Signature: (JLI[F)void
+ */
+JNIEXPORT void JNICALL Java_flat_backend_SVG_FontGetGlyph
+  (JNIEnv *, jclass, jlong, jint, jfloatArray);
 
 /*
  * Class:     flat_backend_SVG
  * Method:    FontGetGlyphsBuffer
- * Signature: (JLjava/nio/Buffer;II[F)I
+ * Signature: (JL[I)V
  */
-JNIEXPORT jint JNICALL Java_flat_backend_SVG_FontGetGlyphsBuffer
-  (JNIEnv *, jclass, jlong, jobject, jint, jint, jfloatArray);
+JNIEXPORT void JNICALL Java_flat_backend_SVG_FontGetAllCodePoints
+  (JNIEnv *, jclass, jlong, jintArray);
 
 /*
  * Class:     flat_backend_SVG
@@ -289,6 +315,14 @@ JNIEXPORT jfloat JNICALL Java_flat_backend_SVG_FontGetLineGap
 
 /*
  * Class:     flat_backend_SVG
+ * Method:    _FontGetGlyphCount
+ * Signature: (J)F
+ */
+JNIEXPORT jint JNICALL Java_flat_backend_SVG_FontGetGlyphCount
+  (JNIEnv *, jclass, jlong);
+
+/*
+ * Class:     flat_backend_SVG
  * Method:    FontGetTextWidth
  * Signature: (JLjava/lang/String;FF)F
  */
@@ -306,26 +340,18 @@ JNIEXPORT jfloat JNICALL Java_flat_backend_SVG_FontGetTextWidthBuffer
 /*
  * Class:     flat_backend_SVG
  * Method:    FontGetOffset
- * Signature: (JLjava/lang/String;FFFZ)I
+ * Signature: (JLjava/lang/String;FFFZ[F)V
  */
-JNIEXPORT jint JNICALL Java_flat_backend_SVG_FontGetOffset
-  (JNIEnv *, jclass, jlong, jstring, jfloat, jfloat, jfloat, jboolean);
+JNIEXPORT void JNICALL Java_flat_backend_SVG_FontGetOffset
+  (JNIEnv *, jclass, jlong, jstring, jfloat, jfloat, jfloat, jboolean, jfloatArray cursor);
 
 /*
  * Class:     flat_backend_SVG
  * Method:    FontGetOffsetBuffer
- * Signature: (JLjava/nio/Buffer;IIFFFZ)I
+ * Signature: (JLjava/nio/Buffer;IIFFFZ[F)V
  */
-JNIEXPORT jint JNICALL Java_flat_backend_SVG_FontGetOffsetBuffer
-  (JNIEnv *, jclass, jlong, jobject, jint, jint, jfloat, jfloat, jfloat, jboolean);
-
-/*
- * Class:     flat_backend_SVG
- * Method:    FontDestroy
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_flat_backend_SVG_FontDestroy
-  (JNIEnv *, jclass, jlong);
+JNIEXPORT void JNICALL Java_flat_backend_SVG_FontGetOffsetBuffer
+  (JNIEnv *, jclass, jlong, jobject, jint, jint, jfloat, jfloat, jfloat, jboolean, jfloatArray cursor);
 
 /*
  * Class:     flat_backend_SVG
@@ -362,18 +388,27 @@ JNIEXPORT void JNICALL Java_flat_backend_SVG_SetFontBlur
 /*
  * Class:     flat_backend_SVG
  * Method:    DrawText
- * Signature: (JFFLjava/lang/String;FII)I
+ * Signature: (JFFLjava/lang/String;FF)V
  */
-JNIEXPORT jint JNICALL Java_flat_backend_SVG_DrawText
-  (JNIEnv *, jclass, jlong, jfloat, jfloat, jstring, jfloat, jint, jint);
+JNIEXPORT void JNICALL Java_flat_backend_SVG_DrawText
+  (JNIEnv *, jclass, jlong, jfloat, jfloat, jstring, jfloat, jfloat);
 
 /*
  * Class:     flat_backend_SVG
  * Method:    DrawTextBuffer
- * Signature: (JFFLjava/nio/Buffer;IIFII)I
+ * Signature: (JFFLjava/nio/Buffer;IIFF)V
  */
-JNIEXPORT jint JNICALL Java_flat_backend_SVG_DrawTextBuffer
-  (JNIEnv *, jclass, jlong, jfloat, jfloat, jobject, jint, jint, jfloat, jint, jint);
+JNIEXPORT void JNICALL Java_flat_backend_SVG_DrawTextBuffer
+  (JNIEnv *, jclass, jlong, jfloat, jfloat, jobject, jint, jint, jfloat, jfloat);
+
+
+/*
+ * Class:     flat_backend_SVG
+ * Method:    ReadImage
+ * Signature: ([B[I)[B
+ */
+JNIEXPORT jbyteArray JNICALL Java_flat_backend_SVG_ReadImage
+  (JNIEnv * jEnv, jclass, jbyteArray, jintArray);
 
 #ifdef __cplusplus
 }

@@ -3,7 +3,7 @@
 //
 #include "utf8.h"
 
-int utf8loop(const char* str, int strLen, int& i, unsigned long& unicode) {
+int readChar(const char* str, int strLen, int& i, unsigned long& unicode) {
     if (i >= strLen) return 0;
 
     if (((unsigned char) str[i] | 0b01111111u) == 0b01111111u) {    //0xxxxxxx
@@ -42,3 +42,68 @@ int utf8loop(const char* str, int strLen, int& i, unsigned long& unicode) {
     }
     return 1;
 }
+
+int utf8loop(const char* str, int strLen, int& i, unsigned long& out) {
+    if (readChar(str, strLen, i, out)) {
+        if (out >= 0xD800 && out <= 0xDBFF) {
+            unsigned long high = out;
+            if (readChar(str, strLen, i, out)) {
+                if (out >= 0xDC00 && out <= 0xDFFF) {
+                    out = (((high - 0xD800) << 10) | (out - 0xDC00)) + 0x10000;
+                } else {
+                    out = 0xFFFD;
+                }
+                return 1;
+            } else {
+                return 0;
+            }
+        } else {
+            return 1;
+        }
+    } else {
+        return 0;
+    }
+}
+
+/*int readChar(const char* str, int strLen, int& i, unsigned long& out) {
+    if (i >= strLen) {
+        return 0;
+    }
+
+    unsigned char c = static_cast<unsigned char>(str[i]);
+    int unicode;
+    int numBytes;
+    if (c < 0x80) {
+        unicode = c;
+        numBytes = 1;
+    } else if ((c & 0xE0) == 0xC0) {
+        unicode = c & 0x1F;
+        numBytes = 2;
+    } else if ((c & 0xF0) == 0xE0) {
+        unicode = c & 0x0F;
+        numBytes = 3;
+    } else if ((c & 0xF8) == 0xF0) {
+        unicode = c & 0x07;
+        numBytes = 4;
+    } else {
+        out = 0xFFFD;
+        return 1;
+    }
+
+    if (i + numBytes > strLen) {
+        return 0;
+    }
+
+    for (int j = 1; j < numBytes; ++j) {
+        c = static_cast<unsigned char>(str[i + j]);
+        if ((c & 0xC0) != 0x80) {
+            out = 0xFFFD;
+            return 1;
+        }
+        unicode = (unicode << 6) | (c & 0x3F);
+    }
+
+    i += numBytes;
+    out = unicode;
+    return 1;
+}*/

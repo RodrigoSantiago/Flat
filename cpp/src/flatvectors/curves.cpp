@@ -10,7 +10,6 @@
 
 #include <curves.h>
 #include <cmath>
-#include <iostream>
 
 #define pi 3.14159265359
 
