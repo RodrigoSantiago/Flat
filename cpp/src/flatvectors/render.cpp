@@ -5,18 +5,23 @@
 #include <glad/glad.h>
 
 #include <iostream>
+#include <cmath>
 
 const char *vertexSource =
         "#version 330 core\n"
         "layout (location = 0) in vec2 iPos;\n"
         "layout (location = 1) in vec2 iTex;\n"
         "uniform vec2 view;\n"
+        "uniform mat3 mat;\n"
         "out vec2 oPos;\n"
         "out vec2 oTex;\n"
         "void main() {\n"
         "   oPos = iPos;\n"
         "   oTex = iTex;\n"
-        "	gl_Position = vec4(iPos.x * 2.0 / view.x - 1.0, 1.0 - iPos.y * 2.0 / view.y, 0, 1);\n"
+        "   vec2 pos;"
+        "   pos.x = iPos.x * mat[0][0] + iPos.y * mat[0][2] + mat[1][1];\n"
+        "   pos.y = iPos.x * mat[0][1] + iPos.y * mat[1][0] + mat[1][2];\n"
+        "	gl_Position = vec4(pos.x * 2.0 / view.x - 1.0, 1.0 - pos.y * 2.0 / view.y, 0, 1);\n"
         "}\0";
 
 const char *fragmentSource =
@@ -27,6 +32,7 @@ const char *fragmentSource =
         "    mat3 colorMat;\n"
         "    mat3 imageMat;\n"
         "    vec4 shape;\n"
+        "    vec4 extra;\n"
         "    vec4 stops[4];\n"
         "    vec4 colors[16];\n"
         "};\n"
@@ -37,9 +43,24 @@ const char *fragmentSource =
         "in vec2 oPos;\n"
         "in vec2 oTex;\n"
         "float roundrect(vec2 pt, vec2 ext, float rad) {\n"
-        "	vec2 ext2 = ext - vec2(rad,rad);\n"
-        "	vec2 d = abs(pt) - ext2;\n"
-        "	return min(max(d.x, d.y), 0.0) + length(max(d, 0.0)) - rad;\n"
+        "	 vec2 ext2 = ext - vec2(rad,rad);\n"
+        "	 vec2 d = abs(pt) - ext2;\n"
+        "	 return min(max(d.x, d.y), 0.0) + length(max(d, 0.0)) - rad;\n"
+        "}\n"
+        "float focuscircle(vec2 coord, vec2 focus) {\n"
+        "    float gradLength = 1.0;\n"
+        "    vec2 diff = focus;\n"
+        "    vec2 rayDir = normalize(coord - focus);\n"
+        "    float a = dot(rayDir, rayDir);\n"
+        "    float b = 2.0 * dot(rayDir, diff);\n"
+        "    float c = dot(diff, diff) - 1;\n"
+        "    float disc = b * b - 4.0 * a * c;\n"
+        "    if (disc >= 0.0) {\n"
+        "        float t = (-b + sqrt(abs(disc))) / (2.0 * a);\n"
+        "        vec2 projection = focus + rayDir * t;\n"
+        "        gradLength = distance(projection, focus);\n"
+        "    }\n"
+        "    return distance(coord, focus) / gradLength;\n"
         "}\n"
         "void main() {\n"
         "    if (stc == 1) {\n"
@@ -48,7 +69,12 @@ const char *fragmentSource =
         "        vec4 color = colors[0], texel = vec4(0);\n"
         "        if (data[3] > 0) {\n"
         "            vec2 cPt = (colorMat * vec3(oPos, 1.0)).xy;\n"
-        "            float t = (roundrect(cPt, shape.xy, shape.z) + shape.w * 0.5) / shape.w;\n"
+        "            float t;\n"
+        "            if (extra[2] == 0) {\n"
+        "                t = (roundrect(cPt, shape.xy, shape.z) + shape.w * 0.5) / shape.w;\n"
+        "            } else {"
+        "                t = focuscircle(cPt / (shape.z * 2.0), extra.xy);\n"
+        "            }\n"
         "            if (data[2] == 1) {\n"
         "                t = t - floor(t);\n"
         "            } else if (data[2] == 2) {\n"
@@ -72,23 +98,22 @@ const char *fragmentSource =
         "            if(data[3] >13) color = mix(color, colors[14], clamp((t - stops[3].y) / (stops[3].z - stops[3].y), 0.0, 1.0));\n"
         "            if(data[3] >14) color = mix(color, colors[15], clamp((t - stops[3].z) / (stops[3].w - stops[3].z), 0.0, 1.0));\n"
         "        }\n"
-        "        if (data[0] > 0 && data[0] <= 2) {\n"
+        "        if (data[0] == 1 || data[0] == 3) {\n"
         "            vec2 tPt = (imageMat * vec3(oPos, 1.0)).xy;\n"
         "            texel = texture(tex, tPt);\n"
         "        }\n"
         "        float a = color.a + texel.a * (1 - color.a);\n"
-        "        if (data[0] >= 2) {\n"
+        "        if (data[0] > 1) {\n"
         "            if (sdf == 1) {\n"
-        "                float d = texture(fnt, oTex).r - 0.5;\n"
-        "                float width = d / fwidth(d);"
-        //"                a = clamp(width + 0.5, 0.0, 1.0);\n" GLES2.0
+        "                float r = texture(fnt, oTex).r;"
+        "                float d = (r - 0.5) * 2;\n"
         "                ivec2 sz = textureSize(fnt, 0);"
         "                float dx = dFdx(oTex.x) * sz.x;\n"
         "                float dy = dFdy(oTex.y) * sz.y;\n"
         "                float toPixels = 8.0 * inversesqrt(dx * dx + dy * dy);"
-        "                a = clamp(d * toPixels + 0.5, 0.0, 1.0);"
+        "                a = a * clamp(mix(r, d * toPixels + 0.5, extra[3]), 0.0, 1.0);"
         "            } else {\n"
-        "                a = texture(fnt, oTex).r;\n"
+        "                a = a * texture(fnt, oTex).r;\n"
         "            }\n"
         "        }\n"
         "        FragColor = vec4(color.rgb * color.a + texel.rgb * texel.a * (1 - color.a), a);\n"
@@ -105,7 +130,7 @@ typedef struct fvGLData {
     GLuint image0, image1;
 
     GLuint shader;
-    GLint viewID, texID, fntID, sdfID, stcID;
+    GLint viewID, matID, texID, fntID, sdfID, stcID;
 
     int aa, sdf;
     unsigned int width, height;
@@ -160,6 +185,7 @@ void* renderCreate() {
     GLuint paintIndex = glGetUniformBlockIndex(ctx->shader, "Paint");
     glUniformBlockBinding(ctx->shader, paintIndex, 0);
     ctx->viewID = glGetUniformLocation(ctx->shader, "view");
+    ctx->matID = glGetUniformLocation(ctx->shader, "mat");
     ctx->texID = glGetUniformLocation(ctx->shader, "tex");
     ctx->fntID = glGetUniformLocation(ctx->shader, "fnt");
     ctx->sdfID = glGetUniformLocation(ctx->shader, "sdf");
@@ -170,6 +196,17 @@ void* renderCreate() {
     return ctx;
 }
 
+int _get_align() {
+    GLint align;
+    glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &align);
+    return (GLint) ceil(sizeof(fvUniform) / (float)align) * align;
+}
+
+int renderAlign() {
+    static int align = _get_align();
+    return align;
+}
+
 void renderAlloc(void * data, int paint, int element, int vertex) {
     fvGLData* ctx = (fvGLData*) data;
 
@@ -178,34 +215,38 @@ void renderAlloc(void * data, int paint, int element, int vertex) {
 
         // Uniform Buffer
         glBindBuffer(GL_UNIFORM_BUFFER, ctx->ubo);
-        glBufferData(GL_UNIFORM_BUFFER, paint * sizeof(fvPaint), NULL, GL_STATIC_DRAW);
+        glBufferData(GL_UNIFORM_BUFFER, paint * renderAlign(), NULL, GL_STATIC_DRAW);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
     }
 
-    if (ctx->vertex != vertex || ctx->element != element) {
+    glBindVertexArray(ctx->vao);
+
+    // Vertices + UVs
+    if (ctx->vertex != vertex) {
         ctx->vertex = vertex;
-        ctx->element = element;
 
-        glBindVertexArray(ctx->vao);
-
-        // Vertices + UVs
         glBindBuffer(GL_ARRAY_BUFFER, ctx->vbo);
         glBufferData(GL_ARRAY_BUFFER, vertex * sizeof(float) * 2, NULL, GL_STATIC_DRAW);
-
-        // Elements
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ctx->ebo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, element * sizeof(short), NULL, GL_STATIC_DRAW);
-
-        // pos
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *) 0);
-        glEnableVertexAttribArray(0);
-
-        // uv
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *) (vertex * sizeof(float)));
-        glEnableVertexAttribArray(1);
-
-        glBindVertexArray(0);
     }
+
+    // Elements
+    if (ctx->element != element) {
+        ctx->element = element;
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ctx->ebo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, element * sizeof(int), NULL, GL_STATIC_DRAW);
+
+    }
+
+    // pos
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *) 0);
+    glEnableVertexAttribArray(0);
+
+    // uv
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *) (vertex * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0);
 }
 
 void renderDestroy(void *data) {
@@ -230,6 +271,7 @@ void renderBegin(void *data, unsigned int width, unsigned int height) {
 
     glUseProgram(ctx->shader);
     glUniform2f(ctx->viewID, width, height);
+    // glUniformMatrix3fv(ctx->matID, 1, 0, *);
     glUniform1i(ctx->texID, 0);
     glUniform1i(ctx->fntID, 1);
     glUniform1i(ctx->sdfID, 0);
@@ -240,10 +282,11 @@ void renderBegin(void *data, unsigned int width, unsigned int height) {
     glBindBuffer(GL_UNIFORM_BUFFER, ctx->ubo);
 
     glDisable(GL_MULTISAMPLE);
+    glDisable(GL_DEPTH_TEST);
 
     glEnable(GL_STENCIL_TEST);
-    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-    glStencilFunc(GL_ALWAYS, 0, 0xFF);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+    glStencilFunc(GL_EQUAL, 0x80, 0xFF);
     glStencilMask(0xFF);
 
     glEnable(GL_BLEND);
@@ -273,37 +316,47 @@ void renderEnd(void *data) {
 }
 
 void renderClearClip(void* data, int clip) {
-    glClearStencil(clip ? 0x00 : 0x01);
+    glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
+    glStencilFunc(GL_ALWAYS, 0, 0xFF);
+    glClearStencil(clip ? 0x00 : 0x80);
     glClear(GL_STENCIL_BUFFER_BIT);
+
+    glStencilFunc(GL_EQUAL, 0x80, 0xFF);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 }
 
 void render__triangles(int pos, int length) {
-    glDrawElements(GL_TRIANGLES, (GLsizei) (length), GL_UNSIGNED_SHORT, (void*) (pos * sizeof(short)));
+    glDrawElements(GL_TRIANGLES, (GLsizei) (length), GL_UNSIGNED_INT, (void*) (pos * sizeof(int)));
 }
 
 void renderFlush(void *data,
-                 fvPaint *paints, int pSize,
-                 short* elements, int eSize,
+                 fvPaint *paints, void* uniforms, int pSize,
+                 int* elements, int eSize,
                  float *vtx, float *uvs, int vSize) {
     fvGLData* ctx = (fvGLData*) data;
 
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, pSize * sizeof(fvPaint), paints);
-    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, eSize * sizeof(short), elements);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, pSize * renderAlign(), uniforms);
+    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, eSize * sizeof(int), elements);
     glBufferSubData(GL_ARRAY_BUFFER, 0, vSize * sizeof(float), vtx);
     glBufferSubData(GL_ARRAY_BUFFER, ctx->vertex * sizeof(float), vSize * sizeof(float), uvs);
 
     GLsizei pos = 0;
     for (int i = 0; i < pSize; i++) {
         // Exclude size, antealiasing and images info
-        glBindBufferRange(GL_UNIFORM_BUFFER, 0, ctx->ubo,
-                          i * sizeof(fvPaint) + sizeof(unsigned long) * 4,
-                          sizeof(fvPaint) - sizeof(unsigned long) * 4);
+        glBindBufferRange(GL_UNIFORM_BUFFER, 0, ctx->ubo, i * renderAlign(), renderAlign());
+
+        glUniformMatrix3fv(ctx->matID, 1, 0, paints[i].mat);
+
         fvPaint &p = paints[i];
-        int op = (int) (p.edgeAA >> 2);
+        int aa = p.aa;
+        int sd = p.sdf;
+        int cv = p.convex;
+        int wr = p.winding;
+        int op = p.paintOp;
 
         // Antialiasing
-        if (ctx->aa != ((p.edgeAA & 1) == 1)) {
-            ctx->aa = ((p.edgeAA & 1) == 1);
+        if (ctx->aa != aa) {
+            ctx->aa = aa;
             if (ctx->aa) {
                 glEnable(GL_MULTISAMPLE);
             } else {
@@ -311,12 +364,23 @@ void renderFlush(void *data,
             }
         }
 
-        if (op == CLIP || op == UNCLIP) {
+        if (op == CLIP) {
             glColorMask(0, 0, 0, 0);
             glUniform1i(ctx->stcID, 1);
-            glStencilFunc(GL_ALWAYS, op == CLIP ? 0x00 : 0x01, 0xFF);
-            render__triangles(pos, p.size - pos);
+            glStencilFunc(GL_ALWAYS, 0x80, 0x80);
+            glStencilMask(0x80);
 
+            if (cv) {
+                glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
+                render__triangles(pos, p.size - pos);
+            } else {
+                glStencilOp(GL_INVERT, GL_INVERT, GL_INVERT);
+                render__triangles(pos, p.size - pos);
+            }
+
+            glStencilFunc(GL_EQUAL, 0x80, 0xFF);
+            glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+            glStencilMask(0xFF);
             glColorMask(1, 1, 1, 1);
             glUniform1i(ctx->stcID, 0);
         } else {
@@ -329,8 +393,8 @@ void renderFlush(void *data,
             if (ctx->image1 != p.image1) {
                 glActiveTexture(GL_TEXTURE1);
                 glBindTexture(GL_TEXTURE_2D, ctx->image1 = p.image1);
-                if (ctx->sdf != ((p.edgeAA & 2) == 2)) {
-                    ctx->sdf = ((p.edgeAA & 2) == 2);
+                if (ctx->sdf != sd) {
+                    ctx->sdf = sd;
                     if (ctx->sdf) {
                         glUniform1i(ctx->sdfID, 1);
                     } else {
@@ -339,21 +403,63 @@ void renderFlush(void *data,
                 }
             }
 
-            if (op == FILL || op == TEXT) {
-                glStencilFunc(GL_EQUAL, 0x01, 0xFF);
+            if (op == TEXT || (op == FILL && cv)) {
+                glStencilFunc(GL_EQUAL, 0x80, 0xFF);
+                glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
                 render__triangles(pos, p.size - pos);
+            } else if (op == FILL) {
+
+                if (wr == EVEN_ODD) {
+                    // Even-Odd
+
+                    glUniform1i(ctx->stcID, 1);
+                    glColorMask(0, 0, 0, 0);
+                    glStencilFunc(GL_NOTEQUAL, 0x00, 0xFF);
+                    glStencilOp(GL_KEEP, GL_KEEP, GL_INVERT);
+                    render__triangles(pos, p.size - pos);
+
+                    glUniform1i(ctx->stcID, 0);
+                    glColorMask(1, 1, 1, 1);
+                    glStencilFunc(GL_EQUAL, 0x7F, 0xFF);
+                    glStencilOp(GL_KEEP, GL_KEEP, GL_INVERT);
+                    render__triangles(pos, p.size - pos);
+                } else {
+                    // Non-Zero
+
+                    glUniform1i(ctx->stcID, 1);
+                    glColorMask(0, 0, 0, 0);
+                    glStencilFuncSeparate(GL_FRONT, GL_NOTEQUAL, 0x00, 0xFF);
+                    glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_KEEP, GL_INCR_WRAP);
+                    glStencilFuncSeparate(GL_BACK, GL_NOTEQUAL, 0x00, 0xFF);
+                    glStencilOpSeparate(GL_BACK, GL_KEEP, GL_KEEP, GL_DECR_WRAP);
+                    glStencilMask(0x7F);
+                    render__triangles(pos, p.size - pos);
+
+                    glUniform1i(ctx->stcID, 0);
+                    glColorMask(1, 1, 1, 1);
+                    glStencilFunc(GL_LESS, 0x80, 0xFF);
+                    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+                    glStencilMask(0xFF);
+                    render__triangles(pos, p.size - pos);
+                }
+
+                glStencilFunc(GL_EQUAL, 0x80, 0xFF);
+                glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
             } else if (op == STROKE) {
                 glUniform1i(ctx->stcID, 1);
                 glColorMask(0, 0, 0, 0);
-                glStencilFunc(GL_EQUAL, 0x01, 0xFF);
-                glStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
+                glStencilFunc(GL_EQUAL, 0x80, 0xFF);
+                glStencilOp(GL_KEEP, GL_KEEP, GL_INVERT);
                 render__triangles(pos, p.size - pos);
 
                 glUniform1i(ctx->stcID, 0);
                 glColorMask(1, 1, 1, 1);
-                glStencilFunc(GL_LESS, 0x01, 0xFF);
-                glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+                glStencilFunc(GL_EQUAL, 0x7F, 0xFF);
+                glStencilOp(GL_KEEP, GL_KEEP, GL_INVERT);
                 render__triangles(pos, p.size - pos);
+
+                glStencilFunc(GL_EQUAL, 0x80, 0xFF);
+                glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
             }
         }
 

@@ -40,10 +40,30 @@ JNIEXPORT void JNICALL Java_flat_backend_SVG_SetAntiAlias(JNIEnv * jEnv, jclass 
     fvAntiAlias((fvContext*) context, enabled == 1 ? 1 : 0);
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_SVG_SetStroke(JNIEnv * jEnv, jclass jClass, jlong context, jfloat width, jint cap, jint join, jfloat mitter) {
+JNIEXPORT void JNICALL Java_flat_backend_SVG_SetStroke(JNIEnv * jEnv, jclass jClass, jlong context, jfloat width, jint cap, jint join, jfloat mitter, jfloatArray dash, jfloat dashPhase) {
     fvCap _cap = cap == 0 ? fvCap::CAP_BUTT : cap == 1 ? fvCap::CAP_SQUARE : fvCap::CAP_ROUND;
     fvJoin _join = join == 0 ? fvJoin::JOIN_BEVEL : join == 1 ? fvJoin::JOIN_MITER : fvJoin::JOIN_ROUND;
-    fvSetStroker((fvContext *) context, {width, _cap, _join, mitter});
+    int dashCount = 0;
+    float* dashArr = 0;
+    if (dash != 0) {
+        float *_dash = (float *) jEnv->GetPrimitiveArrayCritical(dash, 0);
+        dashCount = jEnv->GetArrayLength(dash);
+        dashArr = (float*) malloc(dashCount * sizeof(float));
+        memcpy(dashArr, _dash, dashCount * sizeof(float));
+        jEnv->ReleasePrimitiveArrayCritical(dash, _dash,0);
+
+        float limit = 0;
+        for (int i = 0; i < dashCount; ++i) {
+            limit += dashArr[i];
+        }
+        if (dashCount % 2 == 1) limit *= 2;
+        if (dashPhase > 0) {
+            dashPhase = dashPhase - ((int)(dashPhase / limit) * limit);
+        } else {
+            dashPhase = limit - ((-dashPhase) - ((int)((-dashPhase) / limit) * limit));
+        }
+    }
+    fvSetStroker((fvContext *) context, {width, _cap, _join, mitter, dashPhase, dashCount, dashArr});
 }
 
 JNIEXPORT void JNICALL Java_flat_backend_SVG_SetPaintColor(JNIEnv * jEnv, jclass jClass, jlong context, jint color) {
@@ -60,11 +80,11 @@ JNIEXPORT void JNICALL Java_flat_backend_SVG_SetPaintLinearGradient(JNIEnv * jEn
     jEnv->ReleasePrimitiveArrayCritical(stops, _stops, 0);
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_SVG_SetPaintRadialGradient(JNIEnv * jEnv, jclass jClass, jlong context, jfloatArray affine, jfloat x1, jfloat y1, jfloat rIn, jfloat rOut, jint count, jfloatArray stops, jintArray colors, jint cycleMethod) {
+JNIEXPORT void JNICALL Java_flat_backend_SVG_SetPaintRadialGradient(JNIEnv * jEnv, jclass jClass, jlong context, jfloatArray affine, jfloat x1, jfloat y1, jfloat rIn, jfloat rOut, jfloat fx, jfloat fy, jint count, jfloatArray stops, jintArray colors, jint cycleMethod) {
     float* _stops = (float*) jEnv->GetPrimitiveArrayCritical(stops, 0);
     long* _colors = (long*) jEnv->GetPrimitiveArrayCritical(colors, 0);
     float* _affine = (float*) jEnv->GetPrimitiveArrayCritical(affine, 0);
-    fvSetPaint((fvContext *) context, fvRadialGradientPaint(_affine, x1, y1, rIn, rOut, count, _stops, _colors, cycleMethod));
+    fvSetPaint((fvContext *) context, fvRadialGradientPaint(_affine, x1, y1, rIn, rOut, fx, fy, count, _stops, _colors, cycleMethod));
     jEnv->ReleasePrimitiveArrayCritical(affine, _affine, 0);
     jEnv->ReleasePrimitiveArrayCritical(colors, _colors, 0);
     jEnv->ReleasePrimitiveArrayCritical(stops, _stops, 0);
@@ -86,41 +106,6 @@ JNIEXPORT void JNICALL Java_flat_backend_SVG_SetPaintImage(JNIEnv * jEnv, jclass
     jEnv->ReleasePrimitiveArrayCritical(affineImg, _affineImg, 0);
 }
 
-JNIEXPORT void JNICALL Java_flat_backend_SVG_SetPaintImageLinearGradient(JNIEnv * jEnv, jclass jClass, jlong context, jint imageID, jfloatArray affineImg, jfloatArray affine, jfloat x1, jfloat y1, jfloat x2, jfloat y2, jint count, jfloatArray stops, jintArray colors, jint cycleMethod) {
-    float* _stops = (float*) jEnv->GetPrimitiveArrayCritical(stops, 0);
-    long* _colors = (long*) jEnv->GetPrimitiveArrayCritical(colors, 0);
-    float* _affineImg = (float*) jEnv->GetPrimitiveArrayCritical(affineImg, 0);
-    float* _affine = (float*) jEnv->GetPrimitiveArrayCritical(affine, 0);
-    fvSetPaint((fvContext *) context, fvLinearGradientImagePaint(imageID, _affineImg, _affine, x1, y1, x2, y2, count, _stops, _colors, cycleMethod));
-    jEnv->ReleasePrimitiveArrayCritical(affine, _affine, 0);
-    jEnv->ReleasePrimitiveArrayCritical(affineImg, _affineImg, 0);
-    jEnv->ReleasePrimitiveArrayCritical(colors, _colors, 0);
-    jEnv->ReleasePrimitiveArrayCritical(stops, _stops, 0);
-}
-
-JNIEXPORT void JNICALL Java_flat_backend_SVG_SetPaintImageRadialGradient(JNIEnv * jEnv, jclass jClass, jlong context, jint imageID, jfloatArray affineImg, jfloatArray affine, jfloat x1, jfloat y1, jfloat rIn, jfloat rOut, jint count, jfloatArray stops, jintArray colors, jint cycleMethod) {
-    float* _stops = (float*) jEnv->GetPrimitiveArrayCritical(stops, 0);
-    long* _colors = (long*) jEnv->GetPrimitiveArrayCritical(colors, 0);
-    float* _affineImg = (float*) jEnv->GetPrimitiveArrayCritical(affineImg, 0);
-    float* _affine = (float*) jEnv->GetPrimitiveArrayCritical(affine, 0);
-    fvSetPaint((fvContext *) context, fvRadialGradientImagePaint(imageID, _affineImg, _affine, x1, y1, rIn, rOut, count, _stops, _colors, cycleMethod));
-    jEnv->ReleasePrimitiveArrayCritical(affine, _affine, 0);
-    jEnv->ReleasePrimitiveArrayCritical(affineImg, _affineImg, 0);
-    jEnv->ReleasePrimitiveArrayCritical(colors, _colors, 0);
-    jEnv->ReleasePrimitiveArrayCritical(stops, _stops, 0);
-}
-
-JNIEXPORT void JNICALL Java_flat_backend_SVG_SetPaintImageBoxGradient(JNIEnv * jEnv, jclass jClass, jlong context, jint imageID, jfloatArray affineImg, jfloatArray affine, jfloat x, jfloat y, jfloat width, jfloat height, jfloat corners, jfloat blur, jint count, jfloatArray stops, jintArray colors, jint cycleMethod) {
-    float* _stops = (float*) jEnv->GetPrimitiveArrayCritical(stops, 0);
-    long* _colors = (long*) jEnv->GetPrimitiveArrayCritical(colors, 0);
-    float* _affineImg = (float*) jEnv->GetPrimitiveArrayCritical(affineImg, 0);
-    float* _affine = (float*) jEnv->GetPrimitiveArrayCritical(affine, 0);
-    fvSetPaint((fvContext *) context, fvBoxGradientImagePaint(imageID, _affineImg, _affine, x, y, width, height, corners, blur, count, _stops, _colors, cycleMethod));
-    jEnv->ReleasePrimitiveArrayCritical(affine, _affine, 0);
-    jEnv->ReleasePrimitiveArrayCritical(affineImg, _affineImg, 0);
-    jEnv->ReleasePrimitiveArrayCritical(colors, _colors, 0);
-    jEnv->ReleasePrimitiveArrayCritical(stops, _stops, 0);
-}
 //---------------------------
 //         Transforms
 //---------------------------
@@ -140,12 +125,13 @@ JNIEXPORT void JNICALL Java_flat_backend_SVG_ClearClip(JNIEnv * jEnv, jclass jCl
 //---------------------------
 //           Paths
 //---------------------------
-JNIEXPORT void JNICALL Java_flat_backend_SVG_PathBegin(JNIEnv * jEnv, jclass jClass, jlong context, jint type) {
+JNIEXPORT void JNICALL Java_flat_backend_SVG_PathBegin(JNIEnv * jEnv, jclass jClass, jlong context, jint type, jint rule) {
     fvPathOp op = type == 0 ? fvPathOp::FILL :
-                  type == 1 ? fvPathOp::STROKE :
-                  type == 2 ? fvPathOp::CLIP :
-                  type == 3 ? fvPathOp::UNCLIP : fvPathOp::TEXT;
-    fvPathBegin((fvContext*)context, op);
+                  type == 1 ? fvPathOp::STROKE : fvPathOp::CLIP;
+
+    fvWindingRule wr = rule == 0 ? fvWindingRule::EVEN_ODD : fvWindingRule::NON_ZERO;
+
+    fvPathBegin((fvContext*)context, op, wr);
 }
 JNIEXPORT void JNICALL Java_flat_backend_SVG_MoveTo(JNIEnv * jEnv, jclass jClass, jlong context, jfloat x, jfloat y) {
     fvPathMoveTo((fvContext *) context, x, y);
@@ -192,7 +178,7 @@ JNIEXPORT void JNICALL Java_flat_backend_SVG_FontLoadGlyphs(JNIEnv * jEnv, jclas
     jEnv->ReleaseStringUTFChars(characters, chars);
 }
 JNIEXPORT void JNICALL Java_flat_backend_SVG_FontLoadGlyphsBuffer(JNIEnv * jEnv, jclass jClass, jlong font, jobject characters, jint offset, jint length) {
-    const char * chars = (const char *) (jEnv->GetDirectBufferAddress(characters) + offset);
+    const char * chars = (const char *) (jEnv->GetDirectBufferAddress(characters)) + offset;
     fvFontLoadGlyphs((fvFont*) font, chars, length);
 }
 JNIEXPORT jint JNICALL Java_flat_backend_SVG_FontGetGlyphs(JNIEnv * jEnv, jclass jClass, jlong font, jstring characters, jfloatArray data) {
@@ -204,7 +190,7 @@ JNIEXPORT jint JNICALL Java_flat_backend_SVG_FontGetGlyphs(JNIEnv * jEnv, jclass
     return count;
 }
 JNIEXPORT jint JNICALL Java_flat_backend_SVG_FontGetGlyphsBuffer(JNIEnv * jEnv, jclass jClass, jlong font, jobject characters, jint offset, jint length, jfloatArray data) {
-    const char * chars = (const char *) (jEnv->GetDirectBufferAddress(characters) + offset);
+    const char * chars = (const char *) (jEnv->GetDirectBufferAddress(characters)) + offset;
     float *_data = (float *) jEnv->GetPrimitiveArrayCritical(data, 0);
     jint count = fvFontGetGlyphs((fvFont *) font, chars, length, _data);
     jEnv->ReleasePrimitiveArrayCritical(data, _data, 0);
@@ -212,18 +198,23 @@ JNIEXPORT jint JNICALL Java_flat_backend_SVG_FontGetGlyphsBuffer(JNIEnv * jEnv, 
 }
 JNIEXPORT jfloat JNICALL Java_flat_backend_SVG_FontGetHeight(JNIEnv * jEnv, jclass jClass, jlong font) {
     jfloat height;
-    fvFontGetMetrics((fvFont*) font, 0, 0, &height);
+    fvFontGetMetrics((fvFont*) font, 0, 0, &height, 0);
     return height;
 }
 JNIEXPORT jfloat JNICALL Java_flat_backend_SVG_FontGetAscent(JNIEnv * jEnv, jclass jClass, jlong font) {
     jfloat ascent;
-    fvFontGetMetrics((fvFont*) font, &ascent, 0, 0);
+    fvFontGetMetrics((fvFont*) font, &ascent, 0, 0, 0);
     return ascent;
 }
 JNIEXPORT jfloat JNICALL Java_flat_backend_SVG_FontGetDescent(JNIEnv * jEnv, jclass jClass, jlong font) {
     jfloat descent;
-    fvFontGetMetrics((fvFont*) font, 0, &descent, 0);
+    fvFontGetMetrics((fvFont*) font, 0, &descent, 0, 0);
     return descent;
+}
+JNIEXPORT jfloat JNICALL Java_flat_backend_SVG_FontGetLineGap(JNIEnv * jEnv, jclass jClass, jlong font) {
+    jfloat lineGap;
+    fvFontGetMetrics((fvFont*) font, 0, 0, 0, &lineGap);
+    return lineGap;
 }
 JNIEXPORT jfloat JNICALL Java_flat_backend_SVG_FontGetTextWidth(JNIEnv * jEnv, jclass jClass, jlong font, jstring characters, jfloat scale, jfloat spacing) {
     const char *chars = jEnv->GetStringUTFChars(characters, 0);
@@ -232,7 +223,7 @@ JNIEXPORT jfloat JNICALL Java_flat_backend_SVG_FontGetTextWidth(JNIEnv * jEnv, j
     return width;
 }
 JNIEXPORT jfloat JNICALL Java_flat_backend_SVG_FontGetTextWidthBuffer(JNIEnv * jEnv, jclass jClass, jlong font, jobject characters, jint offset, jint length, jfloat scale, jfloat spacing) {
-    const char * chars = (const char *) (jEnv->GetDirectBufferAddress(characters) + offset);
+    const char * chars = (const char *) (jEnv->GetDirectBufferAddress(characters)) + offset;
     return fvFontGetTextWidth((fvFont *) font, chars, length, scale, spacing);
 }
 JNIEXPORT jint JNICALL Java_flat_backend_SVG_FontGetOffset(JNIEnv * jEnv, jclass jClass, jlong font, jstring characters, jfloat scale, jfloat spacing, jfloat x, jboolean half) {
@@ -242,7 +233,7 @@ JNIEXPORT jint JNICALL Java_flat_backend_SVG_FontGetOffset(JNIEnv * jEnv, jclass
     return offset;
 }
 JNIEXPORT jint JNICALL Java_flat_backend_SVG_FontGetOffsetBuffer(JNIEnv * jEnv, jclass jClass, jlong font, jobject characters, jint offset, jint length, jfloat scale, jfloat spacing, jfloat x, jboolean half) {
-    const char * chars = (const char *) (jEnv->GetDirectBufferAddress(characters) + offset);
+    const char * chars = (const char *) (jEnv->GetDirectBufferAddress(characters)) + offset;
     return fvFontGetOffset((fvFont *) font, chars, length, scale, spacing, x, half);
 }
 JNIEXPORT void JNICALL Java_flat_backend_SVG_FontDestroy(JNIEnv * jEnv, jclass jClass, jlong font) {
@@ -256,6 +247,9 @@ JNIEXPORT void JNICALL Java_flat_backend_SVG_SetFontScale(JNIEnv * jEnv, jclass 
 }
 JNIEXPORT void JNICALL Java_flat_backend_SVG_SetFontSpacing(JNIEnv * jEnv, jclass jClass, jlong context, jfloat spacing) {
     fvSetFontSpacing((fvContext*) context, spacing);
+}
+JNIEXPORT void JNICALL Java_flat_backend_SVG_SetFontBlur(JNIEnv * jEnv, jclass jClass, jlong context, jfloat blur) {
+    fvSetFontBlur((fvContext*) context, blur);
 }
 JNIEXPORT jint JNICALL Java_flat_backend_SVG_DrawText(JNIEnv * jEnv, jclass jClass, jlong context, jfloat x, jfloat y, jstring characters, jfloat maxWidth, jint hAlign, jint vAlign) {
     fvHAlign ha = hAlign == 0 ? fvHAlign::LEFT :
@@ -274,6 +268,6 @@ JNIEXPORT jint JNICALL Java_flat_backend_SVG_DrawTextBuffer(JNIEnv * jEnv, jclas
     fvVAlign va = vAlign == 0 ? fvVAlign::TOP :
                   vAlign == 1 ? fvVAlign::MIDDLE :
                   vAlign == 2 ? fvVAlign::BASELINE : fvVAlign::BOTTOM;
-    const char * chars = (const char *) (jEnv->GetDirectBufferAddress(characters) + offset);
+    const char * chars = (const char *) (jEnv->GetDirectBufferAddress(characters)) + offset;
     return fvText((fvContext*) context, chars, length, x, y, maxWidth, ha, va);
 }

@@ -1,752 +1,764 @@
 package flat.widget.text;
 
+import flat.animations.Animation;
 import flat.animations.StateInfo;
-import flat.events.KeyCode;
-import flat.events.KeyEvent;
-import flat.events.PointerEvent;
-import flat.events.PointerListener;
-import flat.graphics.SmartContext;
+import flat.events.*;
+import flat.graphics.Graphics;
 import flat.graphics.context.Font;
-import flat.graphics.text.Align;
 import flat.math.Vector2;
-import flat.math.Vector3;
-import flat.math.shapes.Rectangle;
-import flat.math.shapes.Shape;
-import flat.uxml.Controller;
-import flat.uxml.UXStyle;
-import flat.uxml.UXStyleAttrs;
-import flat.widget.Widget;
+import flat.math.stroke.BasicStroke;
+import flat.uxml.*;
+import flat.widget.enums.HorizontalAlign;
+import flat.widget.enums.VerticalAlign;
+import flat.widget.layout.Scrollable;
+import flat.widget.text.data.Caret;
+import flat.widget.text.data.TextRender;
+import flat.widget.value.HorizontalScrollBar;
+import flat.widget.value.VerticalScrollBar;
+import flat.window.Activity;
+import flat.window.Application;
 
-import java.lang.reflect.Method;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 
-// TODO - Mult-texture font { +Unicodes }
-public class TextArea extends Widget {
+public class TextArea extends Scrollable {
 
-    private byte[] text;
-    private String string;
-    private int size, capacity;
+    private UXValueListener<String> textChangeListener;
+    private UXListener<TextEvent> textChangeFilter;
+    private UXListener<TextEvent> textInputFilter;
+    private String text;
+    private boolean invalidTextString;
 
-    private int cursorPos, cursorStart, selStart, selEnd; //UTF-8 Positions
-    private float cMove = -1;
+    private Font textFont = Font.getDefault();
+    private float textSize = 16f;
+    private int textColor = 0x000000FF;
+    private int textSelectedColor = 0x00000080;
+    private int caretColor = 0x000000FF;
+    private float caretBlinkDuration = 0.5f;
+    private boolean editable;
 
-    private Font font = Font.DEFAULT;
-    private float textSize;
-    private int textColor;
-    private int selectionColor;
-    private int cursorColor;
+    private VerticalAlign verticalAlign = VerticalAlign.TOP;
+    private HorizontalAlign horizontalAlign = HorizontalAlign.LEFT;
 
-    private long timer = 0;
-
-    private PointerListener actPointerListener;
-
-    private float scrollX, scrollY;
     private boolean invalidTextSize;
-    private float textWidth, textHeight;
+    private float textWidth;
+    private float textHintWidth;
+    private final TextRender textRender = new TextRender();
+    private final Caret startCaret = new Caret();
+    private final Caret endCaret = new Caret();
 
-    private ByteBuffer buffer;
-    private SpanManager spanManager;
-    private ArrayList<Style> styles;
+    private final CaretBlink caretBlink = new CaretBlink();
+    private boolean showCaret;
+
+    private int keyCopy = KeyCode.KEY_C;
+    private int keyPaste = KeyCode.KEY_V;
+    private int keyCut = KeyCode.KEY_X;
+    private int keySelectAll = KeyCode.KEY_A;
+    private int keyClearSelection = KeyCode.KEY_ESCAPE;
+    private int keyBackspace = KeyCode.KEY_BACKSPACE;
+    private int keyDelete = KeyCode.KEY_DELETE;
+    private int keyMenu  = KeyCode.KEY_MENU;
+
+    private int maxCharacters = 0;
+
+    private long lastPressedTime;
+    private int clickCont;
 
     public TextArea() {
-        size = 0;
-        capacity = 64;
-        text = new byte[capacity];
-        buffer = ByteBuffer.allocateDirect(capacity);
-        styles = new ArrayList<>();
-        styles.add(new Style(Font.CURSIVE, 24, 0xFF0000FF));
-        styles.add(new Style(Font.CURSIVE, 32, 0x000000FF));
-        spanManager = new SpanManager();
+        textRender.setFont(textFont);
+        textRender.setTextSize(textSize);
     }
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        super.applyAttributes(style, controller);
+    public void applyChildren(UXChildren children) {
+        super.applyChildren(children);
 
-        setText(style.asString("text", getText()));
-
-        Method handle = style.asListener("on-act-pointer", PointerEvent.class, controller);
-        if (handle != null) {
-            setActPointerListener(new PointerListener.AutoPointerListener(controller, handle));
+        for (var child : children) {
+            if (child.getAttributeBool("horizontal-bar", false) &&
+                    child.getWidget() instanceof HorizontalScrollBar bar) {
+                setHorizontalBar(bar);
+            } else if (child.getAttributeBool("vertical-bar", false) &&
+                    child.getWidget() instanceof VerticalScrollBar bar) {
+                setVerticalBar(bar);
+            }
         }
+    }
+
+    @Override
+    public void applyAttributes(Controller controller) {
+        super.applyAttributes(controller);
+        UXAttrs attrs = getAttrs();
+
+        setMaxCharacters((int) attrs.getAttributeNumber("max-characters", getMaxCharacters()));
+        setText(attrs.getAttributeString("text", getText()));
+        setEditable(attrs.getAttributeBool("editable", isEditable()));
+        setTextChangeListener(attrs.getAttributeValueListener("on-text-change", String.class, controller));
+        setTextChangeFilter(attrs.getAttributeListener("on-text-change-filter", TextEvent.class, controller));
+        setTextInputFilter(attrs.getAttributeListener("on-text-input-filter", TextEvent.class, controller));
     }
 
     @Override
     public void applyStyle() {
         super.applyStyle();
-        UXStyle style = getStyle();
-        if (style == null) return;
 
+        UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
 
-        if (info.get(StateInfo.FOCUSED) != 0) {
-            invalidate(false);
-        }
+        setTextFont(attrs.getFont("text-font", info, getTextFont()));
+        setTextSize(attrs.getSize("text-size", info, getTextSize()));
+        setTextColor(attrs.getColor("text-color", info, getTextColor()));
+        setTextSelectedColor(attrs.getColor("text-selected-color", info, getTextSelectedColor()));
+        setCaretColor(attrs.getColor("caret-color", info, getCaretColor()));
+        setCaretBlinkDuration(attrs.getNumber("caret-blink-duration", info, getCaretBlinkDuration()));
 
-        setFont(style.asFont("font", info, getFont()));
-        setTextSize(style.asSize("text-size", info, getTextSize()));
-        setTextColor(style.asColor("text-color", info, getTextColor()));
-        setSelectionColor(style.asColor("selection-color", info, getSelectionColor()));
-        setCursorColor(style.asColor("cursor-color", info, getCursorColor()));
-    }
-
-    @Override
-    public void onDraw(SmartContext context) {
-        backgroundDraw(getBackgroundColor(), getBorderColor(), getRippleColor(), context);
-
-        float x = getTextInX();
-        float y = getTextInY();
-        float w = getTextInWidth();
-        float h = getTextInHeight();
-        context.setTransform2D(getTransform());
-        context.setTextVerticalAlign(Align.Vertical.TOP);
-        context.setTextHorizontalAlign(Align.Horizontal.LEFT);
-
-        Shape shape = backgroundClip(context);
-        context.intersectClip(new Rectangle(x, y, w, h));
-
-        float xpos = x - scrollX;
-        float ypos = y - scrollY;
-        for (int i = 0; i < spanManager.lines.size(); i++) {
-            Line line = spanManager.lines.get(i);
-            float lineHeight = line.height;
-
-            if (ypos + lineHeight < 0) {
-                ypos += lineHeight;
-                continue;
-            }
-            if (ypos > h) {
-                break;
-            }
-
-            Span span = line.sSpan;
-            do {
-                Style style = span.style;
-
-                toBuffer(span.start, span.len);
-                float tw = style.font.getWidth(buffer, 0, span.len, style.size, 1);
-                float th = style.font.getHeight(style.size);
-
-                // Background (HighLightColor)
-                //context.setColor(0x000000FF);
-                //context.drawRect(xpos, ypos + (lineHeight - th), tw, th, false);
-
-                if (selStart != selEnd) {
-                    context.setColor(selectionColor);
-                    if (selStart <= span.start) {
-                        if (selEnd > span.end) {
-                            context.drawRect(xpos, ypos, span.n ? w - xpos : tw, lineHeight, true);
-                        } else {
-                            float sw = style.font.getWidth(buffer, 0, selEnd - span.start, style.size, 1);
-                            context.drawRect(xpos, ypos, sw, lineHeight, true);
-                        }
-                    } else if (selStart < span.end) {
-                        float ssw = style.font.getWidth(buffer, 0, selStart - span.start, style.size, 1);
-
-                        if (selEnd > span.end) {
-                            if (span.n) {
-                                context.drawRect(xpos + ssw, ypos, w - xpos - ssw, lineHeight, true);
-                            } else {
-                                context.drawRect(xpos + ssw, ypos, tw - ssw, lineHeight, true);
-                            }
-                        } else {
-                            float sew = style.font.getWidth(buffer, 0, selEnd - span.start, style.size, 1);
-                            context.drawRect(xpos + ssw, ypos, sew - ssw, lineHeight, true);
-                        }
-                    }
-                }
-
-                context.setColor(style.color);
-                context.setTextSize(style.size);
-                context.setTextFont(style.font);
-                context.drawText(xpos, ypos + (lineHeight - th), buffer, 0, span.len);
-
-
-                if ((isFocused() || isPressed()) && cursorPos >= span.start &&
-                        (cursorPos < span.end ||
-                                (i == spanManager.lines.size() - 1 && span == line.eSpan && cursorPos <= span.end))) {
-
-                    float off = style.font.getWidth(buffer, 0, cursorPos - span.start, style.size, 1);
-                    float cursorX = (float) Math.floor(xpos + off);
-                    float cursorW = Math.max(2, Math.round(lineHeight / 16f));
-                    float cursorW2 = Math.abs(cursorX - (x + w)) < cursorW ? cursorW : 0;
-
-                    context.setColor(cursorColor);
-                    context.drawRect(cursorX - cursorW2, ypos + (lineHeight - th), cursorW, th, true);
-                }
-
-                xpos += tw;
-                span = span.next;
-            } while (span != null && span != line.eSpan.next);
-            xpos = x - scrollX;
-            ypos += lineHeight;
-        }
-
-        context.setTransform2D(null);
-        context.setClip(shape);
-    }
-
-    @Override
-    public void firePointer(PointerEvent pointerEvent) {
-        super.firePointer(pointerEvent);
-
-        if (!pointerEvent.isConsumed()) {
-            if (pointerEvent.getType() == PointerEvent.PRESSED) {
-                int pos = getPositionIndex(pointerEvent.getX(), pointerEvent.getY(), true);
-                timer = System.currentTimeMillis();
-                setCursorPos(pos);
-                cursorStart = cursorPos;
-                invalidate(true);
-            }
-            if (pointerEvent.getType() == PointerEvent.DRAGGED) {
-                int pos = getPositionIndex(pointerEvent.getX(), pointerEvent.getY(), true);
-                if ((System.currentTimeMillis() - timer) > 100) {
-                    timer = System.currentTimeMillis();
-                }
-
-                setCursorPos(pos);
-                if (cursorPos < cursorStart) {
-                    selStart = cursorPos;
-                    selEnd = cursorStart;
-                } else {
-                    selStart = cursorStart;
-                    selEnd = cursorPos;
-                }
-                invalidate(true);
-            }
-        }
-    }
-
-    @Override
-    public void fireKey(KeyEvent keyEvent) {
-        super.fireKey(keyEvent);
-
-        if (!keyEvent.isConsumed()) {
-            if (keyEvent.getType() == KeyEvent.PRESSED || keyEvent.getType() == KeyEvent.REPEATED) {
-                if (keyEvent.getKeycode() == KeyCode.KEY_LEFT) {
-                    int prev = findPrev(cursorPos);
-
-                    setCursorPos(prev);
-                }
-                if (keyEvent.getKeycode() == KeyCode.KEY_RIGHT) {
-                    int next = findNext(cursorPos);
-
-                    setCursorPos(next);
-                }
-                if (keyEvent.getKeycode() == KeyCode.KEY_UP) {
-                    Line lineUp = spanManager.findUp(cursorPos);
-                    if (lineUp != null) {
-                        updateCursorMove();
-
-                        int off = 0;
-                        float xpos = 0;
-                        Span span = lineUp.sSpan;
-                        do {
-                            if (xpos <= cMove && (span.width + xpos > cMove || span.n || span.next == null)) {
-                                toBuffer(span.start, span.len);
-                                off = span.style.font.getOffset(buffer, 0, span.len, span.style.size, 1, cMove - xpos, true);
-                                if (off == span.len && span.n) {
-                                    off --;
-                                }
-                                off += span.start;
-                                break;
-                            } else {
-                                xpos += span.width;
-                            }
-                            span = span.next;
-                        } while (span != null && span != lineUp.eSpan.next);
-
-                        float pw = cMove;
-                        setCursorPos(off);
-                        cMove = pw;
-                    }
-                }
-                if (keyEvent.getKeycode() == KeyCode.KEY_DOWN) {
-                    Line lineDown = spanManager.findDown(cursorPos);
-                    if (lineDown != null) {
-                        updateCursorMove();
-
-                        int off = 0;
-                        float xpos = 0;
-                        Span span = lineDown.sSpan;
-                        do {
-                            if (xpos <= cMove && (span.width + xpos > cMove || span.n || span.next == null)) {
-                                toBuffer(span.start, span.len);
-                                off = span.style.font.getOffset(buffer, 0, span.len, span.style.size, 1, cMove - xpos, true);
-                                if (off == span.len && span.n) {
-                                    off --;
-                                }
-                                off += span.start;
-                                break;
-                            } else {
-                                xpos += span.width;
-                            }
-                            span = span.next;
-                        } while (span != null && span != lineDown.eSpan.next);
-
-                        float pw = cMove;
-                        setCursorPos(off);
-                        cMove = pw;
-                    }
-                }
-
-                if (keyEvent.getKeycode() == KeyCode.KEY_BACKSPACE) {
-                    if (selStart != selEnd) {
-                        replace(selStart, selEnd - selStart, "");
-                        setCursorPos(cursorPos);
-                    } else {
-                        int back = findPrev(selStart);
-                        replace(back, selStart - back, "");
-                        setCursorPos(cursorPos);
-
-                        // Enhaced Scroll - Fixer
-                        cMove = -1;
-                        updateCursorMove();
-                        if (cMove <= scrollX) {
-                            scrollX = cMove - Math.max(1, getTextInWidth() * 0.25f);
-                        }
-                    }
-                }
-                if (keyEvent.getKeycode() == KeyCode.KEY_DELETE) {
-                    if (selStart != selEnd) {
-                        replace(selStart, selEnd - selStart, "");
-                        setCursorPos(cursorPos);
-                    } else {
-                        int next = findNext(selStart);
-                        replace(selStart, next - selStart, "");
-                        setCursorPos(cursorPos);
-                    }
-                }
-                if (keyEvent.getKeycode() == KeyCode.KEY_ENTER) {
-                    replace(selStart, selEnd - selStart, "\n");
-                    setCursorPos(cursorPos);
-                }
-                if (keyEvent.getKeycode() == KeyCode.KEY_HOME) {
-                    Line line = spanManager.find(cursorPos);
-                    setCursorPos(line.sSpan.start);
-                }
-                if (keyEvent.getKeycode() == KeyCode.KEY_END) {
-                    Line line = spanManager.find(cursorPos);
-                    setCursorPos(line.eSpan.n ? line.eSpan.end - 1 : line.eSpan.end);
-                }
-            }
-            if (keyEvent.getType() == KeyEvent.TYPED) {
-                if (keyEvent.getChar() != null) {
-                    replace(selStart, selEnd - selStart, keyEvent.getChar());
-                    setCursorPos(cursorPos);
-                }
-            }
-        }
+        setVerticalAlign(attrs.getConstant("vertical-align", info, getVerticalAlign()));
+        setHorizontalAlign(attrs.getConstant("horizontal-align", info, getHorizontalAlign()));
     }
 
     @Override
     public void onMeasure() {
-        float mWidth = getPrefWidth();
-        float mHeight = getPrefHeight();
+        float extraWidth = getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
+        float extraHeight = getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
 
-        updatePrefSize();
+        if (getHorizontalBar() != null) {
+            getHorizontalBar().onMeasure();
+        }
+        if (getVerticalBar() != null) {
+            getVerticalBar().onMeasure();
+        }
 
-        if (mWidth == WRAP_CONTENT) {
-            mWidth = textWidth;
+        float mWidth;
+        float mHeight;
+        boolean wrapWidth = getLayoutPrefWidth() == WRAP_CONTENT;
+        boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
+
+        if (wrapWidth) {
+            mWidth = Math.max(getTextWidth() + extraWidth, getLayoutMinWidth());
+        } else {
+            mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
         }
-        if (mHeight == WRAP_CONTENT) {
-            mHeight = textHeight;
+        if (wrapHeight) {
+            mHeight = Math.max(getTextHeight() + extraHeight, getLayoutMinHeight());
+        } else {
+            mHeight = Math.max(getLayoutPrefHeight(), getLayoutMinHeight());
         }
-        mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
-        mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
+
         setMeasure(mWidth, mHeight);
+    }
+
+    @Override
+    public Vector2 onLayoutTotalDimension(float width, float height) {
+        return new Vector2(getTextWidth(), getTextHeight());
+    }
+
+    @Override
+    public void setLayoutScrollOffset(float xx, float yy) {
+
     }
 
     @Override
     public void onLayout(float width, float height) {
         super.onLayout(width, height);
-        updateScroll();
     }
 
-    float getTextInY() {
-        return getInY();
+    protected Caret getStartCaret() {
+        return startCaret;
     }
 
-    float getTextInX() {
+    protected Caret getEndCaret() {
+        return endCaret;
+    }
+
+    protected Caret getFirstCaret() {
+        return startCaret.getOffset() <= endCaret.getOffset() ? startCaret : endCaret;
+    }
+
+    protected Caret getSecondCaret() {
+        return startCaret.getOffset() <= endCaret.getOffset() ? endCaret : startCaret;
+    }
+
+    @Override
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
+        drawRipple(graphics);
+
+        float x = getInX();
+        float y = getInY();
+        float width = getInWidth();
+        float height = getInHeight();
+
+        if (isHorizontalDimensionScroll() || isVerticalDimensionScroll()) {
+            graphics.pushClip(getBackgroundShape());
+        }
+
+        onDrawText(graphics, x, y, width, height);
+
+        if (isHorizontalDimensionScroll() || isVerticalDimensionScroll()) {
+            graphics.popClip();
+        }
+
+        if (getHorizontalBar() != null && isHorizontalVisible()) {
+            getHorizontalBar().onDraw(graphics);
+        }
+
+        if (getVerticalBar() != null && isVerticalVisible()) {
+            getVerticalBar().onDraw(graphics);
+        }
+    }
+
+    protected void onDrawText(Graphics context, float x, float y, float width, float height) {
+        if (getOutWidth() <= 0 || getOutHeight() <= 0 || getTextFont() == null || getTextSize() <= 0) {
+            return;
+        }
+
+        context.setTransform2D(getTransform());
+        x -= getViewOffsetX();
+        y -= getViewOffsetY();
+        float xpos = getTextWidth() < width ? xOff(x, x + width, getTextWidth()) : x;
+        float ypos = getTextHeight() < height ? yOff(y, y + height, getTextHeight()) : y;
+
+        context.setTransform2D(getTransform());
+        context.setColor(getTextColor());
+        context.setTextFont(getTextFont());
+        context.setTextSize(getTextSize());
+        context.setTextBlur(0);
+
+        Caret first = getFirstCaret();
+        Caret second = getSecondCaret();
+
+        float lineH = getLineHeight();
+        float firstX = textRender.getCaretHorizontalOffset(first, horizontalAlign) + xpos;
+        float secondX = textRender.getCaretHorizontalOffset(second, horizontalAlign) + xpos;
+
+        // Text Selection
+        context.setColor(getTextSelectedColor());
+        if (first.getLine() == second.getLine()) {
+            context.drawRect(firstX, ypos + first.getLine() * lineH, secondX - firstX, lineH, true);
+        } else {
+            context.drawRect(firstX, ypos + first.getLine() * lineH, getTotalDimensionX() - (firstX - x), lineH, true);
+            context.drawRect(x, y + second.getLine() * lineH, secondX - x, lineH, true);
+            if (first.getLine() + 1 < second.getLine()) {
+                context.drawRect(
+                        x, y + (first.getLine() + 1) * lineH
+                        , getTotalDimensionX(), (second.getLine() - first.getLine() - 1) * lineH, true);
+            }
+        }
+
+        // Text
+        if (!isTextEmpty()) {
+            context.setColor(getTextColor());
+            int start = Math.max(0, (int) Math.floor((getViewOffsetY() - getInY()) / lineH) - 1);
+            int end = start + Math.max(0, (int) Math.ceil(getHeight() / lineH) + 2);
+            textRender.drawText(context, xpos, ypos, width * 9999, height * 9999, horizontalAlign, start, end);
+        }
+
+        // Caret
+        if (showCaret && isEditable()) {
+            float caretX = textRender.getCaretHorizontalOffset(endCaret, horizontalAlign) + xpos;
+            context.setColor(getCaretColor());
+            context.setStroker(new BasicStroke(2));
+            context.drawLine(
+                    caretX, ypos + endCaret.getLine() * lineH,
+                    caretX, ypos + (endCaret.getLine() + 1) * lineH);
+        }
+    }
+
+    @Override
+    public void scroll(ScrollEvent event) {
+        super.scroll(event);
+        if (!event.isConsumed() && isVerticalDimensionScroll()) {
+            slideVertical(- event.getDeltaY() * 10);
+            event.consume();
+        }
+    }
+
+    @Override
+    public void pointer(PointerEvent event) {
+        super.pointer(event);
+        Vector2 point = screenToLocal(event.getX(), event.getY());
+        point.x += getViewOffsetX();
+        point.y += getViewOffsetY();
+        textPointer(event, point);
+    }
+
+    protected float getVisibleTextX() {
         return getInX();
     }
 
-    float getTextInWidth() {
-        return getInWidth();
+    protected float getVisibleTextY() {
+        return getInY();
     }
 
-    float getTextInHeight() {
+    protected float getVisibleTextHeight() {
         return getInHeight();
     }
 
-    void updatePrefSize() {
-        if (invalidTextSize) {
-            invalidTextSize = false;
-            textWidth = 0;
-            textHeight = 0;
-
-            for (int i = 0; i < spanManager.lines.size(); i++) {
-                Line line = spanManager.lines.get(i);
-                textHeight += line.height;
-                textWidth = Math.max(textWidth, line.width);
-            }
-        }
+    protected float getVisibleTextWidth() {
+        return getInWidth();
     }
 
-    void updateScroll() {
-        float px = scrollX;
-        float py = scrollY;
-
-        float w = getTextInWidth();
-        float h = getTextInHeight();
-        if (textWidth - scrollX < w) {
-            scrollX = textWidth - w;
+    protected void textPointer(PointerEvent event, Vector2 point) {
+        if (event.isConsumed() || event.getSource() != this || event.getPointerID() != 1 || getTextFont() == null) {
+            return;
         }
-        if (textHeight - scrollY < h) {
-            scrollY = textHeight - h;
-        }
-        scrollX = Math.max(0, scrollX);
-        scrollY = Math.max(0, scrollY);
 
-        if (px != scrollX || py != scrollY) {
-            invalidate(true);
-        }
-    }
+        float x = getVisibleTextX();
+        float y = getVisibleTextY();
+        float width = getVisibleTextWidth();
+        float height = getVisibleTextHeight();
+        float xpos = isHorizontalDimensionScroll() ? x : xOff(x, x + width, getTextWidth());
+        float ypos = isVerticalDimensionScroll() ? y : yOff(y, y + height, getTextHeight());
 
-    void updateCursorMove() {
-        if (cMove == -1) {
-            Line line = spanManager.find(cursorPos);
-            cMove = 0;
-            Span span = line.sSpan;
-            do {
-                if (span.start <= cursorPos && (span.end > cursorPos || span.n || span.next == null)) {
-                    toBuffer(span.start, span.len);
-                    cMove += span.style.font.getWidth(buffer, 0, cursorPos - span.start, span.style.size, 1);
-                    break;
-                } else {
-                    cMove += span.width;
+        if (event.getType() == PointerEvent.PRESSED) {
+            long now = System.currentTimeMillis();
+            if (now - lastPressedTime < 200) {
+                clickCont++;
+                if (clickCont == 1) {
+                    textRender.getCaret(point.x, point.y, xpos, ypos, horizontalAlign, startCaret);
+                    endCaret.set(startCaret);
+                    textRender.moveCaretBackwardsLine(startCaret);
+                    textRender.moveCaretFowardsLine(endCaret);
+                } else if (clickCont > 1) {
+                    textRender.moveCaretBegin(startCaret);
+                    textRender.moveCaretEnd(endCaret);
                 }
-                span = span.next;
-            } while (span != null && span != line.eSpan.next);
-        }
-    }
-
-    void ensureCapacity(int size) {
-        if (capacity < size) {
-            while (capacity < size) {
-                capacity *= 2;
+            } else {
+                clickCont = 0;
+                textRender.getCaret(point.x, point.y, xpos, ypos, horizontalAlign, startCaret);
+                endCaret.set(startCaret);
             }
-            byte[] text = new byte[capacity];
-            System.arraycopy(this.text, 0, text, 0, this.size);
-            this.text = text;
+            setCaretVisible();
+            lastPressedTime = now;
+        } else if (event.getType() == PointerEvent.DRAGGED) {
+            textRender.getCaret(point.x, point.y, xpos, ypos, horizontalAlign, endCaret);
+            setCaretVisible();
+            slideToCaret(Application.getLoopTime() * 10f);
         }
+        invalidate(false);
     }
 
-    void toBuffer(int pos, int len) {
-        if (buffer.capacity() < len) {
-            int cap = buffer.capacity();
-            while (cap < len) cap *= 2;
-            buffer = ByteBuffer.allocateDirect(cap);
+    @Override
+    public void key(KeyEvent event) {
+        super.key(event);
+        if (event.isConsumed()) {
+            return;
+        }
+        event.consume();
+
+        var first = getFirstCaret();
+        var second = getSecondCaret();
+
+        if (event.getType() == KeyEvent.TYPED) {
+            editText(first, second, new String(Character.toChars(event.getKeycode())));
         }
 
-        buffer.position(0);
-        buffer.put(text, pos, len);
-    }
+        if (event.getKeycode() != KeyCode.KEY_UNKNOWN &&
+                (event.getType() == KeyEvent.PRESSED || event.getType() == KeyEvent.REPEATED)) {
 
-    int findNext(int pos) {
-        do {
-            if (pos >= size - 1) return size;
-            pos++;
-        } while ((text[pos] & 0xC0) == 0x80);
-        return pos;
-    }
-
-    int findPrev(int pos) {
-        do {
-            if (pos <= 0) return 0;
-            pos--;
-        } while ((text[pos] & 0xC0) == 0x80);
-        return pos;
-    }
-
-    public void replace(int start, int length, String str) {
-        if (start < 0) start = 0;
-        if (start > size) start = size;
-        if (start > 0 && start < size) {
-            start = findPrev(findNext(start));
-        }
-        length = Math.min(size - start, Math.max(0, length));
-        if (start + length > 0 && start + length < size) {
-            length = findPrev(findNext(start + length)) - start;
-        }
-
-
-        byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
-        int offset = bytes.length - length;
-
-        if (offset == 0) {
-            boolean equal = true;
-            for (int i = 0; i < bytes.length; i++) {
-                if (this.text[i + start] != bytes[i]) {
-                    equal = false;
-                    break;
-                }
+            if (event.getKeycode() == KeyCode.KEY_ENTER) {
+                editText(first, second, "\n");
+            } else if (event.getKeycode() == KeyCode.KEY_TAB) {
+                editText(first, second, "\t");
+            } else if (event.getKeycode() == keyBackspace) {
+                actionDeleteBackwards(first, second);
+            } else if (event.getKeycode() == keyDelete) {
+                actionDeleteFowards(first, second);
+            } else if (event.isCtrlDown() && event.getKeycode() == keyPaste) {
+                actionPaste(first, second);
+            } else if (event.isCtrlDown() && event.getKeycode() == keyCopy) {
+                actionCopy(first, second);
+            } else if (event.isCtrlDown() && event.getKeycode() == keyCut) {
+                actionCut(first, second);
+            } else if (event.isCtrlDown() && event.getKeycode() == keySelectAll) {
+                actionSelectAll();
+            } else if (event.getKeycode() == keyClearSelection) {
+                actionClearSelection();
+            } else if (event.getKeycode() == keyMenu) {
+                actionShowContextMenu();
+            } else if (event.getKeycode() == KeyCode.KEY_LEFT) {
+                textRender.moveCaretBackwards(endCaret);
+                if (!event.isShiftDown()) startCaret.set(endCaret);
+            } else if (event.getKeycode() == KeyCode.KEY_RIGHT) {
+                textRender.moveCaretFoward(endCaret);
+                if (!event.isShiftDown()) startCaret.set(endCaret);
+            } else if (event.getKeycode() == KeyCode.KEY_DOWN) {
+                textRender.moveCaretVertical(endCaret, horizontalAlign, 1);
+                if (!event.isShiftDown()) startCaret.set(endCaret);
+            } else if (event.getKeycode() == KeyCode.KEY_UP) {
+                textRender.moveCaretVertical(endCaret, horizontalAlign, -1);
+                if (!event.isShiftDown()) startCaret.set(endCaret);
+            } else if (event.getKeycode() == KeyCode.KEY_PAGE_DOWN) {
+                textRender.moveCaretVertical(endCaret, horizontalAlign, (int) (getViewDimensionY() / getLineHeight()));
+                if (!event.isShiftDown()) startCaret.set(endCaret);
+            } else if (event.getKeycode() == KeyCode.KEY_PAGE_UP) {
+                textRender.moveCaretVertical(endCaret, horizontalAlign, (int) -(getViewDimensionY() / getLineHeight()));
+                if (!event.isShiftDown()) startCaret.set(endCaret);
+            } else if (event.getKeycode() == KeyCode.KEY_HOME) {
+                textRender.moveCaretBackwardsLine(endCaret);
+                if (!event.isShiftDown()) startCaret.set(endCaret);
+            } else if (event.getKeycode() == KeyCode.KEY_END) {
+                textRender.moveCaretFowardsLine(endCaret);
+                if (!event.isShiftDown()) startCaret.set(endCaret);
+            } else {
+                return;
             }
-            if (equal) return;
-        }
-
-        ensureCapacity (size + offset);
-        System.arraycopy(this.text, start + length, this.text, start + length + offset, size - (start + length));
-        System.arraycopy(bytes, 0, this.text, start, bytes.length);
-        size += offset;
-
-        Span newBegin = null;
-        Span newEnd = null;
-        int sStart = start;
-        for (int cur = start; cur < start + bytes.length;) {
-            int next = findNext(cur);
-            if (text[cur] == '\n') {
-                Span span = new Span(sStart, next - sStart, true);
-                span.style = styles.get(0);
-                if (newBegin == null) newBegin = span;
-                if (newEnd != null) newEnd.next = span;
-                newEnd = span;
-                sStart = next;
-            }
-
-            if (next >= start + bytes.length) {
-                Span span = new Span(sStart, (start + bytes.length) - sStart, false);
-                span.style = text[cur] == 'a' ? styles.get(1) : styles.get(0);
-                if (newBegin == null) newBegin = span;
-                if (newEnd != null) newEnd.next = span;
-                newEnd = span;
-            }
-            cur = next;
-        }
-
-        spanManager.replace(start, length, bytes.length, newBegin, newEnd);
-
-        // Offset
-        if (cursorPos >= start && cursorPos < start + length) {
-            cursorPos = start + bytes.length;
-        } else if (cursorPos >= start + length) {
-            cursorPos += offset;
-        }
-
-        if (selStart >= start && selStart < start + length) {
-            selStart = start + bytes.length;
-        } else if (selStart >= start + length) {
-            selStart += offset;
-        }
-        if (selEnd >= start && selEnd < start + length) {
-            selEnd = start + bytes.length;
-        } else if (selEnd >= start + length) {
-            selEnd += offset;
-        }
-
-        Vector3 reversePosition = getReversePosition(cursorPos);
-        scrollTo(reversePosition.x, reversePosition.y, reversePosition.z);
-
-        cMove = -1;
-        string = null;
-        invalidTextSize = true;
-        invalidate(true);
-    }
-
-    public void setStyle(int start, int length, Style style) {
-        if (start < 0) start = 0;
-        if (start > size) start = size;
-        if (start > 0 && start < size) {
-            start = findPrev(findNext(start));
-        }
-        length = Math.min(size - start, Math.max(0, length));
-        if (start + length > 0 && start + length < size) {
-            length = findPrev(findNext(start + length)) - start;
-        }
-
-        Span newBegin = null;
-        Span newEnd = null;
-        int sStart = start;
-        for (int cur = start; cur < start + length;) {
-            int next = findNext(cur);
-            if (text[cur] == '\n') {
-                Span span = new Span(sStart, next - sStart, true, style);
-                if (newBegin == null) newBegin = span;
-                if (newEnd != null) newEnd.next = span;
-                newEnd = span;
-                sStart = next;
-            }
-
-            if (next >= start + length) {
-                Span span = new Span(sStart, (start + length) - sStart, false, style);
-                if (newBegin == null) newBegin = span;
-                if (newEnd != null) newEnd.next = span;
-                newEnd = span;
-            }
-            cur = next;
-        }
-
-        spanManager.replace(start, length, length, newBegin, newEnd);
-
-        cMove = -1;
-        invalidTextSize = true;
-        invalidate(true);
-    }
-
-    public int getCursorPos() {
-        return cursorPos;
-    }
-
-    public void scrollTo(float x, float y) {
-        scrollTo(x, y, y);
-    }
-
-    public void scrollTo(float x, float y1, float y2) {
-        if (scrollX + getTextInWidth() < x) {
-            scrollX = x - getTextInWidth();
-        } else if (scrollX > x) {
-            scrollX = x;
-        }
-        if (scrollY + getTextInHeight() < y2) {
-            scrollY = y2 - getTextInHeight();
-        } else if (scrollY > y1) {
-            scrollY = y1;
+            setCaretVisible();
+            slideToCaret(1);
         }
     }
 
-    public void setCursorPos(int cursorPos) {
-        if (cursorPos < 0) cursorPos = 0;
-        if (cursorPos > size) cursorPos = size;
-        if (cursorPos > 0 && cursorPos < size) {
-            cursorPos = findPrev(findNext(cursorPos));
-        }
-
-        if (this.cursorPos != cursorPos || selStart != cursorPos || selEnd != cursorPos) {
-            this.cursorPos = cursorPos;
-
-            Vector3 reversePosition = getReversePosition(cursorPos);
-            scrollTo(reversePosition.x, reversePosition.y, reversePosition.z);
-
-            selStart = cursorPos;
-            selEnd = cursorPos;
-
-            cMove = -1;
-            invalidate(false);
+    @Override
+    public void focus(FocusEvent event) {
+        super.focus(event);
+        if (!isFocused()) {
+            actionClearSelection();
+            setCaretHidden();
         }
     }
 
-    public int getPositionIndex(float x, float y) {
-        return getPositionIndex(x, y, false);
+    protected void actionShowContextMenu() {
+        float x = getInX();
+        float y = getInY();
+        float width = getInWidth();
+        float height = getInHeight();
+        float px = x - getViewOffsetX();
+        float py = y - getViewOffsetY();
+        float xpos = getTextWidth() < width ? xOff(x, x + width, getTextWidth()) : px;
+        float ypos = getTextHeight() < height ? yOff(y, y + height, getTextHeight()) : py;
+
+        float caretX = textRender.getCaretHorizontalOffset(endCaret, horizontalAlign) + xpos;
+        float caretY = endCaret.getLine() * getLineHeight() + ypos;
+        var pos = localToScreen(Math.min(x + width, Math.max(x, caretX)), Math.min(y + height, Math.max(y, caretY)));
+        showContextMenu(pos.x, pos.y);
     }
 
-    int getPositionIndex(float px, float py, boolean sCursorLine) {
-        Vector2 point = new Vector2(px, py);
-        screenToLocal(point);
-        px = point.x - getTextInX();
-        py = point.y - getTextInY();
-
-        float w = getTextInWidth();
-        float h = getTextInHeight();
-
-        if (sCursorLine) {
-            if ((System.currentTimeMillis() - timer) <= 100) {
-                if (px < 0) px = 0;
-                if (px > w) px = w;
-                if (py < 0) py = 0;
-                if (py > h) py = h - 1;
-            }
-        }
-
-        px += scrollX;
-        py += scrollY;
-        float ypos = 0;
-
-        int off = size;
-
-        boolean first = true;
-        boolean last;
-        loop : for (int j = 0; j < spanManager.lines.size(); j++) {
-            Line line = spanManager.lines.get(j);
-
-            last = (j == spanManager.lines.size() - 1);
-
-            if ((first && py < ypos)
-                    || (ypos <= py && ypos + line.height > py)
-                    || (last && py > ypos)) {
-
-                float xpos = 0;
-                Span span = line.sSpan;
-                do {
-                    if ((xpos <= px || span == line.sSpan) && (xpos + span.width > px || span == line.eSpan)) {
-                        toBuffer(span.start, span.len);
-                        off = span.style.font.getOffset(buffer, 0, span.len, span.style.size, 1, px - xpos, true) + span.start;
-                        if (span.n && off == span.end) off--;
-                        break loop;
-                    }
-                    xpos += span.width;
-                    span = span.next;
-                } while (span != line.eSpan.next);
-            }
-
-            first = false;
-
-            ypos += line.height;
-        }
-        return off;
+    protected void actionClearSelection() {
+        startCaret.set(endCaret);
+        invalidate(false);
     }
 
-    Vector3 getReversePosition(int cursor) {
-        float x = 0;
-        float y = 0;
-        float y2 = 0;
-        loop : for (int i = 0, len = spanManager.lines.size(); i < len; i++) {
-            Line line = spanManager.lines.get(i);
-            if (line.sSpan.start <= cursor && (line.eSpan.end > cursor || line.eSpan.next == null)) {
-                Span span = line.sSpan;
-                do {
-                    if (cursor >= span.start && (cursor < span.end || span.n || span.next == null)) {
-                        toBuffer(span.start, span.len);
-                        x += span.style.font.getWidth(buffer, 0, cursor - span.start, span.style.size, 1);
-                        y2 += y + line.height;
-                        break loop;
-                    } else {
-                        x += span.width;
-                    }
-                    span = span.next;
-                } while (span != null && span != line.eSpan.next);
-                break;
-            }
-            y += line.height;
+    protected void actionSelectAll() {
+        textRender.moveCaretBegin(startCaret);
+        textRender.moveCaretEnd(endCaret);
+        invalidate(false);
+    }
+
+    protected void actionDeleteBackwards(Caret first, Caret second) {
+        if (first.getOffset() == second.getOffset()) {
+            textRender.moveCaretBackwards(first);
         }
-        return new Vector3(x, y, y2);
+        editText(first, second, "");
+    }
+
+    protected void actionDeleteFowards(Caret first, Caret second) {
+        if (first.getOffset() == second.getOffset()) {
+            textRender.moveCaretFoward(second);
+        }
+        editText(first, second, "");
+    }
+
+    protected void actionCut(Caret first, Caret second) {
+        String str = textRender.getText(first, second);
+        if (str != null && !str.isEmpty()) {
+            getActivity().getWindow().setClipboard(str);
+        }
+        editText(first, second, "");
+    }
+
+    protected void actionCopy(Caret first, Caret second) {
+        String str = textRender.getText(first, second);
+        if (str != null && !str.isEmpty()) {
+            getActivity().getWindow().setClipboard(str);
+        }
+    }
+
+    protected void actionPaste(Caret first, Caret second) {
+        String str = getActivity().getWindow().getClipboard();
+        if (str != null && !str.isEmpty()) {
+            editText(first, second, str);
+            Application.runVsync(() -> slideToCaret(1));
+        }
+    }
+
+    protected void setCaretVisible() {
+        showCaret = true;
+        invalidate(false);
+        caretBlink.play();
+    }
+
+    protected void setCaretHidden() {
+        showCaret = false;
+        invalidate(false);
+        caretBlink.stop();
+    }
+
+    protected void blinkCaret() {
+        showCaret = isFocused() && !showCaret;
+        invalidate(false);
+    }
+
+    protected boolean isShowCaret() {
+        return showCaret;
+    }
+
+    public int getKeyCopy() {
+        return keyCopy;
+    }
+
+    public void setKeyCopy(int keyCopy) {
+        this.keyCopy = keyCopy;
+    }
+
+    public int getKeyPaste() {
+        return keyPaste;
+    }
+
+    public void setKeyPaste(int keyPaste) {
+        this.keyPaste = keyPaste;
+    }
+
+    public int getKeyCut() {
+        return keyCut;
+    }
+
+    public void setKeyCut(int keyCut) {
+        this.keyCut = keyCut;
+    }
+
+    public int getKeySelectAll() {
+        return keySelectAll;
+    }
+
+    public void setKeySelectAll(int keySelectAll) {
+        this.keySelectAll = keySelectAll;
+    }
+
+    public int getKeyClearSelection() {
+        return keyClearSelection;
+    }
+
+    public void setKeyClearSelection(int keyClearSelection) {
+        this.keyClearSelection = keyClearSelection;
+    }
+
+    public int getKeyBackspace() {
+        return keyBackspace;
+    }
+
+    public void setKeyBackspace(int keyBackspace) {
+        this.keyBackspace = keyBackspace;
+    }
+
+    public int getKeyDelete() {
+        return keyDelete;
+    }
+
+    public void setKeyDelete(int keyDelete) {
+        this.keyDelete = keyDelete;
+    }
+
+    public int getKeyMenu() {
+        return keyMenu;
+    }
+
+    public void setKeyMenu(int keyMenu) {
+        this.keyMenu = keyMenu;
     }
 
     public String getText() {
-        if (string == null) {
-            string = new String(text, 0, size, StandardCharsets.UTF_8);
+        if (invalidTextString) {
+            setLocalText(textRender.getText());
         }
-        return string;
+        return text;
+    }
+
+    private void setLocalText(String text) {
+        this.text = text;
+        invalidTextString = false;
     }
 
     public void setText(String text) {
-        replace(0, size, text);
-        setCursorPos(0);
-        invalidate(true);
-    }
+        if (Objects.equals(getText(), text)) return;
 
-    public Font getFont() {
-        return font;
-    }
-
-    public void setFont(Font font) {
-        if (this.font != font) {
-            this.font = font;
-            invalidTextSize = true;
-            invalidate(true);
+        // Input Filter
+        var event = filterInputText(0, textRender.getTotalBytes(), text);
+        if (event != null) {
+            if (event.isConsumed() || event.getText() == null) {
+                return;
+            } else {
+                text = event.getText();
+            }
         }
+
+        if (textChangeFilter != null || textChangeListener != null) {
+
+            // Change Filter
+            var textEvent = filterText(0, textRender.getTotalBytes(), text);
+            if (textEvent != null) {
+                if (textEvent.isConsumed()) {
+                    return;
+                } else {
+                    text = textEvent.getText();
+                }
+            }
+
+            String old = getText();
+            setLocalText(text);
+
+            if (text != null && maxCharacters > 0) {
+                if (!textRender.setText(text)) {
+                    setLocalText(textRender.getText());
+                }
+            } else {
+                textRender.setText(text);
+            }
+
+            textRender.moveCaretBegin(startCaret);
+            endCaret.set(startCaret);
+
+            invalidateTextSize();
+
+            // Change Listener
+            fireTextChange(old);
+        } else {
+            setLocalText(text);
+
+            if (text != null && maxCharacters > 0) {
+                if (!textRender.setText(text)) {
+                    invalidateTextString();
+                }
+            } else {
+                textRender.setText(text);
+            }
+
+            textRender.moveCaretBegin(startCaret);
+            endCaret.set(startCaret);
+
+            invalidateTextSize();
+        }
+    }
+
+    protected void editText(Caret first, Caret second, String input) {
+        if (!isEditable()) return;
+
+        // Input Filter
+        var event = filterInputText(first.getOffset(), second.getOffset(), input);
+        if (event != null) {
+            if (event.isConsumed() || event.getText() == null) {
+                return;
+            } else {
+                input = event.getText();
+            }
+        }
+
+        Caret caret = new Caret();
+        caret.set(endCaret);
+
+        if (textChangeFilter != null || textChangeListener != null) {
+            String old = getText();
+
+            if (!textRender.editText(first, second, input, caret)) {
+                return;
+            }
+
+            // Change Filter
+            String text = textRender.getText();
+            var textEvent = filterText(0, textRender.getTotalBytes(), text);
+            if (textEvent != null) {
+                if (textEvent.isConsumed()) {
+                    textRender.setText(old);
+                    return;
+                }
+                String newTxt = textEvent.getText();
+                if (!Objects.equals(newTxt, text)) {
+                    int before = textRender.getTotalCharacters();
+
+                    text = newTxt;
+                    if (!textRender.setText(text)) {
+                        text = textRender.getText();
+                    }
+
+                    int after = textRender.getTotalCharacters();
+                    if (after < before) {
+                        textRender.moveCaret(caret, 0);
+                    } else if (after > before) {
+                        textRender.moveCaret(caret, after - before);
+                    }
+                }
+            }
+            setLocalText(text);
+
+            startCaret.set(caret);
+            endCaret.set(caret);
+
+            invalidateTextSize();
+            setCaretVisible();
+            slideToCaret(1);
+
+            fireTextChange(old);
+        } else {
+            if (!textRender.editText(first, second, input, caret)) {
+                return;
+            }
+
+            startCaret.set(caret);
+            endCaret.set(caret);
+
+            invalidateTextString();
+            invalidateTextSize();
+            setCaretVisible();
+            slideToCaret(1);
+        }
+    }
+
+    public int getMaxCharacters() {
+        return maxCharacters;
+    }
+
+    public void setMaxCharacters(int maxCharacters) {
+        if (this.maxCharacters != maxCharacters) {
+            this.maxCharacters = maxCharacters;
+            textRender.setMaxCharacters(maxCharacters);
+            if (maxCharacters > 0 && maxCharacters < textRender.getTotalCharacters()) {
+                if (textChangeListener != null || textChangeFilter != null) {
+                    String old = getText();
+                    if (textRender.trim(maxCharacters)) {
+                        setLocalText(textRender.getText());
+                    }
+
+                    textRender.moveCaret(startCaret, 0);
+                    textRender.moveCaret(endCaret, 0);
+
+                    invalidateTextSize();
+                    fireTextChange(old);
+                } else {
+                    if (textRender.trim(maxCharacters)) {
+                        invalidateTextString();
+                    }
+
+                    textRender.moveCaret(startCaret, 0);
+                    textRender.moveCaret(endCaret, 0);
+
+                    invalidateTextSize();
+                }
+            }
+        }
+    }
+
+    public Font getTextFont() {
+        return textFont;
+    }
+
+    public void setTextFont(Font textFont) {
+        if (this.textFont != textFont) {
+            this.textFont = textFont;
+            textRender.setFont(textFont);
+            invalidate(isWrapContent());
+            invalidateTextSize();
+        }
+    }
+
+    protected float getLineHeight() {
+        return textFont == null ? textSize : textFont.getHeight(textSize);
     }
 
     public float getTextSize() {
@@ -756,8 +768,9 @@ public class TextArea extends Widget {
     public void setTextSize(float textSize) {
         if (this.textSize != textSize) {
             this.textSize = textSize;
-            invalidTextSize = true;
-            invalidate(true);
+            textRender.setTextSize(textSize);
+            invalidate(isWrapContent());
+            invalidateTextSize();
         }
     }
 
@@ -772,311 +785,227 @@ public class TextArea extends Widget {
         }
     }
 
-    public int getSelectionColor() {
-        return selectionColor;
+    public int getTextSelectedColor() {
+        return textSelectedColor;
     }
 
-    public void setSelectionColor(int selectionColor) {
-        if (this.selectionColor != selectionColor) {
-            this.selectionColor = selectionColor;
+    public void setTextSelectedColor(int textSelectedColor) {
+        if (this.textSelectedColor != textSelectedColor) {
+            this.textSelectedColor = textSelectedColor;
             invalidate(false);
         }
     }
 
-    public int getCursorColor() {
-        return cursorColor;
+    public boolean isEditable() {
+        return editable;
     }
 
-    public void setCursorColor(int cursorColor) {
-        if (this.cursorColor != cursorColor) {
-            this.cursorColor = cursorColor;
+    public void setEditable(boolean editable) {
+        this.editable = editable;
+    }
+
+    public float getCaretBlinkDuration() {
+        return caretBlinkDuration;
+    }
+
+    public void setCaretBlinkDuration(float caretBlinkDuration) {
+        this.caretBlinkDuration = caretBlinkDuration;
+    }
+
+    public int getCaretColor() {
+        return caretColor;
+    }
+
+    public void setCaretColor(int caretColor) {
+        if (this.caretColor != caretColor) {
+            this.caretColor = caretColor;
             invalidate(false);
         }
     }
 
-    public PointerListener getActPointerListener() {
-        return actPointerListener;
+    protected void invalidateTextSize() {
+        invalidate(isWrapContent());
+        invalidTextSize = true;
     }
 
-    public void setActPointerListener(PointerListener actPointerListener) {
-        this.actPointerListener = actPointerListener;
+    private void invalidateTextString() {
+        invalidTextString = true;
     }
 
-    public static class Style {
-        public final Font font;
-        public final float size;
-        public final int color;
+    public VerticalAlign getVerticalAlign() {
+        return verticalAlign;
+    }
 
-        public Style(Font font, float size, int color) {
-            this.font = font;
-            this.size = size;
-            this.color = color;
+    public void setVerticalAlign(VerticalAlign verticalAlign) {
+        if (verticalAlign == null) verticalAlign = VerticalAlign.TOP;
+
+        if (this.verticalAlign != verticalAlign) {
+            this.verticalAlign = verticalAlign;
+            invalidate(false);
         }
     }
 
-    class Line {
-        float width;
-        float height;
-        Span sSpan;
-        Span eSpan;
+    public HorizontalAlign getHorizontalAlign() {
+        return horizontalAlign;
+    }
 
-        Line(Span span) {
-            this.sSpan = span;
-            this.eSpan = span;
-            width = span.width;
-            height = span.style.font.getHeight(span.style.size);
+    public void setHorizontalAlign(HorizontalAlign horizontalAlign) {
+        if (horizontalAlign == null) horizontalAlign = HorizontalAlign.LEFT;
 
-            Span pSpan = span;
-            Span nSpan = span.next;
-            while (nSpan != null && !pSpan.n) {
-                if (pSpan.style == nSpan.style) {
-                    pSpan.end = nSpan.end;
-                    pSpan.len = pSpan.end - pSpan.start;
-                    pSpan.next = nSpan.next;
-                    pSpan.n = nSpan.n;
-                    nSpan = pSpan;
-                } else {
-                    toBuffer(pSpan.start, pSpan.len);
-                    pSpan.width = pSpan.style.font.getWidth(buffer, 0, pSpan.len, pSpan.style.size, 1);
-                    width += pSpan.width;
-                    height = Math.max(height, pSpan.style.font.getHeight(pSpan.style.size));
-                }
-                eSpan = nSpan;
-                pSpan = nSpan;
-                nSpan = nSpan.next;
+        if (this.horizontalAlign != horizontalAlign) {
+            this.horizontalAlign = horizontalAlign;
+            invalidate(false);
+        }
+    }
+
+    public void slideToCaret(float speed) {
+        float lineH = getLineHeight();
+        float caretX = textRender.getCaretHorizontalOffset(endCaret, horizontalAlign);
+        float caretYMin = endCaret.getLine() * lineH;
+        float caretYMax = (endCaret.getLine() + 1) * lineH;
+        float caretY = (caretYMax + caretYMin) * 0.5F;
+
+        float targetX = getViewOffsetX();
+        if (caretX < targetX) {
+            targetX = caretX;
+        } else if (caretX > targetX + getViewDimensionX()) {
+            targetX = caretX - getViewDimensionX();
+        }
+
+        float targetY = getViewOffsetY();
+        if (caretYMin < targetY) {
+            targetY = caretYMin;
+            if (caretYMax > targetY + getViewDimensionY()) {
+                targetY = caretY;
             }
+        } else if (caretYMax > targetY + getViewDimensionY()) {
+            targetY = caretYMax - getViewDimensionY();
+            if (caretYMin < targetY) {
+                targetY = caretY;
+            }
+        }
+        slideTo(targetX * speed + getViewOffsetX() * (1 - speed), targetY * speed + getViewOffsetY() * (1 - speed));
+    }
 
-            toBuffer(pSpan.start, pSpan.len);
-            width += pSpan.style.font.getWidth(buffer, 0, pSpan.len, pSpan.style.size, 1);
-            height = Math.max(height, pSpan.style.font.getHeight(pSpan.style.size));
+    protected int getLastCaretPosition() {
+        return textRender.getTotalBytes();
+    }
+
+    public UXListener<TextEvent> getTextChangeFilter() {
+        return textChangeFilter;
+    }
+
+    public void setTextChangeFilter(UXListener<TextEvent> textChangeFilter) {
+        this.textChangeFilter = textChangeFilter;
+    }
+
+    private TextEvent filterText(int start, int end, String text) {
+        if (textChangeFilter != null) {
+            TextEvent event = new TextEvent(this, TextEvent.FILTER, start, end, text);
+            UXListener.safeHandle(textChangeFilter, event);
+            return event;
+        }
+        return null;
+    }
+
+    public UXListener<TextEvent> getTextInputFilter() {
+        return textInputFilter;
+    }
+
+    public void setTextInputFilter(UXListener<TextEvent> textInputFilter) {
+        this.textInputFilter = textInputFilter;
+    }
+
+    private TextEvent filterInputText(int start, int end, String text) {
+        if (textInputFilter != null) {
+            TextEvent event = new TextEvent(this, TextEvent.FILTER, start, end, text);
+            UXListener.safeHandle(textInputFilter, event);
+            return event;
+        }
+        return null;
+    }
+
+    public UXValueListener<String> getTextChangeListener() {
+        return textChangeListener;
+    }
+
+    public void setTextChangeListener(UXValueListener<String> textChangeListener) {
+        this.textChangeListener = textChangeListener;
+    }
+
+    private void fireTextChange(String old) {
+        if (textChangeListener != null && !Objects.equals(old, text)) {
+            UXValueListener.safeHandle(textChangeListener, new ValueChange<>(this, old, text));
+        }
+    }
+
+    protected boolean isTextEmpty() {
+        return textRender.getTotalCharacters() == 0;
+    }
+
+    protected float getTextWidth() {
+        if (invalidTextSize) {
+            invalidTextSize = false;
+            textWidth = textRender.getTextWidth();
+        }
+        return textWidth;
+    }
+
+    protected float getTextHeight() {
+        return textRender.getTextHeight();
+    }
+
+    protected boolean isWrapContent() {
+        return getPrefWidth() == WRAP_CONTENT || getPrefHeight() == WRAP_CONTENT;
+    }
+
+    protected float xOff(float start, float end, float textWidth) {
+        if (end < start) return (start + end) / 2f;
+        if (horizontalAlign == HorizontalAlign.RIGHT) return end - textWidth;
+        if (horizontalAlign == HorizontalAlign.CENTER) return (start + end - textWidth) / 2f;
+        return start;
+    }
+
+    protected float yOff(float start, float end, float textHeight) {
+        if (end < start) return (start + end) / 2f;
+        if (verticalAlign == VerticalAlign.BOTTOM) return end - textHeight;
+        if (verticalAlign == VerticalAlign.MIDDLE) return (start + end - textHeight) / 2f;
+        return start;
+    }
+
+    protected class CaretBlink implements Animation {
+
+        private boolean playing;
+        private float timer;
+
+        public void play() {
+            timer = 0;
+            if (getActivity() != null) {
+                playing = true;
+                getActivity().addAnimation(this);
+            }
+        }
+
+        public void stop() {
+            playing = false;
         }
 
         @Override
-        public String toString() {
-            return super.toString() + "[" + sSpan.start + "," + eSpan.end + (eSpan.n ? "-N":"") + "]" +
-                    new String(text, sSpan.start, eSpan.end - sSpan.start - (eSpan.n ? 1 : 0), StandardCharsets.UTF_8);
-        }
-    }
-
-    class Span {
-        Style style;
-
-        int start, end, len;
-        float width;
-        boolean n;
-        Span next;
-
-        Span(int start, int len) {
-            this(start, len, false);
-        }
-
-        Span(int start, int len, boolean n) {
-            this(start, len, n, styles.get(0));
-        }
-
-        Span(int start, int len, boolean n, Style style) {
-            this.start = start;
-            this.len = len;
-            this.end = start + len;
-            this.n = n;
-            this.style = style;
+        public Activity getSource() {
+            return getActivity();
         }
 
         @Override
-        public String toString() {
-            return super.toString() + "[" + start + "," + end + (n ? "-N":"") + "]" + new String(text, start, len - (n ? 1 : 0), StandardCharsets.UTF_8);
-        }
-    }
-
-    class SpanManager {
-
-        ArrayList<Line> lines = new ArrayList<>();
-
-        SpanManager() {
-            Span span = new Span(0, 0);
-            Line line = new Line(span);
-            lines.add(line);
+        public boolean isPlaying() {
+            return playing;
         }
 
-        public Line findUp(int index) {
-            Line upLine = null;
-            for (Line line : lines) {
-                if (line.sSpan.start <= index && (line.eSpan.end > index || line.eSpan.next == null)) {
-                    return upLine;
-                }
-                upLine = line;
-            }
-            return null;
-        }
-
-        public Line findDown(int index) {
-            Line prevLine = null;
-            for (Line line : lines) {
-                if (prevLine != null) return line;
-                if (line.sSpan.start <= index && (line.eSpan.end > index || line.eSpan.next == null)) {
-                    prevLine = line;
-                }
-            }
-            return null;
-        }
-
-        public Line find(int index) {
-            for (Line line : lines) {
-                if (line.sSpan.start <= index && (line.eSpan.end > index || line.eSpan.next == null)) {
-                    return line;
-                }
-            }
-            return null; //assert
-        }
-
-        public void replace(int start, int len, int newLen, Span newBegin, Span newEnd) {
-            int cOffSet = newLen - len;
-
-            int isLine = 0;
-            int ieLine = 0;
-            Line sLine = null;
-            Line eLine = null;
-
-            Span preStart = null;
-            Span posEnd = null;
-
-            Span sStart = null;
-            Span sEnd = null;
-
-            // Encontrar Span Inicial e Final
-            loop : for (int i = 0; i < lines.size(); i++) {
-                Line line = lines.get(i);
-                Span span = line.sSpan;
-                do {
-                    if (sStart == null  &&
-                            ((span.start <= start && span.end > start) || span.next == null)) {
-                        sLine = line;
-                        isLine = i;
-                        sStart = span;
-                    }
-                    if (sStart != null &&
-                            ((span.start <= start + len && span.end > start + len) || span.next == null)) {
-                        eLine = line;
-                        ieLine = i;
-                        sEnd = span;
-                        posEnd = span.next;
-                        break loop;
-                    }
-                    if (sStart == null) preStart = span;
-                    span = span.next;
-                } while (span != line.eSpan.next);
-            }
-
-            // Cortar spans
-            if (sStart.start < start) {
-                if (newBegin != null && sStart.style == newBegin.style) {
-                    newBegin.start = sStart.start;
-                    newBegin.len = newBegin.end - newBegin.start;
-                } else {
-                    Span cStart = new Span(sStart.start, start - sStart.start, false, sStart.style);
-                    cStart.next = newBegin;
-                    if (newBegin == null) newEnd = cStart;
-                    newBegin = cStart;
-                }
-            }
-            if (sEnd.end > start + len) {
-                if (newEnd != null && sEnd.style == newEnd.style) {
-                    newEnd.end = sEnd.end + cOffSet;
-                    newEnd.len = newEnd.end - newEnd.start;
-                    newEnd.n = sEnd.n;
-                } else {
-                    Span cEnd = new Span(start + newLen, (sEnd.end + cOffSet) - (start + newLen), sEnd.n, sEnd.style); // +offset
-                    if (newBegin == null) newBegin = cEnd;
-                    if (newEnd != null) newEnd.next = cEnd;
-                    newEnd = cEnd;
-                }
-            }
-
-            // Realinhar spans
-            Span offset = posEnd;
-            while (offset != null) {
-                offset.start += cOffSet;
-                offset.end += cOffSet;
-                offset = offset.next;
-            }
-
-            // Buscar Linhas
-            Span lineSearch;
-            if (newBegin == null) {
-                if (preStart == null) {
-                    if (posEnd == null) {
-                        lineSearch = new Span(0, 0);
-                    } else {
-                        lineSearch = posEnd;
-                    }
-                } else {
-                    // LINE EXCEPTION
-                    if (preStart.n) {
-                        newBegin = new Span(preStart.end, 0);
-                        preStart.next = newBegin;
-                        newBegin.next = posEnd;
-
-                        lineSearch = newBegin;
-                    } else {
-                        preStart.next = posEnd;
-
-                        lineSearch = (sStart == sLine.sSpan ? lines.get(isLine - 1).sSpan : sLine.sSpan);
-                    }
-                }
-            } else {
-                if (preStart != null) {
-                    preStart.next = newBegin;
-
-                    if (preStart.n) {
-                        lineSearch = newBegin;
-                    } else {
-                        lineSearch = (sStart == sLine.sSpan ? newBegin : sLine.sSpan);
-                    }
-                } else {
-                    lineSearch = newBegin;
-                }
-
-                if (posEnd != null) {
-                    newEnd.next = posEnd;
-                }
-            }
-
-            ArrayList<Line> newLines = new ArrayList<>();
-            while ((posEnd == null && lineSearch != null) ||
-                    (posEnd != null && (lineSearch != null && lineSearch.end <= posEnd.start))) {
-                Line line = new Line(lineSearch);
-                lineSearch = line.eSpan.next;
-                newLines.add(line);
-            }
-            List<Line> lineList = lines.subList(isLine, ieLine + 1);
-            lineList.clear();
-            lineList.addAll(newLines);
-
-            /*System.out.println("Spans : ");
-            offset = lines.get(0).sSpan;
-            while (offset != null) {
-                System.out.println(offset);
-                offset = offset.next;
-            }*/
-
-            //System.out.println("Lines : ");
-            Span begin = lines.get(0).sSpan;
-            for (Line line : lines) {
-                if (begin != line.sSpan) {
-                    System.out.println("INICIO INCORRETO : [" + line + "] [" + line.sSpan + "]");
-                    break;
-                }
-                while (begin != line.eSpan) {
-                    if (begin.next != null && begin.end != begin.next.start){
-                        System.out.println("SPANS NAO SE ENCONTRAM " + begin + " || " + begin.next);
-                    }
-                    begin = begin.next;
-                }
-                begin = begin.next;
-                //System.out.println(line);
-            }
-            if (begin != null) {
-                System.out.println("FINAL INCORRETO [" + begin + "]");
+        @Override
+        public void handle(float seconds) {
+            timer += seconds;
+            if (timer >= getCaretBlinkDuration()) {
+                timer = 0;
+                blinkCaret();
             }
         }
     }

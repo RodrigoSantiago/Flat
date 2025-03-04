@@ -1,0 +1,540 @@
+widget {
+
+}
+
+/*
+  Text
+*/
+
+label {
+    text-font : font("Roboto");
+    text-size : 24sp;
+    text-color : #000000FF;
+    text-all-caps : false;
+    vertical-align : middle;
+    horizontal-align : left;
+}
+
+button : label {
+    text-font : font("Roboto", bold);
+    ripple-enabled : true;
+    ripple-color : #00000080;
+    shadow-enabled : true;
+    radius-top : 4;
+    radius-left : 4;
+    radius-right : 4;
+    radius-bottom : 4;
+    padding-left : 16;
+    padding-right : 16;
+    padding-top : 8;
+    padding-bottom : 8;
+    min-height : 36;
+    text-size : 14sp;
+    background-color : #FFFFFFFF;
+    transition-duration : 0.1;
+    vertical-align : middle;
+    cursor : hand;
+    focusable : true;
+
+    enabled {
+        elevation : 1;
+    }
+    hovered {
+        elevation : 2;
+    }
+    pressed {
+        elevation : 4;
+    }
+    focused {
+        background-color : #00FFFFFF;
+    }
+    disabled {
+        background-color : #808080FF;
+    }
+}
+
+toggle-button : button {
+    icon : '/default/icons/checkbox-blank-outline.svg';
+    icon-color : gray;
+    activated {
+        icon : '/default/icons/checkbox-marked.svg';
+        icon-color : red;
+    }
+}
+
+text-area {
+    text-font : font("Roboto");
+    text-size : 16sp;
+    text-color : #000000FF;
+    vertical-align : top;
+    horizontal-align : left;
+    background-color :#FFFFFF;
+    cursor : ibeam;
+    focusable : true;
+}
+
+text-field : text-area {
+    title-transition-duration : 0.25;
+    title-spacing : 2;
+    text-divider-size : 1;
+    text-divider-color : blue;
+}
+
+text-input-field : text-field {
+    action-icon : '/default/icons/radiobox-marked.svg';
+    action-icon-color : red;
+    action-icon-bg-color : #FF000080;
+    action-icon-cursor : hand;
+    action-icon-spacing : 8;
+}
+
+text-drop-down : text-input-field {
+}
+
+chip : label {
+    ripple-enabled : true;
+    ripple-color : #00000080;
+    shadow-enabled : true;
+    radius-top : 100;
+    radius-left : 100;
+    radius-right : 100;
+    radius-bottom : 100;
+    padding-left : 4;
+    padding-right : 4;
+    padding-top : 4;
+    padding-bottom : 4;
+    icon-spacing : 8;
+    action-spacing : 8;
+
+    min-height : 30;
+    text-size : 14sp;
+    background-color : #FFFFFFFF;
+    transition-duration : 0.1;
+    vertical-align : middle;
+    close-icon-cursor : hand;
+    close-icon-bg-color : #00000030;
+    close-icon-spacing : 8px;
+
+    enabled {
+        elevation : 1;
+    }
+    hovered {
+        elevation : 2;
+    }
+    pressed {
+        elevation : 4;
+    }
+}
+
+divider {
+    height : 1;
+    width : MATCH_PARENT;
+    background-color : #00000080;
+}
+
+/*
+  Buttons Styles
+*/
+icon : button {
+    ripple-overflow : true;
+    background-color : #00000000;
+    shadow : false;
+    min-width : 24;
+    min-height : 24;
+    vertical-align : middle;
+    horizontal-align : center;
+    radius-top : 12;
+    radius-left : 12;
+    radius-right : 12;
+    radius-bottom : 12;
+    padding-left : 0;
+    padding-right : 0;
+}
+
+raised : button {
+
+}
+
+outline : button {
+
+}
+
+floating : button {
+
+}
+
+/*
+  TextField Styles
+*/
+text-outline : text-field {
+    radius-top : 4;
+    radius-right : 4;
+    radius-bottom : 4;
+    radius-left : 4;
+
+    high-label-text-size : 10sp;
+    high-label-text-color : #FF0000FF;
+
+    padding-top : 16;
+    border-discret : false;
+}
+
+/*
+  Image
+*/
+
+image-view {
+
+}
+
+canvas {
+
+}
+
+/*
+  Selection
+*/
+
+checkbox {
+    width : 24;
+    height : 24;
+    ripple-overflow : true;
+    ripple-enabled : true;
+    ripple-color : #00000080;
+    icon-indeterminate : '/default/icons/minus-box.svg';
+    icon-inactive : '/default/icons/checkbox-blank-outline.svg';
+    icon-active : '/default/icons/checkbox-marked.svg';
+    cursor : hand;
+}
+
+radio-button {
+    width : 24;
+    height : 24;
+    ripple-overflow : true;
+    ripple-enabled : true;
+    ripple-color : #00000080;
+    icon-inactive : '/default/icons/radiobox-blank.svg';
+    icon-active : '/default/icons/radiobox-marked.svg';
+    cursor : hand;
+}
+
+switch-toggle {
+    ripple-enabled : true;
+    ripple-overflow : true;
+    ripple-color : #00000080;
+    radius-top : 8;
+    radius-left : 8;
+    radius-right : 8;
+    radius-bottom : 8;
+    radius-top : 16;
+    radius-bottom : 16;
+    radius-left : 16;
+    radius-right : 16;
+
+    shadow : true;
+    elevation : 1;
+    background-color : #CA5050;
+    icon-active : '/default/icons/switch-shape.svg';
+    icon-inactive : '/default/icons/switch-shape.svg';
+
+    icon-transition-duration : 0.1;
+    slide-transition-duration : 0.1;
+    cursor : hand;
+}
+
+/*
+  Value
+*/
+
+slider {
+    focusable : true;
+    ripple-enabled : true;
+    ripple-color : #00000080;
+    ripple-overflow : true;
+
+    background-color : #CCCCCC;
+    icon : '/default/icons/switch-shape.svg';
+    icon-width : 24;
+    icon-height : 24;
+    icon-color : red;
+    line-width : 2;
+    line-color : gray;
+    line-filled-color : red;
+    cursor : hand;
+
+    transition-duration : 0.1;
+
+    enabled {
+        expansion : 0;
+        expansion-color : #FF000000;
+    }
+    hovered {
+        expansion : 16;
+        expansion-color : #FF000030;
+    }
+    pressed {
+        expansion : 16;
+        expansion-color : #FF000030;
+    }
+    dragged {
+        expansion : 16;
+        expansion-color : #FF000030;
+    }
+}
+ranged-slider : slider {
+
+}
+
+horizontal-scroll-bar {
+    color : #FF0000;
+    background-color : #ACACAC;
+    radius-left : 8;
+    radius-right : 8;
+    radius-top : 8;
+    radius-bottom : 8;
+    min-width : 16;
+    min-height : 16;
+    min-range : 0.1;
+    transition-duration : 0.1;
+    width : match_parent;
+}
+
+vertical-scroll-bar {
+    color : #FF0000;
+    background-color : #ACACAC;
+    radius-left : 8;
+    radius-right : 8;
+    radius-top : 8;
+    radius-bottom : 8;
+    min-width : 16;
+    min-height : 16;
+    min-range : 0.1;
+    transition-duration : 0.1;
+    height : match_parent;
+}
+
+progress-bar {
+    height : 4;
+    width : 240;
+    color : #0000FF;
+    filled-color : #FF0000;
+    animation-duration : 3.0;
+}
+
+progress-circle : progress-bar {
+    height : 48;
+    width : 48;
+}
+
+/*
+  Layout
+*/
+
+parent {
+
+}
+
+scene {
+    focusable : true;
+    cursor : arrow;
+}
+
+box {
+
+}
+
+linear-box {
+
+}
+
+grid {
+
+}
+
+scroll-box {
+    enabled {
+        background-color : #FF000000;
+    }
+    hovered {
+        background-color : #FF000030;
+    }
+}
+
+tab {
+
+}
+
+page : label {
+    padding-top : 8;
+    padding-bottom : 8;
+    padding-left : 8;
+    padding-right : 8;
+    text-size : 16sp;
+    ripple-enabled : true;
+    ripple-color : #00000060;
+    icon : '/default/icons/slider-icon.svg';
+    icon-color : green;
+    close-icon : '/default/icons/slider-icon.svg';
+    close-icon-color : red;
+    close-icon-cursor : hand;
+}
+
+drawer {
+    front-width : 256;
+    front-height : MATCH_PARENT;
+    height : MATCH_PARENT;
+    width : MATCH_PARENT;
+    slide-anim-duration : 0.2;
+    slide-gesture-area : 16;
+}
+
+list-view {
+    background-color : #FF8080;
+    item-height : 32;
+}
+
+list-item {
+    background-color : #E0E0E0;
+    min-width : 128;
+    width : match_parent;
+    margin-bottom : 1;
+    icon : '/default/icons/checkbox-marked.svg';
+    icon-width : 24;
+    icon-height : 24;
+    icon-color : red;
+    state-icon-open : '/default/icons/checkbox-marked.svg';
+    state-icon-closed : '/default/icons/checkbox-blank-outline.svg';
+    state-icon-color : blue;
+    state-icon-width : 12;
+    state-icon-height : 12;
+    layer-width : 12;
+    state-icon-cursor : hand;
+}
+
+tree-view {
+
+}
+
+/*
+  Menu
+*/
+
+menu {
+    width : 200;
+    shadow-enabled : true;
+    elevation : 8;
+    radius-top : 4;
+    radius-left : 4;
+    radius-right : 4;
+    radius-bottom : 4;
+    padding-top : 8;
+    padding-bottom : 8;
+    margin-top : 8;
+    margin-left : 8;
+    margin-right : 8;
+    margin-bottom : 16;
+    background-color : #FFFFFF;
+    showup-transition-duration : 0.25;
+}
+
+menu-item : label {
+    ripple-enabled : true;
+    ripple-color : #00000080;
+    text-size : 14sp;
+    height : 48;
+    width : match_parent;
+    padding-left : 16;
+    padding-right : 16;
+    shortcut-text-size : 12sp;
+    shortcut-text-color : #00000080;
+    cursor : hand;
+
+    elevation : 0;
+    background-color : #FFFFFF;
+    transition-duration : 0.1;
+    hovered {
+        elevation : 1;
+        background-color : #DDDDDD;
+    }
+    activated {
+        elevation : 1;
+        background-color : #DDDDDD;
+    }
+}
+
+dialog {
+    shadow-enabled : true;
+    elevation : 24;
+    radius-top : 8;
+    radius-left : 8;
+    radius-right : 8;
+    radius-bottom : 8;
+    padding-top : 32;
+    padding-left : 16;
+    padding-right : 16;
+    padding-bottom : 32;
+    margin-top : 8;
+    margin-left : 8;
+    margin-right : 8;
+    margin-bottom : 16;
+    background-color : #FFFFFF;
+    show-transition-duration : 0.25;
+    hide-transition-duration : 0.15;
+}
+
+dropdown-menu : menu {
+
+}
+
+tool-bar {
+    text-font : font("Roboto", "bold");
+    text-size : 20sp;
+    text-color : #000000FF;
+    padding-left : 4;
+    padding-right : 4;
+    padding-top : 8;
+    padding-bottom : 8;
+    shadow-enabled : true;
+    elevation : 4;
+    background-color : red;
+    title-size : 16sp;
+    title-color : #000000FF;
+    subtitle-size : 8sp;
+    subtitle-color : #000000FF;
+    height : 90;
+}
+
+tool-item {
+    icon-color : white;
+    ripple-enabled : true;
+    ripple-color : #FFFFFF;
+    ripple-overflow : true;
+    cursor : hand;
+    width : 24;
+    height : 24;
+    margin-top : 4;
+    margin-left : 4;
+    margin-right : 4;
+    margin-bottom : 4;
+}
+
+tool-item-navigation : tool-item {
+    icon : '/default/icons/menu.svg';
+}
+
+tool-item-overflow : tool-item {
+    icon : '/default/icons/baseline-more_vert.svg';
+}
+
+shiny {
+    background-color : yellow;
+}
+dark {
+    background-color : purple;
+}
+round {
+    radius-top : 16;
+    radius-right : 16;
+    radius-bottom : 16;
+    radius-left : 16;
+}

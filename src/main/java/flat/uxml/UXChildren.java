@@ -1,39 +1,59 @@
 package flat.uxml;
 
-import flat.widget.Gadget;
-import flat.widget.Menu;
+import flat.uxml.value.UXValue;
+import flat.widget.stages.Menu;
+import flat.widget.Widget;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 
-public class UXChildren {
+public class UXChildren implements Iterable<UXChild> {
 
-    private final ArrayList<Gadget> children = new ArrayList<>();
-    private final ArrayList<Menu> menus = new ArrayList<>();
-    private final UXLoader loader;
-    private int pos;
-    private int posMenu;
+    private final ArrayList<UXChild> children = new ArrayList<>();
+    private final UXBuilder loader;
+    private Menu menu;
 
-    public UXChildren(UXLoader loader) {
+    public UXChildren(UXBuilder loader) {
         this.loader = loader;
     }
 
-    public UXLoader getLoader() {
+    public UXBuilder getLoader() {
         return loader;
     }
 
-    public void addMenu(Menu menu) {
-        this.menus.add(menu);
+    public void add(Widget child, HashMap<Integer, UXValue> attributes) {
+        children.add(new UXChild(child, attributes));
     }
 
-    public void add(Gadget child) {
-        children.add(child);
+    public int getChildrenCount() {
+        return children.size();
     }
 
-    public Gadget next() {
-        return pos >= children.size() ? null : children.get(pos++);
+    public void setMenu(Menu menu) {
+        this.menu = menu;
     }
 
-    public Menu nextMenu() {
-        return posMenu >= menus.size() ? null : menus.get(posMenu++);
+    public Menu getMenu() {
+        return menu;
+    }
+
+    @Override
+    public Iterator<UXChild> iterator() {
+        return new UXChildIterator();
+    }
+
+    private class UXChildIterator implements Iterator<UXChild> {
+        private int pos;
+
+        @Override
+        public boolean hasNext() {
+            return pos < children.size();
+        }
+
+        @Override
+        public UXChild next() {
+            return pos >= children.size() ? null : children.get(pos++);
+        }
     }
 }

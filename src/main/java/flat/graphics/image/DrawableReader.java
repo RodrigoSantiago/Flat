@@ -1,56 +1,68 @@
 package flat.graphics.image;
 
+import flat.backend.SVG;
+import flat.exception.FlatException;
 import flat.graphics.context.Paint;
-import flat.graphics.context.Texture2D;
+import flat.graphics.context.enums.LineCap;
+import flat.graphics.context.enums.LineJoin;
+import flat.graphics.context.enums.PixelFormat;
+import flat.graphics.context.paints.ColorPaint;
 import flat.math.shapes.Path;
 import flat.math.shapes.Rectangle;
 import flat.math.shapes.Shape;
 import flat.math.shapes.Stroke;
 import flat.math.stroke.BasicStroke;
 import flat.resources.Parser;
-import flat.graphics.context.enuns.*;
+import flat.resources.ResourceStream;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import javax.imageio.ImageIO;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 
 public class DrawableReader {
 
-    public static PixelMap loadPixelMap(InputStream is) throws IOException {
-        BufferedImage oimg = ImageIO.read(is);
-        BufferedImage pimg = new BufferedImage(oimg.getWidth(), oimg.getHeight(), BufferedImage.TYPE_INT_ARGB_PRE);
-        Graphics2D g = pimg.createGraphics();
-        g.drawImage(oimg, 0, 0, null);
-        g.dispose();
-
-        int[] data = ((DataBufferInt) pimg.getRaster().getDataBuffer()).getData();
-        for (int i = 0; i < data.length; i++) {
-            final int argb = data[i];
-            data[i] =
-                    ((argb & 0xff) << 16) |
-                    (((argb >> 8) & 0xff) << 8) |
-                    (((argb >> 16) & 0xff)) |
-                    (((argb >> 24) & 0xff) << 24);
+    public static Drawable parse(ResourceStream stream) {
+        Object cache = stream.getCache();
+        if (cache != null) {
+            if (cache instanceof Drawable) {
+                return (Drawable) cache;
+            } else {
+                stream.clearCache();
+            }
         }
-        Texture2D texture = new Texture2D();
-        texture.begin(0);
-        texture.setSize(pimg.getWidth(), pimg.getHeight(), PixelFormat.RGBA);
-        texture.setData(0, data, 0, 0, 0, pimg.getWidth(), pimg.getHeight());
-        texture.setLevels(0);
-        texture.generatMipmapLevels();
-        texture.setScaleFilters(MagFilter.NEAREST, MinFilter.NEAREST);
-        texture.end();
-        return new PixelMap(texture, 0, 0, pimg.getWidth(), pimg.getHeight());
+        if (stream.getResourceName().toLowerCase().endsWith(".svg")) {
+            try {
+                LineMap lineMap = loadLineMap(stream.getStream());
+                stream.putCache(lineMap);
+                return lineMap;
+            } catch (Exception e) {
+                throw new FlatException(e);
+            }
+        } else {
+            try {
+                PixelMap pixelMap = loadPixelMap(stream);
+                stream.putCache(pixelMap);
+                return pixelMap;
+            } catch (IOException e) {
+                throw new FlatException(e);
+            }
+        }
+    }
+
+    public static PixelMap loadPixelMap(ResourceStream stream) throws IOException {
+        byte[] data = stream.readData();
+        int[] imageData = new int[3];
+        byte[] readImage = SVG.ReadImage(data, imageData);
+        if (readImage == null) {
+            throw new FlatException("Invalid image format " + stream.getResourceName());
+        }
+        return new PixelMap(readImage, imageData[0], imageData[1], PixelFormat.RGBA);
     }
 
 
@@ -125,11 +137,11 @@ public class DrawableReader {
         }
         Node fillNode = map.getNamedItem("fill");
         if (fillNode != null) {
-            fillPaint = Paint.color(Parser.color(fillNode.getNodeValue()));
+            fillPaint = new ColorPaint(Parser.color(fillNode.getNodeValue()));
         }
         Node strokeNode = map.getNamedItem("stroke");
         if (strokeNode != null) {
-            strokePaint = Paint.color(Parser.color(strokeNode.getNodeValue()));
+            strokePaint = new ColorPaint(Parser.color(strokeNode.getNodeValue()));
         }
         Node strokeWidth = map.getNamedItem("stroke-width");
         Node strokeCap = map.getNamedItem("stroke-cap");
@@ -173,9 +185,5 @@ public class DrawableReader {
         }
 
         return new LineMap.SVGPath(id, shape, stroke, fillPaint, strokePaint, true, false);
-    }
-
-    static void disposeImage(PixelMap image) {
-
     }
 }

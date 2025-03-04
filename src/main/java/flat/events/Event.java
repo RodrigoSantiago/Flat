@@ -4,12 +4,12 @@ import flat.widget.Widget;
 
 public abstract class Event {
 
-    private Widget source;
-    private int type;
+    private final Widget source;
+    private final EventType type;
     private boolean consumed;
     private boolean focusConsumed;
 
-    public Event(Widget source, int type) {
+    public Event(Widget source, EventType type) {
         this.source = source;
         this.type = type;
     }
@@ -18,7 +18,7 @@ public abstract class Event {
         return source;
     }
 
-    public int getType() {
+    public EventType getType() {
         return type;
     }
 

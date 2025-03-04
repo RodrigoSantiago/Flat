@@ -1,12 +1,12 @@
 package flat.resources;
 
-import flat.graphics.image.Drawable;
-import flat.graphics.image.DrawableReader;
+import flat.Flat;
 
 import java.io.*;
 import java.lang.ref.SoftReference;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -15,191 +15,250 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-public final class ResourcesManager {
-    private static ZipFile zip;
-    private static File dir;
+public class ResourcesManager {
 
-    private static HashMap<String, SoftReference<Resource>> resources = new HashMap<>();
+    private static boolean libraryLoaded;
 
-    private ResourcesManager() {
+    private final ZipFile zip;
+    private final File dir;
+    private final HashMap<String, SoftReference<Object>> resources = new HashMap<>();
+
+    public ResourcesManager() {
+        this.dir = null;
+        this.zip = null;
     }
 
-    public static void setResources(File file) {
-        if (dir != null || zip != null) {
-            throw new RuntimeException("Resources redefinition not allowed");
-        }
-
+    public ResourcesManager(File file) {
         if (file == null) {
-
+            this.dir = null;
+            this.zip = null;
         } else if (file.isFile()) {
             try {
-                zip = new ZipFile(file);
+                this.dir = null;
+                this.zip = new ZipFile(file);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         } else {
-            dir = file;
+            this.dir = file;
+            this.zip = null;
         }
     }
 
-    public synchronized static void unloadResources() {
-        resources.clear();
-    }
-
-    public synchronized static Resource getResource(String pathName) {
-        SoftReference<Resource> resRef = resources.get(pathName);
-        if (resRef != null) {
-            Resource res = resRef.get();
-            if (res != null) {
-                return res;
+    public File getFlatLibraryFile() {
+        try {
+            InputStream in = Flat.class.getResourceAsStream("/flat.dll");
+            if (in == null) {
+                return null;
             }
-        }
 
-        Resource res;
-        if (pathName.endsWith(".png")) {
-            res = new Resource() {
-                Drawable drawable;
-
-                @Override
-                public Drawable getDrawable() {
-                    if (drawable == null) {
-                        try {
-                            drawable = DrawableReader.loadPixelMap(getInput(pathName));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    return drawable;
+            File temp = new File("flat.dll");
+            if (temp.exists()) {
+                if (!temp.delete()) {
+                    return null;
                 }
-            };
-        } else if (pathName.endsWith(".svg")) {
-            res = new Resource() {
-                Drawable drawable;
+            }
 
-                @Override
-                public Drawable getDrawable() {
-                    if (drawable == null) {
-                        try {
-                            drawable = DrawableReader.loadLineMap(getInput(pathName));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    return drawable;
-                }
-            };
-        } else {
+            if (!temp.createNewFile()) {
+                return null;
+            }
+
+            byte[] buffer = new byte[1024];
+            int read;
+            FileOutputStream fos = new FileOutputStream(temp);
+            while ((read = in.read(buffer)) != -1) {
+                fos.write(buffer, 0, read);
+            }
+            fos.close();
+            in.close();
+            temp.deleteOnExit();
+
+            return temp;
+        } catch (Exception e) {
             return null;
         }
-        resources.put(pathName, new SoftReference<>(res));
-        return res;
     }
 
-    public synchronized static InputStream getInput(String pathName) {
-        try {
-            if (zip != null) {
-                ZipEntry zipEntry = zip.getEntry(pathName);
-                return zip.getInputStream(zipEntry);
-            } else if (dir != null) {
-                File entry = new File(dir, pathName);
-                return new FileInputStream(entry);
-            } else {
-                return Thread.currentThread().getContextClassLoader().getResourceAsStream(pathName);
-            }
-        } catch (Exception e) {
-            System.out.println("Erro at: Input File");
-            e.printStackTrace();
+    public ResourceStream getResource(String value) {
+        if (exists(value)) {
+            return new ResourceStream(value);
         }
         return null;
     }
 
-    public synchronized static byte[] getData(String pathName) {
-        InputStream is = getInput(pathName);
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        int nRead;
-        byte[] data = new byte[16384];
+    public void unloadResources() {
+        resources.clear();
+    }
+
+    public void clearResourceCache(String pathName) {
+        resources.remove(pathName);
+    }
+
+    public void putResourceCache(String pathName, Object cache) {
+        resources.put(pathName, new SoftReference<>(cache));
+    }
+
+    public Object getResourceCache(String pathName) {
+        SoftReference<Object> reference = resources.get(pathName);
+        if (reference != null) {
+            Object obj = reference.get();
+            if (obj == null) {
+                resources.remove(pathName);
+            } else {
+                return obj;
+            }
+        }
+
+        return null;
+    }
+
+    public InputStream getInput(String pathName) {
+        if (zip != null) {
+            try {
+                ZipEntry zipEntry = zip.getEntry(pathName);
+                return zip.getInputStream(zipEntry);
+            } catch (Exception ignored) {
+            }
+        }
+
+        if (dir != null) {
+            try {
+                File entry = new File(dir, pathName);
+                return new FileInputStream(entry);
+            } catch (Exception ignored) {
+            }
+        }
+
         try {
+            return Flat.class.getResourceAsStream(pathName.startsWith("/") ? pathName : "/" + pathName);
+        } catch (Exception ignored) {
+        }
+
+        return null;
+    }
+
+    public boolean isFolder(String pathName) {
+        if (zip != null) {
+            try {
+                ZipEntry zipEntry = zip.getEntry(pathName);
+                return zipEntry.isDirectory();
+            } catch (Exception ignored) {
+            }
+        }
+
+        if (dir != null) {
+            try {
+                File entry = new File(dir, pathName);
+                return entry.isDirectory();
+            } catch (Exception ignored) {
+            }
+        }
+
+        try {
+            URL dirURL = Flat.class.getResource(pathName.startsWith("/") ? pathName : "/" + pathName);
+
+            if (dirURL != null && dirURL.getProtocol().equals("file")) {
+                return new File(dirURL.toURI()).isDirectory();
+            }
+
+            if (dirURL != null && dirURL.getProtocol().equals("jar")) {
+                String jarPath = dirURL.getPath().substring(5, dirURL.getPath().indexOf("!"));
+
+                try (JarFile jar = new JarFile(URLDecoder.decode(jarPath, StandardCharsets.UTF_8))) {
+                    return jar.getEntry(pathName).isDirectory();
+                }
+            }
+        } catch (Exception ignored) {
+        }
+
+        return false;
+    }
+
+    public byte[] getData(String pathName) {
+        InputStream is = getInput(pathName);
+        if (is == null) {
+            return null;
+        }
+
+        try (ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
+            int nRead;
+            byte[] data = new byte[16384];
             while ((nRead = is.read(data, 0, data.length)) != -1) {
                 buffer.write(data, 0, nRead);
             }
             buffer.flush();
             return buffer.toByteArray();
         } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        } finally {
-            try {
-                buffer.close();
-            } catch (IOException ignored) {
-            }
+            throw new RuntimeException(e);
         }
     }
 
-    public synchronized static String[] listFiles(String pathName) {
+    public List<ResourceStream> listFiles(String pathName) {
         if (pathName.charAt(pathName.length() - 1) != '/') {
             pathName = pathName + "/";
         }
+
+        List<ResourceStream> list = new ArrayList<>();
         try {
             if (zip != null) {
                 Enumeration<? extends ZipEntry> entries = zip.entries();
-                Set<String> result = new HashSet<>();
                 while (entries.hasMoreElements()) {
-                    String name = entries.nextElement().getName();
-                    if (name.startsWith(pathName)) {
-                        String entry = name.substring(pathName.length());
-                        int checkSubdir = entry.indexOf("/");
-                        if (checkSubdir >= 0) {
-                            entry = entry.substring(0, checkSubdir);
+                    ZipEntry entry = entries.nextElement();
+                    String name = entry.getName();
+                    if (!name.equals(pathName) && name.startsWith(pathName)) {
+                        int indexOf = name.indexOf("/", pathName.length());
+                        int indexOf2 = indexOf == -1 ? -1 : name.indexOf("/", indexOf + 1);
+                        if (indexOf == -1 || indexOf2 == -1) {
+                            list.add(new ResourceStream(name, entry.isDirectory()));
                         }
-                        result.add(entry);
                     }
                 }
-                return result.toArray(new String[result.size()]);
+
             } else if (dir != null) {
                 File subDir = new File(dir, pathName);
-                String[] sub = subDir.list();
-                if (sub == null) {
-                    return new String[0];
-                } else {
-                    return sub;
-                }
-            } else {
-                URL dirURL = Thread.currentThread().getContextClassLoader().getResource(pathName);
-                if (dirURL != null && dirURL.getProtocol().equals("file")) {
-                    String[] sub = new File(dirURL.toURI()).list();
-                    if (sub == null) {
-                        return new String[0];
-                    } else {
-                        return sub;
+                String[] files = subDir.list();
+                if (files != null) {
+                    for (var file : files) {
+                        list.add(new ResourceStream(pathName + file, new File(pathName + file).isDirectory()));
                     }
                 }
 
-                if (dirURL != null && dirURL.getProtocol().equals("jar")) {
-                    String jarPath = dirURL.getPath().substring(5, dirURL.getPath().indexOf("!"));
-                    JarFile jar = new JarFile(URLDecoder.decode(jarPath, "UTF-8"));
-                    Enumeration<JarEntry> entries = jar.entries();
-                    Set<String> result = new HashSet<>();
-                    while (entries.hasMoreElements()) {
-                        String name = entries.nextElement().getName();
-                        if (name.startsWith(pathName)) {
-                            String entry = name.substring(pathName.length());
-                            int checkSubdir = entry.indexOf("/");
-                            if (checkSubdir >= 0) {
-                                entry = entry.substring(0, checkSubdir);
-                            }
-                            result.add(entry);
+            } else {
+                URL dirURL = Flat.class.getResource(pathName.startsWith("/") ? pathName : "/" + pathName);
+
+                if (dirURL != null && dirURL.getProtocol().equals("file")) {
+                    String[] files = new File(dirURL.toURI()).list();
+                    if (files != null) {
+                        for (var file : files) {
+                            list.add(new ResourceStream(pathName + file, new File(pathName, file).isDirectory()));
                         }
                     }
-                    return result.toArray(new String[result.size()]);
-                }
 
-                throw new UnsupportedOperationException("Cannot list files for URL " + dirURL);
+                } else if (dirURL != null && dirURL.getProtocol().equals("jar")) {
+
+                    String jarPath = dirURL.getPath().substring(5, dirURL.getPath().indexOf("!"));
+
+                    try (JarFile jar = new JarFile(URLDecoder.decode(jarPath, StandardCharsets.UTF_8))) {
+                        Enumeration<JarEntry> entries = jar.entries();
+                        while (entries.hasMoreElements()) {
+                            JarEntry entry = entries.nextElement();
+                            String name = entry.getName();
+                            if (!name.equals(pathName) && name.startsWith(pathName)) {
+                                int indexOf = name.indexOf("/", pathName.length());
+                                int indexOf2 = indexOf == -1 ? -1 : name.indexOf("/", indexOf + 1);
+                                if (indexOf == -1 || indexOf2 == -1) {
+                                    list.add(new ResourceStream(name, entry.isDirectory()));
+                                }
+                            }
+                        }
+                    }
+                }
             }
+
         } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Erro at: Getting Input Files");
-            return null;
+            throw new UnsupportedOperationException("Cannot list files for URL " + pathName);
         }
+        return list;
     }
 
     /**
@@ -208,15 +267,9 @@ public final class ResourcesManager {
      * @param pathName Resource path
      * @return true-false
      */
-    public synchronized static boolean exists(String pathName) {
+    public boolean exists(String pathName) {
         try {
-            if (zip != null) {
-                return zip.getEntry(pathName) != null;
-            } else if (dir != null) {
-                return new File(dir, pathName).exists();
-            } else {
-                return Thread.currentThread().getContextClassLoader().getResource(pathName) != null;
-            }
+            return getInput(pathName) != null;
         } catch (Exception e) {
             return false;
         }
@@ -229,11 +282,9 @@ public final class ResourcesManager {
      * @param outDir Target Directory
      * @return All extracted files
      *
-     * @throws Exception
      */
     public static File[] zipUnpack(File zipFile, File outDir) throws Exception {
-        outDir.mkdir();
-        if (!outDir.exists() || outDir.isFile() ){
+        if (!outDir.mkdir() || !outDir.exists() || outDir.isFile() ){
             throw new Exception("Invalid Directory");
         }
 
@@ -252,7 +303,7 @@ public final class ResourcesManager {
                 if (zentry.isDirectory()) {
                     newFile.mkdir();
                 } else {
-                    try(FileOutputStream outstream = new FileOutputStream(newFile)){
+                    try (FileOutputStream outstream = new FileOutputStream(newFile)){
                         int n;
                         while ((n = zinstream.read(buffer)) > -1) {
                             outstream.write(buffer, 0, n);
@@ -281,7 +332,6 @@ public final class ResourcesManager {
      * @param zipFile Target zip file
      * @param srcFiles Source files
      *
-     * @throws Exception
      */
     public static void zipPack(File zipFile, File... srcFiles) throws Exception{
         byte[] buffer = new byte[1024];
@@ -316,18 +366,14 @@ public final class ResourcesManager {
      * @param zipFile Target zip file
      * @param dir Source directory
      *
-     * @throws Exception
      */
     public static void zipPack(File zipFile, File dir) throws Exception {
         List<File> fileList = new ArrayList<>();
         getAllFiles(dir, fileList);
 
-        ZipOutputStream zos = null;
-        try {
-            zos = new ZipOutputStream(new FileOutputStream(zipFile));
+        try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFile))) {
             for (File file : fileList) {
-                String path = file.getCanonicalPath().substring(
-                        dir.getCanonicalPath().length() + 1, file.getCanonicalPath().length() );
+                String path = file.getCanonicalPath().substring(dir.getCanonicalPath().length() + 1);
                 // Folder
                 if (file.isDirectory()) {
                     zos.putNextEntry(new ZipEntry(path + "/"));
@@ -347,11 +393,6 @@ public final class ResourcesManager {
                     }
                 }
             }
-        } finally {
-            if( zos != null) try{
-                zos.close();
-            }catch (IOException ignored){
-            }
         }
     }
 
@@ -362,41 +403,10 @@ public final class ResourcesManager {
      * @return true-false
      */
     public static boolean zipCheck(final File file) {
-        ZipFile zipfile = null;
-        try {
-            zipfile = new ZipFile(file);
+        try (ZipFile zipfile = new ZipFile(file)) {
             return true;
         } catch (Exception e) {
             return false;
-        } finally {
-            try {
-                if (zipfile != null) {
-                    zipfile.close();
-                }
-            } catch (Exception ignored) {
-            }
-        }
-    }
-
-    public synchronized static String readPersistentData(String path) {
-        InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(path);
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        int nRead;
-        byte[] data = new byte[16384];
-        try {
-            while ((nRead = is.read(data, 0, data.length)) != -1) {
-                buffer.write(data, 0, nRead);
-            }
-            buffer.flush();
-            return new String(buffer.toByteArray());
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        } finally {
-            try {
-                buffer.close();
-            } catch (IOException ignored) {
-            }
         }
     }
 

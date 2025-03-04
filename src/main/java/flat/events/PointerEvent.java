@@ -3,28 +3,19 @@ package flat.events;
 import flat.widget.Widget;
 
 public class PointerEvent extends Event {
-    public static final int PRESSED     = 14;
-    public static final int RELEASED    = 15;
-    public static final int DRAGGED     = 16;
+    public static final Type PRESSED = new Type("PRESSED");
+    public static final Type RELEASED = new Type("RELEASED");
+    public static final Type DRAGGED = new Type("DRAGGED");
+    public static final Type FILTER = new Type("FILTER");
 
-    private float x, y;
+    private final float x, y;
     private final int buttonID;
-    private final boolean mouseEvent;
 
-    public PointerEvent(Widget source, int type, boolean mouseEvent, int buttonID, float x, float y) {
+    public PointerEvent(Widget source, Type type, int buttonID, float x, float y) {
         super(source, type);
-        this.mouseEvent = mouseEvent;
         this.buttonID = buttonID;
         this.x = x;
         this.y = y;
-    }
-
-    public PointerEvent(Widget source, int type, int buttonID, float x, float y) {
-        this(source, type, true, buttonID, x, y);
-    }
-
-    public boolean isMouseEvent() {
-        return mouseEvent;
     }
 
     public int getPointerID() {
@@ -41,10 +32,12 @@ public class PointerEvent extends Event {
 
     @Override
     public String toString() {
-        StringBuilder s = new StringBuilder("(").append(getSource()).append(") PointerEvent ");
-        if (getType() == PRESSED) s.append("[PRESSED]");
-        else if (getType() == RELEASED) s.append("[RELEASED]");
-        else if (getType() == DRAGGED) s.append("[DRAGGED]");
-        return s.toString();
+        return "(" + getSource() + ") PointerEvent " + getType() + ", [" + x + ", " + y + "] [BTN: " + buttonID + "]";
+    }
+
+    public static class Type extends EventType {
+        Type(String name) {
+            super(name);
+        }
     }
 }

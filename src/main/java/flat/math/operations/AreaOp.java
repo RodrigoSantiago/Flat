@@ -1,9 +1,9 @@
 package flat.math.operations;
 
-import java.util.Vector;
-import java.util.Enumeration;
-import java.util.Comparator;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.Vector;
 
 public abstract class AreaOp {
     public static abstract class CAGOp extends AreaOp {

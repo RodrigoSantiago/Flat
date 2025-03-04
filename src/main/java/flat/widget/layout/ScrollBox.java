@@ -1,349 +1,204 @@
 package flat.widget.layout;
 
-import flat.animations.StateInfo;
 import flat.events.ScrollEvent;
-import flat.math.shapes.Shape;
-import flat.widget.value.ScrollBar;
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
+import flat.math.Vector2;
 import flat.uxml.Controller;
 import flat.uxml.UXChildren;
-import flat.uxml.UXStyleAttrs;
-import flat.widget.Gadget;
-import flat.widget.Parent;
 import flat.widget.Widget;
-import flat.widget.enuns.Direction;
-import flat.widget.enuns.Policy;
-import flat.widget.enuns.Visibility;
+import flat.widget.enums.Visibility;
+import flat.widget.value.HorizontalScrollBar;
+import flat.widget.value.VerticalScrollBar;
 
-public class ScrollBox extends Parent {
+import java.util.List;
 
-    private float scrollX, scrollY;
-    private Widget content;
-    private ScrollBar verticalBar, horizontalBar;
-    private Policy verticalPolicy = Policy.AS_NEEDED, horizontalPolicy = Policy.AS_NEEDED;
-
-    public ScrollBox() {
-
-    }
-
-    @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        super.applyAttributes(style, controller);
-
-        setScrollX(style.asNumber("scroll-x", getScrollX()));
-        setScrollY(style.asNumber("scroll-y", getScrollY()));
-    }
-
-    @Override
-    public void applyStyle() {
-        super.applyStyle();
-        if (getStyle() == null) return;
-
-        StateInfo info = getStateInfo();
-
-        setHorizontalPolicy(getStyle().asConstant("horizontal-policy", info, getHorizontalPolicy()));
-        setVerticalPolicy(getStyle().asConstant("vertical-policy", info, getVerticalPolicy()));
-    }
+public class ScrollBox extends Scrollable {
 
     @Override
     public void applyChildren(UXChildren children) {
         super.applyChildren(children);
 
-        Gadget child;
-        while ((child = children.next()) != null ) {
-            Widget widget = child.getWidget();
-            if (widget != null) {
-                if (content == null) {
-                    setContent(widget);
-                } else if (widget instanceof ScrollBar) {
-                    ScrollBar bar = (ScrollBar) widget;
-                    if (bar.getDirection() == Direction.HORIZONTAL || bar.getDirection() == Direction.IHORIZONTAL) {
-                        if (horizontalBar == null) {
-                            setHorizontalBar(bar);
-                        }
-                    } else {
-                        if (verticalBar == null) {
-                            setVerticalBar(bar);
-                        }
-                    }
-                }
-                if (content != null && horizontalBar != null && verticalBar != null) {
-                    break;
-                }
+        for (var child : children) {
+            if (child.getAttributeBool("horizontal-bar", false) &&
+                    child.getWidget() instanceof HorizontalScrollBar bar) {
+                setHorizontalBar(bar);
+            } else if (child.getAttributeBool("vertical-bar", false) &&
+                    child.getWidget() instanceof VerticalScrollBar bar) {
+                setVerticalBar(bar);
+            } else {
+                add(child.getWidget());
             }
         }
     }
 
     @Override
-    public Widget findByPosition(float x, float y, boolean includeDisabled) {
-        return contains(x, y) ? super.findByPosition(x, y, includeDisabled) : null;
+    public void applyAttributes(Controller controller) {
+        super.applyAttributes(controller);
     }
 
     @Override
-    public void onDraw(SmartContext context) {
-        context.setTransform2D(getTransform());
-        Shape clip = backgroundClip(context);
-
-        backgroundDraw(getBackgroundColor(), getBorderColor(), getRippleColor(), context);
-
-        if (content != null) {
-            content.onDraw(context);
-        }
-        if (verticalBar != null && verticalBar.getVisibility() == Visibility.Visible) {
-            verticalBar.onDraw(context);
-        }
-        if (horizontalBar != null && horizontalBar.getVisibility() == Visibility.Visible) {
-            horizontalBar.onDraw(context);
-        }
-
-        context.setTransform2D(null);
-        context.setClip(clip);
+    public void applyStyle() {
+        super.applyStyle();
     }
 
     @Override
     public void onMeasure() {
-        final float offWidth = getPaddingLeft() + getPaddingRight();
-        final float offHeight = getPaddingTop() + getPaddingBottom();
-        float mWidth = Math.max(getPrefWidth(), Math.max(getMinWidth(), offWidth));
-        float mHeight = Math.max(getPrefHeight(), Math.max(getMinHeight(), offHeight));
+        float extraWidth = getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
+        float extraHeight = getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
 
-        if (content != null) {
-            content.onMeasure();
-        }
-        if (verticalBar != null) {
-            verticalBar.onMeasure();
-        }
-        if (horizontalBar != null) {
-            horizontalBar.onMeasure();
-        }
+        float mWidth = 0;
+        float mHeight = 0;
+        boolean wrapWidth = getLayoutPrefWidth() == WRAP_CONTENT;
+        boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
 
-        if (content != null && content.getVisibility() != Visibility.Gone) {
-            if (getPrefWidth() == WRAP_CONTENT) {
-                mWidth = content.mWidth() + offWidth;
-                if (verticalBar != null && verticalPolicy == Policy.AWAYS) {
-                    mWidth += verticalBar.mWidth();
+        for (Widget child : getChildrenIterable()) {
+            if (child.getVisibility() == Visibility.GONE) continue;
+
+            child.onMeasure();
+
+            if (child == getVerticalBar() || child == getHorizontalBar()) continue;
+
+            if (wrapWidth) {
+                if (child.getMeasureWidth() == MATCH_PARENT) {
+                    float mW = Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth());
+                    if (mW > mWidth) {
+                        mWidth = mW;
+                    }
+                } else if (child.getMeasureWidth() > mWidth) {
+                    mWidth = child.getMeasureWidth();
                 }
             }
-            if (getPrefHeight() == WRAP_CONTENT) {
-                mHeight = content.mHeight() + offHeight;
-                if (horizontalBar != null && horizontalPolicy == Policy.AWAYS) {
-                    mHeight += horizontalBar.mHeight();
+            if (wrapHeight) {
+                if (child.getMeasureHeight() == MATCH_PARENT) {
+                    float mH = Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight());
+                    if (mH > mHeight) {
+                        mHeight = mH;
+                    }
+                } else if (child.getMeasureHeight() > mHeight) {
+                    mHeight = child.getMeasureHeight();
                 }
             }
         }
-        setMeasure(mWidth + getMarginLeft() + getMarginRight(), mHeight + getMarginTop() + getMarginBottom());
+
+        if (wrapWidth) {
+            mWidth = Math.max(mWidth + extraWidth, getLayoutMinWidth());
+        } else {
+            mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
+        }
+        if (wrapHeight) {
+            mHeight = Math.max(mHeight + extraHeight, getLayoutMinHeight());
+        } else {
+            mHeight = Math.max(getLayoutPrefHeight(), getLayoutMinHeight());
+        }
+
+        setMeasure(mWidth, mHeight);
+    }
+
+    @Override
+    public Vector2 onLayoutTotalDimension(float width, float height) {
+        float localDimensionX = 0;
+        float localDimensionY = 0;
+
+        for (Widget child : getChildrenIterable()) {
+            if (child.getVisibility() == Visibility.GONE || child == getVerticalBar() || child == getHorizontalBar())
+                continue;
+
+            if (child.getMeasureWidth() != MATCH_PARENT) {
+                localDimensionX = Math.max(localDimensionX, child.getMeasureWidth());
+            } else {
+                localDimensionX = Math.max(localDimensionX, child.getLayoutMinWidth());
+            }
+            if (child.getMeasureHeight() != MATCH_PARENT) {
+                localDimensionY = Math.max(localDimensionY, child.getMeasureHeight());
+            } else {
+                localDimensionY = Math.max(localDimensionY, child.getLayoutMinHeight());
+            }
+        }
+
+        return new Vector2(localDimensionX, localDimensionY);
+    }
+
+    @Override
+    public void setLayoutScrollOffset(float xx, float yy) {
+        for (Widget child : getChildrenIterable()) {
+            if (child.getVisibility() == Visibility.GONE || child == getVerticalBar() || child == getHorizontalBar())
+                continue;
+
+            float childWidth;
+            if (child.getMeasureWidth() == MATCH_PARENT) {
+                childWidth = Math.min(child.getLayoutMaxWidth(), getTotalDimensionX());
+            } else {
+                childWidth = Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth());
+            }
+
+            float childHeight;
+            if (child.getMeasureHeight() == MATCH_PARENT) {
+                childHeight = Math.min(child.getLayoutMaxHeight(), getTotalDimensionY());
+            } else {
+                childHeight = Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight());
+            }
+
+            child.onLayout(childWidth, childHeight);
+            child.setLayoutPosition(xx, yy);
+        }
     }
 
     @Override
     public void onLayout(float width, float height) {
-        setLayout(width, height);
+        super.onLayout(width, height);
+    }
 
-        if (content != null && content.getVisibility() != Visibility.Gone) {
-            float cw = content.mWidth();
-            float ch = content.mHeight();;
-            if (content.mWidth() == MATCH_PARENT) {
-                cw = width - (verticalBar != null && verticalPolicy == Policy.AWAYS ? verticalBar.mWidth() : 0);
-            }
-            if (content.mHeight() == MATCH_PARENT) {
-                ch = height - (horizontalBar != null && horizontalPolicy == Policy.AWAYS ? horizontalBar.mHeight() : 0);
-            }
+    @Override
+    public boolean onLayoutSingleChild(Widget child) {
+        return false;
+    }
 
-            content.onLayout(cw, ch);
-            if (horizontalBar != null) {
-                if (horizontalPolicy == Policy.AWAYS) {
-                    horizontalBar.setVisibility(Visibility.Visible);
-                }
-                if (getInWidth() >= content.lWidth()) {
-                    horizontalBar.setMaxRange(1);
-                    horizontalBar.setRange(1);
-                    if (horizontalPolicy == Policy.AS_NEEDED) {
-                        horizontalBar.setVisibility(Visibility.Gone);
-                    }
-                } else {
-                    horizontalBar.setMaxRange(content.lWidth());
-                    horizontalBar.setRange(getInWidth());
-                    if (horizontalPolicy != Policy.NEVER) {
-                        horizontalBar.setVisibility(Visibility.Visible);
-                    }
-                }
-            }
-            if (verticalBar != null) {
-                if (verticalPolicy == Policy.AWAYS) {
-                    verticalBar.setVisibility(Visibility.Visible);
-                }
-                if (getInHeight() >= content.lHeight()) {
-                    verticalBar.setMaxRange(1);
-                    verticalBar.setRange(1);
-                    if (verticalPolicy == Policy.AS_NEEDED) {
-                        verticalBar.setVisibility(Visibility.Gone);
-                    }
-                } else {
-                    verticalBar.setMaxRange(content.lHeight());
-                    verticalBar.setRange(getInHeight());
-                    if (verticalPolicy != Policy.NEVER) {
-                        verticalBar.setVisibility(Visibility.Visible);
-                    }
-                }
-            }
-            boolean hbar = horizontalBar != null && horizontalBar.getVisibility() != Visibility.Gone;
-            boolean vbar = verticalBar != null && verticalBar.getVisibility() != Visibility.Gone;
-            float v = 0, h = 0;
+    @Override
+    public void add(Widget... children) {
+        super.add(children);
+    }
 
-            // VERTICAL PRIORITY
-            if (vbar) {
-                verticalBar.onLayout(
-                        Math.min(verticalBar.mWidth(), width),
-                        Math.min(verticalBar.mHeight(), height));
-                v = verticalBar.lWidth();
-            }
-            if (hbar) {
-                horizontalBar.onLayout(
-                        Math.min(horizontalBar.mWidth(), width - v),
-                        Math.min(horizontalBar.mHeight(), height));
-                h = horizontalBar.lHeight();
-            }
-            if (vbar) {
-                verticalBar.setPosition(width - v, 0);
-            }
-            if (hbar) {
-                horizontalBar.setPosition(0, height - h);
-            }
+    @Override
+    public void add(Widget child) {
+        super.add(child);
+    }
 
-            float mx = Math.max(0, (content.lWidth() + getPaddingLeft() + getPaddingRight() + v) - getInWidth());
-            float my = Math.max(0, (content.lHeight() + getPaddingTop() + getPaddingBottom() + h) - getInHeight());
-            content.setPosition(-(scrollX * mx) + getPaddingLeft(), -(scrollY * my) + getPaddingTop());
+    @Override
+    public void add(List<Widget> children) {
+        super.add(children);
+    }
+
+    @Override
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
+        drawRipple(graphics);
+
+        if (getInWidth() <= 0 || getInHeight() <= 0) return;
+
+        graphics.pushClip(getBackgroundShape());
+        for (Widget child : getChildrenIterable()) {
+            if (child.getVisibility() == Visibility.VISIBLE &&
+                    child != getHorizontalBar() && child != getVerticalBar()) {
+                child.onDraw(graphics);
+            }
+        }
+        graphics.popClip();
+
+        if (getHorizontalBar() != null && isHorizontalVisible()) {
+            getHorizontalBar().onDraw(graphics);
+        }
+
+        if (getVerticalBar() != null && isVerticalVisible()) {
+            getVerticalBar().onDraw(graphics);
         }
     }
 
     @Override
-    public void fireScroll(ScrollEvent scrollEvent) {
-        if (!scrollEvent.isConsumed() && content != null && verticalBar != null
-                && verticalBar.getVisibility() == Visibility.Visible) {
-
-            if (content.getHeight() > 0 && getHeight() > 0) {
-                verticalBar.setValue(getScrollY() - (scrollEvent.getDeltaY() * getHeight() / content.getHeight()) / 6f);
-            } else {
-                verticalBar.setValue(getScrollY() - (scrollEvent.getDeltaY() * 0.1f));
-            }
-            scrollEvent.consume();
-        }
-        super.fireScroll(scrollEvent);
-    }
-
-    @Override
-    public void remove(Widget widget) {
-        if (widget == content) content = null;
-        if (widget == horizontalBar) {
-            horizontalBar.setOnValueChange(null);
-            horizontalBar = null;
-        }
-        if (widget == verticalBar) {
-            verticalBar.setOnValueChange(null);
-            verticalBar = null;
-        }
-        super.remove(widget);
-    }
-
-    public Widget getContent() {
-        return content;
-    }
-
-    public void setContent(Widget content) {
-        if (this.content != content) {
-            if (this.content != null) {
-                remove(this.content);
-            }
-            this.content = content;
-            if (content != null) {
-                add(content);
-            }
-        }
-    }
-
-    public ScrollBar getHorizontalBar() {
-        return horizontalBar;
-    }
-
-    public void setHorizontalBar(ScrollBar horizontalBar) {
-        if (this.horizontalBar != horizontalBar) {
-            if (this.horizontalBar != null) {
-                this.horizontalBar.setOnValueChange(null);
-                remove(this.horizontalBar);
-            }
-            this.horizontalBar = horizontalBar;
-            if (horizontalBar != null) {
-                // todo - save as default listener {remove on scene detach}
-                horizontalBar.setOnValueChange((event) -> setScrollX(horizontalBar.getValue()));
-                add(horizontalBar);
-            }
-        }
-    }
-
-    public ScrollBar getVerticalBar() {
-        return verticalBar;
-    }
-
-    public void setVerticalBar(ScrollBar verticalBar) {
-        if (this.verticalBar != verticalBar) {
-            if (this.verticalBar != null) {
-                this.verticalBar.setOnValueChange(null);
-                remove(this.verticalBar);
-            }
-            this.verticalBar = verticalBar;
-            if (verticalBar != null) {
-                verticalBar.setOnValueChange((event) -> setScrollY(verticalBar.getValue()));
-                add(verticalBar);
-            }
-        }
-    }
-
-    public float getScrollX() {
-        return scrollX;
-    }
-
-    public void setScrollX(float scrollX) {
-        scrollX = Math.min(1, Math.max(0, scrollX));
-
-        if (this.scrollX != scrollX) {
-            this.scrollX = scrollX;
-            if (horizontalBar != null) horizontalBar.setValue(scrollX);
-            invalidate(true);
-        }
-    }
-
-    public float getScrollY() {
-        return scrollY;
-    }
-
-    public void setScrollY(float scrollY) {
-        scrollY = Math.min(1, Math.max(0, scrollY));
-
-        if (this.scrollY != scrollY) {
-            this.scrollY = scrollY;
-            if (verticalBar != null) verticalBar.setValue(scrollY);
-            invalidate(true);
-        }
-    }
-
-    public Policy getHorizontalPolicy() {
-        return horizontalPolicy;
-    }
-
-    public void setHorizontalPolicy(Policy horizontalPolicy) {
-        if (this.horizontalPolicy != horizontalPolicy) {
-            this.horizontalPolicy = horizontalPolicy;
-            invalidate(true);
-        }
-    }
-
-    public Policy getVerticalPolicy() {
-        return verticalPolicy;
-    }
-
-    public void setVerticalPolicy(Policy verticalPolicy) {
-        if (this.verticalPolicy != verticalPolicy) {
-            this.verticalPolicy = verticalPolicy;
-            invalidate(true);
+    public void scroll(ScrollEvent event) {
+        super.scroll(event);
+        if (!event.isConsumed()) {
+            slideVertical(- event.getDeltaY() * getScrollSensibility());
+            event.consume();
         }
     }
 }

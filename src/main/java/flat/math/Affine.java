@@ -72,6 +72,16 @@ public final class Affine {
     }
 
     /**
+     * Check if this is equals to other affine transform.
+     *
+     * @return True if translation has all values equals
+     * */
+    public boolean isEquals(Affine other) {
+        return m00 == other.m00 && m01 == other.m01 &&
+               m10 == other.m10 && m11 == other.m11 &&
+               m02 == other.m02 && m12 == other.m12;
+    }
+    /**
      * Sets the affine transform values with the supplied scale, rotation and translation.
      * @param scaleX The scale in the x-axis.
      * @param scaleY The scale in the y-axis.

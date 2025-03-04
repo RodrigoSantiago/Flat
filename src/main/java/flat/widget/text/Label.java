@@ -1,87 +1,117 @@
 package flat.widget.text;
 
 import flat.animations.StateInfo;
-import flat.graphics.SmartContext;
+import flat.graphics.Color;
+import flat.graphics.Graphics;
 import flat.graphics.context.Font;
-import flat.graphics.text.Align;
 import flat.uxml.Controller;
-import flat.uxml.UXStyleAttrs;
+import flat.uxml.UXAttrs;
 import flat.widget.Widget;
+import flat.widget.enums.HorizontalAlign;
+import flat.widget.enums.VerticalAlign;
+import flat.widget.text.data.TextRender;
 
 import java.util.Objects;
 
 public class Label extends Widget {
 
     private String text;
+
     private boolean textAllCaps;
+    private Font textFont = Font.getDefault();
+    private float textSize = 16f;
+    private int textColor = 0x000000FF;
 
-    private Font font = Font.DEFAULT;
-    private float textSize;
-    private int textColor;
-
-    private Align.Vertical verticalAlign = Align.Vertical.TOP;
-    private Align.Horizontal horizontalAlign = Align.Horizontal.LEFT;
+    private VerticalAlign verticalAlign = VerticalAlign.TOP;
+    private HorizontalAlign horizontalAlign = HorizontalAlign.LEFT;
 
     private String showText;
     private boolean invalidTextSize;
     private float textWidth;
+    private final TextRender textRender = new TextRender();
+
+    public Label() {
+        textRender.setFont(textFont);
+        textRender.setTextSize(textSize);
+    }
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        super.applyAttributes(style, controller);
+    public void applyAttributes(Controller controller) {
+        super.applyAttributes(controller);
+        UXAttrs attrs = getAttrs();
 
-        setText(style.asString("text", getText()));
+        setText(attrs.getAttributeString("text", getText()));
     }
 
     @Override
     public void applyStyle() {
         super.applyStyle();
-        if (getStyle() == null) return;
 
+        UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
 
-        setFont(getStyle().asFont("font", info, getFont()));
-        setTextSize(getStyle().asSize("text-size", info, getTextSize()));
-        setTextColor(getStyle().asColor("text-color", info, getTextColor()));
-        setTextAllCaps(getStyle().asBool("text-all-caps", info, isTextAllCaps()));
+        setTextFont(attrs.getFont("text-font", info, getTextFont()));
+        setTextSize(attrs.getSize("text-size", info, getTextSize()));
+        setTextColor(attrs.getColor("text-color", info, getTextColor()));
+        setTextAllCaps(attrs.getBool("text-all-caps", info, isTextAllCaps()));
 
-        setVerticalAlign(getStyle().asConstant("vertical-align", info, getVerticalAlign()));
-        setHorizontalAlign(getStyle().asConstant("horizontal-align", info, getHorizontalAlign()));
-    }
-
-    @Override
-    public void onDraw(SmartContext context) {
-        backgroundDraw(getBackgroundColor(), getBorderColor(), getRippleColor(), context);
-
-        context.setTransform2D(getTransform());
-        if (showText != null) {
-            context.setColor(textColor);
-            context.setTextFont(font);
-            context.setTextSize(textSize);
-            context.setTextVerticalAlign(Align.Vertical.TOP);
-            context.setTextHorizontalAlign(Align.Horizontal.LEFT);
-
-            final float x = getInX();
-            final float y = getInY();
-            final float width = getInWidth();
-            final float height = getInHeight();
-
-            context.drawTextSlice(
-                    xOff(x, x + width, Math.min(getTextWidth(), width)),
-                    yOff(y, y + height, Math.min(getTextHeight(), height)),
-                    width, showText);
-        }
+        setVerticalAlign(attrs.getConstant("vertical-align", info, getVerticalAlign()));
+        setHorizontalAlign(attrs.getConstant("horizontal-align", info, getHorizontalAlign()));
     }
 
     @Override
     public void onMeasure() {
-        float mWidth = getPrefWidth();
-        float mHeight = getPrefHeight();
-        mWidth = mWidth == WRAP_CONTENT ? getTextWidth() : mWidth;
-        mHeight = mHeight == WRAP_CONTENT ? getTextHeight() : mHeight;
-        mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
-        mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
+        float extraWidth = getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
+        float extraHeight = getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
+
+        float mWidth;
+        float mHeight;
+        boolean wrapWidth = getLayoutPrefWidth() == WRAP_CONTENT;
+        boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
+
+        if (wrapWidth) {
+            mWidth = Math.max(getTextWidth() + extraWidth, getLayoutMinWidth());
+        } else {
+            mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
+        }
+        if (wrapHeight) {
+            mHeight = Math.max(getTextHeight() + extraHeight, getLayoutMinHeight());
+        } else {
+            mHeight = Math.max(getLayoutPrefHeight(), getLayoutMinHeight());
+        }
+
         setMeasure(mWidth, mHeight);
+    }
+
+    @Override
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
+        drawRipple(graphics);
+
+        float x = getInX();
+        float y = getInY();
+        float width = getInWidth();
+        float height = getInHeight();
+
+        if (width <= 0 || height <= 0) return;
+
+        if (getTextFont() != null && getTextSize() > 0 && Color.getAlpha(getTextColor()) > 0) {
+            float xpos = xOff(x, x + width, Math.min(getTextWidth(), width));
+            float ypos = yOff(y, y + height, Math.min(getTextHeight(), height));
+            drawText(graphics, xpos, ypos, width, height);
+        }
+    }
+
+    protected void drawText(Graphics graphics, float x, float y, float width, float height) {
+        if (getTextFont() != null && getTextSize() > 0 && Color.getAlpha(getTextColor()) > 0) {
+            graphics.setTransform2D(getTransform());
+            graphics.setColor(getTextColor());
+            graphics.setTextFont(getTextFont());
+            graphics.setTextSize(getTextSize());
+            graphics.setTextBlur(0);
+
+            textRender.drawText(graphics, x, y, width, height, horizontalAlign);
+        }
     }
 
     public String getText() {
@@ -92,7 +122,8 @@ public class Label extends Widget {
         if (!Objects.equals(this.text, text)) {
             this.text = text;
             showText = text == null ? null : textAllCaps ? text.toUpperCase() : text;
-            invalidate(true);
+            textRender.setText(showText);
+            invalidate(isWrapContent());
             invalidateTextSize();
         }
     }
@@ -105,19 +136,21 @@ public class Label extends Widget {
         if (this.textAllCaps != textAllCaps) {
             this.textAllCaps = textAllCaps;
             showText = text == null ? null : textAllCaps ? text.toUpperCase() : text;
-            invalidate(true);
+            textRender.setText(showText);
+            invalidate(isWrapContent());
             invalidateTextSize();
         }
     }
 
-    public Font getFont() {
-        return font;
+    public Font getTextFont() {
+        return textFont;
     }
 
-    public void setFont(Font font) {
-        if (this.font != font) {
-            this.font = font;
-            invalidate(true);
+    public void setTextFont(Font textFont) {
+        if (this.textFont != textFont) {
+            this.textFont = textFont;
+            textRender.setFont(textFont);
+            invalidate(isWrapContent());
             invalidateTextSize();
         }
     }
@@ -129,7 +162,8 @@ public class Label extends Widget {
     public void setTextSize(float textSize) {
         if (this.textSize != textSize) {
             this.textSize = textSize;
-            invalidate(true);
+            textRender.setTextSize(textSize);
+            invalidate(isWrapContent());
             invalidateTextSize();
         }
     }
@@ -149,12 +183,12 @@ public class Label extends Widget {
         invalidTextSize = true;
     }
 
-    public Align.Vertical getVerticalAlign() {
+    public VerticalAlign getVerticalAlign() {
         return verticalAlign;
     }
 
-    public void setVerticalAlign(Align.Vertical verticalAlign) {
-        if (verticalAlign == null) verticalAlign = Align.Vertical.TOP;
+    public void setVerticalAlign(VerticalAlign verticalAlign) {
+        if (verticalAlign == null) verticalAlign = VerticalAlign.TOP;
 
         if (this.verticalAlign != verticalAlign) {
             this.verticalAlign = verticalAlign;
@@ -162,12 +196,12 @@ public class Label extends Widget {
         }
     }
 
-    public Align.Horizontal getHorizontalAlign() {
+    public HorizontalAlign getHorizontalAlign() {
         return horizontalAlign;
     }
 
-    public void setHorizontalAlign(Align.Horizontal horizontalAlign) {
-        if (horizontalAlign == null) horizontalAlign = Align.Horizontal.LEFT;
+    public void setHorizontalAlign(HorizontalAlign horizontalAlign) {
+        if (horizontalAlign == null) horizontalAlign = HorizontalAlign.LEFT;
 
         if (this.horizontalAlign != horizontalAlign) {
             this.horizontalAlign = horizontalAlign;
@@ -177,34 +211,39 @@ public class Label extends Widget {
 
     protected float getTextWidth() {
         if (invalidTextSize) {
-            if (showText == null) {
-                return textWidth = 0;
-            }
-            textWidth = font.getWidth(showText, textSize, 1);
             invalidTextSize = false;
+            textWidth = textRender.getTextWidth();
         }
         return textWidth;
     }
 
     protected float getTextHeight() {
-        return font.getHeight(textSize);
+        return textRender.getTextHeight();
     }
 
     protected String getShowText() {
         return showText;
     }
 
+    protected boolean isWrapContent() {
+        return getPrefWidth() == WRAP_CONTENT || getPrefHeight() == WRAP_CONTENT;
+    }
+
     protected float xOff(float start, float end, float textWidth) {
         if (end < start) return (start + end) / 2f;
-        if (horizontalAlign == Align.Horizontal.RIGHT) return end - textWidth;
-        if (horizontalAlign == Align.Horizontal.CENTER) return (start + end - textWidth) / 2f;
+        if (horizontalAlign == HorizontalAlign.RIGHT) return end - textWidth;
+        if (horizontalAlign == HorizontalAlign.CENTER) return (start + end - textWidth) / 2f;
         return start;
     }
 
     protected float yOff(float start, float end, float textHeight) {
         if (end < start) return (start + end) / 2f;
-        if (verticalAlign == Align.Vertical.BOTTOM || verticalAlign == Align.Vertical.BASELINE) return end - textHeight;
-        if (verticalAlign == Align.Vertical.MIDDLE) return (start + end - textHeight) / 2f;
+        if (verticalAlign == VerticalAlign.BOTTOM) return end - textHeight;
+        if (verticalAlign == VerticalAlign.MIDDLE) return (start + end - textHeight) / 2f;
         return start;
+    }
+
+    protected float yOffCenter(float start, float end, float textHeight) {
+        return (start + end - textHeight) / 2f;
     }
 }

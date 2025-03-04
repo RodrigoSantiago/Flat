@@ -2,201 +2,346 @@ package flat.widget.text;
 
 import flat.animations.StateInfo;
 import flat.events.ActionEvent;
-import flat.events.ActionListener;
-import flat.events.PointerEvent;
-import flat.graphics.SmartContext;
+import flat.events.HoverEvent;
+import flat.graphics.Color;
+import flat.graphics.Graphics;
+import flat.graphics.cursor.Cursor;
 import flat.graphics.image.Drawable;
-import flat.graphics.text.Align;
 import flat.math.Vector2;
-import flat.resources.Resource;
+import flat.math.shapes.Ellipse;
 import flat.uxml.Controller;
-import flat.uxml.UXStyleAttrs;
+import flat.uxml.UXAttrs;
+import flat.uxml.UXListener;
+import flat.widget.enums.HorizontalPosition;
+import flat.widget.enums.ImageFilter;
 
-import java.lang.reflect.Method;
+public class Chip extends Button {
 
-public class Chip extends Label {
+    private UXListener<ActionEvent> requestCloseListener;
 
-    private ActionListener actionListener;
+    private Drawable closeIcon;
+    private int closeIconColor = Color.white;
+    private ImageFilter closeIconImageFilter = ImageFilter.LINEAR;
+    private float closeIconSpacing;
+    private float closeIconWidth;
+    private float closeIconHeight;
+    private int closeIconBgColor = Color.transparent;
+    private Cursor closeIconCursor = Cursor.UNSET;
 
-    private Drawable iconImage;
-    private float iconSpacing;
+    private boolean isHoveringClose;
 
-    private Drawable actionImage;
-    private float actionSpacing;
+    private float x1, y1, x2, y2;
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        super.applyAttributes(style, controller);
+    public void applyAttributes(Controller controller) {
+        super.applyAttributes(controller);
 
-        Method handle = style.asListener("on-action", ActionEvent.class, controller);
-        if (handle != null) {
-            setActionListener(new ActionListener.AutoActionListener(controller, handle));
-        }
+        UXAttrs attrs = getAttrs();
+        setRequestCloseListener(attrs.getAttributeListener("on-request-close", ActionEvent.class, controller));
     }
 
+    @Override
     public void applyStyle() {
         super.applyStyle();
-        if (getStyle() == null) return;
 
+        UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
 
-        Resource res = getStyle().asResource("icon-image", info);
-        if (res != null) {
-            Drawable drawable = res.getDrawable();
-            if (drawable != null) {
-                setIconImage(drawable);
-            }
-        }
-
-        setIconSpacing(getStyle().asSize("icon-spacing", info, getIconSpacing()));
-
-        res = getStyle().asResource("action-image", info);
-        if (res != null) {
-            Drawable drawable = res.getDrawable();
-            if (drawable != null) {
-                setActionImage(drawable);
-            }
-        }
-        setActionSpacing(getStyle().asSize("action-spacing", info, getIconSpacing()));
+        setCloseIcon(attrs.getResourceAsDrawable("close-icon", info, getCloseIcon(), false));
+        setCloseIconColor(attrs.getColor("close-icon-color", info, getCloseIconColor()));
+        setCloseIconBgColor(attrs.getColor("close-icon-bg-color", info, getCloseIconBgColor()));
+        setCloseIconWidth(attrs.getSize("close-icon-width", info, getCloseIconWidth()));
+        setCloseIconHeight(attrs.getSize("close-icon-height", info, getCloseIconHeight()));
+        setCloseIconSpacing(attrs.getSize("close-icon-spacing", info, getCloseIconSpacing()));
+        setCloseIconImageFilter(attrs.getConstant("close-icon-image-filter", info, getCloseIconImageFilter()));
+        setCloseIconCursor(attrs.getConstant("close-icon-cursor", info, getCloseIconCursor()));
     }
 
     @Override
-    public void onDraw(SmartContext context) {
-        backgroundDraw(getBackgroundColor(), getBorderColor(), getRippleColor(), context);
-
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
+        drawRipple(graphics);
 
         final float x = getInX();
         final float y = getInY();
         final float width = getInWidth();
         final float height = getInHeight();
 
-        context.setColor(getTextColor());
-        context.setTextFont(getFont());
-        context.setTextSize(getTextSize());
-        context.setTextVerticalAlign(Align.Vertical.TOP);
-        context.setTextHorizontalAlign(Align.Horizontal.LEFT);
+        if (width <= 0 || height <= 0) return;
 
-        float is = iconSpacing + (iconImage != null ? iconImage.getWidth() : 0);
-        float as = actionSpacing + (actionImage != null ? actionImage.getWidth() : 0);
+        graphics.setTransform2D(getTransform());
 
-        float tw = Math.min(getTextWidth() + (is + as), width);
-        float xoff = xOff(x, x + width, tw);
+        float iW = getLayoutIconWidth();
+        float iH = getLayoutIconHeight();
+        float ciW = getLayoutCloseIconWidth();
+        float ciH = getLayoutCloseIconHeight();
 
-        if (getShowText() != null && !getShowText().isEmpty()) {
-            context.setTransform2D(getTransform());
-            context.drawTextSlice(xoff + is,
-                    yOff(y, y + height, getTextHeight()),
-                    width - (is + as), getShowText());
+        float spaceForIcon = (iW > 0 ? iW + getIconSpacing() : 0);
+        float spaceForCloseIcon = (ciW > 0 ? ciW + getCloseIconSpacing() : 0);
+        float spaceForText = getTextWidth();
+
+        if (spaceForIcon + spaceForCloseIcon + spaceForText > width) {
+            if (spaceForCloseIcon > width) {
+                spaceForIcon = 0;
+                spaceForText = 0;
+                spaceForCloseIcon = width;
+            } else if (spaceForIcon + spaceForCloseIcon > width) {
+                spaceForText = 0;
+                spaceForIcon = width - spaceForCloseIcon;
+            } else {
+                spaceForText = width - spaceForCloseIcon - spaceForIcon;
+            }
         }
 
-        if (iconImage != null) {
-            context.setTransform2D(getTransform());
-            iconImage.draw(context, xoff,
-                    yOff(y, y + height, iconImage.getHeight()),
-                    iconImage.getWidth(), iconImage.getHeight(), 0);
+        float tw = spaceForText;
+        float th = Math.min(height, getTextHeight());
+        float iw = Math.min(iW, Math.max(spaceForIcon, 0));
+        float ih = Math.min(height, iH);
+        float ciw = Math.min(ciW, Math.max(spaceForCloseIcon, 0));
+        float cih = Math.min(height, ciH);
+
+        boolean iconLeft = getIconPosition() == HorizontalPosition.LEFT;
+        float boxX = xOff(x, x + width - spaceForCloseIcon, spaceForIcon + spaceForText);
+
+        if (iw > 0 && ih > 0 && getIcon() != null) {
+            float xpos = iconLeft ? boxX : spaceForCloseIcon + boxX + spaceForText + spaceForIcon - iw;
+            float ypos = yOff(y, y + height, ih);
+            drawIcon(graphics, xpos, ypos, iw, ih);
         }
 
-        if (actionImage != null) {
-            context.setTransform2D(getTransform());
-            actionImage.draw(context, xoff + is + getTextWidth() + actionSpacing,
-                    yOff(y, y + height, actionImage.getHeight()),
-                    actionImage.getWidth(), actionImage.getHeight(), 0);
+        if (tw > 0 && th > 0) {
+            float xpos = iconLeft ? boxX + spaceForIcon : spaceForCloseIcon + boxX;
+            float ypos = yOff(y, y + height, th);
+            drawText(graphics, xpos, ypos, tw, th);
+        }
+
+        if (ciw > 0 && cih > 0 && getCloseIcon() != null) {
+            float xpos = iconLeft ? x + width - ciw : x;
+            float ypos = yOff(y, y + height, cih);
+
+            if (isHoveringClose) {
+                graphics.setColor(getCloseIconBgColor());
+                graphics.drawEllipse(xpos, ypos, ciw, cih, true);
+            }
+            getCloseIcon().draw(graphics, xpos, ypos, ciw, cih, getCloseIconColor(), getCloseIconImageFilter());
         }
     }
 
     @Override
     public void onMeasure() {
+        float extraWidth = getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
+        float extraHeight = getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
 
-        float is = iconSpacing + (iconImage != null ? iconImage.getWidth() : 0);
-        float as = actionSpacing + (actionImage != null ? actionImage.getWidth() : 0);
-        float h = Math.max(iconImage != null ? iconImage.getHeight() : 0, actionImage != null ? actionImage.getHeight() : 0);
+        float mWidth;
+        float mHeight;
+        boolean wrapWidth = getLayoutPrefWidth() == WRAP_CONTENT;
+        boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
 
-        float mWidth = getPrefWidth();
-        float mHeight = getPrefHeight();
-        mWidth = mWidth == WRAP_CONTENT ? getTextWidth() + is + as : mWidth;
-        mHeight = mHeight == WRAP_CONTENT ? Math.max(getTextHeight(), h) : mHeight;
-        mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
-        mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
+        float iW = getLayoutIconWidth();
+        float iH = getLayoutIconHeight();
+        float ciW = getLayoutCloseIconWidth();
+        float ciH = getLayoutCloseIconHeight();
+
+        if (wrapWidth) {
+            mWidth = Math.max(getTextWidth() + extraWidth
+                    + (iW > 0 ? iW + getIconSpacing() : 0)
+                    + (ciW > 0 ? ciW + getCloseIconSpacing() : 0), getLayoutMinWidth());
+        } else {
+            mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
+        }
+        if (wrapHeight) {
+            mHeight = Math.max(Math.max(getTextHeight(), Math.max(iH, ciH)) + extraHeight, getLayoutMinHeight());
+        } else {
+            mHeight = Math.max(getLayoutPrefHeight(), getLayoutMinHeight());
+        }
+
         setMeasure(mWidth, mHeight);
     }
 
     @Override
-    public void firePointer(PointerEvent pointerEvent) {
-        super.firePointer(pointerEvent);
-        if (!pointerEvent.isConsumed() && pointerEvent.getType() == PointerEvent.RELEASED) {
-            Vector2 point = new Vector2(pointerEvent.getX(), pointerEvent.getY());
-            screenToLocal(point);
+    public void onLayout(float width, float height) {
+        super.onLayout(width, height);
+        updateClosePosition();
+    }
 
-            if (point.x >= getInX() + getTextWidth() + (iconImage != null ? iconImage.getWidth() + iconSpacing : 0)) {
-                fire();
+    private void updateClosePosition() {
+        float x = getInX();
+        float y = getInY();
+        float width = getInWidth();
+        float height = getInHeight();
+
+        float iaw = Math.min(width, getLayoutCloseIconWidth());
+        float iah = Math.min(height, getLayoutCloseIconHeight());
+
+        if (getIconPosition() == HorizontalPosition.LEFT) {
+            x1 = x + width - iaw;
+            x2 = x + width;
+        } else {
+            x1 = x;
+            x2 = x + iaw;
+        }
+        y1 = yOff(y, y + height, iah);
+        y2 = yOff(y, y + height, iah) + iah;
+    }
+
+    @Override
+    public void fireRipple(float x, float y) {
+        if (isOverActionButton(screenToLocal(x, y))) {
+            if (isRippleEnabled()) {
+                getRipple().setSize(Math.max(Math.abs(x1 - x2), Math.abs(y1 - y2)) * 0.5f);
+                getRipple().fire((x1 + x2) / 2f, (y1 + y2) / 2f);
+                getRipple().release();
             }
+        } else {
+            super.fireRipple(x, y);
+        }
+    }
+
+    public UXListener<ActionEvent> getRequestCloseListener() {
+        return requestCloseListener;
+    }
+
+    public void setRequestCloseListener(UXListener<ActionEvent> requestCloseListener) {
+        this.requestCloseListener = requestCloseListener;
+    }
+
+    private void fireRequestClose() {
+        if (requestCloseListener != null) {
+            UXListener.safeHandle(requestCloseListener, new ActionEvent(this));
         }
     }
 
     @Override
-    public void setActivated(boolean actived) {
-        super.setActivated(actived);
-    }
-
-    public ActionListener getActionListener() {
-        return actionListener;
-    }
-
-    public void setActionListener(ActionListener actionListener) {
-        this.actionListener = actionListener;
-    }
-
-    public void fireAction(ActionEvent event) {
-        if (actionListener != null) {
-            actionListener.handle(event);
+    public void action() {
+        if (isHoveringClose) {
+            requestClose();
+        } else {
+            super.action();
         }
     }
 
-    public void fire() {
-        fireAction(new ActionEvent(this));
+    public void requestClose() {
+        fireRequestClose();
     }
 
-    public Drawable getIconImage() {
-        return iconImage;
-    }
-
-    public void setIconImage(Drawable iconImage) {
-        if (this.iconImage != iconImage) {
-            this.iconImage = iconImage;
-            invalidate(true);
+    @Override
+    public void hover(HoverEvent event) {
+        super.hover(event);
+        if (!event.isConsumed() && event.getType() == HoverEvent.MOVED) {
+            if (isOverActionButton(screenToLocal(event.getX(), event.getY())) != isHoveringClose) {
+                isHoveringClose = !isHoveringClose;
+                invalidate(false);
+            }
+        }
+        if (!event.isConsumed() && event.getType() == HoverEvent.EXITED) {
+            isHoveringClose = false;
+            invalidate(false);
         }
     }
 
-    public float getIconSpacing() {
-        return iconSpacing;
+    @Override
+    public Cursor getCurrentCursor() {
+        return isHoveringClose && closeIconCursor != Cursor.UNSET ? closeIconCursor : super.getCursor();
     }
 
-    public void setIconSpacing(float iconSpacing) {
-        if (this.iconSpacing != iconSpacing) {
-            this.iconSpacing = iconSpacing;
-            invalidate(true);
+    private boolean isOverActionButton(Vector2 local) {
+        return closeIcon != null && !(local.x < x1 || local.x > x2 || local.y < y1 || local.y > y2);
+    }
+
+    public int getCloseIconColor() {
+        return closeIconColor;
+    }
+
+    public void setCloseIconColor(int closeIconColor) {
+        if (this.closeIconColor != closeIconColor) {
+            this.closeIconColor = closeIconColor;
+            invalidate(false);
         }
     }
 
-    public Drawable getActionImage() {
-        return actionImage;
+    public int getCloseIconBgColor() {
+        return closeIconBgColor;
     }
 
-    public void setActionImage(Drawable actionImage) {
-        if (this.actionImage != actionImage) {
-            this.actionImage = actionImage;
-            invalidate(true);
+    public void setCloseIconBgColor(int closeIconBgColor) {
+        if (this.closeIconBgColor != closeIconBgColor) {
+            this.closeIconBgColor = closeIconBgColor;
+            invalidate(false);
         }
     }
 
-    public float getActionSpacing() {
-        return actionSpacing;
+    public Drawable getCloseIcon() {
+        return closeIcon;
     }
 
-    public void setActionSpacing(float actionSpacing) {
-        if (this.actionSpacing != actionSpacing) {
-            this.actionSpacing = actionSpacing;
-            invalidate(true);
+    public void setCloseIcon(Drawable closeIcon) {
+        if (this.closeIcon != closeIcon) {
+            this.closeIcon = closeIcon;
+            invalidate(isWrapContent());
+        }
+    }
+
+    public float getCloseIconSpacing() {
+        return closeIconSpacing;
+    }
+
+    public void setCloseIconSpacing(float closeIconSpacing) {
+        if (this.closeIconSpacing != closeIconSpacing) {
+            this.closeIconSpacing = closeIconSpacing;
+            invalidate(isWrapContent());
+        }
+    }
+
+    public float getCloseIconWidth() {
+        return closeIconWidth;
+    }
+
+    public void setCloseIconWidth(float closeIconWidth) {
+        if (this.closeIconWidth != closeIconWidth) {
+            this.closeIconWidth = closeIconWidth;
+            invalidate(isWrapContent());
+        }
+    }
+
+    public Cursor getCloseIconCursor() {
+        return closeIconCursor;
+    }
+
+    public void setCloseIconCursor(Cursor closeIconCursor) {
+        if (closeIconCursor == null) closeIconCursor = Cursor.UNSET;
+
+        this.closeIconCursor = closeIconCursor;
+    }
+
+    private float getLayoutCloseIconWidth() {
+        return closeIcon == null ? 0 : closeIconWidth == 0 || closeIconWidth == MATCH_PARENT ? getTextHeight() : closeIconWidth;
+    }
+
+    public float getCloseIconHeight() {
+        return closeIconHeight;
+    }
+
+    public void setCloseIconHeight(float closeIconHeight) {
+        if (this.closeIconHeight != closeIconHeight) {
+            this.closeIconHeight = closeIconHeight;
+            invalidate(isWrapContent());
+        }
+    }
+
+    private float getLayoutCloseIconHeight() {
+        return closeIcon == null ? 0 : closeIconHeight == 0 || closeIconHeight == MATCH_PARENT ? getTextHeight() : closeIconHeight;
+    }
+
+    public ImageFilter getCloseIconImageFilter() {
+        return closeIconImageFilter;
+    }
+
+    public void setCloseIconImageFilter(ImageFilter closeIconImageFilter) {
+        if (closeIconImageFilter == null) closeIconImageFilter = ImageFilter.LINEAR;
+
+        if (this.closeIconImageFilter != closeIconImageFilter) {
+            this.closeIconImageFilter = closeIconImageFilter;
+            invalidate(false);
         }
     }
 }

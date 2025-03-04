@@ -1,24 +1,24 @@
 package flat.graphics.mesh;
 
-import flat.graphics.context.BufferObejct;
+import flat.graphics.context.BufferObject;
+import flat.graphics.context.Context;
 import flat.graphics.context.VertexArray;
-import flat.graphics.context.enuns.AttributeType;
-import flat.graphics.context.enuns.BufferType;
-import flat.graphics.context.enuns.UsageType;
-import flat.widget.Application;
+import flat.graphics.context.enums.AttributeType;
+import flat.graphics.context.enums.BufferType;
+import flat.graphics.context.enums.UsageType;
 
 public class VertexData {
 
     private VertexArray vertexArray;
-    private BufferObejct vertices;
-    private BufferObejct elements;
+    private BufferObject vertices;
+    private BufferObject elements;
 
     private boolean elementMode;
 
-    public VertexData() {
-        vertexArray = new VertexArray(Application.getContext());
-        vertices = new BufferObejct();
-        elements = new BufferObejct();
+    public VertexData(Context context) {
+        vertexArray = new VertexArray(context);
+        vertices = new BufferObject(context);
+        elements = new BufferObject(context);
     }
 
     public void setVertexSize(int size) {
@@ -80,11 +80,11 @@ public class VertexData {
         return vertexArray;
     }
 
-    public BufferObejct getElements() {
+    public BufferObject getElements() {
         return elements;
     }
 
-    public BufferObejct getVertices() {
+    public BufferObject getVertices() {
         return vertices;
     }
 }

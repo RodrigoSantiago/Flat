@@ -8,10 +8,13 @@
 
 #include <unordered_map>
 #define STB_TRUETYPE_IMPLEMENTATION
-#include <stb_truetype.h>
+#include "stb_truetype.h"
 #include <vector>
 #include <algorithm>
 #include <iostream>
+
+#define PADDING 4
+#define PADDING2 8
 
 typedef struct ftFontData {
     stbtt_fontinfo info;
@@ -158,7 +161,7 @@ public:
     }
 };
 
-fvFont* fontCreate(const void* data, long int length, float height, int sdf) {
+fvFont* fontCreate(const void* data, long int length, float size, int sdf) {
     fvFont* ft = (fvFont*) malloc(sizeof(fvFont));
     ftFontData* fdata = (ftFontData*) malloc(sizeof(ftFontData));
     fdata->data = (unsigned char*) malloc(length);
@@ -171,12 +174,12 @@ fvFont* fontCreate(const void* data, long int length, float height, int sdf) {
         return NULL;
     } else {
         ft->sdf = sdf;
-        ft->height = height;
+        ft->size = size;
         ft->iw = 0;
         ft->ih = 0;
         ft->imageID = 0;
 
-        fdata->scale = stbtt_ScaleForPixelHeight(&fdata->info, height);
+        fdata->scale = stbtt_ScaleForMappingEmToPixels(&fdata->info, size);//stbtt_ScaleForPixelHeight(&fdata->info, height);
         fdata->glyphCount = fdata->info.numGlyphs;
         fdata->glyphs = (fvGlyph*) calloc(fdata->glyphCount, sizeof(fvGlyph));
 
@@ -185,6 +188,7 @@ fvFont* fontCreate(const void* data, long int length, float height, int sdf) {
         ft->ascent = ascent * fdata->scale;
         ft->descent = descent * fdata->scale;
         ft->lineGap = lineGap * fdata->scale;
+        ft->height = (ascent - descent) * fdata->scale;
 
         ft->fCtx = fdata;
         return ft;
@@ -213,10 +217,10 @@ void __loadGlyph(fvFont* font, int glyphIndex) {
     fvGlyph& glyph = fdata->glyphs[glyphIndex];
     glyph.enabled = 1;
     glyph.advance = ceil(ax * fdata->scale);
-    glyph.x = c_x1;
-    glyph.y = c_y1 + font->ascent;
-    glyph.w = c_x2 - c_x1;
-    glyph.h = c_y2 - c_y1;
+    glyph.x = c_x1 - PADDING;
+    glyph.y = c_y1 + font->ascent - PADDING;
+    glyph.w = c_x2 - c_x1 + PADDING2;
+    glyph.h = c_y2 - c_y1 + PADDING2;
     glyph.u = glyph.v = glyph.u2 = glyph.v2 = -1;
 }
 
@@ -229,18 +233,23 @@ void __renderGlyph(fvFont* font, int glyphIndex) {
     int height = (int) ceil(glyph.h);
 
     if (width > 0 && height > 0) {
-        int recW = width + 2;
-        int recH = height + 2;
+        int recW = width;
+        int recH = height;
         unsigned char *img = (unsigned char *) malloc(recW * recH * sizeof(unsigned char));
 
         if (font->sdf) {
             int w, h, xof, yof;
             // todo direct make
-            unsigned char *bmap = stbtt_GetGlyphSDF(&fdata->info, fdata->scale, glyphIndex, 1, 128, 64, &w, &h, &xof, &yof);
+            unsigned char *bmap = stbtt_GetGlyphSDF(&fdata->info, fdata->scale, glyphIndex, PADDING, 128, 16/*64*/, &w, &h, &xof, &yof);
             if (bmap != 0) {
-                for (int y = 0; y < recH && y < h; y++) {
-                    for (int x = 0; x < recW && x < w; x++) {
-                        img[x + y * recW] = bmap[x + y * w];
+                for (int y = 0; y < recH; y++) {
+                    for (int x = 0; x < recW; x++) {
+                        if (x >= 0 && x < w && y >= 0 && y < h) {
+                            int p = x + y * recW;
+                            img[p] = bmap[p];
+                        } else {
+                            img[x + y * recW] = 0;
+                        }
                     }
                 }
                 stbtt_FreeSDF(bmap, &fdata->info.userdata);
@@ -250,12 +259,12 @@ void __renderGlyph(fvFont* font, int glyphIndex) {
                                   width, height,
                                   recW, fdata->scale, fdata->scale, glyphIndex);
             // Padding
-            int off = recW * (recH - 1);
+            int off = recW * (recH - PADDING);
             for (int i = 0; i < recW; i++) {
                 img[i] = 0;
                 img[off + i] = 0;
             }
-            off = recW - 1;
+            off = recW - PADDING;
             for (int i = 0, len = recW * recH; i < len; i+= recW) {
                 img[i] = 0;
                 img[i + off] = 0;
@@ -270,10 +279,10 @@ void __renderGlyph(fvFont* font, int glyphIndex) {
 
         free(img);
 
-        glyph.u2 = (glyph.u + 1 + glyph.w) / font->iw;
-        glyph.v2 = (glyph.v + 1 + glyph.h) / font->ih;
-        glyph.u = (glyph.u + 1) / font->iw;
-        glyph.v = (glyph.v + 1) / font->ih;
+        glyph.u2 = (glyph.u + glyph.w) / font->iw;
+        glyph.v2 = (glyph.v + glyph.h) / font->ih;
+        glyph.u = (glyph.u) / font->iw;
+        glyph.v = (glyph.v) / font->ih;
     }
 
     glyph.rendered = 1;
@@ -294,7 +303,7 @@ void fontLoadGlyphs(fvFont* font, const char* str, int strLen) {
 
             fvGlyph glyph = fdata->glyphs[gIndex];
             if ((int) ceil(glyph.w) > 0 && (int) ceil(glyph.h) > 0) {
-                rects.push_back({&fdata->glyphs[gIndex], (int) ceil(glyph.w + 2), (int) ceil(glyph.h + 2)});
+                rects.push_back({&fdata->glyphs[gIndex], (int) ceil(glyph.w + PADDING2), (int) ceil(glyph.h + PADDING2)});
             }
         }
     }
@@ -316,7 +325,7 @@ void fontLoadAllGlyphs(fvFont* font) {
 
         fvGlyph glyph = fdata->glyphs[i];
         if ((int) ceil(glyph.w) > 0 && (int) ceil(glyph.h) > 0) {
-            rects.push_back({&fdata->glyphs[i], (int) ceil(glyph.w + 2), (int) ceil(glyph.h + 2)});
+            rects.push_back({&fdata->glyphs[i], (int) ceil(glyph.w + PADDING2), (int) ceil(glyph.h + PADDING2)});
         }
     }
 

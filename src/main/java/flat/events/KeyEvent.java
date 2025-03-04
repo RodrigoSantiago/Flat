@@ -3,16 +3,17 @@ package flat.events;
 import flat.widget.Widget;
 
 public class KeyEvent extends Event {
-    public static final int PRESSED = 10;
-    public static final int REPEATED = 11;
-    public static final int RELEASED = 12;
-    public static final int TYPED = 13;
+    public static final Type PRESSED = new Type("PRESSED");
+    public static final Type REPEATED = new Type("REPEATED");
+    public static final Type RELEASED = new Type("RELEASED");
+    public static final Type TYPED = new Type("TYPED");
+    public static final Type FILTER = new Type("FILTER");
 
-    private boolean shift, ctrl, alt, spr;
-    private String chr;
-    private int keycode;
+    private final boolean shift, ctrl, alt, spr;
+    private final String chr;
+    private final int keycode;
 
-    public KeyEvent(Widget source, int type, boolean shift, boolean ctrl, boolean alt, boolean spr, String chr, int keycode) {
+    public KeyEvent(Widget source, Type type, boolean shift, boolean ctrl, boolean alt, boolean spr, String chr, int keycode) {
         super(source, type);
         this.shift = shift;
         this.ctrl = ctrl;
@@ -48,18 +49,17 @@ public class KeyEvent extends Event {
 
     @Override
     public String toString() {
-        StringBuilder s = new StringBuilder("KeyEvent ");
-        if (getType() == PRESSED) s.append("[PRESSED]");
-        else if (getType() == REPEATED) s.append("[REPEATED]");
-        else if (getType() == RELEASED) s.append("[RELEASED]");
-        else if (getType() == TYPED) s.append("[TYPED]");
-        s.append(" [").append(keycode).append("], [CHAR:").append("\n".equals(chr) ? "\n" : chr).append("]");
+        return "(" + getSource() + ") KeyEvent " + getType() +
+                ", [KEY:" + keycode + "], [CHAR:" + ("\n".equals(chr) ? "\\n" : chr) + "]"
+                + (shift ? ", [SHIFT]" : "")
+                + (ctrl ? ", [CTRL]" : "")
+                + (alt ? ", [ALT]" : "")
+                + (spr ? ", [META]" : "");
+    }
 
-        if (shift) s.append(", [").append("SHIFT").append("]");
-        if (ctrl) s.append(", [").append("CTRL").append("]");
-        if (alt) s.append(", [").append("ALT").append("]");
-        if (spr) s.append(", [").append("META").append("]");
-
-        return s.toString();
+    public static class Type extends EventType {
+        Type(String name) {
+            super(name);
+        }
     }
 }

@@ -1,132 +1,139 @@
 package flat.widget.selection;
 
 import flat.uxml.Controller;
-import flat.uxml.UXChildren;
-import flat.uxml.UXStyleAttrs;
-import flat.widget.Gadget;
+import flat.uxml.UXAttrs;
+import flat.uxml.UXValueListener;
+import flat.uxml.ValueChange;
 import flat.widget.Widget;
+import flat.widget.enums.Visibility;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public final class RadioGroup implements Gadget {
+public class RadioGroup extends Widget {
 
-    private String id;
+    private UXValueListener<Integer> selectedListener;
+    private List<RadioButton> radioButtons = new ArrayList<>();
+    private List<RadioButton> unmodifiableRadioButtons;
+    private RadioButton selectedButton;
+    private int selectedIndex = -1;
 
-    private int selectionIndex = -1;
-
-    private boolean enableEmptySelection;
-
-    ArrayList<RadioButton> radios = new ArrayList<>();
-
-    @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        if (style == null) return;
-
-        String id = style.asString("id");
-        if (id != null) {
-            this.id = id;
-            if (controller != null) {
-                controller.assign(id, this);
-            }
-        }
-
-        setEmptySelectionEnabled(style.asBool("empty-selection", isEmptySelectionEnabled()));
+    public RadioGroup() {
+        setVisibility(Visibility.GONE);
     }
 
     @Override
-    public void applyChildren(UXChildren children) {
+    public void applyAttributes(Controller controller) {
+        super.applyAttributes(controller);
 
+        UXAttrs attrs = getAttrs();
+        setSelectedListener(attrs.getAttributeValueListener("on-selected-change", Integer.class, controller));
     }
 
-    @Override
-    public String getId() {
-        return id;
+    public List<RadioButton> getUnmodifiableRadioButtons() {
+        if (unmodifiableRadioButtons == null) {
+            unmodifiableRadioButtons = Collections.unmodifiableList(radioButtons);
+        }
+        return unmodifiableRadioButtons;
     }
 
-    @Override
-    public Widget getWidget() {
-        return null;
+    public int getSelected() {
+        return selectedIndex;
     }
 
-    public boolean isEmptySelectionEnabled() {
-        return enableEmptySelection;
-    }
-
-    public void setEmptySelectionEnabled(boolean emptySelectionEnabled) {
-        if (this.enableEmptySelection != emptySelectionEnabled) {
-            this.enableEmptySelection = emptySelectionEnabled;
-
-            if (selectionIndex == -1 && !this.enableEmptySelection && radios.size() > 0) {
-                setSelectionIndex(0);
-            }
+    public void add(RadioButton... radioButton) {
+        for (var btn : radioButton) {
+            add(btn);
         }
     }
 
-    public int getSelectionIndex() {
-        return selectionIndex;
-    }
-
-    public void setSelectionIndex(int selectionIndex) {
-        selectionIndex = Math.max(-1, Math.min(radios.size() - 1, selectionIndex));
-
-        if (this.selectionIndex != selectionIndex &&
-                (selectionIndex > -1 || enableEmptySelection || radios.size() == 0)) {
-
-            int oldIndex = this.selectionIndex;
-            this.selectionIndex = selectionIndex;
-
-            if (oldIndex > -1 && oldIndex < radios.size()) {
-                radios.get(oldIndex)._setActivated(false);
-            }
-
-            if (selectionIndex > -1) {
-                radios.get(selectionIndex)._setActivated(true);
-            }
+    public void add(List<RadioButton> radioButton) {
+        for (var btn : radioButton) {
+            add(btn);
         }
     }
 
-    public List<RadioButton> radiobuttons() {
-        return Collections.unmodifiableList(radios);
-    }
-
-    public void add(RadioButton radio) {
-        if (!radios.contains(radio)) {
-            radios.add(radio);
-            if (radios.size() == 1 && !enableEmptySelection) {
-                setSelectionIndex(0);
+    public void add(RadioButton radioButton) {
+        if (!radioButtons.contains(radioButton)) {
+            if (radioButton.radioGroup != null) {
+                radioButton.radioGroup.remove(radioButton);
             }
+            radioButton.radioGroup = this;
+            radioButtons.add(radioButton);
+
+            radioButton.setActive(false);
         }
     }
 
-    public void remove(RadioButton radio) {
-        int index = radios.indexOf(radio);
-        if (index > -1) {
-            radios.remove(index);
-            if (selectionIndex > index) {
-                selectionIndex -= 1;
-            } else if (selectionIndex == index) {
-                if (enableEmptySelection || radios.size() == 0) {
-                    selectionIndex = -1;
-                } else if (selectionIndex >= radios.size()) {
-                    selectionIndex = radios.size() - 1;
-                    radios.get(selectionIndex)._setActivated(true);
-                } else {
-                    radios.get(selectionIndex)._setActivated(true);
-                }
-            }
-        }
-    }
+    public void remove(RadioButton radioButton) {
+        if (radioButton.radioGroup == this) {
+            radioButton.radioGroup = null;
+            radioButtons.remove(radioButton);
 
-    void radioSetActivated(RadioButton radio, boolean activated) {
-        int index = radios.indexOf(radio);
-        if (index > -1) {
-            if (activated) {
-                setSelectionIndex(index);
+            if (selectedButton == radioButton) {
+                int oldValue = selectedIndex;
+                selectedIndex = -1;
+                selectedButton = null;
+                fireSelectedListener(oldValue);
             } else {
-                setSelectionIndex(-1);
+                int oldValue = selectedIndex;
+                selectedIndex = radioButtons.indexOf(selectedButton);
+                fireSelectedListener(oldValue);
             }
+        }
+    }
+
+    public void select(RadioButton radioButton) {
+        int index = radioButtons.indexOf(radioButton);
+        if (index >= 0) {
+            select(index);
+        }
+    }
+
+    public void select(int index) {
+        if (index < 0 || index >= radioButtons.size()) {
+            if (selectedIndex != -1) {
+                int oldValue = selectedIndex;
+                RadioButton oldSelection = selectedButton;
+                selectedIndex = -1;
+                selectedButton = null;
+                if (oldSelection != null) oldSelection.setActive(false);
+                fireSelectedListener(oldValue);
+            }
+        } else {
+            if (selectedIndex != index) {
+                int oldValue = selectedIndex;
+                RadioButton oldSelection = selectedButton;
+                selectedIndex = index;
+                selectedButton = radioButtons.get(index);
+                selectedButton.setActive(true);
+                if (oldSelection != null) oldSelection.setActive(false);
+                fireSelectedListener(oldValue);
+            }
+        }
+    }
+
+    void unselect(RadioButton radioButton) {
+        if (selectedButton == radioButton) {
+            int oldValue = selectedIndex;
+            selectedIndex = -1;
+            selectedButton = null;
+            fireSelectedListener(oldValue);
+        }
+    }
+
+    public void setSelectedListener(UXValueListener<Integer> selectedListener) {
+        this.selectedListener = selectedListener;
+    }
+
+    public UXValueListener<Integer> getSelectedListener() {
+        return selectedListener;
+    }
+
+    private void fireSelectedListener(int oldValue) {
+        if (selectedListener != null && oldValue != selectedIndex) {
+            UXValueListener.safeHandle(selectedListener, new ValueChange<>(this, oldValue, selectedIndex));
         }
     }
 }

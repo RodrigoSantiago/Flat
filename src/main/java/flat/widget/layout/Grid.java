@@ -1,376 +1,551 @@
 package flat.widget.layout;
 
 import flat.animations.StateInfo;
-import flat.graphics.SmartContext;
+import flat.exception.FlatException;
+import flat.graphics.Graphics;
 import flat.uxml.Controller;
+import flat.uxml.TaskList;
+import flat.uxml.UXAttrs;
 import flat.uxml.UXChildren;
-import flat.uxml.UXStyleAttrs;
-import flat.widget.Gadget;
 import flat.widget.Parent;
 import flat.widget.Widget;
-import flat.widget.enuns.Visibility;
+import flat.widget.enums.Visibility;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 public class Grid extends Parent {
 
-    private float[] rowSize = new float[1], colSize = new float[1];
-    private Cell[] grid = new Cell[1];
-    private int columns = 1, rows = 1;
-    private float columnGap, rowGap;
-    private HashMap<Widget, Cell> cells = new HashMap<>();
+    private float horizontalSpacing;
+    private float verticalSpacing;
 
-    private float[] rowSizeLayout, colSizeLayout;
+    private float[] columns;
+    private float[] rows;
+    private int rowCount;
+    private int columnCount;
 
-    @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        int w = (int) style.asNumber("columns", getColumns());
-        int h = (int) style.asNumber("rows", getRows());
-        setDimension(w, h);
+    private final ArrayList<Cell> orderedCells = new ArrayList<>();
+    private final HashMap<Widget, Integer> cells = new HashMap<>();
 
-        super.applyAttributes(style, controller);
-    }
+    private float[] columnsMeasureSize;
+    private float[] rowsMeasureSize;
+    private float[] columnsTempSize;
+    private float[] rowsTempSize;
+    private Column[] layoutColumns;
+    private Row[] layoutRows;
 
-    @Override
-    public void applyStyle() {
-        super.applyStyle();
-        if (getStyle() == null) return;
-
-        StateInfo info = getStateInfo();
-
-        setColumnGap(getStyle().asNumber("column-gap", info, getColumnGap()));
-        setRowGap(getStyle().asNumber("row-gap", info, getRowGap()));
-
-        ArrayList<String> cSizes = getStyle().dynamicFinder("column-size-");
-        for (String size : cSizes) {
-            String number = size.substring(12);
-            int n;
-            try {
-                n = Integer.parseInt(number);
-            } catch (Exception e) {
-                n = -1;
-            }
-            if (n >= 0 && n < columns) {
-                setColumnSize(n, getStyle().asSize(size, info, getColumnSize(n)));
-            }
-        }
-        ArrayList<String> rSizes = getStyle().dynamicFinder("row-size-");
-        for (String size : rSizes) {
-            String number = size.substring(9);
-            int n;
-            try {
-                n = Integer.parseInt(number);
-            } catch (Exception e) {
-                n = -1;
-            }
-            if (n >= 0 && n < rows) {
-                setRowSize(n, getStyle().asSize(size,  info, getRowSize(n)));
-            }
-        }
+    public Grid() {
+        ensureRows(1);
+        ensureColumns(1);
     }
 
     @Override
     public void applyChildren(UXChildren children) {
         super.applyChildren(children);
 
-        Gadget child;
-        while ((child = children.next()) != null ) {
-            if (child instanceof Cell) {
-                Cell cell = (Cell) child;
-                setCell(cell.getWidget(), cell.getColumn(), cell.getRow());
-                setCellSpan(cell.getColumn(), cell.getRow(), cell.getColSpan(), cell.getRowSpan());
+        for (var child : children) {
+            int x = (int) child.getAttributeNumber("cell-x", 0);
+            int y = (int) child.getAttributeNumber("cell-y", 0);
+            int w = (int) child.getAttributeNumber("cell-w", 0);
+            int h = (int) child.getAttributeNumber("cell-h", 0);
+            add(child.getWidget(), x, y, w, h);
+        }
+    }
+
+    @Override
+    public void applyAttributes(Controller controller) {
+        super.applyAttributes(controller);
+        UXAttrs attrs = getAttrs();
+        float[] columns = attrs.getAttributeSizeList("columns", this.columns);
+        float[] rows = attrs.getAttributeSizeList("rows", this.rows);
+        setDimensions(columns, rows);
+    }
+
+    @Override
+    public void applyStyle() {
+        super.applyStyle();
+
+        UXAttrs attrs = getAttrs();
+        StateInfo info = getStateInfo();
+        setHorizontalSpacing(attrs.getSize("horizontal-spacing", info, getHorizontalSpacing()));
+        setVerticalSpacing(attrs.getSize("vertical-spacing", info, getVerticalSpacing()));
+    }
+
+    private void ensureColumns(int count) {
+        columnCount = count;
+        if (columns == null || columns.length < count) {
+            columns = new float[count];
+        }
+        if (columnsMeasureSize == null || columnsMeasureSize.length < count) {
+            columnsMeasureSize = new float[count];
+        }
+        if (columnsTempSize == null || columnsTempSize.length < count) {
+            columnsTempSize = new float[count];
+        }
+        if (layoutColumns == null || layoutColumns.length < count) {
+            layoutColumns = new Column[count];
+            for (int i = 0; i < layoutColumns.length; i++) {
+                layoutColumns[i] = new Column();
             }
         }
+    }
+    
+    private void ensureRows(int count) {
+        rowCount = count;
+        if (rows == null || rows.length < count) {
+            rows = new float[count];
+        }
+        if (rowsMeasureSize == null || rowsMeasureSize.length < count) {
+            rowsMeasureSize = new float[count];
+        }
+        if (rowsTempSize == null || rowsTempSize.length < count) {
+            rowsTempSize = new float[count];
+        }
+        if (layoutRows == null || layoutRows.length < count) {
+            layoutRows = new Row[count];
+            for (int i = 0; i < layoutRows.length; i++) {
+                layoutRows[i] = new Row();
+            }
+        }
+    }
+
+    private boolean compare(float[] a, List<Float> b, int size) {
+        if (size != b.size()) return false;
+        for (int i = 0; i < size; i++) {
+            if (a[i] != b.get(i)) return false;
+        }
+        return true;
+    }
+
+    private boolean compare(float[] a, float[] b, int size) {
+        if (size != b.length) return false;
+        for (int i = 0; i < size; i++) {
+            if (a[i] != b[i]) return false;
+        }
+        return true;
+    }
+
+    public void setDimensions(float[] columns, float[] rows) {
+        boolean c = compare(this.columns, columns, columnCount);
+        boolean r = compare(this.rows, rows, rowCount);
+        if (c && r) return;
+
+        if (!c) {
+            ensureColumns(columns.length);
+            System.arraycopy(columns, 0, this.columns, 0, columns.length);
+        }
+        if (!r) {
+            ensureRows(rows.length);
+            System.arraycopy(rows, 0, this.rows, 0, rows.length);
+        }
+        reorderChildren();
+    }
+
+    public void setColumns(float[] columns) {
+        if (compare(this.columns, columns, columnCount)) {
+            return;
+        }
+
+        ensureColumns(columns.length);
+        System.arraycopy(columns, 0, this.columns, 0, columns.length);
+        reorderChildren();
+    }
+
+    public void setRows(float[] rows) {
+        if (compare(this.rows, rows, rowCount)) {
+            return;
+        }
+
+        ensureRows(rows.length);
+        System.arraycopy(rows, 0, this.rows, 0, rows.length);
+        reorderChildren();
+    }
+
+    public void setDimensions(List<Float> columns, List<Float> rows) {
+        boolean c = compare(this.columns, columns, columnCount);
+        boolean r = compare(this.rows, rows, rowCount);
+        if (c && r) return;
+
+        if (!c) {
+            ensureColumns(columns.size());
+            for (int i = 0; i < columns.size(); i++) {
+                this.columns[i] = columns.get(i);
+            }
+        }
+        if (!r) {
+            ensureRows(rows.size());
+            for (int i = 0; i < rows.size(); i++) {
+                this.rows[i] = rows.get(i);
+            }
+        }
+        reorderChildren();
+    }
+
+    public void setColumns(List<Float> columns) {
+        if (compare(this.columns, columns, columnCount)) {
+            return;
+        }
+
+        ensureColumns(columns.size());
+        for (int i = 0; i < columns.size(); i++) {
+            this.columns[i] = columns.get(i);
+        }
+        reorderChildren();
+    }
+
+    public void setRows(List<Float> rows) {
+        if (compare(this.rows, rows, rowCount)) {
+            return;
+        }
+
+        ensureRows(rows.size());
+        for (int i = 0; i < rows.size(); i++) {
+            this.rows[i] = rows.get(i);
+        }
+        reorderChildren();
+    }
+
+    private void reorderChildren() {
+        invalidate(true);
+    }
+
+    public void add(Widget widget, int x, int y) {
+        add(widget, x, y, 1, 1);
+    }
+
+    public void add(Widget widget, int x, int y, int w, int h) {
+        w = Math.max(1, w);
+        h = Math.max(1, h);
+
+        TaskList tasks = new TaskList();
+        if (attachAndAddChild(widget, tasks)) {
+            orderedCells.add(new Cell(widget, x, y, w, h));
+            cells.put(widget, orderedCells.size() - 1);
+            tasks.run();
+        }
+    }
+
+    public Cell getCell(Widget child) {
+        Integer index = cells.get(child);
+        if (index != null) {
+            return orderedCells.get(index);
+        }
+        return null;
+    }
+
+    public int getColumnCount() {
+        return columnCount;
+    }
+
+    public int getRowCount() {
+        return rowCount;
+    }
+
+    public float getColumnWidth(int index) {
+        if (index < 0 || index >= columnCount) {
+            throw new FlatException("Index out of bounds : " + index + " of " + columnCount);
+        }
+        return columns[index];
+    }
+
+    public float getRowHeight(int index) {
+        if (index < 0 || index >= rowCount) {
+            throw new FlatException("Index out of bounds : " + index + " of " + rowCount);
+        }
+        return rows[index];
+    }
+
+    public float getColumnLayoutWidth(int index) {
+        if (index < 0 || index >= columnCount) {
+            throw new FlatException("Index out of bounds : " + index + " of " + columnCount);
+        }
+        return layoutColumns[index].width;
+    }
+
+    public float getColumnLayoutX(int index) {
+        if (index < 0 || index >= columnCount) {
+            throw new FlatException("Index out of bounds : " + index + " of " + columnCount);
+        }
+        return layoutColumns[index].x;
+    }
+
+    public float getRowLayoutHeight(int index) {
+        if (index < 0 || index >= rowCount) {
+            throw new FlatException("Index out of bounds : " + index + " of " + rowCount);
+        }
+        return layoutRows[index].height;
+    }
+
+    public float getRowLayoutY(int index) {
+        if (index < 0 || index >= rowCount) {
+            throw new FlatException("Index out of bounds : " + index + " of " + rowCount);
+        }
+        return layoutRows[index].y;
+    }
+
+    @Override
+    protected boolean detachChild(Widget child) {
+        Integer index = cells.remove(child);
+        if (index != null) {
+            orderedCells.remove((int) index);
+        }
+        return super.detachChild(child);
+    }
+
+    @Override
+    public void onMeasure() {
+        float extraWidth = getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
+        float extraHeight = getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
+
+        for (Widget child : getChildrenIterable()) {
+            if (child.getVisibility() == Visibility.GONE) continue;
+            child.onMeasure();
+        }
+        boolean wrapWidth = getLayoutPrefWidth() == WRAP_CONTENT;
+        boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
+
+        float mWidth;
+        float mHeight;
+        if (wrapWidth) {
+            Arrays.fill(columnsMeasureSize, 0);
+
+            for (Cell cell : orderedCells) {
+                if (cell.x < columnCount) {
+                    columnsMeasureSize[cell.x] = Math.max(columnsMeasureSize[cell.x], cell.widget.getMeasureWidth());
+                }
+            }
+            float definedWidth = 0;
+            for (int i = 0; i < columnCount; i++) {
+                float w = columnsMeasureSize[i];
+                definedWidth += columns[i] == 0 ? w : columns[i];
+            }
+
+            float spacingX = getHorizontalSpacing() * Math.max(0, columnCount - 1);
+            mWidth = definedWidth + spacingX;
+        } else {
+            mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
+        }
+        if (wrapHeight) {
+            Arrays.fill(rowsMeasureSize, 0);
+
+            for (Cell cell : orderedCells) {
+                if (cell.y < rowCount) {
+                    rowsMeasureSize[cell.y] = Math.max(rowsMeasureSize[cell.y], cell.widget.getMeasureHeight());
+                }
+            }
+            float definedHeight = 0;
+            for (int i = 0; i < rowCount; i++) {
+                float h = rowsMeasureSize[i];
+                definedHeight += rows[i] == 0 ? h : rows[i];
+            }
+            float spacingY = getVerticalSpacing() * Math.max(0, rowCount - 1);
+            mHeight = definedHeight + spacingY;
+        } else {
+            mHeight = Math.max(getLayoutPrefHeight(), getLayoutMinHeight());
+        }
+        setMeasure(mWidth, mHeight);
     }
 
     @Override
     public void onLayout(float width, float height) {
         setLayout(width, height);
 
-        // Defined Width Math
-        int match_parent_count = 0;
-        float maxW = 0;
-        for (int i = 0; i < columns; i++) {
-            if (colSizeLayout[i] == MATCH_PARENT) {
-                match_parent_count++;
-            } else {
-                maxW += colSizeLayout[i];
-            }
-        }
-        // Undefined Width Math (divide)
-        float reamingW = getInWidth() - maxW - (columnGap * columns);
-        for (int i = 0; i < columns; i++) {
-            if (colSizeLayout[i] == MATCH_PARENT) {
-                colSizeLayout[i] = reamingW / match_parent_count;
-            }
-        }
-        // Defined Height Math
-        match_parent_count = 0;
-        float maxH = 0;
-        for (int i = 0; i < rows; i++) {
-            if (rowSizeLayout[i] == MATCH_PARENT) {
-                match_parent_count++;
-            } else {
-                maxH += rowSizeLayout[i];
-            }
-        }
-        // Undefined Height Math (divide)
-        float reamingH = getInHeight() - maxH - (rowGap * rows);
-        for (int i = 0; i < rows; i++) {
-            if (rowSizeLayout[i] == MATCH_PARENT) {
-                rowSizeLayout[i] = reamingH / match_parent_count;
-            }
-        }
-        for (Cell cell : cells.values()) {
-            Widget child = cell.widget;
-            if (child.getVisibility() == Visibility.Gone) continue;
+        float spacingX = getHorizontalSpacing() * Math.max(0, columnCount - 1);
+        float spacingY = getVerticalSpacing() * Math.max(0, rowCount - 1);
+        float inWidth = Math.max(0, getInWidth() - spacingX);
+        float inHeight = Math.max(0, getInHeight() - spacingY);
 
-            int col = cell.getColumn();
-            int col2 = cell.getColumn() + cell.getColSpan();
-            int row = cell.getRow();
-            int row2 = cell.getRow() + cell.getRowSpan();
-            // Position + outter padding
-            float x = columnGap + getInX(), y = rowGap + getInY();
-            for (int i = 0; i < col; i++) {
-                x += colSizeLayout[i] + columnGap;
-            }
-            for (int i = 0; i < row; i++) {
-                y += rowSizeLayout[i] + rowGap;
-            }
-
-            // Size + inner padding
-            float w = columnGap * (col2 - col - 1), h = rowGap * (row2 - row - 1);
-            for (int i = col; i < col2; i++) {
-                w += colSizeLayout[i];
-            }
-            for (int i = row; i < row2; i++) {
-                h += rowSizeLayout[i];
-            }
-            child.onLayout(Math.min(child.mWidth(), w), Math.min(child.mHeight(), h));
-            child.setPosition(x, y);
+        for (int i = 0; i < columnCount; i++) {
+            columnsMeasureSize[i] = columns[i] == MATCH_PARENT ? 0 : columns[i];
+            columnsTempSize[i] = columns[i] == MATCH_PARENT ? 1 : 0;
         }
-    }
+        for (int i = 0; i < rowCount; i++) {
+            rowsMeasureSize[i] = rows[i] == MATCH_PARENT ? 0 : rows[i];
+            rowsTempSize[i] = rows[i] == MATCH_PARENT ? 1 : 0;
+        }
 
-    @Override
-    public void onMeasure() {
-        float mWidth = getPrefWidth(), mHeight = getPrefHeight();
+        for (Cell cell : orderedCells) {
+            if (cell.x >= 0 && cell.x < columnCount && columns[cell.x] == WRAP_CONTENT) {
+                if (cell.widget.getMeasureWidth() != MATCH_PARENT) {
+                    columnsMeasureSize[cell.x] = Math.max(columnsMeasureSize[cell.x], cell.widget.getMeasureWidth());
+                } else {
+                    columnsTempSize[cell.x] = 1;
+                }
+            }
+            if (cell.y >= 0 && cell.y < rowCount && rows[cell.y] == WRAP_CONTENT) {
+                if (cell.widget.getMeasureHeight() != MATCH_PARENT) {
+                    rowsMeasureSize[cell.y] = Math.max(rowsMeasureSize[cell.y], cell.widget.getMeasureHeight());
+                } else {
+                    rowsTempSize[cell.y] = 1;
+                }
+            }
+        }
 
-        if (colSizeLayout == null || colSizeLayout.length != colSize.length) {
-            colSizeLayout = colSize.clone();
+        float definedWidth = 0;
+        for (int i = 0; i < columnCount; i++) {
+            definedWidth += columnsMeasureSize[i];
+        }
+
+        float definedHeight = 0;
+        for (int i = 0; i < rowCount; i++) {
+            definedHeight += rowsMeasureSize[i];
+        }
+
+        int indefinedWidthCount = 0;
+        for (int i = 0; i < columnCount; i++) {
+            if (columnsTempSize[i] > 0) indefinedWidthCount++;
+        }
+
+        int indefinedHeightCount = 0;
+        for (int i = 0; i < rowCount; i++) {
+            if (rowsTempSize[i] > 0) indefinedHeightCount++;
+        }
+
+        if (definedWidth > inWidth) {
+            float offWidth = inWidth / definedWidth;
+            for (int i = 0; i < columnCount; i++) {
+                layoutColumns[i].width = columnsMeasureSize[i] * offWidth;
+            }
         } else {
-            System.arraycopy(colSize, 0, colSizeLayout, 0, colSize.length);
+            float leavWidth = Math.max(0, inWidth - definedWidth);
+            for (int i = 0; i < columnCount; i++) {
+                float ex = columnsTempSize[i] > 0 ? (leavWidth / indefinedWidthCount) : 0;
+                layoutColumns[i].width = columnsMeasureSize[i] + ex;
+            }
         }
-        if (rowSizeLayout == null || rowSizeLayout.length != rowSize.length) {
-            rowSizeLayout = rowSize.clone();
+
+        if (definedHeight > inHeight) {
+            float offHeight = inHeight / definedHeight;
+            for (int i = 0; i < rowCount; i++) {
+                layoutRows[i].height = rowsMeasureSize[i] * offHeight;
+            }
         } else {
-            System.arraycopy(rowSize, 0, rowSizeLayout, 0, rowSize.length);
-        }
-
-        for (Cell cell : cells.values()) {
-            Widget child = cell.widget;
-            child.onMeasure();
-            if (child.getVisibility() == Visibility.Gone) continue;
-
-            int col = cell.getColumn();
-            if (colSize[col] == WRAP_CONTENT) {
-                if (child.mWidth() > colSizeLayout[col]) {
-                    colSizeLayout[col] = child.mWidth();
-                }
-            }
-            int row = cell.getRow();
-            if (rowSize[row] == WRAP_CONTENT) {
-                if (child.mHeight() > rowSizeLayout[row]) {
-                    rowSizeLayout[row] = child.mHeight();
-                }
+            float leavHeight = Math.max(0, inHeight - definedHeight);
+            for (int i = 0; i < rowCount; i++) {
+                float ex = rowsTempSize[i] > 0 ? (leavHeight / indefinedHeightCount) : 0;
+                layoutRows[i].height = rowsMeasureSize[i] + ex;
             }
         }
-        float maxW = columnGap;
-        for (int i = 0; i < columns; i++) {
-            maxW += colSizeLayout[i] + columnGap;
+
+        float x = getInX();
+        for (int i = 0; i < columnCount; i++) {
+            Column layoutColumn = layoutColumns[i];
+            layoutColumn.x = x;
+            x += layoutColumn.width + getHorizontalSpacing();
         }
-        float maxH = rowGap;
-        for (int i = 0; i < rows; i++) {
-            maxH += rowSizeLayout[i] + rowGap;
+
+        float y = getInY();
+        for (int i = 0; i < rowCount; i++) {
+            Row layoutRow = layoutRows[i];
+            layoutRow.y = y;
+            y += layoutRow.height + getVerticalSpacing();
         }
-        if (mWidth == WRAP_CONTENT && maxW > mWidth) mWidth = maxW;
-        if (mHeight == WRAP_CONTENT && maxH > mHeight) mHeight = maxH;
 
-        mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
-        mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
-        setMeasure(mWidth, mHeight);
-    }
+        for (Cell cell : orderedCells) {
+            if (cell.x >= 0 && cell.x < columnCount && cell.y >= 0 && cell.y < rowCount) {
+                Column column = layoutColumns[cell.x];
+                Row row = layoutRows[cell.y];
+                int maxX = Math.min(columnCount, cell.x + cell.w);
+                int maxY = Math.min(rowCount, cell.y + cell.h);
 
-    @Override
-    public void onDraw(SmartContext context) {
-        super.onDraw(context);
-    }
-
-    @Override
-    public void remove(Widget widget) {
-        super.remove(widget);
-        Cell cell = cells.get(widget);
-        if (cell != null) {
-            removeCell(cell);
-        }
-    }
-
-    public int getRows() {
-        return rows;
-    }
-
-    public int getColumns() {
-        return columns;
-    }
-
-    public float getColumnSize(int column) {
-        return colSize[column];
-    }
-
-    public void setColumnSize(int column, float size) {
-        if (column < this.columns && colSize[column] != size) {
-            this.colSize[column] = size;
-            invalidate(true);
-        }
-    }
-
-    public float getRowSize(int row) {
-        return rowSize[row];
-    }
-
-    public void setRowSize(int row, float size) {
-        if (row < this.rows && rowSize[row] != size) {
-            this.rowSize[row] = size;
-            invalidate(true);
-        }
-    }
-
-    public float getColumnGap() {
-        return columnGap;
-    }
-
-    public void setColumnGap(float columnGap) {
-        if (this.columnGap != columnGap) {
-            this.columnGap = columnGap;
-            invalidate(true);
-        }
-    }
-
-    public float getRowGap() {
-        return rowGap;
-    }
-
-    public void setRowGap(float rowGap) {
-        if (this.rowGap != rowGap) {
-            this.rowGap = rowGap;
-            invalidate(false);
-        }
-    }
-
-    void removeCell(Cell cell) {
-        if (cell.widget.getParent() == this) {
-            remove(cell.widget);
-        } else if (cells.containsValue(cell)) {
-            cells.remove(cell.widget);
-
-            for (int x = cell.getColumn(); x < cell.getColumn() + cell.getColSpan(); x++) {
-                for (int y = cell.getRow(); y < cell.getRow() + cell.getRowSpan(); y++) {
-                    grid[x + y * columns] = null;
-                }
-            }
-            invalidate(true);
-        }
-    }
-
-    public void setCell(Widget widget, int col, int row) {
-        int index = col + row * columns;
-        Cell prev = grid[index];
-        if ((prev == null && widget != null) || (prev != null && prev.widget != widget)) {
-            if (prev != null) {
-                removeCell(prev);
-            }
-
-            if (widget != null) {
-                grid[index] = new Cell(widget, col, row, 1, 1);
-                cells.put(widget, grid[index]);
-                add(widget);
-            }
-            invalidate(true);
-        }
-    }
-
-    public void setCellSpan(int col, int row, int colSpan, int rowSpan) {
-        Cell cell = grid[col + row * columns];
-        if (cell != null) {
-            for (int x = cell.getColumn(); x < cell.getColumn() + cell.getColSpan(); x++) {
-                for (int y = cell.getRow(); y < cell.getRow() + cell.getRowSpan(); y++) {
-                    grid[x + y * columns] = null;
-                }
-            }
-            cell.setColumnSpan(colSpan);
-            cell.setRowSpan(rowSpan);
-            for (int x = cell.getColumn(); x < cell.getColumn() + cell.getColSpan(); x++) {
-                for (int y = cell.getRow(); y < cell.getRow() + cell.getRowSpan(); y++) {
-                    Cell oldCell = grid[x + y * columns];
-                    if (oldCell != null && oldCell != cell) {
-                        removeCell(oldCell);
-                    }
-                    grid[x + y * columns] = cell;
-                }
-            }
-
-            invalidate(true);
-        }
-    }
-
-    public void setDimension(int columns, int rows) {
-        if (this.columns != columns || this.rows != rows) {
-            Cell[] grid = new Cell[columns * rows];
-            for (int x = 0; x < columns || x < this.columns; x++) {
-                for (int y = 0; y < rows || y < this.rows; y++) {
-                    Cell cell = (x < this.columns && y < this.rows) ? this.grid[x + y * columns] : null;
-                    if (x > columns || y > rows) {
-                        if (cell != null) {
-                            if (cell.getColumn() >= columns || cell.getRow() >= rows) {
-                                removeCell(cell);
-                            }
-                        }
-                    } else if (x > this.columns || y > this.columns) {
-                        if (cell != null) {
-                            removeCell(cell);
-                        }
-                    } else if (cell != null) {
-                        int xSpan = cell.getColSpan();
-                        if (cell.getColumn() + cell.getColSpan() > columns) {
-                            xSpan = columns - cell.getColumn();
-                        }
-                        int ySpan = cell.getRowSpan();
-                        if (cell.getRow() + cell.getRowSpan() > rows) {
-                            ySpan = rows - cell.getRowSpan();
-                        }
-                        setCellSpan(x, y, xSpan, ySpan);
-                        grid[x + y * columns] = cell;
+                float envWidth = 0;
+                for (int i = cell.x; i < maxX; i++) {
+                    envWidth += layoutColumns[i].width;
+                    if (i > cell.x) {
+                        envWidth += getHorizontalSpacing();
                     }
                 }
+
+                float envHeight = 0;
+                for (int i = cell.y; i < maxY; i++) {
+                    envHeight += layoutRows[i].height;
+                    if (i > cell.y) {
+                        envHeight += getVerticalSpacing();
+                    }
+                }
+
+                float cW = Math.min(envWidth,
+                        Math.min(cell.widget.getMeasureWidth(), cell.widget.getLayoutMaxWidth()));
+                float cH = Math.min(envHeight,
+                        Math.min(cell.widget.getMeasureHeight(), cell.widget.getLayoutMaxHeight()));
+                
+                cell.widget.onLayout(cW, cH);
+                cell.widget.setLayoutPosition(column.x, row.y);
+            } else {
+                cell.widget.onLayout(0, 0);
+                cell.widget.setLayoutPosition(0, 0);
             }
+        }
+    }
 
-            float[] colSize = new float[columns];
-            for (int i = 0; i < columns && i < this.columns; i++) {
-                colSize[i] = this.colSize[i];
+    @Override
+    public boolean onLayoutSingleChild(Widget child) {
+        Integer index = cells.get(child);
+        if (index != null) {
+            Cell cell = orderedCells.get((int) index);
+            if (cell.x >= 0 && cell.x < columnCount && cell.y >= 0 && cell.y < rowCount) {
+                if (columns[cell.x] == WRAP_CONTENT || columns[cell.x] == MATCH_PARENT ||
+                        columns[cell.y] == WRAP_CONTENT || columns[cell.y] == MATCH_PARENT) {
+                    return false;
+                }
+                
+                Column column = layoutColumns[cell.x];
+                Row row = layoutRows[cell.y];
+                cell.widget.onMeasure();
+                float cW = Math.min(column.width,
+                        Math.min(cell.widget.getMeasureWidth(), cell.widget.getLayoutMaxWidth()));
+                float cH = Math.min(row.height,
+                        Math.min(cell.widget.getMeasureHeight(), cell.widget.getLayoutMaxHeight()));
+
+                cell.widget.onLayout(cW, cH);
+                cell.widget.setLayoutPosition(column.x, row.y);
+            } else {
+                cell.widget.onLayout(0, 0);
+                cell.widget.setLayoutPosition(0, 0);
             }
+            return true;
+        }
+        return false;
+    }
 
-            float[] rowSize = new float[rows];
-            for (int i = 0; i < rows && i < this.rows; i++) {
-                rowSize[i] = this.rowSize[i];
-            }
+    @Override
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
+        drawRipple(graphics);
+        drawChildren(graphics);
+    }
 
-            this.grid = grid;
-            this.rows = rows;
-            this.columns = columns;
-            this.rowSize = rowSize;
-            this.colSize = colSize;
+    public float getHorizontalSpacing() {
+        return horizontalSpacing;
+    }
 
+    public void setHorizontalSpacing(float horizontalSpacing) {
+        if (this.horizontalSpacing != horizontalSpacing) {
+            this.horizontalSpacing = horizontalSpacing;
             invalidate(true);
         }
+    }
+
+    public float getVerticalSpacing() {
+        return verticalSpacing;
+    }
+
+    public void setVerticalSpacing(float verticalSpacing) {
+        if (this.verticalSpacing != verticalSpacing) {
+            this.verticalSpacing = verticalSpacing;
+            invalidate(true);
+        }
+    }
+
+    private static class Column {
+        float x;
+        float width;
+    }
+
+    private static class Row {
+        float y;
+        float height;
     }
 }

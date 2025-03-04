@@ -1,57 +1,127 @@
 package flat.resources;
 
-import java.io.*;
+import flat.window.Application;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.util.*;
 
-public class ResourceStream extends DimensionStream {
+public class ResourceStream {
 
-    private HashMap<Dimension, String> map = new HashMap<>();
-    private ArrayList<Dimension> dimensions = new ArrayList<>();
+    private String resourceName;
+    private boolean folder;
 
-    private static final String sizeRegex = "(small)|(normal)|(large)|(xlarge)";
-    private static final String densityRegex = "(ldpi)|(mdpi)|(hdpi)|(xhdpi)|(xxhdpi)|(xxxhdpi)";
-    private static final String orientationRegex = "(port)|(land)";
-    private static final String regex = "(-(" + orientationRegex + "|" + sizeRegex + "|" + densityRegex + "))*";
-
-    public ResourceStream(String name) {
-        super(name);
-        try {
-            String[] files = ResourcesManager.listFiles(name);
-            for (String fileName : files) {
-                if (fileName.startsWith(name)) {
-                    if (fileName.matches(name + regex + "\\.uxml")) {
-                        String[] modifiers = fileName.substring(name.length()).split("(-)|(\\.)");
-                        Dimension.Size size = Dimension.Size.any;
-                        Dimension.Density density = Dimension.Density.any;
-                        Dimension.Orientation orientation = Dimension.Orientation.any;
-                        for (int i = 1; i < modifiers.length; i++) {
-                            String modifier = modifiers[i];
-                            if (modifier.matches(sizeRegex)) {
-                                size = Dimension.Size.valueOf(modifier);
-                            } else if (modifier.matches(densityRegex)) {
-                                density = Dimension.Density.valueOf(modifier);
-                            } else if (modifier.matches(orientationRegex)) {
-                                orientation = Dimension.Orientation.valueOf(modifier);
-                            }
-                        }
-                        Dimension d = new Dimension(size, density, orientation);
-                        dimensions.add(d);
-                        map.put(d, fileName);
-                    }
-                }
-            }
-        } catch (Exception ignored) {
+    ResourceStream(String name, boolean folder) {
+        this.resourceName = name.length() > 0 && name.charAt(0) == '/' ? name : "/" + name;
+        this.folder = folder;
+        if (folder && !this.resourceName.endsWith("/")) {
+            this.resourceName += "/";
         }
     }
 
-    @Override
-    public List<Dimension> getDimensions() {
-        return Collections.unmodifiableList(dimensions);
+    public ResourceStream(String name) {
+        this.resourceName = name.length() > 0 && name.charAt(0) == '/' ? name : "/" + name;
+        this.folder = Application.getResourcesManager().isFolder(resourceName);
+        if (folder && !this.resourceName.endsWith("/")) {
+            this.resourceName += "/";
+        }
+    }
+
+    public boolean isFolder() {
+        return folder;
+    }
+
+    public List<ResourceStream> getFiles() {
+        if (isFolder()) {
+            return Application.getResourcesManager().listFiles(resourceName);
+
+        } else {
+            return new ArrayList<>();
+        }
+    }
+
+    public String getResourceName() {
+        return resourceName;
+    }
+
+    public InputStream getStream() {
+        if (isFolder()) {
+            return null;
+        } else {
+            return Application.getResourcesManager().getInput(resourceName);
+        }
+    }
+
+    public byte[] readData() {
+        if (isFolder()) {
+            return null;
+        } else {
+            return Application.getResourcesManager().getData(resourceName);
+        }
+    }
+
+    public void clearCache() {
+        Application.getResourcesManager().clearResourceCache(resourceName);
+    }
+
+    public void putCache(Object cache) {
+        Application.getResourcesManager().putResourceCache(resourceName, cache);
+    }
+
+    public Object getCache() {
+        return Application.getResourcesManager().getResourceCache(resourceName);
+    }
+
+    public ResourceStream getRelative(String path) {
+        if (path.startsWith("/")) {
+            return new ResourceStream(path);
+        }
+        if (!path.contains("..")) {
+            if (isFolder()) {
+                return new ResourceStream(resourceName + path);
+            } else {
+                int index = resourceName.lastIndexOf("/");
+                if (index == -1) {
+                    return new ResourceStream("/" + path);
+                } else {
+                    return new ResourceStream(resourceName.substring(0, index) + "/" + path);
+                }
+            }
+        }
+
+        String[] currentPathParts = resourceName.split("/");
+        String[] relativePathParts = path.split("/");
+        List<String> pathList = new ArrayList<>(Arrays.asList(currentPathParts));
+        if (!isFolder() && pathList.size() > 0 && !pathList.get(pathList.size() - 1).isEmpty()) {
+            pathList.remove(pathList.size() - 1);
+        }
+        for (String part : relativePathParts) {
+            if (part.equals("..")) {
+                if (pathList.size() > 1) {
+                    pathList.remove(pathList.size() - 1);
+                }
+            } else if (!part.equals(".") && !part.isEmpty()) {
+                pathList.add(part);
+            }
+        }
+        String resolvedPath = String.join("/", pathList);
+        if (!resolvedPath.startsWith("/")) {
+            resolvedPath = "/" + resolvedPath;
+        }
+        return new ResourceStream(resolvedPath);
     }
 
     @Override
-    public InputStream getStream(Dimension dimension) {
-        return ResourcesManager.getInput(getName() + "/" + map.get(dimension));
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ResourceStream stream)) return false;
+        return Objects.equals(resourceName, stream.resourceName);
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(resourceName);
+    }
 }

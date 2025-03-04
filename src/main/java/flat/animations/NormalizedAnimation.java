@@ -1,6 +1,6 @@
 package flat.animations;
 
-import flat.widget.Activity;
+import flat.window.Activity;
 
 public abstract class NormalizedAnimation implements Animation {
 
@@ -9,15 +9,21 @@ public abstract class NormalizedAnimation implements Animation {
     private boolean playing;
     private boolean paused;
     private int loops;
+    private boolean firstAfterPlay;
     private Interpolation interpolation = Interpolation.linear;
 
-    private long duration;
-    private long _duration;
-    private long _reaming;
+    private float duration;
+    private float _duration;
+    private float _reaming;
     private int _loops;
     private Interpolation _interpolation;
 
-    private Runnable onStop;
+    public NormalizedAnimation() {
+    }
+
+    public NormalizedAnimation(Interpolation interpolation) {
+        this.interpolation = interpolation;
+    }
 
     public Interpolation getInterpolation() {
         return interpolation;
@@ -27,20 +33,12 @@ public abstract class NormalizedAnimation implements Animation {
         this.interpolation = interpolation == null ? Interpolation.linear : interpolation;
     }
 
-    public Runnable getOnStop() {
-        return onStop;
-    }
-
-    public void setOnStop(Runnable onStop) {
-        this.onStop = onStop;
-    }
-
-    public long getDuration() {
+    public float getDuration() {
         return duration;
     }
 
-    public void setDuration(long milis) {
-        this.duration = milis;
+    public void setDuration(float time) {
+        this.duration = time;
     }
 
     public int getLoops() {
@@ -60,6 +58,9 @@ public abstract class NormalizedAnimation implements Animation {
     }
 
     public void play(Activity activity) {
+        if (activity == null) {
+            return;
+        }
         play(activity, 0);
     }
 
@@ -77,11 +78,11 @@ public abstract class NormalizedAnimation implements Animation {
             playing = true;
             paused = false;
         }
-        _reaming = (long) (_duration * (1 - position));
+        _reaming = (_duration * (1 - position));
+        firstAfterPlay = false;
 
-        if (activity != null) {
-            activity.addAnimation(this);
-        }
+        activity.addAnimation(this);
+        onStart();
     }
 
     public void pause() {
@@ -95,7 +96,7 @@ public abstract class NormalizedAnimation implements Animation {
         if (playing || paused) {
             playing = false;
             paused = false;
-            if (onStop != null) onStop.run();
+            onStop();
         }
     }
 
@@ -121,26 +122,32 @@ public abstract class NormalizedAnimation implements Animation {
     public void jump(float position) {
         if (playing || paused) {
             position = Math.max(Math.min(position, 1), 0);
-            _reaming = (long) (_duration * (1 - position));
+            _reaming = (_duration * (1 - position));
         }
     }
 
-    public float getT() {
+    public float getInterpolatedPosition() {
         return _interpolation == null ? interpolation.apply(getPosition()) : _interpolation.apply(getPosition());
     }
 
     public float getPosition() {
-        return playing || paused ? (1 - (_reaming / (float) _duration)) : 0;
+        return playing || paused ?  Math.max(Math.min(1 - (_reaming / _duration), 1), 0) : 0;
     }
 
-    public void handle(long time) {
+    @Override
+    public void handle(float seconds) {
         if (playing) {
+            if (!firstAfterPlay) {
+                firstAfterPlay = true;
+            } else {
+                _reaming -= seconds * delta;
+            }
             if (_reaming <= 0) {
                 if (_reaming == 0 || _loops == 0) {
                     compute(_interpolation.apply(1));
                 } else {
                     _reaming = _reaming % duration;
-                    compute(_interpolation.apply(1 - (_reaming / (float) _duration)));
+                    compute(_interpolation.apply(1 - (_reaming / _duration)));
                 }
                 if (_loops == 0) {
                     stop();
@@ -148,9 +155,8 @@ public abstract class NormalizedAnimation implements Animation {
                     _loops -= 1;
                 }
             } else {
-                compute(_interpolation.apply(1 - (_reaming / (float) _duration)));
+                compute(_interpolation.apply(1 - (_reaming / _duration)));
             }
-            _reaming -= time * delta;
         }
     }
 
@@ -164,4 +170,12 @@ public abstract class NormalizedAnimation implements Animation {
     }
 
     protected abstract void compute(float t);
+
+    protected void onStart() {
+
+    }
+
+    protected void onStop() {
+
+    }
 }

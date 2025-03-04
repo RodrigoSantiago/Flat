@@ -3,34 +3,37 @@ package flat.events;
 import flat.widget.Widget;
 
 public class DragEvent extends Event {
-    public static final int STARTED = 2;
-    public static final int DONE    = 3;
-    public static final int DROPPED = 4;
-    public static final int ENTERED = 5;
-    public static final int EXITED  = 6;
-    public static final int OVER    = 7;
+    public static final Type STARTED = new Type("STARTED");
+    public static final Type DONE    = new Type("DONE");
+    public static final Type DROPPED = new Type("DROPPED");
+    public static final Type ENTERED = new Type("ENTERED");
+    public static final Type EXITED  = new Type("EXITED");
+    public static final Type OVER    = new Type("OVER");
 
-    private Widget widget;
     private Object data;
-    private float x, y;
-    private boolean dragAccpet;
-    private int dragSucess;
-    private boolean started;
+    private final float x, y;
+    private Widget dragHandler;
+    private Widget dragAccepted;
+    private boolean canceled;
 
-    public DragEvent(Widget source, int type, Object data, float x, float y) {
-        this(source, type, source, data, x, y);
-    }
-
-    public DragEvent(Widget source, int type, Widget widget, Object data, float x, float y) {
+    public DragEvent(Widget source, Type type, Object data, float x, float y) {
         super(source, type);
-        this.widget = widget;
         this.data = data;
         this.x = x;
         this.y = y;
     }
 
+    public DragEvent(Widget source, Type type, Object data, float x, float y, Widget dragHandler, Widget dragAccepted) {
+        super(source, type);
+        this.data = data;
+        this.x = x;
+        this.y = y;
+        this.dragHandler = dragHandler;
+        this.dragAccepted = dragAccepted;
+    }
+
     public boolean isRecyclable(Widget source) {
-        return (getType() != EXITED && getType() != ENTERED) || source != widget;
+        return !isAccepted() && !isCanceled();
     }
 
     public Object getData() {
@@ -49,44 +52,46 @@ public class DragEvent extends Event {
         return y;
     }
 
-    public void dragStart() {
-        started = true;
+    public void accept(Widget source) {
+        if (getType() == STARTED) {
+            dragHandler = source;
+        } else {
+            dragAccepted = source;
+        }
     }
 
-    public void dragAccept(boolean accpet) {
-        dragAccpet = accpet;
+    public boolean isAccepted() {
+        if (getType() == STARTED) {
+            return dragHandler != null;
+        } else {
+            return dragAccepted != null;
+        }
     }
 
-    public boolean isDragAccpeted() {
-        return dragAccpet;
+    public Widget getDragHandler() {
+        return dragHandler;
     }
 
-    public void dragComplete(boolean sucess) {
-        dragSucess = sucess ? 1 : 2;
+    public Widget getDragAccepted() {
+        return dragAccepted;
     }
 
-    public boolean isDragCompleted() {
-        return dragSucess != 0;
+    public void cancel() {
+        this.canceled = true;
     }
 
-    public boolean getDragSucess() {
-        return dragSucess == 1;
-    }
-
-    public boolean isStarted() {
-        return started;
+    public boolean isCanceled() {
+        return canceled;
     }
 
     @Override
     public String toString() {
-        StringBuilder s = new StringBuilder("(").append(getSource()).append(") DragEvent ");
-        if (getType() == STARTED) s.append("[STARTED]");
-        else if (getType() == DONE) s.append("[DONE]");
-        else if (getType() == DROPPED) s.append("[DROPPED]");
-        else if (getType() == ENTERED) s.append("[ENTERED]");
-        else if (getType() == EXITED) s.append("[EXITED]");
-        else if (getType() == OVER) s.append("[OVER]");
-        s.append(", [").append(x).append(", ").append(y).append("]");
-        return s.toString();
+        return "(" + getSource() + ") DragEvent " + getType() + ", [" + x + ", " + y + "]";
+    }
+
+    private static class Type extends EventType {
+        Type(String name) {
+            super(name);
+        }
     }
 }

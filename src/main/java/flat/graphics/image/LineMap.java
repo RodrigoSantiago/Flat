@@ -1,11 +1,12 @@
 package flat.graphics.image;
 
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
 import flat.graphics.context.Paint;
 import flat.math.Affine;
 import flat.math.shapes.Rectangle;
 import flat.math.shapes.Shape;
 import flat.math.shapes.Stroke;
+import flat.widget.enums.ImageFilter;
 
 public class LineMap implements Drawable {
 
@@ -33,7 +34,7 @@ public class LineMap implements Drawable {
     }
 
     @Override
-    public void draw(SmartContext context, float x, float y, float width, float height, float frame) {
+    public void draw(Graphics context, float x, float y, float width, float height, int color, ImageFilter filter) {
         Affine affine = context.getTransform2D();
         context.setTransform2D(
                 context.getTransform2D()
@@ -44,14 +45,14 @@ public class LineMap implements Drawable {
         Stroke stroke = context.getStroker();
         for (SVGPath svgPath : svgPaths) {
             if (svgPath.observeFill) {
-                context.setPaint(paint);
+                context.setColor(color);
                 context.drawShape(svgPath.shape, true);
             } else if (svgPath.fillPaint != null) {
                 context.setPaint(svgPath.fillPaint);
                 context.drawShape(svgPath.shape, true);
             }
             if (svgPath.observeStroke) {
-                context.setPaint(paint);
+                context.setColor(color);
                 context.setStroker(stroke);
                 context.drawShape(svgPath.shape, false);
             } else if (svgPath.strokePaint != null) {
@@ -64,8 +65,8 @@ public class LineMap implements Drawable {
     }
 
     @Override
-    public void draw(SmartContext context, float x, float y, float frame) {
-        draw(context, x, y, getWidth(), getHeight(), frame);
+    public void draw(Graphics context, float x, float y, float frame, ImageFilter filter) {
+        draw(context, x, y, getWidth(), getHeight(), 0xFFFFFFFF, filter);
     }
 
     public static class SVGPath {

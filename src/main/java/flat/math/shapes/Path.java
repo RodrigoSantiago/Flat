@@ -1,13 +1,13 @@
 package flat.math.shapes;
 
-import java.util.NoSuchElementException;
-
 import flat.math.Affine;
 import flat.math.Mathf;
 import flat.math.Vector2;
+import flat.math.operations.Area;
 import flat.math.util.FlatteningPathIterator;
 import flat.math.util.IllegalPathStateException;
-import flat.math.operations.Area;
+
+import java.util.NoSuchElementException;
 
 /**
  * Represents a path constructed from lines and curves and which can contain subpaths.
@@ -43,6 +43,12 @@ public class Path implements PathConsumer, Shape, Cloneable {
         PathIterator p = shape.pathIterator(null);
         setWindingRule(p.windingRule());
         append(p, false);
+    }
+
+    public Path(PathIterator iterator) {
+        this(WIND_NON_ZERO, BUFFER_SIZE);
+        setWindingRule(iterator.windingRule());
+        append(iterator, false);
     }
 
     @Override
@@ -244,6 +250,9 @@ public class Path implements PathConsumer, Shape, Cloneable {
     }
 
     public void closePath() {
+        if (typeSize > 0 && types[typeSize - 1] == PathIterator.SEG_MOVETO) {
+            return;
+        }
         if (typeSize == 0 || types[typeSize - 1] != PathIterator.SEG_CLOSE) {
             checkBuf(0, true);
             types[typeSize++] = PathIterator.SEG_CLOSE;

@@ -1,549 +1,249 @@
 package flat.widget.value;
 
-import flat.animations.Interpolation;
-import flat.animations.NormalizedAnimation;
 import flat.animations.StateInfo;
-import flat.events.*;
-import flat.graphics.SmartContext;
-import flat.graphics.context.Font;
+import flat.events.PointerEvent;
+import flat.events.SlideEvent;
+import flat.graphics.Color;
+import flat.graphics.Graphics;
 import flat.graphics.image.Drawable;
-import flat.graphics.text.Align;
-import flat.math.Vector2;
-import flat.math.shapes.Rectangle;
-import flat.resources.Resource;
-import flat.uxml.Controller;
-import flat.uxml.UXStyleAttrs;
-import flat.widget.Activity;
+import flat.math.stroke.BasicStroke;
+import flat.uxml.*;
 import flat.widget.Widget;
+import flat.widget.enums.Direction;
+import flat.widget.enums.ImageFilter;
 
 public class Slider extends Widget {
 
-    // Properties
-    private int color, expansionColor;
-    private float expansion;
-    private float min = 0, max = 10;
-    private float value, value2;
-    private int ticks;
-    private boolean rangeEnabled;
+    private UXListener<SlideEvent> slideListener;
+    private UXListener<SlideEvent> slideFilter;
+    private UXValueListener<Float> valueListener;
+    
+    private Direction direction = Direction.HORIZONTAL;
+
     private Drawable icon;
+    private float iconWidth;
+    private float iconHeight;
+    private int iconColor = Color.white;
+    private ImageFilter iconImageFilter = ImageFilter.LINEAR;
+    private int iconBgColor = Color.transparent;
+    
+    private float lineWidth = 1;
+    private int lineColor = Color.white;
+    private int lineFilledColor = Color.black;
 
-    private int labelDecimal;
-    private boolean labelEnabled;
-    private Font labelFont;
-    private float labelTextSize;
-    private int labelTextColor;
-    private float labelPosition;
-    private long labelTimeOut;
-    private Drawable labelIcon;
+    private float minValue = 0;
+    private float maxValue = 1;
+    private float steps;
 
-    // Animation
-    private int hover;
-    private final SlideAnim anim = new SlideAnim();
-    private final SlideAnim anim2 = new SlideAnim();
-    private final SlideAnim anim3 = new SlideAnim();
-
-    //Events
-    private ActionListener onValueChange;
-    private ActionListener onValue2Change;
+    private float value;
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        super.applyAttributes(style, controller);
+    public void applyAttributes(Controller controller) {
+        super.applyAttributes(controller);
+        UXAttrs attrs = getAttrs();
 
-        setMin(style.asNumber("min", getMin()));
-        setMax(style.asNumber("max", getMax()));
-        _setValue(style.asNumber("value", getValue2()));
-        _setValue2(style.asNumber("value2", getValue2()));
-        setTicks((int) style.asNumber("ticks", getTicks()));
-        setRangeEnabled(style.asBool("range-enabled", isRangeEnabled()));
-    }
-
-    @Override
-    protected void onActivityChange(Activity prev, Activity activity) {
-        super.onActivityChange(prev, activity);
-
-        if (anim.isPlaying()) {
-            prev.removeAnimation(anim);
-            activity.addAnimation(anim);
-        }
-
-        if (anim2.isPlaying()) {
-            prev.removeAnimation(anim2);
-            activity.addAnimation(anim2);
-        }
-
-        if (anim3.isPlaying()) {
-            prev.removeAnimation(anim3);
-            activity.addAnimation(anim3);
-        }
+        setRangeLimits(attrs.getAttributeNumber("min-value", getMinValue()), attrs.getAttributeNumber("max-value", getMaxValue()));
+        setSteps(attrs.getAttributeNumber("steps", getSteps()));
+        setValue(attrs.getAttributeNumber("value", getValue()));
+        setSlideListener(attrs.getAttributeListener("on-slide", SlideEvent.class, controller));
+        setSlideFilter(attrs.getAttributeListener("on-slide-filter", SlideEvent.class, controller));
+        setValueListener(attrs.getAttributeValueListener("on-value-change", Float.class, controller));
     }
 
     @Override
     public void applyStyle() {
         super.applyStyle();
-        if (getStyle() == null) return;
 
+        UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
 
-        setColor(getStyle().asColor("color", info, getColor()));
-
-        setExpansion(getStyle().asNumber("expansion", info, getExpansion()));
-        setExpansionColor(getStyle().asColor("expansion-color", info, getColor()));
-
-        setLabelDecimal((int) getStyle().asNumber("label-decimal", info, getLabelDecimal()));
-        setLabelFont(getStyle().asFont("label-font", info, getLabelFont()));
-        setLabelTextSize(getStyle().asSize("label-text-size", info, getLabelTextSize()));
-        setLabelTextColor(getStyle().asColor("label-text-color", info, getLabelTextColor()));
-        setLabelEnabled(getStyle().asBool("label-enabled", info, isLabelEnabled()));
-        setLabelPosition(getStyle().asSize("label-position", info, getLabelPosition()));
-        setLabelTimeOut((long) getStyle().asSize("label-time-out", info, getLabelTimeOut()));
-
-        Resource res = getStyle().asResource("icon", info);
-        if (res != null) {
-            Drawable drawable = res.getDrawable();
-            if (drawable != null) {
-                setIcon(drawable);
-            }
-        }
-        res = getStyle().asResource("label-icon", info);
-        if (res != null) {
-            Drawable drawable = res.getDrawable();
-            if (drawable != null) {
-                setLabelIcon(drawable);
-            }
-        }
+        setIcon(attrs.getResourceAsDrawable("icon", info, getIcon(), false));
+        setIconWidth(attrs.getSize("icon-width", info, getIconWidth()));
+        setIconHeight(attrs.getSize("icon-height", info, getIconHeight()));
+        setIconColor(attrs.getColor("icon-color", info, getIconColor()));
+        setIconBgColor(attrs.getColor("icon-bg-color", info, getIconBgColor()));
+        setIconImageFilter(attrs.getConstant("icon-image-filter", info, getIconImageFilter()));
+        setLineWidth(attrs.getSize("line-width", info, getLineWidth()));
+        setLineColor(attrs.getColor("line-color", info, getLineColor()));
+        setLineFilledColor(attrs.getColor("line-filled-color", info, getLineFilledColor()));
+        setDirection(attrs.getAttributeConstant("direction", getDirection()));
     }
 
     @Override
-    public void onDraw(SmartContext context) {
-        final float x = getInX();
-        final float y = getInY();
-        final float width = getInWidth();
-        final float height = getInHeight();
+    public void onMeasure() {
+        float extraWidth = getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
+        float extraHeight = getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
 
-        final boolean fValue = Math.abs(anim3.isPlaying() ? anim3.value : hover) == 1;
-        final float val = anim.isPlaying() ? anim.value : value;
-        final float val2 = anim2.isPlaying() ? anim2.value : value2;
-        final float x1 = Interpolation.mix(x + height / 2f, x + width - height / 2f, max == min ? max : (val - min) / (max - min));
-        final float x2 = Interpolation.mix(x + height / 2f, x + width - height / 2f, max == min ? max : (val2 - min) / (max - min));
-        final float y1 = y + height / 2f;
+        float mWidth;
+        float mHeight;
+        boolean wrapWidth = getLayoutPrefWidth() == WRAP_CONTENT;
+        boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
+        boolean hor = direction == Direction.HORIZONTAL || direction == Direction.IHORIZONTAL;
 
-        // Background
-        context.setTransform2D(getTransform());
-        context.setColor(getBackgroundColor());
-        context.drawRoundRect(x, y, width, height,
-                getRadiusTop(), getRadiusRight(), getRadiusBottom(), getRadiusLeft(), true);
-
-        // Filled area
-        context.setColor(color);
-        if (!rangeEnabled) {
-            context.drawRoundRect(x, y, x1 - x, height,
-                    getRadiusTop(), getRadiusRight(), getRadiusBottom(), getRadiusLeft(), true);
+        if (wrapWidth) {
+            mWidth = Math.max(getLayoutIconWidth() * (hor ? 2f : 1f) + extraWidth, getLayoutMinWidth());
         } else {
-            context.drawRoundRect(Math.min(x1, x2), y, Math.abs(x2 - x1), height,
-                    getRadiusTop(), getRadiusRight(), getRadiusBottom(), getRadiusLeft(), true);
+            mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
+        }
+        if (wrapHeight) {
+            mHeight = Math.max(getLayoutIconHeight() * (hor ? 1f : 2f) + extraHeight, getLayoutMinHeight());
+        } else {
+            mHeight = Math.max(getLayoutPrefHeight(), getLayoutMinHeight());
         }
 
-        // Ticks
-        if (ticks > 0) {
-            for (int i = 0; i <= ticks; i++) {
-                float tval = (max - min) / ticks * i;
-                if ((!rangeEnabled && ((max > min && tval < val) || (max < min && tval > val))) ||
-                        (rangeEnabled && tval >= Math.min(val, val2) && tval <= Math.max(val, val2))) {
-                    context.setColor(getBackgroundColor());
+        setMeasure(mWidth, mHeight);
+    }
+
+    @Override
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
+
+        float x = getInX();
+        float y = getInY();
+        float width = getInWidth();
+        float height = getInHeight();
+
+        if (width <= 0 || height <= 0) return;
+
+        float iw = Math.min(width, getLayoutIconWidth());
+        float ih = Math.min(height, getLayoutIconHeight());
+
+        boolean hor = direction == Direction.HORIZONTAL || direction == Direction.IHORIZONTAL;
+        boolean rev = direction == Direction.IHORIZONTAL || direction == Direction.IVERTICAL;
+
+        float lineStart;
+        float lineEnd;
+        if (hor) {
+            lineStart = x + iw * 0.5f;
+            lineEnd = x + width - iw * 0.5f;
+        } else {
+            lineStart = y + ih * 0.5f;
+            lineEnd = y + height - ih * 0.5f;
+        }
+
+        float diff = maxValue - minValue;
+        float pos = diff == 0 ? 0 : value / diff;
+        if (rev) {
+            pos = 1 - pos;
+        }
+        graphics.setTransform2D(getTransform());
+
+        float xpos;
+        float ypos;
+        if (hor) {
+            xpos = (lineStart * (1 - pos) + lineEnd * pos);
+            ypos = (y + height * 0.5f);
+        } else {
+            xpos = (x + width * 0.5f);
+            ypos = (lineStart * (1 - pos) + lineEnd * pos);
+        }
+
+        float lineWidth = Math.min(getLineWidth(), Math.min(width, height));
+
+        graphics.setStroker(new BasicStroke(lineWidth));
+        if (hor) {
+            graphics.setColor(getLineColor());
+            graphics.drawLine(lineStart, ypos, lineEnd, ypos);
+            if (getValue() > getMinValue()) {
+                graphics.setColor(getLineFilledColor());
+                if (rev) {
+                    graphics.drawLine(xpos, ypos, lineEnd, ypos);
                 } else {
-                    context.setColor(color);
+                    graphics.drawLine(lineStart, ypos, xpos, ypos);
                 }
-                context.drawRect(x + width / ticks * i, y, height, height, true);
             }
-        }
-
-        // Icon Shadow
-        Drawable ic = icon;
-
-        if (ic != null && isShadowEnabled()) {
-            context.setColor(0x00000047);
-            context.setTransform2D(getTransform().preTranslate(0, Math.max(0, getElevation())));
-            ic.draw(context, x1 - ic.getWidth() / 2f, y1 - ic.getHeight() / 2f, 0);
-
-            if (rangeEnabled) {
-                context.setColor(0x00000047);
-                context.setTransform2D(getTransform().preTranslate(0, Math.max(0, getElevation())));
-                ic.draw(context, x2 - ic.getWidth() / 2f, y1 - ic.getHeight() / 2f, 0);
-            }
-        }
-
-        // Expansion
-        if (expansion > 0 && hover > 0) {
-            context.setColor(expansionColor);
-            context.setTransform2D(getTransform());
-            context.drawCircle(hover == 1 ? x1 : x2, y1, expansion, true);
-        }
-
-        // Icon
-        if (ic != null) {
-            context.setColor(color);
-            context.setTransform2D(getTransform());
-            ic.draw(context, x1 - ic.getWidth() / 2f, y1 - ic.getHeight() / 2f, 0);
-
-            if (rangeEnabled) {
-                context.setColor(color);
-                context.setTransform2D(getTransform());
-                ic.draw(context, x2 - ic.getWidth() / 2f, y1 - ic.getHeight() / 2f, 0);
-            }
-        }
-
-        // Label
-        ic = labelIcon;
-
-        if (ic != null && (isPressed() || anim3.isPlaying())) {
-            context.setTransform2D(getTransform());
-            context.setColor(color);
-            ic.draw(context, (fValue ? x1 : x2) - ic.getWidth() / 2f, y1 - ic.getHeight() / 2f, 0);
-
-            if (labelEnabled) {
-                String str = String.format("%.0"+ labelDecimal +"f", fValue ? val : val2);
-                context.setTransform2D(getTransform());
-                context.setColor(labelTextColor);
-                context.setTextSize(labelTextSize);
-                context.setTextFont(labelFont);
-                context.setTextHorizontalAlign(Align.Horizontal.CENTER);
-                context.drawText((fValue ? x1 : x2), y1 - labelPosition, str);
-            }
-        }
-
-        // Ripple
-        if (isRippleEnabled() && getRipple().isVisible()) {
-            context.setTransform2D(getTransform().translate(fValue ? x1 : x2, y1));
-            getRipple().drawRipple(context, null, getRippleColor());
-        }
-
-        context.setTransform2D(null);
-    }
-
-    @Override
-    public void fireHover(HoverEvent hoverEvent) {
-        super.fireHover(hoverEvent);
-        if (!hoverEvent.isConsumed() && icon != null && !isDragged()) {
-            Vector2 point = new Vector2(hoverEvent.getX(), hoverEvent.getY());
-            screenToLocal(point);
-            int p = checkPoint(point.x, point.y);
-            if (p == 0 && hover != 0) {
-                p = -Math.abs(hover);
-            }
-            if (p != hover) {
-                hover = p;
-                invalidate(false);
-            }
-        }
-    }
-
-    @Override
-    public void firePointer(PointerEvent pointerEvent) {
-        super.firePointer(pointerEvent);
-        if (!pointerEvent.isConsumed()) {
-            Vector2 point = new Vector2(pointerEvent.getX(), pointerEvent.getY());
-            boolean valMove = !(rangeEnabled && Math.abs(point.x - getX(1)) > Math.abs(point.x - getX(2)));
-
-            point.set(pointerEvent.getX() - getInX(), pointerEvent.getY() - getInY());
-            screenToLocal(point);
-
-            float val = max == min ? max : (point.x / (getInWidth() - getInHeight())) * (max - min) + min;
-            if (ticks > 0 && max != min) {
-                val = Math.round(val / ((max - min) / ticks)) * ((max - min) / ticks);
-            }
-
-            if (pointerEvent.getType() == PointerEvent.DRAGGED) {
-                if (hover == 2) {
-                    _setValue2(val);
+        } else {
+            graphics.setColor(getLineColor());
+            graphics.drawLine(xpos, lineStart, xpos, lineEnd);
+            if (getValue() > getMinValue()) {
+                graphics.setColor(getLineFilledColor());
+                if (rev) {
+                    graphics.drawLine(xpos, ypos, xpos, lineEnd);
                 } else {
-                    _setValue(val);
+                    graphics.drawLine(xpos, lineStart, xpos, ypos);
                 }
-            } else if (pointerEvent.getType() == PointerEvent.PRESSED && !isDragged() && !isPressed()) {
-                if (icon != null && !isDragged()) {
-                    hover = valMove ? 1 : 2;
-                    invalidate(false);
-                }
-
-                if (hover == 2) {
-                    setValue2(val);
-                } else {
-                    setValue(val);
-                }
-            } else if (pointerEvent.getType() == PointerEvent.RELEASED && isPressed()) {
-                anim3.stop();
-                anim3.tValue = hover;
-                anim3.fValue = hover;
-                anim3.setDuration(labelTimeOut);
-                anim3.play(getActivity());
             }
         }
-    }
 
-    @Override
-    public void fireKey(KeyEvent keyEvent) {
-        super.fireKey(keyEvent);
-        if (!keyEvent.isConsumed() && keyEvent.getType() == KeyEvent.RELEASED) {
-            if (keyEvent.getKeycode() == KeyCode.KEY_LEFT) {
-                setValue(value - (max - min) / ticks);
-            } else if (keyEvent.getKeycode() == KeyCode.KEY_RIGHT) {
-                setValue(value + (max - min) / ticks);
+        if (iw > 0 && ih > 0 && getIcon() != null) {
+            if (Color.getAlpha(getIconBgColor()) > 0) {
+                float bgw = hor ? getOutHeight() : getOutWidth();
+                float bgh = hor ? getOutHeight() : getOutWidth();
+                graphics.setColor(getIconBgColor());
+                graphics.drawEllipse(xpos - bgw * 0.5f, ypos - bgh * 0.5f, bgw, bgh, true);
             }
+            getIcon().draw(graphics, xpos - iw * 0.5f, ypos - ih * 0.5f, iw, ih, getIconColor(), getIconImageFilter());
         }
-    }
-
-    @Override
-    public void fireRipple(float x, float y) {
         if (isRippleEnabled()) {
-            getRipple().setSize(expansion);
-            getRipple().fire(0, 0);
+            getRipple().release();
+            getRipple().setSize(Math.min(Math.max(iw, ih) * 0.7f, Math.min(getLayoutWidth(), getLayoutHeight()) * 0.5f));
+            getRipple().setPosition(xpos, ypos);
+            drawRipple(graphics);
         }
     }
 
-    private int checkPoint(float x, float y) {
-        Rectangle rec = new Rectangle();
-        rec.x = getX(1) - (icon.getWidth() / 2f);
-        rec.y = getInY() + getInHeight() / 2f - (icon.getHeight() / 2f);
-        rec.width = icon.getWidth();
-        rec.height = icon.getWidth();
+    @Override
+    public void pointer(PointerEvent event) {
+        super.pointer(event);
+        if (!event.isConsumed() && event.getPointerID() == 1) {
+            var point = screenToLocal(event.getX(), event.getY());
 
-        if (rec.contains(x, y)) {
-            return 1;
-        } else if (rangeEnabled) {
-            rec.x = getX(2) - (icon.getWidth() / 2f);
-            return rec.contains(x, y) ? 2 : 0;
-        }
-        return 0;
-    }
+            float x = getInX();
+            float y = getInY();
+            float width = getInWidth();
+            float height = getInHeight();
+            float iw = Math.min(width, getLayoutIconWidth());
+            float ih = Math.min(height, getLayoutIconHeight());
 
-    private float getX(int id) {
-        float v = max == min ? 0 : ((id == 1 ? value : value2) - min) / (max - min);
-        return Interpolation.mix(getInX() + getInHeight() / 2f, getInX() + getInWidth() - getInHeight() / 2f, v);
-    }
+            boolean hor = direction == Direction.HORIZONTAL || direction == Direction.IHORIZONTAL;
+            boolean rev = direction == Direction.IHORIZONTAL || direction == Direction.IVERTICAL;
 
-    public ActionListener getOnValueChange() {
-        return onValueChange;
-    }
-
-    public void setOnValueChange(ActionListener onValueChange) {
-        this.onValueChange = onValueChange;
-    }
-
-    public ActionListener getOnValue2Change() {
-        return onValue2Change;
-    }
-
-    public void setOnValue2Change(ActionListener onValue2Change) {
-        this.onValue2Change = onValue2Change;
-    }
-
-    public float getMin() {
-        return min;
-    }
-
-    public void setMin(float min) {
-        if (this.min != min) {
-            this.min = min;
-            float v = Math.min(Math.max(max, min), Math.max(Math.min(max, min), value));
-            if (v != value) {
-                _setValue(v);
+            float lineStart;
+            float lineEnd;
+            if (hor) {
+                lineStart = x + iw * 0.5f;
+                lineEnd = x + width - iw * 0.5f;
+            } else {
+                lineStart = y + ih * 0.5f;
+                lineEnd = y + height - ih * 0.5f;
             }
-            float v2 = Math.min(Math.max(max, min), Math.max(Math.min(max, min), value2));
-            if (v2 != value2) {
-                _setValue2(v);
+
+            float lineSize = lineEnd - lineStart;
+
+            float pos = lineSize == 0 ? 0 : ((hor ? point.x : point.y) - lineStart) / lineSize;
+            if (rev) {
+                pos = 1 - pos;
             }
-            invalidate(false);
-        }
-    }
-
-    public float getMax() {
-        return max;
-    }
-
-    public void setMax(float max) {
-        if (this.max != max) {
-            this.max = max;
-            float v = Math.min(Math.max(max, min), Math.max(Math.min(max, min), value));
-            if (v != value) {
-                _setValue(v);
-            }
-            float v2 = Math.min(Math.max(max, min), Math.max(Math.min(max, min), value2));
-            if (v2 != value2) {
-                _setValue2(v);
-            }
-            invalidate(false);
-        }
-    }
-
-    public float getValue() {
-        return value;
-    }
-
-    private void _setValue(float value) {
-        value = Math.min(Math.max(max, min), Math.max(Math.min(max, min), value));
-
-        if (this.value != value) {
-            anim.stop();
-
-            this.value = value;
-            invalidate(false);
-            if (onValueChange != null) {
-                onValueChange.handle(new ActionEvent(this));
+            if (event.getType() == PointerEvent.PRESSED || event.getType() == PointerEvent.DRAGGED) {
+                slideTo(getMinValue() * (1 - pos) + getMaxValue() * pos);
             }
         }
     }
 
-    public void setValue(float value) {
-        value = Math.min(Math.max(max, min), Math.max(Math.min(max, min), value));
+    public void slide(float offset) {
+        slideTo(getValue() + offset);
+    }
 
-        if (this.value != value) {
-            float oldValue = this.value;
-            _setValue(value);
-            anim.fValue = oldValue;
-            anim.tValue = this.value;
-            anim.setDuration(getTransitionDuration());
-            anim.play(getActivity());
+    public void slideTo(float value) {
+        value = steps <= 0 ? value : Math.round(value / steps) * steps;
+        value = Math.max(minValue, Math.min(maxValue, value));
+
+        float old = getValue();
+        if (value != old && filterSlide(value)) {
+            setValue(value);
+            fireSlide();
         }
     }
 
-    public float getValue2() {
-        return rangeEnabled ? value2 : 0;
+    public Direction getDirection() {
+        return direction;
     }
 
-    private void _setValue2(float value2) {
-        value2 = Math.min(Math.max(max, min), Math.max(Math.min(max, min), value2));
-
-        if (this.value2 != value2) {
-            anim2.stop();
-
-            this.value2 = value2;
-            invalidate(false);
-            if (onValue2Change != null) {
-                onValue2Change.handle(new ActionEvent(this));
-            }
-        }
-    }
-
-    public void setValue2(float value2) {
-        value2 = Math.min(Math.max(max, min), Math.max(Math.min(max, min), value2));
-
-        if (this.value2 != value2) {
-            float oldRange = this.value2;
-            _setValue2(value2);
-            anim2.fValue = oldRange;
-            anim2.tValue = this.value2;
-            anim2.setDuration(getTransitionDuration());
-            anim2.play(getActivity());
-        }
-    }
-
-    public boolean isRangeEnabled() {
-        return rangeEnabled;
-    }
-
-    public void setRangeEnabled(boolean rangeEnabled) {
-        if (this.rangeEnabled != rangeEnabled) {
-            this.rangeEnabled = rangeEnabled;
-        }
-    }
-
-    public int getTicks() {
-        return ticks;
-    }
-
-    public void setTicks(int ticks) {
-        if (this.ticks != ticks) {
-            this.ticks = ticks;
-            invalidate(false);
-        }
-    }
-
-    public float getExpansion() {
-        return expansion;
-    }
-
-    public void setExpansion(float expansion) {
-        if (this.expansion != expansion) {
-            this.expansion = expansion;
-            invalidate(false);
-        }
-    }
-
-    public int getLabelDecimal() {
-        return labelDecimal;
-    }
-
-    public void setLabelDecimal(int labelDecimal) {
-        if (labelDecimal < 0) labelDecimal = 0;
-
-        if (this.labelDecimal != labelDecimal) {
-            this.labelDecimal = labelDecimal;
-            invalidate(false);
-        }
-    }
-
-    public boolean isLabelEnabled() {
-        return labelEnabled;
-    }
-
-    public void setLabelEnabled(boolean labelEnabled) {
-        if (this.labelEnabled != labelEnabled) {
-            this.labelEnabled = labelEnabled;
-            invalidate(false);
-        }
-    }
-
-    public Font getLabelFont() {
-        return labelFont;
-    }
-
-    public void setLabelFont(Font labelFont) {
-        if (this.labelFont != labelFont) {
-            this.labelFont = labelFont;
-            invalidate(false);
-        }
-    }
-
-    public float getLabelTextSize() {
-        return labelTextSize;
-    }
-
-    public void setLabelTextSize(float labelTextSize) {
-        if (this.labelTextSize != labelTextSize) {
-            this.labelTextSize = labelTextSize;
-            invalidate(false);
-        }
-    }
-
-    public float getLabelPosition() {
-        return labelPosition;
-    }
-
-    public void setLabelPosition(float labelPosition) {
-        if (this.labelPosition != labelPosition) {
-            this.labelPosition = labelPosition;
-            invalidate(false);
-        }
-    }
-
-    public long getLabelTimeOut() {
-        return labelTimeOut;
-    }
-
-    public void setLabelTimeOut(long labelTimeOut) {
-        if (this.labelTimeOut != labelTimeOut) {
-            this.labelTimeOut = labelTimeOut;
-            invalidate(false);
-        }
-    }
-
-    public int getLabelTextColor() {
-        return labelTextColor;
-    }
-
-    public void setLabelTextColor(int labelTextColor) {
-        if (this.labelTextColor != labelTextColor) {
-            this.labelTextColor = labelTextColor;
+    public void setDirection(Direction direction) {
+        if (direction == null) direction = Direction.HORIZONTAL;
+        
+        if (this.direction != direction) {
+            this.direction = direction;
             invalidate(false);
         }
     }
@@ -555,52 +255,201 @@ public class Slider extends Widget {
     public void setIcon(Drawable icon) {
         if (this.icon != icon) {
             this.icon = icon;
+            invalidate(isWrapContent());
+        }
+    }
+
+    public float getIconWidth() {
+        return iconWidth;
+    }
+
+    public void setIconWidth(float iconWidth) {
+        if (this.iconWidth != iconWidth) {
+            this.iconWidth = iconWidth;
+            invalidate(isWrapContent());
+        }
+    }
+
+    protected float getLayoutIconWidth() {
+        return icon == null ? 0 : iconWidth == 0 || iconWidth == MATCH_PARENT ? icon.getWidth() : iconWidth;
+    }
+
+    public float getIconHeight() {
+        return iconHeight;
+    }
+
+    public void setIconHeight(float iconHeight) {
+        if (this.iconHeight != iconHeight) {
+            this.iconHeight = iconHeight;
+            invalidate(isWrapContent());
+        }
+    }
+
+    protected float getLayoutIconHeight() {
+        return icon == null ? 0 : iconHeight == 0 || iconHeight == MATCH_PARENT ? icon.getHeight() : iconHeight;
+    }
+
+    public int getIconColor() {
+        return iconColor;
+    }
+
+    public void setIconColor(int iconColor) {
+        if (this.iconColor != iconColor) {
+            this.iconColor = iconColor;
             invalidate(false);
         }
     }
 
-    public Drawable getLabelIcon() {
-        return labelIcon;
+    public int getIconBgColor() {
+        return iconBgColor;
     }
 
-    public void setLabelIcon(Drawable labelIcon) {
-        if (this.labelIcon != labelIcon) {
-            this.labelIcon = labelIcon;
+    public void setIconBgColor(int iconBgColor) {
+        if (this.iconBgColor != iconBgColor) {
+            this.iconBgColor = iconBgColor;
             invalidate(false);
         }
     }
 
-    public int getColor() {
-        return color;
+    public ImageFilter getIconImageFilter() {
+        return iconImageFilter;
     }
 
-    public void setColor(int color) {
-        if (this.color != color) {
-            this.color = color;
+    public void setIconImageFilter(ImageFilter iconImageFilter) {
+        if (iconImageFilter == null) iconImageFilter = ImageFilter.LINEAR;
+        
+        if (this.iconImageFilter != iconImageFilter) {
+            this.iconImageFilter = iconImageFilter;
             invalidate(false);
         }
     }
 
-    public int getExpansionColor() {
-        return expansionColor;
+    public float getLineWidth() {
+        return lineWidth;
     }
 
-    public void setExpansionColor(int expansionColor) {
-        if (this.expansionColor != expansionColor) {
-            this.expansionColor = expansionColor;
+    public void setLineWidth(float lineWidth) {
+        if (this.lineWidth != lineWidth) {
+            this.lineWidth = lineWidth;
             invalidate(false);
         }
     }
 
-    private class SlideAnim extends NormalizedAnimation {
-        float fValue;
-        float tValue;
-        float value;
+    public int getLineColor() {
+        return lineColor;
+    }
 
-        @Override
-        protected void compute(float t) {
-            value = Interpolation.mix(fValue, tValue, t);
+    public void setLineColor(int lineColor) {
+        if (this.lineColor != lineColor) {
+            this.lineColor = lineColor;
             invalidate(false);
         }
+    }
+
+    public int getLineFilledColor() {
+        return lineFilledColor;
+    }
+
+    public float getMinValue() {
+        return minValue;
+    }
+
+    public float getMaxValue() {
+        return maxValue;
+    }
+
+    public void setRangeLimits(float minValue, float maxValue) {
+        float cMinValue = Math.min(minValue, maxValue);
+        float cMaxValue = Math.max(minValue, maxValue);
+        if (cMinValue != this.minValue || cMaxValue != this.maxValue) {
+            this.minValue = cMinValue;
+            this.maxValue = cMaxValue;
+            setValue(getValue());
+            invalidate(false);
+        }
+    }
+
+    public float getValue() {
+        return value;
+    }
+
+    public void setValue(float value) {
+        value = steps <= 0 ? value : Math.round(value / steps) * steps;
+        value = Math.max(minValue, Math.min(maxValue, value));
+
+        if (this.value != value) {
+            float old = this.value;
+            this.value = value;
+            invalidate(false);
+            fireValueListener(old);
+        }
+    }
+
+    public float getSteps() {
+        return steps;
+    }
+
+    public void setSteps(float steps) {
+        if (this.steps != steps) {
+            this.steps = steps;
+            setValue(getValue());
+            invalidate(false);
+        }
+    }
+
+    public void setLineFilledColor(int lineFilledColor) {
+        if (this.lineFilledColor != lineFilledColor) {
+            this.lineFilledColor = lineFilledColor;
+            invalidate(false);
+        }
+    }
+
+    public UXListener<SlideEvent> getSlideFilter() {
+        return slideFilter;
+    }
+
+    public void setSlideFilter(UXListener<SlideEvent> slideFilter) {
+        this.slideFilter = slideFilter;
+    }
+
+    private boolean filterSlide(float viewOffset) {
+        if (slideFilter != null) {
+            var event = new SlideEvent(this, SlideEvent.FILTER, viewOffset);
+            UXListener.safeHandle(slideFilter, event);
+            return !event.isConsumed();
+        }
+        return true;
+    }
+
+    public UXListener<SlideEvent> getSlideListener() {
+        return slideListener;
+    }
+
+    public void setSlideListener(UXListener<SlideEvent> slideListener) {
+        this.slideListener = slideListener;
+    }
+
+    private void fireSlide() {
+        if (slideListener != null) {
+            UXListener.safeHandle(slideListener, new SlideEvent(this, SlideEvent.SLIDE, value));
+        }
+    }
+
+    public void setValueListener(UXValueListener<Float> valueListener) {
+        this.valueListener = valueListener;
+    }
+
+    public UXValueListener<Float> getValueListener() {
+        return valueListener;
+    }
+
+    private void fireValueListener(float old) {
+        if (valueListener != null && old != value) {
+            UXValueListener.safeHandle(valueListener, new ValueChange<>(this, old, value));
+        }
+    }
+
+    protected boolean isWrapContent() {
+        return getPrefWidth() == WRAP_CONTENT || getPrefHeight() == WRAP_CONTENT;
     }
 }

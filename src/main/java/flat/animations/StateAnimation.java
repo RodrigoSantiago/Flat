@@ -1,6 +1,7 @@
 package flat.animations;
 
-import flat.widget.Activity;
+import flat.widget.State;
+import flat.window.Activity;
 import flat.widget.Widget;
 
 public final class StateAnimation implements Animation, StateInfo {
@@ -13,10 +14,16 @@ public final class StateAnimation implements Animation, StateInfo {
     float disabledOverlay;
     boolean disabledOverlayed;
 
-    long duration;
+    float duration;
+    boolean firstTimeAfterPlay;
 
     public StateAnimation(Widget widget) {
         this.widget = widget;
+    }
+
+    @Override
+    public Activity getSource() {
+        return widget.getActivity();
     }
 
     @Override
@@ -27,8 +34,12 @@ public final class StateAnimation implements Animation, StateInfo {
     }
 
     @Override
-    public void handle(long milis) {
-        float pass = milis / (float) duration;
+    public void handle(float seconds) {
+        float pass = seconds / duration;
+        if (!firstTimeAfterPlay) {
+            pass = 0;
+            firstTimeAfterPlay = true;
+        }
 
         if (tEnabled == 0) fEnabled = Math.max(0, fEnabled - pass);
         else fEnabled = Math.min(1, fEnabled + pass);
@@ -50,33 +61,26 @@ public final class StateAnimation implements Animation, StateInfo {
         widget.applyStyle();
     }
 
-    public void setDuration(long milis) {
-        this.duration = milis;
+    public void setDuration(float time) {
+        this.duration = time;
     }
 
-    public long getDuration() {
+    public float getDuration() {
         return duration;
     }
 
-    public void play(int bitmask) {
-        boolean play = isPlaying();
-        tEnabled = (byte) ((bitmask & (1 << ENABLED)) == (1 << ENABLED) ? 1 : 0);
-        tFocused = (byte) ((bitmask & (1 << FOCUSED)) == (1 << FOCUSED) ? 1 : 0);
-        tActivated = (byte) ((bitmask & (1 << ACTIVATED)) == (1 << ACTIVATED) ? 1 : 0);
-        tHovered = (byte) ((bitmask & (1 << HOVERED)) == (1 << HOVERED) ? 1 : 0);
-        tPressed = (byte) ((bitmask & (1 << PRESSED)) == (1 << PRESSED) ? 1 : 0);
-        tDragged = (byte) ((bitmask & (1 << DRAGGED)) == (1 << DRAGGED) ? 1 : 0);
-        tError = (byte) ((bitmask & (1 << ERROR)) == (1 << ERROR) ? 1 : 0);
-        tDisabled = (byte) ((bitmask & (1 << DISABLED)) == (1 << DISABLED) ? 1 : 0);
-        if (!play && isPlaying()) {
-            Activity activity = widget.getActivity();
-            if (activity != null) {
-                activity.addAnimation(this);
-            }
-        }
+    private void setTargetMasks(int bitmask) {
+        tEnabled    = (byte) ((bitmask & (State.ENABLED.bitset())) != 0 ? 1 : 0);
+        tFocused    = (byte) ((bitmask & (State.FOCUSED.bitset())) != 0 ? 1 : 0);
+        tActivated  = (byte) ((bitmask & (State.ACTIVATED.bitset())) != 0 ? 1 : 0);
+        tHovered    = (byte) ((bitmask & (State.HOVERED.bitset())) != 0 ? 1 : 0);
+        tPressed    = (byte) ((bitmask & (State.PRESSED.bitset())) != 0 ? 1 : 0);
+        tDragged    = (byte) ((bitmask & (State.DRAGGED.bitset())) != 0 ? 1 : 0);
+        tError      = (byte) ((bitmask & (State.ERROR.bitset())) != 0 ? 1 : 0);
+        tDisabled   = (byte) ((bitmask & (State.DISABLED.bitset())) != 0 ? 1 : 0);
     }
 
-    public void stop() {
+    public void setMasks() {
         fEnabled = tEnabled;
         fFocused = tFocused;
         fActivated = tActivated;
@@ -87,13 +91,30 @@ public final class StateAnimation implements Animation, StateInfo {
         fDisabled = tDisabled;
     }
 
+    public void play(int bitmask) {
+        boolean play = isPlaying();
+        setTargetMasks(bitmask);
+
+        if (!play && isPlaying()) {
+            firstTimeAfterPlay = false;
+            Activity activity = widget.getActivity();
+            if (activity != null) {
+                activity.addAnimation(this);
+            }
+        }
+    }
+
+    public void stop() {
+        setMasks();
+    }
+
     public void set(int bitmask) {
-        play(bitmask);
-        stop();
+        setTargetMasks(bitmask);
+        setMasks();
     }
 
     @Override
-    public float get(int stateIndex) {
+    public float get(State stateIndex) {
         switch (stateIndex) {
             case ENABLED: return fEnabled;
             case FOCUSED: return fFocused;
@@ -110,6 +131,7 @@ public final class StateAnimation implements Animation, StateInfo {
         disabledOverlayed = true;
         disabledOverlay = disable;
     }
+
     public void unsetDisabledOverlay() {
         disabledOverlayed = false;
     }

@@ -3,39 +3,34 @@ package flat.widget;
 import flat.animations.StateAnimation;
 import flat.animations.StateBitset;
 import flat.animations.StateInfo;
-import flat.graphics.SmartContext;
+import flat.events.*;
+import flat.graphics.Color;
+import flat.graphics.Graphics;
 import flat.graphics.cursor.Cursor;
 import flat.math.Affine;
 import flat.math.Vector2;
 import flat.math.shapes.RoundRectangle;
-import flat.math.shapes.Shape;
 import flat.math.stroke.BasicStroke;
-import flat.widget.effects.RippleEffect;
-import flat.widget.enuns.Visibility;
-import flat.events.*;
 import flat.uxml.*;
+import flat.uxml.value.UXValue;
+import flat.widget.stages.Menu;
+import flat.widget.effects.RippleEffect;
+import flat.widget.enums.DropdownAlign;
+import flat.widget.enums.Visibility;
+import flat.window.Activity;
 
-import java.lang.reflect.Method;
+import static flat.widget.State.*;
+
 import java.util.*;
 
-public class Widget implements Gadget {
+public class Widget {
 
     //---------------------
     //    Constants
     //---------------------
     public static final float WRAP_CONTENT = 0;
     public static final float MATCH_PARENT = Float.POSITIVE_INFINITY;
-
-    public static final int ENABLED = 1 << 0;
-    public static final int FOCUSED = 1 << 1;
-    public static final int ACTIVATED = 1 << 2;
-    public static final int HOVERED = 1 << 3;
-    public static final int PRESSED = 1 << 4;
-    public static final int DRAGGED = 1 << 5;
-    public static final int ERROR = 1 << 6;
-    public static final int DISABLED = 1 << 7;
-
-    private static final Comparator<Widget> childComparator = (o1, o2) -> Float.compare(o1.elevation, o2.elevation);
+    public static final Comparator<Widget> childComparator = (o1, o2) -> Float.compare(o1.elevation, o2.elevation);
 
     //---------------------
     //    Properties
@@ -48,14 +43,14 @@ public class Widget implements Gadget {
     private float paddingTop, paddingRight, paddingBottom, paddingLeft;
 
     private float width, height;
-    private float minWidth, minHeight, maxWidth = MATCH_PARENT, maxHeight = MATCH_PARENT, prefWidth, prefHeight;
-    private float measureWidth, measureHeight;
     private float layoutWidth, layoutHeight;
-    private float offsetWidth, offsetHeight;
+    private float minWidth, minHeight, maxWidth = MATCH_PARENT, maxHeight = MATCH_PARENT, prefWidth, prefHeight;
+    private float weight = 1;
+    private float measureWidth, measureHeight;
 
-    private int visibility = Visibility.Visible.ordinal();
-    private Cursor cursor;
-    private UXTheme theme;
+    private int visibility = Visibility.VISIBLE.ordinal();
+    private Cursor cursor = Cursor.UNSET;
+    private Cursor currentCursor = Cursor.UNSET;
 
     private Menu contextMenu;
 
@@ -63,8 +58,10 @@ public class Widget implements Gadget {
     //    Family
     //---------------------
     Parent parent;
-    ArrayList<Widget> children;
-    List<Widget> unmodifiableChildren;
+    Activity activity;
+    Group group;
+    final ArrayList<Widget> children = new ArrayList<>(0);
+    final List<Widget> unmodifiableChildren = Collections.unmodifiableList(children);
     boolean invalidChildrenOrder;
 
     //---------------------
@@ -74,23 +71,25 @@ public class Widget implements Gadget {
 
     private final Affine transform = new Affine();
     private final Affine inverseTransform = new Affine();
-    boolean invalidTransform;
+    private boolean invalidTransform;
 
     //---------------------
     //    Events
     //---------------------
-    private boolean clickable = true;
-    private PointerListener pointerListener;
-    private HoverListener hoverListener;
-    private ScrollListener scrollListener;
-    private KeyListener keyListener;
-    private DragListener dragListener;
-    private FocusListener focusListener;
+    private boolean currentHandleEventsEnabled = true;
+    private boolean handleEventsEnabled = true;
+    private UXListener<PointerEvent> pointerListener;
+    private UXListener<HoverEvent> hoverListener;
+    private UXListener<ScrollEvent> scrollListener;
+    private UXListener<KeyEvent> keyListener;
+    private UXListener<DragEvent> dragListener;
+    private UXListener<FocusEvent> focusListener;
 
     //---------------------
     //    Style
     //---------------------
-    private UXStyle style;
+    private UXAttrs attrs;
+    private UXTheme theme;
     private byte states = 1;
     private StateAnimation stateAnimation;
 
@@ -109,66 +108,41 @@ public class Widget implements Gadget {
 
     private boolean shadowEnabled;
     private boolean rippleEnabled;
-    private long transitionDuration;
+    private float transitionDuration;
 
     public Widget() {
-
+        attrs = new UXAttrs(this, UXAttrs.convertToKebabCase(getClass().getSimpleName()));
     }
 
-    public Widget(UXStyleAttrs style) {
-        this(style, null);
-    }
-
-    public Widget(UXStyleAttrs style, Controller controller) {
-        applyAttributes(style, controller);
-    }
-
-    @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        if (style == null) return;
-
-        String id = style.asString("id");
-        if (id != null) {
-            setId(id);
-            if (controller != null) {
-                controller.assign(id, this);
+    public void setAttributes(HashMap<Integer, UXValue> attributes, List<String> styles) {
+        attrs.setAttributes(attributes);
+        if (styles != null) {
+            for (String style : styles) {
+                attrs.addStyleName(style);
             }
         }
+    }
 
-        Method handle = style.asListener("on-pointer", PointerEvent.class, controller);
-        if (handle != null) {
-            setPointerListener(new PointerListener.AutoPointerListener(controller, handle));
-        }
-        handle = style.asListener("on-hover", HoverEvent.class, controller);
-        if (handle != null) {
-            setHoverListener(new HoverListener.AutoHoverListener(controller, handle));
-        }
-        handle = style.asListener("on-scroll", ScrollEvent.class, controller);
-        if (handle != null) {
-            setScrollListener(new ScrollListener.AutoScrollListener(controller, handle));
-        }
-        handle = style.asListener("on-key", KeyEvent.class, controller);
-        if (handle != null) {
-            setKeyListener(new KeyListener.AutoKeyListener(controller, handle));
-        }
-        handle = style.asListener("on-drag", DragEvent.class, controller);
-        if (handle != null) {
-            setDragListener(new DragListener.AutoDragListener(controller, handle));
-        }
-        handle = style.asListener("on-focus", FocusEvent.class, controller);
-        if (handle != null) {
-            setFocusListener(new FocusListener.AutoFocusListener(controller, handle));
-        }
+    public void applyAttributes(Controller controller) {
+        UXAttrs attrs = getAttrs();
 
-        setNextFocusId(style.asString("next-focus-id", getNextFocusId()));
-        setPrevFocusId(style.asString("prev-focus-id", getPrevFocusId()));
-        setStyle(style);
+        setEnabled(attrs.getAttributeBool("enabled", isEnabled()));
+
+        setPointerListener(attrs.getAttributeListener("on-pointer", PointerEvent.class, controller));
+        setHoverListener(attrs.getAttributeListener("on-hover", HoverEvent.class, controller));
+        setScrollListener(attrs.getAttributeListener("on-scroll", ScrollEvent.class, controller));
+        setKeyListener(attrs.getAttributeListener("on-key", KeyEvent.class, controller));
+        setDragListener(attrs.getAttributeListener("on-drag", DragEvent.class, controller));
+        setFocusListener(attrs.getAttributeListener("on-focus", FocusEvent.class, controller));
+
+        setNextFocusId(attrs.getAttributeString("next-focus-id", getNextFocusId()));
+        setPrevFocusId(attrs.getAttributeString("prev-focus-id", getPrevFocusId()));
     }
 
     public void applyStyle() {
-        if (style == null) return;
+        UXAttrs attrs = getAttrs();
 
-        setTransitionDuration((long) style.asNumber("transition-duration", getTransitionDuration()));
+        setTransitionDuration(attrs.getNumber("transition-duration", null, getTransitionDuration()));
 
         // Disabled State Overlay
         if (parent != null) {
@@ -190,141 +164,131 @@ public class Widget implements Gadget {
         }
 
         if (isDisabled()) {
-            if (children != null) {
-                childSort();
-                for (Widget child : children) {
-                    child.applyStyle();
-                }
+            for (Widget child : getChildrenIterable()) {
+                child.applyStyle();
             }
         }
 
         StateInfo info = getStateInfo();
 
-        setEnabled(style.asBool("enabled", info, isEnabled()));
-        setVisibility(style.asConstant("visibility", info, getVisibility()));
+        setVisibility(attrs.getConstant("visibility", info, getVisibility()));
+        setCursor(attrs.getConstant("cursor", info, getCursor()));
 
-        switch (style.asString("cursor", info, String.valueOf(getCursor())).toLowerCase()) {
-            case "arrow": setCursor(Cursor.ARROW); break;
-            case "crosshair": setCursor(Cursor.CROSSHAIR);break;
-            case "hand": setCursor(Cursor.HAND);break;
-            case "ibeam": setCursor(Cursor.IBEAM);break;
-            case "hresize": setCursor(Cursor.HRESIZE);break;
-            case "vresize": setCursor(Cursor.VRESIZE);break;
-            default: setCursor(null);
-        }
+        setFocusable(attrs.getBool("focusable", info, isFocusable()));
+        setHandleEventsEnabled(attrs.getBool("handle-events-enabled", info, isHandleEventsEnabled()));
 
-        setFocusable(style.asBool("focusable", info, isFocusable()));
-        setClickable(style.asBool("clickable", info, isClickable()));
+        setPrefWidth(attrs.getSize("width", info, getPrefWidth()));
+        setPrefHeight(attrs.getSize("height", info, getPrefHeight()));
+        setMaxWidth(attrs.getSize("max-width", info, getMaxWidth()));
+        setMaxHeight(attrs.getSize("max-height", info, getMaxHeight()));
+        setMinWidth(attrs.getSize("min-width", info, getMinWidth()));
+        setMinHeight(attrs.getSize("min-height", info, getMinHeight()));
+        setWeight(attrs.getSize("weight", info, getWeight()));
 
-        setPrefWidth(style.asSize("width", info, getPrefWidth()));
-        setPrefHeight(style.asSize("height", info, getPrefHeight()));
-        setMaxWidth(style.asSize("max-width", info, getMaxWidth()));
-        setMaxHeight(style.asSize("max-height", info, getMaxHeight()));
-        setMinWidth(style.asSize("min-width", info, getMinWidth()));
-        setMinHeight(style.asSize("min-height", info, getMinHeight()));
+        setTranslateX(attrs.getSize("translate-x", info, getTranslateX()));
+        setTranslateY(attrs.getSize("translate-y", info, getTranslateY()));
+        setCenterX(attrs.getNumber("center-x", info, getCenterX()));
+        setCenterY(attrs.getNumber("center-y", info, getCenterY()));
+        setScaleX(attrs.getNumber("scale-x", info, getScaleX()));
+        setScaleY(attrs.getNumber("scale-y", info, getScaleY()));
 
-        setTranslateX(style.asSize("x", info, getTranslateX()));
-        setTranslateY(style.asSize("y", info, getTranslateY()));
-        setCenterX(style.asNumber("centre-x", info, getCenterX()));
-        setCenterY(style.asNumber("centre-y", info, getCenterY()));
-        setScaleX(style.asNumber("scale-x", info, getScaleX()));
-        setScaleY(style.asNumber("scale-y", info, getScaleY()));
-        setOpacity(style.asNumber("opacity", info, getOpacity()));
+        setRotate(attrs.getAngle("rotate", info, getRotate()));
 
-        setRotate(style.asAngle("rotate", info, getRotate()));
+        setElevation(attrs.getSize("elevation", info, getElevation()));
+        setShadowEnabled(attrs.getBool("shadow-enabled", info, isShadowEnabled()));
 
-        setElevation(style.asSize("elevation", info, getElevation()));
-        setShadowEnabled(style.asBool("shadow", info, isShadowEnabled()));
+        setRippleEnabled(attrs.getBool("ripple-enabled", info, isRippleEnabled()));
+        setRippleColor(attrs.getColor("ripple-color", info, getRippleColor()));
+        setRippleOverflow(attrs.getBool("ripple-overflow", info, isRippleOverflow()));
 
-        setRippleEnabled(style.asBool("ripple", info, isRippleEnabled()));
-        setRippleColor(style.asColor("ripple-color", info, getRippleColor()));
-        setRippleOverflow(style.asBool("ripple-overflow", info, isRippleOverflow()));
+        setMarginTop(attrs.getSize("margin-top", info, getMarginTop()));
+        setMarginRight(attrs.getSize("margin-right", info, getMarginRight()));
+        setMarginBottom(attrs.getSize("margin-bottom", info, getMarginBottom()));
+        setMarginLeft(attrs.getSize("margin-left", info, getMarginLeft()));
 
-        setMarginTop(style.asSize("margin-top", info, getMarginTop()));
-        setMarginRight(style.asSize("margin-right", info, getMarginRight()));
-        setMarginBottom(style.asSize("margin-bottom", info, getMarginBottom()));
-        setMarginLeft(style.asSize("margin-left", info, getMarginLeft()));
+        setPaddingTop(attrs.getSize("padding-top", info, getPaddingTop()));
+        setPaddingRight(attrs.getSize("padding-right", info, getPaddingRight()));
+        setPaddingBottom(attrs.getSize("padding-bottom", info, getPaddingBottom()));
+        setPaddingLeft(attrs.getSize("padding-left", info, getPaddingLeft()));
 
-        setPaddingTop(style.asSize("padding-top", info, getPaddingTop()));
-        setPaddingRight(style.asSize("padding-right", info, getPaddingRight()));
-        setPaddingBottom(style.asSize("padding-bottom", info, getPaddingBottom()));
-        setPaddingLeft(style.asSize("padding-left", info, getPaddingLeft()));
+        setRadiusTop(attrs.getSize("radius-top", info, getRadiusTop()));
+        setRadiusRight(attrs.getSize("radius-right", info, getRadiusRight()));
+        setRadiusBottom(attrs.getSize("radius-bottom", info, getRadiusBottom()));
+        setRadiusLeft(attrs.getSize("radius-left", info, getRadiusLeft()));
 
-        setRadiusTop(style.asSize("radius-top", info, getRadiusTop()));
-        setRadiusRight(style.asSize("radius-right", info, getRadiusRight()));
-        setRadiusBottom(style.asSize("radius-bottom", info, getRadiusBottom()));
-        setRadiusLeft(style.asSize("radius-left", info, getRadiusLeft()));
-
-        setBackgroundColor(style.asColor("background-color", info, getBackgroundColor()));
-        setBorderRound(style.asBool("border-round", info, isBorderRound()));
-        setBorderColor(style.asColor("border-color", info, getBorderColor()));
-        setBorderWidth(style.asSize("border-width", info, getBorderWidth()));
+        setBackgroundColor(attrs.getColor("background-color", info, getBackgroundColor()));
+        setBorderRound(attrs.getBool("border-round", info, isBorderRound()));
+        setBorderColor(attrs.getColor("border-color", info, getBorderColor()));
+        setBorderWidth(attrs.getSize("border-width", info, getBorderWidth()));
     }
 
-    @Override
     public void applyChildren(UXChildren children) {
-        Menu menu = children.nextMenu();
+        Menu menu = children.getMenu();
         if (menu != null) {
             setContextMenu(menu);
         }
     }
 
-    public void onDraw(SmartContext context) {
-        backgroundDraw(backgroundColor, borderColor, rippleColor, context);
-        childrenDraw(context);
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
+        drawRipple(graphics);
+        drawChildren(graphics);
     }
 
-    protected void backgroundDraw(int backgroundColor, int borderColor, int rippleColor, SmartContext context) {
-        if (getDisplayOpacity() > 0) {
-            float b = borderWidth;
-            float b2 = borderWidth / 2;
+    protected void drawBackground(Graphics graphics) {
+        if (bg.width <= 0 || bg.height <= 0) {
+            return;
+        }
 
-            if ((backgroundColor & 0xFF) > 0 && shadowEnabled) {
-                context.setTransform2D(getTransform().preTranslate(0, Math.max(0, elevation)));
-                context.drawRoundRectShadow(
-                        bg.x - b, bg.y - b, bg.width + b * 2, bg.height + b * 2,
-                        bg.arcTop + b, bg.arcRight + b, bg.arcBottom + b, bg.arcLeft + b,
-                        elevation * 2, 0.55f * ((backgroundColor & 0xFF) / 255f));
-            }
+        float bgOpacity = Color.getOpacity(backgroundColor);
+        float borderOpacity = Color.getOpacity(borderColor);
 
-            context.setTransform2D(getTransform());
+        float b = borderWidth * borderOpacity;
+        float b2 = b / 2;
 
-            if ((backgroundColor & 0xFF) > 0) {
-                context.setColor(backgroundColor);
-                context.drawRoundRect(bg, true);
-            }
+        // Draw Background Shadow
+        if (bgOpacity > 0 && shadowEnabled) {
+            graphics.setTransform2D(getTransform().preTranslate(0, Math.max(0, elevation)));
+            graphics.drawRoundRectShadow(
+                    bg.x - b, bg.y - b, bg.width + b * 2, bg.height + b * 2,
+                    bg.arcTop + b, bg.arcRight + b, bg.arcBottom + b, bg.arcLeft + b,
+                    elevation * 2, 0.55f * bgOpacity);
+        }
 
-            if ((borderColor & 0xFF) > 0 && borderWidth > 0) {
-                context.setColor(borderColor);
-                context.setStroker(new BasicStroke(borderWidth));
-                context.drawRoundRect(
-                        bg.x - b2, bg.y - b2, bg.width + b, bg.height + b,
-                        bg.arcTop + b2, bg.arcRight + b2, bg.arcBottom + b2, bg.arcLeft + b2,
-                        false);
-            }
+        // Draw Background
+        if (bgOpacity > 0) {
+            graphics.setTransform2D(getTransform());
+            graphics.setColor(backgroundColor);
+            graphics.drawRoundRect(bg, true);
+        }
 
-            if ((rippleColor & 0xFF) > 0 && rippleEnabled && ripple.isVisible()) {
-                ripple.drawRipple(context, isRippleOverflow() ? null : bg, rippleColor);
-            }
-
-            context.setTransform2D(null);
+        // Draw Border
+        if (borderOpacity > 0 && borderWidth > 0) {
+            graphics.setTransform2D(getTransform());
+            graphics.setColor(borderColor);
+            graphics.setStroker(new BasicStroke(borderWidth));
+            graphics.drawRoundRect(
+                    bg.x - b2, bg.y - b2, bg.width + b, bg.height + b,
+                    bg.arcTop + b2, bg.arcRight + b2, bg.arcBottom + b2, bg.arcLeft + b2,
+                    false);
         }
     }
 
-    protected void childrenDraw(SmartContext context) {
-        if (children != null) {
-            childSort();
-            for (Widget child : children) {
-                if (child.getVisibility() == Visibility.Visible) {
-                    child.onDraw(context);
-                }
-            }
+    protected void drawRipple(Graphics graphics) {
+        float rippleOpacity = Color.getOpacity(rippleColor);
+
+        if (rippleOpacity > 0 && rippleEnabled && ripple.isVisible()) {
+            graphics.setTransform2D(getTransform());
+            ripple.drawRipple(graphics, rippleOverflow ? null : bg, rippleColor);
         }
     }
 
-    protected Shape backgroundClip(SmartContext context) {
-        context.setTransform2D(getTransform());
-        return context.intersectClip(bg);
+    protected void drawChildren(Graphics graphics) {
+        for (Widget child : getChildrenIterable()) {
+            if (child.getVisibility() == Visibility.VISIBLE) {
+                child.onDraw(graphics);
+            }
+        }
     }
 
     /**
@@ -333,8 +297,26 @@ public class Widget implements Gadget {
      * Equation : minsize < ([preferedSize || computedSize] + padding + margins) < maxsize
      */
     public void onMeasure() {
-        setMeasure(Math.max(prefWidth + marginLeft + marginRight, lMinWidth()),
-                Math.max(prefHeight + marginTop + marginBottom, lMinHeight()));
+        float extraWidth = getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
+        float extraHeight = getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
+
+        float mWidth;
+        float mHeight;
+        boolean wrapWidth = getLayoutPrefWidth() == WRAP_CONTENT;
+        boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
+
+        if (wrapWidth) {
+            mWidth = Math.max(extraWidth, getLayoutMinWidth());
+        } else {
+            mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
+        }
+        if (wrapHeight) {
+            mHeight = Math.max(extraHeight, getLayoutMinHeight());
+        } else {
+            mHeight = Math.max(getLayoutPrefHeight(), getLayoutMinHeight());
+        }
+
+        setMeasure(mWidth, mHeight);
     }
 
     /**
@@ -344,15 +326,15 @@ public class Widget implements Gadget {
      * @param height
      */
     public final void setMeasure(float width, float height) {
-        measureWidth = Math.max(width, lMinWidth());
-        measureHeight = Math.max(height, lMinHeight());
+        measureWidth = width;
+        measureHeight = height;
     }
 
-    public float mWidth()  {
+    public float getMeasureWidth()  {
         return measureWidth;
     }
 
-    public float mHeight()  {
+    public float getMeasureHeight()  {
         return measureHeight;
     }
 
@@ -367,39 +349,39 @@ public class Widget implements Gadget {
 
     /**
      * Set the widget real size, based on parent's size (internal)
-     * @param width
-     * @param height
+     * @param layoutWidth
+     * @param layoutHeight
      */
-    public final void setLayout(float width, float height) {
-        this.layoutWidth = width;
-        this.layoutHeight = height;
-
-        setWidth(Math.max(0, width + offsetWidth));
-        setHeight(Math.max(0, height + offsetHeight));
+    public final void setLayout(float layoutWidth, float layoutHeight) {
+        if (this.layoutWidth != layoutWidth || this.layoutHeight != layoutHeight) {
+            this.layoutWidth = layoutWidth;
+            this.layoutHeight = layoutHeight;
+            updateRect();
+        }
     }
 
-    public float lWidth() {
-        return layoutWidth;
+    public float getLayoutPrefWidth() {
+        return prefWidth == WRAP_CONTENT ? prefWidth : prefWidth + marginLeft + marginRight;
     }
 
-    public float lHeight() {
-        return layoutHeight;
+    public float getLayoutPrefHeight() {
+        return prefHeight == WRAP_CONTENT ? prefHeight : prefHeight + marginTop + marginBottom;
     }
 
-    public float lMinWidth() {
+    public float getLayoutMinWidth() {
         return Math.max(minWidth, paddingLeft + paddingRight) + marginLeft + marginRight;
     }
 
-    public float lMinHeight() {
+    public float getLayoutMinHeight() {
         return Math.max(minHeight, paddingTop + paddingBottom) + marginTop + marginBottom;
     }
 
-    public float lMaxWidth() {
-        return maxWidth + marginLeft + marginRight;
+    public float getLayoutMaxWidth() {
+        return Math.max(getLayoutMinWidth(), maxWidth <= 0 ? MATCH_PARENT : maxWidth + marginLeft + marginRight);
     }
 
-    public float lMaxHeight() {
-        return maxHeight + marginTop + marginBottom;
+    public float getLayoutMaxHeight() {
+        return Math.max(getLayoutMinHeight(), maxHeight <= 0 ? MATCH_PARENT : maxHeight + marginTop + marginBottom);
     }
 
     /**
@@ -407,143 +389,230 @@ public class Widget implements Gadget {
      * @param x
      * @param y
      */
-    public final void setPosition(float x, float y) {
+    public void setLayoutPosition(float x, float y) {
         if (this.x != x || this.y != y) {
             this.x = x;
             this.y = y;
             updateRect();
+            invalidate(false);
+        }
+    }
+
+    protected void childInvalidate(Widget child) {
+        if (activity != null) {
+            if (getPrefWidth() == WRAP_CONTENT || getPrefHeight() == WRAP_CONTENT) {
+                invalidate(true);
+            } else {
+                activity.invalidateWidget(child);
+            }
         }
     }
 
     public void invalidate(boolean layout) {
-        if (parent != null) {
-            parent.invalidate(layout);
+        if (activity != null) {
+            if (layout) {
+                if (parent != null) {
+                    parent.childInvalidate(this);
+                } else {
+                    activity.invalidateWidget(this);
+                }
+            } else {
+                activity.invalidate();
+            }
         }
     }
 
     protected void invalidateTransform() {
-        if (children != null) {
-            for (Widget child : children) {
-                child.invalidateTransform();
-            }
+        for (Widget child : getChildrenIterable()) {
+            child.invalidateTransform();
         }
         invalidTransform = true;
     }
 
-    protected void invalidateChildrenOrder() {
-        invalidChildrenOrder = true;
+    protected boolean invalidateChildrenOrder(Widget child) {
+        if (child == null) {
+            invalidChildrenOrder = true;
+            return true;
+        }
+
+        int index = children.indexOf(child);
+        float el = child.getElevation();
+        int indexPrev = index - 1;
+        int indexNext = index + 1;
+        boolean biggerThanPrevious = (indexPrev < 0 || children.get(indexPrev).getElevation() < el);
+        boolean smallerThanNext = (indexNext >= children.size() || children.get(indexNext).getElevation() > el);
+        if (!biggerThanPrevious || !smallerThanNext) {
+            invalidChildrenOrder = true;
+            return true;
+        }
+        return false;
     }
 
-    @Override
     public final String getId() {
         return id;
-    }
-
-    @Override
-    public final Widget getWidget() {
-        return this;
     }
 
     public void setId(String id) {
         if (!Objects.equals(this.id, id)) {
             String oldId = this.id;
             this.id = id;
-            Scene scene = getScene();
-            if (scene != null) {
-                scene.reassign(oldId, this);
+            if (group != null) {
+                group.reassign(oldId, this);
             }
         }
     }
 
     public Activity getActivity() {
-        if (parent != null) {
-            return parent.getActivity();
-        } else {
-            return null;
+        return activity;
+    }
+
+    public void setTheme(UXTheme theme) {
+        if (this.theme != theme) {
+            this.theme = theme;
+            onThemeChangeLocal();
+        }
+    }
+
+    public UXTheme getTheme() {
+        return this.theme;
+    }
+
+    public UXTheme getCurrentTheme() {
+        return this.theme != null ? this.theme : parent != null ? parent.getCurrentTheme() : null;
+    }
+
+    public void refreshStyle() {
+        applyStyle();
+        for (var child : getChildrenIterable()) {
+            child.refreshStyle();
+        }
+        if (contextMenu != null) {
+            contextMenu.refreshStyle();
         }
     }
 
     /**
-     * Return the top-most scene, direct assigned to an activity
+     * Return the current assigned group
      *
      * @return
      */
-    public Scene getScene() {
-        Scene scene = null;
-        if (parent != null) {
-            if (parent.isScene()) {
-                scene = (Scene) parent;
-            } else {
-                scene = parent.getScene();
-            }
-        }
-        return scene;
+    public Group getGroup() {
+        return group;
     }
 
-    boolean isScene() {
-        return false;
+    protected Group getCurrentOrGroup() {
+        return group;
     }
 
     public Parent getParent() {
         return parent;
     }
 
-    void setParent(Parent parent) {
-        if (parent == this) parent = null;
+    void setParent(Parent parent, TaskList tasks) {
+        if (parent == this.parent) return;
 
-        if (this.parent != null && parent != null) {
-            this.parent.remove(this);
-        }
+        UXTheme themeA = getCurrentTheme();
+        Group groupA = getGroup();
+        Activity activityA = getActivity();
 
-        if (parent != null && parent.isChildOf(this)) {
-            parent.getParent().remove(parent);
-        }
-
-        Scene sceneA = getScene();
-        Activity activityA = sceneA == null ? null : sceneA.getActivity();
-
+        Parent old = this.parent;
         this.parent = parent;
 
-        Scene sceneB = getScene();
-        Activity activityB = sceneB == null ? null : sceneB.getActivity();
+        Group groupB = parent == null ? null : parent.getCurrentOrGroup();
+        Activity activityB = parent == null ? null : parent.getActivity();
 
-        if (sceneA != sceneB) {
-            if (sceneA != null) {
-                sceneA.deassign(this);
-            }
-            if (sceneB != null) {
-                sceneB.assign(this);
-            }
-            onSceneChange();
+        if (groupA != groupB) {
+            onGroupChangeLocal(groupA, groupB);
         }
 
         if (activityA != activityB) {
-            onActivityChange(activityA, activityB);
+            onActivityChangeLocal(activityA, activityB);
         }
+
+        if (activityA != activityB) {
+            onActivityChange(activityA, activityB, tasks);
+        }
+
+        UXTheme themeB = getCurrentTheme();
+        if (themeA != themeB) {
+            onThemeChangeLocal();
+        }
+        onCursorChangeLocal();
+        onHandleEventsChangeLocal();
     }
 
-    protected void onSceneChange() {
-        if (children != null) {
-            for (Widget widget : children) {
-                widget.onSceneChange();
+    void onGroupChangeLocal(Group prev, Group current) {
+        this.group = current;
+        if (prev != null) {
+            prev.unassign(this);
+        }
+        if (current != null) {
+            current.assign(this);
+        }
+        if (getCurrentOrGroup() != this) {
+            for (Widget widget : getChildrenIterable()) {
+                widget.onGroupChangeLocal(prev, current);
             }
         }
     }
 
-    protected void onActivityChange(Activity prev, Activity activity) {
-        if (children != null) {
-            for (Widget widget : children) {
-                widget.onActivityChange(prev, activity);
-            }
+    void onActivityChangeLocal(Activity prev, Activity current) {
+        this.activity = current;
+
+        for (Widget widget : getChildrenIterable()) {
+            widget.onActivityChangeLocal(prev, current);
+        }
+    }
+
+    protected void onActivityChange(Activity prev, Activity current, TaskList tasks) {
+        refreshFocus();
+
+        if (contextMenu != null && contextMenu.isShown() && contextMenu.getActivity() != null) {
+            Menu menu = this.contextMenu;
+            tasks.add(() -> menu.hide());
         }
 
         if (ripple != null) {
-            ripple.onActivityChange(prev, activity);
+            ripple.stop();
         }
 
         if (stateAnimation != null && stateAnimation.isPlaying()) {
-            if (prev != null) prev.removeAnimation(stateAnimation);
-            if (activity != null) activity.addAnimation(stateAnimation);
+            stateAnimation.stop();
+        }
+
+        for (Widget widget : getChildrenIterable()) {
+            widget.onActivityChange(prev, current, tasks);
+        }
+    }
+
+    void onThemeChangeLocal() {
+        if (attrs.getTheme() != getCurrentTheme()) {
+            attrs.setTheme(getCurrentTheme());
+            if (getActivity() != null) {
+                applyStyle();
+            }
+
+            if (contextMenu != null) {
+                contextMenu.setTheme(getCurrentTheme());
+            }
+
+            for (Widget child : getChildrenIterable()) {
+                child.onThemeChangeLocal();
+            }
+        }
+    }
+
+    void onCursorChangeLocal() {
+        currentCursor = getShowCursor();
+        for (Widget child : getChildrenIterable()) {
+            child.onCursorChangeLocal();
+        }
+    }
+
+    void onHandleEventsChangeLocal() {
+        currentHandleEventsEnabled = getCurrentHandleEventsEnabled();
+        for (Widget child : getChildrenIterable()) {
+            child.onHandleEventsChangeLocal();
         }
     }
 
@@ -556,54 +625,36 @@ public class Widget implements Gadget {
         return children;
     }
 
+    public Children<Widget> getChildrenIterable() {
+        return new Children<>(getChildren());
+    }
+
+    public Children<Widget> getChildrenIterableReverse() {
+        return new Children<>(getChildren(), true);
+    }
+
     public Widget findById(String id) {
         if (id == null) return null;
 
-        Scene scene = getScene();
-        if (scene != null) {
-            return scene.findById(id);
-        } else {
-            if (children != null) {
-                for (Widget child : children) {
-                    Widget found = child.findById(id);
-                    if (found != null) return found;
-                }
-            }
+        Group group = getGroup();
+        if (group != null) {
+            return group.findById(id);
         }
         return null;
     }
 
     public Widget findByPosition(float x, float y, boolean includeDisabled) {
-        // TODO - reverse order {child -> contains to contains -> child on cliping }
-
-        if ((includeDisabled || isEnabled()) &&
-                (getVisibility() == Visibility.Visible || getVisibility() == Visibility.Invisible)) {
-            if (children != null) {
-                childSort();
-                for (int i = children.size() - 1; i >= 0; i--) {
-                    Widget child = children.get(i);
-                    Widget found = child.findByPosition(x, y, includeDisabled);
-                    if (found != null) return found;
-                }
-            }
-            return clickable && contains(x, y) ? this : null;
-        } else {
+        if (!isCurrentHandleEventsEnabled()
+                || getVisibility() != Visibility.VISIBLE
+                || (!includeDisabled && !isEnabled())
+                || !contains(x, y)) {
             return null;
         }
-    }
-
-    public Widget findFocused() {
-        if (isFocused()) {
-            if (children != null) {
-                for (Widget child : children) {
-                    Widget focus = child.findFocused();
-                    if (focus != null) return focus;
-                }
-            }
-            return this;
-        } else {
-            return null;
+        for (Widget child : getChildrenIterableReverse()) {
+            Widget found = child.findByPosition(x, y, includeDisabled);
+            if (found != null) return found;
         }
+        return this;
     }
 
     public boolean isChildOf(Widget widget) {
@@ -618,12 +669,23 @@ public class Widget implements Gadget {
         }
     }
 
-    public boolean isClickable() {
-        return clickable;
+    protected boolean getCurrentHandleEventsEnabled() {
+        return handleEventsEnabled && (parent == null || parent.getCurrentHandleEventsEnabled());
     }
 
-    public void setClickable(boolean clickable) {
-        this.clickable = clickable;
+    protected boolean isCurrentHandleEventsEnabled() {
+        return currentHandleEventsEnabled;
+    }
+
+    public boolean isHandleEventsEnabled() {
+        return handleEventsEnabled;
+    }
+
+    public void setHandleEventsEnabled(boolean handleEventsEnabled) {
+        if (this.handleEventsEnabled != handleEventsEnabled) {
+            this.handleEventsEnabled = handleEventsEnabled;
+            onHandleEventsChangeLocal();
+        }
     }
 
     public Menu getContextMenu() {
@@ -635,16 +697,9 @@ public class Widget implements Gadget {
     }
 
     public void showContextMenu(float x, float y) {
-        if (contextMenu != null) {
-            Activity act = getActivity();
-            if (act != null) {
-                contextMenu.onMeasure();
-                boolean reverseX = contextMenu.mWidth() + x > act.getWidth();
-                boolean reverseY = contextMenu.mHeight() + y > act.getHeight();
-                contextMenu.show(act,
-                        reverseX ? x - contextMenu.mWidth() : x,
-                        reverseY ? y - contextMenu.mHeight() : y);
-            }
+        Activity act = getActivity();
+        if (contextMenu != null && act != null) {
+            contextMenu.show(act, x, y, DropdownAlign.TOP_LEFT_ADAPTATIVE);
         }
     }
 
@@ -657,7 +712,7 @@ public class Widget implements Gadget {
     // ---- STATES ---- //
     protected void setStates(byte bitmask) {
         if (states != bitmask) {
-            boolean applyStyle = getStyle() != null && getStyle().containsChange(states, bitmask);
+            boolean applyStyle = getAttrs().containsChange(states, bitmask);
             states = bitmask;
 
             if (transitionDuration > 0) {
@@ -673,7 +728,6 @@ public class Widget implements Gadget {
                 }
             } else if (applyStyle) {
                 applyStyle();
-                invalidate(false);
             }
         }
     }
@@ -686,36 +740,64 @@ public class Widget implements Gadget {
         return stateAnimation != null ? stateAnimation : StateBitset.getState(states);
     }
 
-    public UXStyle getStyle() {
-        return this.style;
+    protected UXAttrs getAttrs() {
+        return this.attrs;
     }
 
-    public void setStyle(UXStyle style) {
-        if (this.style != style) {
-            if (style == null) {
-                this.style = null;
-            } else {
-                this.style = style instanceof UXStyleAttrs ?
-                        (UXStyleAttrs) style : new UXStyleAttrs("attributes", style, null);
-                applyStyle();
-            }
+    public List<String> getStyles() {
+        return this.attrs.getStyleNames();
+    }
+
+    public void addStyle(String style) {
+        if (attrs.addStyleName(style)) {
+            applyStyle();
         }
     }
 
-    public void unfollowStyleProperty(String name) {
-        if (style != null) {
-            if (style.getClass() == UXStyle.class) {
-                style = new UXStyleAttrs("attributes", style, null);
-            }
-            ((UXStyleAttrs) style).unfollow(name);
+    public void addStyles(List<String> styles) {
+        if (styles == null || styles.isEmpty()) {
+            return;
+        }
+
+        boolean change = false;
+        for (String style : styles) {
+            change = attrs.addStyleName(style) || change;
+        }
+        if (change) {
+            applyStyle();
         }
     }
 
-    public long getTransitionDuration() {
+    public void setStyles(List<String> styles) {
+        attrs.cleatStyles();
+        for (String style : styles) {
+            attrs.addStyleName(style);
+        }
+        applyStyle();
+    }
+
+    public void clearStyles() {
+        attrs.cleatStyles();
+        applyStyle();
+    }
+
+    public void setFollowStyleProperty(String name, boolean follow) {
+        if (follow) {
+            attrs.clearUnfollow(name);
+        } else {
+            attrs.unfollow(name);
+        }
+    }
+
+    public boolean isFollowStyleProperty(String name) {
+        return !attrs.isUnfollow(name);
+    }
+
+    public float getTransitionDuration() {
         return transitionDuration;
     }
 
-    public void setTransitionDuration(long transitionDuration) {
+    public void setTransitionDuration(float transitionDuration) {
         transitionDuration = Math.max(transitionDuration, 0);
 
         if (this.transitionDuration != transitionDuration) {
@@ -736,89 +818,98 @@ public class Widget implements Gadget {
     }
 
     public boolean isDisabled() {
-        return parent == null ? !isEnabled() : parent.isDisabled() || !isEnabled();
+        return !isEnabled() || (parent != null && parent.isDisabled());
     }
 
     public boolean isEnabled() {
-        return (states & DISABLED) != DISABLED;
+        return !DISABLED.contains(states);
     }
 
     public void setEnabled(boolean enabled) {
         if (isEnabled() != enabled) {
-            setStates((byte) (enabled ? states | DISABLED : states & ~DISABLED));
+            setStates((byte) (!enabled ? states | DISABLED.bitset() : states & ~DISABLED.bitset()));
         }
     }
 
     public boolean isActivated() {
-        return (states & ACTIVATED) == ACTIVATED;
+        return ACTIVATED.contains(states);
     }
 
     protected void setActivated(boolean actived) {
         if (isActivated() != actived) {
-            setStates((byte) (actived ? states | ACTIVATED : states & ~ACTIVATED));
+            setStates((byte) (actived ? states | ACTIVATED.bitset() : states & ~ACTIVATED.bitset()));
         }
     }
 
     public boolean isHovered() {
-        return (states & HOVERED) == HOVERED;
+        return HOVERED.contains(states);
     }
 
     protected void setHovered(boolean hovered) {
         if (isHovered() != hovered) {
-            setStates((byte) (hovered ? states | HOVERED : states & ~HOVERED));
+            setStates((byte) (hovered ? states | HOVERED.bitset() : states & ~HOVERED.bitset()));
         }
     }
 
     public boolean isPressed() {
-        return (states & PRESSED) == PRESSED;
+        return PRESSED.contains(states);
     }
 
     protected void setPressed(boolean pressed) {
         if (isPressed() != pressed) {
-            setStates((byte) (pressed ? states | PRESSED : states & ~PRESSED));
+            setStates((byte) (pressed ? states | PRESSED.bitset() : states & ~PRESSED.bitset()));
         }
     }
 
     public boolean isDragged() {
-        return (states & DRAGGED) == DRAGGED;
+        return DRAGGED.contains(states);
     }
 
     protected void setDragged(boolean dragged) {
         if (isDragged() != dragged) {
-            setStates((byte) (dragged ? states | DRAGGED : states & ~DRAGGED));
+            setStates((byte) (dragged ? states | DRAGGED.bitset() : states & ~DRAGGED.bitset()));
         }
     }
 
     public boolean isError() {
-        return (states & ERROR) == ERROR;
+        return ERROR.contains(states);
     }
 
     protected void setError(boolean error) {
         if (isError() != error) {
-            setStates((byte) (error ? states | ERROR : states & ~ERROR));
+            setStates((byte) (error ? states | ERROR.bitset() : states & ~ERROR.bitset()));
         }
     }
 
+    public void refreshFocus() {
+        Activity activity = getActivity();
+        setFocused(activity != null && activity.getFocus() == this);
+    }
+
     public boolean isFocused() {
-        return (states & FOCUSED) == FOCUSED;
+        return FOCUSED.contains(states);
     }
 
     protected void setFocused(boolean focused) {
         if (isFocused() != focused) {
             Activity activity = getActivity();
             if (activity != null) {
-                if (focused) {
-                    if (focusable) {
-                        setStates((byte) (states | FOCUSED));
-                        if (activity.getFocus() != this) {
-                            activity.setFocus(this);
-                        }
+                if (focused && focusable) {
+                    setStates((byte) (states | FOCUSED.bitset()));
+                    if (activity.getFocus() != this) {
+                        activity.setFocus(this);
                     }
                 } else {
-                    setStates((byte) (states & ~FOCUSED));
+                    setStates((byte) (states & ~FOCUSED.bitset()));
                     if (activity.getFocus() == this) {
                         activity.setFocus(null);
                     }
+                }
+            } else {
+                if (focused && focusable) {
+                    setStates((byte) (states | FOCUSED.bitset()));
+                } else {
+                    setStates((byte) (states & ~FOCUSED.bitset()));
                 }
             }
         }
@@ -826,7 +917,10 @@ public class Widget implements Gadget {
 
     public void requestFocus(boolean focus) {
         if (focusable) {
-            Application.runSync(() -> setFocused(focus));
+            Activity activity = getActivity();
+            if (activity != null && activity.getWindow() != null) {
+                activity.getWindow().runSync(() -> setFocused(focus));
+            }
         }
     }
 
@@ -903,6 +997,14 @@ public class Widget implements Gadget {
         return iny;
     }
 
+    public float getWidth() {
+        return width;
+    }
+
+    public float getHeight() {
+        return height;
+    }
+
     public float getInWidth() {
         return inw;
     }
@@ -927,56 +1029,20 @@ public class Widget implements Gadget {
         return bg.height;
     }
 
-    public float getX() {
+    public float getLayoutX() {
         return x;
     }
 
-    public float getY() {
+    public float getLayoutY() {
         return y;
     }
 
-    public float getWidth() {
-        return width;
+    public float getLayoutWidth() {
+        return layoutWidth;
     }
 
-    void setWidth(float width) {
-        if (this.width != width) {
-            this.width = width;
-            updateRect();
-        }
-    }
-
-    public float getHeight() {
-        return height;
-    }
-
-    void setHeight(float height) {
-        if (this.height != height) {
-            this.height = height;
-            updateRect();
-        }
-    }
-
-    public float getOffsetWidth() {
-        return offsetWidth;
-    }
-
-    public void setOffsetWidth(float offsetWidth) {
-        if (this.offsetWidth != offsetWidth) {
-            this.offsetWidth = offsetWidth;
-            invalidate(true);
-        }
-    }
-
-    public float getOffsetHeight() {
-        return offsetHeight;
-    }
-
-    public void setOffsetHeight(float offsetHeight) {
-        if (this.offsetHeight != offsetHeight) {
-            this.offsetHeight = offsetHeight;
-            invalidate(true);
-        }
+    public float getLayoutHeight() {
+        return layoutHeight;
     }
 
     public float getMarginTop() {
@@ -986,6 +1052,7 @@ public class Widget implements Gadget {
     public void setMarginTop(float marginTop) {
         if (this.marginTop != marginTop) {
             this.marginTop = marginTop;
+
             updateRect();
             invalidate(true);
         }
@@ -998,6 +1065,7 @@ public class Widget implements Gadget {
     public void setMarginRight(float marginRight) {
         if (this.marginRight != marginRight) {
             this.marginRight = marginRight;
+
             updateRect();
             invalidate(true);
         }
@@ -1010,6 +1078,7 @@ public class Widget implements Gadget {
     public void setMarginBottom(float marginBottom) {
         if (this.marginBottom != marginBottom) {
             this.marginBottom = marginBottom;
+
             updateRect();
             invalidate(true);
         }
@@ -1022,6 +1091,7 @@ public class Widget implements Gadget {
     public void setMarginLeft(float marginLeft) {
         if (this.marginLeft != marginLeft) {
             this.marginLeft = marginLeft;
+
             updateRect();
             invalidate(true);
         }
@@ -1046,6 +1116,8 @@ public class Widget implements Gadget {
     public void setPaddingTop(float paddingTop) {
         if (this.paddingTop != paddingTop) {
             this.paddingTop = paddingTop;
+
+            updateRect();
             invalidate(true);
         }
     }
@@ -1057,6 +1129,8 @@ public class Widget implements Gadget {
     public void setPaddingRight(float paddingRight) {
         if (this.paddingRight != paddingRight) {
             this.paddingRight = paddingRight;
+
+            updateRect();
             invalidate(true);
         }
     }
@@ -1068,6 +1142,8 @@ public class Widget implements Gadget {
     public void setPaddingBottom(float paddingBottom) {
         if (this.paddingBottom != paddingBottom) {
             this.paddingBottom = paddingBottom;
+
+            updateRect();
             invalidate(true);
         }
     }
@@ -1079,6 +1155,8 @@ public class Widget implements Gadget {
     public void setPaddingLeft(float paddingLeft) {
         if (this.paddingLeft != paddingLeft) {
             this.paddingLeft = paddingLeft;
+
+            updateRect();
             invalidate(true);
         }
     }
@@ -1089,6 +1167,19 @@ public class Widget implements Gadget {
             paddingRight = right;
             paddingBottom = bottom;
             paddingLeft = left;
+
+            updateRect();
+            invalidate(true);
+        }
+    }
+
+    public float getWeight() {
+        return weight;
+    }
+
+    public void setWeight(float weight) {
+        if (this.weight != weight) {
+            this.weight = weight;
 
             invalidate(true);
         }
@@ -1118,9 +1209,13 @@ public class Widget implements Gadget {
         }
     }
 
-    public void setMinSize(float width, float height) {
-        setMinWidth(width);
-        setMinHeight(height);
+    public void setMinSize(float minWidth, float minHeight) {
+        if (this.minWidth != minWidth || this.minHeight != minHeight) {
+            this.minWidth = minWidth;
+            this.minHeight = minHeight;
+
+            invalidate(true);
+        }
     }
 
     public float getMaxWidth() {
@@ -1147,9 +1242,13 @@ public class Widget implements Gadget {
         }
     }
 
-    public void setMaxSize(float width, float height) {
-        setMaxWidth(width);
-        setMaxHeight(height);
+    public void setMaxSize(float maxWidth, float maxHeight) {
+        if (this.maxWidth != maxWidth || this.maxHeight != maxHeight) {
+            this.maxWidth = maxWidth;
+            this.maxHeight = maxHeight;
+
+            invalidate(true);
+        }
     }
 
     public float getPrefWidth() {
@@ -1176,9 +1275,13 @@ public class Widget implements Gadget {
         }
     }
 
-    public void setPrefSize(float width, float height) {
-        setPrefWidth(width);
-        setPrefHeight(height);
+    public void setPrefSize(float prefWidth, float prefHeight) {
+        if (this.prefWidth != prefWidth || this.prefHeight != prefHeight) {
+            this.prefWidth = prefWidth;
+            this.prefHeight = prefHeight;
+
+            invalidate(true);
+        }
     }
 
     public float getCenterX() {
@@ -1238,6 +1341,8 @@ public class Widget implements Gadget {
     }
 
     public void setScaleX(float scaleX) {
+        if (Math.abs(scaleX) < 0.001f) scaleX = 0.001f;
+
         if (this.scaleX != scaleX) {
             this.scaleX = scaleX;
 
@@ -1251,6 +1356,8 @@ public class Widget implements Gadget {
     }
 
     public void setScaleY(float scaleY) {
+        if (Math.abs(scaleY) < 0.001f) scaleY = 0.001f;
+
         if (this.scaleY != scaleY) {
             this.scaleY = scaleY;
 
@@ -1282,10 +1389,7 @@ public class Widget implements Gadget {
         if (this.elevation != elevation) {
             this.elevation = elevation;
 
-            invalidate(true);
-            if (parent != null) {
-                parent.invalidateChildrenOrder();
-            }
+            invalidate(parent != null && parent.invalidateChildrenOrder(this));
         }
     }
 
@@ -1295,18 +1399,23 @@ public class Widget implements Gadget {
 
     public void setVisibility(Visibility visibility) {
         if (visibility == null) {
-            visibility = Visibility.Visible;
+            visibility = Visibility.VISIBLE;
         }
 
         if (this.visibility != visibility.ordinal()) {
+            var old = getVisibility();
             this.visibility = visibility.ordinal();
 
-            invalidate(true);
+            invalidate(old == Visibility.GONE || visibility == Visibility.GONE);
         }
     }
 
-    public Cursor getShowCursor() {
-        return cursor == null ? parent == null ? null : parent.getShowCursor() : cursor;
+    private Cursor getShowCursor() {
+        return cursor == Cursor.UNSET && parent != null ? ((Widget)parent).getShowCursor() : cursor;
+    }
+
+    public Cursor getCurrentCursor() {
+        return currentCursor;
     }
 
     public Cursor getCursor() {
@@ -1316,33 +1425,19 @@ public class Widget implements Gadget {
     public void setCursor(Cursor cursor) {
         if (this.cursor != cursor) {
             this.cursor = cursor;
-        }
-    }
-
-    public float getDisplayOpacity() {
-        return parent == null ? opacity : parent.getDisplayOpacity() * opacity;
-    }
-
-    public float getOpacity() {
-        return opacity;
-    }
-
-    public void setOpacity(float opacity) {
-        opacity = Math.max(0, Math.min(1, opacity));
-        if (this.opacity != opacity) {
-            this.opacity = opacity;
-
-            invalidate(false);
+            onCursorChangeLocal();
         }
     }
 
     private void childSort() {
         if (invalidChildrenOrder) {
             invalidChildrenOrder = false;
-            if (children != null) {
-                children.sort(childComparator);
-            }
+            sortChildren();
         }
+    }
+
+    protected void sortChildren() {
+        children.sort(childComparator);
     }
 
     private void transform() {
@@ -1364,20 +1459,22 @@ public class Widget implements Gadget {
     }
 
     private void updateRect() {
-        bg.x = marginLeft + marginRight > width ? (marginLeft + width - marginRight) / 2f : marginLeft;
-        bg.y = marginTop + marginBottom > height ? (marginTop + height - marginBottom) / 2f : marginTop;
-        bg.width = Math.max(0, width - marginLeft - marginRight);
-        bg.height = Math.max(0, height - marginTop - marginBottom);
+        bg.x = marginLeft + marginRight > layoutWidth ? (marginLeft + layoutWidth - marginRight) / 2f : marginLeft;
+        bg.y = marginTop + marginBottom > layoutHeight ? (marginTop + layoutHeight - marginBottom) / 2f : marginTop;
+        bg.width = Math.max(0, layoutWidth - marginLeft - marginRight);
+        bg.height = Math.max(0, layoutHeight - marginTop - marginBottom);
 
-        float lm = marginLeft + paddingLeft;
-        float rm = marginRight + paddingRight;
-        float tm = marginTop + paddingTop;
-        float bm = marginBottom + paddingBottom;
+        float eLeft = marginLeft + paddingLeft;
+        float eRight = marginRight + paddingRight;
+        float eTop = marginTop + paddingTop;
+        float eBot = marginBottom + paddingBottom;
 
-        inx = lm + rm > getWidth() ? (lm + getWidth() - rm) / 2f : lm;
-        iny = tm + bm > getHeight() ? (tm + getHeight() - bm) / 2f : tm;
-        inw = Math.max(0, getWidth() - lm - rm);
-        inh = Math.max(0, getHeight() - tm - bm);
+        inx = eLeft + eRight > layoutWidth ? (eLeft + layoutWidth - eRight) / 2f : eLeft;
+        iny = eTop + eBot > layoutHeight ? (eTop + layoutHeight - eBot) / 2f : eTop;
+        inw = Math.max(0, layoutWidth - eLeft - eRight);
+        inh = Math.max(0, layoutHeight - eTop - eBot);
+        width = Math.max(0, layoutWidth - marginLeft - marginRight);
+        height = Math.max(0, layoutHeight - marginTop - marginBottom);
         invalidateTransform();
     }
 
@@ -1393,6 +1490,7 @@ public class Widget implements Gadget {
     public void setRadiusTop(float radiusTop) {
         if (bg.arcTop != radiusTop) {
             bg.arcTop = radiusTop;
+
             invalidate(false);
         }
     }
@@ -1404,6 +1502,7 @@ public class Widget implements Gadget {
     public void setRadiusRight(float radiusRight) {
         if (bg.arcRight != radiusRight) {
             bg.arcRight = radiusRight;
+
             invalidate(false);
         }
     }
@@ -1415,6 +1514,7 @@ public class Widget implements Gadget {
     public void setRadiusBottom(float radiusBottom) {
         if (bg.arcBottom != radiusBottom) {
             bg.arcBottom = radiusBottom;
+
             invalidate(false);
         }
     }
@@ -1426,15 +1526,13 @@ public class Widget implements Gadget {
     public void setRadiusLeft(float radiusLeft) {
         if (bg.arcLeft != radiusLeft) {
             bg.arcLeft = radiusLeft;
+
             invalidate(false);
         }
     }
 
     public void setRadius(float cTop, float cRight, float cBottom, float cLeft) {
-        if (bg.arcTop != cTop ||
-                bg.arcRight != cRight ||
-                bg.arcBottom != cBottom ||
-                bg.arcLeft != cLeft) {
+        if (bg.arcTop != cTop || bg.arcRight != cRight || bg.arcBottom != cBottom || bg.arcLeft != cLeft) {
             bg.arcTop = cTop;
             bg.arcRight = cRight;
             bg.arcBottom = cBottom;
@@ -1492,6 +1590,10 @@ public class Widget implements Gadget {
         }
     }
 
+    public RoundRectangle getBackgroundShape() {
+        return new RoundRectangle(bg);
+    }
+
     public boolean isShadowEnabled() {
         return shadowEnabled;
     }
@@ -1521,9 +1623,9 @@ public class Widget implements Gadget {
         return rippleColor;
     }
 
-    public void setRippleColor(int rippleColor) {
-        if (this.rippleColor != rippleColor) {
-            this.rippleColor = rippleColor;
+    public void setRippleColor(int rgba) {
+        if (this.rippleColor != rgba) {
+            this.rippleColor = rgba;
 
             invalidate(false);
         }
@@ -1536,6 +1638,7 @@ public class Widget implements Gadget {
     public void setRippleOverflow(boolean rippleOverflow) {
         if (this.rippleOverflow != rippleOverflow) {
             this.rippleOverflow = rippleOverflow;
+
             invalidate(false);
         }
     }
@@ -1543,8 +1646,20 @@ public class Widget implements Gadget {
     public void fireRipple(float x, float y) {
         if (rippleEnabled) {
             transform();
-            float ix = inverseTransform.pointX(x, y);
-            float iy = inverseTransform.pointY(x, y);
+            float ix;
+            float iy;
+            if (rippleOverflow) {
+                ix = inx + inw * 0.5f;
+                iy = iny + inh * 0.5f;
+                float w = getLayoutWidth();
+                float h = getLayoutHeight();
+                ripple.setSize((float) Math.sqrt(w * w + h * h) * 0.5f);
+                ripple.setSize(Math.max(getLayoutWidth(), getLayoutHeight()) * 0.5f);
+            } else {
+                ix = inverseTransform.pointX(x, y);
+                iy = inverseTransform.pointY(x, y);
+                ripple.setSize(Math.max(getWidth(), getHeight()));
+            }
             ripple.fire(ix, iy);
         }
     }
@@ -1559,125 +1674,177 @@ public class Widget implements Gadget {
         return ripple;
     }
 
-    public void setPointerListener(PointerListener pointerListener) {
+    public void setPointerListener(UXListener<PointerEvent> pointerListener) {
         this.pointerListener = pointerListener;
     }
 
-    public PointerListener getPointerListener() {
+    public UXListener<PointerEvent> getPointerListener() {
         return pointerListener;
     }
 
-    public void setHoverListener(HoverListener hoverListener) {
+    public void setHoverListener(UXListener<HoverEvent> hoverListener) {
         this.hoverListener = hoverListener;
     }
 
-    public HoverListener getHoverListener() {
+    public UXListener<HoverEvent> getHoverListener() {
         return hoverListener;
     }
 
-    public void setScrollListener(ScrollListener scrollListener) {
+    public void setScrollListener(UXListener<ScrollEvent> scrollListener) {
         this.scrollListener = scrollListener;
     }
 
-    public ScrollListener getScrollListener() {
+    public UXListener<ScrollEvent> getScrollListener() {
         return scrollListener;
     }
 
-    public void setKeyListener(KeyListener keyListener) {
+    public void setKeyListener(UXListener<KeyEvent> keyListener) {
         this.keyListener = keyListener;
     }
 
-    public KeyListener getKeyListener() {
+    public UXListener<KeyEvent> getKeyListener() {
         return keyListener;
     }
 
-    public void setDragListener(DragListener dragListener) {
+    public void setDragListener(UXListener<DragEvent> dragListener) {
         this.dragListener = dragListener;
     }
 
-    public DragListener getDragListener() {
+    public UXListener<DragEvent> getDragListener() {
         return dragListener;
     }
 
-    public void setFocusListener(FocusListener focusListener) {
+    public void setFocusListener(UXListener<FocusEvent> focusListener) {
         this.focusListener = focusListener;
     }
 
-    public FocusListener getFocusListener() {
+    public UXListener<FocusEvent> getFocusListener() {
         return focusListener;
     }
 
-    public void firePointer(PointerEvent pointerEvent) {
+    public void firePointer(PointerEvent event) {
         // -- Pressed -- //
-        if (pointerEvent.getType() == PointerEvent.RELEASED) {
-            if (pointerEvent.getPointerID() == 2 && contextMenu != null) {
-                showContextMenu(pointerEvent.getX(), pointerEvent.getY());
+        if (isCurrentHandleEventsEnabled()) {
+            if (event.getType() == PointerEvent.PRESSED) {
+                setPressed(true);
+                fireRipple(event.getX(), event.getY());
             }
-            if (!pointerEvent.isFocusConsumed() && isFocusable()) {
-                pointerEvent.consumeFocus(true);
-                requestFocus(true);
+            if (event.getType() == PointerEvent.RELEASED) {
+                setPressed(false);
+                releaseRipple();
+
+                if (event.getPointerID() == 2 && contextMenu != null) {
+                    pointerMenu(event);
+                }
+                if (!event.isFocusConsumed() && isFocusable()) {
+                    event.consumeFocus(true);
+                    requestFocus(true);
+                }
             }
+
+            pointer(event);
         }
 
-        if (pointerListener != null) {
-            pointerListener.handle(pointerEvent);
-        }
-        if (parent != null) {
-            parent.firePointer(pointerEvent);
+        if (event.getType() != PointerEvent.FILTER) {
+            if (parent != null) {
+                parent.firePointer(event);
+            }
         }
     }
 
-    public void fireHover(HoverEvent hoverEvent) {
+    public void pointerMenu(PointerEvent event) {
+        showContextMenu(event.getX(), event.getY());
+    }
+
+    public void pointer(PointerEvent event) {
+        UXListener.safeHandle(pointerListener, event);
+    }
+
+    public void fireHover(HoverEvent event) {
         // -- Hovered -- //
-        if (hoverEvent.getType() == HoverEvent.ENTERED) {
-            setHovered(true);
-        } else if (hoverEvent.getType() == HoverEvent.EXITED) {
-            setHovered(false);
+        if (isCurrentHandleEventsEnabled()) {
+            if (event.getType() == HoverEvent.ENTERED) {
+                setHovered(true);
+            } else if (event.getType() == HoverEvent.EXITED) {
+                setHovered(false);
+            }
+
+            hover(event);
         }
 
-        if (hoverListener != null) {
-            hoverListener.handle(hoverEvent);
-        }
-        if (parent != null && hoverEvent.isRecyclable(parent)) {
-            parent.fireHover(hoverEvent);
-        }
-    }
-
-    public void fireScroll(ScrollEvent scrollEvent) {
-        if (scrollListener != null) {
-            scrollListener.handle(scrollEvent);
-        }
         if (parent != null) {
-            parent.fireScroll(scrollEvent);
+            parent.fireHover(event);
         }
     }
 
-    public void fireDrag(DragEvent dragEvent) {
-        if (dragListener != null) {
-            dragListener.handle(dragEvent);
-        }
-        if (parent != null && dragEvent.isRecyclable(parent)) {
-            parent.fireDrag(dragEvent);
-        }
+    public void hover(HoverEvent event) {
+        UXListener.safeHandle(hoverListener, event);
     }
 
-    public void fireKey(KeyEvent keyEvent) {
-        if (keyListener != null) {
-            keyListener.handle(keyEvent);
+    public void fireScroll(ScrollEvent event) {
+        if (isCurrentHandleEventsEnabled()) {
+            scroll(event);
         }
+
         if (parent != null) {
-            parent.fireKey(keyEvent);
+            parent.fireScroll(event);
         }
     }
 
-    public void fireFocus(FocusEvent focusEvent) {
-        if (focusListener != null) {
-            focusListener.handle(focusEvent);
+    public void scroll(ScrollEvent event) {
+        UXListener.safeHandle(scrollListener, event);
+    }
+
+    public void fireDrag(DragEvent event) {
+        if (isCurrentHandleEventsEnabled()) {
+            drag(event);
         }
+
+        if (parent != null && event.isRecyclable(parent)) {
+            parent.fireDrag(event);
+        }
+    }
+
+    public void drag(DragEvent event) {
+        UXListener.safeHandle(dragListener, event);
+    }
+
+    public void fireKey(KeyEvent event) {
+        if (isCurrentHandleEventsEnabled()) {
+            key(event);
+        }
+
+        if (parent != null) {
+            parent.fireKey(event);
+        }
+    }
+
+    public void key(KeyEvent event) {
+        UXListener.safeHandle(keyListener, event);
+    }
+
+    public void fireFocus(FocusEvent event) {
+        if (isCurrentHandleEventsEnabled()) {
+            focus(event);
+        }
+    }
+
+    public void focus(FocusEvent event) {
+        UXListener.safeHandle(focusListener, event);
+    }
+
+    public void fireResize() {
+        if (isCurrentHandleEventsEnabled()) {
+            resize();
+        }
+    }
+
+    public void resize() {
+
     }
 
     @Override
     public String toString() {
-        return "[" + id + "]" + getClass().getSimpleName();
+        return "[" + id + "]" + getClass().getSimpleName() + "@" + Integer.toHexString(super.hashCode());
     }
 }

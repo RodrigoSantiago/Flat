@@ -1,24 +1,32 @@
 package flat.widget;
 
-import flat.graphics.SmartContext;
+import flat.graphics.Graphics;
+import flat.uxml.TaskList;
 import flat.uxml.UXChildren;
-import flat.widget.enuns.Visibility;
+import flat.widget.enums.Visibility;
+import flat.window.Activity;
+import flat.window.ActivityScene;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 
-public class Scene extends Parent {
+public class Scene extends Group {
 
-    Activity activity;
-    HashMap<String, Widget> idMap = new HashMap<>();
+    private ArrayList<Stage> stages = new ArrayList<>();
 
-    public Scene() {
+    ActivityScene activityScene;
 
+    public ActivityScene getActivityScene() {
+        if (activityScene == null) {
+            activityScene = new ActivityScene(new SceneActivity(this));
+        }
+        return activityScene;
     }
 
     @Override
     public Activity getActivity() {
-        if (activity != null) {
-            return activity;
+        if (activityScene != null && activityScene.getActivity() != null) {
+            return activityScene.getActivity();
         } else {
             return super.getActivity();
         }
@@ -28,49 +36,29 @@ public class Scene extends Parent {
     public void applyChildren(UXChildren children) {
         super.applyChildren(children);
 
-        Gadget child;
-        while ((child = children.next()) != null ) {
-            Widget widget = child.getWidget();
-            if (widget != null) {
-                add(widget);
-            }
+        for (var child : children) {
+            add(child.getWidget());
         }
     }
 
     @Override
     public void onMeasure() {
-        float mWidth = getPrefWidth(), mHeight = getPrefHeight();
-
-        for (Widget child : getChildren()) {
-            child.onMeasure();
-            if (child.getVisibility() == Visibility.Gone) continue;
-
-            if (mWidth != MATCH_PARENT) {
-                if (child.mWidth() == MATCH_PARENT) {
-                    if (getPrefWidth() == WRAP_CONTENT)
-                        mWidth = MATCH_PARENT;
-                } else if (child.mWidth() > mWidth) {
-                    mWidth = child.mWidth();
-                }
-            }
-            if (mHeight != MATCH_PARENT) {
-                if (child.mHeight() == MATCH_PARENT) {
-                    if (getPrefHeight() == WRAP_CONTENT)
-                        mHeight = MATCH_PARENT;
-                } else if (child.mHeight() > mHeight) {
-                    mHeight = child.mHeight();
-                }
-            }
-        }
-        mWidth += getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
-        mHeight += getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
-        setMeasure(mWidth, mHeight);
+        performMeasureStack();
     }
 
     @Override
     public void onLayout(float width, float height) {
         setLayout(width, height);
-        layoutHelperBox(getChildren(), getInX(), getInY(), getInWidth(), getInHeight());
+        performLayoutFree(getInWidth(), getInHeight());
+    }
+
+    public boolean onLayoutSingleChild(Widget child) {
+        if (getChildren().contains(child)) {
+            child.onMeasure();
+            performSingleLayoutFree(getInWidth(), getInHeight(), child);
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -84,86 +72,70 @@ public class Scene extends Parent {
     }
 
     @Override
-    public void invalidate(boolean layout) {
-        if (getParent() == null) {
-            if (activity != null) {
-                activity.invalidate(layout);
+    public void add(List<Widget> children) {
+        super.add(children);
+    }
+
+    @Override
+    public void onDraw(Graphics graphics) {
+        if (getVisibility() == Visibility.VISIBLE) {
+            super.onDraw(graphics);
+        }
+    }
+
+    void addStage(Stage stage) {
+        if (stages.contains(stage)) {
+            if (stages.get(stages.size() - 1) != stage) {
+                stages.remove(stage);
+                stages.add(stage);
+                var children = getChildren();
+                children.remove(stage);
+                children.add(stage);
+                childInvalidate(stage);
             }
+
         } else {
-            super.invalidate(layout);
-        }
-    }
-
-    @Override
-    public void onDraw(SmartContext context) {
-        if (getVisibility() == Visibility.Visible) {
-            super.onDraw(context);
-        }
-    }
-
-    @Override
-    public Scene getScene() {
-        if (parent != null) {
-            if (parent.isScene()) {
-                return (Scene) parent;
-            } else {
-                return parent.getScene();
+            TaskList tasks = new TaskList();
+            if (attachAndAddChild(stage, tasks)) {
+                stages.add(stage);
             }
+            tasks.run();
+        }
+    }
+
+    void removeStage(Stage stage) {
+        stages.remove(stage);
+        remove(stage);
+    }
+
+    @Override
+    protected boolean detachChild(Widget child) {
+        if (child instanceof Stage stage) {
+            if (stages.contains(stage)) {
+                return false;
+            }
+        }
+        return super.detachChild(child);
+    }
+
+    @Override
+    protected void sortChildren() {
+        if (stages.size() == 0) {
+            super.sortChildren();
         } else {
-            return this;
+            var children = getChildren();
+            children.removeAll(stages);
+            children.sort(childComparator);
+            children.addAll(stages);
         }
     }
 
     @Override
-    final boolean isScene() {
-        return true;
-    }
-
-    @Override
-    public Widget findById(String id) {
-        return idMap.get(id);
-    }
-
-    final void assign(Widget widget) {
-        String id = widget.getId();
-        if (id != null) {
-            Widget old = idMap.put(id, widget);
-            if (old != null && old != widget) {
-                System.out.println("ID Overflow");
-            }
-        }
-        if (!widget.isScene() && widget.children != null) {
-            for (Widget child : widget.children) {
-                assign(child);
-            }
-        }
-    }
-
-    final void deassign(Widget widget) {
-        String id = widget.getId();
-        if (id != null) {
-            if (!idMap.remove(id, widget)) {
-                System.out.println("The id \'"+ id+"\' wasn't assigned");
-            }
-        }
-        if (!widget.isScene() && widget.children != null) {
-            for (Widget child : widget.children) {
-                deassign(child);
-            }
-        }
-    }
-
-    final void reassign(String oldId, Widget widget) {
-        if (idMap.get(oldId) == widget) {
-            idMap.remove(oldId);
-        }
-
-        String newID = widget.getId();
-        if (newID != null) {
-            Widget old = idMap.put(newID, widget);
-            if (old != null && old != widget) {
-                System.out.println("ID Overflow");
-            }
+    protected void childInvalidate(Widget child) {
+        if (activityScene != null && activityScene.getActivity() != null) {
+            activityScene.getActivity().invalidateWidget(child);
+        } else {
+            super.childInvalidate(child);
         }
     }
 }

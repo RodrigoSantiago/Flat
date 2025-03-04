@@ -1,36 +1,29 @@
 package flat.graphics.context;
 
 import flat.backend.GL;
-import flat.graphics.context.enuns.ShaderType;
-import flat.widget.Application;
+import flat.graphics.context.enums.ShaderType;
 
 public final class Shader extends ContextObject {
 
-    private int shaderId;
-    private ShaderType type;
+    private final int shaderId;
+    private final ShaderType type;
+
     private String source;
     private boolean compiled;
     private String log;
 
-    public Shader(ShaderType type) {
-        this(type, null);
+    public Shader(Context context, ShaderType type) {
+        this(context, type, null);
     }
 
-    public Shader(ShaderType type, String source) {
-        this.source = source;
+    public Shader(Context context, ShaderType type, String source) {
+        super(context);
         this.type = type;
-        init();
-    }
+        this.source = source;
 
-    @Override
-    protected void onInitialize() {
-        this.shaderId = GL.ShaderCreate(type.getInternalEnum());
-    }
-
-    @Override
-    protected void onDispose() {
-        final int shaderId = this.shaderId;
-        Application.runSync(() -> GL.ShaderDestroy(shaderId));
+        final int shaderId = GL.ShaderCreate(type.getInternalEnum());
+        this.shaderId = shaderId;
+        assignDispose(() -> GL.ShaderDestroy(shaderId));
     }
 
     int getInternalID() {
@@ -66,8 +59,11 @@ public final class Shader extends ContextObject {
         return compiled;
     }
 
+    public ShaderType getType() {
+        return type;
+    }
+
     public String getLog() {
         return log;
     }
-
 }

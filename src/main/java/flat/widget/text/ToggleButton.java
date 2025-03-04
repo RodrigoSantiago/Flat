@@ -1,53 +1,75 @@
 package flat.widget.text;
 
 import flat.events.ActionEvent;
-import flat.events.ActionListener;
-import flat.uxml.Controller;
-import flat.uxml.UXStyleAttrs;
+import flat.uxml.*;
 
 public class ToggleButton extends Button {
 
-    private ActionListener toggleListener;
+    private UXListener<ActionEvent> toggleListener;
+    private UXValueListener<Boolean> activeListener;
+    private boolean active;
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        super.applyAttributes(style, controller);
+    public void applyAttributes(Controller controller) {
+        super.applyAttributes(controller);
 
-        setActivated(style.asBool("activated", isActivated()));
+        UXAttrs attrs = getAttrs();
+
+        setActive(attrs.getAttributeBool("active", isActive()));
+        setToggleListener(attrs.getAttributeListener("on-toggle", ActionEvent.class, controller));
+        setActiveListener(attrs.getAttributeValueListener("on-active-change", Boolean.class, controller));
     }
 
     @Override
-    public void setActivated(boolean actived) {
-        if (this.isActivated() != actived) {
-            super.setActivated(actived);
-            fireToggle(new ActionEvent(this));
+    public void action() {
+        super.action();
+        toggle();
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        if (this.active != active) {
+            boolean old = this.active;
+            this.active = active;
+
+            setActivated(active);
+            fireActiveListener(old);
         }
     }
 
-    @Override
-    public void fireAction(ActionEvent actionEvent) {
-        super.fireAction(actionEvent);
-        if (!actionEvent.isConsumed()) {
-            toggle();
-        }
-    }
-
-    public ActionListener getToggleListener() {
+    public UXListener<ActionEvent> getToggleListener() {
         return toggleListener;
     }
 
-    public void setToggleListener(ActionListener toggleListener) {
+    public void setToggleListener(UXListener<ActionEvent> toggleListener) {
         this.toggleListener = toggleListener;
     }
 
-    public void fireToggle(ActionEvent event) {
+    private void fireToggle() {
         if (toggleListener != null) {
-            toggleListener.handle(event);
+            UXListener.safeHandle(toggleListener, new ActionEvent(this));
         }
     }
 
     public void toggle() {
-        setActivated(!isActivated());
+        setActive(!isActive());
+        fireToggle();
     }
 
+    public UXValueListener<Boolean> getActiveListener() {
+        return activeListener;
+    }
+
+    public void setActiveListener(UXValueListener<Boolean> activeListener) {
+        this.activeListener = activeListener;
+    }
+
+    private void fireActiveListener(boolean oldValue) {
+        if (activeListener != null && oldValue != active) {
+            UXValueListener.safeHandle(activeListener, new ValueChange<>(this, oldValue, active));
+        }
+    }
 }

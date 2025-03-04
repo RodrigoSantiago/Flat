@@ -1,213 +1,118 @@
 package flat.widget.value;
 
-import flat.animations.StateInfo;
-import flat.graphics.SmartContext;
-import flat.math.Mathf;
+import flat.graphics.Graphics;
 import flat.math.shapes.Arc;
 import flat.math.stroke.BasicStroke;
-import flat.uxml.Controller;
-import flat.uxml.UXStyle;
-import flat.uxml.UXStyleAttrs;
-import flat.widget.Widget;
+import flat.widget.enums.ProgressLineMode;
 
-public class ProgressCircle extends Widget {
+public class ProgressCircle extends ProgressBar {
 
-    private float progress;
-    private int color0;
-    private int color1;
-    private int color2;
-    private int color3;
-    private float indicatorSize;
-    private float animationDuration;
-    private float anim;
-    private long time;
-    private Arc arc = new Arc(Arc.Type.OPEN);
+    private final Arc arc = new Arc();
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        super.applyAttributes(style, controller);
+    public void onMeasure() {
+        float extraWidth = getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
+        float extraHeight = getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
 
-        setProgress(style.asNumber("progress", getProgress()));
-        setAnimationDuration(style.asNumber("animation-duration", getAnimationDuration()));
-        if (style.contains("color")) {
-            setColor(style.asColor("color", getColor0()));
+        float mWidth;
+        float mHeight;
+        boolean wrapWidth = getLayoutPrefWidth() == WRAP_CONTENT;
+        boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
+
+        if (wrapWidth) {
+            mWidth = Math.max(extraWidth + getLineWidth() * 2f, getLayoutMinWidth());
+        } else {
+            mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
         }
+        if (wrapHeight) {
+            mHeight = Math.max(extraHeight + getLineWidth() * 2f, getLayoutMinHeight());
+        } else {
+            mHeight = Math.max(getLayoutPrefHeight(), getLayoutMinHeight());
+        }
+
+        setMeasure(mWidth, mHeight);
     }
 
     @Override
-    public void applyStyle() {
-        super.applyStyle();
-        UXStyle style = getStyle();
-        if (style == null) return;
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
+        drawRipple(graphics);
 
-        StateInfo info = getStateInfo();
-
-        setColor0(style.asColor("color-0", info, getColor0()));
-        setColor1(style.asColor("color-1", info, getColor1()));
-        setColor2(style.asColor("color-2", info, getColor2()));
-        setColor3(style.asColor("color-3", info, getColor3()));
-
-        setIndicatorSize(style.asSize("indicator-size", info, getIndicatorSize()));
-    }
-
-    @Override
-    public void onDraw(SmartContext context) {
-        backgroundDraw(0, getBorderColor(), getRippleColor(), context);
-
-        context.setTransform2D(getTransform());
         float x = getInX();
         float y = getInY();
-        float w = getInWidth();
-        float h = getInHeight();
+        float width = getInWidth();
+        float height = getInHeight();
 
-        context.setStroker(new BasicStroke(indicatorSize));
-        context.setColor(getBackgroundColor());
-        context.drawEllipse(x + 2, y + 2, w - 4, h - 4, false);
+        float lineWidth = Math.min(getLineWidth(), Math.min(width, height));
+        float lineRadius = lineWidth * 0.5f;
 
-        if (progress >= 0) {
-            arc.set(x + 2, y + 2, w - 4, h - 4, 90, 0, Arc.Type.OPEN);
-            context.setColor(color0);
-            context.drawShape(arc, false);
-        } else if (animationDuration > 0) {
-            long t = System.currentTimeMillis();
-            long pass = t - time;
-            time = t;
+        x += lineRadius;
+        y += lineRadius;
+        width -= lineRadius * 2;
+        height -= lineRadius * 2;
 
-            anim += pass / Math.abs(animationDuration);
-            anim = Mathf.clamp(anim, 0, 1);
-            float p = anim;
-            float p0 = p < 0.125f ? p * 6 :
-                    p < 0.250f ? 0.75f :
-                            p < 0.375f ? (p - 0.125f) * 6 :
-                                    p < 0.500f ? 1.5f :
-                                            p < 0.625f ? (p - 0.250f) * 6 :
-                                                    p < 0.750f ? 2.25f :
-                                                            p < 0.875f ? (p - 0.375f) * 6 : 3.00f;
-            float p1 = p < 0.125f ? 0 :
-                    p < 0.250f ? (p - 0.125f) * 6 :
-                            p < 0.375f ? 0.75f :
-                                    p < 0.500f ? (p - 0.250f) * 6 :
-                                            p < 0.625f ? 1.5f :
-                                                    p < 0.750f ? (p - 0.375f) * 6 :
-                                                            p < 0.875f ? 2.25f : (p - 0.500f) * 6;
+        if (width <= 0 || height <= 0) return;
 
-            context.setColor(p < 0.25 ? color0 : p < 0.5 ? color1 : p < 0.75 ? color2 : color3);
-            arc.set(x + 2, y + 2, w - 4, h - 4, -((anim * 2160) + (p1 * 360)), ((p1 - p0) * 360), Arc.Type.OPEN);
-            context.drawShape(arc, false);
+        graphics.setTransform2D(getTransform());
+        graphics.setStroker(new BasicStroke(lineWidth, getLineMode() == ProgressLineMode.REGULAR ? 0 : 1, 2));
+        float baseAngle = 90;
+        float radius = (float) Math.sqrt(width * width + height * height) * 0.5f;
 
-            if (anim == 1) {
-                anim = 0;
+        float angleOffset = getAngle(radius, lineRadius);
+
+        if (getValue() < 0 && indeterminateAnimation.isPlaying()) {
+            float t1 = indeterminateAnimation.getT1();
+            float t2 = indeterminateAnimation.getT2();
+            float t3 = indeterminateAnimation.getT3() * 120f % 360;
+
+            if (getLineMode() == ProgressLineMode.REGULAR || getLineMode() == ProgressLineMode.ROUND) {
+                graphics.setColor(getLineColor());
+                graphics.drawEllipse(x, y, width, height, false);
+            } else {
+                graphics.setColor(getLineColor());
+                float x2 = 360 * t2 + t3 + 360 * (t1 - t2);
+                float x3 = 360 * t2 + t3 + 360;
+
+                float secx1 = x2 + angleOffset * 4f;
+                float secx2 = x3 - angleOffset * 4f;
+                if (secx1 < secx2) {
+                    arc.set(x, y, width, height, secx1, secx2 - secx1, Arc.Type.OPEN);
+                    graphics.drawShape(arc, false);
+                }
             }
 
-            invalidate(false);
-        }
-    }
+            graphics.setColor(getLineFilledColor());
+            arc.set(x, y, width, height, 360 * t2 + t3, 360 * (t1 - t2), Arc.Type.OPEN);
+            graphics.drawShape(arc, false);
+        } else {
 
-    public float getProgress() {
-        return progress;
-    }
+            if (getLineMode() == ProgressLineMode.REGULAR || getLineMode() == ProgressLineMode.ROUND
+                    || visibleValue <= 0 || visibleValue >= 1) {
+                graphics.setColor(getLineColor());
+                graphics.drawEllipse(x, y, width, height, false);
+            } else {
+                graphics.setColor(getLineColor());
 
-    public void setProgress(float progress) {
-        if (progress < 0) progress = -1;
-        if (progress > 1) progress = 1;
-
-        if (this.progress != progress) {
-            this.progress = progress;
-            if (progress == -1) {
-                time = System.currentTimeMillis();
+                float x2 = baseAngle - 360 * visibleValue;
+                float x3 = baseAngle - 360;
+                float secx1 = x2 - angleOffset * 4f;
+                float secx2 = x3 + angleOffset * 4f;
+                if (secx1 > secx2) {
+                    arc.set(x, y, width, height, secx1, secx2 - secx1, Arc.Type.OPEN);
+                    graphics.drawShape(arc, false);
+                }
             }
-            anim = 0;
-            invalidate(false);
+
+            graphics.setColor(getLineFilledColor());
+            arc.set(x, y, width, height, baseAngle, -360 * visibleValue, Arc.Type.OPEN);
+            graphics.drawShape(arc, false);
+
         }
     }
 
-    public void setColor(int color) {
-        if (color != color0 || color != color1 || color != color2 || color != color3) {
-            this.color0 = this.color1 = this.color2 = this.color3 = color;
-            invalidate(false);
-        }
-    }
+    private float getAngle(float radius, float distance) {
+        float angleRadians = distance / radius;
 
-    public void setColor(int colorIn, int colorOut) {
-        if (colorIn != color0 || colorIn != color1 || colorOut != color2 || colorOut != color3) {
-            this.color0 = this.color1 = colorIn;
-            this.color2 = this.color3 = colorOut;
-            invalidate(false);
-        }
-    }
-
-    public void setColor(int color0, int color1, int color2, int color3) {
-        if (this.color0 != color0 || this.color1 != color1 || this.color2 != color2 || this.color3 != color3) {
-            this.color0 = color0;
-            this.color1 = color1;
-            this.color2 = color2;
-            this.color3 = color3;
-            invalidate(false);
-        }
-    }
-
-    public int getColor0() {
-        return color0;
-    }
-
-    public void setColor0(int color0) {
-        if (this.color0 != color0) {
-            this.color0 = color0;
-            invalidate(false);
-        }
-    }
-
-    public int getColor1() {
-        return color1;
-    }
-
-    public void setColor1(int color1) {
-        if (this.color1 != color1) {
-            this.color1 = color1;
-            invalidate(false);
-        }
-    }
-
-    public int getColor2() {
-        return color2;
-    }
-
-    public void setColor2(int color2) {
-        if (this.color2 != color2) {
-            this.color2 = color2;
-            invalidate(false);
-        }
-    }
-
-    public int getColor3() {
-        return color3;
-    }
-
-    public void setColor3(int color3) {
-        if (this.color3 != color3) {
-            this.color3 = color3;
-            invalidate(false);
-        }
-    }
-
-    public float getIndicatorSize() {
-        return indicatorSize;
-    }
-
-    public void setIndicatorSize(float indicatorSize) {
-        if (this.indicatorSize != indicatorSize) {
-            this.indicatorSize = indicatorSize;
-            invalidate(false);
-        }
-    }
-
-    public float getAnimationDuration() {
-        return animationDuration;
-    }
-
-    public void setAnimationDuration(float milis) {
-        if (this.animationDuration != milis) {
-            this.animationDuration = milis;
-        }
+        return (float) Math.toDegrees(angleRadians);
     }
 }

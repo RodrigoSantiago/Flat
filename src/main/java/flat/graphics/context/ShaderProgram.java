@@ -1,8 +1,7 @@
 package flat.graphics.context;
 
 import flat.backend.GL;
-import flat.graphics.context.enuns.AttributeType;
-import flat.widget.Application;
+import flat.graphics.context.enums.AttributeType;
 import flat.math.*;
 
 import java.util.ArrayList;
@@ -12,37 +11,35 @@ import java.util.List;
 
 public final class ShaderProgram extends ContextObject {
 
-    private ArrayList<Shader> shaders = new ArrayList<>();
+    private final ArrayList<Shader> shaders = new ArrayList<>();
 
     private List<Attribute> attA;
     private List<Attribute> attU;
-    private ArrayList<Attribute> attributes = new ArrayList<>();
-    private ArrayList<Attribute> uniforms = new ArrayList<>();
+    private final ArrayList<Attribute> attributes = new ArrayList<>();
+    private final ArrayList<Attribute> uniforms = new ArrayList<>();
 
-    private HashMap<String, Attribute> attributesNames = new HashMap<>();
-    private HashMap<String, Attribute> uniformsNames = new HashMap<>();
-    private HashMap<String, Integer> blocksLocations = new HashMap<>();
+    private final HashMap<String, Attribute> attributesNames = new HashMap<>();
+    private final HashMap<String, Attribute> uniformsNames = new HashMap<>();
+    private final HashMap<String, Integer> blocksLocations = new HashMap<>();
 
-    private int programId;
+    private final int programId;
     private String log;
     private boolean linked;
 
-    public ShaderProgram(Shader... shaders) {
-        init();
+    public ShaderProgram(Context context, Shader... shaders) {
+        super(context);
+        final int programId = GL.ProgramCreate();
+        this.programId = programId;
+        assignDispose(() -> GL.ProgramDestroy(programId));
+
         for (Shader shader : shaders) {
             attach(shader);
         }
     }
 
     @Override
-    protected void onInitialize() {
-        this.programId = GL.ProgramCreate();
-    }
-
-    @Override
-    protected void onDispose() {
-        final int programId = this.programId;
-        Application.runSync(() -> GL.ProgramDestroy(programId));
+    protected boolean isBound() {
+        return getContext().isShaderProgramBound(this);
     }
 
     int getInternalID() {
@@ -72,41 +69,41 @@ public final class ShaderProgram extends ContextObject {
     }
 
     public boolean link() {
+        if (linked) return true;
+
+        GL.ProgramLink(programId);
+        linked = GL.ProgramIsLinked(programId);
         if (!linked) {
-            GL.ProgramLink(programId);
-            linked = GL.ProgramIsLinked(programId);
-            if (!linked) {
-                log = GL.ProgramGetLog(programId);
-            } else {
-                log = null;
-                int size = GL.ProgramGetAttributesCount(programId);
-                for (int i = 0; i < size; i++) {
-                    String name = GL.ProgramGetAttributeName(programId, i);
-                    AttributeType type = AttributeType.fromInternalEnum(GL.ProgramGetAttributeType(programId, i));
-                    int arraySize = GL.ProgramGetAttributeSize(programId, i);
-                    if (name.contains("[")) {
-                        name = name.substring(0, name.indexOf("["));
-                    }
-                    Attribute att = new Attribute(i, name, type, arraySize);
-                    attributes.add(att);
-                    attributesNames.put(name, att);
+            log = GL.ProgramGetLog(programId);
+        } else {
+            log = null;
+            int size = GL.ProgramGetAttributesCount(programId);
+            for (int i = 0; i < size; i++) {
+                String name = GL.ProgramGetAttributeName(programId, i);
+                AttributeType type = AttributeType.fromInternalEnum(GL.ProgramGetAttributeType(programId, i));
+                int arraySize = GL.ProgramGetAttributeSize(programId, i);
+                if (name.contains("[")) {
+                    name = name.substring(0, name.indexOf("["));
                 }
-                size = GL.ProgramGetUniformsCount(programId);
-                for (int i = 0; i < size; i++) {
-                    String name = GL.ProgramGetUniformName(programId, i);
-                    AttributeType type = AttributeType.fromInternalEnum(GL.ProgramGetUniformType(programId, i));
-                    int arraySize = GL.ProgramGetUniformSize(programId, i);
-                    if (name.contains("[")) {
-                        name = name.substring(0, name.indexOf("["));
-                    }
-                    Attribute att = new Attribute(i, name, type, arraySize);
-                    uniforms.add(att);
-                    uniformsNames.put(name, att);
+                Attribute att = new Attribute(i, name, type, arraySize);
+                attributes.add(att);
+                attributesNames.put(name, att);
+            }
+            size = GL.ProgramGetUniformsCount(programId);
+            for (int i = 0; i < size; i++) {
+                String name = GL.ProgramGetUniformName(programId, i);
+                AttributeType type = AttributeType.fromInternalEnum(GL.ProgramGetUniformType(programId, i));
+                int arraySize = GL.ProgramGetUniformSize(programId, i);
+                if (name.contains("[")) {
+                    name = name.substring(0, name.indexOf("["));
                 }
-                size = GL.ProgramGetUniformBlocksCount(programId);
-                for (int i = 0; i < size; i++) {
-                    blocksLocations.put(GL.ProgramGetUniformBlockName(programId, i), i);
-                }
+                Attribute att = new Attribute(i, name, type, arraySize);
+                uniforms.add(att);
+                uniformsNames.put(name, att);
+            }
+            size = GL.ProgramGetUniformBlocksCount(programId);
+            for (int i = 0; i < size; i++) {
+                blocksLocations.put(GL.ProgramGetUniformBlockName(programId, i), i);
             }
         }
         return linked;
@@ -121,11 +118,11 @@ public final class ShaderProgram extends ContextObject {
     }
 
     public void begin() {
-        Application.getContext().bindShaderProgram(this);
+        getContext().bindShaderProgram(this);
     }
 
     public void end() {
-        Application.getContext().unbindShaderProgram();
+        getContext().unbindShaderProgram();
     }
 
     public List<Attribute> getAttributes() {
@@ -163,13 +160,13 @@ public final class ShaderProgram extends ContextObject {
         return set(attributes.get(att), value);
     }
 
-    private boolean set(Attribute atribute, Object value) {
-        if (atribute == null) {
+    private boolean set(Attribute attribute, Object value) {
+        if (attribute == null) {
             return false;
         }
-        int att = atribute.location;
+        int att = attribute.location;
 
-        AttributeType type = atribute.type;
+        AttributeType type = attribute.type;
 
         if (type == AttributeType.INT || type == AttributeType.BOOL ||
                 type == AttributeType.SAMPLER_2D || type == AttributeType.SAMPLER_CUBE) {
@@ -359,6 +356,8 @@ public final class ShaderProgram extends ContextObject {
     }
 
     public void setInt(int att, int typeSize, int arraySize, int... values) {
+        boundCheck();
+
         GL.ProgramSetUniformI(att, typeSize, arraySize, values, 0);
     }
 
@@ -367,6 +366,8 @@ public final class ShaderProgram extends ContextObject {
     }
 
     public void setFloat(int att, int typeSize, int arraySize, float... values) {
+        boundCheck();
+
         GL.ProgramSetUniformF(att, typeSize, arraySize, values, 0);
     }
 
@@ -375,6 +376,8 @@ public final class ShaderProgram extends ContextObject {
     }
 
     public void setMatrix(int att, int w, int h, int arraySize, boolean transpose, float... value) {
+        boundCheck();
+
         GL.ProgramSetUniformMatrix(att, w, h, arraySize, transpose, value, 0);
     }
 

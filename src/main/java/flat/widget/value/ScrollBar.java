@@ -1,282 +1,108 @@
 package flat.widget.value;
 
-import flat.animations.Interpolation;
-import flat.animations.NormalizedAnimation;
 import flat.animations.StateInfo;
-import flat.events.ActionEvent;
-import flat.events.ActionListener;
 import flat.events.PointerEvent;
-import flat.graphics.SmartContext;
-import flat.graphics.context.Font;
-import flat.graphics.text.Align;
+import flat.events.SlideEvent;
+import flat.graphics.Color;
+import flat.graphics.Graphics;
 import flat.math.Vector2;
-import flat.uxml.Controller;
-import flat.uxml.UXStyleAttrs;
-import flat.widget.Activity;
+import flat.uxml.*;
 import flat.widget.Widget;
-import flat.widget.enuns.Direction;
-
-import java.util.Objects;
+import flat.widget.enums.Direction;
 
 public class ScrollBar extends Widget {
 
-    private Direction direction = Direction.HORIZONTAL;
+    private UXListener<SlideEvent> slideListener;
+    private UXListener<SlideEvent> slideFilter;
+    private UXValueListener<Float> viewOffsetListener;
+    private float viewOffset;
+    private float viewDimension;
+    private float totalDimension;
 
-    private int color, popupColor;
-    private boolean popupEnabled;
-    private float popupX, popupY, popupWidth, popupHeight;
-    private float popupRadiusTop, popupRadiusRight, popupRadiusBottom, popupRadiusLeft;
-    private long popupTimeOut;
+    private float minSize;
+    private int color = Color.white;
 
-    private String labelText;
-    private int labelTextColor;
-    private Font labelFont;
-    private float labelTextSize;
+    private float grabOffset;
 
-    private float maxRange, range, value, minRangeDisplay;
-    private float pOffset;
-
-    private ActionListener onValueChange;
-
-    private final SlideAnim anim = new SlideAnim();
-    private final SlideAnim anim2 = new SlideAnim();
+    ScrollBar() {
+    }
 
     @Override
-    public void applyAttributes(UXStyleAttrs style, Controller controller) {
-        super.applyAttributes(style, controller);
+    public void applyAttributes(Controller controller) {
+        super.applyAttributes(controller);
 
-        setDirection(style.asConstant("direction", getDirection()));
-        setPopupEnabled(style.asBool("popup-enabled", isPopupEnabled()));
-        setMaxRange(style.asNumber("max-range", getMaxRange()));
-        setRange(style.asNumber("range", getMaxRange()));
-        setValueDirect(style.asNumber("value", getValue()));
-        setMinRangeDisplay(style.asSize("min-range-display", getMinRangeDisplay()));
-        setLabelText(style.asString("label-text", getLabelText()));
+        UXAttrs attrs = getAttrs();
+        setTotalDimension(attrs.getAttributeSize("total-dimension", getTotalDimension()));
+        setViewDimension(attrs.getAttributeSize("view-dimension", getViewDimension()));
+        setViewOffset(attrs.getAttributeSize("view-offset", getViewOffset()));
+        setSlideListener(attrs.getAttributeListener("on-slide", SlideEvent.class, controller));
+        setSlideFilter(attrs.getAttributeListener("on-slide-filter", SlideEvent.class, controller));
+        setViewOffsetListener(attrs.getAttributeValueListener("on-view-offset-change", Float.class, controller));
     }
 
     @Override
     public void applyStyle() {
         super.applyStyle();
-        if (getStyle() == null) return;
 
+        UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
-
-        setColor(getStyle().asColor("color", info, getColor()));
-
-        setLabelFont(getStyle().asFont("label-font", info, getLabelFont()));
-        setLabelTextColor(getStyle().asColor("label-text-color", info, getLabelTextColor()));
-        setLabelTextSize(getStyle().asSize("label-text-size", info, getLabelTextSize()));
-
-        setPopupColor(getStyle().asColor("popup-color", info, getPopupColor()));
-        setPopupX(getStyle().asSize("popup-x", info, getPopupX()));
-        setPopupY(getStyle().asSize("popup-y", info, getPopupY()));
-        setPopupWidth(getStyle().asSize("popup-width", info, getPopupWidth()));
-        setPopupHeight(getStyle().asSize("popup-height", info, getPopupHeight()));
-        setPopupRadiusTop(getStyle().asSize("popup-radius-top", info, getPopupRadiusTop()));
-        setPopupRadiusRight(getStyle().asSize("popup-radius-right", info, getPopupRadiusRight()));
-        setPopupRadiusBottom(getStyle().asSize("popup-radius-bottom", info, getPopupRadiusBottom()));
-        setPopupRadiusLeft(getStyle().asSize("popup-radius-left", info, getPopupRadiusLeft()));
-        setPopupTimeOut((long) getStyle().asSize("popup-time-out", info, getPopupTimeOut()));
+        setMinSize(attrs.getSize("min-size", info, getMinSize()));
+        setColor(attrs.getColor("color", info, getColor()));
     }
 
     @Override
-    protected void onActivityChange(Activity prev, Activity activity) {
-        super.onActivityChange(prev, activity);
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
 
-        if (anim.isPlaying()) {
-            if (prev != null) prev.removeAnimation(anim);
-            if (activity != null) activity.addAnimation(anim);
-        }
-
-        if (anim2.isPlaying()) {
-            if (prev != null) prev.removeAnimation(anim2);
-            if (activity != null) activity.addAnimation(anim2);
-        }
-    }
-
-    @Override
-    public void onDraw(SmartContext context) {
-        super.onDraw(context);
-        boolean lh = direction == Direction.HORIZONTAL || direction == Direction.IHORIZONTAL;
-        boolean li = direction == Direction.IVERTICAL || direction == Direction.IHORIZONTAL;
+        boolean hor = getDirection() == Direction.HORIZONTAL;
 
         final float x = getInX();
         final float y = getInY();
         final float width = getInWidth();
         final float height = getInHeight();
 
-        float w, h, x1, y1, xc, yc, t;
+        if (width <= 0 || height <= 0) return;
 
-        t = (anim.isPlaying() ? anim.value : value);
-        if (li) {
-            t = 1 - t;
-        }
+        float w, h, x1, y1, xc, yc;
+        float handleSize = totalDimension == 0 ? 1 : Math.max(minSize, Math.min(1, viewDimension / totalDimension));
+        float moveOffset = totalDimension == 0 ? 0 : Math.max(0, Math.min(1 - handleSize, viewOffset / totalDimension));
 
-        if (lh) {
-            w = Math.max(minRangeDisplay, (range * width) / maxRange);
+        if (hor) {
+            w = width * handleSize;
             h = height;
 
-            x1 = x + (width - w) * t;
+            x1 = x + width * moveOffset;
             y1 = y;
-            xc = x + (width - w) * t + w / 2f;
-            yc = y + height / 2f;
         } else {
             w = width;
-            h = Math.max(minRangeDisplay, (range * height) / maxRange);
+            h = height * handleSize;
 
             x1 = x;
-            y1 = y + (height - h) * t;
-            xc = x + width / 2f;
-            yc = y + (height - h) * t + h / 2f;
+            y1 = y + height * moveOffset;
         }
 
-        context.setTransform2D(getTransform());
-        context.setColor(color);
-        context.drawRoundRect(x1, y1, w, h,
-                getRadiusTop(), getRadiusRight(), getRadiusBottom(), getRadiusLeft(), true);
+        graphics.setTransform2D(getTransform());
+        graphics.setColor(color);
+        graphics.drawRoundRect(x1, y1, w, h, getRadiusTop(), getRadiusRight(), getRadiusBottom(), getRadiusLeft(), true);
 
-        if (popupEnabled && (isPressed() || anim2.isPlaying())) {
-            context.drawRoundRect(xc + popupX, yc + popupY, popupWidth, popupHeight,
-                    popupRadiusTop, popupRadiusRight, popupRadiusBottom, popupRadiusLeft, true);
-
-            if (labelText != null) {
-                context.setTransform2D(getTransform());
-                context.setColor(labelTextColor);
-                context.setTextSize(labelTextSize);
-                context.setTextFont(labelFont);
-                context.setTextVerticalAlign(Align.Vertical.MIDDLE);
-                context.setTextHorizontalAlign(Align.Horizontal.CENTER);
-                context.drawText(xc + popupX + popupWidth / 2f, yc + popupY + popupHeight / 2f, labelText);
-            }
-        }
-    }
-
-    @Override
-    public void firePointer(PointerEvent pointerEvent) {
-        super.firePointer(pointerEvent);
-        if (!pointerEvent.isConsumed()) {
-            Vector2 point = new Vector2(pointerEvent.getX(), pointerEvent.getY());
-            screenToLocal(point);
-
-            boolean h = direction == Direction.HORIZONTAL || direction == Direction.IHORIZONTAL;
-            boolean i = direction == Direction.IVERTICAL || direction == Direction.IHORIZONTAL;
-
-            float tPoint = (h ? point.x : point.y);
-            float size = (h ? getInWidth() : getInHeight());
-            // Bar Width
-            float w = Math.max(minRangeDisplay, (range * size) / maxRange);
-            // Bar position
-            float p = (size - w) * value + w / 2f;
-
-            if (pointerEvent.getType() == PointerEvent.PRESSED && !isDragged() && !isPressed()) {
-                if (tPoint >= p - w / 2f && tPoint <= p + w / 2f) {
-                    pOffset = p - tPoint;
-                } else {
-                    if (tPoint > p + w / 2f) {
-                        pOffset = -w / 2f;
-                    } else {
-                        pOffset = w / 2f;
-                    }
-                    float t = Math.max(0, Math.min(1, (tPoint + pOffset - w / 2f) / (size - w)));
-                    if (i) {
-                        t = 1 - t;
-                    }
-                    setValue(t);
-                }
-            }
-            if (pointerEvent.getType() == PointerEvent.DRAGGED) {
-                float t = Math.max(0, Math.min(1, (tPoint + pOffset - w / 2f) / (size - w)));
-                if (i) {
-                    t = 1 - t;
-                }
-                setValue(t);
-                anim.stop();
-            }
-            if (pointerEvent.getType() == PointerEvent.RELEASED && popupEnabled && isPressed()) {
-                anim2.play(getActivity());
-            }
-        }
-    }
-
-    public ActionListener getOnValueChange() {
-        return onValueChange;
-    }
-
-    public void setOnValueChange(ActionListener onValueChange) {
-        this.onValueChange = onValueChange;
     }
 
     public Direction getDirection() {
-        return direction;
+        return null;
     }
 
-    public void setDirection(Direction direction) {
-        if (this.direction != direction) {
-            this.direction = direction;
+    public float getViewOffset() {
+        return viewOffset;
+    }
+
+    public void setViewOffset(float viewOffset) {
+        viewOffset = Math.max(0, Math.min(viewOffset, totalDimension - viewDimension));
+
+        if (this.viewOffset != viewOffset) {
+            float old = this.viewOffset;
+            this.viewOffset = viewOffset;
             invalidate(false);
-        }
-    }
-
-    public float getMaxRange() {
-        return maxRange;
-    }
-
-    public void setMaxRange(float maxRange) {
-        if (this.maxRange != maxRange) {
-            this.maxRange = maxRange;
-            invalidate(false);
-        }
-    }
-
-    public float getMinRangeDisplay() {
-        return minRangeDisplay;
-    }
-
-    public void setMinRangeDisplay(float minRangeDisplay) {
-        if (this.minRangeDisplay != minRangeDisplay) {
-            this.minRangeDisplay = minRangeDisplay;
-            invalidate(false);
-        }
-    }
-
-    public float getRange() {
-        return range;
-    }
-
-    public void setRange(float range) {
-        if (this.range != range) {
-            this.range = range;
-            invalidate(false);
-        }
-    }
-
-    public float getValue() {
-        return value;
-    }
-
-    public void setValue(float value) {
-        value = Math.max(0, Math.min(1, value));
-
-        if (this.value != value) {
-            anim.fValue = this.value;
-            anim.tValue = value;
-            anim.setDuration(getTransitionDuration());
-            anim.play(getActivity());
-
-            this.value = value;
-            if (onValueChange != null) {
-                onValueChange.handle(new ActionEvent(this));
-            }
-            invalidate(false);
-        }
-    }
-
-    public void setValueDirect(float value) {
-        value = Math.max(0, Math.min(1, value));
-
-        if (this.value != value) {
-            this.value = value;
-            invalidate(false);
+            fireViewOffsetListener(old);
         }
     }
 
@@ -291,181 +117,158 @@ public class ScrollBar extends Widget {
         }
     }
 
-    public boolean isPopupEnabled() {
-        return popupEnabled;
+    public float getTotalDimension() {
+        return totalDimension;
     }
 
-    public void setPopupEnabled(boolean popupEnabled) {
-        if (this.popupEnabled != popupEnabled) {
-            this.popupEnabled = popupEnabled;
+    public void setTotalDimension(float totalDimension) {
+        if (this.totalDimension != totalDimension) {
+            this.totalDimension = totalDimension;
+            invalidate(false);
+
+            if (viewOffset > totalDimension - viewDimension) {
+                setViewOffset(totalDimension - viewDimension);
+            }
+        }
+    }
+
+    public float getMinSize() {
+        return minSize;
+    }
+
+    public void setMinSize(float minSize) {
+        if (minSize < 0) minSize = 0;
+        if (minSize > 1) minSize = 1;
+
+        if (this.minSize != minSize) {
+            this.minSize = minSize;
             invalidate(false);
         }
     }
 
-    public int getPopupColor() {
-        return popupColor;
+    public float getViewDimension() {
+        return viewDimension;
     }
 
-    public void setPopupColor(int popupColor) {
-        if (this.popupColor != popupColor) {
-            this.popupColor = popupColor;
+    public void setViewDimension(float viewDimension) {
+        if (this.viewDimension != viewDimension) {
+            this.viewDimension = viewDimension;
             invalidate(false);
+
+            if (viewOffset > totalDimension - viewDimension) {
+                setViewOffset(totalDimension - viewDimension);
+            }
         }
     }
 
-    public float getPopupWidth() {
-        return popupWidth;
-    }
+    public void slideTo(float dimeionsOffset) {
+        dimeionsOffset = Math.max(0, Math.min(dimeionsOffset, totalDimension - viewDimension));
 
-    public void setPopupWidth(float popupWidth) {
-        if (this.popupWidth != popupWidth) {
-            this.popupWidth = popupWidth;
-            invalidate(false);
+        float old = getViewOffset();
+        if (dimeionsOffset != old && filterSlide(dimeionsOffset)) {
+            setViewOffset(dimeionsOffset);
+            fireSlide();
         }
     }
 
-    public float getPopupHeight() {
-        return popupHeight;
+    public void slide(float dimeionsOffset) {
+        slideTo(getViewOffset() + dimeionsOffset);
     }
 
-    public void setPopupHeight(float popupHeight) {
-        if (this.popupHeight != popupHeight) {
-            this.popupHeight = popupHeight;
-            invalidate(false);
+    public UXListener<SlideEvent> getSlideFilter() {
+        return slideFilter;
+    }
+
+    public void setSlideFilter(UXListener<SlideEvent> slideFilter) {
+        this.slideFilter = slideFilter;
+    }
+
+    private boolean filterSlide(float viewOffset) {
+        if (slideFilter != null) {
+            var event = new SlideEvent(this, SlideEvent.FILTER, viewOffset);
+            UXListener.safeHandle(slideFilter, event);
+            return !event.isConsumed();
+        }
+        return true;
+    }
+
+    public UXListener<SlideEvent> getSlideListener() {
+        return slideListener;
+    }
+
+    public void setSlideListener(UXListener<SlideEvent> slideListener) {
+        this.slideListener = slideListener;
+    }
+
+    private void fireSlide() {
+        if (slideListener != null) {
+            UXListener.safeHandle(slideListener, new SlideEvent(this, SlideEvent.SLIDE, getViewOffset()));
         }
     }
 
-    public float getPopupX() {
-        return popupX;
+    public void setViewOffsetListener(UXValueListener<Float> viewOffsetListener) {
+        this.viewOffsetListener = viewOffsetListener;
     }
 
-    public void setPopupX(float popupX) {
-        if (this.popupX != popupX) {
-            this.popupX = popupX;
-            invalidate(false);
+    public UXValueListener<Float> getViewOffsetListener() {
+        return viewOffsetListener;
+    }
+
+    private void fireViewOffsetListener(float old) {
+        if (viewOffsetListener != null && old != viewOffset) {
+            UXValueListener.safeHandle(viewOffsetListener, new ValueChange<>(this, old, viewOffset));
         }
     }
 
-    public float getPopupY() {
-        return popupY;
-    }
-
-    public void setPopupY(float popupY) {
-        if (this.popupY != popupY) {
-            this.popupY = popupY;
-            invalidate(false);
+    @Override
+    public void pointer(PointerEvent event) {
+        super.pointer(event);
+        if (event.isConsumed() || event.getPointerID() != 1) {
+            return;
         }
-    }
 
-    public float getPopupRadiusTop() {
-        return popupRadiusTop;
-    }
+        Vector2 point = new Vector2(event.getX(), event.getY());
+        screenToLocal(point);
 
-    public void setPopupRadiusTop(float popupRadiusTop) {
-        if (this.popupRadiusTop != popupRadiusTop) {
-            this.popupRadiusTop = popupRadiusTop;
-            invalidate(false);
+        boolean hor = getDirection() == Direction.HORIZONTAL;
+
+        final float x = getInX();
+        final float y = getInY();
+        final float width = getInWidth();
+        final float height = getInHeight();
+
+        float hStart, hSize, pos, start, size;
+
+        float handleSize = totalDimension == 0 ? 1 :
+                Math.max(minSize, Math.min(1, viewDimension / totalDimension));
+        float moveOffset = totalDimension == 0 ? 0 :
+                Math.max(0, Math.min(1 - handleSize, viewOffset / totalDimension));
+
+        if (hor) {
+            pos = point.x;
+            start = x;
+            size = width;
+            hStart = x + width * moveOffset;
+            hSize = width * handleSize;
+        } else {
+            pos = point.y;
+            start = y;
+            size = height;
+            hStart = y + height * moveOffset;
+            hSize = height * handleSize;
         }
-    }
 
-    public float getPopupRadiusRight() {
-        return popupRadiusRight;
-    }
+        if (event.getType() == PointerEvent.PRESSED) {
+            grabOffset = Math.max(0, Math.min(1, (pos + ((float) 0) - hStart) / hSize));
+            float target = ((pos - start) / size - handleSize * grabOffset) * totalDimension;
+            slideTo(target);
 
-    public void setPopupRadiusRight(float popupRadiusRight) {
-        if (this.popupRadiusRight != popupRadiusRight) {
-            this.popupRadiusRight = popupRadiusRight;
-            invalidate(false);
-        }
-    }
+        } else if (event.getType() == PointerEvent.DRAGGED) {
+            float target = ((pos - start) / size - handleSize * grabOffset) * totalDimension;
+            slideTo(target);
 
-    public float getPopupRadiusBottom() {
-        return popupRadiusBottom;
-    }
-
-    public void setPopupRadiusBottom(float popupRadiusBottom) {
-        if (this.popupRadiusBottom != popupRadiusBottom) {
-            this.popupRadiusBottom = popupRadiusBottom;
-            invalidate(false);
-        }
-    }
-
-    public float getPopupRadiusLeft() {
-        return popupRadiusLeft;
-    }
-
-    public void setPopupRadiusLeft(float popupRadiusLeft) {
-        if (this.popupRadiusLeft != popupRadiusLeft) {
-            this.popupRadiusLeft = popupRadiusLeft;
-            invalidate(false);
-        }
-    }
-
-    public long getPopupTimeOut() {
-        return popupTimeOut;
-    }
-
-    public void setPopupTimeOut(long popupTimeOut) {
-        if (this.popupTimeOut != popupTimeOut) {
-            this.popupTimeOut = popupTimeOut;
-            anim2.setDuration(popupTimeOut);
-            invalidate(false);
-        }
-    }
-
-    public String getLabelText() {
-        return labelText;
-    }
-
-    public void setLabelText(String labelText) {
-        if (!Objects.equals(this.labelText, labelText)) {
-            this.labelText = labelText;
-            invalidate(false);
-        }
-    }
-
-    public Font getLabelFont() {
-        return labelFont;
-    }
-
-    public void setLabelFont(Font labelFont) {
-        if (this.labelFont != labelFont) {
-            this.labelFont = labelFont;
-            invalidate(false);
-        }
-    }
-
-    public float getLabelTextSize() {
-        return labelTextSize;
-    }
-
-    public void setLabelTextSize(float labelTextSize) {
-        if (this.labelTextSize != labelTextSize) {
-            this.labelTextSize = labelTextSize;
-            invalidate(false);
-        }
-    }
-
-    public int getLabelTextColor() {
-        return labelTextColor;
-    }
-
-    public void setLabelTextColor(int labelTextColor) {
-        if (this.labelTextColor != labelTextColor) {
-            this.labelTextColor = labelTextColor;
-            invalidate(false);
-        }
-    }
-
-    private class SlideAnim extends NormalizedAnimation {
-        float fValue;
-        float tValue;
-        float value;
-
-        @Override
-        protected void compute(float t) {
-            value = Interpolation.mix(fValue, tValue, t);
-            invalidate(false);
+        } else if (event.getType() == PointerEvent.RELEASED) {
+            grabOffset = 0;
         }
     }
 }
