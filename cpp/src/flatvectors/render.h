@@ -21,12 +21,16 @@ void renderEnd(void *data);
 
 void renderClearClip(void* data, int clip);
 
+void renderUnbindImage(void *data);
+
 void renderFlush(void *data,
                  fvPaint *paints, void* uniforms, int pSize,
                  int* elements, int eSize,
                  float *vtx, float *uvs, int vSize);
 
-unsigned long renderCreateFontTexture(void* data, int width, int height);
+unsigned long renderCreateFontTexture(int width, int height);
+
+unsigned long renderResizeFontTexture(unsigned long oldImageID, int oldWidth, int oldHeight, int width, int height);
 
 void renderUpdateFontTexture(unsigned long imageID, void* data, int x, int y, int width, int height);
 

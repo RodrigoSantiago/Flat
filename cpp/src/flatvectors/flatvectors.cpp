@@ -6,6 +6,7 @@
 #include "curves.h"
 #include "utf8.h"
 #include "font.h"
+#include "pack.h"
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
@@ -14,6 +15,8 @@
 #define EPSILON 0.00001
 #define PI 3.14159265359f
 #define PI2 6.28318530718f
+
+bool fvIsDebugMode = false;
 
 float fv__angle(float x1, float y1, float x2, float y2) {
     return atan2(y2 - y1, x2 - x1);
@@ -173,7 +176,6 @@ void fv__commit(fvContext* ctx) {
         drawpaint.paintOp = ctx->op;
         drawpaint.winding = ctx->wr;
         drawpaint.convex = ctx->convex;
-        drawpaint.sdf = ctx->font->sdf;
         drawpaint.aa = 0;
         drawpaint.uniform.extra[3] = ctx->fontBlur;
 
@@ -182,26 +184,25 @@ void fv__commit(fvContext* ctx) {
         } else if (drawpaint.uniform.type == 1) {
             drawpaint.uniform.type = 3;
         }
-        drawpaint.image1 = ctx->font->imageID;
+        drawpaint.font = ctx->font;
     } else {
         drawpaint.paintOp = ctx->op;
         drawpaint.winding = ctx->wr;
         drawpaint.convex = ctx->convex;
-        drawpaint.sdf = 0;
         drawpaint.aa = ctx->aa;
         drawpaint.uniform.extra[3] = 1;
-        drawpaint.image1 = 0;
+        drawpaint.font = NULL;
     }
 
     for (int i = 0; i < 6; i++) {
         drawpaint.mat[i] = ctx->transform[i];
     }
 
-    fv__multiply(drawpaint.uniform.colorMat, ctx->transform);
+    //fv__multiply(drawpaint.uniform.colorMat, ctx->transform);
     fv__inverse(drawpaint.uniform.colorMat, drawpaint.uniform.colorMat);
     fv__affineToMat4(drawpaint.uniform.colorMat, drawpaint.uniform.colorMat);
 
-    fv__multiply(drawpaint.uniform.imageMat, ctx->transform);
+    //fv__multiply(drawpaint.uniform.imageMat, ctx->transform);
     fv__inverse(drawpaint.uniform.imageMat, drawpaint.uniform.imageMat);
     fv__affineToMat4(drawpaint.uniform.imageMat, drawpaint.uniform.imageMat);
 
@@ -575,7 +576,7 @@ void fv__dashline(fvContext* ctx, float x, float y) {
             if (!ctx->open) fvPathMoveTo(ctx, prevX, prevY);
             fvPathLineTo(ctx, nx, ny);
 
-            if (ctx->lt != -1 && ctx->mInd != ctx->vInd) {
+            if (ctx->lt != -1 && ctx->mInd + 2 < ctx->vInd) {
                 fv__linecap(ctx);
             }
             ctx->ft = 0;
@@ -613,7 +614,7 @@ void fv__dashclose(fvContext* ctx) {
     if (ctx->phaseFill && ctx->startFill) {
         // fv__linejoincap(ctx, ctx->dSx, ctx->dSy);
 
-        if (ctx->lt != -1 && ctx->mInd != ctx->vInd) {
+        if (ctx->lt != -1 && ctx->mInd + 2 < ctx->vInd) {
             fv__linecap(ctx);
         }
         float _px1, _sx1, _py1, _sy1, _px2, _sx2, _py2, _sy2;
@@ -690,6 +691,14 @@ fvContext* fvCreate() {
 void fvDestroy(fvContext* ctx) {
     renderDestroy(ctx->rCtx);
     free(ctx);
+}
+
+void fvSetDebug(bool debug) {
+    fvIsDebugMode = debug;
+}
+
+bool fvIsDebug() {
+    return fvIsDebugMode;
 }
 
 void fvBegin(fvContext* ctx, int width, int height) {
@@ -770,7 +779,7 @@ void fvPathMoveTo(fvContext* ctx, float x, float y) {
     if (ctx->op == STROKE && ctx->dashCommand) {
         fv__dashmove(ctx, x, y);
     } else if (ctx->op == STROKE) {
-        if (ctx->lt != -1 && ctx->mInd != ctx->vInd) {
+        if (ctx->lt != -1 && ctx->mInd + 2 < ctx->vInd) {
             fv__linecap(ctx);
         }
         ctx->ft = 0;
@@ -845,7 +854,7 @@ void fvPathClose(fvContext* ctx) {
         fv__dashclose(ctx);
     } else if (ctx->op == STROKE) {
         fvPathLineTo(ctx, ctx->mx, ctx->my);
-        if (ctx->mInd != ctx->vInd) {
+        if (ctx->mInd + 2 < ctx->vInd) {
             fv__linejoincap(ctx, ctx->mx, ctx->my);
         }
     } else {
@@ -864,11 +873,11 @@ void fvPathEnd(fvContext* ctx) {
     } else if (ctx->op == STROKE && ctx->dashCommand) {
         fv__dashend(ctx);
     } else if (ctx->op == STROKE) {
-        if (ctx->lt != -1 && ctx->mInd != ctx->vInd) {
+        if (ctx->lt != -1 && ctx->mInd + 2 < ctx->vInd) {
             fv__linecap(ctx);
         }
     } else {
-        if (ctx->lt != -1 && ctx->mInd != ctx->vInd) {
+        if (ctx->lt != -1 && ctx->mInd + 2 < ctx->vInd) {
             fvPathClose(ctx);
         }
 
@@ -979,55 +988,57 @@ void fvRoundRect(fvContext* ctx, float x, float y, float width, float height, fl
     fv__commit(ctx);
 }
 
-fvFont* fvFontCreate(void* data, long length, float size, int sdf) {
+void* fvFontLoad(void* data, long int length, float size, int sdf) {
     return fontCreate(data, length, size, sdf);
 }
 
+void fvFontUnload(void* ctx) {
+    fontDestroy(ctx);
+}
+
+fvFont* fvFontCreate(void* ctx) {
+    fvFont* ft = (fvFont*) malloc(sizeof(fvFont));
+    fontGetData(ctx, ft);
+    return ft;
+}
+
 void fvFontDestroy(fvFont* font) {
-    fontDestroy(font);
-}
-
-void fvFontLoadGlyphs(fvFont* font, const char* str, int strLen) {
-    fontLoadGlyphs(font, str, strLen);
-}
-
-void fvFontLoadAllGlyphs(fvFont* font) {
-    fontLoadAllGlyphs(font);
-}
-
-int fvFontGetGlyphs(fvFont* font, const char* str, int strLen, float* info) {
-    int i = 0, f = 0, index = 0, count;
-    unsigned long chr = 0, prev = 0;
-    while (utf8loop(str, strLen, i, chr)) {
-        fvGlyph& glyph = fontGlyph(font, chr);
-        if (glyph.enabled) {
-            info[index++] = f ? fontKerning(font, prev, chr) : 0;
-            info[index++] = glyph.enabled;
-            info[index++] = glyph.advance;
-
-            info[index++] = glyph.x;
-            info[index++] = glyph.y;
-            info[index++] = glyph.w;
-            info[index++] = glyph.h;
-
-            info[index++] = glyph.u;
-            info[index++] = glyph.v;
-            prev = chr;
-            f = 1;
-            count++;
-        }
+    if (font->imageID != 0) {
+        renderDestroyFontTexture(font->imageID);
     }
-    return count;
+    packDestroy(font->pack);
+    free(font->renderState);
+    free(font);
 }
 
-void fvFontGetMetrics(fvFont* font, float* ascender, float* descender, float* height, float* lineGap) {
-    if (ascender != 0) *ascender = font->ascent;
-    if (descender != 0) *descender = font->descent;
-    if (height != 0) *height = font->height;
-    if (lineGap != 0) *lineGap = font->lineGap;
+long fvFontGetCurrentAtlas(fvFont* font, int* w, int* h) {
+    *w = font->pack->width;
+    *h = font->pack->height;
+    return font->imageID;
 }
 
-float fvFontGetTextWidth(fvFont* font, const char* str, int strLen, float scale, float spacing) {
+void fvFontGetGlyphShape(void* ctx, long unicode, float** polygon, int* len) {
+    fontGetGlyphShape(ctx, unicode, polygon, len);
+}
+
+void fvFontGetGlyph(void* ctx, int codePoint, float* info) {
+    fvGlyph& glyph = fontGlyph(ctx, codePoint);
+    info[0] = glyph.advance;
+    info[1] = glyph.x;
+    info[2] = glyph.y;
+    info[3] = glyph.w;
+    info[4] = glyph.h;
+}
+
+void fvFontGetAllCodePoints(void* ctx, long int* codePoints) {
+    fontGetAllCodePoints(ctx, codePoints);
+}
+
+void fvFontGetMetrics(void* ctx, float* ascender, float* descender, float* height, float* lineGap, int* glyphCount) {
+    fontGetMetrics(ctx, ascender, descender, height, lineGap, glyphCount);
+}
+
+float fvFontGetTextWidth(void* ctx, const char* str, int strLen, float scale, float spacing) {
     float scl = scale * spacing;
 
     float w = 0;
@@ -1035,43 +1046,48 @@ float fvFontGetTextWidth(fvFont* font, const char* str, int strLen, float scale,
     unsigned long chr = 0, prev = 0;
     while (utf8loop(str, strLen, i, chr)) {
         if (chr != '\n') {
-            fvGlyph &glyph = fontGlyph(font, chr);
-            if (glyph.enabled) {
-                w += ceil((glyph.advance + (f ? fontKerning(font, prev, chr) : 0)) * scl);
-                prev = chr;
-                f = 1;
-            }
+            fvGlyph &glyph = fontGlyph(ctx, chr);
+
+            w += ceil((glyph.advance + (f ? fontKerning(ctx, prev, chr) : 0)) * scl);
+            prev = chr;
+            f = 1;
         }
     }
     return w;
 }
 
-int fvFontGetOffset(fvFont* font, const char* str, int strLen, float scale, float spacing, float x, int half) {
+void fvFontGetOffset(void* ctx, const char* str, int strLen, float scale, float spacing, float cursorX, int half, float* index, float* width) {
     float scl = scale * spacing;
 
     float w = 0;
     int i = 0, f = 0, pi = 0;
     unsigned long chr = 0, pchr = 0;
     while (utf8loop(str, strLen, i, chr)) {
-        if (chr != '\n') {
-            fvGlyph &glyph = fontGlyph(font, chr);
-            if (glyph.enabled) {
-                float advance = ceil((glyph.advance + (f ? fontKerning(font, pchr, chr) : 0)) * scl);
-                if (!half && w + advance > x) {
-                    return pi;
-                } else if (w + advance / 2 > x) {
-                    return pi;
-                } else if (w + advance > x) {
-                    return i;
-                }
-                w += advance;
-                pchr = chr;
-                pi = i;
-                f = 1;
+        if (chr == '\n') continue;
+
+        fvGlyph &glyph = fontGlyph(ctx, chr);
+
+        float advance = ceil((glyph.advance + (f ? fontKerning(ctx, pchr, chr) : 0)) * scl);
+        if (w + advance > cursorX) {
+            if (cursorX <= w + advance * 0.5) {
+                *width = w;
+                *index = pi;
+            } else if (half) {
+                *width = w + advance;
+                *index = i;
+            } else {
+                *width = w;
+                *index = pi;
             }
+            return;
         }
+        w += advance;
+        pchr = chr;
+        pi = i;
+        f = 1;
     }
-    return i;
+    *width = w;
+    *index = pi;
 }
 //-----------------------------------------
 //
@@ -1093,80 +1109,86 @@ void fvSetFontBlur(fvContext* ctx, float blur) {
     ctx->fontBlur = blur;
 }
 
-int fvText(fvContext* ctx, const char* str, int strLen, float x, float y, float maxWidth, fvHAlign hAlign, fvVAlign vAlign) {
-    fvPathBegin(ctx, fvPathOp::TEXT, fvWindingRule::EVEN_ODD);
+void fvText(fvContext* ctx, const char* str, int strLen, float x, float y, float maxWidth, float maxHeight) {
+    if (maxWidth == 0) maxWidth = 99999;
+    else maxWidth = x + maxWidth;
+    if (maxHeight == 0) maxHeight = 99999;
+    else maxHeight = y + maxHeight;
 
     fvFont *font = ctx->font;
-    maxWidth = ceil(maxWidth);
-
-    fv__assert(ctx, strLen * 4, strLen * 2);
+    float scl = ctx->fontScale;
+    float spc = ctx->fontSpacing;
 
     float start = x;
-    int fEl = ctx->vInd / 2;
 
-    float scl = ctx->fontScale, spc = ctx->fontSpacing;
-
-    if (vAlign == fvVAlign::BOTTOM) {
-        y -= font->height * scl;
-    } else if (vAlign == fvVAlign::MIDDLE) {
-        y -= font->height / 2 * scl;
-    } else if (vAlign == fvVAlign::BASELINE) {
-        y -= font->ascent * scl;
-    }
+    fvPathBegin(ctx, fvPathOp::TEXT, fvWindingRule::EVEN_ODD);
+    fv__assert(ctx, strLen * 4, strLen * 2);
 
     int p = 0, i = 0, f = 0;
     unsigned long chr = 0, prev = 0;
     while (utf8loop(str, strLen, i, chr)) {
-        if (chr != '\n') {
-            fvGlyph &glyph = fontGlyphRendered(font, chr);
-            if (glyph.enabled) {
-                float kern = (f ? fontKerning(font, prev, chr) : 0);
-                float advance = ceil((glyph.advance + kern) * (scl * spc));
-                if (maxWidth > 0 && floor(x + advance - start) > maxWidth) {
-                    break;
+        if (chr == '\n') continue;
+
+        fvPoint uv;
+        int recreate;
+        fvGlyph& glyph = fontGlyphRendered(font->fCtx, font, chr, &uv, &recreate);
+        if (recreate == 1) {
+            renderUnbindImage(ctx->rCtx);
+        }
+        if (recreate == 2) {
+            fvPathEnd(ctx);
+            fvFlush(ctx);
+
+            fontGlyphRendered(font->fCtx, font, chr, &uv, &recreate);
+            fvPathBegin(ctx, fvPathOp::TEXT, fvWindingRule::EVEN_ODD);
+        }
+
+        float kern = (f ? fontKerning(font->fCtx, prev, chr) : 0);
+        float advance = ceil((glyph.advance + kern) * (scl * spc));
+
+        float px = x + kern * scl * spc;
+        if (uv.x > -1) {
+            float x1 = px + glyph.x * scl;
+            float y1 = y + glyph.y * scl;
+            float x2 = x1 + glyph.w * scl;
+            float y2 = y1 + glyph.h * scl;
+
+            if (x1 < maxWidth && y1 < maxHeight) {
+                float uvW = glyph.w;
+                float uvH = glyph.h;
+                if (x2 > maxWidth) {
+                    float wb = x2 - x1;
+                    x2 = maxWidth;
+                    float wa = x2 - x1;
+                    uvW *= wa / wb;
                 }
-                float px = x + kern * scl * spc;
-                if (glyph.u > -1) {
-                    float x1 = round(px + glyph.x * scl), y1 = y + glyph.y * scl;
-                    float x2 = x1 + glyph.w * scl, y2 = y1 + glyph.h * scl;
-
-                    if (ctx->vInd + 8 >= ctx->MVERTEX || ctx->eInd + 6 >= ctx->MELEMENT) {
-                        break;
-                    }
-
-                    int el = (ctx->vInd / 2);
-                    fv__text_vertex(ctx, x1, y1, glyph.u, glyph.v);
-                    fv__text_vertex(ctx, x2, y1, glyph.u2, glyph.v);
-                    fv__text_vertex(ctx, x2, y2, glyph.u2, glyph.v2);
-                    fv__text_vertex(ctx, x1, y2, glyph.u, glyph.v2);
-                    fv__triangle(ctx, el, el + 1, el + 2);
-                    fv__triangle(ctx, el, el + 2, el + 3);
+                if (y2 > maxHeight) {
+                    float hb = y2 - y1;
+                    y2 = maxHeight;
+                    float ha = y2 - y1;
+                    uvH *= ha / hb;
                 }
-                x += advance;
 
-                prev = chr;
-                f = 1;
+                int el = (ctx->vInd / 2);
+                fv__text_vertex(ctx, x1, y1, uv.x, uv.y);
+                fv__text_vertex(ctx, x2, y1, uv.x + uvW, uv.y);
+                fv__text_vertex(ctx, x2, y2, uv.x + uvW, uv.y + uvH);
+                fv__text_vertex(ctx, x1, y2, uv.x, uv.y + uvH);
+                fv__triangle(ctx, el, el + 1, el + 2);
+                fv__triangle(ctx, el, el + 2, el + 3);
             }
-            p = i;
         }
-    }
+        x += advance;
+        if (x > maxWidth) {
+            break;
+        }
 
-    if (hAlign == fvHAlign::RIGHT) {
-        float offset = x - start;
-        int el = (ctx->vInd / 2);
-        for (int j = fEl; j < el; j++) {
-            ctx->vtx[j * 2] -= offset;
-        }
-    } else if (hAlign == fvHAlign::CENTER) {
-        float offset = (x - start) / 2;
-        int el = (ctx->vInd / 2);
-        for (int j = fEl; j < el; j++) {
-            ctx->vtx[j * 2] -= offset;
-        }
+        prev = chr;
+        f = 1;
+        p = i;
     }
 
     fvPathEnd(ctx);
-    return p;
 }
 
 //-----------------------------
@@ -1184,7 +1206,7 @@ fvPaint fvColorPaint(long color) {
     fvPaint p{};
     p.uniform.type = 0;
     p.image0 = 0;
-    p.image1 = 0;
+    p.font = NULL;
     fv__identity(p.uniform.imageMat);
     fv__identity(p.uniform.colorMat);
 
@@ -1204,17 +1226,16 @@ fvPaint fvColorPaint(long color) {
     p.paintOp = fvPathOp::NOONE;
     p.winding = fvWindingRule::EVEN_ODD;
     p.convex = 0;
-    p.sdf = 0;
     p.aa = 0;
 
     return p;
 }
 
-fvPaint fvImagePaint(unsigned long imageID, float* affineImg, long color) {
+fvPaint fvImagePaint(unsigned long imageID, float* affineImg, long color, int cycleMethod) {
     fvPaint p{};
     p.uniform.type = 1;
     p.image0 = imageID;
-    p.image1 = 0;
+    p.font = NULL;
     if (affineImg != 0) {
         for (int i = 0; i < 6; i++) {
             p.uniform.imageMat[i] = affineImg[i];
@@ -1236,12 +1257,11 @@ fvPaint fvImagePaint(unsigned long imageID, float* affineImg, long color) {
     p.uniform.colors[1] = ((color >> 16) & 0xFF) / 255.f;
     p.uniform.colors[2] = ((color >> 8) & 0xFF) / 255.f;
     p.uniform.colors[3] = ((color >> 0) & 0xFF) / 255.f;
-    p.uniform.cycleType = 0;
+    p.uniform.cycleType = cycleMethod;
 
     p.paintOp = fvPathOp::NOONE;
     p.winding = fvWindingRule::EVEN_ODD;
     p.convex = 0;
-    p.sdf = 0;
     p.aa = 0;
 
     return p;
@@ -1251,7 +1271,7 @@ fvPaint fvLinearGradientPaint(float* affine, float x1, float y1, float x2, float
     fvPaint p{};
     p.uniform.type = 0;
     p.image0 = 0;
-    p.image1 = 0;
+    p.font = NULL;
     fv__identity(p.uniform.imageMat);
 
     float dx, dy, d;
@@ -1295,7 +1315,6 @@ fvPaint fvLinearGradientPaint(float* affine, float x1, float y1, float x2, float
     p.paintOp = fvPathOp::NOONE;
     p.winding = fvWindingRule::EVEN_ODD;
     p.convex = 0;
-    p.sdf = 0;
     p.aa = 0;
 
     return p;
@@ -1305,7 +1324,7 @@ fvPaint fvRadialGradientPaint(float* affine, float x, float y, float rIn, float 
     fvPaint p{};
     p.uniform.type = 0;
     p.image0 = 0;
-    p.image1 = 0;
+    p.font = NULL;
     fv__identity(p.uniform.imageMat);
 
     float r = (rIn+rOut)*0.5f;
@@ -1338,11 +1357,10 @@ fvPaint fvRadialGradientPaint(float* affine, float x, float y, float rIn, float 
     p.paintOp = fvPathOp::NOONE;
     p.winding = fvWindingRule::EVEN_ODD;
     p.convex = 0;
-    p.sdf = 0;
     p.aa = 0;
 
-    p.uniform.extra[0] = fx;
-    p.uniform.extra[1] = fy;
+    p.uniform.extra[0] = rOut < 0.0001f ? 0 : (fx - x) / rOut;
+    p.uniform.extra[1] = rOut < 0.0001f ? 0 : (fy - y) / rOut;
     if (fx < -0.0001 || fx > 0.0001 || fy < -0.0001 || fy > 0.0001) {
         p.uniform.extra[2] = 1;
     }
@@ -1350,11 +1368,11 @@ fvPaint fvRadialGradientPaint(float* affine, float x, float y, float rIn, float 
     return p;
 }
 
-fvPaint fvBoxGradientPaint(float* affine, float x, float y, float w, float h, float r, float f, int count, float* stops, long* colors, int cycleMethod) {
+fvPaint fvBoxGradientPaint(float* affine, float x, float y, float w, float h, float r, float f, float a, long c) {
     fvPaint p{};
     p.uniform.type = 0;
     p.image0 = 0;
-    p.image1 = 0;
+    p.font = NULL;
     fv__identity(p.uniform.imageMat);
 
     p.uniform.colorMat[0] = 1.0f;
@@ -1363,28 +1381,35 @@ fvPaint fvBoxGradientPaint(float* affine, float x, float y, float w, float h, fl
     p.uniform.colorMat[3] = 1.0f;
     p.uniform.colorMat[4] = x + w * 0.5f;
     p.uniform.colorMat[5] = y + h * 0.5f;
-    fv__multiply(p.uniform.colorMat, affine);
+    if (affine != NULL) {
+        fv__multiply(p.uniform.colorMat, affine);
+    }
 
     p.uniform.shape[0] = w * 0.5f;
     p.uniform.shape[1] = h * 0.5f;
     p.uniform.shape[2] = r;
     p.uniform.shape[3] = f < 1.0f ? 1.0f : f;
 
-    p.uniform.stopCount = count - 1;
+    p.uniform.stopCount = 2;
     p.uniform.joinType = 0;
-    for (int i = 0; i < count; i++) {
-        p.uniform.stops[i] = stops[i];
-        p.uniform.colors[i * 4] = ((colors[i] >> 24) & 0xFF) / 255.f;
-        p.uniform.colors[i * 4 + 1] = ((colors[i] >> 16) & 0xFF) / 255.f;
-        p.uniform.colors[i * 4 + 2] = ((colors[i] >> 8) & 0xFF) / 255.f;
-        p.uniform.colors[i * 4 + 3] = ((colors[i] >> 0) & 0xFF) / 255.f;
-    }
-    p.uniform.cycleType = cycleMethod;
+
+    p.uniform.stops[0] = 0;
+    p.uniform.colors[0] = ((c >> 24) & 0xFF) / 255.f;
+    p.uniform.colors[1] = ((c >> 16) & 0xFF) / 255.f;
+    p.uniform.colors[2] = ((c >> 8) & 0xFF) / 255.f;
+    p.uniform.colors[3] = ((c >> 0) & 0xFF) / 255.f;
+
+    p.uniform.stops[1] = 1;
+    p.uniform.colors[4] = ((c >> 24) & 0xFF) / 255.f;
+    p.uniform.colors[5] = ((c >> 16) & 0xFF) / 255.f;
+    p.uniform.colors[6] = ((c >> 8) & 0xFF) / 255.f;
+    p.uniform.colors[7] = 0;
+
+    p.uniform.cycleType = 3;
 
     p.paintOp = fvPathOp::NOONE;
     p.winding = fvWindingRule::EVEN_ODD;
     p.convex = 0;
-    p.sdf = 0;
     p.aa = 0;
 
     return p;
