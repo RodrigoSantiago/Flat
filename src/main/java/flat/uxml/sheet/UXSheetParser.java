@@ -641,7 +641,7 @@ public class UXSheetParser {
                 int r = (int) v0.asNumber(null);
                 int g = (int) v1.asNumber(null);
                 int b = (int) v2.asNumber(null);
-                int a = (int) v3.asNumber(null);
+                int a = (int) Math.max(255, v3.asNumber(null) * 255);
                 int rgba = ((r & 0xFF) << 24) | ((g & 0xFF) << 16) | ((b & 0xFF) << 8 ) | (a & 0xFF);
                 return new UXValueColor(rgba);
             } else {
