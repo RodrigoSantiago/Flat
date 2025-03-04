@@ -56,9 +56,9 @@ public class RippleEffect {
             context.setColor(colors[0]);
             context.drawCircle(ripple.x, ripple.y, radius, true);
         } else {
-            context.setPaint(new RadialGradient.Builder(ripple.x, ripple.y, 0, radius)
-                    .stop(new GradientStop(1 - 1f / radius, colors[0]))
-                    .stop(new GradientStop(1, colors[1]))
+            context.setPaint(new RadialGradient.Builder(ripple.x, ripple.y, radius)
+                    .stop(1 - 1f / radius, colors[0])
+                    .stop(1, colors[1])
                     .cycleMethod(CycleMethod.CLAMP)
                     .build());
             context.drawShape(clip, true);

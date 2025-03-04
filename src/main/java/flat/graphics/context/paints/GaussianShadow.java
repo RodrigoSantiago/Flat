@@ -1,6 +1,7 @@
 package flat.graphics.context.paints;
 
 import flat.backend.SVG;
+import flat.exception.FlatException;
 import flat.graphics.context.Paint;
 import flat.math.Affine;
 import flat.math.Mathf;
@@ -15,7 +16,6 @@ public class GaussianShadow extends Paint {
     private final float blur;
     private final float alpha;
     private final int color;
-    private final Affine transform;
     private final float[] data;
 
     GaussianShadow(Builder builder) {
@@ -27,12 +27,15 @@ public class GaussianShadow extends Paint {
         blur = builder.blur;
         alpha = Mathf.clamp(builder.alpha, 0, 1);
         color = builder.color;
-        transform = builder.transform == null ? new Affine() : builder.transform;
-        data = new float[]{
-                transform.m00, transform.m10,
-                transform.m01, transform.m11,
-                transform.m02, transform.m12,
-        };
+        if (builder.transform != null) {
+            data = new float[]{
+                    builder.transform.m00, builder.transform.m10,
+                    builder.transform.m01, builder.transform.m11,
+                    builder.transform.m02, builder.transform.m12,
+            };
+        } else {
+            data = null;
+        }
     }
 
     @Override
@@ -73,7 +76,7 @@ public class GaussianShadow extends Paint {
     }
 
     public Affine getTransform() {
-        return new Affine(transform);
+        return data == null ? new Affine() : new Affine(data[0], data[2], data[1], data[3], data[4], data[5]);
     }
 
     public static class Builder {
@@ -86,6 +89,7 @@ public class GaussianShadow extends Paint {
         private float alpha;
         private int color;
         private Affine transform;
+        private boolean readOnly;
 
         public Builder(float x, float y, float width, float height) {
             this.x = x;
@@ -94,32 +98,45 @@ public class GaussianShadow extends Paint {
             this.height = height;
         }
 
+        private void checkReadOnly() {
+            if (readOnly) {
+                throw new FlatException("The builder is read only after building");
+            }
+        }
+
         public Builder transform(Affine transform) {
+            checkReadOnly();
             this.transform = transform;
             return this;
         }
 
         public Builder corners(float corners) {
+            checkReadOnly();
             this.corners = corners;
             return this;
         }
 
         public Builder blur(float blur) {
+            checkReadOnly();
             this.blur = blur;
             return this;
         }
 
         public Builder alpha(float alpha) {
+            checkReadOnly();
             this.alpha = alpha;
             return this;
         }
 
         public Builder color(int color) {
+            checkReadOnly();
             this.color = color;
             return this;
         }
 
         public GaussianShadow build() {
+            checkReadOnly();
+            readOnly = true;
             return new GaussianShadow(this);
         }
     }

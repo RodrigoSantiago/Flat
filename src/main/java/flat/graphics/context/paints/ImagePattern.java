@@ -1,6 +1,7 @@
 package flat.graphics.context.paints;
 
 import flat.backend.SVG;
+import flat.exception.FlatException;
 import flat.graphics.Color;
 import flat.graphics.context.enums.CycleMethod;
 import flat.graphics.context.Paint;
@@ -39,16 +40,19 @@ public class ImagePattern extends Paint {
         final float sh = srcy2 - srcy1;
         final float dw = dstx2 - dstx1;
         final float dh = dsty2 - dsty1;
-        transform = new Affine()
+
+        transform = builder.transform == null ? new Affine() : builder.transform;
+        var affine = new Affine()
                 .translate(dstx1 - (dw / sw * srcx1), dsty1 - (dh / sh * srcy1))
                 .scale(dw / sw, dh / sh);
         if (builder.transform != null) {
-            transform.mul(builder.transform);
+            affine.mul(transform);
         }
         data = new float[]{
-                transform.m00, transform.m10,
-                transform.m01, transform.m11,
-                transform.m02, transform.m12};
+                affine.m00, affine.m10,
+                affine.m01, affine.m11,
+                affine.m02, affine.m12
+        };
     }
 
     @Override
@@ -117,6 +121,7 @@ public class ImagePattern extends Paint {
         private int color = Color.white;
         private Affine transform;
         private CycleMethod cycleMethod;
+        private boolean readOnly;
 
         public Builder(Texture2D texture) {
             this(texture, 0, 0, texture.getWidth(), texture.getHeight());
@@ -138,7 +143,14 @@ public class ImagePattern extends Paint {
             dsty2 = y + height;
         }
 
+        private void checkReadOnly() {
+            if (readOnly) {
+                throw new FlatException("The builder is read only after building");
+            }
+        }
+
         public Builder source(float x1, float y1, float x2, float y2) {
+            checkReadOnly();
             srcx1 = x1;
             srcy1 = y1;
             srcx2 = x2;
@@ -147,6 +159,7 @@ public class ImagePattern extends Paint {
         }
 
         public Builder destin(float x1, float y1, float x2, float y2) {
+            checkReadOnly();
             dstx1 = x1;
             dsty1 = y1;
             dstx2 = x2;
@@ -155,21 +168,26 @@ public class ImagePattern extends Paint {
         }
 
         public Builder color(int color) {
+            checkReadOnly();
             this.color = color;
             return this;
         }
 
         public Builder cycleMethod(CycleMethod cycleMethod) {
+            checkReadOnly();
             this.cycleMethod = cycleMethod;
             return this;
         }
 
         public Builder transform(Affine transform) {
+            checkReadOnly();
             this.transform = transform;
             return this;
         }
 
         public ImagePattern build() {
+            checkReadOnly();
+            readOnly = true;
             return new ImagePattern(this);
         }
     }

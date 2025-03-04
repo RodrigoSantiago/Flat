@@ -1,6 +1,7 @@
 package flat.graphics.context.paints;
 
 import flat.backend.SVG;
+import flat.exception.FlatException;
 import flat.graphics.context.enums.CycleMethod;
 import flat.graphics.context.Paint;
 import flat.math.Affine;
@@ -17,7 +18,6 @@ public class LinearGradient extends Paint {
     private final int stopCount;
     private final float[] data;
     private final CycleMethod cycleMethod;
-    private final Affine transform;
 
     LinearGradient(Builder builder) {
         x1 = builder.x1;
@@ -25,26 +25,8 @@ public class LinearGradient extends Paint {
         x2 = builder.x2;
         y2 = builder.y2;
         cycleMethod = builder.cycleMethod == null ? CycleMethod.CLAMP : builder.cycleMethod;
-        transform = builder.transform == null ? new Affine() : builder.transform;
-        data = new float[38];
-        data[0] = transform.m00;
-        data[1] = transform.m10;
-        data[2] = transform.m01;
-        data[3] = transform.m11;
-        data[4] = transform.m02;
-        data[5] = transform.m12;
-        if (builder.stops != null) {
-            builder.stops.sort((o1, o2) -> Float.compare(o1.getStep(), o2.getStep()));
-            stopCount = Math.min(16, builder.stops.size());
-            for (int i = 0; i < stopCount; i++) {
-                data[6 + i] = builder.stops.get(i).getStep();
-            }
-            for (int i = 0; i < stopCount; i++) {
-                data[6 + 16 + i] = Float.intBitsToFloat(builder.stops.get(i).getColor());
-            }
-        } else {
-            stopCount = 0;
-        }
+        stopCount = builder.stopCount;
+        data = builder.data;
     }
 
     @Override
@@ -77,7 +59,7 @@ public class LinearGradient extends Paint {
     }
 
     public Affine getTransform() {
-        return new Affine(transform);
+        return new Affine(data[0], data[2], data[1], data[3], data[4], data[5]);
     }
 
     public List<GradientStop> getStops() {
@@ -93,13 +75,17 @@ public class LinearGradient extends Paint {
     }
 
     public static class Builder {
+        private static final int stop0 = 6;
+        private static final int color0 = 6 + 16;
+
         private float x1;
         private float y1;
         private float x2;
         private float y2;
         private CycleMethod cycleMethod;
-        private Affine transform;
-        private ArrayList<GradientStop> stops;
+        private float[] data = new float[6 + 16 + 16];
+        private int stopCount;
+        private boolean readOnly;
 
         public Builder(float x1, float y1, float x2, float y2) {
             this.x1 = x1;
@@ -108,25 +94,66 @@ public class LinearGradient extends Paint {
             this.y2 = y2;
         }
 
+        private void checkReadOnly() {
+            if (readOnly) {
+                throw new FlatException("The builder is read only after building");
+            }
+        }
+
         public Builder cycleMethod(CycleMethod cycleMethod) {
+            checkReadOnly();
             this.cycleMethod = cycleMethod;
             return this;
         }
 
         public Builder transform(Affine transform) {
-            this.transform = transform;
+            checkReadOnly();
+            data[0] = transform.m00;
+            data[1] = transform.m10;
+            data[2] = transform.m01;
+            data[3] = transform.m11;
+            data[4] = transform.m02;
+            data[5] = transform.m12;
             return this;
         }
 
-        public Builder stop(GradientStop stop) {
-            if (stops == null) {
-                stops = new ArrayList<>();
+        public Builder stop(float stop, int color) {
+            checkReadOnly();
+            if (stop < 0 || stop > 1) {
+                throw new FlatException("Stop must be between 0 and 1.");
             }
-            stops.add(stop);
+
+            if (stopCount == 0) {
+                data[stop0] = stop;
+                data[color0] = Float.intBitsToFloat(color);
+                stopCount++;
+                return this;
+            }
+
+            int insertPos = 0;
+            while (insertPos < stopCount && data[stop0 + insertPos] < stop) {
+                insertPos++;
+            }
+
+            if (stopCount == 16) {
+                stopCount--;
+            }
+
+            for (int i = stopCount; i > insertPos; i--) {
+                data[stop0 + i] = data[stop0 + i - 1];
+                data[color0 + i] = data[color0 + i - 1];
+            }
+
+            data[stop0 + insertPos] = stop;
+            data[color0 + insertPos] = Float.intBitsToFloat(color);
+
+            stopCount++;
             return this;
         }
 
         public LinearGradient build() {
+            checkReadOnly();
+            readOnly = true;
             return new LinearGradient(this);
         }
     }

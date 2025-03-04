@@ -9,6 +9,7 @@ import flat.graphics.Graphics;
 import flat.graphics.context.enums.CycleMethod;
 import flat.graphics.context.Font;
 import flat.graphics.context.paints.ImagePattern;
+import flat.graphics.context.paints.LinearGradient;
 import flat.graphics.image.DrawableReader;
 import flat.graphics.image.PixelMap;
 import flat.math.Affine;
@@ -123,13 +124,23 @@ public class MainController extends Controller {
     @Override
     public void onDraw(Graphics graphics) {
         super.onDraw(graphics);
-        PixelMap map = (PixelMap) DrawableReader.parse(new ResourceStream("/default/img_test.png"));
+        /*PixelMap map = (PixelMap) DrawableReader.parse(new ResourceStream("/default/img_test.png"));
         ImagePattern pattern = new ImagePattern.Builder(map.readTexture(graphics.getContext()), 50, 50)
                 .cycleMethod(CycleMethod.REFLECT)
                 .transform(new Affine().scale(5, 5))
                 .build();
         graphics.setTransform2D(null);
         graphics.setPaint(pattern);
+        graphics.drawRect(0, 0, 200, 200, true);*/
+
+        t += 1;
+        LinearGradient linear = new LinearGradient.Builder(0, 0, 100, 100)
+                .stop(0, Color.red)
+                .stop(1, Color.green)
+                .transform(new Affine().rotate(t))
+                .build();
+        graphics.setTransform2D(null);
+        graphics.setPaint(linear);
         graphics.drawRect(0, 0, 200, 200, true);
 
         if (save) {
