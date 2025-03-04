@@ -70,6 +70,7 @@ public class SliderTest {
         assertEquals(ImageFilter.LINEAR, slider.getIconImageFilter());
         assertEquals(0, slider.getIconWidth(), 0.001f);
         assertEquals(0, slider.getIconHeight(), 0.001f);
+        assertEquals(0x00000000, slider.getIconBgColor());
         assertEquals(0xFFFFFFFF, slider.getIconColor());
         assertEquals(1, slider.getLineWidth(), 0.001f);
         assertEquals(0xFFFFFFFF, slider.getLineColor());
@@ -90,6 +91,7 @@ public class SliderTest {
         assertEquals(ImageFilter.LINEAR, slider.getIconImageFilter());
         assertEquals(0, slider.getIconWidth(), 0.001f);
         assertEquals(0, slider.getIconHeight(), 0.001f);
+        assertEquals(0x00000000, slider.getIconBgColor());
         assertEquals(0xFFFFFFFF, slider.getIconColor());
         assertEquals(1, slider.getLineWidth(), 0.001f);
         assertEquals(0xFFFFFFFF, slider.getLineColor());
@@ -109,6 +111,7 @@ public class SliderTest {
         assertEquals(ImageFilter.NEAREST, slider.getIconImageFilter());
         assertEquals(18, slider.getIconWidth(), 0.001f);
         assertEquals(20, slider.getIconHeight(), 0.001f);
+        assertEquals(0xFF00FFFF, slider.getIconBgColor());
         assertEquals(0xFF0000FF, slider.getIconColor());
         assertEquals(3, slider.getLineWidth(), 0.001f);
         assertEquals(0x00FFFFFF, slider.getLineColor());
@@ -250,6 +253,7 @@ public class SliderTest {
         hash.put(UXHash.getHash("icon-width"), new UXValueSizeDp(18));
         hash.put(UXHash.getHash("icon-height"), new UXValueSizeDp(20));
         hash.put(UXHash.getHash("icon-color"), new UXValueColor(0xFF0000FF));
+        hash.put(UXHash.getHash("icon-bg-color"), new UXValueColor(0xFF00FFFF));
         hash.put(UXHash.getHash("line-color"), new UXValueColor(0x00FFFFFF));
         hash.put(UXHash.getHash("line-filled-color"), new UXValueColor(0x00FF00FF));
         hash.put(UXHash.getHash("line-width"), new UXValueSizeDp(3));

@@ -60,6 +60,9 @@ public class TextArea extends Scrollable {
 
     private int maxCharacters = 0;
 
+    private long lastPressedTime;
+    private int clickCont;
+
     public TextArea() {
         textRender.setFont(textFont);
         textRender.setTextSize(textSize);
@@ -260,19 +263,17 @@ public class TextArea extends Scrollable {
     }
 
     @Override
-    public void fireScroll(ScrollEvent event) {
-        super.fireScroll(event);
-        if (!event.isConsumed()) {
+    public void scroll(ScrollEvent event) {
+        super.scroll(event);
+        if (!event.isConsumed() && isVerticalDimensionScroll()) {
             slideVertical(- event.getDeltaY() * 10);
+            event.consume();
         }
     }
 
-    private long lastPressedTime;
-    private int clickCont;
-
     @Override
-    public void firePointer(PointerEvent event) {
-        super.firePointer(event);
+    public void pointer(PointerEvent event) {
+        super.pointer(event);
         Vector2 point = screenToLocal(event.getX(), event.getY());
         point.x += getViewOffsetX();
         point.y += getViewOffsetY();
@@ -336,11 +337,12 @@ public class TextArea extends Scrollable {
     }
 
     @Override
-    public void fireKey(KeyEvent event) {
-        super.fireKey(event);
+    public void key(KeyEvent event) {
+        super.key(event);
         if (event.isConsumed()) {
             return;
         }
+        event.consume();
 
         var first = getFirstCaret();
         var second = getSecondCaret();
@@ -405,8 +407,8 @@ public class TextArea extends Scrollable {
     }
 
     @Override
-    public void fireFocus(FocusEvent event) {
-        super.fireFocus(event);
+    public void focus(FocusEvent event) {
+        super.focus(event);
         if (!isFocused()) {
             actionClearSelection();
             setCaretHidden();

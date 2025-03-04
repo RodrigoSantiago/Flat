@@ -35,7 +35,7 @@ public class Children<T extends Widget> implements Iterable<T> {
         private int pos;
 
         ChildrenIterator() {
-            if (reverse) {
+            if (reverse && children != null) {
                 pos = children.size() - 1;
             }
         }

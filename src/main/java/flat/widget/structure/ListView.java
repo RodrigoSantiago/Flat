@@ -277,10 +277,11 @@ public class ListView extends Scrollable {
     }
 
     @Override
-    public void fireScroll(ScrollEvent event) {
-        super.fireScroll(event);
+    public void scroll(ScrollEvent event) {
+        super.scroll(event);
         if (!event.isConsumed()) {
             slideVertical(- event.getDeltaY() * getScrollSensibility());
+            event.consume();
         }
     }
 

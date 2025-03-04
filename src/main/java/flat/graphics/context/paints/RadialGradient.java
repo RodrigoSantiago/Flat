@@ -1,6 +1,7 @@
 package flat.graphics.context.paints;
 
 import flat.backend.SVG;
+import flat.graphics.context.enums.CycleMethod;
 import flat.graphics.context.Paint;
 import flat.math.Affine;
 
@@ -17,7 +18,7 @@ public class RadialGradient extends Paint {
     private final float fy;
     private final int stopCount;
     private final float[] data;
-    private final Paint.CycleMethod cycleMethod;
+    private final CycleMethod cycleMethod;
     private final Affine transform;
 
     RadialGradient(Builder builder) {

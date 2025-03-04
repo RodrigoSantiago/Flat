@@ -12,23 +12,25 @@ import flat.widget.Stage;
 import flat.widget.Widget;
 import flat.widget.enums.HorizontalAlign;
 import flat.widget.enums.VerticalAlign;
+import flat.widget.enums.Visibility;
 import flat.window.Activity;
 import flat.window.Application;
 
 public class Dialog extends Stage {
 
-    // TODO - Adaptative dialog : The dialog grow and overflow toolbars! Only the space is too small
-
     private VerticalAlign verticalAlign = VerticalAlign.MIDDLE;
     private HorizontalAlign horizontalAlign = HorizontalAlign.CENTER;
-    private float showupTransitionDuration = 0;
+    private float showTransitionDuration = 0;
+    private float hideTransitionDuration = 0;
+    private boolean blockEvents;
 
     private float targetX, targetY;
     private float dragX, dragY;
     private boolean show;
     private Controller controller;
 
-    private final ShowupAnimation showupAnimation = new ShowupAnimation();
+    private final ShowAnimation showupAnimation = new ShowAnimation();
+    private final HideAnimation hideAnimation = new HideAnimation();
 
     public void build(String uxmlStream) {
         build(new ResourceStream(uxmlStream), null);
@@ -75,7 +77,8 @@ public class Dialog extends Stage {
         StateInfo info = getStateInfo();
         setHorizontalAlign(attrs.getConstant("horizontal-align", info, getHorizontalAlign()));
         setVerticalAlign(attrs.getConstant("vertical-align", info, getVerticalAlign()));
-        setShowupTransitionDuration(attrs.getNumber("showup-transition-duration", info, getShowupTransitionDuration()));
+        setShowTransitionDuration(attrs.getNumber("show-transition-duration", info, getShowTransitionDuration()));
+        setHideTransitionDuration(attrs.getNumber("hide-transition-duration", info, getHideTransitionDuration()));
     }
 
     @Override
@@ -105,16 +108,16 @@ public class Dialog extends Stage {
     }
 
     @Override
-    public void firePointer(PointerEvent event) {
-        super.firePointer(event);
+    public void pointer(PointerEvent event) {
+        super.pointer(event);
         if (event.getType() == PointerEvent.PRESSED) {
             bringToFront();
         }
     }
 
     @Override
-    public void fireDrag(DragEvent event) {
-        super.fireDrag(event);
+    public void drag(DragEvent event) {
+        super.drag(event);
         if (!event.isConsumed() && event.getSource() == this) {
             if (contains(event.getX(), event.getY()) && event.getType() == DragEvent.STARTED) {
                 if (!event.isCanceled()) {
@@ -131,6 +134,21 @@ public class Dialog extends Stage {
                 setLayoutPosition(targetX, targetY);
             }
         }
+    }
+
+    @Override
+    public Widget findByPosition(float x, float y, boolean includeDisabled) {
+        if (!isCurrentHandleEventsEnabled()
+                || getVisibility() != Visibility.VISIBLE
+                || (!includeDisabled && !isEnabled())
+                || (!isBlockEvents() && !contains(x, y))) {
+            return null;
+        }
+        for (Widget child : getChildrenIterableReverse()) {
+            Widget found = child.findByPosition(x, y, includeDisabled);
+            if (found != null) return found;
+        }
+        return this;
     }
 
     private void limitPosition() {
@@ -173,16 +191,32 @@ public class Dialog extends Stage {
         }
     }
 
-    public float getShowupTransitionDuration() {
-        return showupTransitionDuration;
+    public float getShowTransitionDuration() {
+        return showTransitionDuration;
     }
 
-    public void setShowupTransitionDuration(float showupTransitionDuration) {
-        if (this.showupTransitionDuration != showupTransitionDuration) {
-            this.showupTransitionDuration = showupTransitionDuration;
-
-            showupAnimation.stop();
+    public void setShowTransitionDuration(float showTransitionDuration) {
+        if (this.showTransitionDuration != showTransitionDuration) {
+            this.showTransitionDuration = showTransitionDuration;
         }
+    }
+
+    public float getHideTransitionDuration() {
+        return hideTransitionDuration;
+    }
+
+    public void setHideTransitionDuration(float hideTransitionDuration) {
+        if (this.hideTransitionDuration != hideTransitionDuration) {
+            this.hideTransitionDuration = hideTransitionDuration;
+        }
+    }
+
+    public boolean isBlockEvents() {
+        return blockEvents;
+    }
+
+    public void setBlockEvents(boolean blockEvents) {
+        this.blockEvents = blockEvents;
     }
 
     @Override
@@ -219,6 +253,18 @@ public class Dialog extends Stage {
         }
     }
 
+    public void smoothHide() {
+        if (isShown() && getActivity() != null && hideTransitionDuration > 0) {
+            setHandleEventsEnabled(false);
+            showupAnimation.stop();
+            hideAnimation.setDelta(1);
+            hideAnimation.setDuration(hideTransitionDuration);
+            hideAnimation.play(getActivity());
+        } else {
+            hide();
+        }
+    }
+
     public void bringToFront() {
         if (isShown()) {
             setToShow(getActivity());
@@ -236,17 +282,18 @@ public class Dialog extends Stage {
         targetX = x - getWidth() / 2f - getMarginLeft();
         targetY = y - getHeight() / 2f - getMarginTop();
 
-        if (showupTransitionDuration > 0) {
-            showupAnimation.setDuration(showupTransitionDuration);
+        if (showTransitionDuration > 0) {
+            showupAnimation.setDelta(1);
+            showupAnimation.setDuration(showTransitionDuration);
             showupAnimation.play(act);
         }
     }
 
-    private class ShowupAnimation extends NormalizedAnimation {
+    private class ShowAnimation extends NormalizedAnimation {
         private float scaleX, scaleY, centerX, centerY;
         private boolean followX, followY, followCX, followCY;
 
-        public ShowupAnimation() {
+        public ShowAnimation() {
             super(Interpolation.circleOut);
         }
 
@@ -290,6 +337,58 @@ public class Dialog extends Stage {
             setFollowStyleProperty("scale-y", followY);
             setFollowStyleProperty("scale-x", followCX);
             setFollowStyleProperty("scale-y", followCY);
+        }
+    }
+
+    private class HideAnimation extends NormalizedAnimation {
+        private float scaleX, scaleY, centerX, centerY;
+        private boolean followX, followY, followCX, followCY;
+
+        public HideAnimation() {
+            super(Interpolation.circleIn);
+        }
+
+        @Override
+        public Activity getSource() {
+            return getActivity();
+        }
+
+        @Override
+        protected void compute(float t) {
+            setScaleX(scaleX * 0.5f + (scaleX * 0.5f * (1 - t)));
+            setScaleY(scaleY * 0.5f + (scaleY * 0.5f * (1 - t)));
+            invalidate(false);
+        }
+
+        @Override
+        protected void onStart() {
+            scaleX = getScaleX();
+            scaleY = getScaleY();
+            centerX = getCenterX();
+            centerY = getCenterY();
+            followX = isFollowStyleProperty("scale-x");
+            followY = isFollowStyleProperty("scale-y");
+            followCX = isFollowStyleProperty("center-x");
+            followCY = isFollowStyleProperty("center-y");
+            setFollowStyleProperty("scale-x", false);
+            setFollowStyleProperty("scale-y", false);
+            setFollowStyleProperty("center-x", false);
+            setFollowStyleProperty("center-y", false);
+            setCenterX(0.5f);
+            setCenterY(0.5f);
+        }
+
+        @Override
+        protected void onStop() {
+            setScaleX(scaleX);
+            setScaleY(scaleY);
+            setCenterX(centerX);
+            setCenterY(centerY);
+            setFollowStyleProperty("scale-x", followX);
+            setFollowStyleProperty("scale-y", followY);
+            setFollowStyleProperty("scale-x", followCX);
+            setFollowStyleProperty("scale-y", followCY);
+            hide();
         }
     }
 }

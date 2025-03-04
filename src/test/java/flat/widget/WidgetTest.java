@@ -119,7 +119,7 @@ public class WidgetTest {
         assertEquals(Cursor.ARROW, widget.getCursor());
 
         assertEquals(true, widget.isFocusable());
-        assertEquals(false, widget.isClickable());
+        assertEquals(false, widget.isHandleEventsEnabled());
 
         assertEquals(160, widget.getPrefWidth(), 0.0001f);
         assertEquals(80, widget.getPrefHeight(), 0.0001f);
@@ -187,7 +187,7 @@ public class WidgetTest {
         widget.setCursor(Cursor.UNSET);
 
         widget.setFocusable(false);
-        widget.setClickable(true);
+        widget.setHandleEventsEnabled(true);
 
         widget.setPrefWidth(161);
         widget.setPrefHeight(801);
@@ -238,7 +238,7 @@ public class WidgetTest {
         widget.applyStyle();
 
         assertEquals(true, widget.isFocusable());
-        assertEquals(false, widget.isClickable());
+        assertEquals(false, widget.isHandleEventsEnabled());
 
         assertEquals(160, widget.getPrefWidth(), 0.0001f);
         assertEquals(80, widget.getPrefHeight(), 0.0001f);
@@ -309,8 +309,8 @@ public class WidgetTest {
 
         widget.setFocusable(false);
         widget.setFollowStyleProperty("focusable", false);
-        widget.setClickable(true);
-        widget.setFollowStyleProperty("clickable", false);
+        widget.setHandleEventsEnabled(true);
+        widget.setFollowStyleProperty("handle-events-enabled", false);
 
         widget.setPrefWidth(161);
         widget.setFollowStyleProperty("width", false);
@@ -396,7 +396,7 @@ public class WidgetTest {
         widget.applyStyle();
 
         assertEquals(false, widget.isFocusable());
-        assertEquals(true, widget.isClickable());
+        assertEquals(true, widget.isHandleEventsEnabled());
 
         assertEquals(161, widget.getPrefWidth(), 0.0001f);
         assertEquals(801, widget.getPrefHeight(), 0.0001f);
@@ -450,7 +450,7 @@ public class WidgetTest {
         hash.put(UXHash.getHash("cursor"), new UXValueText(Cursor.ARROW.toString()));
 
         hash.put(UXHash.getHash("focusable"), new UXValueBool(true));
-        hash.put(UXHash.getHash("clickable"), new UXValueBool(false));
+        hash.put(UXHash.getHash("handle-events-enabled"), new UXValueBool(false));
 
         hash.put(UXHash.getHash("width"), new UXValueSizeDp(160));
         hash.put(UXHash.getHash("height"), new UXValueSizeDp(80));

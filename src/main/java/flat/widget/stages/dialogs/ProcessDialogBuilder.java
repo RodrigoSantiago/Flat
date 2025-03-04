@@ -18,6 +18,7 @@ public class ProcessDialogBuilder {
     private String title;
     private String message;
     private UXTheme theme;
+    private boolean block;
     private UXListener<Dialog> onShowListener;
     private UXListener<Dialog> onHideListener;
     private UXListener<Dialog> onRequestCancelListener;
@@ -70,8 +71,14 @@ public class ProcessDialogBuilder {
         return this;
     }
 
+    public ProcessDialogBuilder block(boolean block) {
+        this.block = block;
+        return this;
+    }
+
     public Dialog build() {
         final Dialog dialog = new Dialog();
+        dialog.setBlockEvents(block);
         if (theme != null) {
             dialog.setTheme(theme);
         }

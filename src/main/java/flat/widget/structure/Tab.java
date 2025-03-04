@@ -291,13 +291,14 @@ public class Tab extends Group {
 
 
     @Override
-    public void fireScroll(ScrollEvent event) {
-        super.fireScroll(event);
-        if (!event.isConsumed()) {
+    public void scroll(ScrollEvent event) {
+        super.scroll(event);
+        if (!event.isConsumed() && isPagesScrollable()) {
             Vector2 pos = screenToLocal(event.getX(), event.getY());
             if ((pagesVerticalPosition == VerticalPosition.TOP && pos.y < getInY() + pagesHeight) ||
                 (pagesVerticalPosition == VerticalPosition.BOTTOM && pos.y > getInY() + getInHeight() - pagesHeight)) {
                 slide(-event.getDeltaY() * scrollSensibility);
+                event.consume();
             }
         }
     }

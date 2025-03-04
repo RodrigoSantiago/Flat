@@ -18,6 +18,7 @@ public class ConfirmDialogBuilder {
     private String title;
     private String message;
     private UXTheme theme;
+    private boolean block;
     private UXListener<Dialog> onShowListener;
     private UXListener<Dialog> onHideListener;
     private UXListener<Dialog> onYesListener;
@@ -76,8 +77,14 @@ public class ConfirmDialogBuilder {
         return this;
     }
 
+    public ConfirmDialogBuilder block(boolean block) {
+        this.block = block;
+        return this;
+    }
+
     public Dialog build() {
         final Dialog dialog = new Dialog();
+        dialog.setBlockEvents(block);
         if (theme != null) {
             dialog.setTheme(theme);
         }
@@ -85,7 +92,7 @@ public class ConfirmDialogBuilder {
         Controller controller = new Controller() {
             @Flat
             public void hide(ActionEvent event) {
-                dialog.hide();
+                dialog.smoothHide();
             }
 
             @Flat
@@ -93,7 +100,7 @@ public class ConfirmDialogBuilder {
                 try {
                     UXListener.safeHandle(onYesListener, dialog);
                 } finally {
-                    dialog.hide();
+                    dialog.smoothHide();
                 }
             }
 
@@ -102,7 +109,7 @@ public class ConfirmDialogBuilder {
                 try {
                     UXListener.safeHandle(onNoListener, dialog);
                 } finally {
-                    dialog.hide();
+                    dialog.smoothHide();
                 }
             }
 

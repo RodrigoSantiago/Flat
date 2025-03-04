@@ -5,7 +5,9 @@ import flat.events.ActionEvent;
 import flat.events.PointerEvent;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
+import flat.graphics.context.paints.ImagePattern;
 import flat.graphics.image.Drawable;
+import flat.graphics.image.PixelMap;
 import flat.math.shapes.Ellipse;
 import flat.uxml.Controller;
 import flat.uxml.UXAttrs;
@@ -90,19 +92,30 @@ public class Button extends Label {
         if (iw > 0 && ih > 0 && getIcon() != null) {
             float xpos = iconLeft ? boxX : boxX + spaceForText + Math.max(0, spaceForIcon - iW);
             float ypos = yOff(y, y + height, ih);
-            if (isIconClipCircle()) {
-                graphics.pushClip(new Ellipse(xpos, ypos, iw, ih));
-            }
-            getIcon().draw(graphics, xpos, ypos, iw, ih, getIconColor(), getIconImageFilter());
-            if (isIconClipCircle()) {
-                graphics.popClip();
-            }
+            drawIcon(graphics, xpos, ypos, iw, ih);
         }
 
         if (tw > 0 && th > 0 && getTextFont() != null) {
             float xpos = iconLeft ? boxX + spaceForIcon : boxX;
             float ypos = yOff(y, y + height, th);
             drawText(graphics, xpos, ypos, tw, th);
+        }
+    }
+
+    protected void drawIcon(Graphics graphics, float x, float y, float width, float height) {
+        if (!isIconClipCircle()) {
+            getIcon().draw(graphics, x, y, width, height, getIconColor(), getIconImageFilter());
+        } else if (getIcon() instanceof PixelMap pixelMap) {
+            var tex = pixelMap.readTexture(graphics.getContext(), getIconImageFilter());
+            ImagePattern paint = new ImagePattern.Builder(tex, x, y, width, height)
+                    .color(getIconColor())
+                    .build();
+            graphics.setPaint(paint);
+            graphics.drawEllipse(x, y, width, height, true);
+        } else {
+            graphics.pushClip(new Ellipse(x, y, width, height));
+            getIcon().draw(graphics, x, y, width, height, getIconColor(), getIconImageFilter());
+            graphics.popClip();
         }
     }
 
@@ -139,9 +152,9 @@ public class Button extends Label {
     }
 
     @Override
-    public void firePointer(PointerEvent event) {
-        super.firePointer(event);
-        if (!event.isConsumed() && event.getType() == PointerEvent.RELEASED && event.getPointerID() == 1) {
+    public void pointer(PointerEvent event) {
+        super.pointer(event);
+        if (!event.isConsumed() && event.getPointerID() == 1 && event.getType() == PointerEvent.RELEASED) {
             action();
         }
     }

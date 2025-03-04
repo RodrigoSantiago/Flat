@@ -377,9 +377,9 @@ public class ListItem extends Button {
     }
 
     @Override
-    public void firePointer(PointerEvent event) {
-        super.firePointer(event);
-        if (!event.isConsumed() && event.getType() == PointerEvent.RELEASED && event.getPointerID() == 1) {
+    public void pointer(PointerEvent event) {
+        super.pointer(event);
+        if (!event.isConsumed() && event.getPointerID() == 1 && event.getType() == PointerEvent.RELEASED) {
             if (isOverActionButton(screenToLocal(event.getX(), event.getY()))) {
                 changeStateAction();
             } else {
@@ -389,8 +389,8 @@ public class ListItem extends Button {
     }
 
     @Override
-    public void fireHover(HoverEvent event) {
-        super.fireHover(event);
+    public void hover(HoverEvent event) {
+        super.hover(event);
         if (!event.isConsumed() && event.getType() == HoverEvent.MOVED) {
             isHoveringState = isOverActionButton(screenToLocal(event.getX(), event.getY()));
         }

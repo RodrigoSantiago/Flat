@@ -1,6 +1,7 @@
 package flat.graphics.context.paints;
 
 import flat.backend.SVG;
+import flat.graphics.context.enums.CycleMethod;
 import flat.graphics.context.Paint;
 import flat.math.Affine;
 

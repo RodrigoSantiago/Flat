@@ -13,11 +13,6 @@ public abstract class Parent extends Widget {
 
     private float[] tempSize;
 
-    protected Parent() {
-        children = new ArrayList<>();
-        unmodifiableChildren = Collections.unmodifiableList(children);
-    }
-
     @Override
     protected ArrayList<Widget> getChildren() {
         return super.getChildren();

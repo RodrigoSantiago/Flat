@@ -236,8 +236,8 @@ public class TextInputField extends TextField {
     }
 
     @Override
-    public void fireHover(HoverEvent event) {
-        super.fireHover(event);
+    public void hover(HoverEvent event) {
+        super.hover(event);
         if (!event.isConsumed() && event.getType() == HoverEvent.MOVED) {
             if (isOverActionButton(screenToLocal(event.getX(), event.getY())) != isHoveringAction) {
                 isHoveringAction = !isHoveringAction;
@@ -251,10 +251,10 @@ public class TextInputField extends TextField {
     }
 
     @Override
-    public void firePointer(PointerEvent event) {
-        super.firePointer(event);
-        if (isHoveringAction && event.getPointerID() == 1
-                && !event.isConsumed() && event.getType() == PointerEvent.RELEASED) {
+    public void pointer(PointerEvent event) {
+        super.pointer(event);
+        if (isHoveringAction && !event.isConsumed() && event.getPointerID() == 1
+                && event.getType() == PointerEvent.RELEASED) {
             action();
         }
     }

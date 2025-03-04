@@ -162,9 +162,9 @@ public class SwitchToggle extends Widget {
     }
 
     @Override
-    public void firePointer(PointerEvent event) {
-        super.firePointer(event);
-        if (!event.isConsumed() && event.getType() == PointerEvent.RELEASED && event.getPointerID() == 1) {
+    public void pointer(PointerEvent event) {
+        super.pointer(event);
+        if (!event.isConsumed() && event.getPointerID() == 1 && event.getType() == PointerEvent.RELEASED) {
             toggle();
         }
     }

@@ -478,7 +478,8 @@ dialog {
     margin-right : 8;
     margin-bottom : 16;
     background-color : #FFFFFF;
-    showup-transition-duration : 0.25;
+    show-transition-duration : 0.25;
+    hide-transition-duration : 0.15;
 }
 
 dropdown-menu : menu {

@@ -157,14 +157,7 @@ public class MenuItem extends Button {
         if (iw > 0 && ih > 0 && getIcon() != null) {
             float xpos = iconLeft ? boxX : spaceForShortcutIcon + boxX + spaceForText + spaceForIcon - iw;
             float ypos = yOff(y, y + height, ih);
-
-            if (isIconClipCircle()) {
-                graphics.pushClip(new Ellipse(xpos, ypos, iw, ih));
-            }
-            getIcon().draw(graphics, xpos, ypos, iw, ih, getIconColor(), getIconImageFilter());
-            if (isIconClipCircle()) {
-                graphics.popClip();
-            }
+            drawIcon(graphics, xpos, ypos, iw, ih);
         }
 
         if (tw > 0 && th > 0) {
@@ -204,8 +197,8 @@ public class MenuItem extends Button {
     }
 
     @Override
-    public void fireHover(HoverEvent event) {
-        super.fireHover(event);
+    public void hover(HoverEvent event) {
+        super.hover(event);
         Activity act = getActivity();
         if (act != null && getParent() instanceof Menu parentMenu) {
             if (event.getType() == HoverEvent.ENTERED) {

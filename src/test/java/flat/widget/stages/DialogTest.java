@@ -59,20 +59,23 @@ public class DialogTest {
 
         assertEquals(HorizontalAlign.CENTER, dialog.getHorizontalAlign());
         assertEquals(VerticalAlign.MIDDLE, dialog.getVerticalAlign());
-        assertEquals(0, dialog.getShowupTransitionDuration(), 0.001f);
+        assertEquals(0, dialog.getShowTransitionDuration(), 0.001f);
+        assertEquals(0, dialog.getHideTransitionDuration(), 0.001f);
 
         dialog.setAttributes(createNonDefaultValues(), null);
         dialog.applyAttributes(controller);
 
         assertEquals(HorizontalAlign.CENTER, dialog.getHorizontalAlign());
         assertEquals(VerticalAlign.MIDDLE, dialog.getVerticalAlign());
-        assertEquals(0, dialog.getShowupTransitionDuration(), 0.001f);
+        assertEquals(0, dialog.getShowTransitionDuration(), 0.001f);
+        assertEquals(0, dialog.getHideTransitionDuration(), 0.001f);
 
         dialog.applyStyle();
 
         assertEquals(HorizontalAlign.RIGHT, dialog.getHorizontalAlign());
         assertEquals(VerticalAlign.TOP, dialog.getVerticalAlign());
-        assertEquals(0.25f, dialog.getShowupTransitionDuration(), 0.001f);
+        assertEquals(0.25f, dialog.getShowTransitionDuration(), 0.001f);
+        assertEquals(0.15f, dialog.getHideTransitionDuration(), 0.001f);
     }
 
     @Test
@@ -216,7 +219,8 @@ public class DialogTest {
 
         hash.put(UXHash.getHash("horizontal-align"), new UXValueText(HorizontalAlign.RIGHT.toString()));
         hash.put(UXHash.getHash("vertical-align"), new UXValueText(VerticalAlign.TOP.toString()));
-        hash.put(UXHash.getHash("showup-transition-duration"), new UXValueNumber(0.25f));
+        hash.put(UXHash.getHash("show-transition-duration"), new UXValueNumber(0.25f));
+        hash.put(UXHash.getHash("hide-transition-duration"), new UXValueNumber(0.15f));
         return hash;
     }
 }

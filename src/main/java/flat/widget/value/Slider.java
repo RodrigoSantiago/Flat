@@ -25,6 +25,7 @@ public class Slider extends Widget {
     private float iconHeight;
     private int iconColor = Color.white;
     private ImageFilter iconImageFilter = ImageFilter.LINEAR;
+    private int iconBgColor = Color.transparent;
     
     private float lineWidth = 1;
     private int lineColor = Color.white;
@@ -60,6 +61,7 @@ public class Slider extends Widget {
         setIconWidth(attrs.getSize("icon-width", info, getIconWidth()));
         setIconHeight(attrs.getSize("icon-height", info, getIconHeight()));
         setIconColor(attrs.getColor("icon-color", info, getIconColor()));
+        setIconBgColor(attrs.getColor("icon-bg-color", info, getIconBgColor()));
         setIconImageFilter(attrs.getConstant("icon-image-filter", info, getIconImageFilter()));
         setLineWidth(attrs.getSize("line-width", info, getLineWidth()));
         setLineColor(attrs.getColor("line-color", info, getLineColor()));
@@ -164,6 +166,12 @@ public class Slider extends Widget {
         }
 
         if (iw > 0 && ih > 0 && getIcon() != null) {
+            if (Color.getAlpha(getIconBgColor()) > 0) {
+                float bgw = hor ? getOutHeight() : getOutWidth();
+                float bgh = hor ? getOutHeight() : getOutWidth();
+                graphics.setColor(getIconBgColor());
+                graphics.drawEllipse(xpos - bgw * 0.5f, ypos - bgh * 0.5f, bgw, bgh, true);
+            }
             getIcon().draw(graphics, xpos - iw * 0.5f, ypos - ih * 0.5f, iw, ih, getIconColor(), getIconImageFilter());
         }
         if (isRippleEnabled()) {
@@ -175,8 +183,8 @@ public class Slider extends Widget {
     }
 
     @Override
-    public void firePointer(PointerEvent event) {
-        super.firePointer(event);
+    public void pointer(PointerEvent event) {
+        super.pointer(event);
         if (!event.isConsumed() && event.getPointerID() == 1) {
             var point = screenToLocal(event.getX(), event.getY());
 
@@ -288,6 +296,17 @@ public class Slider extends Widget {
     public void setIconColor(int iconColor) {
         if (this.iconColor != iconColor) {
             this.iconColor = iconColor;
+            invalidate(false);
+        }
+    }
+
+    public int getIconBgColor() {
+        return iconBgColor;
+    }
+
+    public void setIconBgColor(int iconBgColor) {
+        if (this.iconBgColor != iconBgColor) {
+            this.iconBgColor = iconBgColor;
             invalidate(false);
         }
     }

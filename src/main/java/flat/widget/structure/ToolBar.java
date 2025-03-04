@@ -290,25 +290,27 @@ public class ToolBar extends Group {
 
     @Override
     public Widget findByPosition(float x, float y, boolean includeDisabled) {
-        if (getVisibility() == Visibility.VISIBLE && (includeDisabled || isEnabled()) && contains(x, y)) {
-            for (int i = 0; i < toolItems.size() && i < drawVisibleItems; i++) {
-                ToolItem toolItem = toolItems.get(i);
-                Widget found = toolItem.findByPosition(x, y, includeDisabled);
-                if (found != null) return found;
-            }
-            if (overflowVisible && overflowItem != null) {
-                Widget found = overflowItem.findByPosition(x, y, includeDisabled);
-                if (found != null) return found;
-            }
-            if (navigationVisible && navigationItem != null) {
-                Widget found = navigationItem.findByPosition(x, y, includeDisabled);
-                if (found != null) return found;
-            }
-
-            return isClickable() ? this : null;
-        } else {
+        if (!isCurrentHandleEventsEnabled()
+                || getVisibility() != Visibility.VISIBLE
+                || (!includeDisabled && !isEnabled())
+                || !contains(x, y)) {
             return null;
         }
+        for (int i = 0; i < toolItems.size() && i < drawVisibleItems; i++) {
+            ToolItem toolItem = toolItems.get(i);
+            Widget found = toolItem.findByPosition(x, y, includeDisabled);
+            if (found != null) return found;
+        }
+        if (overflowVisible && overflowItem != null) {
+            Widget found = overflowItem.findByPosition(x, y, includeDisabled);
+            if (found != null) return found;
+        }
+        if (navigationVisible && navigationItem != null) {
+            Widget found = navigationItem.findByPosition(x, y, includeDisabled);
+            if (found != null) return found;
+        }
+
+        return isHandleEventsEnabled() ? this : null;
     }
 
     private boolean hasExtraContextMenuItems() {

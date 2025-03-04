@@ -221,10 +221,10 @@
                     icon="/default/img_test.png"
                     icon-scale-height="true" icon-spacing="12px"
                     icon-position="RIGHT" on-action="setProgress"/>
-            <Slider width="128" height="32" min-value="0" max-value="10" steps="0.1" direction="ihorizontal"></Slider>
-            <RangedSlider width="128" height="32" min-value="0" max-value="10" steps="0.1" direction="ihorizontal"></RangedSlider>
-            <ProgressBar id="progressBar" smooth-transition-duration="10" animation-duration="4" line-mode="SPLIT"></ProgressBar>
-            <ProgressCircle id="progressBar2" smooth-transition-duration="1" animation-duration="4" line-mode="SPLIT" background-color="red"></ProgressCircle>
+            <Slider width="128" height="32" min-value="0" max-value="10" steps="0.1" direction="ihorizontal" icon-bg-color="blue"/>
+            <RangedSlider width="128" height="32" min-value="0" max-value="10" steps="0.1" direction="ihorizontal"/>
+            <ProgressBar id="progressBar" smooth-transition-duration="10" animation-duration="4" line-mode="SPLIT"/>
+            <ProgressCircle id="progressBar2" smooth-transition-duration="1" animation-duration="4" line-mode="SPLIT" background-color="red"/>
         </LinearBox>
     </LinearBox>
     </LinearBox>

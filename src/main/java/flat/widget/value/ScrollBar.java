@@ -221,8 +221,8 @@ public class ScrollBar extends Widget {
     }
 
     @Override
-    public void firePointer(PointerEvent event) {
-        super.firePointer(event);
+    public void pointer(PointerEvent event) {
+        super.pointer(event);
         if (event.isConsumed() || event.getPointerID() != 1) {
             return;
         }

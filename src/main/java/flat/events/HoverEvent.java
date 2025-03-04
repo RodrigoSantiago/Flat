@@ -15,10 +15,6 @@ public class HoverEvent extends Event {
         this.y = y;
     }
 
-    public boolean isRecyclable(Widget source) {
-        return true;
-    }
-
     public float getX() {
         return x;
     }

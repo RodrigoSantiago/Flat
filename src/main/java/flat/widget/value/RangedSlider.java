@@ -195,8 +195,8 @@ public class RangedSlider extends Widget {
     }
 
     @Override
-    public void firePointer(PointerEvent event) {
-        super.firePointer(event);
+    public void pointer(PointerEvent event) {
+        super.pointer(event);
         if (!event.isConsumed() && event.getPointerID() == 1) {
             var point = screenToLocal(event.getX(), event.getY());
 

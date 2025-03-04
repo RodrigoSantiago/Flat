@@ -106,14 +106,7 @@ public class Chip extends Button {
         if (iw > 0 && ih > 0 && getIcon() != null) {
             float xpos = iconLeft ? boxX : spaceForCloseIcon + boxX + spaceForText + spaceForIcon - iw;
             float ypos = yOff(y, y + height, ih);
-
-            if (isIconClipCircle()) {
-                graphics.pushClip(new Ellipse(xpos, ypos, iw, ih));
-            }
-            getIcon().draw(graphics, xpos, ypos, iw, ih, getIconColor(), getIconImageFilter());
-            if (isIconClipCircle()) {
-                graphics.popClip();
-            }
+            drawIcon(graphics, xpos, ypos, iw, ih);
         }
 
         if (tw > 0 && th > 0) {
@@ -232,8 +225,8 @@ public class Chip extends Button {
     }
 
     @Override
-    public void fireHover(HoverEvent event) {
-        super.fireHover(event);
+    public void hover(HoverEvent event) {
+        super.hover(event);
         if (!event.isConsumed() && event.getType() == HoverEvent.MOVED) {
             if (isOverActionButton(screenToLocal(event.getX(), event.getY())) != isHoveringClose) {
                 isHoveringClose = !isHoveringClose;

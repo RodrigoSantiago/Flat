@@ -35,6 +35,10 @@ public class PixelMap implements Drawable {
     }
 
     public Texture2D readTexture(Context context) {
+        return readTexture(context, null);
+    }
+
+    public Texture2D readTexture(Context context, ImageFilter filter) {
         var texture = textures.get(context);
         if (texture == null) {
             texture = new Texture2D(context);
@@ -52,6 +56,15 @@ public class PixelMap implements Drawable {
             if (ctx.isDisposed()) {
                 textures.remove(ctx);
                 break;
+            }
+        }
+        if (filter != null) {
+            if ((texture.getMagFilter() == MagFilter.NEAREST) != (filter == ImageFilter.NEAREST)) {
+                texture.begin(0);
+                texture.setScaleFilters(
+                        filter == ImageFilter.LINEAR ? MagFilter.LINEAR : MagFilter.NEAREST,
+                        filter == ImageFilter.LINEAR ? MinFilter.LINEAR : MinFilter.NEAREST);
+                texture.end();
             }
         }
         return texture;
@@ -78,14 +91,7 @@ public class PixelMap implements Drawable {
 
     @Override
     public void draw(Graphics context, float x, float y, float width, float height, int color, ImageFilter filter) {
-        var texture = readTexture(context.getContext());
-        if ((texture.getMagFilter() == MagFilter.NEAREST) != (filter == ImageFilter.NEAREST)) {
-            texture.begin(0);
-            texture.setScaleFilters(
-                    filter == ImageFilter.LINEAR ? MagFilter.LINEAR : MagFilter.NEAREST,
-                    filter == ImageFilter.LINEAR ? MinFilter.LINEAR : MinFilter.NEAREST);
-            texture.end();
-        }
+        var texture = readTexture(context.getContext(), filter);
         context.drawImage(this, x, y, width, height, color);
     }
 

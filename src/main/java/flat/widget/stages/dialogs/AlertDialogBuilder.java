@@ -18,6 +18,7 @@ public class AlertDialogBuilder {
     private String title;
     private String message;
     private UXTheme theme;
+    private boolean block;
     private UXListener<Dialog> onShowListener;
     private UXListener<Dialog> onHideListener;
 
@@ -64,8 +65,14 @@ public class AlertDialogBuilder {
         return this;
     }
 
+    public AlertDialogBuilder block(boolean block) {
+        this.block = block;
+        return this;
+    }
+
     public Dialog build() {
         final Dialog dialog = new Dialog();
+        dialog.setBlockEvents(block);
         if (theme != null) {
             dialog.setTheme(theme);
         }
@@ -73,7 +80,7 @@ public class AlertDialogBuilder {
         Controller controller = new Controller() {
             @Flat
             public void hide(ActionEvent event) {
-                dialog.hide();
+                dialog.smoothHide();
             }
 
             @Override

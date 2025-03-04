@@ -176,16 +176,17 @@ public class Menu extends Stage {
     }
 
     @Override
-    public void fireScroll(ScrollEvent event) {
-        super.fireScroll(event);
-        if (!event.isConsumed()) {
+    public void scroll(ScrollEvent event) {
+        super.scroll(event);
+        if (!event.isConsumed() && isScrollable()) {
             slide(- event.getDeltaY() * scrollSensibility);
+            event.consume();
         }
     }
 
     @Override
-    public void firePointer(PointerEvent event) {
-        super.firePointer(event);
+    public void pointer(PointerEvent event) {
+        super.pointer(event);
         if (!event.isConsumed() && event.getType() == PointerEvent.FILTER) {
             if (!isSourceMenuFrom(event.getSource())) {
                 hide();
@@ -194,7 +195,7 @@ public class Menu extends Stage {
     }
 
     @Override
-    public void fireResize() {
+    public void resize() {
         hide();
     }
 

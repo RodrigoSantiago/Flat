@@ -234,27 +234,27 @@ public abstract class Scrollable extends Parent {
 
     @Override
     public Widget findByPosition(float x, float y, boolean includeDisabled) {
-        if ((includeDisabled || isEnabled()) && (getVisibility() != Visibility.GONE)) {
-            if (contains(x, y)) {
-                if (isVerticalVisible() && verticalBar != null) {
-                    Widget found = verticalBar.findByPosition(x, y, includeDisabled);
-                    if (found != null) return found;
-                }
-                if (isHorizontalVisible() && horizontalBar != null) {
-                    Widget found = horizontalBar.findByPosition(x, y, includeDisabled);
-                    if (found != null) return found;
-                }
-
-                for (Widget child : getChildrenIterableReverse()) {
-                    if (child != horizontalBar && child != verticalBar) {
-                        Widget found = child.findByPosition(x, y, includeDisabled);
-                        if (found != null) return found;
-                    }
-                }
-                return isClickable() ? this : null;
+        if (!isCurrentHandleEventsEnabled()
+                || getVisibility() != Visibility.VISIBLE
+                || (!includeDisabled && !isEnabled())
+                || !contains(x, y)) {
+            return null;
+        }
+        if (isVerticalVisible() && verticalBar != null) {
+            Widget found = verticalBar.findByPosition(x, y, includeDisabled);
+            if (found != null) return found;
+        }
+        if (isHorizontalVisible() && horizontalBar != null) {
+            Widget found = horizontalBar.findByPosition(x, y, includeDisabled);
+            if (found != null) return found;
+        }
+        for (Widget child : getChildrenIterableReverse()) {
+            if (child != horizontalBar && child != verticalBar) {
+                Widget found = child.findByPosition(x, y, includeDisabled);
+                if (found != null) return found;
             }
         }
-        return null;
+        return this;
     }
 
     public Policy getHorizontalPolicy() {

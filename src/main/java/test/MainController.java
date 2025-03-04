@@ -6,11 +6,13 @@ import flat.events.ActionEvent;
 import flat.events.TextEvent;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
+import flat.graphics.context.enums.CycleMethod;
 import flat.graphics.context.Font;
-import flat.graphics.context.Paint;
-import flat.graphics.context.paints.GradientStop;
-import flat.graphics.context.paints.RadialGradient;
+import flat.graphics.context.paints.ImagePattern;
+import flat.graphics.image.DrawableReader;
 import flat.graphics.image.PixelMap;
+import flat.math.Affine;
+import flat.resources.ResourceStream;
 import flat.uxml.Controller;
 import flat.uxml.ValueChange;
 import flat.widget.Widget;
@@ -32,9 +34,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends Controller {
+public class MainController extends Controller {
 
-    public MainActivity(Activity activity) {
+    public MainController(Activity activity) {
     }
 
     @Flat public Button button;
@@ -63,6 +65,7 @@ public class MainActivity extends Controller {
                 .onHideListener((dg) -> System.out.println("Hide"))
                 .onYesListener((dg) -> System.out.println("Yes"))
                 .onNoListener((dg) -> System.out.println("No"))
+                .block(true)
                 .build();
         alert.show(getActivity());
     }
@@ -72,7 +75,7 @@ public class MainActivity extends Controller {
         Application.createWindow(new WindowSettings.Builder()
                 .layout("/default/screen_test/screen_test.uxml")
                 .theme("/default/themes")
-                .controller(MainActivity::new)
+                .controller(MainController::new)
                 .size(1000, 800)
                 .multiSamples(8)
                 .transparent(false)
@@ -120,45 +123,15 @@ public class MainActivity extends Controller {
     @Override
     public void onDraw(Graphics graphics) {
         super.onDraw(graphics);
-        t += 0.01f;
-        if (t > 1) t = 1;
-        RadialGradient linearGradient = new RadialGradient.Builder(50, 50, 0, 50)
-                .focus(25, 25)
-                .stop(new GradientStop(0, Color.red))
-                .stop(new GradientStop(1, Color.blue))
-                .cycleMethod(Paint.CycleMethod.CLAMP)
+        PixelMap map = (PixelMap) DrawableReader.parse(new ResourceStream("/default/img_test.png"));
+        ImagePattern pattern = new ImagePattern.Builder(map.readTexture(graphics.getContext()), 50, 50)
+                .cycleMethod(CycleMethod.REFLECT)
+                .transform(new Affine().scale(5, 5))
                 .build();
         graphics.setTransform2D(null);
-        graphics.setPaint(linearGradient);
+        graphics.setPaint(pattern);
         graphics.drawRect(0, 0, 200, 200, true);
-        /*graphics.setTransform2D(null);
-        graphics.setStroker(new BasicStroke(10, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-        graphics.setColor(0xFF0000FF);
-        Path a = new Path();
-        a.moveTo(200, 200);
-        a.closePath();
-        a.moveTo(300, 300);
-        a.lineTo(310, 310);
-        graphics.drawShape(a, false);*/
-        //t += 1 / 120f;
-        //if (t > 1) t = 0;
-        //graphics.setTransform2D(null);
-        //graphics.setTextSize(64);
-        //graphics.setTextFont(Font.getDefault());
-        //graphics.setColor(Color.black);
-        //graphics.setTextBlur(1);
-        //graphics.drawText(32, 300, "Ola Mundo");
 
-        /*graphics.setStroker(new BasicStroke(5.5f));
-        graphics.setAntialiasEnabled(false);
-        graphics.setColor(0x00000080);
-        graphics.setAntialiasEnabled(false);
-        graphics.drawLine(100, 100, 500, 600);
-        graphics.setAntialiasEnabled(true);
-        graphics.drawLine(100, 500, 500, 100);*/
-        //graphics.setColor(Color.black);
-        //graphics.setTextBlur(0);
-        //graphics.drawText(32, 200, "Ola Mundo");
         if (save) {
             save = false;
             Font font = Font.getDefault();

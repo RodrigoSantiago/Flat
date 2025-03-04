@@ -1,6 +1,8 @@
 package flat.graphics.context.paints;
 
 import flat.backend.SVG;
+import flat.graphics.Color;
+import flat.graphics.context.enums.CycleMethod;
 import flat.graphics.context.Paint;
 import flat.graphics.context.Texture2D;
 import flat.math.Affine;
@@ -112,7 +114,7 @@ public class ImagePattern extends Paint {
         private float dstx2;
         private float dsty2;
         private Texture2D texture;
-        private int color;
+        private int color = Color.white;
         private Affine transform;
         private CycleMethod cycleMethod;
 
@@ -132,8 +134,8 @@ public class ImagePattern extends Paint {
             srcy2 = texture.getHeight();
             dstx1 = x;
             dsty1 = y;
-            dstx2 = width;
-            dsty2 = height;
+            dstx2 = x + width;
+            dsty2 = y + height;
         }
 
         public Builder source(float x1, float y1, float x2, float y2) {
