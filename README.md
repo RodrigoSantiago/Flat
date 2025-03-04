@@ -267,10 +267,10 @@ style : parent {
   - Posture : `REGULAR`, `ITALIC`
 - `Text` or `Constant` : simple write the plain text or use quots for spaces and special characters. Constants are case-insensitive
 - `Resource` : simple write the path as `'/path/to/image.svg'`
-- `Variable` : `@variable`. The variable name is case-sensitive. It must follow the java rules for variables. A variable can have any value. It must be set a default value. The variable value can be set at runtime.
+- `Variable` : `@variable`. The variable name is case-sensitive. It does not need to follow the java rules for variables names. A variable can have any value. It must have a default value. The variable value can be set at runtime.
  
 ````CSS
-@varName : 10dp;
+@var-name : 10dp;
 
 style {
    size : 10dp;
@@ -283,7 +283,7 @@ style {
    constant : MaTcH_PaReNt;
    image-resource-1 : "/default/path/to/icon.svg";
    image-resource-2 : '/simple/quots/also/works.png';
-   variable : @varName;
+   variable : @var-name;
 }
 ````
 
