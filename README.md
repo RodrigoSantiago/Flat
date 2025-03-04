@@ -4,7 +4,7 @@
 ![Opengl ES : 3.1](https://img.shields.io/badge/opengl%20ES-3.1-red.svg)
 
 ## Overview
-Fuse.Flat is a library for material design UI development. It also provides simple and indispensable set of tools for working with xml, themes, fonts, svg and images  
+Fuse.Flat is a library for material design UI development on Java. It also provides simple and indispensable set of tools for working with xml, themes, fonts, svg and images  
 
 The main purpose is to work similar to HTML/CSS, but with solid and clear standards for styles.  
 
@@ -25,9 +25,12 @@ The main purpose is to work similar to HTML/CSS, but with solid and clear standa
 
 ### Getting started
 
-The Controller class should be extended to control the Activity (Always assigned to a Window). Controllers can also be used to control Dialogs and Frames.
+The project starts when the first `Window` is created and launched.
+A `Window` always have an `Activity` which is a bridge between `Window` and `Widget`
+The Controller class is resposible to handle Activity events, and it should be extended. 
+Controllers can also be used to control a `Dialog` and a `Frame`
 
-The UXBuilder can assign variables and methods based upon widget's id. The field must be assigned with the annotation @Flat. All the fields will be assigned after the onLoad event.
+The UXBuilder can assign variables and methods based upon widget's id. The field must be assigned with the annotation `@Flat`. All the fields will be assigned after the onLoad event.
 ```java
 public class MainController extends Controller {
    @Flat 
@@ -45,7 +48,7 @@ public class MainController extends Controller {
    }
 }
 ```
-XML files for UX (uxml) for activities will be wrapped around a Scene widget, if it is not the root.
+UXML files are similar to XML. It is used for creating `Widgets`.
 ```XML
 <Scene>
    <Button id="button" text="Print Hello World" on-action="onButtonClick"/>
@@ -63,7 +66,7 @@ Application.init(new ResourcesManager(new File("/file.zip")));
 Application.init(new ResourcesManager(new File("/directory")));
 ```
 It must be only one init for the project, and it should be the first thing to execute. As the example bellow.
-The launcher also must happen only once. A new Window can be created using `Application.createWindow`
+The launcher also must happen only once.
 
 ```java
 public static void main(String[] args) {
@@ -79,6 +82,8 @@ public static void main(String[] args) {
     );
 }
 ```
+A new Window can be created later using `Application.createWindow`
+
 ### Style-Properties and Attributes
 All proprties have two names : CamelCaase for Java and kebab-case for CSS-Like and String
 
@@ -162,7 +167,7 @@ Paddings and Margins properties will affect the final Layout/Out/In size indepen
 - Divider
 
 ### UXML (XML-Like)
-The UXML should have only one root. It accepts `<Tag></Tag>` and `<Tag/>`.
+The UXML should have only one root.
 
 #### Scene
 The UXML for the Activity should always start with a `Scene`. If not, it will be wrapped with a new `Scene`.
@@ -241,7 +246,6 @@ style : parent {
     }
 }
 ````
-
 
 #### Values
 - `Size` : `dp` `sp` `in` `cm` `mm` `px` `pc`
