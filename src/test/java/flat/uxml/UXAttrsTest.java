@@ -224,7 +224,7 @@ public class UXAttrsTest {
         StateInfo stateInfo = mock(StateInfo.class);
         when(stateInfo.get(any())).thenReturn(0f);
         when(stateInfo.get(State.ENABLED)).thenReturn(1f);
-        when(stateInfo.get(State.FOCUSED)).thenReturn(0.5f);
+        when(stateInfo.get(State.HOVERED)).thenReturn(0.5f);
 
         assertEquals(36, attrs.getSize("property-mix", stateInfo, 0), 0.0001f);
     }
@@ -238,7 +238,7 @@ public class UXAttrsTest {
         StateInfo stateInfo = mock(StateInfo.class);
         when(stateInfo.get(any())).thenReturn(0f);
         when(stateInfo.get(State.ENABLED)).thenReturn(1f);
-        when(stateInfo.get(State.FOCUSED)).thenReturn(0.5f);
+        when(stateInfo.get(State.HOVERED)).thenReturn(0.5f);
 
         assertEquals(24, attrs.getSize("property-mix-different"), 0.0001f);
         assertEquals(92, attrs.getSize("property-mix-different", stateInfo, 0), 0.0001f);

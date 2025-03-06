@@ -2,12 +2,14 @@ package flat.widget.effects;
 
 import flat.animations.Interpolation;
 import flat.animations.NormalizedAnimation;
+import flat.graphics.Color;
 import flat.graphics.Graphics;
 import flat.graphics.context.enums.CycleMethod;
 import flat.graphics.context.paints.GradientStop;
 import flat.graphics.context.paints.RadialGradient;
 import flat.math.shapes.Circle;
 import flat.math.shapes.Shape;
+import flat.math.stroke.BasicStroke;
 import flat.window.Activity;
 import flat.widget.Widget;
 

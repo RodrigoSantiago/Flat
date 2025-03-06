@@ -99,6 +99,12 @@ public class RadialGradient extends Paint {
             this.fx = x;
             this.fy = y;
             this.radiusOut = radiusOut;
+            data[0] = 1;
+            data[1] = 0;
+            data[2] = 0;
+            data[3] = 1;
+            data[4] = 0;
+            data[5] = 0;
         }
 
         private void checkReadOnly() {

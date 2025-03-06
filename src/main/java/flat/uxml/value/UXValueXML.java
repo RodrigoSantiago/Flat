@@ -39,8 +39,8 @@ public class UXValueXML extends  UXValue {
     }
 
     @Override
-    public boolean isSize() {
-        return value.isSize();
+    public boolean isSize(UXTheme theme) {
+        return value.isSize(theme);
     }
 
     @Override

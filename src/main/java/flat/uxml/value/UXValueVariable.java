@@ -1,5 +1,6 @@
 package flat.uxml.value;
 
+import flat.graphics.Color;
 import flat.graphics.context.Font;
 import flat.resources.ResourceStream;
 import flat.uxml.Controller;
@@ -11,18 +12,54 @@ import java.util.Objects;
 
 public class UXValueVariable extends UXValue {
     private final String name;
+    private final float alpha;
 
     public UXValueVariable(String name) {
         this.name = name;
+        this.alpha = 1;
+    }
+
+    public UXValueVariable(String name, float alphaFunction) {
+        this.name = name;
+        this.alpha = Math.min(1, Math.max(0, alphaFunction));
+    }
+
+    public String getName() {
+        return name;
     }
 
     @Override
     UXValue internalMix(UXValue uxValue, float t, UXTheme theme, float dpi) {
         UXValue variable = getVariable(theme);
         if (variable != null) {
-            return variable.mix(uxValue, t, theme, dpi);
+            if (alpha < 1 && variable.isColor(theme)) {
+                return new UXValueColor(Color.multiplyColorAlpha(variable.asColor(theme), alpha))
+                        .mix(uxValue, t, theme, dpi);
+            } else {
+                return variable.mix(uxValue, t, theme, dpi);
+            }
         } else {
             return super.internalMix(uxValue, t, theme, dpi);
+        }
+    }
+
+    @Override
+    public boolean isSize(UXTheme theme) {
+        UXValue variable = getVariable(theme);
+        if (variable != null) {
+            return variable.isSize(theme);
+        } else {
+            return super.isSize(theme);
+        }
+    }
+
+    @Override
+    public boolean isColor(UXTheme theme) {
+        UXValue variable = getVariable(theme);
+        if (variable != null) {
+            return variable.isColor(theme);
+        } else {
+            return super.isColor(theme);
         }
     }
 
@@ -115,7 +152,7 @@ public class UXValueVariable extends UXValue {
     public int asColor(UXTheme theme) {
         UXValue variable = getVariable(theme);
         if (variable != null) {
-            return variable.asColor(theme);
+            return Color.multiplyColorAlpha(variable.asColor(theme), alpha);
         } else {
             return super.asColor(theme);
         }

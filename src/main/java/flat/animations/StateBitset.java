@@ -18,7 +18,7 @@ public final class StateBitset implements StateInfo {
     }
 
     public static StateBitset getState(byte bitset) {
-        return states[bitset];
+        return states[bitset & 0xFF];
     }
 
     @Override

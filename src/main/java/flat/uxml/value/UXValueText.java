@@ -1,5 +1,6 @@
 package flat.uxml.value;
 
+import flat.animations.Interpolation;
 import flat.resources.Parser;
 import flat.resources.ResourceStream;
 import flat.uxml.Controller;
@@ -12,9 +13,30 @@ import java.util.Objects;
 
 public class UXValueText extends UXValue {
     private final String text;
+    private final int color;
+    private final boolean isColor;
 
     public UXValueText(String text) {
         this.text = text;
+        this.color = Parser.colorByName(text);
+        this.isColor = this.color != 0x0 || text.equalsIgnoreCase("transparent");
+    }
+
+    UXValueText(String text, int color) {
+        this.text = text;
+        this.color = color;
+        this.isColor = true;
+    }
+
+    @Override
+    UXValue internalMix(UXValue uxValue, float t, UXTheme theme, float dpi) {
+        if (isColor(theme) && uxValue.isColor(theme)) {
+            int v1 = asColor(theme);
+            int v2 = uxValue.asColor(theme);
+            return new UXValueColor(Interpolation.mixColor(v1, v2, t));
+        } else {
+            return super.internalMix(uxValue, t, theme, dpi);
+        }
     }
 
     @Override
@@ -23,8 +45,13 @@ public class UXValueText extends UXValue {
     }
 
     @Override
+    public boolean isColor(UXTheme theme) {
+        return isColor;
+    }
+
+    @Override
     public int asColor(UXTheme theme) {
-        return Parser.colorByName(text);
+        return color;
     }
 
     @Override

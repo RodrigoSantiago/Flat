@@ -219,7 +219,7 @@ public class ResourcesManager {
                 String[] files = subDir.list();
                 if (files != null) {
                     for (var file : files) {
-                        list.add(new ResourceStream(pathName + file, new File(pathName + file).isDirectory()));
+                        list.add(new ResourceStream(pathName + file, new File(subDir, file).isDirectory()));
                     }
                 }
 
@@ -227,10 +227,11 @@ public class ResourcesManager {
                 URL dirURL = Flat.class.getResource(pathName.startsWith("/") ? pathName : "/" + pathName);
 
                 if (dirURL != null && dirURL.getProtocol().equals("file")) {
-                    String[] files = new File(dirURL.toURI()).list();
+                    File subDir = new File(dirURL.toURI());
+                    String[] files = subDir.list();
                     if (files != null) {
                         for (var file : files) {
-                            list.add(new ResourceStream(pathName + file, new File(pathName, file).isDirectory()));
+                            list.add(new ResourceStream(pathName + file, new File(subDir, file).isDirectory()));
                         }
                     }
 

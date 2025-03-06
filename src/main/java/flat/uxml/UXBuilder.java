@@ -38,7 +38,6 @@ public class UXBuilder {
         UXBuilder.install("StackBox", StackBox::new);
         UXBuilder.install("Label", Label::new);
         UXBuilder.install("Button", Button::new);
-        UXBuilder.install("ToggleButton", ToggleButton::new);
         UXBuilder.install("Checkbox", Checkbox::new);
         UXBuilder.install("RadioButton", RadioButton::new);
         UXBuilder.install("RadioGroup", RadioGroup::new);

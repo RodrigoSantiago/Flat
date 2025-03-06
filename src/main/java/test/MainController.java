@@ -1,6 +1,8 @@
 package test;
 
 import flat.Flat;
+import flat.backend.GL;
+import flat.backend.SVG;
 import flat.data.ObservableList;
 import flat.events.ActionEvent;
 import flat.events.TextEvent;
@@ -8,19 +10,23 @@ import flat.graphics.Color;
 import flat.graphics.Graphics;
 import flat.graphics.context.enums.CycleMethod;
 import flat.graphics.context.Font;
+import flat.graphics.context.paints.GaussianShadow;
 import flat.graphics.context.paints.ImagePattern;
 import flat.graphics.context.paints.LinearGradient;
+import flat.graphics.context.paints.RadialGradient;
 import flat.graphics.image.DrawableReader;
 import flat.graphics.image.PixelMap;
 import flat.math.Affine;
 import flat.resources.ResourceStream;
 import flat.uxml.Controller;
 import flat.uxml.ValueChange;
+import flat.widget.Parent;
 import flat.widget.Widget;
 import flat.widget.layout.LinearBox;
 import flat.widget.structure.*;
 import flat.widget.stages.dialogs.ConfirmDialogBuilder;
 import flat.widget.text.Button;
+import flat.widget.text.Chip;
 import flat.widget.text.Label;
 import flat.widget.text.TextField;
 import flat.widget.value.ProgressBar;
@@ -55,6 +61,18 @@ public class MainController extends Controller {
         List<Page> list = new ArrayList<>();
         new Tab().addPage(list);
         getActivity().getWindow().setIcon((PixelMap) iconButton.getIcon());
+    }
+
+    private void search(Widget widget) {
+        if (widget instanceof Parent parent) {
+            for (var child : parent.getChildrenIterable()) {
+                if (child instanceof Chip chip) {
+                    chip.setActionListener((event) -> chip.setActive(!chip.isActive()));
+                } else {
+                    search(child);
+                }
+            }
+        }
     }
 
     @Flat
@@ -110,17 +128,17 @@ public class MainController extends Controller {
 
     @Override
     public void onShow() {
-        listView.setAdapter(new ListViewDefaultAdapter<>(items) {
+        search(getActivity().getScene());
+        /*listView.setAdapter(new ListViewDefaultAdapter<>(items) {
             @Override
             public void buildListItem(int index, Widget item) {
                 var label = (ListItem) item;
                 label.setText(items.get(index));
                 label.setLayers(index % 6);
             }
-        });
+        });*/
     }
 
-    float t;
     @Override
     public void onDraw(Graphics graphics) {
         super.onDraw(graphics);
@@ -133,15 +151,15 @@ public class MainController extends Controller {
         graphics.setPaint(pattern);
         graphics.drawRect(0, 0, 200, 200, true);*/
 
-        t += 1;
-        LinearGradient linear = new LinearGradient.Builder(0, 0, 100, 100)
+        /*t += 1;
+        RadialGradient linear = new RadialGradient.Builder(50, 50, 100)
                 .stop(0, Color.red)
                 .stop(1, Color.green)
                 .transform(new Affine().rotate(t))
                 .build();
         graphics.setTransform2D(null);
         graphics.setPaint(linear);
-        graphics.drawRect(0, 0, 200, 200, true);
+        graphics.drawRect(0, 0, 200, 200, true);*/
 
         if (save) {
             save = false;

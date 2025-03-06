@@ -17,6 +17,7 @@ import flat.widget.stages.Menu;
 import flat.widget.effects.RippleEffect;
 import flat.widget.enums.DropdownAlign;
 import flat.widget.enums.Visibility;
+import flat.widget.text.Button;
 import flat.window.Activity;
 
 import static flat.widget.State.*;
@@ -247,14 +248,13 @@ public class Widget {
         float b2 = b / 2;
 
         // Draw Background Shadow
-        if (bgOpacity > 0 && shadowEnabled) {
-            graphics.setTransform2D(getTransform().preTranslate(0, Math.max(0, elevation)));
+        if (bgOpacity > 0 && shadowEnabled && elevation >= 1) {
+            graphics.setTransform2D(getTransform().preTranslate(0, Math.max(0, elevation * 0.5f)));
             graphics.drawRoundRectShadow(
                     bg.x - b, bg.y - b, bg.width + b * 2, bg.height + b * 2,
                     bg.arcTop + b, bg.arcRight + b, bg.arcBottom + b, bg.arcLeft + b,
-                    elevation * 2, 0.55f * bgOpacity);
+                    elevation, 0.55f * bgOpacity);
         }
-
         // Draw Background
         if (bgOpacity > 0) {
             graphics.setTransform2D(getTransform());

@@ -137,7 +137,6 @@ Paddings and Margins properties will affect the final Layout/Out/In size indepen
 - Label
 - Button
 - Chip
-- ToggleButton
 - TextArea
 - TextField
 - TextInputField

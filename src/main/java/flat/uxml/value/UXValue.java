@@ -30,7 +30,11 @@ public class UXValue {
         return getClass();
     }
 
-    public boolean isSize() {
+    public boolean isSize(UXTheme theme) {
+        return false;
+    }
+
+    public boolean isColor(UXTheme theme) {
         return false;
     }
 

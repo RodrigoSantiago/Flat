@@ -1,3 +1,28 @@
+$primary-color : #2196F3;
+$primary-color-acc : #1976D2;
+$primary-color-selected : #64B5F6;
+
+$secondary-color : #FF1744;
+$secondary-color-acc : #D50000;
+$secondary-color-selected : #FF5252;
+
+$surface-color : #E0E0E0;
+$surface-color-acc : #D5D5D5;
+$card-color : #FFFFFF;
+$card-color-acc : #BBDEFB;
+$card-color-selected : #E3F2FD;
+
+$disabled-color : #00000020;
+$on-disabled-color : #00000080;
+
+$on-primary-color : #FFFFFF;
+$on-secondary-color : #FFFFFF;
+$on-surface-color : #808080;
+$on-card-color : #909090;
+
+$text-primary-color : #202020;
+$icon-primary-color : #505050;
+
 widget {
 
 }
@@ -5,53 +30,6 @@ widget {
 /*
   Text
 */
-
-label {
-    text-font : font("Roboto");
-    text-size : 24sp;
-    text-color : #000000FF;
-    text-all-caps : false;
-    vertical-align : middle;
-    horizontal-align : left;
-}
-
-button : label {
-    text-font : font("Roboto", bold);
-    ripple-enabled : true;
-    ripple-color : #00000080;
-    shadow-enabled : true;
-    radius-top : 4;
-    radius-left : 4;
-    radius-right : 4;
-    radius-bottom : 4;
-    padding-left : 16;
-    padding-right : 16;
-    padding-top : 8;
-    padding-bottom : 8;
-    min-height : 36;
-    text-size : 14sp;
-    background-color : #FFFFFFFF;
-    transition-duration : 0.1;
-    vertical-align : middle;
-    cursor : hand;
-    focusable : true;
-
-    enabled {
-        elevation : 1;
-    }
-    hovered {
-        elevation : 2;
-    }
-    pressed {
-        elevation : 4;
-    }
-    focused {
-        background-color : #00FFFFFF;
-    }
-    disabled {
-        background-color : #808080FF;
-    }
-}
 
 toggle-button : button {
     icon : '/default/icons/checkbox-blank-outline.svg';
@@ -91,41 +69,6 @@ text-input-field : text-field {
 text-drop-down : text-input-field {
 }
 
-chip : label {
-    ripple-enabled : true;
-    ripple-color : #00000080;
-    shadow-enabled : true;
-    radius-top : 100;
-    radius-left : 100;
-    radius-right : 100;
-    radius-bottom : 100;
-    padding-left : 4;
-    padding-right : 4;
-    padding-top : 4;
-    padding-bottom : 4;
-    icon-spacing : 8;
-    action-spacing : 8;
-
-    min-height : 30;
-    text-size : 14sp;
-    background-color : #FFFFFFFF;
-    transition-duration : 0.1;
-    vertical-align : middle;
-    close-icon-cursor : hand;
-    close-icon-bg-color : #00000030;
-    close-icon-spacing : 8px;
-
-    enabled {
-        elevation : 1;
-    }
-    hovered {
-        elevation : 2;
-    }
-    pressed {
-        elevation : 4;
-    }
-}
-
 divider {
     height : 1;
     width : MATCH_PARENT;
@@ -135,21 +78,6 @@ divider {
 /*
   Buttons Styles
 */
-icon : button {
-    ripple-overflow : true;
-    background-color : #00000000;
-    shadow : false;
-    min-width : 24;
-    min-height : 24;
-    vertical-align : middle;
-    horizontal-align : center;
-    radius-top : 12;
-    radius-left : 12;
-    radius-right : 12;
-    radius-bottom : 12;
-    padding-left : 0;
-    padding-right : 0;
-}
 
 raised : button {
 

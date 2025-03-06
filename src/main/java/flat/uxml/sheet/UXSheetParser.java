@@ -1,5 +1,6 @@
 package flat.uxml.sheet;
 
+import flat.graphics.Color;
 import flat.graphics.text.FontPosture;
 import flat.graphics.text.FontStyle;
 import flat.graphics.text.FontWeight;
@@ -110,7 +111,7 @@ public class UXSheetParser {
         if (text.length() == 0) return new UXValueText(text);
 
         int init = text.codePointAt(0);
-        //if (isCharacter(init) || init == '+' || init == '#' || init == '$' || init == '@') {
+        if (isCharacter(init) || init == '+' || init == '#' || init == '$' || init == '@') {
             read();
             if (readNext()) {
                 UXValue value = parseValue();
@@ -126,7 +127,7 @@ public class UXSheetParser {
                 }
                 return new UXValueXML(text, value);
             }
-        //}
+        }
         return new UXValueText(text);
     }
 
@@ -576,29 +577,6 @@ public class UXSheetParser {
         }
     }
 
-    private UXValue parseSizeArray(String text) {
-        try {
-            String[] values = text.split(" ");
-            UXValue[] numbers = new UXValue[values.length];
-            for (int i = 0; i < values.length; i++) {
-                String val = values[i].trim();
-                if (val.startsWith("$")) {
-                    numbers[i] = new UXValueVariable(val);
-                } else if (val.equalsIgnoreCase("MATCH_PARENT")) {
-                    numbers[i] = new UXValueNumber(Widget.MATCH_PARENT);
-                } else if (val.equalsIgnoreCase("WRAP_CONTENT")) {
-                    numbers[i] = new UXValueNumber(Widget.WRAP_CONTENT);
-                } else {
-                    numbers[i] = parseNumber(val);
-                }
-            }
-            return new UXValueSizeList(numbers);
-        } catch (Exception ignored) {
-            log(ErroLog.INVALID_SIZE_LIST);
-            return new UXValue();
-        }
-    }
-
     private UXValue parseHex(String source) {
         try {
             int color;
@@ -620,6 +598,19 @@ public class UXSheetParser {
     private UXValue parseFunction(String source, List<UXValue> values) {
         if (source.equalsIgnoreCase("list")) {
             return new UXValueSizeList(values.toArray(new UXValue[0]));
+
+        } else if (source.equalsIgnoreCase("alpha")) {
+            if (values.size() >= 2 && values.get(1) instanceof UXValueNumber v0) {
+                float alpha = Math.min(1, Math.max(0, v0.asNumber(null)));
+                if (values.get(0) instanceof UXValueVariable variable) {
+                    return new UXValueVariable(variable.getName(), alpha);
+                } else {
+                    return new UXValueColor(Color.multiplyColorAlpha(values.get(0).asColor(null), alpha));
+                }
+            }
+            if (values.size() != 2) {
+                log(ErroLog.INVALID_ALPHA);
+            }
 
         } else if (source.equalsIgnoreCase("rgb")) {
             if (values.size() == 3 && values.get(0) instanceof UXValueNumber v0
@@ -701,6 +692,7 @@ public class UXSheetParser {
         public static final String INVALID_NUMBER = "Invalid number";
         public static final String INVALID_FONT = "Invalid font";
         public static final String INVALID_COLOR = "Invalid color";
+        public static final String INVALID_ALPHA = "Invalid alpha function";
         public static final String INVALID_FUNCTION = "Invalid function";
         public static final String NAME_EXPECTED = "Name expected";
         public static final String PARENT_NOT_FOUND = "Parent Not Found";

@@ -2,11 +2,11 @@ package flat.widget;
 
 public enum State {
     ENABLED,
-    FOCUSED,
-    ACTIVATED,
     HOVERED,
+    FOCUSED,
     PRESSED,
     DRAGGED,
+    ACTIVATED,
     ERROR,
     DISABLED;
 

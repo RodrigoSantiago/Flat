@@ -9,15 +9,15 @@ import flat.graphics.context.paints.ImagePattern;
 import flat.graphics.image.Drawable;
 import flat.graphics.image.PixelMap;
 import flat.math.shapes.Ellipse;
-import flat.uxml.Controller;
-import flat.uxml.UXAttrs;
-import flat.uxml.UXListener;
+import flat.uxml.*;
 import flat.widget.enums.HorizontalPosition;
 import flat.widget.enums.ImageFilter;
 
 public class Button extends Label {
 
     private UXListener<ActionEvent> actionListener;
+    private UXValueListener<Boolean> activeListener;
+    private boolean active;
 
     private Drawable icon;
     private float iconWidth;
@@ -33,7 +33,9 @@ public class Button extends Label {
         super.applyAttributes(controller);
 
         UXAttrs attrs = getAttrs();
+        setActive(attrs.getAttributeBool("active", isActive()));
         setActionListener(attrs.getAttributeListener("on-action", ActionEvent.class, controller));
+        setActiveListener(attrs.getAttributeValueListener("on-active-change", Boolean.class, controller));
     }
 
     @Override
@@ -70,7 +72,7 @@ public class Button extends Label {
         float iW = getLayoutIconWidth();
         float iH = getLayoutIconHeight();
 
-        float spaceForIcon = iW == 0 ? 0 : iW + getIconSpacing();
+        float spaceForIcon = iW == 0 ? 0 : iW + (hasText() ? getIconSpacing() : 0);
         float spaceForText = getTextWidth();
 
         if (spaceForIcon > width) {
@@ -100,6 +102,10 @@ public class Button extends Label {
             float ypos = yOff(y, y + height, th);
             drawText(graphics, xpos, ypos, tw, th);
         }
+    }
+
+    protected boolean hasText() {
+        return getShowText() != null && !getShowText().isEmpty();
     }
 
     protected void drawIcon(Graphics graphics, float x, float y, float width, float height) {
@@ -138,7 +144,7 @@ public class Button extends Label {
         float iH = getLayoutIconHeight();
 
         if (wrapWidth) {
-            mWidth = Math.max(getTextWidth() + extraWidth + (iW > 0 ? iW + getIconSpacing() : 0), getLayoutMinWidth());
+            mWidth = Math.max(getTextWidth() + extraWidth + (iW > 0 ? iW + (hasText() ? getIconSpacing() : 0) : 0), getLayoutMinWidth());
         } else {
             mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
         }
@@ -274,6 +280,34 @@ public class Button extends Label {
         if (this.iconClipCircle != iconClipCircle) {
             this.iconClipCircle = iconClipCircle;
             invalidate(false);
+        }
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        if (this.active != active) {
+            boolean old = this.active;
+            this.active = active;
+
+            setActivated(active);
+            fireActiveListener(old);
+        }
+    }
+
+    public UXValueListener<Boolean> getActiveListener() {
+        return activeListener;
+    }
+
+    public void setActiveListener(UXValueListener<Boolean> activeListener) {
+        this.activeListener = activeListener;
+    }
+
+    private void fireActiveListener(boolean oldValue) {
+        if (activeListener != null && oldValue != active) {
+            UXValueListener.safeHandle(activeListener, new ValueChange<>(this, oldValue, active));
         }
     }
 }

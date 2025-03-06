@@ -92,6 +92,12 @@ public class LinearGradient extends Paint {
             this.y1 = y1;
             this.x2 = x2;
             this.y2 = y2;
+            data[0] = 1;
+            data[1] = 0;
+            data[2] = 0;
+            data[3] = 1;
+            data[4] = 0;
+            data[5] = 0;
         }
 
         private void checkReadOnly() {
