@@ -8,11 +8,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+import org.mockito.invocation.Invocation;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.File;
+import java.util.List;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -283,11 +286,12 @@ public class ApplicationTest {
         File fileLibrary = mock(File.class);
 
         Window window = mock(Window.class);
+        int[] fakeWindowState = new int[]{0};
+        doAnswer(a -> fakeWindowState[0]).when(window).getVsync();
+        doAnswer(a -> fakeWindowState[0] = a.getArgument(0)).when(window).setVsync(1);
+
         when(window.isClosed()).thenReturn(false).thenReturn(false).thenReturn(true);
-        when(window.loop(anyFloat())).thenAnswer(a -> {
-            Application.setVsync(1);
-            return false;
-        });
+        when(window.isBufferInvalided()).thenReturn(true);
         when(Window.create(settings)).thenReturn(window);
 
         when(resources.getFlatLibraryFile()).thenReturn(fileLibrary);
@@ -295,6 +299,7 @@ public class ApplicationTest {
 
         // Execution
         Application.init(resources);
+        Application.setVsync(1);
         Application.launch(settings);
 
         // Assertion
@@ -307,6 +312,9 @@ public class ApplicationTest {
 
         verifyStatic(WL.class);
         WL.WindowAssign(anyLong());
+
+        verifyStatic(WL.class, times(2));
+        WL.SwapBuffers(anyLong());
 
         verifyStatic(WL.class, times(2));
         WL.HandleEvents(anyDouble());
@@ -332,7 +340,7 @@ public class ApplicationTest {
 
         when(resources.getFlatLibraryFile()).thenReturn(fileLibrary);
         when(WL.Init()).thenReturn(true);
-        when(window.loop(anyFloat())).thenThrow(new RuntimeException("Problem"));
+        doThrow(new RuntimeException("Problem")).when(window).loop(anyFloat());
 
         // Execution
         Application.init(resources);
@@ -371,10 +379,10 @@ public class ApplicationTest {
         when(WL.Init()).thenReturn(true);
 
         Runnable task = mock(Runnable.class);
-        when(window.loop(anyFloat())).thenAnswer(a -> {
+        doAnswer(a -> {
             Application.runVsync(task);
             return false;
-        });
+        }).when(window).loop(anyFloat());
 
         // Execution
         Application.init(resources);

@@ -27,7 +27,7 @@ public class UXValueTest {
         Controller controller = mock(Controller.class);
 
         UXValue value = new UXValue();
-        assertFalse(value.isSize());
+        assertFalse(value.isSize(theme));
         assertEquals("", value.asString(theme));
         assertFalse(value.asBool(theme));
         assertEquals(0, value.asNumber(theme), 0);

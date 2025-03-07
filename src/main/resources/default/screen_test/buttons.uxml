@@ -1,0 +1,124 @@
+<Scene width="MATCH_PARENT" height="MATCH_PARENT" background-color="$surface-color">
+    <LinearBox direction="HORIZONTAL" width="MATCH_PARENT">
+        <LinearBox direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
+                   padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
+            <Label text="Default" text-size="16sp" margin-left="4dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Button text="Contained" style="button-contained"/>
+                <Button margin-left="16dp" text="Contained" style="button-contained-primary"/>
+                <Button margin-left="16dp" text="Outlined" style="button-outlined-primary"/>
+                <Button margin-left="16dp" text="Text" style="button-text-primary"/>
+            </LinearBox>
+            <Label text="Trailing Icons Left" text-size="16sp" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Button text="Contained" style="button-icon-left button-contained" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" text="Contained" style="button-icon-left button-contained-primary" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" text="Outlined" style="button-icon-left button-outlined-primary" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" text="Text" style="button-icon-left button-text-primary" icon="/default/icons/star.svg"/>
+            </LinearBox>
+            <Label text="Trailing Icons Right" text-size="16sp" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Button text="Contained" style="button-icon-right button-contained" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" text="Contained" style="button-icon-right button-contained-primary" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" text="Outlined" style="button-icon-right button-outlined-primary" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" text="Text" style="button-icon-right button-text-primary" icon="/default/icons/star.svg"/>
+            </LinearBox>
+            <Label text="Icons" text-size="16sp" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Button style="icon button-contained" icon="/default/icons/star.svg" />
+                <Button margin-left="16dp" style="icon button-contained-primary" icon="/default/icons/star.svg" />
+                <Button margin-left="16dp" style="icon button-outlined-primary" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" style="icon button-text-primary" icon="/default/icons/star.svg"/>
+            </LinearBox>
+            <Label text="Dense" text-size="16sp" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Button text="Contained" style="button-contained button-dense"/>
+                <Button margin-left="16dp" text="Contained" style="button-contained-primary button-dense"/>
+                <Button margin-left="16dp" text="Outlined" style="button-outlined-primary button-dense"/>
+                <Button margin-left="16dp" text="Text" style="button-text-primary button-dense"/>
+            </LinearBox>
+
+            <Label text="Dense Trailing Icons Left" text-size="16sp" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Button text="Contained" style="button-icon-left button-contained button-dense" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" text="Contained" style="button-icon-left button-contained-primary button-dense" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" text="Outlined" style="button-icon-left button-outlined-primary button-dense" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" text="Text" style="button-icon-left button-text-primary button-dense" icon="/default/icons/star.svg"/>
+            </LinearBox>
+            <Label text="Dense Trailing Icons Right" text-size="16sp" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Button text="Contained" style="button-icon-right button-contained button-dense" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" text="Contained" style="button-icon-right button-contained-primary button-dense" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" text="Outlined" style="button-icon-right button-outlined-primary button-dense" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" text="Text" style="button-icon-right button-text-primary button-dense" icon="/default/icons/star.svg"/>
+            </LinearBox>
+            <Label text="Dense Icons" text-size="16sp" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Button style="icon-dense button-contained" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" style="icon-dense button-contained-primary" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" style="icon-dense button-outlined-primary" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" style="icon-dense button-text-primary" icon="/default/icons/star.svg"/>
+            </LinearBox>
+        </LinearBox>
+        <LinearBox enabled="false" direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
+                   padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
+            <Label text="Default" text-size="16sp" margin-left="4dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Button text="Contained" style="button-contained"/>
+                <Button margin-left="16dp" text="Contained" style="button-contained-primary"/>
+                <Button margin-left="16dp" text="Outlined" style="button-outlined-primary"/>
+                <Button margin-left="16dp" text="Text" style="button-text-primary"/>
+            </LinearBox>
+            <Label text="Trailing Icons Left" text-size="16sp" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Button text="Contained" style="button-icon-left button-contained" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" text="Contained" style="button-icon-left button-contained-primary" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" text="Outlined" style="button-icon-left button-outlined-primary" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" text="Text" style="button-icon-left button-text-primary" icon="/default/icons/star.svg"/>
+            </LinearBox>
+            <Label text="Trailing Icons Right" text-size="16sp" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Button text="Contained" style="button-icon-right button-contained" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" text="Contained" style="button-icon-right button-contained-primary" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" text="Outlined" style="button-icon-right button-outlined-primary" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" text="Text" style="button-icon-right button-text-primary" icon="/default/icons/star.svg"/>
+            </LinearBox>
+            <Label text="Icons" text-size="16sp" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Button style="icon button-contained" icon="/default/icons/star.svg" />
+                <Button margin-left="16dp" style="icon button-contained-primary" icon="/default/icons/star.svg" />
+                <Button margin-left="16dp" style="icon button-outlined-primary" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" style="icon button-text-primary" icon="/default/icons/star.svg"/>
+            </LinearBox>
+            <Label text="Dense" text-size="16sp" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Button text="Contained" style="button-contained button-dense"/>
+                <Button margin-left="16dp" text="Contained" style="button-contained-primary button-dense"/>
+                <Button margin-left="16dp" text="Outlined" style="button-outlined-primary button-dense"/>
+                <Button margin-left="16dp" text="Text" style="button-text-primary button-dense"/>
+            </LinearBox>
+
+            <Label text="Dense Trailing Icons Left" text-size="16sp" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Button text="Contained" style="button-icon-left button-contained button-dense" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" text="Contained" style="button-icon-left button-contained-primary button-dense" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" text="Outlined" style="button-icon-left button-outlined-primary button-dense" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" text="Text" style="button-icon-left button-text-primary button-dense" icon="/default/icons/star.svg"/>
+            </LinearBox>
+            <Label text="Dense Trailing Icons Right" text-size="16sp" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Button text="Contained" style="button-icon-right button-contained button-dense" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" text="Contained" style="button-icon-right button-contained-primary button-dense" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" text="Outlined" style="button-icon-right button-outlined-primary button-dense" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" text="Text" style="button-icon-right button-text-primary button-dense" icon="/default/icons/star.svg"/>
+            </LinearBox>
+            <Label text="Dense Icons" text-size="16sp" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Button style="icon-dense button-contained" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" style="icon-dense button-contained-primary" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" style="icon-dense button-outlined-primary" icon="/default/icons/star.svg"/>
+                <Button margin-left="16dp" style="icon-dense button-text-primary" icon="/default/icons/star.svg"/>
+            </LinearBox>
+        </LinearBox>
+    </LinearBox>
+</Scene>

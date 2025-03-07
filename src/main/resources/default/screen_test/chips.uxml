@@ -1,0 +1,204 @@
+<Scene width="MATCH_PARENT" height="MATCH_PARENT" background-color="$surface-color">
+    <LinearBox direction="HORIZONTAL" width="MATCH_PARENT">
+        <LinearBox direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
+               padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
+        <Label text="Default" text-size="16sp" margin-left="4dp" margin-bottom="4dp"/>
+        <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+            <Chip text="Contained" style="chip-contained"/>
+            <Chip margin-left="16dp" text="Contained Color" style="chip-contained-primary"/>
+            <Chip margin-left="16dp" text="Outlined" style="chip-outlined-primary"/>
+        </LinearBox>
+        <Label text="Trailing Icons Left" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+        <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+            <Chip text="Contained" style="chip-icon-left chip-contained" icon="/default/icons/account.svg"/>
+            <Chip margin-left="16dp" text="Contained Color" style="chip-icon-left chip-contained-primary" icon="/default/icons/account.svg"/>
+            <Chip margin-left="16dp" text="Outlined" style="chip-icon-left chip-outlined-primary" icon="/default/icons/account.svg"/>
+        </LinearBox>
+        <Label text="Trailing Icons Right" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+        <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+            <Chip text="Contained" style="chip-icon-right chip-contained" icon="/default/icons/account.svg"/>
+            <Chip margin-left="16dp" text="Contained Color" style="chip-icon-right chip-contained-primary" icon="/default/icons/account.svg"/>
+            <Chip margin-left="16dp" text="Outlined" style="chip-icon-right chip-outlined-primary" icon="/default/icons/account.svg"/>
+        </LinearBox>
+        <Label text="Close Action Right" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+        <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+            <Chip text="Contained" style="chip-close-icon-right chip-contained" close-icon="/default/icons/close.svg"/>
+            <Chip margin-left="16dp" text="Contained Color" style="chip-close-icon-right chip-contained-primary" close-icon="/default/icons/close.svg"/>
+            <Chip margin-left="16dp" text="Outlined" style="chip-close-icon-right chip-outlined-primary" close-icon="/default/icons/close.svg"/>
+        </LinearBox>
+        <Label text="Close Action Left" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+        <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+            <Chip text="Contained" style="chip-close-icon-left chip-contained" close-icon="/default/icons/close.svg"/>
+            <Chip margin-left="16dp" text="Contained Color" style="chip-close-icon-left chip-contained-primary" close-icon="/default/icons/close.svg"/>
+            <Chip margin-left="16dp" text="Outlined" style="chip-close-icon-left chip-outlined-primary" close-icon="/default/icons/close.svg"/>
+        </LinearBox>
+        <Label text="Complete Left" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+        <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+            <Chip text="Contained" style="chip-complete-left chip-contained"
+                  icon="/default/icons/account.svg" close-icon="/default/icons/close.svg"/>
+            <Chip margin-left="16dp" text="Contained Color" style="chip-complete-left chip-contained-primary"
+                  icon="/default/icons/account.svg" close-icon="/default/icons/close.svg"/>
+            <Chip margin-left="16dp" text="Outlined" style="chip-complete-left chip-outlined-primary"
+                  icon="/default/icons/account.svg" close-icon="/default/icons/close.svg"/>
+        </LinearBox>
+        <Label text="Complete Right" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+        <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+            <Chip text="Contained" style="chip-complete-right chip-contained"
+                  icon="/default/icons/account.svg" close-icon="/default/icons/close.svg"/>
+            <Chip margin-left="16dp" text="Contained Color" style="chip-complete-right chip-contained-primary"
+                  icon="/default/icons/account.svg" close-icon="/default/icons/close.svg"/>
+            <Chip margin-left="16dp" text="Outlined" style="chip-complete-right chip-outlined-primary"
+                  icon="/default/icons/account.svg" close-icon="/default/icons/close.svg"/>
+        </LinearBox>
+        <Label text="Dense" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="32dp"/>
+        <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+            <Chip text="Contained" style="chip-dense chip-contained"/>
+            <Chip margin-left="16dp" text="Contained Color" style="chip-dense chip-contained-primary"/>
+            <Chip margin-left="16dp" text="Outlined" style="chip-dense chip-outlined-primary"/>
+        </LinearBox>
+        <Label text="Dense Trailing Icons Left" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+        <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+            <Chip text="Contained" style="chip-icon-left chip-dense chip-contained" icon="/default/icons/account.svg"/>
+            <Chip margin-left="16dp" text="Contained Color" style="chip-icon-left chip-dense chip-contained-primary" icon="/default/icons/account.svg"/>
+            <Chip margin-left="16dp" text="Outlined" style="chip-icon-left chip-dense chip-outlined-primary" icon="/default/icons/account.svg"/>
+        </LinearBox>
+        <Label text="Dense Trailing Icons Right" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+        <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+            <Chip text="Contained" style="chip-icon-right chip-dense chip-contained" icon="/default/icons/account.svg"/>
+            <Chip margin-left="16dp" text="Contained Color" style="chip-icon-right chip-dense chip-contained-primary" icon="/default/icons/account.svg"/>
+            <Chip margin-left="16dp" text="Outlined" style="chip-icon-right chip-dense chip-outlined-primary" icon="/default/icons/account.svg"/>
+        </LinearBox>
+        <Label text="Dense Close Action Right" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+        <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+            <Chip text="Contained" style="chip-close-icon-right chip-dense chip-contained" close-icon="/default/icons/close.svg"/>
+            <Chip margin-left="16dp" text="Contained Color" style="chip-close-icon-right chip-dense chip-contained-primary" close-icon="/default/icons/close.svg"/>
+            <Chip margin-left="16dp" text="Outlined" style="chip-close-icon-right chip-dense chip-outlined-primary" close-icon="/default/icons/close.svg"/>
+        </LinearBox>
+        <Label text="Dense Close Action Left" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+        <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+            <Chip text="Contained" style="chip-close-icon-left chip-dense chip-contained" close-icon="/default/icons/close.svg"/>
+            <Chip margin-left="16dp" text="Contained Color" style="chip-close-icon-left chip-dense chip-contained-primary" close-icon="/default/icons/close.svg"/>
+            <Chip margin-left="16dp" text="Outlined" style="chip-close-icon-left chip-dense chip-outlined-primary" close-icon="/default/icons/close.svg"/>
+        </LinearBox>
+        <Label text="Dense Complete Left" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+        <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+            <Chip text="Contained" style="chip-complete-left chip-dense chip-contained"
+                  icon="/default/icons/account.svg" close-icon="/default/icons/close.svg"/>
+            <Chip margin-left="16dp" text="Contained Color" style="chip-complete-left chip-dense chip-contained-primary"
+                  icon="/default/icons/account.svg" close-icon="/default/icons/close.svg"/>
+            <Chip margin-left="16dp" text="Outlined" style="chip-complete-left chip-dense chip-outlined-primary"
+                  icon="/default/icons/account.svg" close-icon="/default/icons/close.svg"/>
+        </LinearBox>
+        <Label text="Dense Complete Right" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+        <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+            <Chip text="Contained" style="chip-complete-right chip-dense chip-contained"
+                  icon="/default/icons/account.svg" close-icon="/default/icons/close.svg"/>
+            <Chip margin-left="16dp" text="Contained Color" style="chip-complete-right chip-dense chip-contained-primary"
+                  icon="/default/icons/account.svg" close-icon="/default/icons/close.svg"/>
+            <Chip margin-left="16dp" text="Outlined" style="chip-complete-right chip-dense chip-outlined-primary"
+                  icon="/default/icons/account.svg" close-icon="/default/icons/close.svg"/>
+        </LinearBox>
+
+    </LinearBox>
+        <LinearBox enabled="false" direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
+                   padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
+            <Label text="Default" text-size="16sp" margin-left="4dp" margin-bottom="4dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Chip text="Contained" style="chip-contained"/>
+                <Chip margin-left="16dp" text="Contained Color" style="chip-contained-primary"/>
+                <Chip margin-left="16dp" text="Outlined" style="chip-outlined-primary"/>
+            </LinearBox>
+            <Label text="Trailing Icons Left" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Chip text="Contained" style="chip-icon-left chip-contained" icon="/default/icons/account.svg"/>
+                <Chip margin-left="16dp" text="Contained Color" style="chip-icon-left chip-contained-primary" icon="/default/icons/account.svg"/>
+                <Chip margin-left="16dp" text="Outlined" style="chip-icon-left chip-outlined-primary" icon="/default/icons/account.svg"/>
+            </LinearBox>
+            <Label text="Trailing Icons Right" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Chip text="Contained" style="chip-icon-right chip-contained" icon="/default/icons/account.svg"/>
+                <Chip margin-left="16dp" text="Contained Color" style="chip-icon-right chip-contained-primary" icon="/default/icons/account.svg"/>
+                <Chip margin-left="16dp" text="Outlined" style="chip-icon-right chip-outlined-primary" icon="/default/icons/account.svg"/>
+            </LinearBox>
+            <Label text="Close Action Right" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Chip text="Contained" style="chip-close-icon-right chip-contained" close-icon="/default/icons/close.svg"/>
+                <Chip margin-left="16dp" text="Contained Color" style="chip-close-icon-right chip-contained-primary" close-icon="/default/icons/close.svg"/>
+                <Chip margin-left="16dp" text="Outlined" style="chip-close-icon-right chip-outlined-primary" close-icon="/default/icons/close.svg"/>
+            </LinearBox>
+            <Label text="Close Action Left" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Chip text="Contained" style="chip-close-icon-left chip-contained" close-icon="/default/icons/close.svg"/>
+                <Chip margin-left="16dp" text="Contained Color" style="chip-close-icon-left chip-contained-primary" close-icon="/default/icons/close.svg"/>
+                <Chip margin-left="16dp" text="Outlined" style="chip-close-icon-left chip-outlined-primary" close-icon="/default/icons/close.svg"/>
+            </LinearBox>
+            <Label text="Complete Left" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Chip text="Contained" style="chip-complete-left chip-contained"
+                      icon="/default/icons/account.svg" close-icon="/default/icons/close.svg"/>
+                <Chip margin-left="16dp" text="Contained Color" style="chip-complete-left chip-contained-primary"
+                      icon="/default/icons/account.svg" close-icon="/default/icons/close.svg"/>
+                <Chip margin-left="16dp" text="Outlined" style="chip-complete-left chip-outlined-primary"
+                      icon="/default/icons/account.svg" close-icon="/default/icons/close.svg"/>
+            </LinearBox>
+            <Label text="Complete Right" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Chip text="Contained" style="chip-complete-right chip-contained"
+                      icon="/default/icons/account.svg" close-icon="/default/icons/close.svg"/>
+                <Chip margin-left="16dp" text="Contained Color" style="chip-complete-right chip-contained-primary"
+                      icon="/default/icons/account.svg" close-icon="/default/icons/close.svg"/>
+                <Chip margin-left="16dp" text="Outlined" style="chip-complete-right chip-outlined-primary"
+                      icon="/default/icons/account.svg" close-icon="/default/icons/close.svg"/>
+            </LinearBox>
+            <Label text="Dense" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="32dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Chip text="Contained" style="chip-dense chip-contained"/>
+                <Chip margin-left="16dp" text="Contained Color" style="chip-dense chip-contained-primary"/>
+                <Chip margin-left="16dp" text="Outlined" style="chip-dense chip-outlined-primary"/>
+            </LinearBox>
+            <Label text="Dense Trailing Icons Left" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Chip text="Contained" style="chip-icon-left chip-dense chip-contained" icon="/default/icons/account.svg"/>
+                <Chip margin-left="16dp" text="Contained Color" style="chip-icon-left chip-dense chip-contained-primary" icon="/default/icons/account.svg"/>
+                <Chip margin-left="16dp" text="Outlined" style="chip-icon-left chip-dense chip-outlined-primary" icon="/default/icons/account.svg"/>
+            </LinearBox>
+            <Label text="Dense Trailing Icons Right" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Chip text="Contained" style="chip-icon-right chip-dense chip-contained" icon="/default/icons/account.svg"/>
+                <Chip margin-left="16dp" text="Contained Color" style="chip-icon-right chip-dense chip-contained-primary" icon="/default/icons/account.svg"/>
+                <Chip margin-left="16dp" text="Outlined" style="chip-icon-right chip-dense chip-outlined-primary" icon="/default/icons/account.svg"/>
+            </LinearBox>
+            <Label text="Dense Close Action Right" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Chip text="Contained" style="chip-close-icon-right chip-dense chip-contained" close-icon="/default/icons/close.svg"/>
+                <Chip margin-left="16dp" text="Contained Color" style="chip-close-icon-right chip-dense chip-contained-primary" close-icon="/default/icons/close.svg"/>
+                <Chip margin-left="16dp" text="Outlined" style="chip-close-icon-right chip-dense chip-outlined-primary" close-icon="/default/icons/close.svg"/>
+            </LinearBox>
+            <Label text="Dense Close Action Left" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Chip text="Contained" style="chip-close-icon-left chip-dense chip-contained" close-icon="/default/icons/close.svg"/>
+                <Chip margin-left="16dp" text="Contained Color" style="chip-close-icon-left chip-dense chip-contained-primary" close-icon="/default/icons/close.svg"/>
+                <Chip margin-left="16dp" text="Outlined" style="chip-close-icon-left chip-dense chip-outlined-primary" close-icon="/default/icons/close.svg"/>
+            </LinearBox>
+            <Label text="Dense Complete Left" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Chip text="Contained" style="chip-complete-left chip-dense chip-contained"
+                      icon="/default/icons/account.svg" close-icon="/default/icons/close.svg"/>
+                <Chip margin-left="16dp" text="Contained Color" style="chip-complete-left chip-dense chip-contained-primary"
+                      icon="/default/icons/account.svg" close-icon="/default/icons/close.svg"/>
+                <Chip margin-left="16dp" text="Outlined" style="chip-complete-left chip-dense chip-outlined-primary"
+                      icon="/default/icons/account.svg" close-icon="/default/icons/close.svg"/>
+            </LinearBox>
+            <Label text="Dense Complete Right" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Chip text="Contained" style="chip-complete-right chip-dense chip-contained"
+                      icon="/default/icons/account.svg" close-icon="/default/icons/close.svg"/>
+                <Chip margin-left="16dp" text="Contained Color" style="chip-complete-right chip-dense chip-contained-primary"
+                      icon="/default/icons/account.svg" close-icon="/default/icons/close.svg"/>
+                <Chip margin-left="16dp" text="Outlined" style="chip-complete-right chip-dense chip-outlined-primary"
+                      icon="/default/icons/account.svg" close-icon="/default/icons/close.svg"/>
+            </LinearBox>
+
+        </LinearBox>
+    </LinearBox>
+</Scene>

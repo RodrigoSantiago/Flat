@@ -29,8 +29,6 @@ public class ListView extends Scrollable {
     private int endIndex;
     private int totalIndex;
 
-    private RefreshAnimation refresh = new RefreshAnimation();
-
     public ListView() {
         setHorizontalBar(new HorizontalScrollBar());
         setVerticalBar(new VerticalScrollBar());
@@ -74,15 +72,15 @@ public class ListView extends Scrollable {
         setItemHeight(attrs.getSize("item-height", info, getItemHeight()));
     }
 
-    private void invalidateItems() {
-        refresh.play(getActivity());
+    @Override
+    public void setViewOffsetY(float viewOffsetY) {
+        super.setViewOffsetY(viewOffsetY);
+        if (updateDimensions()) {
+            refreshItems();
+        }
     }
 
-    private void resetInvalidateItems() {
-        refresh.stop(false);
-    }
-
-    private void updateDimensions() {
+    private boolean updateDimensions() {
         int count = getRealItemsCount();
 
         float bestHeight = getInHeight() > 0 ? getInHeight()
@@ -92,6 +90,10 @@ public class ListView extends Scrollable {
         bestHeight = Math.max(bestHeight, 16);
         setTotalDimensionY(itemHeight * count);
         viewDimensionExtraY = getActivity() == null ? bestHeight * 1.25f : getActivity().getHeight();
+
+        int prevStartIndex = startIndex;
+        int prevTotalIndex = totalIndex;
+        int prevEndIndex = endIndex;
 
         startIndex = Math.max(0, (int) Math.floor((getViewOffsetY() - getInY()) / itemHeight));
         totalIndex = Math.max(0, (int) Math.ceil(viewDimensionExtraY / itemHeight)) + 1;
@@ -103,14 +105,15 @@ public class ListView extends Scrollable {
 
         viewBackOffsetY = -((getViewOffsetY() / itemHeight) % 1f) * itemHeight;
 
+        return (prevStartIndex != startIndex || prevTotalIndex != totalIndex || prevEndIndex != endIndex);
+    }
+
+    private void updateContent() {
         if (items.size() < totalIndex) {
             createItem(totalIndex - items.size());
         } else if (items.size() > totalIndex) {
             destroyItem(items.size() - totalIndex);
         }
-        setViewOffsetX(getViewOffsetX());
-        setViewOffsetY(getViewOffsetY());
-        resetInvalidateItems();
     }
 
     private void createItem(int count) {
@@ -140,14 +143,21 @@ public class ListView extends Scrollable {
     }
 
     public void refreshItems(int start, int length) {
-        updateDimensions();
-        if (length == -1) {
-            length = totalIndex;
-        }
         int end = start + length;
+        if (length == -1) {
+            end = endIndex;
+        }
+
+        if (updateDimensions()) {
+            updateContent();
+            start = startIndex;
+            end = endIndex;
+        }
+
         if (end < startIndex || start >= endIndex) {
             return;
         }
+
         if (start < startIndex) start = startIndex;
         if (end > endIndex) end = endIndex;
 
@@ -247,9 +257,13 @@ public class ListView extends Scrollable {
 
     @Override
     public void onLayout(float width, float height) {
-        super.onLayout(width, height);
+        setLayout(width, height);
 
-        invalidateItems();
+        if (updateDimensions() && getActivity() != null) {
+            getActivity().getWindow().runSync(() -> refreshItems());
+        }
+
+        super.onLayout(width, height);
     }
 
     @Override
@@ -323,18 +337,7 @@ public class ListView extends Scrollable {
         return adapter == null ? 0 : adapter.size();
     }
 
-    private class RefreshAnimation extends NormalizedAnimation {
-        @Override
-        public Activity getSource() {
-            return getActivity();
-        }
-
-        @Override
-        protected void compute(float t) {
-            int prevStart = startIndex;
-            int prevEnd = endIndex;
-            updateDimensions();
-            refreshItems(startIndex, endIndex);
-        }
+    private void refreshItemsNow() {
+        updateDimensions();
     }
 }

@@ -483,8 +483,6 @@ public class Graphics {
                     .build());
             drawRect(x1, ym, hw, hh, true);
         }
-
-        context.svgPaint(paint);
     }
 
     public void drawRoundRectShadow(RoundRectangle rect, float blur, float alpha) {

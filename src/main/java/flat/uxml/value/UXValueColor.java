@@ -14,16 +14,23 @@ public class UXValueColor extends UXValue {
 
     @Override
     UXValue internalMix(UXValue uxValue, float t, UXTheme theme, float dpi) {
-        if (uxValue.asColor(theme) == 0x0 && getSourceType(theme) != uxValue.getSourceType(theme)) {
-            return super.internalMix(uxValue, t, theme, dpi);
+        if (uxValue.isColor(theme)) {
+            int v1 = asColor(theme);
+            int v2 = uxValue.asColor(theme);
+            return new UXValueColor(Interpolation.mixColor(v1, v2, t));
         } else {
-            return new UXValueColor(Interpolation.mixColor(rgba, uxValue.asColor(theme), t));
+            return super.internalMix(uxValue, t, theme, dpi);
         }
     }
 
     @Override
     public int asColor(UXTheme theme) {
         return rgba;
+    }
+
+    @Override
+    public boolean isColor(UXTheme theme) {
+        return true;
     }
 
     @Override

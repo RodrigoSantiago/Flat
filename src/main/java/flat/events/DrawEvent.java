@@ -13,7 +13,7 @@ public class DrawEvent extends Event {
         this.graphics = graphics;
     }
 
-    public Graphics getSmartContext() {
+    public Graphics getGraphics() {
         return graphics;
     }
 

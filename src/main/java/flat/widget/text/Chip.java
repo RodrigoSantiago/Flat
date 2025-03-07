@@ -9,9 +9,7 @@ import flat.graphics.cursor.Cursor;
 import flat.graphics.image.Drawable;
 import flat.math.Vector2;
 import flat.math.shapes.Ellipse;
-import flat.uxml.Controller;
-import flat.uxml.UXAttrs;
-import flat.uxml.UXListener;
+import flat.uxml.*;
 import flat.widget.enums.HorizontalPosition;
 import flat.widget.enums.ImageFilter;
 

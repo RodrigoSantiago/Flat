@@ -124,7 +124,7 @@ public class Context {
         }
     }
 
-    public Graphics getSmartContext() {
+    public Graphics getGraphics() {
         if (graphics == null) {
             this.graphics = new Graphics(this);
         }

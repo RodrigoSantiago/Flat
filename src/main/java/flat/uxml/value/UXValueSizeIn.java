@@ -14,7 +14,7 @@ public class UXValueSizeIn extends UXValue {
 
     @Override
     UXValue internalMix(UXValue uxValue, float t, UXTheme theme, float dpi) {
-        if (uxValue.isSize()) {
+        if (uxValue.isSize(theme)) {
             float v1 = asSize(theme, dpi);
             float v2 = uxValue.asSize(theme, dpi);
             if (Math.abs(v1 - v2) > 0.01f) {
@@ -27,7 +27,7 @@ public class UXValueSizeIn extends UXValue {
     }
 
     @Override
-    public boolean isSize() {
+    public boolean isSize(UXTheme theme) {
         return true;
     }
 
