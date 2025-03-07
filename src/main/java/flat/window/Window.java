@@ -45,9 +45,11 @@ public class Window {
     private int minWidth, minHeight, maxWidth, maxHeight;
 
     private float loopTime;
+    private int vsync;
     private boolean assigned;
-    private boolean started, loopAnim, loopDraw;
+    private boolean started;
     private boolean releaseEventDelayed, eventConsume;
+    private boolean bufferInvalid;
 
     static Window create(WindowSettings settings) {
         if (settings.getWidth() <= 0 || settings.getHeight() <= 0) {
@@ -95,10 +97,8 @@ public class Window {
         }
     }
 
-    boolean loop(float loopTime) {
+    void loop(float loopTime) {
         this.loopTime = loopTime;
-        this.loopAnim = false;
-        this.loopDraw = false;
 
         processStartup();
 
@@ -108,11 +108,14 @@ public class Window {
 
         processSyncCalls();
 
-        loopAnim = activity.animate(loopTime) || loopAnim;
+        activity.animate(loopTime);
 
         activity.layout(getClientWidth(), getClientHeight());
 
-        loopDraw = activity.draw(context.getSmartContext()) || loopDraw;
+        if (activity.draw(context.getGraphics())) {
+            bufferInvalid = true;
+            context.getGraphics().softFlush();
+        }
 
         // Cursor
         if (cursor != currentCursor) {
@@ -130,13 +133,14 @@ public class Window {
                 WL.SetCursor(windowId, currentCursor.getInternalCursor());
             }
         }
+    }
 
-        // GL Draw
-        if (loopDraw) {
-            context.getSmartContext().softFlush();
-            WL.SwapBuffers(windowId);
-        }
-        return loopAnim;
+    boolean isBufferInvalided() {
+        return bufferInvalid;
+    }
+
+    void unsetBufferInvalided() {
+        bufferInvalid = false;
     }
 
     void addEvent(EventData eventData) {
@@ -236,6 +240,14 @@ public class Window {
 
     long getSvgId() {
         return svgId;
+    }
+
+    int getVsync() {
+        return vsync;
+    }
+
+    void setVsync(int vsync) {
+        this.vsync = vsync;
     }
 
     public boolean isStarted() {

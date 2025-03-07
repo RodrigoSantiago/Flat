@@ -1,6 +1,7 @@
 package test;
 
 import flat.Flat;
+import flat.animations.Animation;
 import flat.backend.GL;
 import flat.backend.SVG;
 import flat.data.ObservableList;
@@ -16,6 +17,7 @@ import flat.graphics.context.paints.LinearGradient;
 import flat.graphics.context.paints.RadialGradient;
 import flat.graphics.image.DrawableReader;
 import flat.graphics.image.PixelMap;
+import flat.graphics.text.FontStyle;
 import flat.math.Affine;
 import flat.resources.ResourceStream;
 import flat.uxml.Controller;
@@ -126,21 +128,63 @@ public class MainController extends Controller {
         if (items.size() > 0) items.remove(items.size() / 2);
     }
 
+    double lastAnim = 0;
+    double lastDraw = 0;
+    int anim;
+    int draw;
+    double animFPS = 0;
+    double drawFPS = 0;
     @Override
     public void onShow() {
+        Application.setVsync(1);
+        /*getActivity().addAnimation(new Animation() {
+            @Override
+            public Activity getSource() {
+                return getActivity();
+            }
+
+            @Override
+            public boolean isPlaying() {
+                return true;
+            }
+
+            @Override
+            public void handle(float seconds) {
+                anim++;
+                double now = System.nanoTime() / 1_000_000_000.0;
+                if (lastAnim != 0) {
+                    animFPS = (animFPS + (now - lastAnim)) * 0.5;
+                }
+                System.out.printf("%.02f%n", 1 / animFPS);
+                lastAnim = now;
+            }
+        });*/
         search(getActivity().getScene());
-        /*listView.setAdapter(new ListViewDefaultAdapter<>(items) {
+        listView.setAdapter(new ListViewDefaultAdapter<>(items) {
             @Override
             public void buildListItem(int index, Widget item) {
                 var label = (ListItem) item;
                 label.setText(items.get(index));
                 label.setLayers(index % 6);
             }
-        });*/
+        });
     }
 
     @Override
     public void onDraw(Graphics graphics) {
+        /*draw++;
+        double now = System.nanoTime() / 1_000_000_000.0;
+        if (lastDraw != 0) {
+            drawFPS = (drawFPS + (now - lastDraw)) * 0.5;
+        }
+        lastDraw = now;
+        
+        graphics.setTransform2D(null);
+        graphics.setColor(Color.red);
+        graphics.setTextSize(32);
+        graphics.setTextFont(Font.findFont(FontStyle.MONO));
+        graphics.drawText(10, 10, "Anim: "+String.format("%.02f", 1 / animFPS));
+        graphics.drawText(10, 52, "Draw:" +String.format("%.02f", 1 / drawFPS));*/
         super.onDraw(graphics);
         /*PixelMap map = (PixelMap) DrawableReader.parse(new ResourceStream("/default/img_test.png"));
         ImagePattern pattern = new ImagePattern.Builder(map.readTexture(graphics.getContext()), 50, 50)

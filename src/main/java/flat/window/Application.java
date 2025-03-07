@@ -3,7 +3,6 @@ package flat.window;
 import flat.backend.FlatLibrary;
 import flat.backend.WL;
 import flat.exception.FlatException;
-import flat.graphics.context.Context;
 import flat.resources.ResourcesManager;
 import flat.window.event.EventData;
 
@@ -28,6 +27,9 @@ public class Application {
     private static boolean loopActive;
     private static long lastLoopTime;
     private static float loopTime;
+
+    private static long autoFrameLimit = 0;
+    private static final long autoFrameFPS = 1_000_000_000L / 120L;
 
     private static boolean finalized;
 
@@ -127,7 +129,7 @@ public class Application {
         try {
             createWindow(settings);
 
-            lastLoopTime = System.currentTimeMillis();
+            lastLoopTime = System.nanoTime();
 
             while (loopActive) {
                 refresh();
@@ -163,10 +165,6 @@ public class Application {
             assignedWindow.setAssigned(true);
             WL.WindowAssign(window.getWindowId());
         }
-        if (currentVsync != vsync) {
-            currentVsync = vsync;
-            WL.SetVsync(Math.max(0, vsync));
-        }
     }
 
     private static void updateWindowList() {
@@ -197,47 +195,81 @@ public class Application {
         windowsRemove.clear();
     }
 
-    private static boolean iterateWindows() {
+    private static void iterateWindows() {
         updateWindowList();
 
         long now = System.nanoTime();
         loopTime = (now - lastLoopTime) / 1_000_000_000.0f;
         lastLoopTime = now;
 
-        boolean anyAnimation = false;
         for (Window window : windows) {
             assignWindow(window);
 
             try {
-                anyAnimation = window.loop(loopTime) || anyAnimation;
+                window.loop(loopTime);
             } catch (Exception e) {
                 Application.handleException(e);
                 window.close();
             }
         }
-        return anyAnimation;
     }
 
     private static void refresh() {
-        boolean anyAnimation = iterateWindows();
-        runVsyncTasks();
+        iterateWindows();
 
         if (assignedWindow != null) {
-            WL.HandleEvents(vsync > 0 ? 0 : anyAnimation ? 1 / 120f : 0.25f);
+            boolean noSync = updateContext();
+            runVsyncTasks(noSync);
         } else {
             loopActive = false;
         }
     }
 
     private static void refreshResize() {
-        boolean anyAnimation = iterateWindows();
+        iterateWindows();
 
-        if (assignedWindow == null) {
+        if (assignedWindow != null) {
+            updateContext();
+        } else {
             loopActive = false;
         }
     }
 
-    private static void runVsyncTasks() {
+    private static boolean updateContext() {
+        int lastWindows = -1;
+        for (int i = 0; i < windows.size(); i++) {
+            Window window = windows.get(i);
+            if (window.isBufferInvalided()) {
+                lastWindows = i;
+            }
+        }
+
+        for (int i = 0; i < windows.size(); i++) {
+            Window window = windows.get(i);
+            if (window.isBufferInvalided()) {
+                assignWindow(window);
+                if (i != lastWindows) {
+                    if (window.getVsync() != 0) {
+                        window.setVsync(0);
+                        WL.SetVsync(0);
+                    }
+                } else {
+                    if (window.getVsync() != getVsync()) {
+                        window.setVsync(getVsync());
+                        WL.SetVsync(getVsync());
+                    }
+                }
+                WL.SwapBuffers(window.getWindowId());
+            }
+        }
+        for (int i = 0; i < windows.size(); i++) {
+            Window window = windows.get(i);
+            window.unsetBufferInvalided();
+        }
+        return lastWindows == -1;
+    }
+
+    private static void runVsyncTasks(boolean noSync) {
         synchronized (vsyncRun) {
             vsyncRunTemp.addAll(vsyncRun);
             vsyncRun.clear();
@@ -250,6 +282,25 @@ public class Application {
             }
         }
         vsyncRunTemp.clear();
+
+        if (getVsync() == 0 || noSync) {
+            long now = System.nanoTime();
+            if (autoFrameLimit == 0) {
+                autoFrameLimit = now;
+            }
+            long off = now - autoFrameLimit;
+
+            long sleepTime = autoFrameFPS - off;
+            if (sleepTime > 0) {
+                try {
+                    Thread.sleep(sleepTime / 1_000_000);
+                } catch (InterruptedException ignored) {
+                }
+            }
+        }
+        autoFrameLimit = System.nanoTime();
+
+        WL.HandleEvents(0);
     }
 
     public static void setVsync(int vsync) {
