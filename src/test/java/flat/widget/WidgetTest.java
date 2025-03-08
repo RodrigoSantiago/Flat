@@ -52,7 +52,7 @@ public class WidgetTest {
         assertFalse(widget.isHovered());
         assertFalse(widget.isDragged());
         assertFalse(widget.isActivated());
-        assertFalse(widget.isError());
+        assertFalse(widget.isUndefined());
         assertFalse(widget.isFocused());
 
         widget.setEnabled(false);
@@ -78,8 +78,8 @@ public class WidgetTest {
         widget.setActivated(true);
         assertTrue(widget.isActivated());
 
-        widget.setError(true);
-        assertTrue(widget.isError());
+        widget.setUndefined(true);
+        assertTrue(widget.isUndefined());
 
         widget.setFocused(true);
         assertFalse(widget.isFocused());
@@ -96,7 +96,7 @@ public class WidgetTest {
         assertTrue(widget.isHovered());
         assertTrue(widget.isDragged());
         assertTrue(widget.isActivated());
-        assertTrue(widget.isError());
+        assertTrue(widget.isUndefined());
         assertTrue(widget.isFocused());
     }
 

@@ -41,7 +41,7 @@ public class UXBuilder {
         UXBuilder.install("Checkbox", Checkbox::new);
         UXBuilder.install("RadioButton", RadioButton::new);
         UXBuilder.install("RadioGroup", RadioGroup::new);
-        UXBuilder.install("Switch", SwitchToggle::new);
+        UXBuilder.install("SwitchToggle", SwitchToggle::new);
         UXBuilder.install("ImageView", ImageView::new);
         UXBuilder.install("VerticalScrollBar", VerticalScrollBar::new);
         UXBuilder.install("HorizontalScrollBar", HorizontalScrollBar::new);

@@ -11,6 +11,7 @@ import flat.uxml.*;
 import flat.widget.Widget;
 import flat.widget.enums.Direction;
 import flat.widget.enums.ImageFilter;
+import flat.widget.enums.LineCap;
 
 public class Slider extends Widget {
 
@@ -28,6 +29,7 @@ public class Slider extends Widget {
     private int iconBgColor = Color.transparent;
     
     private float lineWidth = 1;
+    private LineCap lineCap = LineCap.BUTT;
     private int lineColor = Color.white;
     private int lineFilledColor = Color.black;
 
@@ -65,6 +67,7 @@ public class Slider extends Widget {
         setIconImageFilter(attrs.getConstant("icon-image-filter", info, getIconImageFilter()));
         setLineWidth(attrs.getSize("line-width", info, getLineWidth()));
         setLineColor(attrs.getColor("line-color", info, getLineColor()));
+        setLineCap(attrs.getConstant("line-cap", info, getLineCap()));
         setLineFilledColor(attrs.getColor("line-filled-color", info, getLineFilledColor()));
         setDirection(attrs.getAttributeConstant("direction", getDirection()));
     }
@@ -117,8 +120,8 @@ public class Slider extends Widget {
             lineStart = x + iw * 0.5f;
             lineEnd = x + width - iw * 0.5f;
         } else {
-            lineStart = y + ih * 0.5f;
-            lineEnd = y + height - ih * 0.5f;
+            lineStart = y + height - ih * 0.5f;
+            lineEnd = y + ih * 0.5f;
         }
 
         float diff = maxValue - minValue;
@@ -140,7 +143,7 @@ public class Slider extends Widget {
 
         float lineWidth = Math.min(getLineWidth(), Math.min(width, height));
 
-        graphics.setStroker(new BasicStroke(lineWidth));
+        graphics.setStroker(new BasicStroke(lineWidth, getLineCap().ordinal(), 0));
         if (hor) {
             graphics.setColor(getLineColor());
             graphics.drawLine(lineStart, ypos, lineEnd, ypos);
@@ -165,21 +168,30 @@ public class Slider extends Widget {
             }
         }
 
-        if (iw > 0 && ih > 0 && getIcon() != null) {
-            if (Color.getAlpha(getIconBgColor()) > 0) {
-                float bgw = hor ? getOutHeight() : getOutWidth();
-                float bgh = hor ? getOutHeight() : getOutWidth();
-                graphics.setColor(getIconBgColor());
-                graphics.drawEllipse(xpos - bgw * 0.5f, ypos - bgh * 0.5f, bgw, bgh, true);
-            }
-            getIcon().draw(graphics, xpos - iw * 0.5f, ypos - ih * 0.5f, iw, ih, getIconColor(), getIconImageFilter());
+        if (Color.getAlpha(getIconBgColor()) > 0) {
+            float w = Math.min(getOutWidth(), getOutHeight());
+            graphics.setColor(getIconBgColor());
+            graphics.drawEllipse(xpos - w * 0.5f, ypos - w * 0.5f, w, w, true);
         }
+
         if (isRippleEnabled()) {
-            getRipple().release();
-            getRipple().setSize(Math.min(Math.max(iw, ih) * 0.7f, Math.min(getLayoutWidth(), getLayoutHeight()) * 0.5f));
             getRipple().setPosition(xpos, ypos);
             drawRipple(graphics);
         }
+
+        if (iw > 0 && ih > 0 && getIcon() != null) {
+            drawIconShadow(graphics, xpos, ypos, iw, ih);
+            getIcon().draw(graphics, xpos - iw * 0.5f, ypos - ih * 0.5f, iw, ih, getIconColor(), getIconImageFilter());
+        }
+    }
+
+    protected void drawIconShadow(Graphics graphics, float x, float y, float iw, float ih) {
+        float el = getElevation();
+        float sw = Math.min(getOutWidth(), iw);
+        float sh = Math.min(getOutHeight(), ih);
+        float c = Math.max(sw, sh);
+        float op = Color.getOpacity(getIconColor()) * 0.20f;
+        graphics.drawRoundRectShadow(x - sw * 0.5f, y - sh * 0.5f, sw, sh, c, c, c, c, el + 2f, op);
     }
 
     @Override
@@ -204,8 +216,8 @@ public class Slider extends Widget {
                 lineStart = x + iw * 0.5f;
                 lineEnd = x + width - iw * 0.5f;
             } else {
-                lineStart = y + ih * 0.5f;
-                lineEnd = y + height - ih * 0.5f;
+                lineStart = y + height - ih * 0.5f;
+                lineEnd = y + ih * 0.5f;
             }
 
             float lineSize = lineEnd - lineStart;
@@ -342,6 +354,19 @@ public class Slider extends Widget {
     public void setLineColor(int lineColor) {
         if (this.lineColor != lineColor) {
             this.lineColor = lineColor;
+            invalidate(false);
+        }
+    }
+
+    public LineCap getLineCap() {
+        return lineCap;
+    }
+
+    public void setLineCap(LineCap lineCap) {
+        if (lineCap == null) lineCap = LineCap.BUTT;
+
+        if (this.lineCap != lineCap) {
+            this.lineCap = lineCap;
             invalidate(false);
         }
     }

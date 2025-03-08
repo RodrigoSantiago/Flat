@@ -17,7 +17,6 @@ import flat.widget.stages.Menu;
 import flat.widget.effects.RippleEffect;
 import flat.widget.enums.DropdownAlign;
 import flat.widget.enums.Visibility;
-import flat.widget.text.Button;
 import flat.window.Activity;
 
 import static flat.widget.State.*;
@@ -835,9 +834,9 @@ public class Widget {
         return ACTIVATED.contains(states);
     }
 
-    protected void setActivated(boolean actived) {
-        if (isActivated() != actived) {
-            setStates((byte) (actived ? states | ACTIVATED.bitset() : states & ~ACTIVATED.bitset()));
+    protected void setActivated(boolean activated) {
+        if (isActivated() != activated) {
+            setStates((byte) (activated ? states | ACTIVATED.bitset() : states & ~ACTIVATED.bitset()));
         }
     }
 
@@ -871,13 +870,13 @@ public class Widget {
         }
     }
 
-    public boolean isError() {
-        return ERROR.contains(states);
+    public boolean isUndefined() {
+        return UNDEFINED.contains(states);
     }
 
-    protected void setError(boolean error) {
-        if (isError() != error) {
-            setStates((byte) (error ? states | ERROR.bitset() : states & ~ERROR.bitset()));
+    protected void setUndefined(boolean undefined) {
+        if (isUndefined() != undefined) {
+            setStates((byte) (undefined ? states | UNDEFINED.bitset() : states & ~UNDEFINED.bitset()));
         }
     }
 
@@ -1651,10 +1650,9 @@ public class Widget {
             if (rippleOverflow) {
                 ix = inx + inw * 0.5f;
                 iy = iny + inh * 0.5f;
-                float w = getLayoutWidth();
-                float h = getLayoutHeight();
-                ripple.setSize((float) Math.sqrt(w * w + h * h) * 0.5f);
-                ripple.setSize(Math.max(getLayoutWidth(), getLayoutHeight()) * 0.5f);
+                float w = getOutWidth();
+                float h = getOutHeight();
+                ripple.setSize(Math.min(w, h) * 0.5f);
             } else {
                 ix = inverseTransform.pointX(x, y);
                 iy = inverseTransform.pointY(x, y);

@@ -1,5 +1,6 @@
 package flat.widget.selection;
 
+import flat.animations.Interpolation;
 import flat.animations.NormalizedAnimation;
 import flat.animations.StateInfo;
 import flat.events.ActionEvent;
@@ -7,41 +8,43 @@ import flat.events.PointerEvent;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
 import flat.graphics.image.Drawable;
+import flat.math.stroke.BasicStroke;
 import flat.uxml.*;
 import flat.widget.Widget;
 import flat.widget.enums.Direction;
 import flat.widget.enums.ImageFilter;
+import flat.widget.enums.LineCap;
 import flat.window.Activity;
 
 public class SwitchToggle extends Widget {
 
     private UXListener<ActionEvent> toggleListener;
-    private UXValueListener<Boolean> activeListener;
-    private boolean active;
+    private UXValueListener<Boolean> activatedListener;
 
-    private ImageFilter iconImageFilter = ImageFilter.LINEAR;
-    private Drawable iconInactive;
-    private Drawable iconActive;
-    private int iconColor = Color.white;
-    private float iconTransitionDuration;
-    private float slideTransitionDuration;
     private Direction direction = Direction.HORIZONTAL;
 
-    private final IconChange iconChangeAnimation = new IconChange();
-    private final IconChange iconSlideAnimation = new IconChange();
-    private Drawable prevIcon;
-    private Drawable currentIcon;
+    private Drawable icon;
     private float iconWidth;
     private float iconHeight;
+    private int iconColor = Color.white;
+    private int iconBgColor;
+    private ImageFilter iconImageFilter = ImageFilter.LINEAR;
+    private float slideTransitionDuration;
+
+    private float lineWidth = 1;
+    private int lineColor;
+    private LineCap lineCap = LineCap.BUTT;
+
+    private final IconChange iconSlideAnimation = new IconChange(Interpolation.fade);
 
     @Override
     public void applyAttributes(Controller controller) {
         super.applyAttributes(controller);
 
         UXAttrs attrs = getAttrs();
-        setActive(attrs.getAttributeBool("active", isActive()));
+        setActivated(attrs.getAttributeBool("activated", isActivated()));
         setToggleListener(attrs.getAttributeListener("on-toggle", ActionEvent.class, controller));
-        setActiveListener(attrs.getAttributeValueListener("on-active-change", Boolean.class, controller));
+        setActivatedListener(attrs.getAttributeValueListener("on-activated-change", Boolean.class, controller));
     }
 
     @Override
@@ -53,87 +56,15 @@ public class SwitchToggle extends Widget {
 
         setIconColor(attrs.getColor("icon-color", info, getIconColor()));
         setIconImageFilter(attrs.getConstant("icon-image-filter", info, getIconImageFilter()));
-        setIconInactive(attrs.getResourceAsDrawable("icon-inactive", info, getIconInactive(), false));
-        setIconActive(attrs.getResourceAsDrawable("icon-active", info, getIconActive(), false));
-        setIconTransitionDuration(attrs.getNumber("icon-transition-duration", info, getIconTransitionDuration()));
+        setIcon(attrs.getResourceAsDrawable("icon", info, getIcon(), false));
+        setIconWidth(attrs.getSize("icon-width", info, getIconWidth()));
+        setIconHeight(attrs.getSize("icon-height", info, getIconHeight()));
+        setIconBgColor(attrs.getColor("icon-bg-color", info, getIconBgColor()));
+        setLineWidth(attrs.getSize("line-width", info, getLineWidth()));
+        setLineColor(attrs.getColor("line-color", info, getLineColor()));
+        setLineCap(attrs.getConstant("line-cap", info, getLineCap()));
         setSlideTransitionDuration(attrs.getNumber("slide-transition-duration", info, getSlideTransitionDuration()));
         setDirection(attrs.getConstant("direction", info, getDirection()));
-    }
-
-    @Override
-    public void onDraw(Graphics graphics) {
-        drawBackground(graphics);
-
-        final float x = getInX();
-        final float y = getInY();
-        final float width = getInWidth();
-        final float height = getInHeight();
-
-        if (width <= 0 || height <= 0) return;
-
-        float slide = iconSlideAnimation.isPlaying() ? iconSlideAnimation.getInterpolatedPosition() : 1f;
-        if (!active) {
-            slide = 1 - slide;
-        }
-        if (direction == Direction.HORIZONTAL || direction == Direction.VERTICAL) {
-            slide = 1 - slide;
-        }
-
-        boolean hor = direction == Direction.HORIZONTAL || direction == Direction.IHORIZONTAL;
-        float cx1, cy1, cx2, cy2;
-
-        if (hor) {
-            cx1 = (x + Math.min(iconWidth, width) * 0.5f);
-            cy1 = y + height * 0.5f;
-            cx2 = (x + (width - Math.min(iconWidth, width) * 0.5f));
-            cy2 = y + height * 0.5f;
-
-        } else {
-            cx1 = x + width * 0.5f;
-            cy1 = (y + Math.min(iconHeight, height) * 0.5f);
-            cx2 = x + width * 0.5f;
-            cy2 = (y + (height - Math.min(iconHeight, height) * 0.5f));
-        }
-
-        float px = cx1 * (1 - slide) + cx2 * slide;
-        float py = cy1 * (1 - slide) + cy2 * slide;
-
-        graphics.setTransform2D(getTransform());
-
-        float pos = iconChangeAnimation.isPlaying() ? iconChangeAnimation.getInterpolatedPosition() : 1f;
-        float prevAlpha = pos < 0.5f ? 1 : 1 - (pos - 0.5f) / 0.5f;
-        float currentAlpha = pos < 0.5f ? pos / 0.5f : 1;
-        if (iconTransitionDuration <= 0) {
-            currentAlpha = 1f;
-        }
-
-        if (iconTransitionDuration > 0 && prevIcon != null) {
-            float icoWidth = Math.min(prevIcon.getWidth(), width);
-            float icoHeight = Math.min(prevIcon.getHeight(), height);
-
-            int colorAlpha = Color.multiplyColorAlpha(iconColor, prevAlpha);
-            prevIcon.draw(graphics
-                    , px - icoWidth * 0.5f
-                    , py - icoHeight * 0.5f
-                    , icoWidth, icoHeight, colorAlpha, iconImageFilter);
-        }
-
-        if (currentIcon != null) {
-            float icoWidth = Math.min(currentIcon.getWidth(), width);
-            float icoHeight = Math.min(currentIcon.getHeight(), height);
-
-            int colorAlpha = Color.multiplyColorAlpha(iconColor, currentAlpha);
-            currentIcon.draw(graphics
-                    , px - icoWidth * 0.5f
-                    , py - icoHeight * 0.5f
-                    , icoWidth, icoHeight, colorAlpha, iconImageFilter);
-        }
-
-        if (isRippleEnabled()) {
-            getRipple().setSize((hor ? getLayoutHeight() : getLayoutWidth()) * 0.5f);
-            getRipple().setPosition(px, py);
-            drawRipple(graphics);
-        }
     }
 
     @Override
@@ -148,12 +79,12 @@ public class SwitchToggle extends Widget {
         boolean hor = direction == Direction.HORIZONTAL || direction == Direction.IHORIZONTAL;
 
         if (wrapWidth) {
-            mWidth = Math.max(iconWidth * (hor ? 2f : 1f) + extraWidth, getLayoutMinWidth());
+            mWidth = Math.max(getLayoutIconWidth() * (hor ? 2f : 1f) + extraWidth, getLayoutMinWidth());
         } else {
             mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
         }
         if (wrapHeight) {
-            mHeight = Math.max(iconHeight * (hor ? 1f : 2f) + extraHeight, getLayoutMinHeight());
+            mHeight = Math.max(getLayoutIconHeight() * (hor ? 1f : 2f) + extraHeight, getLayoutMinHeight());
         } else {
             mHeight = Math.max(getLayoutPrefHeight(), getLayoutMinHeight());
         }
@@ -162,42 +93,86 @@ public class SwitchToggle extends Widget {
     }
 
     @Override
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
+        final float x = getInX();
+        final float y = getInY();
+        final float width = getInWidth();
+        final float height = getInHeight();
+
+        if (width <= 0 || height <= 0) return;
+
+        boolean hor = direction == Direction.HORIZONTAL || direction == Direction.IHORIZONTAL;
+        boolean rev = direction == Direction.IHORIZONTAL || direction == Direction.IVERTICAL;
+
+        float slide = iconSlideAnimation.isPlaying() ? iconSlideAnimation.getInterpolatedPosition() : 1f;
+        if (!isActivated()) {
+            slide = 1 - slide;
+        }
+        if (rev) {
+            slide = 1 - slide;
+        }
+
+        float cx1, cy1, cx2, cy2;
+
+        float icoWidth = Math.min(getLayoutIconWidth(), width);
+        float icoHeight = Math.min(getLayoutIconHeight(), height);
+        if (hor) {
+            cx1 = (x + icoWidth * 0.5f);
+            cy1 = y + height * 0.5f;
+            cx2 = (x + (width - icoWidth * 0.5f));
+            cy2 = y + height * 0.5f;
+
+        } else {
+            cx1 = x + width * 0.5f;
+            cy1 = (y + icoHeight * 0.5f);
+            cx2 = x + width * 0.5f;
+            cy2 = (y + (height - icoHeight * 0.5f));
+        }
+
+        float px = cx1 * (1 - slide) + cx2 * slide;
+        float py = cy1 * (1 - slide) + cy2 * slide;
+
+        graphics.setTransform2D(getTransform());
+
+        float lineW = Math.min(getLineWidth(), Math.min(height, width));
+        if (lineW > 0 && Color.getAlpha(getLineColor()) > 0) {
+            graphics.setStroker(new BasicStroke(lineW, getLineCap().ordinal(), 0));
+            graphics.setColor(getLineColor());
+            graphics.drawLine(cx1, cy1, cx2, cy2);
+        }
+
+        if (Color.getAlpha(getIconBgColor()) > 0) {
+            float w = Math.min(getOutWidth(), getOutHeight());
+            graphics.setColor(getIconBgColor());
+            graphics.drawEllipse(px - w * 0.5f, py - w * 0.5f, w, w, true);
+        }
+
+        if (isRippleEnabled()) {
+            getRipple().setPosition(px, py);
+            drawRipple(graphics);
+        }
+
+        if (icoWidth > 0 && icoHeight > 0 && getIcon() != null) {
+            float el = getElevation();
+            float sw = Math.min(getOutWidth(), icoWidth);
+            float sh = Math.min(getOutHeight(), icoHeight);
+            float c = Math.max(sw, sh);
+            float op = Color.getOpacity(getIconColor()) * 0.20f;
+            graphics.drawRoundRectShadow(px - sw * 0.5f, py - sh * 0.5f, sw, sh, c, c, c, c, el + 2f, op);
+
+            getIcon().draw(graphics
+                    , px - icoWidth * 0.5f
+                    , py - icoHeight * 0.5f
+                    , icoWidth, icoHeight, getIconColor(), getIconImageFilter());
+        }
+    }
+
+    @Override
     public void pointer(PointerEvent event) {
         super.pointer(event);
         if (!event.isConsumed() && event.getPointerID() == 1 && event.getType() == PointerEvent.RELEASED) {
             toggle();
-        }
-    }
-
-    private void updateIconSize() {
-        float iaWidth = iconActive == null ? 0 : iconActive.getWidth();
-        float iaHeight = iconActive == null ? 0 : iconActive.getHeight();
-        float iiWidth = iconInactive == null ? 0 : iconInactive.getWidth();
-        float iiHeight = iconInactive == null ? 0 : iconInactive.getHeight();
-        float nextWidth = Math.max(iaWidth, iiWidth);
-        float nextHeight = Math.max(iaHeight, iiHeight);
-        if (nextWidth != iconWidth || nextHeight != iconHeight) {
-            this.iconWidth = nextWidth;
-            this.iconHeight = nextHeight;
-            invalidate(isWrapContent());
-        } else {
-            invalidate(false);
-        }
-    }
-
-    private void setCurrentIcon() {
-        Drawable icon = isActive() ? iconActive : iconInactive;
-        if (icon == null) {
-            icon = isActive() ? iconInactive : iconActive;
-        }
-        if (currentIcon != icon) {
-            if (iconTransitionDuration > 0) {
-                iconChangeAnimation.setDuration(iconTransitionDuration);
-                iconChangeAnimation.play(getActivity());
-            }
-            prevIcon = currentIcon;
-            currentIcon = icon;
-            invalidate(false);
         }
     }
 
@@ -214,40 +189,14 @@ public class SwitchToggle extends Widget {
         }
     }
 
-    public Drawable getIconInactive() {
-        return iconInactive;
+    public Drawable getIcon() {
+        return icon;
     }
 
-    public void setIconInactive(Drawable iconInactive) {
-        if (this.iconInactive != iconInactive) {
-            this.iconInactive = iconInactive;
-            updateIconSize();
-            setCurrentIcon();
-        }
-    }
-
-    public Drawable getIconActive() {
-        return iconActive;
-    }
-
-    public void setIconActive(Drawable iconActive) {
-        if (this.iconActive != iconActive) {
-            this.iconActive = iconActive;
-
-            updateIconSize();
-            setCurrentIcon();
-        }
-    }
-
-    public float getIconTransitionDuration() {
-        return iconTransitionDuration;
-    }
-
-    public void setIconTransitionDuration(float iconTransitionDuration) {
-        if (this.iconTransitionDuration != iconTransitionDuration) {
-            this.iconTransitionDuration = iconTransitionDuration;
-
-            iconChangeAnimation.stop(true);
+    public void setIcon(Drawable icon) {
+        if (this.icon != icon) {
+            this.icon = icon;
+            invalidate(isWrapContent());
         }
     }
 
@@ -274,6 +223,47 @@ public class SwitchToggle extends Widget {
         }
     }
 
+    public float getIconWidth() {
+        return iconWidth;
+    }
+
+    public void setIconWidth(float iconWidth) {
+        if (this.iconWidth != iconWidth) {
+            this.iconWidth = iconWidth;
+            invalidate(isWrapContent());
+        }
+    }
+    
+    protected float getLayoutIconWidth() {
+        return iconWidth == 0 && icon != null ? icon.getWidth() : iconWidth;
+    }
+
+    public float getIconHeight() {
+        return iconHeight;
+    }
+
+    public void setIconHeight(float iconHeight) {
+        if (this.iconHeight != iconHeight) {
+            this.iconHeight = iconHeight;
+            invalidate(isWrapContent());
+        }
+    }
+
+    public int getIconBgColor() {
+        return iconBgColor;
+    }
+
+    public void setIconBgColor(int iconBgColor) {
+        if (this.iconBgColor != iconBgColor) {
+            this.iconBgColor = iconBgColor;
+            invalidate(false);
+        }
+    }
+
+    protected float getLayoutIconHeight() {
+        return iconHeight == 0 && icon != null ? icon.getHeight() : iconHeight;
+    }
+
     public Direction getDirection() {
         return direction;
     }
@@ -287,21 +277,51 @@ public class SwitchToggle extends Widget {
         }
     }
 
-    public boolean isActive() {
-        return active;
+    public float getLineWidth() {
+        return lineWidth;
     }
 
-    public void setActive(boolean active) {
-        if (this.active != active) {
-            boolean old = this.active;
-            this.active = active;
+    public void setLineWidth(float lineWidth) {
+        if (this.lineWidth != lineWidth) {
+            this.lineWidth = lineWidth;
+            invalidate(false);
+        }
+    }
+
+    public int getLineColor() {
+        return lineColor;
+    }
+
+    public void setLineColor(int lineColor) {
+        if (this.lineColor != lineColor) {
+            this.lineColor = lineColor;
+            invalidate(false);
+        }
+    }
+
+    public LineCap getLineCap() {
+        return lineCap;
+    }
+
+    public void setLineCap(LineCap lineCap) {
+        if (lineCap == null) lineCap = LineCap.BUTT;
+
+        if (this.lineCap != lineCap) {
+            this.lineCap = lineCap;
+            invalidate(false);
+        }
+    }
+
+    @Override
+    public void setActivated(boolean active) {
+        if (this.isActivated() != active) {
+            boolean old = this.isActivated();
+            super.setActivated(active);
 
             if (slideTransitionDuration > 0) {
                 iconSlideAnimation.setDuration(slideTransitionDuration);
                 iconSlideAnimation.play(getActivity());
             }
-            setCurrentIcon();
-            setActivated(active);
             fireActiveListener(old);
         }
     }
@@ -321,21 +341,21 @@ public class SwitchToggle extends Widget {
     }
 
     public void toggle() {
-        setActive(!isActive());
+        setActivated(!isActivated());
         fireToggle();
     }
 
-    public UXValueListener<Boolean> getActiveListener() {
-        return activeListener;
+    public UXValueListener<Boolean> getActivatedListener() {
+        return activatedListener;
     }
 
-    public void setActiveListener(UXValueListener<Boolean> activeListener) {
-        this.activeListener = activeListener;
+    public void setActivatedListener(UXValueListener<Boolean> activatedListener) {
+        this.activatedListener = activatedListener;
     }
 
     private void fireActiveListener(boolean oldValue) {
-        if (activeListener != null && oldValue != active) {
-            UXValueListener.safeHandle(activeListener, new ValueChange<>(this, oldValue, active));
+        if (activatedListener != null && oldValue != isActivated()) {
+            UXValueListener.safeHandle(activatedListener, new ValueChange<>(this, oldValue, isActivated()));
         }
     }
 
@@ -344,6 +364,11 @@ public class SwitchToggle extends Widget {
     }
 
     private class IconChange extends NormalizedAnimation {
+
+        public IconChange(Interpolation interpolation) {
+            super(interpolation);
+        }
+
         @Override
         public Activity getSource() {
             return getActivity();

@@ -12,8 +12,8 @@ $card-color : #FFFFFF;
 $card-color-acc : #BBDEFB;
 $card-color-selected : #E3F2FD;
 
-$disabled-color : #00000020;
-$on-disabled-color : #00000080;
+$disabled-color : #C0C0C0FF;
+$on-disabled-color : #808080FF;
 
 $on-primary-color : #FFFFFF;
 $on-secondary-color : #FFFFFF;
@@ -123,92 +123,9 @@ canvas {
   Selection
 */
 
-checkbox {
-    width : 24;
-    height : 24;
-    ripple-overflow : true;
-    ripple-enabled : true;
-    ripple-color : #00000080;
-    icon-indeterminate : '/default/icons/minus-box.svg';
-    icon-inactive : '/default/icons/checkbox-blank-outline.svg';
-    icon-active : '/default/icons/checkbox-marked.svg';
-    cursor : hand;
-}
-
-radio-button {
-    width : 24;
-    height : 24;
-    ripple-overflow : true;
-    ripple-enabled : true;
-    ripple-color : #00000080;
-    icon-inactive : '/default/icons/radiobox-blank.svg';
-    icon-active : '/default/icons/radiobox-marked.svg';
-    cursor : hand;
-}
-
-switch-toggle {
-    ripple-enabled : true;
-    ripple-overflow : true;
-    ripple-color : #00000080;
-    radius-top : 8;
-    radius-left : 8;
-    radius-right : 8;
-    radius-bottom : 8;
-    radius-top : 16;
-    radius-bottom : 16;
-    radius-left : 16;
-    radius-right : 16;
-
-    shadow : true;
-    elevation : 1;
-    background-color : #CA5050;
-    icon-active : '/default/icons/switch-shape.svg';
-    icon-inactive : '/default/icons/switch-shape.svg';
-
-    icon-transition-duration : 0.1;
-    slide-transition-duration : 0.1;
-    cursor : hand;
-}
-
 /*
   Value
 */
-
-slider {
-    focusable : true;
-    ripple-enabled : true;
-    ripple-color : #00000080;
-    ripple-overflow : true;
-
-    background-color : #CCCCCC;
-    icon : '/default/icons/switch-shape.svg';
-    icon-width : 24;
-    icon-height : 24;
-    icon-color : red;
-    line-width : 2;
-    line-color : gray;
-    line-filled-color : red;
-    cursor : hand;
-
-    transition-duration : 0.1;
-
-    enabled {
-        expansion : 0;
-        expansion-color : #FF000000;
-    }
-    hovered {
-        expansion : 16;
-        expansion-color : #FF000030;
-    }
-    pressed {
-        expansion : 16;
-        expansion-color : #FF000030;
-    }
-    dragged {
-        expansion : 16;
-        expansion-color : #FF000030;
-    }
-}
 ranged-slider : slider {
 
 }

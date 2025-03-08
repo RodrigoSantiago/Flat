@@ -26,10 +26,7 @@ import static org.powermock.api.mockito.PowerMockito.*;
 @PrepareForTest({DrawableReader.class})
 public class RadioButtonTest {
     ResourceStream resActive;
-    ResourceStream resInactive;
-
     Drawable iconActive;
-    Drawable iconInactive;
 
     @Before
     public void before() {
@@ -38,15 +35,10 @@ public class RadioButtonTest {
         iconActive = mock(Drawable.class);
         when(iconActive.getWidth()).thenReturn(16f);
         when(iconActive.getHeight()).thenReturn(20f);
-        iconInactive = mock(Drawable.class);
-        when(iconInactive.getWidth()).thenReturn(20f);
-        when(iconInactive.getHeight()).thenReturn(16f);
 
         resActive = mock(ResourceStream.class);
-        resInactive = mock(ResourceStream.class);
 
         when(DrawableReader.parse(resActive)).thenReturn(iconActive);
-        when(DrawableReader.parse(resInactive)).thenReturn(iconInactive);
     }
 
     @Test
@@ -61,45 +53,51 @@ public class RadioButtonTest {
 
         RadioButton radioButton = new RadioButton();
 
-        assertNull(radioButton.getIconActive());
-        assertNull(radioButton.getIconInactive());
-        assertEquals(0, radioButton.getIconTransitionDuration(), 0.0001f);
+        assertNull(radioButton.getIcon());
+        assertEquals(0, radioButton.getIconWidth(), 0.001f);
+        assertEquals(0, radioButton.getIconHeight(), 0.001f);
         assertEquals(0xFFFFFFFF, radioButton.getIconColor());
         assertEquals(ImageFilter.LINEAR, radioButton.getIconImageFilter());
-        assertFalse(radioButton.isActive());
+        assertFalse(radioButton.isActivated());
         assertNull(radioButton.getToggleListener());
-        assertNull(radioButton.getActiveListener());
+        assertNull(radioButton.getActivatedListener());
 
         radioButton.setAttributes(createNonDefaultValues(), null);
         radioButton.applyAttributes(controller);
 
-        assertNull(radioButton.getIconActive());
-        assertNull(radioButton.getIconInactive());
-        assertEquals(0, radioButton.getIconTransitionDuration(), 0.0001f);
+        assertNull(radioButton.getIcon());
+        assertEquals(0, radioButton.getIconWidth(), 0.001f);
+        assertEquals(0, radioButton.getIconHeight(), 0.001f);
         assertEquals(0xFFFFFFFF, radioButton.getIconColor());
         assertEquals(ImageFilter.LINEAR, radioButton.getIconImageFilter());
-        assertTrue(radioButton.isActive());
+        assertTrue(radioButton.isActivated());
         assertEquals(action, radioButton.getToggleListener());
-        assertEquals(listener, radioButton.getActiveListener());
+        assertEquals(listener, radioButton.getActivatedListener());
 
         radioButton.applyStyle();
 
-        assertEquals(iconActive, radioButton.getIconActive());
-        assertEquals(iconInactive, radioButton.getIconInactive());
-        assertEquals(1.0f, radioButton.getIconTransitionDuration(), 0.0001f);
+        assertEquals(iconActive, radioButton.getIcon());
+        assertEquals(16, radioButton.getIconWidth(), 0.001f);
+        assertEquals(18, radioButton.getIconHeight(), 0.001f);
         assertEquals(0xFF0000FF, radioButton.getIconColor());
         assertEquals(ImageFilter.NEAREST, radioButton.getIconImageFilter());
-        assertTrue(radioButton.isActive());
+        assertTrue(radioButton.isActivated());
         assertEquals(action, radioButton.getToggleListener());
-        assertEquals(listener, radioButton.getActiveListener());
+        assertEquals(listener, radioButton.getActivatedListener());
     }
 
     @Test
     public void measure() {
         RadioButton radioButton = new RadioButton();
-        radioButton.setIconActive(iconActive);
-        radioButton.setIconInactive(iconInactive);
-        radioButton.setActive(true);
+        radioButton.setIcon(iconActive);
+        radioButton.setActivated(true);
+        radioButton.onMeasure();
+
+        assertEquals(16, radioButton.getMeasureWidth(), 0.1f);
+        assertEquals(20, radioButton.getMeasureHeight(), 0.1f);
+
+        radioButton.setIconWidth(20);
+        radioButton.setIconHeight(20);
         radioButton.onMeasure();
 
         assertEquals(20, radioButton.getMeasureWidth(), 0.1f);
@@ -128,24 +126,23 @@ public class RadioButtonTest {
     @Test
     public void fireAction() {
         RadioButton radioButton = new RadioButton();
-        radioButton.setIconActive(iconActive);
-        radioButton.setIconInactive(iconInactive);
+        radioButton.setIcon(iconActive);
 
         var action = (UXListener<ActionEvent>) mock(UXListener.class);
         radioButton.setToggleListener(action);
 
         var listener = (UXValueListener<Boolean>) mock(UXValueListener.class);
-        radioButton.setActiveListener(listener);
+        radioButton.setActivatedListener(listener);
 
-        assertFalse(radioButton.isActive());
-
-        radioButton.toggle();
-        assertTrue(radioButton.isActive());
+        assertFalse(radioButton.isActivated());
 
         radioButton.toggle();
-        assertTrue(radioButton.isActive());
+        assertTrue(radioButton.isActivated());
 
-        radioButton.setActive(false);
+        radioButton.toggle();
+        assertTrue(radioButton.isActivated());
+
+        radioButton.setActivated(false);
 
         verify(action, times(1)).handle(any());
         verify(listener, times(2)).handle(any());
@@ -156,17 +153,15 @@ public class RadioButtonTest {
 
         UXValue uxIconActive = mock(UXValue.class);
         when(uxIconActive.asResource(any())).thenReturn(resActive);
-        UXValue uxIconInactive = mock(UXValue.class);
-        when(uxIconInactive.asResource(any())).thenReturn(resInactive);
 
         hash.put(UXHash.getHash("on-toggle"), new UXValueText("onActionWork"));
-        hash.put(UXHash.getHash("on-active-change"), new UXValueText("onActiveWork"));
+        hash.put(UXHash.getHash("on-activated-change"), new UXValueText("onActiveWork"));
         hash.put(UXHash.getHash("icon-color"), new UXValueColor(0xFF0000FF));
         hash.put(UXHash.getHash("icon-image-filter"), new UXValueText(ImageFilter.NEAREST.toString()));
-        hash.put(UXHash.getHash("icon-active"), uxIconActive);
-        hash.put(UXHash.getHash("icon-inactive"), uxIconInactive);
-        hash.put(UXHash.getHash("icon-transition-duration"), new UXValueNumber(1.0f));
-        hash.put(UXHash.getHash("active"), new UXValueBool(true));
+        hash.put(UXHash.getHash("icon"), uxIconActive);
+        hash.put(UXHash.getHash("icon-width"), new UXValueSizeDp(16));
+        hash.put(UXHash.getHash("icon-height"), new UXValueSizeDp(18));
+        hash.put(UXHash.getHash("activated"), new UXValueBool(true));
         return hash;
     }
 }

@@ -8,8 +8,8 @@ public final class StateAnimation implements Animation, StateInfo {
 
     public final Widget widget;
 
-    float fEnabled, fFocused, fActivated, fHovered, fPressed, fDragged, fError, fDisabled;
-    byte tEnabled, tFocused, tActivated, tHovered, tPressed, tDragged, tError, tDisabled;
+    float fEnabled, fFocused, fActivated, fHovered, fPressed, fDragged, fUndefined, fDisabled;
+    byte tEnabled, tFocused, tActivated, tHovered, tPressed, tDragged, tUndefined, tDisabled;
 
     float disabledOverlay;
     boolean disabledOverlayed;
@@ -30,7 +30,7 @@ public final class StateAnimation implements Animation, StateInfo {
     public boolean isPlaying() {
         return !(fEnabled == tEnabled && fFocused == tFocused && fActivated == tActivated &&
                 fHovered == tHovered && fPressed == tPressed && fDragged == tDragged &&
-                fError == tError && fDisabled == tDisabled);
+                fUndefined == tUndefined && fDisabled == tDisabled);
     }
 
     @Override
@@ -53,8 +53,8 @@ public final class StateAnimation implements Animation, StateInfo {
         else fPressed = Math.min(1, fPressed + pass);
         if (tDragged == 0) fDragged = Math.max(0, fDragged - pass);
         else fDragged = Math.min(1, fDragged + pass);
-        if (tError == 0) fError = Math.max(0, fError - pass);
-        else fError = Math.min(1, fError + pass);
+        if (tUndefined == 0) fUndefined = Math.max(0, fUndefined - pass);
+        else fUndefined = Math.min(1, fUndefined + pass);
         if (tDisabled == 0) fDisabled = Math.max(0, fDisabled - pass);
         else fDisabled = Math.min(1, fDisabled + pass);
 
@@ -76,7 +76,7 @@ public final class StateAnimation implements Animation, StateInfo {
         tHovered    = (byte) ((bitmask & (State.HOVERED.bitset())) != 0 ? 1 : 0);
         tPressed    = (byte) ((bitmask & (State.PRESSED.bitset())) != 0 ? 1 : 0);
         tDragged    = (byte) ((bitmask & (State.DRAGGED.bitset())) != 0 ? 1 : 0);
-        tError      = (byte) ((bitmask & (State.ERROR.bitset())) != 0 ? 1 : 0);
+        tUndefined  = (byte) ((bitmask & (State.UNDEFINED.bitset())) != 0 ? 1 : 0);
         tDisabled   = (byte) ((bitmask & (State.DISABLED.bitset())) != 0 ? 1 : 0);
     }
 
@@ -87,7 +87,7 @@ public final class StateAnimation implements Animation, StateInfo {
         fHovered = tHovered;
         fPressed = tPressed;
         fDragged = tDragged;
-        fError = tError;
+        fUndefined = tUndefined;
         fDisabled = tDisabled;
     }
 
@@ -122,7 +122,7 @@ public final class StateAnimation implements Animation, StateInfo {
             case HOVERED: return fHovered;
             case PRESSED: return fPressed;
             case DRAGGED: return fDragged;
-            case ERROR: return fError;
+            case UNDEFINED: return fUndefined;
             default : return disabledOverlayed ? disabledOverlay : fDisabled;
         }
     }

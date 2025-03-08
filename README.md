@@ -119,6 +119,9 @@ The widgets also have `weight` Style-Property so multiple MATCH_PARENT widgets c
 
 Paddings and Margins properties will affect the final Layout/Out/In size independently
 ### Widgets
+![print-01.png](images/print-01.png)
+![print-02.png](images/print-02.png)
+![print-03.png](images/print-03.png)
 
 #### Layout
 - Scene

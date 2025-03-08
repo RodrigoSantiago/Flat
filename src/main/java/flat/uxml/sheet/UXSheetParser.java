@@ -31,7 +31,7 @@ public class UXSheetParser {
     private static final int STRING     = 12;  // "String"|'String'
     private static final int LOCALE     = 13;  // @[a-zA-Z]
 
-    private static final List<String> pseudo = List.of("enabled", "focused", "activated", "hovered", "pressed", "dragged", "error", "disabled");
+    private static final List<String> pseudo = List.of("enabled", "focused", "activated", "hovered", "pressed", "dragged", "undefined", "disabled");
     private static final char[][] measureChar = {{'c', 'm'}, {'d', 'p'}, {'i', 'n'}, {'m', 'm'}, {'p', 'x', 'c'}, {'s', 'p'}};
 
     private int pos;

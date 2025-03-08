@@ -24,7 +24,7 @@ public class RippleEffect {
 
     public RippleEffect(Widget widget) {
         this.widget = widget;
-        animation.setDuration(2);
+        animation.setDuration(1);
         animation.setInterpolation(Interpolation.quadOut);
     }
 
@@ -78,7 +78,7 @@ public class RippleEffect {
     }
 
     public void release() {
-        animation.setDelta(3);
+        animation.setDelta(2);
     }
 
     public void stop() {
