@@ -9,6 +9,7 @@ import flat.uxml.value.*;
 import flat.widget.Widget;
 import flat.widget.enums.Direction;
 import flat.widget.enums.ImageFilter;
+import flat.widget.enums.LineCap;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,10 +30,8 @@ public class SwitchToggleTest {
     UXTheme theme;
 
     ResourceStream resActive;
-    ResourceStream resInactive;
 
     Drawable iconActive;
-    Drawable iconInactive;
 
     @Before
     public void before() {
@@ -43,15 +42,10 @@ public class SwitchToggleTest {
         iconActive = mock(Drawable.class);
         when(iconActive.getWidth()).thenReturn(16f);
         when(iconActive.getHeight()).thenReturn(20f);
-        iconInactive = mock(Drawable.class);
-        when(iconInactive.getWidth()).thenReturn(20f);
-        when(iconInactive.getHeight()).thenReturn(16f);
 
         resActive = mock(ResourceStream.class);
-        resInactive = mock(ResourceStream.class);
 
         when(DrawableReader.parse(resActive)).thenReturn(iconActive);
-        when(DrawableReader.parse(resInactive)).thenReturn(iconInactive);
     }
 
     @Test
@@ -72,6 +66,9 @@ public class SwitchToggleTest {
         assertEquals(0, switchToggle.getSlideTransitionDuration(), 0.0001f);
         assertEquals(0xFFFFFFFF, switchToggle.getIconColor());
         assertEquals(0x00000000, switchToggle.getIconBgColor());
+        assertEquals(0x00000000, switchToggle.getLineColor());
+        assertEquals(1, switchToggle.getLineWidth(), 0.001f);
+        assertEquals(LineCap.BUTT, switchToggle.getLineCap());
         assertEquals(Direction.HORIZONTAL, switchToggle.getDirection());
         assertEquals(ImageFilter.LINEAR, switchToggle.getIconImageFilter());
         assertFalse(switchToggle.isActivated());
@@ -87,6 +84,9 @@ public class SwitchToggleTest {
         assertEquals(0, switchToggle.getSlideTransitionDuration(), 0.0001f);
         assertEquals(0xFFFFFFFF, switchToggle.getIconColor());
         assertEquals(0x00000000, switchToggle.getIconBgColor());
+        assertEquals(0x00000000, switchToggle.getLineColor());
+        assertEquals(1, switchToggle.getLineWidth(), 0.001f);
+        assertEquals(LineCap.BUTT, switchToggle.getLineCap());
         assertEquals(Direction.HORIZONTAL, switchToggle.getDirection());
         assertEquals(ImageFilter.LINEAR, switchToggle.getIconImageFilter());
         assertTrue(switchToggle.isActivated());
@@ -101,6 +101,9 @@ public class SwitchToggleTest {
         assertEquals(2.0f, switchToggle.getSlideTransitionDuration(), 0.0001f);
         assertEquals(0xFF0000FF, switchToggle.getIconColor());
         assertEquals(0xFFFF00FF, switchToggle.getIconBgColor());
+        assertEquals(0x000000FF, switchToggle.getLineColor());
+        assertEquals(2, switchToggle.getLineWidth(), 0.001f);
+        assertEquals(LineCap.ROUND, switchToggle.getLineCap());
         assertEquals(Direction.VERTICAL, switchToggle.getDirection());
         assertEquals(ImageFilter.NEAREST, switchToggle.getIconImageFilter());
         assertTrue(switchToggle.isActivated());
@@ -215,13 +218,14 @@ public class SwitchToggleTest {
 
         UXValue uxIconActive = mock(UXValue.class);
         when(uxIconActive.asResource(any())).thenReturn(resActive);
-        UXValue uxIconInactive = mock(UXValue.class);
-        when(uxIconInactive.asResource(any())).thenReturn(resInactive);
 
         hash.put(UXHash.getHash("on-toggle"), new UXValueText("onActionWork"));
         hash.put(UXHash.getHash("on-activated-change"), new UXValueText("onActiveWork"));
         hash.put(UXHash.getHash("icon-color"), new UXValueColor(0xFF0000FF));
         hash.put(UXHash.getHash("icon-bg-color"), new UXValueColor(0xFFFF00FF));
+        hash.put(UXHash.getHash("line-color"), new UXValueColor(0x000000FF));
+        hash.put(UXHash.getHash("line-width"), new UXValueSizeDp(2));
+        hash.put(UXHash.getHash("line-cap"), new UXValueText(LineCap.ROUND.toString()));
         hash.put(UXHash.getHash("direction"), new UXValueText(Direction.VERTICAL.toString()));
         hash.put(UXHash.getHash("icon-image-filter"), new UXValueText(ImageFilter.NEAREST.toString()));
         hash.put(UXHash.getHash("icon"), uxIconActive);

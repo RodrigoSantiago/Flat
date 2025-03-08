@@ -9,6 +9,7 @@ import flat.uxml.value.*;
 import flat.widget.Widget;
 import flat.widget.enums.Direction;
 import flat.widget.enums.ImageFilter;
+import flat.widget.enums.LineCap;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -83,6 +84,7 @@ public class RangeSliderTest {
         assertEquals(0, slider.getIconHeight(), 0.001f);
         assertEquals(0xFFFFFFFF, slider.getIconColor());
         assertEquals(1, slider.getLineWidth(), 0.001f);
+        assertEquals(LineCap.BUTT, slider.getLineCap());
         assertEquals(0xFFFFFFFF, slider.getLineColor());
         assertEquals(0x000000FF, slider.getLineFilledColor());
         assertEquals(Direction.HORIZONTAL, slider.getDirection());
@@ -107,6 +109,7 @@ public class RangeSliderTest {
         assertEquals(0, slider.getIconHeight(), 0.001f);
         assertEquals(0xFFFFFFFF, slider.getIconColor());
         assertEquals(1, slider.getLineWidth(), 0.001f);
+        assertEquals(LineCap.BUTT, slider.getLineCap());
         assertEquals(0xFFFFFFFF, slider.getLineColor());
         assertEquals(0x000000FF, slider.getLineFilledColor());
         assertEquals(Direction.HORIZONTAL, slider.getDirection());
@@ -130,6 +133,7 @@ public class RangeSliderTest {
         assertEquals(20, slider.getIconHeight(), 0.001f);
         assertEquals(0xFF0000FF, slider.getIconColor());
         assertEquals(3, slider.getLineWidth(), 0.001f);
+        assertEquals(LineCap.ROUND, slider.getLineCap());
         assertEquals(0x00FFFFFF, slider.getLineColor());
         assertEquals(0x00FF00FF, slider.getLineFilledColor());
         assertEquals(Direction.VERTICAL, slider.getDirection());
@@ -374,6 +378,7 @@ public class RangeSliderTest {
         hash.put(UXHash.getHash("line-color"), new UXValueColor(0x00FFFFFF));
         hash.put(UXHash.getHash("line-filled-color"), new UXValueColor(0x00FF00FF));
         hash.put(UXHash.getHash("line-width"), new UXValueSizeDp(3));
+        hash.put(UXHash.getHash("line-cap"), new UXValueText(LineCap.ROUND.toString()));
         return hash;
     }
 }

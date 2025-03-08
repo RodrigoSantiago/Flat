@@ -1,16 +1,19 @@
 package flat.widget.value;
 
 import flat.animations.StateInfo;
+import flat.events.HoverEvent;
 import flat.events.PointerEvent;
 import flat.events.SlideEvent;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
 import flat.graphics.image.Drawable;
+import flat.math.Vector2;
 import flat.math.stroke.BasicStroke;
 import flat.uxml.*;
 import flat.widget.Widget;
 import flat.widget.enums.Direction;
 import flat.widget.enums.ImageFilter;
+import flat.widget.enums.LineCap;
 
 public class RangedSlider extends Widget {
 
@@ -27,9 +30,11 @@ public class RangedSlider extends Widget {
     private float iconWidth;
     private float iconHeight;
     private int iconColor = Color.white;
+    private int iconBgColor = Color.transparent;
     private ImageFilter iconImageFilter = ImageFilter.LINEAR;
     
     private float lineWidth = 1;
+    private LineCap lineCap = LineCap.BUTT;
     private int lineColor = Color.white;
     private int lineFilledColor = Color.black;
 
@@ -40,7 +45,9 @@ public class RangedSlider extends Widget {
     private float startValue;
     private float endValue;
 
+    private int hoverIndex;
     private int grabIndex;
+    private boolean grabbed;
 
     @Override
     public void applyAttributes(Controller controller) {
@@ -69,9 +76,11 @@ public class RangedSlider extends Widget {
         setIconWidth(attrs.getSize("icon-width", info, getIconWidth()));
         setIconHeight(attrs.getSize("icon-height", info, getIconHeight()));
         setIconColor(attrs.getColor("icon-color", info, getIconColor()));
+        setIconBgColor(attrs.getColor("icon-bg-color", info, getIconBgColor()));
         setIconImageFilter(attrs.getConstant("icon-image-filter", info, getIconImageFilter()));
         setLineWidth(attrs.getSize("line-width", info, getLineWidth()));
         setLineColor(attrs.getColor("line-color", info, getLineColor()));
+        setLineCap(attrs.getConstant("line-cap", info, getLineCap()));
         setLineFilledColor(attrs.getColor("line-filled-color", info, getLineFilledColor()));
         setDirection(attrs.getAttributeConstant("direction", getDirection()));
     }
@@ -159,7 +168,7 @@ public class RangedSlider extends Widget {
 
         float lineWidth = Math.min(getLineWidth(), Math.min(width, height));
 
-        graphics.setStroker(new BasicStroke(lineWidth));
+        graphics.setStroker(new BasicStroke(lineWidth, getLineCap().ordinal(), 0));
         if (hor) {
             graphics.setColor(getLineColor());
             graphics.drawLine(lineStart, yposStart, lineEnd, yposStart);
@@ -178,19 +187,86 @@ public class RangedSlider extends Widget {
             }
         }
 
-        if (iw > 0 && ih > 0 && getIcon() != null) {
-            getIcon().draw(graphics, xposStart - iw * 0.5f, yposStart - ih * 0.5f, iw, ih, getIconColor(), getIconImageFilter());
-            getIcon().draw(graphics, xposEnd - iw * 0.5f, yposEnd - ih * 0.5f, iw, ih, getIconColor(), getIconImageFilter());
+        if (Color.getAlpha(getIconBgColor()) > 0) {
+            float w = Math.min(getOutWidth(), getOutHeight());
+            graphics.setColor(getIconBgColor());
+            int index = grabbed ? grabIndex : hoverIndex;
+            if (index == 0) {
+                graphics.drawEllipse(xposStart - w * 0.5f, yposStart - w * 0.5f, w, w, true);
+            } else {
+                graphics.drawEllipse(xposEnd - w * 0.5f, yposEnd - w * 0.5f, w, w, true);
+            }
         }
+
         if (isRippleEnabled()) {
-            getRipple().release();
-            getRipple().setSize(Math.min(Math.max(iw, ih) * 0.7f, Math.min(getLayoutWidth(), getLayoutHeight()) * 0.5f));
             if (grabIndex == 0) {
                 getRipple().setPosition(xposStart, yposStart);
             } else {
                 getRipple().setPosition(xposEnd, yposEnd);
             }
             drawRipple(graphics);
+        }
+
+        if (iw > 0 && ih > 0 && getIcon() != null) {
+            getIcon().draw(graphics, xposStart - iw * 0.5f, yposStart - ih * 0.5f, iw, ih, getIconColor(), getIconImageFilter());
+            getIcon().draw(graphics, xposEnd - iw * 0.5f, yposEnd - ih * 0.5f, iw, ih, getIconColor(), getIconImageFilter());
+        }
+    }
+
+    private float findPos(Vector2 point) {
+        float x = getInX();
+        float y = getInY();
+        float width = getInWidth();
+        float height = getInHeight();
+        float iw = Math.min(width, getLayoutIconWidth());
+        float ih = Math.min(height, getLayoutIconHeight());
+        float range = getMaxValue() - getMinValue();
+
+        boolean hor = direction == Direction.HORIZONTAL || direction == Direction.IHORIZONTAL;
+        boolean rev = direction == Direction.IHORIZONTAL || direction == Direction.IVERTICAL;
+
+        float lineStart;
+        float lineEnd;
+        if (hor) {
+            lineStart = x + iw * 0.5f;
+            lineEnd = x + width - iw * 0.5f;
+        } else {
+            lineStart = y + ih * 0.5f;
+            lineEnd = y + height - ih * 0.5f;
+        }
+        float lineSize = lineEnd - lineStart;
+        float pos = lineSize == 0 ? 0 : ((hor ? point.x : point.y) - lineStart) / lineSize;
+        if (rev) {
+            pos = 1 - pos;
+        }
+        return pos;
+    }
+
+    @Override
+    public void hover(HoverEvent event) {
+        super.hover(event);
+
+        if (event.getType() == HoverEvent.MOVED) {
+            var point = screenToLocal(event.getX(), event.getY());
+            float pos = findPos(point);
+
+            float val = getMinValue() * (1 - pos) + getMaxValue() * pos;
+            float diff = Math.abs(getStartValue() - val) - Math.abs(getEndValue() - val);
+            int lastHover = hoverIndex;
+            if (diff < -0.001f) {
+                hoverIndex = 0;
+            } else if (diff > 0.001f) {
+                hoverIndex = 1;
+            } else if (getStartValue() == getMinValue()) {
+                hoverIndex = 1;
+            } else if (getStartValue() == getMaxValue()) {
+                hoverIndex = 0;
+            } else {
+                hoverIndex = val <= getStartValue() ? 0 : 1;
+            }
+            if (lastHover != hoverIndex) {
+                invalidate(false);
+            }
         }
     }
 
@@ -199,34 +275,10 @@ public class RangedSlider extends Widget {
         super.pointer(event);
         if (!event.isConsumed() && event.getPointerID() == 1) {
             var point = screenToLocal(event.getX(), event.getY());
-
-            float x = getInX();
-            float y = getInY();
-            float width = getInWidth();
-            float height = getInHeight();
-            float iw = Math.min(width, getLayoutIconWidth());
-            float ih = Math.min(height, getLayoutIconHeight());
-            float range = getMaxValue() - getMinValue();
-
-            boolean hor = direction == Direction.HORIZONTAL || direction == Direction.IHORIZONTAL;
-            boolean rev = direction == Direction.IHORIZONTAL || direction == Direction.IVERTICAL;
-
-            float lineStart;
-            float lineEnd;
-            if (hor) {
-                lineStart = x + iw * 0.5f;
-                lineEnd = x + width - iw * 0.5f;
-            } else {
-                lineStart = y + ih * 0.5f;
-                lineEnd = y + height - ih * 0.5f;
-            }
-            float lineSize = lineEnd - lineStart;
-            float pos = lineSize == 0 ? 0 : ((hor ? point.x : point.y) - lineStart) / lineSize;
-            if (rev) {
-                pos = 1 - pos;
-            }
+            float pos = findPos(point);
 
             if (event.getType() == PointerEvent.PRESSED) {
+                grabbed = true;
                 float val = getMinValue() * (1 - pos) + getMaxValue() * pos;
                 float diff = Math.abs(getStartValue() - val) - Math.abs(getEndValue() - val);
                 if (diff < -0.001f) {
@@ -254,6 +306,10 @@ public class RangedSlider extends Widget {
                 } else {
                     slideEndTo(val);
                 }
+            }
+
+            if (event.getType() == PointerEvent.RELEASED) {
+                grabbed = false;
             }
         }
     }
@@ -361,6 +417,17 @@ public class RangedSlider extends Widget {
         }
     }
 
+    public int getIconBgColor() {
+        return iconBgColor;
+    }
+
+    public void setIconBgColor(int iconBgColor) {
+        if (this.iconBgColor != iconBgColor) {
+            this.iconBgColor = iconBgColor;
+            invalidate(false);
+        }
+    }
+
     public ImageFilter getIconImageFilter() {
         return iconImageFilter;
     }
@@ -392,6 +459,19 @@ public class RangedSlider extends Widget {
     public void setLineColor(int lineColor) {
         if (this.lineColor != lineColor) {
             this.lineColor = lineColor;
+            invalidate(false);
+        }
+    }
+
+    public LineCap getLineCap() {
+        return lineCap;
+    }
+
+    public void setLineCap(LineCap lineCap) {
+        if (lineCap == null) lineCap = LineCap.BUTT;
+
+        if (this.lineCap != lineCap) {
+            this.lineCap = lineCap;
             invalidate(false);
         }
     }

@@ -1,4 +1,4 @@
-switch-toggle {
+ranged-slider {
     ripple-enabled : true;
     ripple-overflow : true;
     radius-top : 100;
@@ -16,8 +16,6 @@ switch-toggle {
 
     icon-width : 20dp;
     icon-height : 20dp;
-    max-width : 48dp;
-    max-height : 48dp;
 
     transition-duration : 0.2;
     slide-transition-duration : 0.2;
@@ -26,25 +24,20 @@ switch-toggle {
     cursor : hand;
 }
 
-switch-toggle-primary {
+ranged-slider-primary {
     icon : '/default/icons/switch-shape.svg';
-    icon-color : $card-color-selected;
+    icon-color : $primary-color;
     line-color : $disabled-color;
+    line-filled-color : $primary-color-selected;
     icon-bg-color : transparent;
-    line-width : 12dp;
+    line-width : 6dp;
     line-cap : ROUND;
     ripple-color : alpha($primary-color-selected, 0.5);
     hovered {
-        icon-color : $card-color;
         icon-bg-color : alpha($primary-color-selected, 0.15);
     }
     focused {
-        icon-color : $card-color;
         icon-bg-color : alpha($primary-color-selected, 0.2);
-    }
-    activated {
-        icon-color : $primary-color;
-        line-color : alpha($primary-color-selected, 0.5);
     }
     disabled {
         icon-color : $disabled-color;

@@ -1,6 +1,4 @@
 radio-button {
-    width : 40dp;
-    height : 40dp;
     padding-top : 8dp;
     padding-left : 8dp;
     padding-right : 8dp;
@@ -11,7 +9,8 @@ radio-button {
     radius-bottom : 100;
     ripple-overflow : true;
     ripple-enabled : true;
-    ripple-color : #00000080;
+    icon-width : 20dp;
+    icon-height : 20dp;
     cursor : hand;
     focusable : true;
     transition-duration : 0.2;
@@ -30,5 +29,9 @@ radio-button-primary {
     }
     activated {
         icon : '/default/icons/radiobox-marked.svg';
+    }
+    disabled {
+        icon-color : $disabled-color;
+        background-color : transparent;
     }
 }

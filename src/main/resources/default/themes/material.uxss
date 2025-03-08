@@ -12,8 +12,8 @@ $card-color : #FFFFFF;
 $card-color-acc : #BBDEFB;
 $card-color-selected : #E3F2FD;
 
-$disabled-color : #00000020;
-$on-disabled-color : #00000080;
+$disabled-color : #C0C0C0FF;
+$on-disabled-color : #808080FF;
 
 $on-primary-color : #FFFFFF;
 $on-secondary-color : #FFFFFF;
@@ -126,42 +126,6 @@ canvas {
 /*
   Value
 */
-
-slider {
-    focusable : true;
-    ripple-enabled : true;
-    ripple-color : #00000080;
-    ripple-overflow : true;
-
-    background-color : #CCCCCC;
-    icon : '/default/icons/switch-shape.svg';
-    icon-width : 24;
-    icon-height : 24;
-    icon-color : red;
-    line-width : 2;
-    line-color : gray;
-    line-filled-color : red;
-    cursor : hand;
-
-    transition-duration : 0.1;
-
-    enabled {
-        expansion : 0;
-        expansion-color : #FF000000;
-    }
-    hovered {
-        expansion : 16;
-        expansion-color : #FF000030;
-    }
-    pressed {
-        expansion : 16;
-        expansion-color : #FF000030;
-    }
-    dragged {
-        expansion : 16;
-        expansion-color : #FF000030;
-    }
-}
 ranged-slider : slider {
 
 }

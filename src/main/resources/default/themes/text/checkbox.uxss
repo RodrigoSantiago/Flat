@@ -9,7 +9,6 @@ checkbox {
     radius-bottom : 100;
     ripple-overflow : true;
     ripple-enabled : true;
-    ripple-color : #00000080;
     icon-width : 20dp;
     icon-height : 20dp;
     cursor : hand;
@@ -28,10 +27,14 @@ checkbox-primary {
     focused {
         background-color : alpha($primary-color-selected, 0.2);
     }
-    error {
-        icon : '/default/icons/minus-box.svg';
-    }
     activated {
         icon : '/default/icons/checkbox-marked.svg';
+    }
+    undefined {
+        icon : '/default/icons/minus-box.svg';
+    }
+    disabled {
+        icon-color : $disabled-color;
+        background-color : transparent;
     }
 }

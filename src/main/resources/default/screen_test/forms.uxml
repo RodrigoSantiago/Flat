@@ -1,0 +1,84 @@
+<Scene width="MATCH_PARENT" height="MATCH_PARENT" background-color="$surface-color">
+    <LinearBox direction="HORIZONTAL" width="MATCH_PARENT">
+        <LinearBox direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
+                   padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
+            <Label text="Checkboxes" text-size="16sp" margin-left="4dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Checkbox activated="true" style="checkbox-primary"/>
+                <Checkbox margin-left="16dp" activated="false" style="checkbox-primary"/>
+                <Checkbox margin-left="16dp" undefined="true" style="checkbox-primary"/>
+            </LinearBox>
+            <Label text="RadioButtons" text-size="16sp" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <RadioGroup id="group1"/>
+                <RadioButton activated="true" style="radio-button-primary" radio-group-id="group1"/>
+                <RadioButton margin-left="16dp" activated="false" style="radio-button-primary" radio-group-id="group1"/>
+            </LinearBox>
+            <Label text="SwitchToggles" text-size="16sp" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <SwitchToggle activated="true" style="switch-toggle-primary"/>
+                <SwitchToggle margin-left="8dp" activated="false" style="switch-toggle-primary"/>
+                <SwitchToggle margin-left="8dp" activated="true" style="switch-toggle-primary" direction="vertical"/>
+                <SwitchToggle margin-left="8dp" activated="false" style="switch-toggle-primary" direction="vertical"/>
+                <SwitchToggle margin-left="8dp" activated="true" style="switch-toggle-primary" direction="ihorizontal"/>
+                <SwitchToggle margin-left="8dp" activated="false" style="switch-toggle-primary" direction="ihorizontal"/>
+                <SwitchToggle margin-left="8dp" activated="true" style="switch-toggle-primary" direction="ivertical"/>
+                <SwitchToggle margin-left="8dp" activated="false" style="switch-toggle-primary" direction="ivertical"/>
+            </LinearBox>
+            <Label text="Slider" text-size="16sp" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Slider style="slider-primary" value="0.5" width="120dp"/>
+                <Slider style="slider-primary" value="0.5" height="120dp" direction="vertical"/>
+                <Slider style="slider-primary" value="0.5" width="120dp" direction="ihorizontal"/>
+                <Slider style="slider-primary" value="0.5" height="120dp" direction="ivertical"/>
+            </LinearBox>
+            <Label text="Ranged Slider" text-size="16sp" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <RangedSlider style="ranged-slider-primary" start-value="0.15" end-value="0.65" width="120dp"/>
+                <RangedSlider style="ranged-slider-primary" start-value="0.15" end-value="0.65" height="120dp" direction="vertical"/>
+                <RangedSlider style="ranged-slider-primary" start-value="0.15" end-value="0.65" width="120dp" direction="ihorizontal"/>
+                <RangedSlider style="ranged-slider-primary" start-value="0.15" end-value="0.65" height="120dp" direction="ivertical"/>
+            </LinearBox>
+        </LinearBox>
+        <LinearBox enabled="false" direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
+                   padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
+            <Label text="Checkboxes" text-size="16sp" margin-left="4dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Checkbox activated="true" style="checkbox-primary"/>
+                <Checkbox margin-left="16dp" activated="false" style="checkbox-primary"/>
+                <Checkbox margin-left="16dp" undefined="true" style="checkbox-primary"/>
+            </LinearBox>
+            <Label text="RadioButtons" text-size="16sp" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <RadioGroup id="group1"/>
+                <RadioButton activated="true" style="radio-button-primary" radio-group-id="group1"/>
+                <RadioButton margin-left="16dp" activated="false" style="radio-button-primary" radio-group-id="group1"/>
+            </LinearBox>
+            <Label text="SwitchToggles" text-size="16sp" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <SwitchToggle activated="true" style="switch-toggle-primary"/>
+                <SwitchToggle margin-left="8dp" activated="false" style="switch-toggle-primary"/>
+                <SwitchToggle margin-left="8dp" activated="true" style="switch-toggle-primary" direction="vertical"/>
+                <SwitchToggle margin-left="8dp" activated="false" style="switch-toggle-primary" direction="vertical"/>
+                <SwitchToggle margin-left="8dp" activated="true" style="switch-toggle-primary" direction="ihorizontal"/>
+                <SwitchToggle margin-left="8dp" activated="false" style="switch-toggle-primary" direction="ihorizontal"/>
+                <SwitchToggle margin-left="8dp" activated="true" style="switch-toggle-primary" direction="ivertical"/>
+                <SwitchToggle margin-left="8dp" activated="false" style="switch-toggle-primary" direction="ivertical"/>
+            </LinearBox>
+            <Label text="Slider" text-size="16sp" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Slider style="slider-primary" value="0.5" width="120dp"/>
+                <Slider style="slider-primary" value="0.5" height="120dp" direction="vertical"/>
+                <Slider style="slider-primary" value="0.5" width="120dp" direction="ihorizontal"/>
+                <Slider style="slider-primary" value="0.5" height="120dp" direction="ivertical"/>
+            </LinearBox>
+            <Label text="Ranged Slider" text-size="16sp" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <RangedSlider style="ranged-slider-primary" start-value="0.15" end-value="0.65" width="120dp"/>
+                <RangedSlider style="ranged-slider-primary" start-value="0.15" end-value="0.65" height="120dp" direction="vertical"/>
+                <RangedSlider style="ranged-slider-primary" start-value="0.15" end-value="0.65" width="120dp" direction="ihorizontal"/>
+                <RangedSlider style="ranged-slider-primary" start-value="0.15" end-value="0.65" height="120dp" direction="ivertical"/>
+            </LinearBox>
+        </LinearBox>
+    </LinearBox>
+</Scene>

@@ -102,15 +102,17 @@ public class SwitchToggle extends Widget {
 
         if (width <= 0 || height <= 0) return;
 
+        boolean hor = direction == Direction.HORIZONTAL || direction == Direction.IHORIZONTAL;
+        boolean rev = direction == Direction.IHORIZONTAL || direction == Direction.IVERTICAL;
+
         float slide = iconSlideAnimation.isPlaying() ? iconSlideAnimation.getInterpolatedPosition() : 1f;
-        if (isActivated()) {
+        if (!isActivated()) {
             slide = 1 - slide;
         }
-        if (direction == Direction.HORIZONTAL || direction == Direction.VERTICAL) {
+        if (rev) {
             slide = 1 - slide;
         }
 
-        boolean hor = direction == Direction.HORIZONTAL || direction == Direction.IHORIZONTAL;
         float cx1, cy1, cx2, cy2;
 
         float icoWidth = Math.min(getLayoutIconWidth(), width);
