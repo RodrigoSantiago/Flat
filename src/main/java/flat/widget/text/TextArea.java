@@ -34,7 +34,8 @@ public class TextArea extends Scrollable {
     private int textSelectedColor = 0x00000080;
     private int caretColor = 0x000000FF;
     private float caretBlinkDuration = 0.5f;
-    private boolean editable;
+    private boolean editable = true;
+    private boolean multiLineEnabled = true;
 
     private VerticalAlign verticalAlign = VerticalAlign.TOP;
     private HorizontalAlign horizontalAlign = HorizontalAlign.LEFT;
@@ -89,6 +90,7 @@ public class TextArea extends Scrollable {
         UXAttrs attrs = getAttrs();
 
         setMaxCharacters((int) attrs.getAttributeNumber("max-characters", getMaxCharacters()));
+        setMultiLineEnabled(attrs.getAttributeBool("multiline-enabled", isMultiLineEnabled()));
         setText(attrs.getAttributeString("text", getText()));
         setEditable(attrs.getAttributeBool("editable", isEditable()));
         setTextChangeListener(attrs.getAttributeValueListener("on-text-change", String.class, controller));
@@ -253,7 +255,14 @@ public class TextArea extends Scrollable {
 
         // Caret
         if (showCaret && isEditable()) {
-            float caretX = textRender.getCaretHorizontalOffset(endCaret, horizontalAlign) + xpos;
+            float caretX = textRender.getCaretHorizontalOffset(endCaret, horizontalAlign);
+            if (caretX == 0) {
+                caretX += xpos + 1;
+            } else if (textRender.isCaretLastOfLine(endCaret)) {
+                caretX += xpos - 1;
+            } else {
+                caretX += xpos;
+            }
             context.setColor(getCaretColor());
             context.setStroker(new BasicStroke(2));
             context.drawLine(
@@ -374,35 +383,37 @@ public class TextArea extends Scrollable {
                 actionClearSelection();
             } else if (event.getKeycode() == keyMenu) {
                 actionShowContextMenu();
-            } else if (event.getKeycode() == KeyCode.KEY_LEFT) {
-                textRender.moveCaretBackwards(endCaret);
-                if (!event.isShiftDown()) startCaret.set(endCaret);
-            } else if (event.getKeycode() == KeyCode.KEY_RIGHT) {
-                textRender.moveCaretFoward(endCaret);
-                if (!event.isShiftDown()) startCaret.set(endCaret);
-            } else if (event.getKeycode() == KeyCode.KEY_DOWN) {
-                textRender.moveCaretVertical(endCaret, horizontalAlign, 1);
-                if (!event.isShiftDown()) startCaret.set(endCaret);
-            } else if (event.getKeycode() == KeyCode.KEY_UP) {
-                textRender.moveCaretVertical(endCaret, horizontalAlign, -1);
-                if (!event.isShiftDown()) startCaret.set(endCaret);
-            } else if (event.getKeycode() == KeyCode.KEY_PAGE_DOWN) {
-                textRender.moveCaretVertical(endCaret, horizontalAlign, (int) (getViewDimensionY() / getLineHeight()));
-                if (!event.isShiftDown()) startCaret.set(endCaret);
-            } else if (event.getKeycode() == KeyCode.KEY_PAGE_UP) {
-                textRender.moveCaretVertical(endCaret, horizontalAlign, (int) -(getViewDimensionY() / getLineHeight()));
-                if (!event.isShiftDown()) startCaret.set(endCaret);
-            } else if (event.getKeycode() == KeyCode.KEY_HOME) {
-                textRender.moveCaretBackwardsLine(endCaret);
-                if (!event.isShiftDown()) startCaret.set(endCaret);
-            } else if (event.getKeycode() == KeyCode.KEY_END) {
-                textRender.moveCaretFowardsLine(endCaret);
-                if (!event.isShiftDown()) startCaret.set(endCaret);
             } else {
-                return;
+                if (event.getKeycode() == KeyCode.KEY_LEFT) {
+                    textRender.moveCaretBackwards(endCaret);
+                    if (!event.isShiftDown()) startCaret.set(endCaret);
+                } else if (event.getKeycode() == KeyCode.KEY_RIGHT) {
+                    textRender.moveCaretFoward(endCaret);
+                    if (!event.isShiftDown()) startCaret.set(endCaret);
+                } else if (event.getKeycode() == KeyCode.KEY_DOWN) {
+                    textRender.moveCaretVertical(endCaret, horizontalAlign, 1);
+                    if (!event.isShiftDown()) startCaret.set(endCaret);
+                } else if (event.getKeycode() == KeyCode.KEY_UP) {
+                    textRender.moveCaretVertical(endCaret, horizontalAlign, -1);
+                    if (!event.isShiftDown()) startCaret.set(endCaret);
+                } else if (event.getKeycode() == KeyCode.KEY_PAGE_DOWN) {
+                    textRender.moveCaretVertical(endCaret, horizontalAlign, (int) (getViewDimensionY() / getLineHeight()));
+                    if (!event.isShiftDown()) startCaret.set(endCaret);
+                } else if (event.getKeycode() == KeyCode.KEY_PAGE_UP) {
+                    textRender.moveCaretVertical(endCaret, horizontalAlign, (int) -(getViewDimensionY() / getLineHeight()));
+                    if (!event.isShiftDown()) startCaret.set(endCaret);
+                } else if (event.getKeycode() == KeyCode.KEY_HOME) {
+                    textRender.moveCaretBackwardsLine(endCaret);
+                    if (!event.isShiftDown()) startCaret.set(endCaret);
+                } else if (event.getKeycode() == KeyCode.KEY_END) {
+                    textRender.moveCaretFowardsLine(endCaret);
+                    if (!event.isShiftDown()) startCaret.set(endCaret);
+                } else {
+                    return;
+                }
+                setCaretVisible();
+                slideToCaret(1);
             }
-            setCaretVisible();
-            slideToCaret(1);
         }
     }
 
@@ -475,7 +486,7 @@ public class TextArea extends Scrollable {
         String str = getActivity().getWindow().getClipboard();
         if (str != null && !str.isEmpty()) {
             editText(first, second, str);
-            Application.runVsync(() -> slideToCaret(1));
+            slideToCaretLater(1);
         }
     }
 
@@ -578,6 +589,10 @@ public class TextArea extends Scrollable {
 
     public void setText(String text) {
         if (Objects.equals(getText(), text)) return;
+        if (!isMultiLineEnabled() && text != null) {
+            text = text.replaceAll("[\\n\\r]", "");
+            if (Objects.equals(getText(), text)) return;
+        }
 
         // Input Filter
         var event = filterInputText(0, textRender.getTotalBytes(), text);
@@ -639,6 +654,9 @@ public class TextArea extends Scrollable {
 
     protected void editText(Caret first, Caret second, String input) {
         if (!isEditable()) return;
+        if (!isMultiLineEnabled()) {
+            input = input.replaceAll("[\\n\\r]", "");
+        }
 
         // Input Filter
         var event = filterInputText(first.getOffset(), second.getOffset(), input);
@@ -692,7 +710,7 @@ public class TextArea extends Scrollable {
 
             invalidateTextSize();
             setCaretVisible();
-            slideToCaret(1);
+            slideToCaretLater(1);
 
             fireTextChange(old);
         } else {
@@ -706,7 +724,7 @@ public class TextArea extends Scrollable {
             invalidateTextString();
             invalidateTextSize();
             setCaretVisible();
-            slideToCaret(1);
+            slideToCaretLater(1);
         }
     }
 
@@ -804,6 +822,19 @@ public class TextArea extends Scrollable {
         this.editable = editable;
     }
 
+    public boolean isMultiLineEnabled() {
+        return multiLineEnabled;
+    }
+
+    public void setMultiLineEnabled(boolean multiLineEnabled) {
+        if (this.multiLineEnabled != multiLineEnabled) {
+            this.multiLineEnabled = multiLineEnabled;
+            if (multiLineEnabled && !isTextEmpty()) {
+                setText(getText());
+            }
+        }
+    }
+
     public float getCaretBlinkDuration() {
         return caretBlinkDuration;
     }
@@ -858,6 +889,12 @@ public class TextArea extends Scrollable {
         }
     }
 
+    public void slideToCaretLater(float speed) {
+        if (getActivity() != null) {
+            getActivity().getWindow().runSync(() -> slideToCaret(speed));
+        }
+    }
+
     public void slideToCaret(float speed) {
         float lineH = getLineHeight();
         float caretX = textRender.getCaretHorizontalOffset(endCaret, horizontalAlign);
@@ -867,13 +904,15 @@ public class TextArea extends Scrollable {
 
         float targetX = getViewOffsetX();
         if (caretX < targetX) {
-            targetX = caretX;
+            targetX = caretX - 1;
         } else if (caretX > targetX + getViewDimensionX()) {
-            targetX = caretX - getViewDimensionX();
+            targetX = caretX - getViewDimensionX() + 1;
         }
 
         float targetY = getViewOffsetY();
-        if (caretYMin < targetY) {
+        if (textRender.getTotalLines() <= 1) {
+            targetY = 0;
+        } else if (caretYMin < targetY) {
             targetY = caretYMin;
             if (caretYMax > targetY + getViewDimensionY()) {
                 targetY = caretY;
@@ -939,7 +978,7 @@ public class TextArea extends Scrollable {
         }
     }
 
-    protected boolean isTextEmpty() {
+    public boolean isTextEmpty() {
         return textRender.getTotalCharacters() == 0;
     }
 

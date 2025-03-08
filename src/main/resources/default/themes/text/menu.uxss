@@ -1,0 +1,43 @@
+menu {
+    width : 200dp;
+    shadow-enabled : true;
+    elevation : 8dp;
+    radius-top : 4dp;
+    radius-left : 4dp;
+    radius-right : 4dp;
+    radius-bottom : 4dp;
+    padding-top : 8dp;
+    padding-bottom : 8dp;
+    margin-top : 8dp;
+    margin-left : 8dp;
+    margin-right : 8dp;
+    margin-bottom : 16dp;
+    background-color : $card-color;
+    show-transition-duration : 0.2;
+    transition-duration : 0.2;
+}
+
+menu-item : label {
+    padding-top : 8dp;
+    padding-left : 16dp;
+    padding-right : 16dp;
+    padding-bottom : 8dp;
+    ripple-enabled : true;
+
+    text-size : 18sp;
+    shortcut-text-size : 12sp;
+    width : match_parent;
+    cursor : hand;
+
+    text-color : $on-card-color;
+    shortcut-text-color : alpha($on-card-color, 0.5);
+    ripple-color : $card-color-selected;
+    background-color : $card-color;
+
+    hovered {
+        background-color : $card-color-acc;
+    }
+    pressed {
+        background-color : $card-color-acc;
+    }
+}

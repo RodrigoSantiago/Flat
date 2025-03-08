@@ -10,6 +10,7 @@ import flat.graphics.cursor.Cursor;
 import flat.graphics.image.Drawable;
 import flat.math.Vector2;
 import flat.math.shapes.RoundRectangle;
+import flat.math.stroke.BasicStroke;
 import flat.uxml.Controller;
 import flat.uxml.UXAttrs;
 import flat.uxml.UXListener;
@@ -32,9 +33,6 @@ public class TextInputField extends TextField {
     private float actionIconSpacing;
     private float actionIconWidth;
     private float actionIconHeight;
-    private int actionIconBgColor = Color.transparent;
-    private Cursor actionIconCursor = Cursor.UNSET;
-    private boolean isHoveringAction;
 
     private float x1, y1, x2, y2;
 
@@ -63,12 +61,10 @@ public class TextInputField extends TextField {
 
         setActionIcon(attrs.getResourceAsDrawable("action-icon", info, getActionIcon(), false));
         setActionIconColor(attrs.getColor("action-icon-color", info, getActionIconColor()));
-        setActionIconBgColor(attrs.getColor("action-icon-bg-color", info, getActionIconBgColor()));
         setActionIconWidth(attrs.getSize("action-icon-width", info, getActionIconWidth()));
         setActionIconHeight(attrs.getSize("action-icon-height", info, getActionIconHeight()));
         setActionIconSpacing(attrs.getSize("action-icon-spacing", info, getActionIconSpacing()));
         setActionIconImageFilter(attrs.getConstant("action-icon-image-filter", info, getActionIconImageFilter()));
-        setActionIconCursor(attrs.getConstant("action-icon-cursor", info, getActionIconCursor()));
     }
 
     @Override
@@ -115,9 +111,12 @@ public class TextInputField extends TextField {
 
     @Override
     public Vector2 onLayoutViewDimension(float width, float height) {
+        if (isTextEmpty()) return super.onLayoutViewDimension(width, height);
+
         float iw = getLayoutIconWidth();
         float aiw = getLayoutActionIconWidth();
-        float exWidth = (iw > 0 ? iw + getIconSpacing() : 0) + (aiw <= 0 ? 0 : aiw + getActionIconSpacing());
+        float exWidth = (iw > 0 ? iw + getIconSpacing(): 0)
+                + (aiw <= 0 ? 0 : aiw + getActionIconSpacing());
 
         Vector2 fromBase = super.onLayoutViewDimension(width, height);
         fromBase.x -= exWidth;
@@ -129,6 +128,8 @@ public class TextInputField extends TextField {
         super.onLayout(width, height);
         updateActionPosition();
     }
+
+    RoundRectangle textClip = new RoundRectangle();
 
     @Override
     public void onDraw(Graphics graphics) {
@@ -167,14 +168,10 @@ public class TextInputField extends TextField {
 
         if (aiw > 0 && aih > 0 && getActionIcon() != null) {
             aiw = Math.min(width, aiw);
-            aih = Math.min(fieldHeight, aih);
+            aih = Math.min(height, aih);
             float xpos = x + width - aiw;
             float ypos = yOff(y, y + height, aih);
 
-            if (isHoveringAction) {
-                graphics.setColor(getActionIconBgColor());
-                graphics.drawEllipse(xpos, ypos, aiw, aih, true);
-            }
             getActionIcon().draw(graphics, xpos, ypos, aiw, aih, getActionIconColor(), getActionIconImageFilter());
         }
 
@@ -184,21 +181,28 @@ public class TextInputField extends TextField {
 
         if (isHorizontalDimensionScroll() || isVerticalDimensionScroll()) {
             float off = getPaddingTop() + titleHeight;
-            RoundRectangle bg = getBackgroundShape();
+            textClip.set(getOutX(), getOutY(), getOutWidth(), getOutHeight(),
+                    getRadiusTop(), getRadiusRight(), getRadiusBottom(), getRadiusLeft());
             if (hasTitle()) {
-                bg.y += getPaddingTop() + titleHeight;
-                bg.height -= getPaddingTop() + titleHeight;
+                textClip.y += getPaddingTop() + titleHeight;
+                textClip.height -= getPaddingTop() + titleHeight;
+                textClip.arcTop = 0;
+                textClip.arcRight = 0;
             }
             if (getIcon() != null) {
-                bg.x += iw + getIconSpacing();
-                bg.width -= iw + getIconSpacing();
+                textClip.x += iw + getIconSpacing() + getPaddingLeft();
+                textClip.width -= iw + getIconSpacing() + getPaddingLeft();
+                textClip.arcTop = 0;
+                textClip.arcLeft = 0;
             }
             if (getActionIcon() != null) {
-                bg.width -= aiw + getActionIconSpacing();
+                textClip.width -= aiw + getActionIconSpacing() + getPaddingRight();
+                textClip.arcRight = 0;
+                textClip.arcBottom = 0;
             }
 
-            if (bg.width > 0 && bg.height > 0) {
-                graphics.pushClip(bg);
+            if (textClip.width > 0 && textClip.height > 0) {
+                graphics.pushClip(textClip);
                 onDrawText(graphics, x, y + titleHeight, width, Math.max(0, getInHeight() - titleHeight));
                 graphics.popClip();
             }
@@ -217,6 +221,7 @@ public class TextInputField extends TextField {
         if (getVerticalBar() != null && isVerticalVisible()) {
             getVerticalBar().onDraw(graphics);
         }
+
     }
 
     private void updateActionPosition() {
@@ -239,23 +244,20 @@ public class TextInputField extends TextField {
     public void hover(HoverEvent event) {
         super.hover(event);
         if (!event.isConsumed() && event.getType() == HoverEvent.MOVED) {
-            if (isOverActionButton(screenToLocal(event.getX(), event.getY())) != isHoveringAction) {
-                isHoveringAction = !isHoveringAction;
-                invalidate(false);
-            }
+            setUndefined(isOverActionButton(screenToLocal(event.getX(), event.getY())));
         }
         if (!event.isConsumed() && event.getType() == HoverEvent.EXITED) {
-            isHoveringAction = false;
-            invalidate(false);
+            setUndefined(false);
         }
     }
 
     @Override
     public void pointer(PointerEvent event) {
         super.pointer(event);
-        if (isHoveringAction && !event.isConsumed() && event.getPointerID() == 1
-                && event.getType() == PointerEvent.RELEASED) {
-            action();
+        if (!event.isConsumed() && event.getPointerID() == 1 && event.getType() == PointerEvent.RELEASED) {
+            if (isOverActionButton(screenToLocal(event.getX(), event.getY()))) {
+                action();
+            }
         }
     }
 
@@ -274,14 +276,9 @@ public class TextInputField extends TextField {
 
     @Override
     protected void textPointer(PointerEvent event, Vector2 point) {
-        if (!isHoveringAction) {
+        if (!isOverActionButton(screenToLocal(event.getX(), event.getY()))) {
             super.textPointer(event, point);
         }
-    }
-
-    @Override
-    public Cursor getCurrentCursor() {
-        return isHoveringAction && actionIconCursor != Cursor.UNSET ? actionIconCursor : super.getCursor();
     }
 
     public void action() {
@@ -393,17 +390,6 @@ public class TextInputField extends TextField {
         }
     }
 
-    public int getActionIconBgColor() {
-        return actionIconBgColor;
-    }
-
-    public void setActionIconBgColor(int actionIconBgColor) {
-        if (this.actionIconBgColor != actionIconBgColor) {
-            this.actionIconBgColor = actionIconBgColor;
-            invalidate(false);
-        }
-    }
-
     public Drawable getActionIcon() {
         return actionIcon;
     }
@@ -435,16 +421,6 @@ public class TextInputField extends TextField {
             this.actionIconWidth = actionIconWidth;
             invalidate(isWrapContent());
         }
-    }
-
-    public Cursor getActionIconCursor() {
-        return actionIconCursor;
-    }
-
-    public void setActionIconCursor(Cursor actionIconCursor) {
-        if (actionIconCursor == null) actionIconCursor = Cursor.UNSET;
-
-        this.actionIconCursor = actionIconCursor;
     }
 
     private float getLayoutActionIconWidth() {

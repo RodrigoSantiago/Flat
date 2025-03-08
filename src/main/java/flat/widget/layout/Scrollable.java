@@ -40,6 +40,9 @@ public abstract class Scrollable extends Parent {
     private float viewDimensionY;
     private float viewDimensionX;
 
+    private boolean verticalScrollEnabled = true;
+    private boolean horizontalScrollEnabled = true;
+
     private final UXListener<SlideEvent> slideX = (event) -> {
         event.consume();
         slideHorizontalTo(event.getValue());
@@ -51,8 +54,12 @@ public abstract class Scrollable extends Parent {
     };
 
     public Scrollable() {
-        setHorizontalBar(new HorizontalScrollBar());
-        setVerticalBar(new VerticalScrollBar());
+        var hbar = new HorizontalScrollBar();
+        hbar.addStyle(UXAttrs.convertToKebabCase(getClass().getSimpleName()) + "-horizontal-scroll-bar");
+        setHorizontalBar(hbar);
+        var vbar = new VerticalScrollBar();
+        vbar.addStyle(UXAttrs.convertToKebabCase(getClass().getSimpleName()) + "-vertical-scroll-bar");
+        setVerticalBar(vbar);
     }
 
     @Override
@@ -85,6 +92,8 @@ public abstract class Scrollable extends Parent {
         setHorizontalBarPosition(attrs.getConstant("horizontal-bar-position", info, getHorizontalBarPosition()));
         setScrollSensibility(attrs.getNumber("scroll-sensibility", info, getScrollSensibility()));
         setFloatingBars(attrs.getBool("floating-bars", info, isFloatingBars()));
+        setHorizontalScrollEnabled(attrs.getBool("horizontal-scroll-enabled", info, isHorizontalScrollEnabled()));
+        setVerticalScrollEnabled(attrs.getBool("vertical-scroll-enabled", info, isVerticalScrollEnabled()));
     }
 
     public Vector2 onLayoutViewDimension(float width, float height) {
@@ -385,6 +394,9 @@ public abstract class Scrollable extends Parent {
     }
 
     public void setViewOffsetX(float viewOffsetX) {
+        if (!isHorizontalScrollEnabled()) {
+            viewOffsetX = getViewOffsetX();
+        }
         viewOffsetX = Math.max(0, Math.min(viewOffsetX, totalDimensionX - viewDimensionX));
 
         if (this.viewOffsetX != viewOffsetX) {
@@ -404,6 +416,9 @@ public abstract class Scrollable extends Parent {
     }
 
     public void setViewOffsetY(float viewOffsetY) {
+        if (!isVerticalScrollEnabled()) {
+            viewOffsetY = getViewOffsetY();
+        }
         viewOffsetY = Math.max(0, Math.min(viewOffsetY, totalDimensionY - viewDimensionY));
 
         if (this.viewOffsetY != viewOffsetY) {
@@ -416,6 +431,22 @@ public abstract class Scrollable extends Parent {
                 verticalBar.setViewOffset(this.viewOffsetY);
             }
         }
+    }
+
+    public boolean isHorizontalScrollEnabled() {
+        return horizontalScrollEnabled;
+    }
+
+    public void setHorizontalScrollEnabled(boolean horizontalScrollEnabled) {
+        this.horizontalScrollEnabled = horizontalScrollEnabled;
+    }
+
+    public boolean isVerticalScrollEnabled() {
+        return verticalScrollEnabled;
+    }
+
+    public void setVerticalScrollEnabled(boolean verticalScrollEnabled) {
+        this.verticalScrollEnabled = verticalScrollEnabled;
     }
 
     public UXValueListener<Float> getViewOffsetXListener() {
@@ -445,6 +476,8 @@ public abstract class Scrollable extends Parent {
     }
 
     public void slideHorizontalTo(float offsetX) {
+        if (!isHorizontalScrollEnabled()) return;
+
         offsetX = Math.max(0, Math.min(offsetX, totalDimensionX - viewDimensionX));
 
         float old = viewOffsetX;
@@ -459,6 +492,8 @@ public abstract class Scrollable extends Parent {
     }
 
     public void slideVerticalTo(float offsetY) {
+        if (!isVerticalScrollEnabled()) return;
+
         offsetY = Math.max(0, Math.min(offsetY, totalDimensionY - viewDimensionY));
 
         float old = viewOffsetY;

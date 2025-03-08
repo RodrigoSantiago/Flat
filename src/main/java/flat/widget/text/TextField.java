@@ -101,6 +101,8 @@ public class TextField extends TextArea {
 
     @Override
     public Vector2 onLayoutViewDimension(float width, float height) {
+        if (isTextEmpty()) return super.onLayoutViewDimension(width, height);
+
         float titleHeight = hasTitle() ? getTitleHeight() + getTitleSpacing() : 0;
         return new Vector2(getInWidth(), Math.max(0, getInHeight() - titleHeight));
     }

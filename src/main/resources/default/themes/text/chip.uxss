@@ -100,16 +100,16 @@ chip-contained {
     ripple-color : alpha($primary-color-acc, 0.5);
 
     hovered {
-        background-color : $card-color-selected;
+        background-color : $card-color-primary-selected;
     }
     focused {
-        background-color : $card-color-selected;
+        background-color : $card-color-primary-selected;
     }
     activated {
         text-color : $primary-color-acc;
         icon-color : $primary-color-acc;
         close-icon-color : $primary-color-acc;
-        background-color : $card-color-selected;
+        background-color : $card-color-primary-selected;
     }
     disabled {
         text-color : $on-disabled-color;

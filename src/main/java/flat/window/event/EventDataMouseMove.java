@@ -51,11 +51,6 @@ public class EventDataMouseMove extends EventData {
     private void move(Window window, EventDataPointer pointer, Widget widget) {
         pointer.setHover(widget);
         pointer.performHover();
-        if (widget != null) {
-            window.setCursor(widget.getCurrentCursor());
-        } else {
-            window.setCursor(null);
-        }
     }
 
     private void drag(Window window, EventDataPointer pointer, Widget widget) {
@@ -70,8 +65,5 @@ public class EventDataMouseMove extends EventData {
         }
 
         pointer.performPointerDrag();
-        if (pointer.pressed != null && pointer.pressed.getCurrentCursor() != Cursor.UNSET) {
-            window.setCursor(pointer.pressed.getCurrentCursor());
-        }
     }
 }

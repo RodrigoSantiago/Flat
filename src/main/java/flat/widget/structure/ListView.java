@@ -29,11 +29,6 @@ public class ListView extends Scrollable {
     private int endIndex;
     private int totalIndex;
 
-    public ListView() {
-        setHorizontalBar(new HorizontalScrollBar());
-        setVerticalBar(new VerticalScrollBar());
-    }
-
     @Override
     public void applyChildren(UXChildren children) {
         super.applyChildren(children);

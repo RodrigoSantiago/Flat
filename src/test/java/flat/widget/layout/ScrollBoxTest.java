@@ -100,6 +100,9 @@ public class ScrollBoxTest {
         assertEquals(slideVertical, scrollBox.getSlideVerticalListener());
         assertEquals(listenerx, scrollBox.getViewOffsetXListener());
         assertEquals(listenery, scrollBox.getViewOffsetYListener());
+
+        assertTrue(scrollBox.getHorizontalBar().getStyles().contains("scroll-box-horizontal-scroll-bar"));
+        assertTrue(scrollBox.getVerticalBar().getStyles().contains("scroll-box-vertical-scroll-bar"));
     }
 
     @Test

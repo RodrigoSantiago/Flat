@@ -90,10 +90,10 @@ button-contained {
     text-color : $primary-color;
     icon-color : $primary-color;
     background-color : $card-color;
-    ripple-color : $card-color-selected;
+    ripple-color : alpha($primary-color, 0.25);
 
     focused {
-        background-color : $card-color-selected;
+        background-color : $card-color-primary-selected;
     }
     disabled {
         text-color : $on-disabled-color;
@@ -111,6 +111,7 @@ button-contained-primary {
 
     focused {
         background-color : $primary-color-selected;
+        ripple-color : $primary-color;
     }
     disabled {
         text-color : $on-disabled-color;

@@ -19,7 +19,7 @@ public class ScrollBar extends Widget {
     private float viewDimension;
     private float totalDimension;
 
-    private float minSize;
+    private float minRange;
     private int color = Color.white;
 
     private float grabOffset;
@@ -46,7 +46,7 @@ public class ScrollBar extends Widget {
 
         UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
-        setMinSize(attrs.getSize("min-size", info, getMinSize()));
+        setMinRange(attrs.getSize("min-range", info, getMinRange()));
         setColor(attrs.getColor("color", info, getColor()));
     }
 
@@ -64,7 +64,7 @@ public class ScrollBar extends Widget {
         if (width <= 0 || height <= 0) return;
 
         float w, h, x1, y1, xc, yc;
-        float handleSize = totalDimension == 0 ? 1 : Math.max(minSize, Math.min(1, viewDimension / totalDimension));
+        float handleSize = totalDimension == 0 ? 1 : Math.max(minRange, Math.min(1, viewDimension / totalDimension));
         float moveOffset = totalDimension == 0 ? 0 : Math.max(0, Math.min(1 - handleSize, viewOffset / totalDimension));
 
         if (hor) {
@@ -132,16 +132,16 @@ public class ScrollBar extends Widget {
         }
     }
 
-    public float getMinSize() {
-        return minSize;
+    public float getMinRange() {
+        return minRange;
     }
 
-    public void setMinSize(float minSize) {
-        if (minSize < 0) minSize = 0;
-        if (minSize > 1) minSize = 1;
+    public void setMinRange(float minRange) {
+        if (minRange < 0) minRange = 0;
+        if (minRange > 1) minRange = 1;
 
-        if (this.minSize != minSize) {
-            this.minSize = minSize;
+        if (this.minRange != minRange) {
+            this.minRange = minRange;
             invalidate(false);
         }
     }
@@ -240,7 +240,7 @@ public class ScrollBar extends Widget {
         float hStart, hSize, pos, start, size;
 
         float handleSize = totalDimension == 0 ? 1 :
-                Math.max(minSize, Math.min(1, viewDimension / totalDimension));
+                Math.max(minRange, Math.min(1, viewDimension / totalDimension));
         float moveOffset = totalDimension == 0 ? 0 :
                 Math.max(0, Math.min(1 - handleSize, viewOffset / totalDimension));
 

@@ -148,7 +148,9 @@ public class TextDropDown extends TextInputField {
             float height = getOutHeight();
             Vector2 screen1 = localToScreen(x, y);
             Vector2 screen2 = localToScreen(x + width, y + height);
-            subMenu.setMinWidth(getWidth());
+            subMenu.addStyle("drop-down-menu");
+            subMenu.setFollowStyleProperty("width", false);
+            subMenu.setPrefWidth(getWidth());
             subMenu.show(act, screen2.x, screen2.y, DropdownAlign.TOP_RIGHT);
         }
     }

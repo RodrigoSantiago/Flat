@@ -217,6 +217,14 @@ public class EventDataPointer {
         }
     }
 
+    public Widget getHover() {
+        return hover;
+    }
+
+    public Widget getPressed() {
+        return pressed;
+    }
+
     public void reset(float x, float y) {
         this.x = x;
         this.y = y;

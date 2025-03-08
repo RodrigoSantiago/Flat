@@ -7,7 +7,7 @@ public class Main {
     public static void main(String[] args) {
         Application.init();
         Application.launch(new WindowSettings.Builder()
-                .layout("/default/screen_test/forms.uxml")
+                .layout("/default/screen_test/text.uxml")
                 .theme("/default/themes")
                 .controller(MainController::new)
                 .size(1000, 800)

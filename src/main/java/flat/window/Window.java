@@ -104,9 +104,9 @@ public class Window {
 
         activity.refreshScene();
 
-        processEvents();
-
         processSyncCalls();
+
+        processEvents();
 
         activity.animate(loopTime);
 
@@ -118,6 +118,14 @@ public class Window {
         }
 
         // Cursor
+        var pointer = getPointer();
+        if (pointer.getPressed() != null) {
+            setCursor(pointer.getPressed().getCursor());
+        } else if (pointer.getHover() != null) {
+            setCursor(pointer.getHover().getCursor());
+        } else {
+            setCursor(Cursor.UNSET);
+        }
         if (cursor != currentCursor) {
             if (currentCursor == Cursor.NONE) {
                 WL.SetInputMode(windowId, WLEnums.CURSOR, WLEnums.CURSOR_NORMAL);
