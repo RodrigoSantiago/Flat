@@ -120,12 +120,12 @@ public class SwitchToggle extends Widget {
         if (hor) {
             cx1 = (x + icoWidth * 0.5f);
             cy1 = y + height * 0.5f;
-            cx2 = (x + (width - icoHeight * 0.5f));
+            cx2 = (x + (width - icoWidth * 0.5f));
             cy2 = y + height * 0.5f;
 
         } else {
             cx1 = x + width * 0.5f;
-            cy1 = (y + icoWidth * 0.5f);
+            cy1 = (y + icoHeight * 0.5f);
             cx2 = x + width * 0.5f;
             cy2 = (y + (height - icoHeight * 0.5f));
         }
@@ -154,6 +154,13 @@ public class SwitchToggle extends Widget {
         }
 
         if (icoWidth > 0 && icoHeight > 0 && getIcon() != null) {
+            float el = getElevation();
+            float sw = Math.min(getOutWidth(), icoWidth);
+            float sh = Math.min(getOutHeight(), icoHeight);
+            float c = Math.max(sw, sh);
+            float op = Color.getOpacity(getIconColor()) * 0.20f;
+            graphics.drawRoundRectShadow(px - sw * 0.5f, py - sh * 0.5f, sw, sh, c, c, c, c, el + 2f, op);
+
             getIcon().draw(graphics
                     , px - icoWidth * 0.5f
                     , py - icoHeight * 0.5f

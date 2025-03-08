@@ -208,9 +208,20 @@ public class RangedSlider extends Widget {
         }
 
         if (iw > 0 && ih > 0 && getIcon() != null) {
+            drawIconShadow(graphics, xposStart, yposStart, iw, ih);
             getIcon().draw(graphics, xposStart - iw * 0.5f, yposStart - ih * 0.5f, iw, ih, getIconColor(), getIconImageFilter());
+            drawIconShadow(graphics, xposEnd, yposEnd, iw, ih);
             getIcon().draw(graphics, xposEnd - iw * 0.5f, yposEnd - ih * 0.5f, iw, ih, getIconColor(), getIconImageFilter());
         }
+    }
+
+    protected void drawIconShadow(Graphics graphics, float x, float y, float iw, float ih) {
+        float el = getElevation();
+        float sw = Math.min(getOutWidth(), iw);
+        float sh = Math.min(getOutHeight(), ih);
+        float c = Math.max(sw, sh);
+        float op = Color.getOpacity(getIconColor()) * 0.20f;
+        graphics.drawRoundRectShadow(x - sw * 0.5f, y - sh * 0.5f, sw, sh, c, c, c, c, el + 2f, op);
     }
 
     private float findPos(Vector2 point) {

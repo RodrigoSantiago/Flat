@@ -185,7 +185,14 @@ public final class Color {
         return rgbaToColor(rInt, gInt, blue, aInt);
     }
 
-    public static int setColorAlpha(int rgba, float alpha) {
+    public static int setColorAlpha(int rgba, int alpha) {
+        int rInt = ((rgba >> 24) & 0xFF);
+        int gInt = ((rgba >> 16) & 0xFF);
+        int bInt = ((rgba >> 8) & 0xFF);
+        return rgbaToColor(rInt, gInt, bInt, alpha);
+    }
+
+    public static int setColorOpacity(int rgba, float alpha) {
         int rInt = ((rgba >> 24) & 0xFF);
         int gInt = ((rgba >> 16) & 0xFF);
         int bInt = ((rgba >> 8) & 0xFF);

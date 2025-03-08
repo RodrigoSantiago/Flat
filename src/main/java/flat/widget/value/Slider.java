@@ -180,8 +180,18 @@ public class Slider extends Widget {
         }
 
         if (iw > 0 && ih > 0 && getIcon() != null) {
+            drawIconShadow(graphics, xpos, ypos, iw, ih);
             getIcon().draw(graphics, xpos - iw * 0.5f, ypos - ih * 0.5f, iw, ih, getIconColor(), getIconImageFilter());
         }
+    }
+
+    protected void drawIconShadow(Graphics graphics, float x, float y, float iw, float ih) {
+        float el = getElevation();
+        float sw = Math.min(getOutWidth(), iw);
+        float sh = Math.min(getOutHeight(), ih);
+        float c = Math.max(sw, sh);
+        float op = Color.getOpacity(getIconColor()) * 0.20f;
+        graphics.drawRoundRectShadow(x - sw * 0.5f, y - sh * 0.5f, sw, sh, c, c, c, c, el + 2f, op);
     }
 
     @Override

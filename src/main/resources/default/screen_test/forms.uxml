@@ -1,5 +1,5 @@
 <Scene width="MATCH_PARENT" height="MATCH_PARENT" background-color="$surface-color">
-    <LinearBox direction="HORIZONTAL" width="MATCH_PARENT">
+    <LinearBox direction="HORIZONTAL" width="MATCH_PARENT" height="MATCH_PARENT" vertical-align="top">
         <LinearBox direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
                    padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
             <Label text="Checkboxes" text-size="16sp" margin-left="4dp"/>
@@ -50,9 +50,9 @@
             </LinearBox>
             <Label text="RadioButtons" text-size="16sp" margin-left="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <RadioGroup id="group1"/>
-                <RadioButton activated="true" style="radio-button-primary" radio-group-id="group1"/>
-                <RadioButton margin-left="16dp" activated="false" style="radio-button-primary" radio-group-id="group1"/>
+                <RadioGroup id="group2"/>
+                <RadioButton activated="true" style="radio-button-primary" radio-group-id="group2"/>
+                <RadioButton margin-left="16dp" activated="false" style="radio-button-primary" radio-group-id="group2"/>
             </LinearBox>
             <Label text="SwitchToggles" text-size="16sp" margin-left="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">

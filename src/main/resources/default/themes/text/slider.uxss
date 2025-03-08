@@ -16,6 +16,7 @@ slider {
 
     icon-width : 20dp;
     icon-height : 20dp;
+    elevation : 1dp;
 
     transition-duration : 0.2;
     slide-transition-duration : 0.2;
