@@ -1,0 +1,37 @@
+checkbox {
+    padding-top : 8dp;
+    padding-left : 8dp;
+    padding-right : 8dp;
+    padding-bottom : 8dp;
+    radius-top : 100;
+    radius-left : 100;
+    radius-right : 100;
+    radius-bottom : 100;
+    ripple-overflow : true;
+    ripple-enabled : true;
+    ripple-color : #00000080;
+    icon-width : 20dp;
+    icon-height : 20dp;
+    cursor : hand;
+    focusable : true;
+    transition-duration : 0.2;
+}
+
+checkbox-primary {
+    icon : '/default/icons/checkbox-blank-outline.svg';
+    icon-color : $primary-color;
+    background-color : transparent;
+    ripple-color : alpha($primary-color-selected, 0.5);
+    hovered {
+        background-color : alpha($primary-color-selected, 0.15);
+    }
+    focused {
+        background-color : alpha($primary-color-selected, 0.2);
+    }
+    error {
+        icon : '/default/icons/minus-box.svg';
+    }
+    activated {
+        icon : '/default/icons/checkbox-marked.svg';
+    }
+}

@@ -308,6 +308,9 @@ public class ListView extends Scrollable {
             var old = this.adapter;
             this.adapter = adapter;
             if (old != null) {
+                this.startIndex = 0;
+                this.endIndex = 0;
+                this.totalIndex = 0;
                 old.setListView(null);
                 items.clear();
                 removeAll();

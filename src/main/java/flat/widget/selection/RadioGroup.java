@@ -14,7 +14,7 @@ import java.util.List;
 public class RadioGroup extends Widget {
 
     private UXValueListener<Integer> selectedListener;
-    private List<RadioButton> radioButtons = new ArrayList<>();
+    private final List<RadioButton> radioButtons = new ArrayList<>();
     private List<RadioButton> unmodifiableRadioButtons;
     private RadioButton selectedButton;
     private int selectedIndex = -1;
@@ -62,7 +62,7 @@ public class RadioGroup extends Widget {
             radioButton.radioGroup = this;
             radioButtons.add(radioButton);
 
-            radioButton.setActive(false);
+            radioButton.setActivated(false);
         }
     }
 
@@ -98,7 +98,7 @@ public class RadioGroup extends Widget {
                 RadioButton oldSelection = selectedButton;
                 selectedIndex = -1;
                 selectedButton = null;
-                if (oldSelection != null) oldSelection.setActive(false);
+                if (oldSelection != null) oldSelection.setActivated(false);
                 fireSelectedListener(oldValue);
             }
         } else {
@@ -107,8 +107,8 @@ public class RadioGroup extends Widget {
                 RadioButton oldSelection = selectedButton;
                 selectedIndex = index;
                 selectedButton = radioButtons.get(index);
-                selectedButton.setActive(true);
-                if (oldSelection != null) oldSelection.setActive(false);
+                selectedButton.setActivated(true);
+                if (oldSelection != null) oldSelection.setActivated(false);
                 fireSelectedListener(oldValue);
             }
         }

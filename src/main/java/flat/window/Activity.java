@@ -206,17 +206,17 @@ public class Activity {
         }
 
         if (invalidWidget != null) {
-            var wiget = invalidWidget;
+            var widget = invalidWidget;
             invalidWidget = null;
-            if (wiget == scene) {
-                wiget.onMeasure();
-                wiget.onLayout(width, height);
+            if (widget == scene) {
+                widget.onMeasure();
+                widget.onLayout(width, height);
             } else {
-                Parent parent = wiget.getParent();
+                Parent parent = widget.getParent();
                 if (parent == null) {
-                    wiget.onMeasure();
-                    wiget.onLayout(wiget.getLayoutWidth(), wiget.getLayoutHeight());
-                } else if (!parent.onLayoutSingleChild(wiget)) {
+                    widget.onMeasure();
+                    widget.onLayout(widget.getLayoutWidth(), widget.getLayoutHeight());
+                } else if (!parent.onLayoutSingleChild(widget)) {
                     parent.onMeasure();
                     parent.onLayout(parent.getLayoutWidth(), parent.getLayoutHeight());
                 }

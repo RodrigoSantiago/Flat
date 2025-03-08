@@ -112,7 +112,7 @@ public class UXSheetTest {
                 "hovered { width : 400; } " +
                 "pressed { width : 500; } " +
                 "dragged { width : 600; } " +
-                "error { width : 700; } " +
+                "undefined { width : 700; } " +
                 "disabled { width : 800; } " +
                 "enabled { width : 900; } " +
                 "}";
@@ -136,7 +136,7 @@ public class UXSheetTest {
         assertStyles(style, State.DRAGGED,
                 "width", new UXValueNumber(600)
         );
-        assertStyles(style, State.ERROR,
+        assertStyles(style, State.UNDEFINED,
                 "width", new UXValueNumber(700)
         );
         assertStyles(style, State.DISABLED,

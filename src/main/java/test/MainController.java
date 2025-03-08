@@ -1,25 +1,14 @@
 package test;
 
 import flat.Flat;
-import flat.animations.Animation;
-import flat.backend.GL;
-import flat.backend.SVG;
+import flat.animations.Interpolation;
 import flat.data.ObservableList;
 import flat.events.ActionEvent;
 import flat.events.TextEvent;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
-import flat.graphics.context.enums.CycleMethod;
 import flat.graphics.context.Font;
-import flat.graphics.context.paints.GaussianShadow;
-import flat.graphics.context.paints.ImagePattern;
-import flat.graphics.context.paints.LinearGradient;
-import flat.graphics.context.paints.RadialGradient;
-import flat.graphics.image.DrawableReader;
 import flat.graphics.image.PixelMap;
-import flat.graphics.text.FontStyle;
-import flat.math.Affine;
-import flat.resources.ResourceStream;
 import flat.uxml.Controller;
 import flat.uxml.ValueChange;
 import flat.widget.Parent;
@@ -41,6 +30,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MainController extends Controller {
@@ -160,18 +150,30 @@ public class MainController extends Controller {
             }
         });*/
         search(getActivity().getScene());
-        listView.setAdapter(new ListViewDefaultAdapter<>(items) {
+        /*listView.setAdapter(new ListViewDefaultAdapter<>(items) {
             @Override
             public void buildListItem(int index, Widget item) {
                 var label = (ListItem) item;
                 label.setText(items.get(index));
                 label.setLayers(index % 6);
             }
-        });
+        });*/
     }
 
+    float t = 0;
+    float speed = 0.01f;
     @Override
     public void onDraw(Graphics graphics) {
+        /*int mix = Color.mixHSV(0xFF8080FF, 0x2196F3FF, 0.5f);
+        System.out.println(Arrays.toString(Color.rgbToHsv(0xFF8080FF)));
+        System.out.println(Arrays.toString(Color.rgbToHsv(0x2196F3FF)));
+        System.out.println(Arrays.toString(Color.rgbToHsv(mix)));
+        if (t > 2) speed = -speed;
+        if (t < -1) speed = -speed;
+        t += speed;
+        graphics.setTransform2D(null);
+        graphics.setColor(mix);
+        graphics.drawRect(0, 0, 100, 100, true);*/
         /*draw++;
         double now = System.nanoTime() / 1_000_000_000.0;
         if (lastDraw != 0) {

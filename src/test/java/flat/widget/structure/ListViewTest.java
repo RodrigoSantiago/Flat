@@ -156,19 +156,19 @@ public class ListViewTest {
         listView.setAdapter(adapter);
         listView.refreshItems();
 
-        verify(adapter, times(5)).createListItem();               // 4 + 1
-        verify(adapter, times(13)).buildListItem(anyInt(), any()); // 4 + 4 + 5
+        verify(adapter, times(4)).createListItem();               // 4 + 1
+        verify(adapter, times(12)).buildListItem(anyInt(), any()); // 4 + 4 + 4
 
         when(adapter.size()).thenReturn(6);
         listView.refreshItems();
 
         verify(adapter, times(6)).createListItem();
-        verify(adapter, times(19)).buildListItem(anyInt(), any()); // 4 + 4 + 5 + 6
+        verify(adapter, times(18)).buildListItem(anyInt(), any()); // 4 + 4 + 5 + 6
 
         listView.setAdapter(adapter2);
 
         verify(adapter, times(6)).createListItem();
-        verify(adapter, times(19)).buildListItem(anyInt(), any());
+        verify(adapter, times(18)).buildListItem(anyInt(), any());
         verify(adapter2, times(8)).createListItem();
         verify(adapter2, times(8)).buildListItem(anyInt(), any());
     }

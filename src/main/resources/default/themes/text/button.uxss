@@ -96,9 +96,9 @@ button-contained {
         background-color : $card-color-selected;
     }
     disabled {
-        text-color : alpha($text-primary-color, 0.5);
-        icon-color : alpha($text-primary-color, 0.5);
-        background-color : $card-color-acc;
+        text-color : $on-disabled-color;
+        icon-color : $on-disabled-color;
+        background-color : $disabled-color;
     }
 }
 
@@ -113,13 +113,14 @@ button-contained-primary {
         background-color : $primary-color-selected;
     }
     disabled {
-        text-color : alpha($text-primary-color, 0.5);
-        icon-color : alpha($text-primary-color, 0.5);
-        background-color : $card-color-acc;
+        text-color : $on-disabled-color;
+        icon-color : $on-disabled-color;
+        background-color : $disabled-color;
     }
 }
 
 button-outlined-primary {
+    shadow-enabled : false;
     text-color : $primary-color;
     icon-color : $primary-color;
     background-color : alpha($primary-color, 0);
@@ -134,13 +135,14 @@ button-outlined-primary {
         background-color : alpha($primary-color-selected, 0.25);
     }
     disabled {
-        text-color : alpha($text-primary-color, 0.5);
-        icon-color : alpha($text-primary-color, 0.5);
-        border-color : alpha($text-primary-color, 0.5);
+        text-color : $on-disabled-color;
+        icon-color : $on-disabled-color;
+        border-color : $on-disabled-color;
     }
 }
 
 button-text-primary {
+    shadow-enabled : false;
     text-color : $primary-color;
     icon-color : $primary-color;
     background-color : alpha($primary-color, 0);
@@ -153,7 +155,7 @@ button-text-primary {
         background-color : alpha($primary-color-selected, 0.25);
     }
     disabled {
-        text-color : alpha($text-primary-color, 0.5);
-        icon-color : alpha($text-primary-color, 0.5);
+        text-color : $on-disabled-color;
+        icon-color : $on-disabled-color;
     }
 }

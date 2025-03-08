@@ -123,53 +123,6 @@ canvas {
   Selection
 */
 
-checkbox {
-    width : 24;
-    height : 24;
-    ripple-overflow : true;
-    ripple-enabled : true;
-    ripple-color : #00000080;
-    icon-indeterminate : '/default/icons/minus-box.svg';
-    icon-inactive : '/default/icons/checkbox-blank-outline.svg';
-    icon-active : '/default/icons/checkbox-marked.svg';
-    cursor : hand;
-}
-
-radio-button {
-    width : 24;
-    height : 24;
-    ripple-overflow : true;
-    ripple-enabled : true;
-    ripple-color : #00000080;
-    icon-inactive : '/default/icons/radiobox-blank.svg';
-    icon-active : '/default/icons/radiobox-marked.svg';
-    cursor : hand;
-}
-
-switch-toggle {
-    ripple-enabled : true;
-    ripple-overflow : true;
-    ripple-color : #00000080;
-    radius-top : 8;
-    radius-left : 8;
-    radius-right : 8;
-    radius-bottom : 8;
-    radius-top : 16;
-    radius-bottom : 16;
-    radius-left : 16;
-    radius-right : 16;
-
-    shadow : true;
-    elevation : 1;
-    background-color : #CA5050;
-    icon-active : '/default/icons/switch-shape.svg';
-    icon-inactive : '/default/icons/switch-shape.svg';
-
-    icon-transition-duration : 0.1;
-    slide-transition-duration : 0.1;
-    cursor : hand;
-}
-
 /*
   Value
 */

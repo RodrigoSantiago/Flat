@@ -7,7 +7,7 @@ public enum State {
     PRESSED,
     DRAGGED,
     ACTIVATED,
-    ERROR,
+    UNDEFINED,
     DISABLED;
 
     public byte bitset() {

@@ -1,0 +1,47 @@
+switch-toggle {
+    ripple-enabled : true;
+    ripple-overflow : true;
+    ripple-color : #00000080;
+    radius-top : 100;
+    radius-left : 100;
+    radius-right : 100;
+    radius-bottom : 100;
+    padding-top : 8dp;
+    padding-left : 8dp;
+    padding-right : 8dp;
+    padding-bottom : 8dp;
+    radius-top : 100;
+    radius-bottom : 100;
+    radius-left : 100;
+    radius-right : 100;
+
+    icon : '/default/icons/switch-shape.svg';
+    icon-width : 20dp;
+    icon-height : 20dp;
+    width : 48dp;
+
+    transition-duration : 0.2;
+    slide-transition-duration : 0.2;
+
+    focusable : true;
+    cursor : hand;
+}
+
+switch-toggle-primary {
+    icon-color : $card-color;
+    line-color : $disabled-color;
+    icon-bg-color : transparent;
+    line-width : 12dp;
+    line-cap : ROUND;
+    ripple-color : alpha($primary-color-selected, 0.5);
+    hovered {
+        icon-bg-color : alpha($primary-color-selected, 0.15);
+    }
+    focused {
+        icon-bg-color : alpha($primary-color-selected, 0.2);
+    }
+    activated {
+        icon-color : $primary-color;
+        line-color : alpha($primary-color-selected, 0.5);
+    }
+}

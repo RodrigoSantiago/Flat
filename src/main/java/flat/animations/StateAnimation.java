@@ -76,7 +76,7 @@ public final class StateAnimation implements Animation, StateInfo {
         tHovered    = (byte) ((bitmask & (State.HOVERED.bitset())) != 0 ? 1 : 0);
         tPressed    = (byte) ((bitmask & (State.PRESSED.bitset())) != 0 ? 1 : 0);
         tDragged    = (byte) ((bitmask & (State.DRAGGED.bitset())) != 0 ? 1 : 0);
-        tError      = (byte) ((bitmask & (State.ERROR.bitset())) != 0 ? 1 : 0);
+        tError      = (byte) ((bitmask & (State.UNDEFINED.bitset())) != 0 ? 1 : 0);
         tDisabled   = (byte) ((bitmask & (State.DISABLED.bitset())) != 0 ? 1 : 0);
     }
 
@@ -122,7 +122,7 @@ public final class StateAnimation implements Animation, StateInfo {
             case HOVERED: return fHovered;
             case PRESSED: return fPressed;
             case DRAGGED: return fDragged;
-            case ERROR: return fError;
+            case UNDEFINED: return fError;
             default : return disabledOverlayed ? disabledOverlay : fDisabled;
         }
     }

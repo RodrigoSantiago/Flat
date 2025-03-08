@@ -54,101 +54,101 @@ public class RadioGroupTest {
         assertEquals(-1, radioGroup.getSelected());
         assertEquals(radioGroup, radioButton1.getRadioGroup());
 
-        radioButton1.setActive(true);
+        radioButton1.setActivated(true);
         assertEquals(0, radioGroup.getSelected());
-        assertTrue(radioButton1.isActive());
+        assertTrue(radioButton1.isActivated());
 
-        radioButton1.setActive(false);
+        radioButton1.setActivated(false);
         assertEquals(-1, radioGroup.getSelected());
-        assertFalse(radioButton1.isActive());
+        assertFalse(radioButton1.isActivated());
 
-        radioButton2.setActive(true);
+        radioButton2.setActivated(true);
         radioGroup.add(radioButton2);
         assertEquals(-1, radioGroup.getSelected());
-        assertFalse(radioButton1.isActive());
-        assertFalse(radioButton2.isActive());
+        assertFalse(radioButton1.isActivated());
+        assertFalse(radioButton2.isActivated());
         assertEquals(radioGroup, radioButton1.getRadioGroup());
         assertEquals(radioGroup, radioButton2.getRadioGroup());
 
-        radioButton1.setActive(true);
+        radioButton1.setActivated(true);
         assertEquals(0, radioGroup.getSelected());
-        assertTrue(radioButton1.isActive());
-        assertFalse(radioButton2.isActive());
+        assertTrue(radioButton1.isActivated());
+        assertFalse(radioButton2.isActivated());
 
-        radioButton2.setActive(true);
+        radioButton2.setActivated(true);
         assertEquals(1, radioGroup.getSelected());
-        assertFalse(radioButton1.isActive());
-        assertTrue(radioButton2.isActive());
+        assertFalse(radioButton1.isActivated());
+        assertTrue(radioButton2.isActivated());
 
-        radioButton2.setActive(false);
+        radioButton2.setActivated(false);
         assertEquals(-1, radioGroup.getSelected());
-        assertFalse(radioButton1.isActive());
-        assertFalse(radioButton2.isActive());
+        assertFalse(radioButton1.isActivated());
+        assertFalse(radioButton2.isActivated());
 
-        radioButton1.setActive(true);
+        radioButton1.setActivated(true);
         radioGroup.add(radioButton3);
         assertEquals(0, radioGroup.getSelected());
-        assertTrue(radioButton1.isActive());
-        assertFalse(radioButton2.isActive());
-        assertFalse(radioButton3.isActive());
+        assertTrue(radioButton1.isActivated());
+        assertFalse(radioButton2.isActivated());
+        assertFalse(radioButton3.isActivated());
         assertEquals(radioGroup, radioButton1.getRadioGroup());
         assertEquals(radioGroup, radioButton2.getRadioGroup());
         assertEquals(radioGroup, radioButton3.getRadioGroup());
 
-        radioButton2.setActive(true);
+        radioButton2.setActivated(true);
         radioGroup.remove(radioButton1);
         assertEquals(0, radioGroup.getSelected());
-        assertFalse(radioButton1.isActive());
-        assertTrue(radioButton2.isActive());
-        assertFalse(radioButton3.isActive());
+        assertFalse(radioButton1.isActivated());
+        assertTrue(radioButton2.isActivated());
+        assertFalse(radioButton3.isActivated());
         assertNull(radioButton1.getRadioGroup());
         assertEquals(radioGroup, radioButton2.getRadioGroup());
         assertEquals(radioGroup, radioButton3.getRadioGroup());
 
         radioGroup.add(radioButton1);
         assertEquals(0, radioGroup.getSelected());
-        assertFalse(radioButton1.isActive());
-        assertTrue(radioButton2.isActive());
-        assertFalse(radioButton3.isActive());
+        assertFalse(radioButton1.isActivated());
+        assertTrue(radioButton2.isActivated());
+        assertFalse(radioButton3.isActivated());
         assertEquals(radioGroup, radioButton1.getRadioGroup());
         assertEquals(radioGroup, radioButton2.getRadioGroup());
         assertEquals(radioGroup, radioButton3.getRadioGroup());
 
         radioGroup.remove(radioButton2);
         assertEquals(-1, radioGroup.getSelected());
-        assertFalse(radioButton1.isActive());
-        assertTrue(radioButton2.isActive());
-        assertFalse(radioButton3.isActive());
+        assertFalse(radioButton1.isActivated());
+        assertTrue(radioButton2.isActivated());
+        assertFalse(radioButton3.isActivated());
         assertEquals(radioGroup, radioButton1.getRadioGroup());
         assertNull(radioButton2.getRadioGroup());
         assertEquals(radioGroup, radioButton3.getRadioGroup());
 
         radioGroup.add(radioButton2);
         assertEquals(-1, radioGroup.getSelected());
-        assertFalse(radioButton1.isActive());
-        assertFalse(radioButton2.isActive());
-        assertFalse(radioButton3.isActive());
+        assertFalse(radioButton1.isActivated());
+        assertFalse(radioButton2.isActivated());
+        assertFalse(radioButton3.isActivated());
         assertEquals(radioGroup, radioButton1.getRadioGroup());
         assertEquals(radioGroup, radioButton2.getRadioGroup());
         assertEquals(radioGroup, radioButton3.getRadioGroup());
 
         radioGroup.select(0);
         assertEquals(0, radioGroup.getSelected());
-        assertFalse(radioButton1.isActive());
-        assertFalse(radioButton2.isActive());
-        assertTrue(radioButton3.isActive());
+        assertFalse(radioButton1.isActivated());
+        assertFalse(radioButton2.isActivated());
+        assertTrue(radioButton3.isActivated());
 
         radioGroup.select(-1);
         assertEquals(-1, radioGroup.getSelected());
-        assertFalse(radioButton1.isActive());
-        assertFalse(radioButton2.isActive());
-        assertFalse(radioButton3.isActive());
+        assertFalse(radioButton1.isActivated());
+        assertFalse(radioButton2.isActivated());
+        assertFalse(radioButton3.isActivated());
 
         radioGroup.select(-1);
         assertEquals(-1, radioGroup.getSelected());
-        assertFalse(radioButton1.isActive());
-        assertFalse(radioButton2.isActive());
-        assertFalse(radioButton3.isActive());
+        assertFalse(radioButton1.isActivated());
+        assertFalse(radioButton2.isActivated());
+        assertFalse(radioButton3.isActivated());
     }
 
     @Test
@@ -190,10 +190,10 @@ public class RadioGroupTest {
         RadioButton radioButtonB = new RadioButton();
 
         var listenerA = (UXValueListener<Boolean>) mock(UXValueListener.class);
-        radioButtonA.setActiveListener(listenerA);
+        radioButtonA.setActivatedListener(listenerA);
 
         var listenerB = (UXValueListener<Boolean>) mock(UXValueListener.class);
-        radioButtonB.setActiveListener(listenerB);
+        radioButtonB.setActivatedListener(listenerB);
 
         var listenerC = (UXValueListener<Integer>) mock(UXValueListener.class);
         radioGroup.setSelectedListener(listenerC);

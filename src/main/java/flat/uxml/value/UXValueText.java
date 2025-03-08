@@ -1,6 +1,6 @@
 package flat.uxml.value;
 
-import flat.animations.Interpolation;
+import flat.graphics.Color;
 import flat.resources.Parser;
 import flat.resources.ResourceStream;
 import flat.uxml.Controller;
@@ -33,7 +33,7 @@ public class UXValueText extends UXValue {
         if (isColor(theme) && uxValue.isColor(theme)) {
             int v1 = asColor(theme);
             int v2 = uxValue.asColor(theme);
-            return new UXValueColor(Interpolation.mixColor(v1, v2, t));
+            return new UXValueColor(Color.mixHSV(v1, v2, t));
         } else {
             return super.internalMix(uxValue, t, theme, dpi);
         }

@@ -1,0 +1,34 @@
+radio-button {
+    width : 40dp;
+    height : 40dp;
+    padding-top : 8dp;
+    padding-left : 8dp;
+    padding-right : 8dp;
+    padding-bottom : 8dp;
+    radius-top : 100;
+    radius-left : 100;
+    radius-right : 100;
+    radius-bottom : 100;
+    ripple-overflow : true;
+    ripple-enabled : true;
+    ripple-color : #00000080;
+    cursor : hand;
+    focusable : true;
+    transition-duration : 0.2;
+}
+
+radio-button-primary {
+    icon : '/default/icons/radiobox-blank.svg';
+    icon-color : $primary-color;
+    background-color : transparent;
+    ripple-color : alpha($primary-color-selected, 0.5);
+    hovered {
+        background-color : alpha($primary-color-selected, 0.15);
+    }
+    focused {
+        background-color : alpha($primary-color-selected, 0.2);
+    }
+    activated {
+        icon : '/default/icons/radiobox-marked.svg';
+    }
+}
