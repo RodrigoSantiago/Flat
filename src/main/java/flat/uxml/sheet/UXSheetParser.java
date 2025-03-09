@@ -112,7 +112,7 @@ public class UXSheetParser {
         if (text.length() == 0) return new UXValueText(text);
 
         int init = text.codePointAt(0);
-        if (isCharacter(init) || init == '+' || init == '#' || init == '$' || init == '@') {
+        if (isCharacter(init) || init == '+' || init == '-' || init == '#' || init == '$' || init == '@') {
             read();
             if (readNext()) {
                 UXValue value = parseValue();

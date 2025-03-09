@@ -1,4 +1,4 @@
-slider {
+slider : slider.primary {
     ripple-enabled : true;
     ripple-overflow : true;
     radius-top : 100;
@@ -25,7 +25,7 @@ slider {
     cursor : hand;
 }
 
-slider-primary {
+slider.primary {
     icon : '/default/icons/switch-shape.svg';
     icon-color : $primary-color;
     line-color : $disabled-color;

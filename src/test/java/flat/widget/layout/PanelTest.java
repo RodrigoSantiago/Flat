@@ -214,6 +214,45 @@ public class PanelTest {
     }
 
     @Test
+    public void disabledFromParent() {
+        Panel panel = new Panel();
+        Widget child1 = new Widget();
+        Widget child2 = new Widget();
+
+        assertNull(child1.getParent());
+        assertNull(child2.getParent());
+
+        child1.setEnabled(false);
+        assertFalse(child1.isEnabled());
+        assertTrue(child2.isEnabled());
+
+        panel.add(child1, child2);
+        assertFalse(child1.isEnabled());
+        assertTrue(child2.isEnabled());
+
+        panel.setEnabled(false);
+        assertFalse(panel.isEnabled());
+        assertFalse(child1.isEnabled());
+        assertFalse(child2.isEnabled());
+
+        panel.setEnabled(true);
+        assertTrue(panel.isEnabled());
+        assertFalse(child1.isEnabled());
+        assertTrue(child2.isEnabled());
+
+        panel.setEnabled(false);
+        child1.setEnabled(true);
+        assertFalse(panel.isEnabled());
+        assertFalse(child1.isEnabled());
+        assertFalse(child2.isEnabled());
+
+        panel.setEnabled(true);
+        assertTrue(panel.isEnabled());
+        assertTrue(child1.isEnabled());
+        assertTrue(child2.isEnabled());
+    }
+
+    @Test
     public void measure() {
         Panel panel = new Panel();
 

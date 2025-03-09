@@ -7,6 +7,7 @@ import flat.graphics.Color;
 import flat.graphics.Graphics;
 import flat.math.stroke.BasicStroke;
 import flat.uxml.Controller;
+import flat.uxml.TaskList;
 import flat.uxml.UXAttrs;
 import flat.widget.Widget;
 import flat.widget.enums.ProgressLineMode;
@@ -148,8 +149,10 @@ public class ProgressBar extends Widget {
                 graphics.setColor(getLineColor());
                 graphics.drawLine(x1, yPos, x3, yPos);
 
-                graphics.setColor(getLineFilledColor());
-                graphics.drawLine(x1, yPos, x2, yPos);
+                if (getValue() > 0) {
+                    graphics.setColor(getLineFilledColor());
+                    graphics.drawLine(x1, yPos, x2, yPos);
+                }
 
             } else if (getLineMode() == ProgressLineMode.ROUND) {
 
@@ -158,22 +161,26 @@ public class ProgressBar extends Widget {
                 graphics.setColor(getLineColor());
                 graphics.drawLine(mainx1, yPos, secx2, yPos);
 
-                float mainx2 = Math.max(x2 - lineRadius, mainx1);
-                graphics.setColor(getLineFilledColor());
-                if (mainx1 == mainx2) {
-                    graphics.drawEllipse(x - lineRadius, yPos - lineRadius, lineRadius * 2, lineRadius * 2, true);
-                } else {
-                    graphics.drawLine(mainx1, yPos, mainx2, yPos);
+                if (getValue() > 0) {
+                    float mainx2 = Math.max(x2 - lineRadius, mainx1);
+                    graphics.setColor(getLineFilledColor());
+                    if (mainx1 == mainx2) {
+                        graphics.drawEllipse(x - lineRadius, yPos - lineRadius, lineRadius * 2, lineRadius * 2, true);
+                    } else {
+                        graphics.drawLine(mainx1, yPos, mainx2, yPos);
+                    }
                 }
 
             } else {
                 float mainx1 = Math.min(x1 + lineRadius, x + width * 0.5f);
                 float mainx2 = Math.max(x2 - lineRadius, mainx1);
-                graphics.setColor(getLineFilledColor());
-                if (mainx1 == mainx2 && getValue() > 0) {
-                    graphics.drawEllipse(x, yPos - lineRadius, lineRadius * 2, lineRadius * 2, true);
-                } else {
-                    graphics.drawLine(mainx1, yPos, mainx2, yPos);
+                if (getValue() > 0) {
+                    graphics.setColor(getLineFilledColor());
+                    if (mainx1 == mainx2) {
+                        graphics.drawEllipse(x, yPos - lineRadius, lineRadius * 2, lineRadius * 2, true);
+                    } else {
+                        graphics.drawLine(mainx1, yPos, mainx2, yPos);
+                    }
                 }
 
                 float secx1 = x2 + lineRadius * 2f;
@@ -182,6 +189,16 @@ public class ProgressBar extends Widget {
                     graphics.setColor(getLineColor());
                     graphics.drawLine(secx1, yPos, secx2, yPos);
                 }
+            }
+        }
+    }
+
+    @Override
+    protected void onActivityChange(Activity prev, Activity current, TaskList tasks) {
+        super.onActivityChange(prev, current, tasks);
+        if (prev == null && current != null) {
+            if (getAnimationDuration() > 0 && getValue() < 0) {
+                tasks.add(indeterminateAnimation::play);
             }
         }
     }
@@ -331,14 +348,23 @@ public class ProgressBar extends Widget {
                 t1 = 0;
                 playing = false;
             } else {
-                t1 = Math.min(1, t1 + seconds / animationDuration);
-                t2 = Math.min(1, t2 + seconds / animationDuration);
-                t3 += seconds / animationDuration;
-                if (t2 >= 1) {
-                    t2 = 0;
-                    t1 = 0;
+                if (isDisabled()) {
+                    if (t1 != 0.5f || t2 != 0.5f || t3 != 0.5f) {
+                        t1 = 0.5f;
+                        t2 = 0.5f;
+                        t3 = 0;
+                        invalidate(false);
+                    }
+                } else {
+                    t1 = Math.min(1, t1 + seconds / animationDuration);
+                    t2 = Math.min(1, t2 + seconds / animationDuration);
+                    t3 += seconds / animationDuration;
+                    if (t2 >= 1) {
+                        t2 = 0;
+                        t1 = 0;
+                    }
+                    invalidate(false);
                 }
-                invalidate(false);
             }
         }
     }

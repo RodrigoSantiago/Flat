@@ -118,19 +118,6 @@ vertical-scroll-bar {
     cursor : hand;
 }
 
-progress-bar {
-    height : 4;
-    width : 240;
-    color : #0000FF;
-    filled-color : #FF0000;
-    animation-duration : 3.0;
-}
-
-progress-circle : progress-bar {
-    height : 48;
-    width : 48;
-}
-
 /*
   Layout
 */

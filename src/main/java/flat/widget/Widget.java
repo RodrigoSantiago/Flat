@@ -91,7 +91,9 @@ public class Widget {
     private UXAttrs attrs;
     private UXTheme theme;
     private byte states = 1;
+    private byte currentStateMask = 1;
     private StateAnimation stateAnimation;
+    private boolean currentDisabled;
 
     private final RoundRectangle bg = new RoundRectangle();
     private float inx, iny, inw, inh;
@@ -145,7 +147,7 @@ public class Widget {
         setTransitionDuration(attrs.getNumber("transition-duration", null, getTransitionDuration()));
 
         // Disabled State Overlay
-        if (parent != null) {
+        /*if (parent != null) {
             if (parent.isDisabled()) {
                 if (stateAnimation == null) {
                     stateAnimation = new StateAnimation(this);
@@ -167,7 +169,7 @@ public class Widget {
             for (Widget child : getChildrenIterable()) {
                 child.applyStyle();
             }
-        }
+        }*/
 
         StateInfo info = getStateInfo();
 
@@ -536,6 +538,7 @@ public class Widget {
         if (themeA != themeB) {
             onThemeChangeLocal();
         }
+        onDisabledChangeLocal();
         onCursorChangeLocal();
         onHandleEventsChangeLocal();
     }
@@ -612,6 +615,14 @@ public class Widget {
         currentHandleEventsEnabled = getCurrentHandleEventsEnabled();
         for (Widget child : getChildrenIterable()) {
             child.onHandleEventsChangeLocal();
+        }
+    }
+
+    void onDisabledChangeLocal() {
+        currentDisabled = getCurrentDisabled();
+        setStates(states);
+        for (Widget child : getChildrenIterable()) {
+            child.onDisabledChangeLocal();
         }
     }
 
@@ -710,20 +721,23 @@ public class Widget {
 
     // ---- STATES ---- //
     protected void setStates(byte bitmask) {
-        if (states != bitmask) {
-            boolean applyStyle = getAttrs().containsChange(states, bitmask);
-            states = bitmask;
+        states = bitmask;
+        byte targetBitMask = (byte) (currentDisabled ? states | DISABLED.bitset() : states);
+
+        if (currentStateMask != targetBitMask) {
+            boolean applyStyle = getAttrs().containsChange(currentStateMask, targetBitMask);
+            currentStateMask = targetBitMask;
 
             if (transitionDuration > 0) {
                 if (applyStyle) {
                     if (stateAnimation == null) {
                         stateAnimation = new StateAnimation(this);
                     }
-                    stateAnimation.play(bitmask);
+                    stateAnimation.play(currentStateMask);
                 } else if (stateAnimation != null && stateAnimation.isPlaying()) {
-                    stateAnimation.play(bitmask);
+                    stateAnimation.play(currentStateMask);
                 } else if (stateAnimation != null) {
-                    stateAnimation.set(bitmask);
+                    stateAnimation.set(currentStateMask);
                 }
             } else if (applyStyle) {
                 applyStyle();
@@ -736,7 +750,7 @@ public class Widget {
     }
 
     protected StateInfo getStateInfo() {
-        return stateAnimation != null ? stateAnimation : StateBitset.getState(states);
+        return stateAnimation != null ? stateAnimation : StateBitset.getState(currentStateMask);
     }
 
     protected UXAttrs getAttrs() {
@@ -816,18 +830,27 @@ public class Widget {
         }
     }
 
-    public boolean isDisabled() {
-        return !isEnabled() || (parent != null && parent.isDisabled());
-    }
-
     public boolean isEnabled() {
-        return !DISABLED.contains(states);
+        return !isDisabled();
     }
 
     public void setEnabled(boolean enabled) {
-        if (isEnabled() != enabled) {
-            setStates((byte) (!enabled ? states | DISABLED.bitset() : states & ~DISABLED.bitset()));
+        setDisabled(!enabled);
+    }
+
+    public boolean isDisabled() {
+        return currentDisabled;
+    }
+
+    public void setDisabled(boolean disabled) {
+        if ((DISABLED.contains(states)) != disabled) {
+            setStates((byte) (disabled ? states | DISABLED.bitset() : states & ~DISABLED.bitset()));
+            onDisabledChangeLocal();
         }
+    }
+
+    protected boolean getCurrentDisabled() {
+        return DISABLED.contains(states) || (parent != null && parent.getCurrentDisabled());
     }
 
     public boolean isActivated() {

@@ -17,7 +17,14 @@ menu {
     transition-duration : 0.2;
 }
 
-menu-item : label {
+menu-item {
+    text-font : font("Roboto");
+    text-size : 18sp;
+    text-color : $on-card-color;
+    text-all-caps : false;
+    vertical-align : middle;
+    horizontal-align : left;
+
     padding-top : 8dp;
     padding-left : 16dp;
     padding-right : 16dp;

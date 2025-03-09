@@ -1,4 +1,4 @@
-ranged-slider {
+ranged-slider : ranged-slider.primary {
     ripple-enabled : true;
     ripple-overflow : true;
     radius-top : 100;
@@ -25,7 +25,7 @@ ranged-slider {
     cursor : hand;
 }
 
-ranged-slider-primary {
+ranged-slider.primary {
     icon : '/default/icons/switch-shape.svg';
     icon-color : $primary-color;
     line-color : $disabled-color;

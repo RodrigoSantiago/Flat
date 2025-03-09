@@ -1,10 +1,8 @@
-text-area {
+text-area : text-area.default {
     text-font : font("Roboto");
     text-size : 20sp;
-    text-color : #000000FF;
     vertical-align : middle;
     horizontal-align : left;
-    background-color :#FFFFFF;
     cursor : ibeam;
     focusable : true;
     floating-bars : true;
@@ -16,7 +14,7 @@ text-area {
     transition-duration : 0.2;
 }
 
-text-area-primary {
+text-area.default {
     text-color : $on-card-color;
     caret-color : $on-card-color;
     text-selected-color : $selection-on-card-color;
@@ -35,21 +33,31 @@ text-area-primary {
     }
 }
 
-text-field : text-area {
+text-field : text-field.primary {
+    text-font : font("Roboto");
+    text-size : 20sp;
+    vertical-align : middle;
+    horizontal-align : left;
+    cursor : ibeam;
+    focusable : true;
+    floating-bars : true;
+
     padding-top : 8dp;
     padding-bottom : 8dp;
     padding-left : 16dp;
     padding-right : 16dp;
+    transition-duration : 0.2;
+
     radius-top : 4dp;
     radius-right : 4dp;
     title-size : 12dp;
     title-transition-duration : 0.2;
-    title-spacing : 2;
-    text-divider-size : 1;
-    transition-duration : 0.2;
+    title-spacing : 2dp;
+
+    text-divider-size : 1dp;
 }
 
-text-field-primary {
+text-field.primary {
     text-color : $on-card-color;
     title-color : alpha($on-card-color, 0.75);
     caret-color : $on-card-color;
@@ -75,12 +83,38 @@ text-field-primary {
     }
 }
 
-text-input-field : text-field {
+text-input-field : text-input-field.primary {
+    text-font : font("Roboto");
+    text-size : 20sp;
+    vertical-align : middle;
+    horizontal-align : left;
+    focusable : true;
+    floating-bars : true;
+
+    padding-top : 8dp;
+    padding-bottom : 8dp;
+    padding-left : 16dp;
+    padding-right : 16dp;
+    transition-duration : 0.2;
+
+    radius-top : 4dp;
+    radius-right : 4dp;
+    title-size : 12dp;
+    title-transition-duration : 0.2;
+    title-spacing : 2dp;
+
+    text-divider-size : 1dp;
+
     icon-spacing : 8dp;
     action-icon-spacing : 8dp;
+
+    cursor : ibeam;
+    undefined {
+        cursor : hand;
+    }
 }
 
-text-input-field-primary {
+text-input-field.primary {
     icon-color : alpha($on-card-color, 0.25);
     action-icon-color : alpha($on-card-color, 0.25);
 
@@ -91,7 +125,6 @@ text-input-field-primary {
     text-divider-color : $disabled-color;
     background-color : $card-color;
 
-    cursor : ibeam;
     hovered {
         background-color : $card-color-fade;
     }
@@ -102,7 +135,6 @@ text-input-field-primary {
     }
     undefined {
         action-icon-color : $on-card-color;
-        cursor : hand;
         background-color : $card-color-fade;
     }
     disabled {
@@ -117,12 +149,39 @@ text-input-field-primary {
     }
 }
 
-text-drop-down : text-input-field {
+text-drop-down : text-drop-down.primary {
+    text-font : font("Roboto");
+    text-size : 20sp;
+    vertical-align : middle;
+    horizontal-align : left;
+    focusable : true;
+    floating-bars : true;
 
+    padding-top : 8dp;
+    padding-bottom : 8dp;
+    padding-left : 16dp;
+    padding-right : 16dp;
+    transition-duration : 0.2;
+
+    radius-top : 4dp;
+    radius-right : 4dp;
+    title-size : 12dp;
+    title-transition-duration : 0.2;
+    title-spacing : 2dp;
+
+    text-divider-size : 1dp;
+
+    icon-spacing : 8dp;
+    action-icon-spacing : 8dp;
+
+    cursor : ibeam;
+    action-icon : "/default/icons/menu-down.svg";
+    undefined {
+        cursor : hand;
+    }
 }
 
-text-drop-down-primary {
-    action-icon : "/default/icons/menu-down.svg";
+text-drop-down.primary {
     icon-color : alpha($on-card-color, 0.25);
     action-icon-color : alpha($on-card-color, 0.25);
 
