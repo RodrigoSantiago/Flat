@@ -20,12 +20,12 @@ checkbox-primary {
     icon : '/default/icons/checkbox-blank-outline.svg';
     icon-color : $primary-color;
     background-color : transparent;
-    ripple-color : alpha($primary-color-selected, 0.5);
+    ripple-color : alpha($primary-color-fade, 0.5);
     hovered {
-        background-color : alpha($primary-color-selected, 0.15);
+        background-color : alpha($primary-color-fade, 0.15);
     }
     focused {
-        background-color : alpha($primary-color-selected, 0.2);
+        background-color : alpha($primary-color-fade, 0.2);
     }
     activated {
         icon : '/default/icons/checkbox-marked.svg';

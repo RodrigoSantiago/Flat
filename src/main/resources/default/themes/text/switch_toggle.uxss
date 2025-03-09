@@ -9,10 +9,6 @@ switch-toggle {
     padding-left : 8dp;
     padding-right : 8dp;
     padding-bottom : 8dp;
-    radius-top : 100;
-    radius-bottom : 100;
-    radius-left : 100;
-    radius-right : 100;
 
     icon-width : 20dp;
     icon-height : 20dp;
@@ -34,18 +30,18 @@ switch-toggle-primary {
     icon-bg-color : transparent;
     line-width : 12dp;
     line-cap : ROUND;
-    ripple-color : alpha($primary-color-selected, 0.5);
+    ripple-color : alpha($primary-color-fade, 0.5);
     hovered {
         icon-color : $card-color;
-        icon-bg-color : alpha($primary-color-selected, 0.15);
+        icon-bg-color : alpha($primary-color-fade, 0.15);
     }
     focused {
         icon-color : $card-color;
-        icon-bg-color : alpha($primary-color-selected, 0.2);
+        icon-bg-color : alpha($primary-color-fade, 0.2);
     }
     activated {
         icon-color : $primary-color;
-        line-color : alpha($primary-color-selected, 0.5);
+        line-color : alpha($primary-color-fade, 0.5);
     }
     disabled {
         icon-color : $disabled-color;

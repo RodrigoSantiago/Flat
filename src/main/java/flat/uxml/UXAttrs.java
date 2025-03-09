@@ -20,6 +20,7 @@ import java.util.Objects;
 public class UXAttrs {
 
     private final Widget widget;
+    private final String base;
     private ArrayList<String> styleNames = new ArrayList<>();
     private ArrayList<UXStyle> styles = new ArrayList<>();
     private Activity activity;
@@ -30,6 +31,7 @@ public class UXAttrs {
 
     public UXAttrs(Widget widget, String base) {
         this.widget = widget;
+        this.base = base;
         styleNames.add(base);
     }
 
@@ -54,6 +56,9 @@ public class UXAttrs {
     }
 
     public boolean removeStyleName(String name) {
+        if (base.equals(name)) {
+            return false;
+        }
         if (styleNames.remove(name)) {
             invalidStyles = true;
             return true;
@@ -63,6 +68,7 @@ public class UXAttrs {
 
     public void cleatStyles() {
         styleNames.clear();
+        styleNames.add(base);
         invalidStyles = true;
     }
 
@@ -102,9 +108,14 @@ public class UXAttrs {
             invalidStyles = false;
             styles.clear();
             for (String styleName : styleNames) {
-                UXStyle style = theme.getStyle(styleName);
+                UXStyle style = theme.getStyle(base + "." + styleName);
                 if (style != null) {
                     styles.add(style);
+                } else {
+                    style = theme.getStyle(styleName);
+                    if (style != null) {
+                        styles.add(style);
+                    }
                 }
             }
         }

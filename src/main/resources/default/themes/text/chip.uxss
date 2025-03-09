@@ -1,6 +1,6 @@
-chip : label {
+chip : chip.default {
+    text-font : font("Roboto");
     ripple-enabled : true;
-    ripple-color : #00000080;
     shadow-enabled : false;
     radius-top : 100;
     radius-left : 100;
@@ -10,10 +10,10 @@ chip : label {
     padding-right : 12dp;
     padding-top : 7dp;
     padding-bottom : 7dp;
-    cursor : hand;
     focusable : true;
 
-    action-spacing : 8;
+    icon-spacing : 8dp;
+    action-spacing : 8dp;
     text-size : 18sp;
 
     transition-duration : 0.2;
@@ -21,9 +21,14 @@ chip : label {
     close-icon-cursor : hand;
     close-icon-bg-color : #00000030;
     close-icon-spacing : 8px;
+
+    cursor : hand;
+    undefined {
+        cursor : hand;
+    }
 }
 
-chip-icon-left {
+chip.icon-left {
     icon-position : left;
     padding-left : 4dp;
     padding-top : 4dp;
@@ -33,7 +38,7 @@ chip-icon-left {
     icon-height : 24dp;
 }
 
-chip-icon-right {
+chip.icon-right {
     icon-position : right;
     padding-right : 4dp;
     padding-top : 4dp;
@@ -43,23 +48,31 @@ chip-icon-right {
     icon-height : 24dp;
 }
 
-chip-close-icon-right {
+chip.close-icon-right {
     icon-position : left;
     padding-right : 8dp;
     close-icon-spacing : 8dp;
     close-icon-width : 18dp;
     close-icon-height : 18dp;
+    close-icon : "/default/icons/close.svg";
+    undefined {
+        close-icon : "/default/icons/close-thick.svg";
+    }
 }
 
-chip-close-icon-left {
+chip.close-icon-left {
     icon-position : right;
     padding-left : 8dp;
     close-icon-spacing : 8dp;
     close-icon-width : 18dp;
     close-icon-height : 18dp;
+    close-icon : "/default/icons/close.svg";
+    undefined {
+        close-icon : "/default/icons/close-thick.svg";
+    }
 }
 
-chip-complete-left {
+chip.complete-left {
     icon-position : left;
     padding-right : 8dp;
     padding-top : 4dp;
@@ -68,9 +81,13 @@ chip-complete-left {
     icon-spacing : 8dp;
     icon-width : 24dp;
     icon-height : 24dp;
+    close-icon : "/default/icons/close.svg";
+    undefined {
+        close-icon : "/default/icons/close-thick.svg";
+    }
 }
 
-chip-complete-right {
+chip.complete-right {
     icon-position : right;
     padding-right : 4dp;
     padding-top : 4dp;
@@ -79,9 +96,13 @@ chip-complete-right {
     icon-spacing : 8dp;
     icon-width : 24dp;
     icon-height : 24dp;
+    close-icon : "/default/icons/close.svg";
+    undefined {
+        close-icon : "/default/icons/close-thick.svg";
+    }
 }
 
-chip-dense {
+chip.dense {
     padding-top : 4dp;
     padding-bottom : 4dp;
     close-icon-spacing : 8dp;
@@ -92,24 +113,27 @@ chip-dense {
     icon-height : 18dp;
 }
 
-chip-contained {
-    text-color : $text-primary-color;
-    icon-color : $text-primary-color;
-    close-icon-color : $text-primary-color;
-    background-color : $card-color;
-    ripple-color : alpha($primary-color-acc, 0.5);
+chip.default {
+    text-color : alpha($on-card-color, 0.5);
+    icon-color : alpha($on-card-color, 0.5);
+    close-icon-color : alpha($on-card-color, 0.5);
+    background-color : $card-color-active;
+    ripple-color : $card-color-press;
 
     hovered {
-        background-color : $card-color-primary-selected;
+        background-color : $card-color-hover;
     }
     focused {
-        background-color : $card-color-primary-selected;
+        background-color : $card-color-hover;
     }
     activated {
-        text-color : $primary-color-acc;
-        icon-color : $primary-color-acc;
-        close-icon-color : $primary-color-acc;
-        background-color : $card-color-primary-selected;
+        text-color : $on-card-color;
+        icon-color : $on-card-color;
+        close-icon-color : alpha($on-card-color, 0.5);
+        background-color : $card-color;
+    }
+    undefined {
+        close-icon-color : $on-card-color;
     }
     disabled {
         text-color : $on-disabled-color;
@@ -119,22 +143,27 @@ chip-contained {
     }
 }
 
-chip-contained-primary {
-    text-color : $on-primary-color;
-    icon-color : $on-primary-color;
-    close-icon-color : $on-primary-color;
-    background-color : $primary-color-selected;
-    ripple-color : $primary-color-acc;
+chip.primary {
+    text-color : alpha($on-primary-color, 0.75);
+    icon-color : alpha($on-primary-color, 0.75);
+    close-icon-color : alpha($on-primary-color, 0.75);
+    background-color : $primary-color-active;
+    ripple-color : $primary-color-press;
 
     hovered {
-        background-color : $primary-color;
+        background-color : $primary-color-hover;
     }
     focused {
-        background-color : $primary-color;
+        background-color : $primary-color-hover;
     }
     activated {
-        background-color : $primary-color-acc;
-        ripple-color : $primary-color;
+        text-color : $on-primary-color;
+        icon-color : $on-primary-color;
+        close-icon-color : alpha($on-primary-color, 0.75);
+        background-color : $primary-color;
+    }
+    undefined {
+        close-icon-color : $on-primary-color;
     }
     disabled {
         text-color : $on-disabled-color;
@@ -144,26 +173,29 @@ chip-contained-primary {
     }
 }
 
-chip-outlined-primary {
+chip.outlined-primary {
     text-color : $primary-color;
     icon-color : $primary-color;
-    close-icon-color : $primary-color;
-    background-color : alpha($primary-color, 0);
-    ripple-color : alpha($primary-color-acc, 0.25);
+    close-icon-color : alpha($primary-color, 0.75);
+    background-color : transparent;
     border-color : $primary-color;
     border-width : 1dp;
+    ripple-color : alpha($primary-color-fade, 0.25);
 
     hovered {
-        background-color : alpha($primary-color-selected, 0.15);
+        background-color : alpha($primary-color-fade, 0.10);
     }
     focused {
-        background-color : alpha($primary-color-selected, 0.15);
+        background-color : alpha($primary-color-fade, 0.15);
     }
     activated {
-        text-color : $primary-color-acc;
-        icon-color : $primary-color-acc;
-        close-icon-color : $primary-color-acc;
-        background-color : alpha($primary-color-acc, 0.25);
+        text-color : $primary-color;
+        icon-color : $primary-color;
+        close-icon-color : alpha($primary-color, 0.75);
+        background-color : alpha($primary-color-fade, 0.25);
+    }
+    undefined {
+        close-icon-color : $primary-color;
     }
     disabled {
         text-color : $on-disabled-color;

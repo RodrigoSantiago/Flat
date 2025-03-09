@@ -89,7 +89,8 @@ public class UXSheetParser {
             if (currentType == VARIABLE) {
                 var variable = parseAttribute();
                 if (variable != null) {
-                    if (variable.getValue() instanceof UXValueVariable) {
+                    if (variable.getValue() instanceof UXValueVariable ||
+                        variable.getValue() instanceof UXValueSizeList list && list.containsVariable()) {
                         log(ErroLog.VARIABLE_CANNOT_REFERENCE_A_VARIABLE);
                     } else {
                         getVariables().add(variable);
@@ -280,7 +281,8 @@ public class UXSheetParser {
 
                 } else if (state == 1) {
                     state = 2;
-                    values.add(parseValue());
+                    var val = parseValue();
+                    if (val != null) values.add(val);
 
                 }  else {
                     log(ErroLog.UNEXPECTED_TOKEN);
@@ -464,7 +466,7 @@ public class UXSheetParser {
         // [a-zA-Z_\-]+
 
         builder.appendCodePoint(current);
-        while (isCharacter(next)) {
+        while (isCharacter(next) || next == '.') {
             readNextChar();
             builder.appendCodePoint(current);
         }

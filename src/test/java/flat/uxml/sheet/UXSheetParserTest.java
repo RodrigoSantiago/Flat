@@ -62,6 +62,18 @@ public class UXSheetParserTest {
     }
 
     @Test
+    public void subStyle() {
+        UXSheetParser reader = new UXSheetParser("widget.style {}");
+        reader.parse();
+
+        assertEquals(1, reader.getStyles().size());
+        assertStyle(reader.getStyles(), "widget.style", null);
+
+        assertEquals(0, reader.getVariables().size());
+        assertLog(reader.getLogs());
+    }
+
+    @Test
     public void styleVariable() {
         UXSheetParser reader = new UXSheetParser("$variable : 10; style { color : red; }");
         reader.parse();

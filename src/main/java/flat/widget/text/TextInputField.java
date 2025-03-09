@@ -262,6 +262,19 @@ public class TextInputField extends TextField {
     }
 
     @Override
+    public void fireRipple(float x, float y) {
+        if (isOverActionButton(screenToLocal(x, y))) {
+            if (isRippleEnabled()) {
+                var ripple = getRipple();
+                ripple.setSize(Math.max(Math.abs(x1 - x2), Math.abs(y1 - y2)) * 0.5f);
+                ripple.fire((x1 + x2) / 2f, (y1 + y2) / 2f);
+            }
+        } else {
+            super.fireRipple(x, y);
+        }
+    }
+
+    @Override
     protected float getVisibleTextX() {
         float iw = getLayoutIconWidth();
         return getInX() + (iw > 0 ? iw + getIconSpacing() : 0);

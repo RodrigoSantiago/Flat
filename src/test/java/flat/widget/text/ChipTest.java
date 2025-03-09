@@ -88,8 +88,6 @@ public class ChipTest {
         assertEquals(ImageFilter.LINEAR, chip.getCloseIconImageFilter());
         assertNull(chip.getCloseIcon());
         assertEquals(0xFFFFFFFF, chip.getCloseIconColor());
-        assertEquals(0x00000000, chip.getCloseIconBgColor());
-        assertEquals(Cursor.UNSET, chip.getCloseIconCursor());
         assertNull(chip.getRequestCloseListener());
 
         chip.setAttributes(createNonDefaultValues(), null);
@@ -101,8 +99,6 @@ public class ChipTest {
         assertEquals(ImageFilter.LINEAR, chip.getCloseIconImageFilter());
         assertNull(chip.getCloseIcon());
         assertEquals(0xFFFFFFFF, chip.getCloseIconColor());
-        assertEquals(0x00000000, chip.getCloseIconBgColor());
-        assertEquals(Cursor.UNSET, chip.getCloseIconCursor());
         assertEquals(action, chip.getRequestCloseListener());
 
         chip.applyStyle();
@@ -113,8 +109,6 @@ public class ChipTest {
         assertEquals(ImageFilter.NEAREST, chip.getCloseIconImageFilter());
         assertEquals(closeIcon, chip.getCloseIcon());
         assertEquals(0xFF0000FF, chip.getCloseIconColor());
-        assertEquals(0xFF00F0FF, chip.getCloseIconBgColor());
-        assertEquals(Cursor.HAND, chip.getCloseIconCursor());
         assertEquals(action, chip.getRequestCloseListener());
     }
 
@@ -353,12 +347,10 @@ public class ChipTest {
 
         hash.put(UXHash.getHash("close-icon"), uxCloseIcon);
         hash.put(UXHash.getHash("close-icon-color"), new UXValueColor(0xFF0000FF));
-        hash.put(UXHash.getHash("close-icon-bg-color"), new UXValueColor(0xFF00F0FF));
         hash.put(UXHash.getHash("close-icon-width"), new UXValueSizeSp(20));
         hash.put(UXHash.getHash("close-icon-height"), new UXValueSizeSp(22));
         hash.put(UXHash.getHash("close-icon-spacing"), new UXValueSizeSp(16));
         hash.put(UXHash.getHash("close-icon-image-filter"), new UXValueText(ImageFilter.NEAREST.toString()));
-        hash.put(UXHash.getHash("close-icon-cursor"), new UXValueText(Cursor.HAND.toString()));
         hash.put(UXHash.getHash("on-request-close"), new UXValueText("onCloseActionWork"));
 
         return hash;

@@ -1,30 +1,37 @@
+// Main Color
 $primary-color : #2196F3;
-$primary-color-acc : #1976D2;
-$primary-color-selected : #64B5F6;
+$primary-color-hover : #42A5F5;   // Hover / Focus
+$primary-color-press : #90CAF9;   // Pressed / Ripple   - Usually Lighter
+$primary-color-active: #64B5F6;   // Activated
+$primary-color-fade  : #64B5F6;   // Outline Background
 
+// Optional Extra Color
 $secondary-color : #FF1744;
 $secondary-color-acc : #D50000;
 $secondary-color-selected : #FF5252;
 
+// Base Color (Usually used Primary+Card or Card+Primary)
+$card-color : #FFFFFF;
+$card-color-hover : #F0F0F0;
+$card-color-press : #D0D0D0;
+$card-color-active: #F0F0F0;
+$card-color-fade  : #F5F5F5;    // (Soft Hover)
+
+// Background Color
 $surface-color : #E0E0E0;
 $surface-color-acc : #D5D5D5;
-$card-color : #FFFFFF;
-$card-color-acc : #F8F8F8;
-$card-color-selected : #E0E0E0;
-$card-color-primary-selected : #E3F2FD;
 
+// Disabled Colors (Bg + Details)
 $disabled-color : #C0C0C0FF;
 $on-disabled-color : #808080FF;
 
+// Text/Icons/Symbols Colors
 $on-primary-color : #FFFFFF;
 $on-secondary-color : #FFFFFF;
 $on-surface-color : #101010;
 $on-card-color : #151515;
 $selection-on-primary-color : #FFFFFF80;
 $selection-on-card-color : #64B5F680;
-
-$text-primary-color : #202020;
-$icon-primary-color : #505050;
 
 widget {
 
@@ -88,9 +95,6 @@ canvas {
 /*
   Value
 */
-ranged-slider : slider {
-
-}
 
 horizontal-scroll-bar {
     color : alpha($on-card-color, 0.25);

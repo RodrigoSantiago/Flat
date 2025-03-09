@@ -7,11 +7,12 @@ label {
     horizontal-align : left;
 }
 
-button : label {
+button : button.default {
     text-font : font("Roboto", BOLD);
     text-size : 18sp;
+    icon-width : 0;
+    icon-height : 0;
     ripple-enabled : true;
-    ripple-color : #00000080;
     radius-top : 4dp;
     radius-left : 4dp;
     radius-right : 4dp;
@@ -32,49 +33,38 @@ button : label {
     text-all-caps : true;
 
     enabled {
-        elevation : 1;
+        elevation : 1dp;
     }
     hovered {
-        elevation : 2;
+        elevation : 2dp;
     }
     pressed {
-        elevation : 4;
+        elevation : 4dp;
     }
     disabled {
-        elevation : 0;
+        elevation : 0dp;
     }
 }
 
-button-icon-left {
-    icon-position : left;
-    padding-left : 12dp;
-    icon-spacing : 8dp;
-}
-
-button-icon-right {
-    icon-position : right;
-    padding-right : 12dp;
-    icon-spacing : 8dp;
-}
-
-button-dense {
+button.dense {
     padding-left : 8dp;
     padding-right : 8dp;
     padding-top : 6dp;
     padding-bottom : 6dp;
 }
 
-icon {
+button.icon {
     padding-left : 8dp;
     padding-right : 8dp;
-    icon-spacing : 0dp;
     radius-top : 36dp;
     radius-left : 36dp;
     radius-right : 36dp;
     radius-bottom : 36dp;
+    icon-width : 18dp;
+    icon-height : 18dp;
 }
 
-icon-dense {
+button.icon-dense {
     padding-left : 6dp;
     padding-right : 6dp;
     padding-top : 6dp;
@@ -83,17 +73,38 @@ icon-dense {
     radius-left : 36dp;
     radius-right : 36dp;
     radius-bottom : 36dp;
+    icon-width : 18dp;
+    icon-height : 18dp;
 }
 
-button-contained {
-    shadow-enabled : true;
-    text-color : $primary-color;
-    icon-color : $primary-color;
-    background-color : $card-color;
-    ripple-color : alpha($primary-color, 0.25);
+button.icon-left {
+    icon-position : left;
+    padding-left : 12dp;
+    icon-spacing : 8dp;
+    icon-width : 18dp;
+    icon-height : 18dp;
+}
 
+button.icon-right {
+    icon-position : right;
+    padding-right : 12dp;
+    icon-spacing : 8dp;
+    icon-width : 18dp;
+    icon-height : 18dp;
+}
+
+button.default {
+    shadow-enabled : true;
+    text-color : $on-card-color;
+    icon-color : $on-card-color;
+    background-color : $card-color;
+    ripple-color : $card-color-press;
+
+    hovered {
+        background-color : $card-color-hover;
+    }
     focused {
-        background-color : $card-color-primary-selected;
+        background-color : $card-color-hover;
     }
     disabled {
         text-color : $on-disabled-color;
@@ -102,16 +113,18 @@ button-contained {
     }
 }
 
-button-contained-primary {
+button.primary {
     shadow-enabled : true;
     text-color : $on-primary-color;
     icon-color : $on-primary-color;
     background-color : $primary-color;
-    ripple-color : $primary-color-selected;
+    ripple-color : $primary-color-press;
 
+    hovered {
+        background-color : $primary-color-hover;
+    }
     focused {
-        background-color : $primary-color-selected;
-        ripple-color : $primary-color;
+        background-color : $primary-color-hover;
     }
     disabled {
         text-color : $on-disabled-color;
@@ -120,20 +133,20 @@ button-contained-primary {
     }
 }
 
-button-outlined-primary {
+button.outlined-primary {
     shadow-enabled : false;
     text-color : $primary-color;
     icon-color : $primary-color;
-    background-color : alpha($primary-color, 0);
-    ripple-color : alpha($primary-color-selected, 0.25);
+    background-color : transparent;
+    ripple-color : alpha($primary-color-fade, 0.25);
     border-color : $primary-color;
     border-width : 1dp;
 
     hovered {
-        background-color : alpha($primary-color-selected, 0.25);
+        background-color : alpha($primary-color-fade, 0.15);
     }
     focused {
-        background-color : alpha($primary-color-selected, 0.25);
+        background-color : alpha($primary-color-fade, 0.25);
     }
     disabled {
         text-color : $on-disabled-color;
@@ -142,18 +155,18 @@ button-outlined-primary {
     }
 }
 
-button-text-primary {
+button.text-primary {
     shadow-enabled : false;
     text-color : $primary-color;
     icon-color : $primary-color;
-    background-color : alpha($primary-color, 0);
-    ripple-color : alpha($primary-color-selected, 0.25);
+    background-color : transparent;
+    ripple-color : alpha($primary-color-fade, 0.25);
 
     hovered {
-        background-color : alpha($primary-color-selected, 0.25);
+        background-color : alpha($primary-color-fade, 0.15);
     }
     focused {
-        background-color : alpha($primary-color-selected, 0.25);
+        background-color : alpha($primary-color-fade, 0.25);
     }
     disabled {
         text-color : $on-disabled-color;

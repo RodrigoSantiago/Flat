@@ -23,6 +23,7 @@ menu-item : label {
     padding-right : 16dp;
     padding-bottom : 8dp;
     ripple-enabled : true;
+    transition-duration : 0.2;
 
     text-size : 18sp;
     shortcut-text-size : 12sp;
@@ -31,13 +32,13 @@ menu-item : label {
 
     text-color : $on-card-color;
     shortcut-text-color : alpha($on-card-color, 0.5);
-    ripple-color : $card-color-selected;
+    ripple-color : $card-color-press;
     background-color : $card-color;
 
     hovered {
-        background-color : $card-color-acc;
+        background-color : $card-color-hover;
     }
     pressed {
-        background-color : $card-color-acc;
+        background-color : $card-color-hover;
     }
 }

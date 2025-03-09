@@ -29,16 +29,16 @@ slider-primary {
     icon : '/default/icons/switch-shape.svg';
     icon-color : $primary-color;
     line-color : $disabled-color;
-    line-filled-color : $primary-color-selected;
+    line-filled-color : $primary-color-active;
     icon-bg-color : transparent;
     line-width : 6dp;
     line-cap : ROUND;
-    ripple-color : alpha($primary-color-selected, 0.5);
+    ripple-color : alpha($primary-color-fade, 0.5);
     hovered {
-        icon-bg-color : alpha($primary-color-selected, 0.15);
+        icon-bg-color : alpha($primary-color-fade, 0.15);
     }
     focused {
-        icon-bg-color : alpha($primary-color-selected, 0.2);
+        icon-bg-color : alpha($primary-color-fade, 0.2);
     }
     disabled {
         icon-color : $disabled-color;

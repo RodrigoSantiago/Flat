@@ -13,6 +13,7 @@ text-area {
     padding-bottom : 8dp;
     padding-left : 8dp;
     padding-right : 8dp;
+    transition-duration : 0.2;
 }
 
 text-area-primary {
@@ -22,10 +23,10 @@ text-area-primary {
     background-color : $card-color;
 
     hovered {
-        background-color : $card-color-acc;
+        background-color : $card-color-fade;
     }
     focused {
-        background-color : $card-color-acc;
+        background-color : $card-color-fade;
     }
     disabled {
         background-color : $disabled-color;
@@ -57,12 +58,12 @@ text-field-primary {
     background-color : $card-color;
 
     hovered {
-        background-color : $card-color-acc;
+        background-color : $card-color-fade;
     }
     focused {
         text-divider-color : $primary-color;
         title-color : $primary-color;
-        background-color : $card-color-acc;
+        background-color : $card-color-fade;
     }
     disabled {
         caret-color : transparent;
@@ -92,17 +93,17 @@ text-input-field-primary {
 
     cursor : ibeam;
     hovered {
-        background-color : $card-color-acc;
+        background-color : $card-color-fade;
     }
     focused {
         text-divider-color : $primary-color;
         title-color : $primary-color;
-        background-color : $card-color-acc;
+        background-color : $card-color-fade;
     }
     undefined {
         action-icon-color : $on-card-color;
         cursor : hand;
-        background-color : $card-color-acc;
+        background-color : $card-color-fade;
     }
     disabled {
         caret-color : transparent;
@@ -134,17 +135,17 @@ text-drop-down-primary {
 
     cursor : ibeam;
     hovered {
-        background-color : $card-color-acc;
+        background-color : $card-color-fade;
     }
     focused {
         text-divider-color : $primary-color;
         title-color : $primary-color;
-        background-color : $card-color-acc;
+        background-color : $card-color-fade;
     }
     undefined {
         action-icon-color : $on-card-color;
         cursor : hand;
-        background-color : $card-color-acc;
+        background-color : $card-color-fade;
     }
     disabled {
         caret-color : transparent;

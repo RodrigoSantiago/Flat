@@ -12,6 +12,19 @@ public class UXValueSizeList extends UXValue {
         this.values = values;
     }
 
+    public boolean containsVariable() {
+        for (var val : values) {
+            if (val instanceof UXValueVariable) {
+                return true;
+            } else if (val instanceof UXValueSizeList innerList) {
+                if (innerList.containsVariable()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     @Override
     UXValue internalMix(UXValue uxValue, float t, UXTheme theme, float dpi) {
         if (getSourceType(theme) != uxValue.getSourceType(theme)) {

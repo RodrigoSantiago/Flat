@@ -3,12 +3,14 @@ package flat.widget.text;
 import flat.animations.StateInfo;
 import flat.events.ActionEvent;
 import flat.events.HoverEvent;
+import flat.events.PointerEvent;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
 import flat.graphics.cursor.Cursor;
 import flat.graphics.image.Drawable;
 import flat.math.Vector2;
 import flat.math.shapes.Ellipse;
+import flat.math.stroke.BasicStroke;
 import flat.uxml.*;
 import flat.widget.enums.HorizontalPosition;
 import flat.widget.enums.ImageFilter;
@@ -23,10 +25,6 @@ public class Chip extends Button {
     private float closeIconSpacing;
     private float closeIconWidth;
     private float closeIconHeight;
-    private int closeIconBgColor = Color.transparent;
-    private Cursor closeIconCursor = Cursor.UNSET;
-
-    private boolean isHoveringClose;
 
     private float x1, y1, x2, y2;
 
@@ -47,12 +45,10 @@ public class Chip extends Button {
 
         setCloseIcon(attrs.getResourceAsDrawable("close-icon", info, getCloseIcon(), false));
         setCloseIconColor(attrs.getColor("close-icon-color", info, getCloseIconColor()));
-        setCloseIconBgColor(attrs.getColor("close-icon-bg-color", info, getCloseIconBgColor()));
         setCloseIconWidth(attrs.getSize("close-icon-width", info, getCloseIconWidth()));
         setCloseIconHeight(attrs.getSize("close-icon-height", info, getCloseIconHeight()));
         setCloseIconSpacing(attrs.getSize("close-icon-spacing", info, getCloseIconSpacing()));
         setCloseIconImageFilter(attrs.getConstant("close-icon-image-filter", info, getCloseIconImageFilter()));
-        setCloseIconCursor(attrs.getConstant("close-icon-cursor", info, getCloseIconCursor()));
     }
 
     @Override
@@ -116,11 +112,6 @@ public class Chip extends Button {
         if (ciw > 0 && cih > 0 && getCloseIcon() != null) {
             float xpos = iconLeft ? x + width - ciw : x;
             float ypos = yOff(y, y + height, cih);
-
-            if (isHoveringClose) {
-                graphics.setColor(getCloseIconBgColor());
-                graphics.drawEllipse(xpos, ypos, ciw, cih, true);
-            }
             getCloseIcon().draw(graphics, xpos, ypos, ciw, cih, getCloseIconColor(), getCloseIconImageFilter());
         }
     }
@@ -186,9 +177,9 @@ public class Chip extends Button {
     public void fireRipple(float x, float y) {
         if (isOverActionButton(screenToLocal(x, y))) {
             if (isRippleEnabled()) {
-                getRipple().setSize(Math.max(Math.abs(x1 - x2), Math.abs(y1 - y2)) * 0.5f);
-                getRipple().fire((x1 + x2) / 2f, (y1 + y2) / 2f);
-                getRipple().release();
+                var ripple = getRipple();
+                ripple.setSize(Math.max(Math.abs(x1 - x2), Math.abs(y1 - y2)) * 0.5f);
+                ripple.fire((x1 + x2) / 2f, (y1 + y2) / 2f);
             }
         } else {
             super.fireRipple(x, y);
@@ -209,15 +200,6 @@ public class Chip extends Button {
         }
     }
 
-    @Override
-    public void action() {
-        if (isHoveringClose) {
-            requestClose();
-        } else {
-            super.action();
-        }
-    }
-
     public void requestClose() {
         fireRequestClose();
     }
@@ -226,20 +208,23 @@ public class Chip extends Button {
     public void hover(HoverEvent event) {
         super.hover(event);
         if (!event.isConsumed() && event.getType() == HoverEvent.MOVED) {
-            if (isOverActionButton(screenToLocal(event.getX(), event.getY())) != isHoveringClose) {
-                isHoveringClose = !isHoveringClose;
-                invalidate(false);
-            }
+            setUndefined(isOverActionButton(screenToLocal(event.getX(), event.getY())));
         }
         if (!event.isConsumed() && event.getType() == HoverEvent.EXITED) {
-            isHoveringClose = false;
-            invalidate(false);
+            setUndefined(false);
         }
     }
 
     @Override
-    public Cursor getCurrentCursor() {
-        return isHoveringClose && closeIconCursor != Cursor.UNSET ? closeIconCursor : super.getCursor();
+    public void pointer(PointerEvent event) {
+        UXListener.safeHandle(getPointerListener(), event);
+        if (!event.isConsumed() && event.getPointerID() == 1 && event.getType() == PointerEvent.RELEASED) {
+            if (isOverActionButton(screenToLocal(event.getX(), event.getY()))) {
+                requestClose();
+            } else {
+                action();
+            }
+        }
     }
 
     private boolean isOverActionButton(Vector2 local) {
@@ -253,17 +238,6 @@ public class Chip extends Button {
     public void setCloseIconColor(int closeIconColor) {
         if (this.closeIconColor != closeIconColor) {
             this.closeIconColor = closeIconColor;
-            invalidate(false);
-        }
-    }
-
-    public int getCloseIconBgColor() {
-        return closeIconBgColor;
-    }
-
-    public void setCloseIconBgColor(int closeIconBgColor) {
-        if (this.closeIconBgColor != closeIconBgColor) {
-            this.closeIconBgColor = closeIconBgColor;
             invalidate(false);
         }
     }
@@ -299,16 +273,6 @@ public class Chip extends Button {
             this.closeIconWidth = closeIconWidth;
             invalidate(isWrapContent());
         }
-    }
-
-    public Cursor getCloseIconCursor() {
-        return closeIconCursor;
-    }
-
-    public void setCloseIconCursor(Cursor closeIconCursor) {
-        if (closeIconCursor == null) closeIconCursor = Cursor.UNSET;
-
-        this.closeIconCursor = closeIconCursor;
     }
 
     private float getLayoutCloseIconWidth() {
