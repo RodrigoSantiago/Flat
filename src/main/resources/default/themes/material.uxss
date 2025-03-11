@@ -1,9 +1,9 @@
 // Main Color
 $primary-color : #2196F3;
 $primary-color-hover : #42A5F5;   // Hover / Focus
-$primary-color-press : #90CAF9;   // Pressed / Ripple   - Usually Lighter
 $primary-color-active: #64B5F6;   // Activated
-$primary-color-fade  : #64B5F6;   // Outline Background
+$primary-color-press : #90CAF9;   // Pressed / Ripple
+$primary-color-fade  : #1E88E5;   // Outline Background
 
 // Optional Extra Color
 $secondary-color : #FF1744;
@@ -12,18 +12,19 @@ $secondary-color-selected : #FF5252;
 
 // Base Color (Usually used Primary+Card or Card+Primary)
 $card-color : #FFFFFF;
-$card-color-hover : #F0F0F0;
-$card-color-press : #D0D0D0;
+$card-color-hover : #F5F5F5;
 $card-color-active: #F0F0F0;
-$card-color-fade  : #F5F5F5;    // (Soft Hover)
+$card-color-press : #E8E8E8;
+$card-color-fade  : #E0E0E0;
 
 // Background Color
 $surface-color : #E0E0E0;
-$surface-color-acc : #D5D5D5;
 
 // Disabled Colors (Bg + Details)
 $disabled-color : #C0C0C0FF;
 $on-disabled-color : #808080FF;
+$disabled-color-low : #D0D0D0FF;      // Only for Chips
+$on-disabled-color-low : #B0B0B0FF;   // Only for Chips
 
 // Text/Icons/Symbols Colors
 $on-primary-color : #FFFFFF;
@@ -152,33 +153,6 @@ scroll-box {
     }
 }
 
-tab {
-
-}
-
-page : label {
-    padding-top : 8;
-    padding-bottom : 8;
-    padding-left : 8;
-    padding-right : 8;
-    text-size : 16sp;
-    ripple-enabled : true;
-    ripple-color : #00000060;
-    icon : '/default/icons/slider-icon.svg';
-    icon-color : green;
-    close-icon : '/default/icons/slider-icon.svg';
-    close-icon-color : red;
-    close-icon-cursor : hand;
-}
-
-drawer {
-    front-width : 256;
-    front-height : MATCH_PARENT;
-    height : MATCH_PARENT;
-    width : MATCH_PARENT;
-    slide-anim-duration : 0.2;
-    slide-gesture-area : 16;
-}
 
 list-view {
     background-color : #FF8080;
@@ -233,46 +207,6 @@ dialog {
 
 dropdown-menu : menu {
 
-}
-
-tool-bar {
-    text-font : font("Roboto", "bold");
-    text-size : 20sp;
-    text-color : #000000FF;
-    padding-left : 4;
-    padding-right : 4;
-    padding-top : 8;
-    padding-bottom : 8;
-    shadow-enabled : true;
-    elevation : 4;
-    background-color : red;
-    title-size : 16sp;
-    title-color : #000000FF;
-    subtitle-size : 8sp;
-    subtitle-color : #000000FF;
-    height : 90;
-}
-
-tool-item {
-    icon-color : white;
-    ripple-enabled : true;
-    ripple-color : #FFFFFF;
-    ripple-overflow : true;
-    cursor : hand;
-    width : 24;
-    height : 24;
-    margin-top : 4;
-    margin-left : 4;
-    margin-right : 4;
-    margin-bottom : 4;
-}
-
-tool-item-navigation : tool-item {
-    icon : '/default/icons/menu.svg';
-}
-
-tool-item-overflow : tool-item {
-    icon : '/default/icons/baseline-more_vert.svg';
 }
 
 shiny {

@@ -49,3 +49,29 @@ menu-item {
         background-color : $card-color-hover;
     }
 }
+
+menu-item.navigation {
+    radius-top : 4dp;
+    radius-left : 4dp;
+    radius-bottom : 4dp;
+    radius-right : 4dp;
+    margin-top : 2dp;
+    margin-bottom : 2dp;
+    focusable : true;
+
+    text-color : $on-card-color;
+    ripple-color : alpha($primary-color, 0.5);
+    background-color : transparent;
+
+    hovered {
+        background-color : alpha($primary-color-fade, 0.1);
+    }
+    focused {
+        text-color : $primary-color;
+        background-color : alpha($primary-color-fade, 0.2);
+    }
+    pressed {
+        text-color : $primary-color;
+        background-color : alpha($primary-color-fade, 0.5);
+    }
+}

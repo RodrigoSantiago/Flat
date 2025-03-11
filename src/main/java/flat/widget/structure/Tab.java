@@ -32,6 +32,8 @@ public class Tab extends Group {
     private final ArrayList<Page> pages;
     private final List<Page> unmodifiablePages;
 
+    private boolean hiddenPages;
+
     private float pagesPrefHeight;
     private float pagesHeight;
 
@@ -66,8 +68,9 @@ public class Tab extends Group {
         setPagesHorizontalAlign(attrs.getConstant("pages-horizontal-align", info, getPagesHorizontalAlign()));
         setPagesVerticalAlign(attrs.getConstant("pages-vertical-align", info, getPagesVerticalAlign()));
         setPagesVerticalPosition(attrs.getConstant("pages-vertical-position", info, getPagesVerticalPosition()));
-        setPagesPrefHeight(attrs.getSize("pages-preft-height", info, getPagesPrefHeight()));
-        setScrollSensibility(attrs.getNumber("scroll-sensibilityt", info, getScrollSensibility()));
+        setPagesPrefHeight(attrs.getSize("pages-pref-height", info, getPagesPrefHeight()));
+        setScrollSensibility(attrs.getNumber("scroll-sensibility", info, getScrollSensibility()));
+        setHiddenPages(attrs.getBool("hidden-pages", info, isHiddenPages()));
     }
 
     @Override
@@ -78,10 +81,14 @@ public class Tab extends Group {
         float mHeight = 0;
         boolean wrapWidth = getLayoutPrefWidth() == WRAP_CONTENT;
         boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
+
         for (Widget child : pages) {
             if (child.getVisibility() == Visibility.GONE) continue;
 
             child.onMeasure();
+
+            if (isHiddenPages()) continue;
+
             if (wrapWidth) {
                 if (child.getMeasureWidth() == MATCH_PARENT) {
                     mWidth += Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth());
@@ -139,12 +146,28 @@ public class Tab extends Group {
     @Override
     public void onLayout(float width, float height) {
         setLayout(width, height);
+        float prevViewOffset = getViewOffset();
+
+        if (isHiddenPages()) {
+            this.pagesHeight = 0;
+            totalDimension = 0;
+            viewDimension = 0;
+            if (content != null) {
+                performSingleLayoutConstraints(getInWidth(), getInHeight(), getInX(), getInY()
+                        , content, verticalAlign, horizontalAlign);
+            }
+
+            if (prevViewOffset != getViewOffset() && getActivity() != null) {
+                getActivity().runLater(() -> setViewOffset(getViewOffset()));
+            }
+            return;
+        }
+
         float inHeight = getInHeight();
 
         float contentMinHeight = content == null ? 0 : content.getLayoutMinHeight();
         float contentHeight = content == null ? 0 : Math.min(content.getMeasureHeight(), content.getLayoutMaxHeight());
         contentHeight -= contentMinHeight;
-
 
         float pagesMinHeight = pagesPrefHeight == MATCH_PARENT ? 0 : pagesPrefHeight;
         float pagesHeight = Math.min(inHeight, pagesPrefHeight);
@@ -202,10 +225,13 @@ public class Tab extends Group {
         totalDimension = performLayoutHorizontalScrollable(getInWidth(), pagesTotalheight, getInX(), getInY() + pageY
                 , (ArrayList) pages, VerticalAlign.MIDDLE, horizontalAlign, getViewOffset());
         viewDimension = getInWidth();
-        setViewOffset(getViewOffset());
         if (content != null) {
             performSingleLayoutConstraints(getInWidth(), contentTotalheight, getInX(), getInY() + contentY
                     , content, verticalAlign, horizontalAlign);
+        }
+
+        if (prevViewOffset != getViewOffset() && getActivity() != null) {
+            getActivity().runLater(() -> setViewOffset(getViewOffset()));
         }
     }
 
@@ -245,6 +271,7 @@ public class Tab extends Group {
     }
 
     RoundRectangle clipShape = new RoundRectangle();
+
     @Override
     public void onDraw(Graphics graphics) {
         if (getInWidth() <= 0 || getInHeight() <= 0) return;
@@ -293,7 +320,7 @@ public class Tab extends Group {
     @Override
     public void scroll(ScrollEvent event) {
         super.scroll(event);
-        if (!event.isConsumed() && isPagesScrollable()) {
+        if (!event.isConsumed() && isPagesScrollable() && !isHiddenPages()) {
             Vector2 pos = screenToLocal(event.getX(), event.getY());
             if ((pagesVerticalPosition == VerticalPosition.TOP && pos.y < getInY() + pagesHeight) ||
                 (pagesVerticalPosition == VerticalPosition.BOTTOM && pos.y > getInY() + getInHeight() - pagesHeight)) {
@@ -368,6 +395,17 @@ public class Tab extends Group {
 
     public Widget getContent() {
         return content;
+    }
+
+    public boolean isHiddenPages() {
+        return hiddenPages;
+    }
+
+    public void setHiddenPages(boolean hiddenPages) {
+        if (this.hiddenPages != hiddenPages) {
+            this.hiddenPages = hiddenPages;
+            invalidate(true);
+        }
     }
 
     @Override

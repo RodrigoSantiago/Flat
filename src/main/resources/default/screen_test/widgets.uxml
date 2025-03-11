@@ -1,0 +1,49 @@
+<Scene width="MATCH_PARENT" height="MATCH_PARENT" background-color="$surface-color">
+    <LinearBox direction="VERTICAL" width="MATCH_PARENT" height="MATCH_PARENT">
+        <ToolBar width="MATCH_PARENT" on-navigation="toggleDrawer"
+                 title="Flat.UI Showcase" subtitle="Material" style="dense-double">
+            <ToolItem navigation-item="true" style="navigation dense"/>
+            <ToolItem overflow-item="true" style="overflow dense"/>
+            <ToolItem icon="/default/icons/sun.svg" style="dense" menu-text="Light"/>
+            <ToolItem icon="/default/icons/night.svg" style="dense" menu-text="Dark"/>
+        </ToolBar>
+        <Drawer id="mainDrawer" width="MATCH_PARENT" height="MATCH_PARENT" block-events="true" auto-close="true">
+            <LinearBox slide-content="true" direction="vertical" width="250dp" height="MATCH_PARENT" style="drawer-menu">
+                <MenuItem text="Buttons" on-action="setPageButtons" style="navigation"/>
+                <MenuItem text="Chips" on-action="setPageChips" style="navigation"/>
+                <MenuItem text="Forms" on-action="setPageForms" style="navigation"/>
+                <MenuItem text="Progress" on-action="setPageProgress" style="navigation"/>
+                <MenuItem text="Text" on-action="setPageText" style="navigation"/>
+            </LinearBox>
+            <LinearBox direction="vertical" width="MATCH_PARENT" height="MATCH_PARENT">
+                <Tab width="MATCH_PARENT" height="MATCH_PARENT" id="mainTab" hidden-pages="true">
+                    <Page text="Buttons" id="pageButtons">
+                        <Frame width="MATCH_PARENT" height="MATCH_PARENT">
+                            <Include src="buttons.uxml"/>
+                        </Frame>
+                    </Page>
+                    <Page text="Chips" id="pageChips">
+                        <Frame width="MATCH_PARENT" height="MATCH_PARENT">
+                            <Include src="chips.uxml" background-color="$card-color"/>
+                        </Frame>
+                    </Page>
+                    <Page text="Forms" id="pageForms">
+                        <Frame width="MATCH_PARENT" height="MATCH_PARENT">
+                            <Include src="forms.uxml"/>
+                        </Frame>
+                    </Page>
+                    <Page text="Progress" id="pageProgress">
+                        <Frame width="MATCH_PARENT" height="MATCH_PARENT">
+                            <Include src="progress.uxml"/>
+                        </Frame>
+                    </Page>
+                    <Page text="Text" id="pageText">
+                        <Frame width="MATCH_PARENT" height="MATCH_PARENT">
+                            <Include src="text.uxml"/>
+                        </Frame>
+                    </Page>
+                </Tab>
+            </LinearBox>
+        </Drawer>
+    </LinearBox>
+</Scene>

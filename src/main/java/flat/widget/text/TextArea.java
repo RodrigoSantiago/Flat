@@ -891,7 +891,7 @@ public class TextArea extends Scrollable {
 
     public void slideToCaretLater(float speed) {
         if (getActivity() != null) {
-            getActivity().getWindow().runSync(() -> slideToCaret(speed));
+            getActivity().runLater(() -> slideToCaret(speed));
         }
     }
 
@@ -992,10 +992,6 @@ public class TextArea extends Scrollable {
 
     protected float getTextHeight() {
         return textRender.getTextHeight();
-    }
-
-    protected boolean isWrapContent() {
-        return getPrefWidth() == WRAP_CONTENT || getPrefHeight() == WRAP_CONTENT;
     }
 
     protected float xOff(float start, float end, float textWidth) {

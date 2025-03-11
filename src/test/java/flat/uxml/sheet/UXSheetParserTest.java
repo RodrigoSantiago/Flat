@@ -595,7 +595,7 @@ public class UXSheetParserTest {
         assertStyle(reader.getStyles(), "style-list", null,
                 "list-on", new UXValueSizeList(new UXValue[] {
                         new UXValueNumber(1), new UXValueSizeDp(2),
-                        new UXValueNumber(Widget.MATCH_PARENT), new UXValueNumber(Widget.WRAP_CONTENT),
+                        new UXValueSizeMp(), new UXValueNumber(0),
                         new UXValueText("10"), new UXValueVariable("$var"), new UXValueLocale("@locale")
                 })
         );
@@ -686,8 +686,8 @@ public class UXSheetParserTest {
 
         assertEquals(1, reader.getStyles().size());
         assertStyle(reader.getStyles(), "style", null,
-                "number-m", new UXValueNumber(Widget.MATCH_PARENT),
-                "number-w", new UXValueNumber(Widget.WRAP_CONTENT)
+                "number-m", new UXValueSizeMp(),
+                "number-w", new UXValueNumber(0)
         );
 
         assertEquals(0, reader.getVariables().size());

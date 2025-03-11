@@ -218,10 +218,10 @@ public abstract class Scrollable extends Parent {
         float oldX = viewOffsetX;
         float oldY = viewOffsetY;
         if (viewOffsetX != viewX && getActivity() != null) {
-            getActivity().getWindow().runSync(() -> setViewOffsetX(getViewOffsetX()));
+            getActivity().runLater(() -> setViewOffsetX(getViewOffsetX()));
         }
         if (viewOffsetY != viewY && getActivity() != null) {
-            getActivity().getWindow().runSync(() -> setViewOffsetY(getViewOffsetY()));
+            getActivity().runLater(() -> setViewOffsetY(getViewOffsetY()));
         }
     }
 

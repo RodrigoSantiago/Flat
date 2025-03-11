@@ -177,8 +177,9 @@ public class Chip extends Button {
     public void fireRipple(float x, float y) {
         if (isOverActionButton(screenToLocal(x, y))) {
             if (isRippleEnabled()) {
+                float sp = getCloseIconSpacing();
                 var ripple = getRipple();
-                ripple.setSize(Math.max(Math.abs(x1 - x2), Math.abs(y1 - y2)) * 0.5f);
+                ripple.setSize(Math.max(Math.abs(x1 - x2) + sp, Math.abs(y1 - y2) + sp) * 0.5f);
                 ripple.fire((x1 + x2) / 2f, (y1 + y2) / 2f);
             }
         } else {

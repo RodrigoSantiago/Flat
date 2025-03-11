@@ -71,10 +71,10 @@ public class ToolBar extends Group {
         subtitleRender.setTextSize(subtitleSize);
         unmodifiableToolItems = Collections.unmodifiableList(toolItems);
         var overflow = new ToolItem();
-        overflow.addStyle("tool-item-overflow");
+        overflow.addStyle("overflow");
         setOverflowItem(overflow);
         var navigation = new ToolItem();
-        navigation.addStyle("tool-item-navigation");
+        navigation.addStyle("navigation");
         setNavigationItem(navigation);
     }
 
@@ -181,13 +181,13 @@ public class ToolBar extends Group {
         }
 
         if (wrapWidth) {
-            float tw = Math.max(getTitleWidth(), getSubtitleWidth());
+            float tw = Math.max(hasTitle() ? getTitleWidth() : 0, hasSubtitle() ? getSubtitleWidth() : 0);
             mWidth = Math.max(tw + extraWidth + ow + nw + iw, getLayoutMinWidth());
         } else {
             mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
         }
         if (wrapHeight) {
-            float th = getTitleHeight() + getSubtitleHeight();
+            float th = (hasTitle() ? getTitleHeight() : 0) + (hasSubtitle() ? getSubtitleHeight() : 0);
             mHeight = Math.max(Math.max(th, ih) + extraHeight, getLayoutMinHeight());
         } else {
             mHeight = Math.max(getLayoutPrefHeight(), getLayoutMinHeight());
@@ -513,8 +513,8 @@ public class ToolBar extends Group {
     }
 
     private void onOverflowBtnAction(ActionEvent actionEvent) {
+        updateMenuItems();
         if (overflowItem != null && overflowMenu != null && getActivity() != null) {
-            updateMenuItems();
             Vector2 center = localToScreen(
                     overflowItem.getLayoutX() + overflowItem.getLayoutWidth() * 0.5f,
                     overflowItem.getLayoutY() + overflowItem.getLayoutHeight() * 0.5f);
@@ -753,10 +753,6 @@ public class ToolBar extends Group {
         if (navigationAction != null) {
             UXListener.safeHandle(navigationAction, new ActionEvent(this));
         }
-    }
-
-    protected boolean isWrapContent() {
-        return getPrefWidth() == WRAP_CONTENT || getPrefHeight() == WRAP_CONTENT;
     }
 
     protected float xOff(float start, float end, float textWidth) {

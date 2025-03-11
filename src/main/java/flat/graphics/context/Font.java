@@ -416,7 +416,7 @@ public class Font {
         public void run() {
             if (!consumed) {
                 consumed = true;
-                Application.runVsync(() -> {
+                Application.runOnContextSync(() -> {
                     var values = new ArrayList<>(fontRenderer.values());
                     for (var render : values) {
                         render.destroyTask.run();

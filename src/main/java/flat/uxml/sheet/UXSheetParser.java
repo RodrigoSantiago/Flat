@@ -7,12 +7,9 @@ import flat.graphics.text.FontWeight;
 import flat.resources.Parser;
 import flat.uxml.value.UXValue;
 import flat.uxml.value.*;
-import flat.widget.Widget;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.regex.Pattern;
 
 public class UXSheetParser {
 
@@ -256,10 +253,10 @@ public class UXSheetParser {
                 return new UXValueBool(false);
             }
             if (currentText.equalsIgnoreCase("MATCH_PARENT")) {
-                return new UXValueNumber(Widget.MATCH_PARENT);
+                return new UXValueSizeMp();
             }
             if (currentText.equalsIgnoreCase("WRAP_CONTENT")) {
-                 return new UXValueNumber(Widget.WRAP_CONTENT);
+                 return new UXValueNumber(0);
             }
             return new UXValueText(currentText);
         }

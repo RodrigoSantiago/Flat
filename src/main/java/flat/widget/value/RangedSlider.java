@@ -668,8 +668,4 @@ public class RangedSlider extends Widget {
             UXValueListener.safeHandle(endValueListener, new ValueChange<>(this, old, endValue));
         }
     }
-
-    protected boolean isWrapContent() {
-        return getPrefWidth() == WRAP_CONTENT || getPrefHeight() == WRAP_CONTENT;
-    }
 }

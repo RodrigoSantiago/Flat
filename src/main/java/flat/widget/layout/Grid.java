@@ -482,31 +482,6 @@ public class Grid extends Parent {
 
     @Override
     public boolean onLayoutSingleChild(Widget child) {
-        Integer index = cells.get(child);
-        if (index != null) {
-            Cell cell = orderedCells.get((int) index);
-            if (cell.x >= 0 && cell.x < columnCount && cell.y >= 0 && cell.y < rowCount) {
-                if (columns[cell.x] == WRAP_CONTENT || columns[cell.x] == MATCH_PARENT ||
-                        columns[cell.y] == WRAP_CONTENT || columns[cell.y] == MATCH_PARENT) {
-                    return false;
-                }
-                
-                Column column = layoutColumns[cell.x];
-                Row row = layoutRows[cell.y];
-                cell.widget.onMeasure();
-                float cW = Math.min(column.width,
-                        Math.min(cell.widget.getMeasureWidth(), cell.widget.getLayoutMaxWidth()));
-                float cH = Math.min(row.height,
-                        Math.min(cell.widget.getMeasureHeight(), cell.widget.getLayoutMaxHeight()));
-
-                cell.widget.onLayout(cW, cH);
-                cell.widget.setLayoutPosition(column.x, row.y);
-            } else {
-                cell.widget.onLayout(0, 0);
-                cell.widget.setLayoutPosition(0, 0);
-            }
-            return true;
-        }
         return false;
     }
 

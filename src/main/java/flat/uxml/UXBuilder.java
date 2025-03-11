@@ -65,9 +65,9 @@ public class UXBuilder {
         UXBuilder.install("ToolBar", ToolBar::new);
         UXBuilder.install("ToolItem", ToolItem::new);
         UXBuilder.install("Grid", Grid::new);
+        UXBuilder.install("Drawer", Drawer::new);
         /*
-        UXBuilder.install("Canvas", Canvas::new);
-        UXBuilder.install("Drawer", Drawer::new);*/
+        UXBuilder.install("Canvas", Canvas::new);*/
         // RichText text + multiple fonts + images + Emoji icons
         // MonoText text + multiple monospaced fonts
         // RawText text + monospaced infinity reading efficiency

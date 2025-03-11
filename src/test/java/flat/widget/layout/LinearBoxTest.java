@@ -1,5 +1,6 @@
 package flat.widget.layout;
 
+import flat.uxml.Controller;
 import flat.uxml.UXChild;
 import flat.uxml.UXChildren;
 import flat.uxml.UXHash;
@@ -22,6 +23,29 @@ import static org.powermock.api.mockito.PowerMockito.when;
 public class LinearBoxTest {
 
     @Test
+    public void properties() {
+        Controller controller = mock(Controller.class);
+        LinearBox box = new LinearBox();
+
+        assertEquals(HorizontalAlign.LEFT, box.getHorizontalAlign());
+        assertEquals(VerticalAlign.TOP, box.getVerticalAlign());
+        assertEquals(Direction.HORIZONTAL, box.getDirection());
+
+        box.setAttributes(createNonDefaultValues(), null);
+        box.applyAttributes(controller);
+
+        assertEquals(HorizontalAlign.LEFT, box.getHorizontalAlign());
+        assertEquals(VerticalAlign.TOP, box.getVerticalAlign());
+        assertEquals(Direction.HORIZONTAL, box.getDirection());
+
+        box.applyStyle();
+
+        assertEquals(HorizontalAlign.RIGHT, box.getHorizontalAlign());
+        assertEquals(VerticalAlign.BOTTOM, box.getVerticalAlign());
+        assertEquals(Direction.VERTICAL, box.getDirection());
+    }
+
+    @Test
     public void childrenFromUx() {
         LinearBox box = new LinearBox();
         Widget child1 = new Widget();
@@ -36,17 +60,6 @@ public class LinearBoxTest {
         assertEquals(child2, box.getChildrenIterable().get(1));
         assertEquals(box, child1.getParent());
         assertEquals(box, child2.getParent());
-    }
-
-    @Test
-    public void alignDirectionStyles() {
-        LinearBox box = new LinearBox();
-        box.setAttributes(createNonDefaultValues(), null);
-        box.applyStyle();
-
-        assertEquals(HorizontalAlign.LEFT, box.getHorizontalAlign());
-        assertEquals(VerticalAlign.TOP, box.getVerticalAlign());
-        assertEquals(Direction.VERTICAL, box.getDirection());
     }
 
     private void testDefaultPosSize(LinearBox parent, LinearBox child) {
@@ -1114,8 +1127,8 @@ public class LinearBoxTest {
 
     private HashMap<Integer, UXValue> createNonDefaultValues() {
         var hash = new HashMap<Integer, UXValue>();
-        hash.put(UXHash.getHash("horizontal-align"), new UXValueText(HorizontalAlign.LEFT.toString()));
-        hash.put(UXHash.getHash("vertical-align"), new UXValueText(VerticalAlign.TOP.toString()));
+        hash.put(UXHash.getHash("horizontal-align"), new UXValueText(HorizontalAlign.RIGHT.toString()));
+        hash.put(UXHash.getHash("vertical-align"), new UXValueText(VerticalAlign.BOTTOM.toString()));
         hash.put(UXHash.getHash("direction"), new UXValueText(Direction.VERTICAL.toString()));
         return hash;
     }

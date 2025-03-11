@@ -225,10 +225,6 @@ public class Label extends Widget {
         return showText;
     }
 
-    protected boolean isWrapContent() {
-        return getPrefWidth() == WRAP_CONTENT || getPrefHeight() == WRAP_CONTENT;
-    }
-
     protected float xOff(float start, float end, float textWidth) {
         if (end < start) return (start + end) / 2f;
         if (horizontalAlign == HorizontalAlign.RIGHT) return end - textWidth;

@@ -13,6 +13,7 @@ import flat.uxml.Controller;
 import flat.uxml.ValueChange;
 import flat.widget.Parent;
 import flat.widget.Widget;
+import flat.widget.layout.Drawer;
 import flat.widget.layout.LinearBox;
 import flat.widget.structure.*;
 import flat.widget.stages.dialogs.ConfirmDialogBuilder;
@@ -38,15 +39,65 @@ public class MainController extends Controller {
     public MainController(Activity activity) {
     }
 
-    @Flat public Button button;
-    @Flat public Label label;
-    @Flat public LinearBox linear;
-    @Flat public Button iconButton;
-    @Flat public ListView listView;
+    @Flat
+    public Button button;
+    @Flat
+    public Label label;
+    @Flat
+    public LinearBox linear;
+    @Flat
+    public Button iconButton;
+    @Flat
+    public ListView listView;
+    @Flat
+    public Drawer mainDrawer;
+    @Flat
+    public Drawer drawer2;
+    @Flat public Tab mainTab;
+    @Flat public Page pageButtons;
+    @Flat public Page pageChips;
+    @Flat public Page pageForms;
+    @Flat public Page pageProgress;
+    @Flat public Page pageText;
 
     private ObservableList<String> items = new ObservableList<>();
 
     private int num;
+
+    @Flat
+    public void toggleDrawer() {
+        mainDrawer.toggle();
+    }
+
+    @Flat
+    public void setPageButtons() {
+        mainTab.selectPage(pageButtons);
+        mainDrawer.hide();
+    }
+
+    @Flat
+    public void setPageChips() {
+        mainTab.selectPage(pageChips);
+        mainDrawer.hide();
+    }
+
+    @Flat
+    public void setPageForms() {
+        mainTab.selectPage(pageForms);
+        mainDrawer.hide();
+    }
+
+    @Flat
+    public void setPageProgress() {
+        mainTab.selectPage(pageProgress);
+        mainDrawer.hide();
+    }
+
+    @Flat
+    public void setPageText() {
+        mainTab.selectPage(pageText);
+        mainDrawer.hide();
+    }
 
     @Flat
     public void linearAction(ActionEvent actionEvent) {
@@ -92,121 +143,16 @@ public class MainController extends Controller {
                 .transparent(false)
                 .build());
     }
-
-    @Flat
-    public void doTheWork(ValueChange<Integer> change) {
-        System.out.println("From : " + change.getOldValue() + ", To : " + change.getValue());
-    }
-
-    @Flat
-    public void slideBar(ActionEvent event) {
-        System.out.println("Slide");
-    }
-
-    @Flat
-    public void slideChange(ValueChange<Float> change) {
-        System.out.println("From : " + change.getOldValue() + ", To : " + change.getValue());
-    }
-
-    @Flat
-    public void onAddItem(ActionEvent event) {
-        items.add("New " + items.size());
-    }
-
-    @Flat
-    public void onRemoveItem(ActionEvent event) {
-        if (items.size() > 0) items.remove(items.size() / 2);
-    }
-
-    double lastAnim = 0;
-    double lastDraw = 0;
-    int anim;
-    int draw;
-    double animFPS = 0;
-    double drawFPS = 0;
     @Override
     public void onShow() {
-        Application.setVsync(1);
-        /*getActivity().addAnimation(new Animation() {
-            @Override
-            public Activity getSource() {
-                return getActivity();
-            }
-
-            @Override
-            public boolean isPlaying() {
-                return true;
-            }
-
-            @Override
-            public void handle(float seconds) {
-                anim++;
-                double now = System.nanoTime() / 1_000_000_000.0;
-                if (lastAnim != 0) {
-                    animFPS = (animFPS + (now - lastAnim)) * 0.5;
-                }
-                System.out.printf("%.02f%n", 1 / animFPS);
-                lastAnim = now;
-            }
-        });*/
-        search(getActivity().getScene());
-        /*listView.setAdapter(new ListViewDefaultAdapter<>(items) {
-            @Override
-            public void buildListItem(int index, Widget item) {
-                var label = (ListItem) item;
-                label.setText(items.get(index));
-                label.setLayers(index % 6);
-            }
-        });*/
+        search(pageChips.getFrame());
     }
 
     float t = 0;
     float speed = 0.01f;
     @Override
     public void onDraw(Graphics graphics) {
-        /*int mix = Color.mixHSV(0xFF8080FF, 0x2196F3FF, 0.5f);
-        System.out.println(Arrays.toString(Color.rgbToHsv(0xFF8080FF)));
-        System.out.println(Arrays.toString(Color.rgbToHsv(0x2196F3FF)));
-        System.out.println(Arrays.toString(Color.rgbToHsv(mix)));
-        if (t > 2) speed = -speed;
-        if (t < -1) speed = -speed;
-        t += speed;
-        graphics.setTransform2D(null);
-        graphics.setColor(mix);
-        graphics.drawRect(0, 0, 100, 100, true);*/
-        /*draw++;
-        double now = System.nanoTime() / 1_000_000_000.0;
-        if (lastDraw != 0) {
-            drawFPS = (drawFPS + (now - lastDraw)) * 0.5;
-        }
-        lastDraw = now;
-        
-        graphics.setTransform2D(null);
-        graphics.setColor(Color.red);
-        graphics.setTextSize(32);
-        graphics.setTextFont(Font.findFont(FontStyle.MONO));
-        graphics.drawText(10, 10, "Anim: "+String.format("%.02f", 1 / animFPS));
-        graphics.drawText(10, 52, "Draw:" +String.format("%.02f", 1 / drawFPS));*/
         super.onDraw(graphics);
-        /*PixelMap map = (PixelMap) DrawableReader.parse(new ResourceStream("/default/img_test.png"));
-        ImagePattern pattern = new ImagePattern.Builder(map.readTexture(graphics.getContext()), 50, 50)
-                .cycleMethod(CycleMethod.REFLECT)
-                .transform(new Affine().scale(5, 5))
-                .build();
-        graphics.setTransform2D(null);
-        graphics.setPaint(pattern);
-        graphics.drawRect(0, 0, 200, 200, true);*/
-
-        /*t += 1;
-        RadialGradient linear = new RadialGradient.Builder(50, 50, 100)
-                .stop(0, Color.red)
-                .stop(1, Color.green)
-                .transform(new Affine().rotate(t))
-                .build();
-        graphics.setTransform2D(null);
-        graphics.setPaint(linear);
-        graphics.drawRect(0, 0, 200, 200, true);*/
-
         if (save) {
             save = false;
             Font font = Font.getDefault();
@@ -214,8 +160,8 @@ public class MainController extends Controller {
             PixelMap pixelMap = font.createImageFromAtlas(graphics.getContext());
             saveImage(pixelMap.getData(), (int) pixelMap.getWidth(), (int) pixelMap.getHeight(), "C:\\Nova\\image-2.png");
         }
-
     }
+
     public static void saveImage(byte[] rgbData, int width, int height, String filePath) {
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
@@ -235,77 +181,12 @@ public class MainController extends Controller {
     }
 
     boolean save = false;
-
-    @Flat ProgressBar progressBar;
-    @Flat ProgressBar progressBar2;
-
     @Flat
     public void export(ActionEvent event) {
         save = true;
     }
-
     @Flat
-    public void setProgress(ActionEvent event) {
-        if (progressBar.getValue() >= 0.99f) {
-            progressBar.setValue(-0.1f);
-        } else {
-            progressBar.setValue(progressBar.getValue() + 0.25f);
-        }
-        if (progressBar2.getValue() >= 0.99f) {
-            progressBar2.setValue(-0.1f);
-        } else {
-            progressBar2.setValue(progressBar2.getValue() + 0.25f);
-        }
-    }
-
-    @Flat
-    public void filter(TextEvent event) {
-        event.setText(formatCep(event.getText()));
-    }
-
-    @Flat
-    public void textCHANGE(ValueChange<String> event) {
-        System.out.println("aqui");
-    }
-
-    private String formatCep(String text) {
-        if (text.matches("^\\d{5}-\\d{3}$")) return text;
-        text = text.replaceAll("\\D", "");
-        String finalText = text.length() > 0 ? "" + text.charAt(0) : ""; // 64 123 - 555
-        if (text.length() > 1) {
-            finalText += text.charAt(1);
-        }
-        if (text.length() > 2) {
-            finalText += text.charAt(2);
-        }
-        if (text.length() > 3) {
-            finalText += text.charAt(3);
-        }
-        if (text.length() > 4) {
-            finalText += text.charAt(4);
-        }
-        if (text.length() > 5) {
-            finalText += "-" + text.charAt(5);
-        }
-        if (text.length() > 6) {
-            finalText += text.charAt(6);
-        }
-        if (text.length() > 7) {
-            finalText += text.charAt(7);
-        }
-
-        return finalText;
-    }
-
-    @Flat public TextField textField;
-
-    @Flat
-    public void setmax(ActionEvent event) {
-        textField.setMaxCharacters(10);
-    }
-
-    @Flat
-    public void here(ActionEvent event) {
-        System.out.println("Here " + event);
+    public void toggleDrawer2(ActionEvent event) {
+        drawer2.toggle();
     }
 }

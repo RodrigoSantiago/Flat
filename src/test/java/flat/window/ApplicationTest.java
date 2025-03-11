@@ -3,19 +3,15 @@ package flat.window;
 import flat.backend.*;
 import flat.graphics.context.Context;
 import flat.resources.ResourcesManager;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-import org.mockito.invocation.Invocation;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.File;
-import java.util.List;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -365,7 +361,7 @@ public class ApplicationTest {
     }
 
     @Test
-    public void runVsync() {
+    public void runOnContextSync() {
         // Setup
         ResourcesManager resources = mock(ResourcesManager.class);
         WindowSettings settings = new WindowSettings.Builder().size(200, 400).build();
@@ -380,7 +376,7 @@ public class ApplicationTest {
 
         Runnable task = mock(Runnable.class);
         doAnswer(a -> {
-            Application.runVsync(task);
+            Application.runOnContextSync(task);
             return false;
         }).when(window).loop(anyFloat());
 

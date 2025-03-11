@@ -12,8 +12,8 @@ import java.util.List;
 
 public class StackBox extends Parent {
 
-    private VerticalAlign verticalAlign = VerticalAlign.MIDDLE;
-    private HorizontalAlign horizontalAlign = HorizontalAlign.CENTER;
+    private VerticalAlign verticalAlign = VerticalAlign.TOP;
+    private HorizontalAlign horizontalAlign = HorizontalAlign.LEFT;
 
     @Override
     public void applyChildren(UXChildren children) {
@@ -49,7 +49,7 @@ public class StackBox extends Parent {
     public boolean onLayoutSingleChild(Widget child) {
         if (getChildren().contains(child)) {
             child.onMeasure();
-            performSingleLayoutConstraints(getLayoutWidth(), getLayoutHeight(), getInX(), getInY(), child, verticalAlign, horizontalAlign);
+            performSingleLayoutConstraints(getInWidth(), getInHeight(), getInX(), getInY(), child, verticalAlign, horizontalAlign);
             return true;
         }
         return false;
@@ -75,7 +75,7 @@ public class StackBox extends Parent {
     }
 
     public void setVerticalAlign(VerticalAlign verticalAlign) {
-        if (verticalAlign == null) verticalAlign = VerticalAlign.MIDDLE;
+        if (verticalAlign == null) verticalAlign = VerticalAlign.TOP;
 
         if (this.verticalAlign != verticalAlign) {
             this.verticalAlign = verticalAlign;
@@ -88,7 +88,7 @@ public class StackBox extends Parent {
     }
 
     public void setHorizontalAlign(HorizontalAlign horizontalAlign) {
-        if (horizontalAlign == null) horizontalAlign = HorizontalAlign.CENTER;
+        if (horizontalAlign == null) horizontalAlign = HorizontalAlign.LEFT;
 
         if (this.horizontalAlign != horizontalAlign) {
             this.horizontalAlign = horizontalAlign;

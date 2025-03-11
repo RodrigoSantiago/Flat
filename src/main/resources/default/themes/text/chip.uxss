@@ -1,7 +1,6 @@
 chip : chip.default {
     text-font : font("Roboto");
     ripple-enabled : true;
-    shadow-enabled : false;
     radius-top : 100;
     radius-left : 100;
     radius-right : 100;
@@ -117,76 +116,45 @@ chip.default {
     text-color : alpha($on-card-color, 0.5);
     icon-color : alpha($on-card-color, 0.5);
     close-icon-color : alpha($on-card-color, 0.5);
-    background-color : $card-color-active;
-    ripple-color : $card-color-press;
+    background-color : alpha($on-card-color, 0.05);
+    ripple-color : alpha($on-card-color, 0.5);
 
     hovered {
-        background-color : $card-color-hover;
+        background-color : alpha($on-card-color, 0.10);
     }
     focused {
-        background-color : $card-color-hover;
+        background-color : alpha($on-card-color, 0.10);
     }
     activated {
         text-color : $on-card-color;
         icon-color : $on-card-color;
-        close-icon-color : alpha($on-card-color, 0.5);
-        background-color : $card-color;
+        close-icon-color : alpha($on-card-color, 0.75);
+        background-color : alpha($on-card-color, 0.20);
     }
     undefined {
         close-icon-color : $on-card-color;
     }
     disabled {
-        text-color : $on-disabled-color;
-        icon-color : $on-disabled-color;
-        close-icon-color : $on-disabled-color;
-        background-color : $disabled-color;
+        text-color : $on-disabled-color-low;
+        icon-color : $on-disabled-color-low;
+        close-icon-color : $on-disabled-color-low;
+        border-color : $on-disabled-color-low;
+        background-color : $disabled-color-low;
     }
 }
 
 chip.primary {
-    text-color : alpha($on-primary-color, 0.75);
-    icon-color : alpha($on-primary-color, 0.75);
-    close-icon-color : alpha($on-primary-color, 0.75);
-    background-color : $primary-color-active;
-    ripple-color : $primary-color-press;
+    text-color : alpha($on-card-color, 0.5);
+    icon-color : alpha($on-card-color, 0.5);
+    close-icon-color : alpha($on-card-color, 0.5);
+    background-color : alpha($on-card-color, 0.05);
+    ripple-color : alpha($primary-color, 0.5);
 
     hovered {
-        background-color : $primary-color-hover;
+        background-color : alpha($on-card-color, 0.10);
     }
     focused {
-        background-color : $primary-color-hover;
-    }
-    activated {
-        text-color : $on-primary-color;
-        icon-color : $on-primary-color;
-        close-icon-color : alpha($on-primary-color, 0.75);
-        background-color : $primary-color;
-    }
-    undefined {
-        close-icon-color : $on-primary-color;
-    }
-    disabled {
-        text-color : $on-disabled-color;
-        icon-color : $on-disabled-color;
-        close-icon-color : $on-disabled-color;
-        background-color : $disabled-color;
-    }
-}
-
-chip.outlined-primary {
-    text-color : $primary-color;
-    icon-color : $primary-color;
-    close-icon-color : alpha($primary-color, 0.75);
-    background-color : transparent;
-    border-color : $primary-color;
-    border-width : 1dp;
-    ripple-color : alpha($primary-color-fade, 0.25);
-
-    hovered {
-        background-color : alpha($primary-color-fade, 0.10);
-    }
-    focused {
-        background-color : alpha($primary-color-fade, 0.15);
+        background-color : alpha($on-card-color, 0.10);
     }
     activated {
         text-color : $primary-color;
@@ -198,9 +166,77 @@ chip.outlined-primary {
         close-icon-color : $primary-color;
     }
     disabled {
-        text-color : $on-disabled-color;
-        icon-color : $on-disabled-color;
-        close-icon-color : $on-disabled-color;
-        border-color : $on-disabled-color;
+        text-color : $on-disabled-color-low;
+        icon-color : $on-disabled-color-low;
+        close-icon-color : $on-disabled-color-low;
+        border-color : $on-disabled-color-low;
+        background-color : $disabled-color-low;
+    }
+}
+
+chip.outlined {
+    text-color : alpha($on-card-color, 0.5);
+    icon-color : alpha($on-card-color, 0.5);
+    close-icon-color : alpha($on-card-color, 0.5);
+    background-color : transparent;
+    border-color : alpha($on-card-color, 0.5);
+    border-width : 1dp;
+    ripple-color : alpha($on-card-color, 0.5);
+
+    hovered {
+        background-color : alpha($on-card-color, 0.05);
+    }
+    focused {
+        background-color : alpha($on-card-color, 0.10);
+    }
+    activated {
+        text-color : $on-card-color;
+        icon-color : $on-card-color;
+        close-icon-color : alpha($on-card-color, 0.75);
+        border-color : $on-card-color;
+        background-color : alpha($on-card-color, 0.20);
+    }
+    undefined {
+        close-icon-color : $on-card-color;
+    }
+    disabled {
+        text-color : $on-disabled-color-low;
+        icon-color : $on-disabled-color-low;
+        close-icon-color : $on-disabled-color-low;
+        border-color : $on-disabled-color-low;
+        background-color : transparent;
+    }
+}
+
+chip.outlined-primary {
+    text-color : alpha($primary-color, 0.75);
+    icon-color : alpha($primary-color, 0.75);
+    close-icon-color : alpha($primary-color, 0.75);
+    background-color : transparent;
+    border-color : $primary-color;
+    border-width : 1dp;
+    ripple-color : alpha($primary-color-fade, 0.25);
+
+    hovered {
+        background-color : alpha($primary-color-fade, 0.05);
+    }
+    focused {
+        background-color : alpha($primary-color-fade, 0.10);
+    }
+    activated {
+        text-color : $primary-color;
+        icon-color : $primary-color;
+        close-icon-color : alpha($primary-color, 0.75);
+        background-color : alpha($primary-color-fade, 0.25);
+    }
+    undefined {
+        close-icon-color : $primary-color;
+    }
+    disabled {
+        text-color : $on-disabled-color-low;
+        icon-color : $on-disabled-color-low;
+        close-icon-color : $on-disabled-color-low;
+        border-color : $on-disabled-color-low;
+        background-color : transparent;
     }
 }

@@ -300,10 +300,6 @@ public class ProgressBar extends Widget {
         }
     }
 
-    protected boolean isWrapContent() {
-        return getPrefWidth() == WRAP_CONTENT || getPrefHeight() == WRAP_CONTENT;
-    }
-
     protected class IndeterminateAnimation implements Animation {
 
         private boolean playing;
@@ -392,7 +388,7 @@ public class ProgressBar extends Widget {
 
         @Override
         public void handle(float seconds) {
-            if (value >= 0 && smoothTransitionDuration > 0) {
+            if (value >= 0 && smoothTransitionDuration > 0 && !isDisabled()) {
                 if (visibleValue > value) {
                     visibleValue = Math.max(value, visibleValue - seconds / smoothTransitionDuration);
                 } else if (visibleValue < value) {

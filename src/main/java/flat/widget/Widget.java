@@ -818,12 +818,12 @@ public class Widget {
 
             if (transitionDuration == 0) {
                 if (stateAnimation != null) {
-                    stateAnimation.set(states);
+                    stateAnimation.set(currentStateMask);
                 }
             } else {
                 if (stateAnimation == null) {
                     stateAnimation = new StateAnimation(this);
-                    stateAnimation.set(states);
+                    stateAnimation.set(currentStateMask);
                 }
                 stateAnimation.setDuration(transitionDuration);
             }
@@ -940,8 +940,8 @@ public class Widget {
     public void requestFocus(boolean focus) {
         if (focusable) {
             Activity activity = getActivity();
-            if (activity != null && activity.getWindow() != null) {
-                activity.getWindow().runSync(() -> setFocused(focus));
+            if (activity != null) {
+                activity.runLater(() -> setFocused(focus));
             }
         }
     }
@@ -1304,6 +1304,10 @@ public class Widget {
 
             invalidate(true);
         }
+    }
+
+    public boolean isWrapContent() {
+        return getPrefWidth() == WRAP_CONTENT || getPrefHeight() == WRAP_CONTENT;
     }
 
     public float getCenterX() {

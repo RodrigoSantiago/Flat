@@ -6,10 +6,12 @@ import java.lang.reflect.Method;
 public class ControllerListener<T> implements UXListener<T> {
     private WeakReference<Controller> controller;
     private Method method;
+    private boolean simple;
 
     ControllerListener(Controller controller, Method method) {
         this.controller = new WeakReference<>(controller);
         this.method = method;
+        simple = (method.getParameterCount() == 0);
     }
 
     @Override
@@ -21,7 +23,11 @@ public class ControllerListener<T> implements UXListener<T> {
         try {
             var obj = controller.get();
             if (obj != null && obj.isListening()) {
-                method.invoke(obj, event);
+                if (simple) {
+                    method.invoke(obj);
+                } else {
+                    method.invoke(obj, event);
+                }
             } else {
                 controller = null;
                 method = null;

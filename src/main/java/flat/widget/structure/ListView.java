@@ -255,7 +255,7 @@ public class ListView extends Scrollable {
         setLayout(width, height);
 
         if (updateDimensions() && getActivity() != null) {
-            getActivity().getWindow().runSync(() -> refreshItems());
+            getActivity().runLater(() -> refreshItems());
         }
 
         super.onLayout(width, height);

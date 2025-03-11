@@ -4,10 +4,7 @@ import flat.graphics.context.Font;
 import flat.uxml.Controller;
 import flat.uxml.UXHash;
 import flat.uxml.UXNode;
-import flat.uxml.value.UXValue;
-import flat.uxml.value.UXValueNumber;
-import flat.uxml.value.UXValueSizeDp;
-import flat.uxml.value.UXValueText;
+import flat.uxml.value.*;
 import flat.widget.Scene;
 import flat.widget.Widget;
 import flat.widget.enums.HorizontalAlign;
@@ -24,8 +21,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.HashMap;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.*;
@@ -54,6 +50,7 @@ public class TabTest {
         assertEquals(VerticalPosition.TOP, tab.getPagesVerticalPosition());
         assertEquals(0, tab.getPagesPrefHeight(), 0.1f);
         assertEquals(10, tab.getScrollSensibility(), 0.1f);
+        assertFalse(tab.isHiddenPages());
 
         tab.setAttributes(createNonDefaultValues(), null);
         tab.applyAttributes(controller);
@@ -65,6 +62,7 @@ public class TabTest {
         assertEquals(VerticalPosition.TOP, tab.getPagesVerticalPosition());
         assertEquals(0, tab.getPagesPrefHeight(), 0.1f);
         assertEquals(10, tab.getScrollSensibility(), 0.1f);
+        assertFalse(tab.isHiddenPages());
 
         tab.applyStyle();
 
@@ -75,6 +73,7 @@ public class TabTest {
         assertEquals(VerticalPosition.BOTTOM, tab.getPagesVerticalPosition());
         assertEquals(16, tab.getPagesPrefHeight(), 0.1f);
         assertEquals(5, tab.getScrollSensibility(), 0.1f);
+        assertTrue(tab.isHiddenPages());
     }
 
     @Test
@@ -421,8 +420,9 @@ public class TabTest {
         hash.put(UXHash.getHash("pages-horizontal-align"), new UXValueText(HorizontalAlign.RIGHT.toString()));
         hash.put(UXHash.getHash("pages-vertical-align"), new UXValueText(VerticalAlign.MIDDLE.toString()));
         hash.put(UXHash.getHash("pages-vertical-position"), new UXValueText(VerticalPosition.BOTTOM.toString()));
-        hash.put(UXHash.getHash("pages-preft-height"), new UXValueSizeDp(16));
-        hash.put(UXHash.getHash("scroll-sensibilityt"), new UXValueNumber(5));
+        hash.put(UXHash.getHash("pages-pref-height"), new UXValueSizeDp(16));
+        hash.put(UXHash.getHash("scroll-sensibility"), new UXValueNumber(5));
+        hash.put(UXHash.getHash("hidden-pages"), new UXValueBool(true));
         return hash;
     }
 }

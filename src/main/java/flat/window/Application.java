@@ -311,7 +311,7 @@ public class Application {
         return vsync;
     }
 
-    public static void runVsync(Runnable task) {
+    public static void runOnContextSync(Runnable task) {
         synchronized (vsyncRun) {
             vsyncRun.add(task);
         }

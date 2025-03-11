@@ -473,8 +473,4 @@ public class Slider extends Widget {
             UXValueListener.safeHandle(valueListener, new ValueChange<>(this, old, value));
         }
     }
-
-    protected boolean isWrapContent() {
-        return getPrefWidth() == WRAP_CONTENT || getPrefHeight() == WRAP_CONTENT;
-    }
 }

@@ -1,0 +1,12 @@
+drawer {
+    slide-animation-duration : 0.5;
+    block-color : #00000080;
+}
+
+drawer-menu {
+    padding-top : 16dp;
+    padding-left : 8dp;
+    padding-right : 8dp;
+    padding-bottom : 16dp;
+    background-color : $card-color;
+}

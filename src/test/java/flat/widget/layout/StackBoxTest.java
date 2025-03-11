@@ -1,11 +1,13 @@
 package flat.widget.layout;
 
+import flat.uxml.Controller;
 import flat.uxml.UXChild;
 import flat.uxml.UXChildren;
 import flat.uxml.UXHash;
 import flat.uxml.value.UXValue;
 import flat.uxml.value.UXValueText;
 import flat.widget.Widget;
+import flat.widget.enums.Direction;
 import flat.widget.enums.HorizontalAlign;
 import flat.widget.enums.VerticalAlign;
 import org.junit.Test;
@@ -18,6 +20,26 @@ import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 public class StackBoxTest {
+
+    @Test
+    public void properties() {
+        Controller controller = mock(Controller.class);
+        StackBox box = new StackBox();
+
+        assertEquals(HorizontalAlign.LEFT, box.getHorizontalAlign());
+        assertEquals(VerticalAlign.TOP, box.getVerticalAlign());
+
+        box.setAttributes(createNonDefaultValues(), null);
+        box.applyAttributes(controller);
+
+        assertEquals(HorizontalAlign.LEFT, box.getHorizontalAlign());
+        assertEquals(VerticalAlign.TOP, box.getVerticalAlign());
+
+        box.applyStyle();
+
+        assertEquals(HorizontalAlign.RIGHT, box.getHorizontalAlign());
+        assertEquals(VerticalAlign.BOTTOM, box.getVerticalAlign());
+    }
 
     @Test
     public void childrenFromUx() {
@@ -34,16 +56,6 @@ public class StackBoxTest {
         assertEquals(child2, box.getChildrenIterable().get(1));
         assertEquals(box, child1.getParent());
         assertEquals(box, child2.getParent());
-    }
-
-    @Test
-    public void alignStyles() {
-        StackBox box = new StackBox();
-        box.setAttributes(createNonDefaultValues(), null);
-        box.applyStyle();
-
-        assertEquals(HorizontalAlign.LEFT, box.getHorizontalAlign());
-        assertEquals(VerticalAlign.TOP, box.getVerticalAlign());
     }
 
     @Test
@@ -226,8 +238,8 @@ public class StackBoxTest {
 
     private HashMap<Integer, UXValue> createNonDefaultValues() {
         var hash = new HashMap<Integer, UXValue>();
-        hash.put(UXHash.getHash("horizontal-align"), new UXValueText(HorizontalAlign.LEFT.toString()));
-        hash.put(UXHash.getHash("vertical-align"), new UXValueText(VerticalAlign.TOP.toString()));
+        hash.put(UXHash.getHash("horizontal-align"), new UXValueText(HorizontalAlign.RIGHT.toString()));
+        hash.put(UXHash.getHash("vertical-align"), new UXValueText(VerticalAlign.BOTTOM.toString()));
         return hash;
     }
 

@@ -838,21 +838,21 @@ public abstract class Parent extends Widget {
         return Math.max(lWidth, localDimensionX);
     }
 
-    private float getDefWidth(Widget widget) {
+    protected final float getDefWidth(Widget widget) {
         return Math.min(widget.getLayoutMaxWidth(), widget.getMeasureWidth());
     }
 
-    private float getDefHeight(Widget widget) {
+    protected final float getDefHeight(Widget widget) {
         return Math.min(widget.getLayoutMaxHeight(), widget.getMeasureHeight());
     }
 
-    private float off(float start, float end, float size, VerticalAlign verticalAlign) {
+    protected final float off(float start, float end, float size, VerticalAlign verticalAlign) {
         if (verticalAlign == VerticalAlign.BOTTOM) return end - size;
         if (verticalAlign == VerticalAlign.MIDDLE) return (start + end - size) / 2f;
         return start;
     }
 
-    private float off(float start, float end, float size, HorizontalAlign horizontalAlign) {
+    protected final float off(float start, float end, float size, HorizontalAlign horizontalAlign) {
         if (horizontalAlign == HorizontalAlign.RIGHT) return end - size;
         if (horizontalAlign == HorizontalAlign.CENTER) return (start + end - size) / 2f;
         return start;
