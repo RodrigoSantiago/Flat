@@ -8,6 +8,7 @@ import flat.uxml.value.*;
 import flat.widget.Scene;
 import flat.widget.Widget;
 import flat.widget.enums.HorizontalAlign;
+import flat.widget.enums.LineCap;
 import flat.widget.enums.VerticalAlign;
 import flat.widget.enums.VerticalPosition;
 import flat.widget.layout.Frame;
@@ -50,6 +51,12 @@ public class TabTest {
         assertEquals(VerticalPosition.TOP, tab.getPagesVerticalPosition());
         assertEquals(0, tab.getPagesPrefHeight(), 0.1f);
         assertEquals(10, tab.getScrollSensibility(), 0.1f);
+        assertEquals(0x00000000, tab.getPagesBgColor());
+        assertEquals(0, tab.getPagesElevation(), 0.1f);
+        assertEquals(0, tab.getLineWidth(), 0.1f);
+        assertEquals(0x00000000, tab.getLineColor());
+        assertEquals(LineCap.BUTT, tab.getLineCap());
+        assertEquals(0, tab.getLineAnimationDuration(), 0.1f);
         assertFalse(tab.isHiddenPages());
 
         tab.setAttributes(createNonDefaultValues(), null);
@@ -62,6 +69,12 @@ public class TabTest {
         assertEquals(VerticalPosition.TOP, tab.getPagesVerticalPosition());
         assertEquals(0, tab.getPagesPrefHeight(), 0.1f);
         assertEquals(10, tab.getScrollSensibility(), 0.1f);
+        assertEquals(0x00000000, tab.getPagesBgColor());
+        assertEquals(0, tab.getPagesElevation(), 0.1f);
+        assertEquals(0, tab.getLineWidth(), 0.1f);
+        assertEquals(0x00000000, tab.getLineColor());
+        assertEquals(LineCap.BUTT, tab.getLineCap());
+        assertEquals(0, tab.getLineAnimationDuration(), 0.1f);
         assertFalse(tab.isHiddenPages());
 
         tab.applyStyle();
@@ -73,6 +86,12 @@ public class TabTest {
         assertEquals(VerticalPosition.BOTTOM, tab.getPagesVerticalPosition());
         assertEquals(16, tab.getPagesPrefHeight(), 0.1f);
         assertEquals(5, tab.getScrollSensibility(), 0.1f);
+        assertEquals(0xFF0000FF, tab.getPagesBgColor());
+        assertEquals(1, tab.getPagesElevation(), 0.1f);
+        assertEquals(2, tab.getLineWidth(), 0.1f);
+        assertEquals(0x0000FFFF, tab.getLineColor());
+        assertEquals(LineCap.ROUND, tab.getLineCap());
+        assertEquals(3, tab.getLineAnimationDuration(), 0.1f);
         assertTrue(tab.isHiddenPages());
     }
 
@@ -356,7 +375,7 @@ public class TabTest {
         tab.onMeasure();
         assertMeasure(tab, 500, 400);
         tab.onLayout(500, 400);
-        assertLayout(page1, 0, 100, 100, 24);
+        assertLayout(page1, 0, 376, 100, 24);
         assertLayout(frame1, 0, 0, 200, 100);
 
         tab.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
@@ -423,6 +442,12 @@ public class TabTest {
         hash.put(UXHash.getHash("pages-pref-height"), new UXValueSizeDp(16));
         hash.put(UXHash.getHash("scroll-sensibility"), new UXValueNumber(5));
         hash.put(UXHash.getHash("hidden-pages"), new UXValueBool(true));
+        hash.put(UXHash.getHash("pages-bg-color"), new UXValueColor(0xFF0000FF));
+        hash.put(UXHash.getHash("pages-elevation"), new UXValueSizeDp(1));
+        hash.put(UXHash.getHash("line-width"), new UXValueSizeDp(2));
+        hash.put(UXHash.getHash("line-color"), new UXValueColor(0x0000FFFF));
+        hash.put(UXHash.getHash("line-cap"),  new UXValueText(LineCap.ROUND.toString()));
+        hash.put(UXHash.getHash("line-animation-duration"),  new UXValueNumber(3));
         return hash;
     }
 }

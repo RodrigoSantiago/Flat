@@ -8,7 +8,7 @@ public class Main {
         Application.init();
         Application.launch(new WindowSettings.Builder()
                 .layout("/default/screen_test/widgets.uxml")
-                .theme("/default/themes")
+                .theme("/default/themes/light")
                 .controller(MainController::new)
                 .size(1280, 900)
                 .multiSamples(8)

@@ -1,12 +1,3 @@
-label {
-    text-font : font("Roboto");
-    text-size : 18sp;
-    text-color : #000000FF;
-    text-all-caps : false;
-    vertical-align : middle;
-    horizontal-align : left;
-}
-
 button : button.default {
     text-font : font("Roboto", BOLD);
     text-size : 18sp;

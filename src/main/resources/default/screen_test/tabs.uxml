@@ -1,0 +1,170 @@
+<Scene width="MATCH_PARENT" height="MATCH_PARENT" background-color="$surface-color">
+    <LinearBox direction="HORIZONTAL" width="MATCH_PARENT" height="MATCH_PARENT" vertical-align="top">
+        <LinearBox direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
+                   padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
+            <Label text="Default" style="subtitle" margin-left="4dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Tab height="70dp" style="" background-color="$card-color" width="MATCH_PARENT">
+                    <Page text="Page 1" style=""/>
+                    <Page text="Page 2" style=""/>
+                    <Page text="Page 3" style=""/>
+                    <Page text="Page 4" style=""/>
+                </Tab>
+            </LinearBox>
+            <Label text="Color" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Tab height="70dp" style="primary" background-color="$card-color" width="MATCH_PARENT">
+                    <Page text="Page 1" style="primary"/>
+                    <Page text="Page 2" style="primary"/>
+                    <Page text="Page 3" style="primary"/>
+                    <Page text="Page 4" style="primary"/>
+                </Tab>
+            </LinearBox>
+            <Label text="Complete" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Tab height="70dp" style="primary" background-color="$card-color" width="MATCH_PARENT">
+                    <Page text="Page 1" style="complete-left primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 2" style="complete-left primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 3" style="complete-left primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 4" style="complete-right primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 5" style="complete-right primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 6" style="complete-right primary" icon="/default/icons/star.svg"/>
+                </Tab>
+            </LinearBox>
+            <Label text="Bottom" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Tab height="70dp" style="primary" background-color="$card-color" width="MATCH_PARENT" pages-vertical-position="bottom">
+                    <Page text="Page 1" style="complete-left primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 2" style="complete-left primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 3" style="complete-left primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 4" style="complete-right primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 5" style="complete-right primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 6" style="complete-right primary" icon="/default/icons/star.svg"/>
+                </Tab>
+            </LinearBox>
+            <Label text="Dense" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Tab height="48dp" style="dense" background-color="$card-color" width="MATCH_PARENT">
+                    <Page text="Page 1" style="dense"/>
+                    <Page text="Page 2" style="dense"/>
+                    <Page text="Page 3" style="dense"/>
+                    <Page text="Page 4" style="dense"/>
+                </Tab>
+            </LinearBox>
+            <Label text="Color" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Tab height="48dp" style="dense primary" background-color="$card-color" width="MATCH_PARENT">
+                    <Page text="Page 1" style="dense primary"/>
+                    <Page text="Page 2" style="dense primary"/>
+                    <Page text="Page 3" style="dense primary"/>
+                    <Page text="Page 4" style="dense primary"/>
+                </Tab>
+            </LinearBox>
+            <Label text="Complete" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Tab height="48dp" style="dense primary" background-color="$card-color" width="MATCH_PARENT">
+                    <Page text="Page 1" style="complete-left dense primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 2" style="complete-left dense primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 3" style="complete-left dense primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 4" style="complete-right dense primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 5" style="complete-right dense primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 6" style="complete-right dense primary" icon="/default/icons/star.svg"/>
+                </Tab>
+            </LinearBox>
+            <Label text="Bottom" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Tab height="48dp" style="dense primary" background-color="$card-color" width="MATCH_PARENT" pages-vertical-position="bottom">
+                    <Page text="Page 1" style="complete-left dense primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 2" style="complete-left dense primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 3" style="complete-left dense primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 4" style="complete-right dense primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 5" style="complete-right dense primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 6" style="complete-right dense primary" icon="/default/icons/star.svg"/>
+                </Tab>
+            </LinearBox>
+        </LinearBox>
+        <LinearBox enabled="false" direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
+                   padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
+            <Label text="Default" style="subtitle" margin-left="4dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Tab height="70dp" style="" background-color="$card-color" width="MATCH_PARENT">
+                    <Page text="Page 1" style=""/>
+                    <Page text="Page 2" style=""/>
+                    <Page text="Page 3" style=""/>
+                    <Page text="Page 4" style=""/>
+                </Tab>
+            </LinearBox>
+            <Label text="Color" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Tab height="70dp" style="primary" background-color="$card-color" width="MATCH_PARENT">
+                    <Page text="Page 1" style="primary"/>
+                    <Page text="Page 2" style="primary"/>
+                    <Page text="Page 3" style="primary"/>
+                    <Page text="Page 4" style="primary"/>
+                </Tab>
+            </LinearBox>
+            <Label text="Complete" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Tab height="70dp" style="primary" background-color="$card-color" width="MATCH_PARENT">
+                    <Page text="Page 1" style="complete-left primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 2" style="complete-left primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 3" style="complete-left primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 4" style="complete-right primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 5" style="complete-right primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 6" style="complete-right primary" icon="/default/icons/star.svg"/>
+                </Tab>
+            </LinearBox>
+            <Label text="Bottom" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Tab height="70dp" style="primary" background-color="$card-color" width="MATCH_PARENT" pages-vertical-position="bottom">
+                    <Page text="Page 1" style="complete-left primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 2" style="complete-left primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 3" style="complete-left primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 4" style="complete-right primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 5" style="complete-right primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 6" style="complete-right primary" icon="/default/icons/star.svg"/>
+                </Tab>
+            </LinearBox>
+            <Label text="Dense" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Tab height="48dp" style="dense" background-color="$card-color" width="MATCH_PARENT">
+                    <Page text="Page 1" style="dense"/>
+                    <Page text="Page 2" style="dense"/>
+                    <Page text="Page 3" style="dense"/>
+                    <Page text="Page 4" style="dense"/>
+                </Tab>
+            </LinearBox>
+            <Label text="Color" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Tab height="48dp" style="dense primary" background-color="$card-color" width="MATCH_PARENT">
+                    <Page text="Page 1" style="dense primary"/>
+                    <Page text="Page 2" style="dense primary"/>
+                    <Page text="Page 3" style="dense primary"/>
+                    <Page text="Page 4" style="dense primary"/>
+                </Tab>
+            </LinearBox>
+            <Label text="Complete" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Tab height="48dp" style="dense primary" background-color="$card-color" width="MATCH_PARENT">
+                    <Page text="Page 1" style="complete-left dense primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 2" style="complete-left dense primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 3" style="complete-left dense primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 4" style="complete-right dense primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 5" style="complete-right dense primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 6" style="complete-right dense primary" icon="/default/icons/star.svg"/>
+                </Tab>
+            </LinearBox>
+            <Label text="Bottom" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Tab height="48dp" style="dense primary" background-color="$card-color" width="MATCH_PARENT" pages-vertical-position="bottom">
+                    <Page text="Page 1" style="complete-left dense primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 2" style="complete-left dense primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 3" style="complete-left dense primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 4" style="complete-right dense primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 5" style="complete-right dense primary" icon="/default/icons/star.svg"/>
+                    <Page text="Page 6" style="complete-right dense primary" icon="/default/icons/star.svg"/>
+                </Tab>
+            </LinearBox>
+        </LinearBox>
+    </LinearBox>
+</Scene>

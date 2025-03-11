@@ -1,6 +1,6 @@
 text-area : text-area.default {
     text-font : font("Roboto");
-    text-size : 20sp;
+    text-size : 18sp;
     vertical-align : middle;
     horizontal-align : left;
     cursor : ibeam;
@@ -18,13 +18,13 @@ text-area.default {
     text-color : $on-card-color;
     caret-color : $on-card-color;
     text-selected-color : $selection-on-card-color;
-    background-color : $card-color;
+    background-color : $card-color-fade;
 
     hovered {
-        background-color : $card-color-fade;
+        background-color : $card-color-hover;
     }
     focused {
-        background-color : $card-color-fade;
+        background-color : $card-color-hover;
     }
     disabled {
         background-color : $disabled-color;
@@ -35,7 +35,7 @@ text-area.default {
 
 text-field : text-field.primary {
     text-font : font("Roboto");
-    text-size : 20sp;
+    text-size : 18sp;
     vertical-align : middle;
     horizontal-align : left;
     cursor : ibeam;
@@ -63,15 +63,15 @@ text-field.primary {
     caret-color : $on-card-color;
     text-selected-color : $selection-on-card-color;
     text-divider-color : $disabled-color;
-    background-color : $card-color;
+    background-color : $card-color-fade;
 
     hovered {
-        background-color : $card-color-fade;
+        background-color : $card-color-hover;
     }
     focused {
         text-divider-color : $primary-color;
         title-color : $primary-color;
-        background-color : $card-color-fade;
+        background-color : $card-color-hover;
     }
     disabled {
         caret-color : transparent;
@@ -85,7 +85,7 @@ text-field.primary {
 
 text-input-field : text-input-field.primary {
     text-font : font("Roboto");
-    text-size : 20sp;
+    text-size : 18sp;
     vertical-align : middle;
     horizontal-align : left;
     focusable : true;
@@ -123,19 +123,19 @@ text-input-field.primary {
     caret-color : $on-card-color;
     text-selected-color : $selection-on-card-color;
     text-divider-color : $disabled-color;
-    background-color : $card-color;
+    background-color : $card-color-fade;
 
     hovered {
-        background-color : $card-color-fade;
+        background-color : $card-color-hover;
     }
     focused {
         text-divider-color : $primary-color;
         title-color : $primary-color;
-        background-color : $card-color-fade;
+        background-color : $card-color-hover;
     }
     undefined {
         action-icon-color : $on-card-color;
-        background-color : $card-color-fade;
+        background-color : $card-color-hover;
     }
     disabled {
         caret-color : transparent;
@@ -151,7 +151,7 @@ text-input-field.primary {
 
 text-drop-down : text-drop-down.primary {
     text-font : font("Roboto");
-    text-size : 20sp;
+    text-size : 18sp;
     vertical-align : middle;
     horizontal-align : left;
     focusable : true;
@@ -190,21 +190,21 @@ text-drop-down.primary {
     caret-color : $on-card-color;
     text-selected-color : $selection-on-card-color;
     text-divider-color : $disabled-color;
-    background-color : $card-color;
+    background-color : $card-color-fade;
 
     cursor : ibeam;
     hovered {
-        background-color : $card-color-fade;
+        background-color : $card-color-hover;
     }
     focused {
         text-divider-color : $primary-color;
         title-color : $primary-color;
-        background-color : $card-color-fade;
+        background-color : $card-color-hover;
     }
     undefined {
         action-icon-color : $on-card-color;
         cursor : hand;
-        background-color : $card-color-fade;
+        background-color : $card-color-hover;
     }
     disabled {
         caret-color : transparent;

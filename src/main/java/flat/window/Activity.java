@@ -206,6 +206,7 @@ public class Activity {
 
         if (invalidDensity) {
             invalidDensity = false;
+            scene.setTheme(theme);
             scene.refreshStyle();
         }
         clearUnusedFilters();

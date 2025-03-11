@@ -51,6 +51,7 @@ public class UXSheetParser {
 
     private List<UXSheetStyle> styles = new ArrayList<>();
     private List<UXSheetAttribute> variables = new ArrayList<>();
+    private List<UXSheetAttribute> includes = new ArrayList<>();
     private List<ErroLog> logs = new ArrayList<>();
 
     public UXSheetParser(String text) {
@@ -92,6 +93,16 @@ public class UXSheetParser {
                     } else {
                         getVariables().add(variable);
                     }
+                }
+
+            } else if (currentType == LOCALE) {
+                var value = parseImport();
+                if (value == null
+                        || !"@include".equals(value.getName())
+                        || !(value.getValue() instanceof UXValueText)) {
+                    log(ErroLog.INVALID_INCLUDE);
+                } else {
+                    getIncludes().add(value);
                 }
 
             } else if (currentType == TEXT) {
@@ -139,6 +150,10 @@ public class UXSheetParser {
 
     public List<ErroLog> getLogs() {
         return logs;
+    }
+
+    public List<UXSheetAttribute> getIncludes() {
+        return includes;
     }
 
     private UXSheetStyle parseStyle() {
@@ -220,6 +235,33 @@ public class UXSheetParser {
             }
         }
         if (state != 3) {
+            log(ErroLog.UNEXPECTED_END_OF_TOKENS);
+        }
+        if (state < 1) {
+            return null;
+        }
+        return new UXSheetAttribute(name, value == null ? new UXValue() : value);
+    }
+
+    private UXSheetAttribute parseImport() {
+        String name = currentText;
+        UXValue value = null;
+        int state = 0;
+        while (nextType != CBRACE && readNext()) {
+            if (state == 0 && (value = parseValue()) != null) {
+                state = 1;
+            } else if (state == 1 && currentType == SEMICOLON) {
+                state = 2;
+                break;
+            } else if (currentType == INVALID) {
+                log(ErroLog.UNEXPECTED_TOKEN);
+
+            } else {
+                log(ErroLog.UNEXPECTED_TOKEN);
+                break;
+            }
+        }
+        if (state != 2) {
             log(ErroLog.UNEXPECTED_END_OF_TOKENS);
         }
         if (state < 1) {
@@ -688,6 +730,7 @@ public class UXSheetParser {
         public static final String VARIABLE_CANNOT_REFERENCE_A_VARIABLE = "Variable cannot reference a variable";
         public static final String UNEXPECTED_TOKEN = "Unexpected token";
         public static final String UNEXPECTED_END_OF_TOKENS = "Unexpected end of tokens";
+        public static final String INVALID_INCLUDE = "Invalid import";
         public static final String INVALID_NUMBER = "Invalid number";
         public static final String INVALID_FONT = "Invalid font";
         public static final String INVALID_COLOR = "Invalid color";
@@ -696,6 +739,7 @@ public class UXSheetParser {
         public static final String NAME_EXPECTED = "Name expected";
         public static final String PARENT_NOT_FOUND = "Parent Not Found";
         public static final String CYCLIC_PARENT = "Cyclic Parent";
+        public static final String CYCLIC_INCLUDE = "Cyclic Include";
         public static final String REPEATED_STYLE = "Repeated Style";
         public static final String REPEATED_VARIABLE = "Repeated Variable";
         public static final String INVALID_PROCESSOR = "Invalid processor";

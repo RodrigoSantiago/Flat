@@ -2,14 +2,14 @@
     <LinearBox direction="HORIZONTAL" width="MATCH_PARENT" height="MATCH_PARENT" vertical-align="top">
         <LinearBox direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
                padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
-            <Label text="Default" text-size="16sp" margin-left="4dp" margin-bottom="4dp"/>
+            <Label text="Default" style="subtitle" margin-left="4dp" margin-bottom="4dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
                 <Chip text="Contained" style=""/>
                 <Chip margin-left="8dp" text="Contained Color" style="primary"/>
                 <Chip margin-left="8dp" text="Outlinelined" style="outlined"/>
                 <Chip margin-left="8dp" text="Outlinelined Color" style="outlined-primary"/>
             </LinearBox>
-            <Label text="Trailing Icons" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+            <Label text="Trailing Icons" style="subtitle" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
                 <Chip text="Default" style="icon-left" icon="/default/icons/account.svg"/>
                 <Chip margin-left="8dp" text="Default" style="icon-right" icon="/default/icons/account.svg"/>
@@ -22,7 +22,7 @@
                 <Chip margin-left="8dp" text="Outline Color" style="icon-left outlined-primary" icon="/default/icons/account.svg"/>
                 <Chip margin-left="8dp" text="Outline Color" style="icon-right outlined-primary" icon="/default/icons/account.svg"/>
             </LinearBox>
-            <Label text="Close Action" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+            <Label text="Close Action" style="subtitle" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
                 <Chip text="Default" style="close-icon-right"/>
                 <Chip margin-left="8dp" text="Default" style="close-icon-left"/>
@@ -35,7 +35,7 @@
                 <Chip margin-left="8dp" text="Outline Color" style="close-icon-right outlined-primary"/>
                 <Chip margin-left="8dp" text="Outline Color" style="close-icon-left outlined-primary"/>
             </LinearBox>
-            <Label text="Complete" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+            <Label text="Complete" style="subtitle" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
                 <Chip text="Default" style="complete-left" icon="/default/icons/account.svg"/>
                 <Chip margin-left="8dp" text="Default" style="complete-right" icon="/default/icons/account.svg"/>
@@ -48,13 +48,13 @@
                 <Chip margin-left="8dp" text="Outline Color" style="complete-left outlined-primary" icon="/default/icons/account.svg"/>
                 <Chip margin-left="8dp" text="Outline Color" style="complete-right outlined-primary" icon="/default/icons/account.svg"/>
             </LinearBox>
-            <Label text="Dense" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+            <Label text="Dense" style="subtitle" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
                 <Chip text="Contained" style="dense"/>
                 <Chip margin-left="8dp" text="Contained Color" style="primary dense"/>
                 <Chip margin-left="8dp" text="Outline" style="outlined-primary dense"/>
             </LinearBox>
-            <Label text="Dense Trailing Icons" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+            <Label text="Dense Trailing Icons" style="subtitle" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
                 <Chip text="Default" style="icon-left dense" icon="/default/icons/account.svg"/>
                 <Chip margin-left="8dp" text="Default" style="icon-right dense" icon="/default/icons/account.svg"/>
@@ -67,7 +67,7 @@
                 <Chip margin-left="8dp" text="Outline Color" style="icon-left outlined-primary dense" icon="/default/icons/account.svg"/>
                 <Chip margin-left="8dp" text="Outline Color" style="icon-right outlined-primary dense" icon="/default/icons/account.svg"/>
             </LinearBox>
-            <Label text="Dense Close Action" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+            <Label text="Dense Close Action" style="subtitle" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
                 <Chip text="Default" style="close-icon-right dense"/>
                 <Chip margin-left="8dp" text="Default" style="close-icon-left dense"/>
@@ -80,7 +80,7 @@
                 <Chip margin-left="8dp" text="Outline Color" style="close-icon-right outlined-primary dense"/>
                 <Chip margin-left="8dp" text="Outline Color" style="close-icon-left outlined-primary dense"/>
             </LinearBox>
-            <Label text="Dense Complete" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+            <Label text="Dense Complete" style="subtitle" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
                 <Chip text="Default" style="complete-left dense" icon="/default/icons/account.svg"/>
                 <Chip margin-left="8dp" text="Default" style="complete-right dense" icon="/default/icons/account.svg"/>
@@ -96,14 +96,14 @@
         </LinearBox>
         <LinearBox enabled="false" direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
                    padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
-            <Label text="Default" text-size="16sp" margin-left="4dp" margin-bottom="4dp"/>
+            <Label text="Default" style="subtitle" margin-left="4dp" margin-bottom="4dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
                 <Chip text="Contained" style=""/>
                 <Chip margin-left="8dp" text="Contained Color" style="primary"/>
                 <Chip margin-left="8dp" text="Outlinelined" style="outlined"/>
                 <Chip margin-left="8dp" text="Outlinelined Color" style="outlined-primary"/>
             </LinearBox>
-            <Label text="Trailing Icons" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+            <Label text="Trailing Icons" style="subtitle" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
                 <Chip text="Default" style="icon-left" icon="/default/icons/account.svg"/>
                 <Chip margin-left="8dp" text="Default" style="icon-right" icon="/default/icons/account.svg"/>
@@ -116,7 +116,7 @@
                 <Chip margin-left="8dp" text="Outline Color" style="icon-left outlined-primary" icon="/default/icons/account.svg"/>
                 <Chip margin-left="8dp" text="Outline Color" style="icon-right outlined-primary" icon="/default/icons/account.svg"/>
             </LinearBox>
-            <Label text="Close Action" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+            <Label text="Close Action" style="subtitle" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
                 <Chip text="Default" style="close-icon-right"/>
                 <Chip margin-left="8dp" text="Default" style="close-icon-left"/>
@@ -129,7 +129,7 @@
                 <Chip margin-left="8dp" text="Outline Color" style="close-icon-right outlined-primary"/>
                 <Chip margin-left="8dp" text="Outline Color" style="close-icon-left outlined-primary"/>
             </LinearBox>
-            <Label text="Complete" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+            <Label text="Complete" style="subtitle" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
                 <Chip text="Default" style="complete-left" icon="/default/icons/account.svg"/>
                 <Chip margin-left="8dp" text="Default" style="complete-right" icon="/default/icons/account.svg"/>
@@ -142,13 +142,13 @@
                 <Chip margin-left="8dp" text="Outline Color" style="complete-left outlined-primary" icon="/default/icons/account.svg"/>
                 <Chip margin-left="8dp" text="Outline Color" style="complete-right outlined-primary" icon="/default/icons/account.svg"/>
             </LinearBox>
-            <Label text="Dense" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+            <Label text="Dense" style="subtitle" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
                 <Chip text="Contained" style="dense"/>
                 <Chip margin-left="8dp" text="Contained Color" style="primary dense"/>
                 <Chip margin-left="8dp" text="Outline" style="outlined-primary dense"/>
             </LinearBox>
-            <Label text="Dense Trailing Icons" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+            <Label text="Dense Trailing Icons" style="subtitle" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
                 <Chip text="Default" style="icon-left dense" icon="/default/icons/account.svg"/>
                 <Chip margin-left="8dp" text="Default" style="icon-right dense" icon="/default/icons/account.svg"/>
@@ -161,7 +161,7 @@
                 <Chip margin-left="8dp" text="Outline Color" style="icon-left outlined-primary dense" icon="/default/icons/account.svg"/>
                 <Chip margin-left="8dp" text="Outline Color" style="icon-right outlined-primary dense" icon="/default/icons/account.svg"/>
             </LinearBox>
-            <Label text="Dense Close Action" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+            <Label text="Dense Close Action" style="subtitle" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
                 <Chip text="Default" style="close-icon-right dense"/>
                 <Chip margin-left="8dp" text="Default" style="close-icon-left dense"/>
@@ -174,7 +174,7 @@
                 <Chip margin-left="8dp" text="Outline Color" style="close-icon-right outlined-primary dense"/>
                 <Chip margin-left="8dp" text="Outline Color" style="close-icon-left outlined-primary dense"/>
             </LinearBox>
-            <Label text="Dense Complete" text-size="16sp" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
+            <Label text="Dense Complete" style="subtitle" margin-left="4dp" margin-bottom="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
                 <Chip text="Default" style="complete-left dense" icon="/default/icons/account.svg"/>
                 <Chip margin-left="8dp" text="Default" style="complete-right dense" icon="/default/icons/account.svg"/>

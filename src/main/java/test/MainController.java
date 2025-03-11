@@ -1,16 +1,13 @@
 package test;
 
 import flat.Flat;
-import flat.animations.Interpolation;
 import flat.data.ObservableList;
 import flat.events.ActionEvent;
-import flat.events.TextEvent;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
 import flat.graphics.context.Font;
 import flat.graphics.image.PixelMap;
 import flat.uxml.Controller;
-import flat.uxml.ValueChange;
 import flat.widget.Parent;
 import flat.widget.Widget;
 import flat.widget.layout.Drawer;
@@ -20,8 +17,6 @@ import flat.widget.stages.dialogs.ConfirmDialogBuilder;
 import flat.widget.text.Button;
 import flat.widget.text.Chip;
 import flat.widget.text.Label;
-import flat.widget.text.TextField;
-import flat.widget.value.ProgressBar;
 import flat.window.Activity;
 import flat.window.Application;
 import flat.window.WindowSettings;
@@ -31,7 +26,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class MainController extends Controller {
@@ -59,6 +53,7 @@ public class MainController extends Controller {
     @Flat public Page pageForms;
     @Flat public Page pageProgress;
     @Flat public Page pageText;
+    @Flat public Page pageTabs;
 
     private ObservableList<String> items = new ObservableList<>();
 
@@ -100,6 +95,22 @@ public class MainController extends Controller {
     }
 
     @Flat
+    public void setPageTabs() {
+        mainTab.selectPage(pageTabs);
+        mainDrawer.hide();
+    }
+
+    @Flat
+    public void setThemeLight() {
+        getActivity().setTheme("/default/themes/light");
+    }
+
+    @Flat
+    public void setThemeDark() {
+        getActivity().setTheme("/default/themes/dark");
+    }
+
+    @Flat
     public void linearAction(ActionEvent actionEvent) {
         List<Page> list = new ArrayList<>();
         new Tab().addPage(list);
@@ -110,7 +121,7 @@ public class MainController extends Controller {
         if (widget instanceof Parent parent) {
             for (var child : parent.getChildrenIterable()) {
                 if (child instanceof Chip chip) {
-                    chip.setActionListener((event) -> chip.setActive(!chip.isActive()));
+                    chip.setActionListener((event) -> chip.setActivated(!chip.isActivated()));
                 } else {
                     search(child);
                 }

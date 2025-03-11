@@ -4,8 +4,8 @@
                  title="Flat.UI Showcase" subtitle="Material" style="dense-double">
             <ToolItem navigation-item="true" style="navigation dense"/>
             <ToolItem overflow-item="true" style="overflow dense"/>
-            <ToolItem icon="/default/icons/sun.svg" style="dense" menu-text="Light"/>
-            <ToolItem icon="/default/icons/night.svg" style="dense" menu-text="Dark"/>
+            <ToolItem icon="/default/icons/sun.svg" style="dense" menu-text="Light" on-action="setThemeLight"/>
+            <ToolItem icon="/default/icons/night.svg" style="dense" menu-text="Dark" on-action="setThemeDark"/>
         </ToolBar>
         <Drawer id="mainDrawer" width="MATCH_PARENT" height="MATCH_PARENT" block-events="true" auto-close="true">
             <LinearBox slide-content="true" direction="vertical" width="250dp" height="MATCH_PARENT" style="drawer-menu">
@@ -14,6 +14,7 @@
                 <MenuItem text="Forms" on-action="setPageForms" style="navigation"/>
                 <MenuItem text="Progress" on-action="setPageProgress" style="navigation"/>
                 <MenuItem text="Text" on-action="setPageText" style="navigation"/>
+                <MenuItem text="Tabs" on-action="setPageTabs" style="navigation"/>
             </LinearBox>
             <LinearBox direction="vertical" width="MATCH_PARENT" height="MATCH_PARENT">
                 <Tab width="MATCH_PARENT" height="MATCH_PARENT" id="mainTab" hidden-pages="true">
@@ -24,7 +25,7 @@
                     </Page>
                     <Page text="Chips" id="pageChips">
                         <Frame width="MATCH_PARENT" height="MATCH_PARENT">
-                            <Include src="chips.uxml" background-color="$card-color"/>
+                            <Include src="chips.uxml"/>
                         </Frame>
                     </Page>
                     <Page text="Forms" id="pageForms">
@@ -40,6 +41,11 @@
                     <Page text="Text" id="pageText">
                         <Frame width="MATCH_PARENT" height="MATCH_PARENT">
                             <Include src="text.uxml"/>
+                        </Frame>
+                    </Page>
+                    <Page text="Tabs" id="pageTabs">
+                        <Frame width="MATCH_PARENT" height="MATCH_PARENT">
+                            <Include src="tabs.uxml"/>
                         </Frame>
                     </Page>
                 </Tab>

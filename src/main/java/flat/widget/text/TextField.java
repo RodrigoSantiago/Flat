@@ -19,7 +19,7 @@ public class TextField extends TextArea {
 
     private String title;
     private int titleColor = 0x000000FF;
-    private float titleTransitionDuration = 1f;
+    private float titleTransitionDuration;
     private float titleSize = 8f;
     private float titleSpacing;
     private boolean titleLocked;
@@ -286,7 +286,6 @@ public class TextField extends TextArea {
     public void setTitleTransitionDuration(float titleTransitionDuration) {
         if (this.titleTransitionDuration != titleTransitionDuration) {
             this.titleTransitionDuration = titleTransitionDuration;
-            invalidateTitleFloating();
         }
     }
 
@@ -328,7 +327,11 @@ public class TextField extends TextArea {
     }
 
     private void invalidateTitleFloating() {
-        titleToTitle.play();
+        if (titleTransitionDuration > 0) {
+            titleToTitle.play();
+        } else {
+            titleToTitle.setPose(isTitleFloating() ? 1 : 0);
+        }
     }
 
     private void invalidateTitleSize() {

@@ -82,9 +82,9 @@ public class ButtonTest {
         assertFalse(button.isIconClipCircle());
         assertNull(button.getIcon());
         assertEquals(0xFFFFFFFF, button.getIconColor());
-        assertFalse(button.isActive());
+        assertFalse(button.isActivated());
         assertNull(button.getActionListener());
-        assertNull(button.getActiveListener());
+        assertNull(button.getActivatedListener());
 
         button.setAttributes(createNonDefaultValues(), null);
         button.applyAttributes(controller);
@@ -97,9 +97,9 @@ public class ButtonTest {
         assertFalse(button.isIconClipCircle());
         assertNull(button.getIcon());
         assertEquals(0xFFFFFFFF, button.getIconColor());
-        assertTrue(button.isActive());
+        assertTrue(button.isActivated());
         assertEquals(action, button.getActionListener());
-        assertEquals(active, button.getActiveListener());
+        assertEquals(active, button.getActivatedListener());
 
         button.applyStyle();
 
@@ -111,9 +111,9 @@ public class ButtonTest {
         assertTrue(button.isIconClipCircle());
         assertEquals(icon, button.getIcon());
         assertEquals(0xFFFF00FF, button.getIconColor());
-        assertTrue(button.isActive());
+        assertTrue(button.isActivated());
         assertEquals(action, button.getActionListener());
-        assertEquals(active, button.getActiveListener());
+        assertEquals(active, button.getActivatedListener());
     }
 
     @Test

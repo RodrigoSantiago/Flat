@@ -80,6 +80,9 @@ chip.complete-left {
     icon-spacing : 8dp;
     icon-width : 24dp;
     icon-height : 24dp;
+    close-icon-spacing : 8dp;
+    close-icon-width : 18dp;
+    close-icon-height : 18dp;
     close-icon : "/default/icons/close.svg";
     undefined {
         close-icon : "/default/icons/close-thick.svg";
@@ -95,6 +98,9 @@ chip.complete-right {
     icon-spacing : 8dp;
     icon-width : 24dp;
     icon-height : 24dp;
+    close-icon-spacing : 8dp;
+    close-icon-width : 18dp;
+    close-icon-height : 18dp;
     close-icon : "/default/icons/close.svg";
     undefined {
         close-icon : "/default/icons/close-thick.svg";

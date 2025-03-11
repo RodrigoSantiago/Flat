@@ -12,10 +12,10 @@ $secondary-color-selected : #FF5252;
 
 // Base Color (Usually used Primary+Card or Card+Primary)
 $card-color : #FFFFFF;
-$card-color-hover : #F5F5F5;
+$card-color-hover : #F4F4F4;
 $card-color-active: #F0F0F0;
 $card-color-press : #E8E8E8;
-$card-color-fade  : #E0E0E0;
+$card-color-fade  : #F8F8F8;          // Only for Text Field
 
 // Background Color
 $surface-color : #E0E0E0;

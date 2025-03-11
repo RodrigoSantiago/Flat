@@ -422,7 +422,27 @@ public class Graphics {
         return context.svgDrawText(x, y, text, offset, length, maxWidth, maxHeight);
     }
 
-    // TODO - Implement draw round rect border (use gradient values to create the effect)
+    public void drawLinearShadowDown(float x, float y, float width, float height, float alpha) {
+        Paint paint = context.svgPaint();
+        context.svgPaint(new GaussianShadow.Builder(x - height, y - height * 1.5f, width + height * 2f, height * 2f)
+                .corners(0)
+                .blur(height)
+                .alpha(alpha)
+                .color(Color.black)
+                .build());
+        drawRect(x, y, width, height, true);
+    }
+
+    public void drawLinearShadowUp(float x, float y, float width, float height, float alpha) {
+        Paint paint = context.svgPaint();
+        context.svgPaint(new GaussianShadow.Builder(x - height, y + height * 0.5f, width + height * 2f, height * 2f)
+                .corners(0)
+                .blur(height)
+                .alpha(alpha)
+                .color(Color.black)
+                .build());
+        drawRect(x, y, width, height, true);
+    }
 
     public void drawRoundRectShadow(float x, float y, float width, float height,
                                     float cTop, float cRight, float cBottom, float cLeft, float blur, float alpha) {

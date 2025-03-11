@@ -1,16 +1,21 @@
 package flat.widget.structure;
 
+import flat.animations.Interpolation;
+import flat.animations.NormalizedAnimation;
 import flat.animations.StateInfo;
 import flat.events.ActionEvent;
 import flat.events.ScrollEvent;
+import flat.graphics.Color;
 import flat.graphics.Graphics;
 import flat.math.Vector2;
 import flat.math.shapes.RoundRectangle;
+import flat.math.stroke.BasicStroke;
 import flat.uxml.*;
 import flat.widget.Children;
 import flat.widget.Group;
 import flat.widget.Widget;
 import flat.widget.enums.*;
+import flat.window.Activity;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,13 +38,25 @@ public class Tab extends Group {
     private final List<Page> unmodifiablePages;
 
     private boolean hiddenPages;
+    private float lineWidth;
+    private int lineColor;
+    private LineCap lineCap = LineCap.BUTT;
+    private float lineAnimationDuration;
 
     private float pagesPrefHeight;
+    private float pagesElevation;
+    private int pagesBgColor;
     private float pagesHeight;
 
     private float viewOffset;
     private float viewDimension;
     private float totalDimension;
+
+    private Page target;
+    private float px1, px2;
+    private LineChange lineChange = new LineChange(Interpolation.fade);
+
+    private RoundRectangle clipShape = new RoundRectangle();
 
     public Tab() {
         pages = new ArrayList<>();
@@ -69,8 +86,14 @@ public class Tab extends Group {
         setPagesVerticalAlign(attrs.getConstant("pages-vertical-align", info, getPagesVerticalAlign()));
         setPagesVerticalPosition(attrs.getConstant("pages-vertical-position", info, getPagesVerticalPosition()));
         setPagesPrefHeight(attrs.getSize("pages-pref-height", info, getPagesPrefHeight()));
-        setScrollSensibility(attrs.getNumber("scroll-sensibility", info, getScrollSensibility()));
+        setPagesElevation(attrs.getSize("pages-elevation", info, getPagesElevation()));
+        setPagesBgColor(attrs.getColor("pages-bg-color", info, getPagesBgColor()));
         setHiddenPages(attrs.getBool("hidden-pages", info, isHiddenPages()));
+        setLineWidth(attrs.getSize("line-width", info, getLineWidth()));
+        setLineColor(attrs.getColor("line-color", info, getLineColor()));
+        setLineCap(attrs.getConstant("line-cap", info, getLineCap()));
+        setLineAnimationDuration(attrs.getNumber("line-animation-duration", info, getLineAnimationDuration()));
+        setScrollSensibility(attrs.getNumber("scroll-sensibility", info, getScrollSensibility()));
     }
 
     @Override
@@ -190,34 +213,27 @@ public class Tab extends Group {
         pagesWeight = pagesCount == 0 ? 0 : pagesWeight / pagesCount;
         float totalWeight = pagesWeight + contentWeight;
 
-        float contentTotalheight = 0;
         float pagesTotalheight = 0;
         if (pagesMinHeight + contentMinHeight > inHeight) {
-            contentTotalheight = contentMinHeight / (contentMinHeight + pagesMinHeight) * inHeight;
             pagesTotalheight = pagesMinHeight / (contentMinHeight + pagesMinHeight) * inHeight;
         } else {
             float extraHeight = inHeight - pagesMinHeight - contentMinHeight;
             if (contentHeight != MATCH_PARENT && pagesHeight != MATCH_PARENT) {
                 if (contentHeight + pagesHeight <= extraHeight) {
-                    contentTotalheight = contentMinHeight + contentHeight;
                     pagesTotalheight = pagesMinHeight + pagesHeight;
                 } else {
-                    contentTotalheight = contentMinHeight + (extraHeight / 2f);
                     pagesTotalheight = pagesMinHeight + (extraHeight / 2f);
                 }
             } else if (contentHeight == MATCH_PARENT && pagesHeight == MATCH_PARENT) {
-                contentTotalheight = contentMinHeight + (extraHeight * (totalWeight == 0 ? 0.5f : contentWeight / totalWeight));
                 pagesTotalheight = pagesMinHeight + (extraHeight * (totalWeight == 0 ? 0.5f : pagesWeight / totalWeight));
             } else if (contentHeight == MATCH_PARENT) {
-                contentTotalheight = contentMinHeight + Math.max(0, extraHeight - pagesHeight);
                 pagesTotalheight = pagesMinHeight + Math.min(pagesHeight, extraHeight);
             } else {
-                contentTotalheight = contentMinHeight + Math.min(contentHeight, extraHeight);
                 pagesTotalheight = pagesMinHeight + Math.max(0, extraHeight - contentHeight);
             }
         }
 
-        float pageY = pagesVerticalPosition == VerticalPosition.BOTTOM ? contentTotalheight : 0;
+        float pageY = pagesVerticalPosition == VerticalPosition.BOTTOM ? height - pagesTotalheight : 0;
         float contentY = pagesVerticalPosition == VerticalPosition.BOTTOM ? 0 : pagesTotalheight;
 
         this.pagesHeight = pagesTotalheight;
@@ -226,8 +242,28 @@ public class Tab extends Group {
                 , (ArrayList) pages, VerticalAlign.MIDDLE, horizontalAlign, getViewOffset());
         viewDimension = getInWidth();
         if (content != null) {
-            performSingleLayoutConstraints(getInWidth(), contentTotalheight, getInX(), getInY() + contentY
+            performSingleLayoutConstraints(getInWidth(), height - pagesTotalheight, getInX(), getInY() + contentY
                     , content, verticalAlign, horizontalAlign);
+        }
+
+        if (target != selectedPage) {
+            var old = target;
+            target = selectedPage;
+            if (target == null) {
+                px1 = 0;
+                px2 = 0;
+            } else {
+                if (old != null && pages.contains(old)) {
+                    px1 = old.getLayoutX();
+                    px2 = old.getLayoutX() + old.getLayoutWidth();
+                } else {
+                    px1 = 0;
+                    px2 = 0;
+                }
+            }
+            if (lineAnimationDuration > 0 && getActivity() != null) {
+                lineChange.play(getActivity());
+            }
         }
 
         if (prevViewOffset != getViewOffset() && getActivity() != null) {
@@ -236,8 +272,99 @@ public class Tab extends Group {
     }
 
     @Override
-    public boolean onLayoutSingleChild(Widget child) {
-        return false;
+    public void onDraw(Graphics graphics) {
+        drawBackground(graphics);
+        drawRipple(graphics);
+
+        float x = getInX();
+        float y = getInY();
+        float width = getInWidth();
+        float height = getInHeight();
+
+        if (width <= 0 || height <= 0) return;
+
+        if (isHiddenPages()) {
+            if (content != null && content.getVisibility() == Visibility.VISIBLE) {
+                content.onDraw(graphics);
+            }
+        } else {
+            graphics.setTransform2D(getTransform());
+            if (isPagesScrollable()) {
+                if (pagesVerticalPosition == VerticalPosition.TOP) {
+                    clipShape.x = x;
+                    clipShape.y = y;
+                    clipShape.width = width;
+                    clipShape.height = pagesHeight;
+                    clipShape.arcTop = getRadiusTop();
+                    clipShape.arcRight = getRadiusRight();
+                    clipShape.arcBottom = 0;
+                    clipShape.arcLeft = 0;
+                } else {
+                    clipShape.x = x;
+                    clipShape.y = y + height - pagesHeight;
+                    clipShape.width = width;
+                    clipShape.height = pagesHeight;
+                    clipShape.arcTop = 0;
+                    clipShape.arcRight = 0;
+                    clipShape.arcBottom = getRadiusBottom();
+                    clipShape.arcLeft = getRadiusLeft();
+                }
+                graphics.pushClip(clipShape);
+            }
+
+            if (Color.getAlpha(getPagesBgColor()) > 0) {
+                graphics.setTransform2D(getTransform());
+                graphics.setColor(getPagesBgColor());
+                if (pagesVerticalPosition == VerticalPosition.TOP) {
+                    graphics.drawRect(0, 0, width, pagesHeight, true);
+                } else {
+                    graphics.drawRect(0, y + height - pagesHeight, width, pagesHeight, true);
+                }
+            }
+
+            for (Widget child : pages) {
+                if (child.getVisibility() == Visibility.VISIBLE) {
+                    child.onDraw(graphics);
+                }
+            }
+
+            if (selectedPage != null && Color.getAlpha(getLineColor()) > 0
+                    && getLineWidth() > 0 && selectedPage.getLayoutWidth() > 0) {
+                float lineW = Math.min(width, Math.min(height, getLineWidth()));
+                graphics.setTransform2D(getTransform());
+                graphics.setStroker(new BasicStroke(lineW, getLineCap().ordinal(), 0));
+                graphics.setColor(getLineColor());
+                float ty = pagesVerticalPosition == VerticalPosition.TOP
+                        ? selectedPage.getLayoutY() + selectedPage.getLayoutHeight() - lineW * 0.5f
+                        : selectedPage.getLayoutY() + lineW * 0.5f;
+                float tx1 = selectedPage.getLayoutX();
+                float tx2 = selectedPage.getLayoutX() + selectedPage.getLayoutWidth();
+                if (lineChange.isPlaying() && (px1 != 0 || px2 != 0)) {
+                    float t = lineChange.getInterpolatedPosition();
+                    tx1 = Interpolation.mix(px1, tx1, t);
+                    tx2 = Interpolation.mix(px2, tx2, t);
+                }
+                graphics.drawLine(tx1, ty, tx2, ty);
+            }
+
+            if (isPagesScrollable()) {
+                graphics.popClip();
+            }
+
+            float el = Math.min(pagesElevation, height - pagesHeight);
+            if (el >= 1) {
+                graphics.setTransform2D(getTransform());
+                if (pagesVerticalPosition == VerticalPosition.TOP) {
+                    graphics.drawLinearShadowDown(0, pagesHeight, width, el, 0.55f / ((pagesElevation + 7) / 8));
+                } else {
+                    graphics.drawLinearShadowUp(0, y + height - pagesHeight - el, width, el, 0.55f / ((pagesElevation + 7) / 8));
+                }
+            }
+
+            if (content != null && content.getVisibility() == Visibility.VISIBLE) {
+                content.onDraw(graphics);
+            }
+        }
     }
 
     public void addPage(Page child) {
@@ -270,50 +397,17 @@ public class Tab extends Group {
         }
     }
 
-    RoundRectangle clipShape = new RoundRectangle();
-
     @Override
-    public void onDraw(Graphics graphics) {
-        if (getInWidth() <= 0 || getInHeight() <= 0) return;
-
-        drawBackground(graphics);
-        drawRipple(graphics);
-
-        if (isPagesScrollable()) {
-            if (pagesVerticalPosition == VerticalPosition.TOP) {
-                clipShape.x = getInX();
-                clipShape.y = getInY();
-                clipShape.width = getInWidth();
-                clipShape.height = pagesHeight;
-                clipShape.arcTop = getRadiusTop();
-                clipShape.arcRight = getRadiusRight();
-                clipShape.arcBottom = 0;
-                clipShape.arcLeft = 0;
-            } else {
-                clipShape.x = getInX();
-                clipShape.y = getInY() + getInHeight() - pagesHeight;
-                clipShape.width = getInWidth();
-                clipShape.height = pagesHeight;
-                clipShape.arcTop = 0;
-                clipShape.arcRight = 0;
-                clipShape.arcBottom = getRadiusBottom();
-                clipShape.arcLeft = getRadiusLeft();
+    protected boolean detachChild(Widget child) {
+        if (child instanceof Page page) {
+            if (pages.contains(page)) {
+                return false;
             }
-
-            graphics.setTransform2D(getTransform());
-            graphics.pushClip(clipShape);
-            for (Widget child : pages) {
-                if (child.getVisibility() == Visibility.VISIBLE) {
-                    child.onDraw(graphics);
-                }
-            }
-            graphics.popClip();
-            if (content != null && content.getVisibility() == Visibility.VISIBLE) {
-                content.onDraw(graphics);
-            }
-        } else {
-            drawChildren(graphics);
         }
+        if (child == content) {
+            return false;
+        }
+        return super.detachChild(child);
     }
 
 
@@ -326,6 +420,56 @@ public class Tab extends Group {
                 (pagesVerticalPosition == VerticalPosition.BOTTOM && pos.y > getInY() + getInHeight() - pagesHeight)) {
                 slide(-event.getDeltaY() * scrollSensibility);
                 event.consume();
+            }
+        }
+    }
+
+    public float getLineWidth() {
+        return lineWidth;
+    }
+
+    public void setLineWidth(float lineWidth) {
+        if (this.lineWidth != lineWidth) {
+            this.lineWidth = lineWidth;
+            invalidate(false);
+        }
+    }
+
+    public int getLineColor() {
+        return lineColor;
+    }
+
+    public void setLineColor(int lineColor) {
+        if (this.lineColor != lineColor) {
+            this.lineColor = lineColor;
+            invalidate(false);
+        }
+    }
+
+    public LineCap getLineCap() {
+        return lineCap;
+    }
+
+    public void setLineCap(LineCap lineCap) {
+        if (lineCap == null) lineCap = LineCap.BUTT;
+
+        if (this.lineCap != lineCap) {
+            this.lineCap = lineCap;
+            invalidate(false);
+        }
+    }
+
+    public float getLineAnimationDuration() {
+        return lineAnimationDuration;
+    }
+
+    public void setLineAnimationDuration(float lineAnimationDuration) {
+        if (this.lineAnimationDuration != lineAnimationDuration) {
+            this.lineAnimationDuration = lineAnimationDuration;
+            if (lineAnimationDuration > 0) {
+                lineChange.setDuration(lineAnimationDuration);
+            } else {
+                lineChange.stop();
             }
         }
     }
@@ -408,17 +552,26 @@ public class Tab extends Group {
         }
     }
 
-    @Override
-    protected boolean detachChild(Widget child) {
-        if (child instanceof Page page) {
-            if (pages.contains(page)) {
-                return false;
-            }
+    public float getPagesElevation() {
+        return pagesElevation;
+    }
+
+    public void setPagesElevation(float pagesElevation) {
+        if (this.pagesElevation != pagesElevation) {
+            this.pagesElevation = pagesElevation;
+            invalidate(true);
         }
-        if (child == content) {
-            return false;
+    }
+
+    public int getPagesBgColor() {
+        return pagesBgColor;
+    }
+
+    public void setPagesBgColor(int pagesBgColor) {
+        if (this.pagesBgColor != pagesBgColor) {
+            this.pagesBgColor = pagesBgColor;
+            invalidate(true);
         }
-        return super.detachChild(child);
     }
 
     public float getPagesPrefHeight() {
@@ -524,14 +677,16 @@ public class Tab extends Group {
         if (page != null && !pages.contains(page)) return;
 
         if (this.selectedPage != page) {
-            if (this.selectedPage != null) {
-                this.selectedPage.refreshSelectedState();
-            }
+            var old = this.selectedPage;
             this.selectedPage = page;
+            if (old != null) {
+                old.refreshSelectedState();
+            }
             if (this.selectedPage != null) {
                 this.selectedPage.refreshSelectedState();
             }
             setContent(this.selectedPage == null ? null : this.selectedPage.getFrame());
+            invalidate(true);
         }
     }
 
@@ -555,11 +710,28 @@ public class Tab extends Group {
             pages.remove(page);
             remove(page);
         }
+        invalidate(true);
     }
 
     public void refreshPage(Page page) {
         if (this.selectedPage == page) {
             setContent(this.selectedPage == null ? null : this.selectedPage.getFrame());
+        }
+    }
+
+    private class LineChange extends NormalizedAnimation {
+        public LineChange(Interpolation interpolation) {
+            super(interpolation);
+        }
+
+        @Override
+        public Activity getSource() {
+            return getActivity();
+        }
+
+        @Override
+        protected void compute(float t) {
+            invalidate(false);
         }
     }
 }

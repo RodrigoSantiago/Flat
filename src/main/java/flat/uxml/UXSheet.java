@@ -11,7 +11,6 @@ import flat.widget.State;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -22,6 +21,11 @@ public class UXSheet {
     private final List<UXSheetParser.ErroLog> logs = new ArrayList<>();
 
     public static UXSheet parse(ResourceStream stream) {
+        ArrayList<String> includes = new ArrayList<>();
+        return parseInclude(stream, includes);
+    }
+
+    private static UXSheet parseInclude(ResourceStream stream, ArrayList<String> includes) {
         Object cache = stream.getCache();
         if (cache != null) {
             if (cache instanceof UXSheet) {
@@ -31,18 +35,20 @@ public class UXSheet {
             }
         }
         try {
-            UXSheet sheet = read(stream);
-            stream.putCache(sheet);
+            UXSheet sheet = read(stream, includes);
+            if (sheet != null) {
+                stream.putCache(sheet);
+            }
             return sheet;
         } catch (IOException e) {
             throw new FlatException(e);
         }
     }
 
-    private static UXSheet read(ResourceStream stream) throws IOException {
+    private static UXSheet read(ResourceStream stream, ArrayList<String> includes) throws IOException {
         UXSheet sheet = new UXSheet();
 
-        readRecursive(sheet, stream);
+        readRecursive(sheet, stream, includes);
 
         for (var style : sheet.styles.values()) {
             String parentName = style.getParentName();
@@ -61,12 +67,15 @@ public class UXSheet {
         return sheet;
     }
 
-    private static void readRecursive(UXSheet sheet, ResourceStream stream) throws IOException {
+    private static void readRecursive(UXSheet sheet, ResourceStream stream, ArrayList<String> includes) throws IOException {
         if (stream.isFolder()) {
             for (var st : stream.getFiles()) {
-                readRecursive(sheet, st);
+                readRecursive(sheet, st, includes);
             }
         } else {
+            if (stream.getStream() == null) {
+                throw new FlatException("File not found at: " + stream.getResourceName());
+            }
             String data = new String(stream.getStream().readAllBytes(), StandardCharsets.UTF_8);
             UXSheetParser reader = new UXSheetParser(data);
             reader.parse();
@@ -100,6 +109,30 @@ public class UXSheet {
                             , UXSheetParser.ErroLog.REPEATED_VARIABLE + " '" + variable.getName() + "'"));
                 }
                 sheet.variableInitialValue.put(variable.getName(), variable.getValue());
+            }
+
+            // Include
+            for (UXSheetAttribute include : reader.getIncludes()) {
+                UXValue value = include.getValue();
+                ResourceStream relative = stream.getRelative(value.asString(null));
+                if (includes.contains(relative.getResourceName())) {
+                    sheet.logs.add(new UXSheetParser.ErroLog(-1, -1
+                            , UXSheetParser.ErroLog.CYCLIC_INCLUDE + " '" + value.asString(null) + "'"));
+                } else {
+                    UXSheet includeSheet = parseInclude(relative, includes);
+
+                    for (var set : includeSheet.styles.entrySet()) {
+                        if (!sheet.styles.containsKey(set.getKey())) {
+                            sheet.styles.put(set.getKey(), set.getValue());
+                        }
+                    }
+
+                    for (var set : includeSheet.variableInitialValue.entrySet()) {
+                        if (!sheet.variableInitialValue.containsKey(set.getKey())) {
+                            sheet.variableInitialValue.put(set.getKey(), set.getValue());
+                        }
+                    }
+                }
             }
         }
     }
