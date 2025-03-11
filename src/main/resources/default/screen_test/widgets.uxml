@@ -1,11 +1,11 @@
 <Scene width="MATCH_PARENT" height="MATCH_PARENT" background-color="$surface-color">
     <LinearBox direction="VERTICAL" width="MATCH_PARENT" height="MATCH_PARENT">
         <ToolBar width="MATCH_PARENT" on-navigation="toggleDrawer"
-                 title="Flat.UI Showcase" subtitle="Material" style="dense-double">
-            <ToolItem navigation-item="true" style="navigation dense"/>
-            <ToolItem overflow-item="true" style="overflow dense"/>
-            <ToolItem icon="/default/icons/sun.svg" style="dense" menu-text="Light" on-action="setThemeLight"/>
-            <ToolItem icon="/default/icons/night.svg" style="dense" menu-text="Dark" on-action="setThemeDark"/>
+                 title="Flat.UI Showcase" subtitle="Material" style="double-dense primary">
+            <ToolItem navigation-item="true" style="navigation dense primary"/>
+            <ToolItem overflow-item="true" style="overflow dense primary"/>
+            <ToolItem icon="/default/icons/sun.svg" style="dense primary" menu-text="Light" on-action="setThemeLight"/>
+            <ToolItem icon="/default/icons/night.svg" style="dense primary" menu-text="Dark" on-action="setThemeDark"/>
         </ToolBar>
         <Drawer id="mainDrawer" width="MATCH_PARENT" height="MATCH_PARENT" block-events="true" auto-close="true">
             <LinearBox slide-content="true" direction="vertical" width="250dp" height="MATCH_PARENT" style="drawer-menu">
@@ -15,6 +15,7 @@
                 <MenuItem text="Progress" on-action="setPageProgress" style="navigation"/>
                 <MenuItem text="Text" on-action="setPageText" style="navigation"/>
                 <MenuItem text="Tabs" on-action="setPageTabs" style="navigation"/>
+                <MenuItem text="Toolbars" on-action="setPageToolbars" style="navigation"/>
             </LinearBox>
             <LinearBox direction="vertical" width="MATCH_PARENT" height="MATCH_PARENT">
                 <Tab width="MATCH_PARENT" height="MATCH_PARENT" id="mainTab" hidden-pages="true">
@@ -46,6 +47,11 @@
                     <Page text="Tabs" id="pageTabs">
                         <Frame width="MATCH_PARENT" height="MATCH_PARENT">
                             <Include src="tabs.uxml"/>
+                        </Frame>
+                    </Page>
+                    <Page text="Toolbars" id="pageToolbars">
+                        <Frame width="MATCH_PARENT" height="MATCH_PARENT">
+                            <Include src="toolbars.uxml"/>
                         </Frame>
                     </Page>
                 </Tab>

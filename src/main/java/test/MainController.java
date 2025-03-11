@@ -54,6 +54,7 @@ public class MainController extends Controller {
     @Flat public Page pageProgress;
     @Flat public Page pageText;
     @Flat public Page pageTabs;
+    @Flat public Page pageToolbars;
 
     private ObservableList<String> items = new ObservableList<>();
 
@@ -97,6 +98,12 @@ public class MainController extends Controller {
     @Flat
     public void setPageTabs() {
         mainTab.selectPage(pageTabs);
+        mainDrawer.hide();
+    }
+
+    @Flat
+    public void setPageToolbars() {
+        mainTab.selectPage(pageToolbars);
         mainDrawer.hide();
     }
 

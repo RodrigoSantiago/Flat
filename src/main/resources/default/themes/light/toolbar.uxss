@@ -1,4 +1,4 @@
-tool-bar : tool-bar.primary {
+tool-bar : tool-bar.default {
     title-font : font("Roboto", BOLD);
     subtitle-font : font("Roboto");
     title-size : 24sp;
@@ -18,29 +18,45 @@ tool-bar : tool-bar.primary {
 tool-bar.double {
     height : 112dp;
     vertical-align : bottom;
-    padding-bottom : 16dp;
 }
 
 tool-bar.dense {
+    title-size : 20sp;
+    subtitle-size : 12sp;
     padding-top : 4dp;
     padding-left : 4dp;
     padding-right : 4dp;
     padding-bottom : 4dp;
 }
 
-tool-bar.dense-double {
+tool-bar.double-dense {
     height : 80dp;
     vertical-align : bottom;
-    padding-bottom : 8dp;
+}
+
+tool-bar.default {
+    title-color : $primary-color;
+    subtitle-color : $primary-color;
+    background-color : $card-color;
+    disabled {
+        title-color : $on-disabled-color;
+        subtitle-color : $on-disabled-color;
+        background-color : $disabled-color;
+    }
 }
 
 tool-bar.primary {
     title-color : $on-primary-color;
     subtitle-color : $on-primary-color;
     background-color : $primary-color;
+    disabled {
+        title-color : $on-disabled-color;
+        subtitle-color : $on-disabled-color;
+        background-color : $disabled-color;
+    }
 }
 
-tool-item : tool-item.primary {
+tool-item : tool-item.default {
     ripple-enabled : true;
     ripple-overflow : true;
     cursor : hand;
@@ -64,6 +80,21 @@ tool-item.dense {
     padding-bottom : 4dp;
 }
 
+tool-item.default {
+    icon-color : $primary-color;
+    background-color : transparent;
+    ripple-color : alpha($primary-color-fade, 0.5);
+    hovered {
+        background-color : alpha($primary-color-fade, 0.1);
+    }
+    focused {
+        background-color : alpha($primary-color-fade, 0.2);
+    }
+    disabled {
+        icon-color : alpha($primary-color, 0.25);
+    }
+}
+
 tool-item.primary {
     icon-color : $on-primary-color;
     background-color : transparent;
@@ -73,6 +104,9 @@ tool-item.primary {
     }
     focused {
         background-color : alpha($on-primary-color, 0.2);
+    }
+    disabled {
+        icon-color : alpha($on-primary-color, 0.25);
     }
 }
 

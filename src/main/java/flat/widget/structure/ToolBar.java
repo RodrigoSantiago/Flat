@@ -330,6 +330,7 @@ public class ToolBar extends Group {
                 if (item == toolItem) {
                     MenuItem menuItem = i >= menuItems.size() ? null : menuItems.get(i);
                     if (menuItem != null) {
+                        menuItem.setEnabled(item.isEnabled());
                         menuItem.setText(item.getMenuText());
                         menuItem.setShortcutText(item.getMenuShortcutText());
                     }
@@ -365,6 +366,7 @@ public class ToolBar extends Group {
                 menuItems.add(menuItem);
             }
             ToolItem item = toolItems.get(toolItems.size() - 1 - i);
+            menuItem.setEnabled(item.isEnabled());
             menuItem.setText(item.getMenuText());
             menuItem.setShortcutText(item.getMenuShortcutText());
         }
@@ -409,6 +411,9 @@ public class ToolBar extends Group {
 
         boolean hasTitle = hasTitle() && getTitleFont() != null && getTitleSize() > 0;
         boolean hasSubtitle = hasSubtitle() && getSubtitleFont() != null && getSubtitleSize() > 0;
+        if (hasTitle && hasSubtitle && getTitleHeight() + getSubtitleHeight() > height + 0.001f) {
+            hasSubtitle = false;
+        }
         if (hasTitle || hasSubtitle) {
 
             float titleH = (hasTitle ? getTitleHeight() : 0);
