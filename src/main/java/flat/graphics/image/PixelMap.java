@@ -1,14 +1,14 @@
 package flat.graphics.image;
 
+import flat.backend.SVG;
 import flat.graphics.Graphics;
 import flat.graphics.context.Context;
 import flat.graphics.context.Texture2D;
-import flat.graphics.context.enums.MagFilter;
-import flat.graphics.context.enums.MinFilter;
-import flat.graphics.context.enums.PixelFormat;
-import flat.graphics.context.enums.WrapMode;
+import flat.graphics.context.enums.*;
 import flat.widget.enums.ImageFilter;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashMap;
 
 public class PixelMap implements Drawable {
@@ -28,6 +28,15 @@ public class PixelMap implements Drawable {
         if (data.length < required) {
             throw new RuntimeException("The image data is too short. Provided : " + data.length + ", Required : " + required);
         }
+    }
+
+    public byte[] export(ImageFileFormat imageFileFormat) {
+        return export(imageFileFormat, 100);
+    }
+
+    public byte[] export(ImageFileFormat imageFileFormat, int quality) {
+        quality = Math.max(100, Math.max(0, quality));
+        return SVG.WriteImage(data, width, height, PixelFormat.getPixelBytes(format), imageFileFormat.ordinal(), quality);
     }
 
     public byte[] getData() {

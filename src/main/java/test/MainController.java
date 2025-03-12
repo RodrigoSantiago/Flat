@@ -8,6 +8,7 @@ import flat.graphics.Color;
 import flat.graphics.Graphics;
 import flat.graphics.context.Context;
 import flat.graphics.context.Font;
+import flat.graphics.context.enums.ImageFileFormat;
 import flat.graphics.context.enums.PixelFormat;
 import flat.graphics.image.PixelMap;
 import flat.math.shapes.Circle;
@@ -29,7 +30,9 @@ import flat.window.WindowSettings;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -232,23 +235,14 @@ public class MainController extends Controller {
             Font font = Font.getDefault();
             var ctx = graphics.getContext();
             PixelMap pixelMap = font.createImageFromAtlas(graphics.getContext());
-            saveImage(pixelMap.getData(), (int) pixelMap.getWidth(), (int) pixelMap.getHeight(), "C:\\Nova\\image-2.png");
+            saveImage(pixelMap, "C:\\Nova\\image-3.png");
+            System.out.println("SAVED");
         }
     }
 
-    public static void saveImage(byte[] rgbData, int width, int height, String filePath) {
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                int index = y * width + x;
-                int c = Color.rgbaToColor(255, rgbData[index] & 0xFF, rgbData[index] & 0xFF, rgbData[index] & 0xFF);
-                image.setRGB(x, y, c);
-            }
-        }
-
+    public static void saveImage(PixelMap pixelMap, String filePath) {
         try {
-            ImageIO.write(image, "png", new File(filePath));
+            Files.write(new File(filePath).toPath(), pixelMap.export(ImageFileFormat.PNG));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -259,6 +253,7 @@ public class MainController extends Controller {
     public void export(ActionEvent event) {
         save = true;
     }
+
     @Flat
     public void toggleDrawer2(ActionEvent event) {
         drawer2.toggle();

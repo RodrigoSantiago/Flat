@@ -93,4 +93,5 @@ public class SVG {
     //           Image
     //---------------------------
     public static native byte[] ReadImage(byte[] data, int[] imageData);
+    public static native byte[] WriteImage(byte[] imageData, int width, int height, int channels, int format, int quality);
 }
