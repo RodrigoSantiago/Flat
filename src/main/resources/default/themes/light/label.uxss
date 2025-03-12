@@ -33,6 +33,7 @@ label.headline-2 {
 label.title {
     text-font : font("Roboto", BOLD);
     text-size : 18sp;
+    height : 24sp;
 }
 
 label.text {
@@ -43,6 +44,7 @@ label.text {
 label.subtitle {
     text-font : font("Roboto");
     text-size : 16sp;
+    height : 20sp;
 }
 
 label.hint {

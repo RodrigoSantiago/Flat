@@ -120,7 +120,7 @@ public class MenuItem extends Button {
         float scImg = getTextSize();
 
         float spaceForIcon = (iW > 0 ? iW + getIconSpacing() : 0);
-        float spaceForShortcutIcon = getContextMenu() != null ? scImg : (ciW > 0 ? ciW + getShortcutSpacing() : 0);
+        float spaceForShortcutIcon = getContextMenu() != null && isMenuSubItem() ? scImg : (ciW > 0 ? ciW + getShortcutSpacing() : 0);
         float spaceForText = getTextWidth();
 
         if (spaceForIcon + spaceForShortcutIcon + spaceForText > width) {
@@ -158,7 +158,7 @@ public class MenuItem extends Button {
             drawText(graphics, xpos, ypos, tw, th);
         }
 
-        if (getContextMenu() != null && spaceForShortcutIcon > 0 && getSubmenuIcon() != null) {
+        if (getContextMenu() != null && isMenuSubItem() && spaceForShortcutIcon > 0 && getSubmenuIcon() != null) {
             float xpos = iconLeft ? x + width - spaceForShortcutIcon : x;
             float yoff = yOff(y, y + height, spaceForShortcutIcon);
             graphics.setColor(getSubmenuColor());
@@ -182,6 +182,10 @@ public class MenuItem extends Button {
 
             shortcutRender.drawText(context, x, y, width, height, getHorizontalAlign());
         }
+    }
+
+    private boolean isMenuSubItem() {
+        return getParent() instanceof Menu;
     }
 
     @Override
@@ -221,7 +225,11 @@ public class MenuItem extends Button {
 
     @Override
     public void showContextMenu(float x, float y) {
-        showContextMenu();
+        if (getParent() instanceof Menu) {
+            showContextMenu();
+        } else {
+            super.showContextMenu(x, y);
+        }
     }
 
     public void showContextMenu() {

@@ -56,7 +56,13 @@ public class DrawableReader {
     }
 
     public static PixelMap loadPixelMap(ResourceStream stream) throws IOException {
+        if (stream.getStream() == null) {
+            throw new FlatException("Invalid image format " + stream.getResourceName());
+        }
         byte[] data = stream.readData();
+        if (data == null) {
+            throw new FlatException("Invalid image format " + stream.getResourceName());
+        }
         int[] imageData = new int[3];
         byte[] readImage = SVG.ReadImage(data, imageData);
         if (readImage == null) {

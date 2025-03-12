@@ -97,6 +97,8 @@ public class Menu extends Stage {
         setHorizontalAlign(attrs.getConstant("horizontal-align", info, getHorizontalAlign()));
         setScrollSensibility(attrs.getNumber("scroll-sensibility", info, getScrollSensibility()));
         setShowTransitionDuration(attrs.getNumber("show-transition-duration", info, getShowTransitionDuration()));
+        setVerticalBarPolicy(attrs.getConstant("vertical-bar-policy", info, getVerticalBarPolicy()));
+        setVerticalBarPosition(attrs.getConstant("vertical-bar-position", info, getVerticalBarPosition()));
     }
 
     @Override

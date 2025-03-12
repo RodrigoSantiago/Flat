@@ -281,6 +281,39 @@
                     </Menu>
                 </Button>
             </LinearBox>
+            <Label text="Navigation" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <LinearBox direction="VERTICAL" horizontal-align="LEFT" background-color="$card-color" width="200dp"
+                           padding-left="8dp" padding-right="8dp" padding-top="8dp" padding-bottom="8dp">
+                    <MenuItem text="Menu Item A" style="navigation"/>
+                    <MenuItem text="Menu Item B" style="navigation"/>
+                    <MenuItem text="Menu Item C" style="navigation"/>
+                    <MenuItem text="Menu Item D" style="navigation"/>
+                    <MenuItem text="Menu Item E" style="navigation" enabled="false"/>
+                </LinearBox>
+                <LinearBox margin-left="16dp" direction="VERTICAL" horizontal-align="LEFT" background-color="$card-color" width="200dp"
+                           padding-left="8dp" padding-right="8dp" padding-top="8dp" padding-bottom="8dp">
+                    <MenuItem text="Menu Item A" icon="/default/icons/star.svg" style="navigation icon-left"/>
+                    <MenuItem text="Menu Item B" icon="/default/icons/star.svg" style="navigation icon-left"/>
+                    <MenuItem text="Menu Item C" icon="/default/icons/star.svg" style="navigation icon-left"/>
+                    <MenuItem text="Menu Item D" style="navigation icon-left"/>
+                    <MenuItem text="Menu Item E" icon="/default/icons/star.svg" style="navigation icon-left" enabled="false"/>
+                </LinearBox>
+                <LinearBox margin-left="16dp" direction="VERTICAL" horizontal-align="LEFT" background-color="$card-color" width="200dp"
+                           padding-left="8dp" padding-right="8dp" padding-top="8dp" padding-bottom="8dp">
+                    <MenuItem text="Menu Item A" icon="/default/icons/star.svg" style="navigation icon-left"/>
+                    <MenuItem text="Menu Item B" icon="/default/icons/star.svg" style="navigation icon-left"/>
+                    <MenuItem text="Menu Item C" icon="/default/icons/star.svg" style="navigation icon-left"/>
+                    <MenuItem text="Right Click-Me" icon="/default/icons/star.svg" style="navigation icon-left">
+                        <Menu>
+                            <MenuItem text="Menu Item A" style=""/>
+                            <MenuItem text="Menu Item B" style=""/>
+                            <MenuItem text="Menu Item C" style=""/>
+                        </Menu>
+                    </MenuItem>
+                    <MenuItem text="Menu Item E" icon="/default/icons/star.svg" style="navigation icon-left" enabled="false"/>
+                </LinearBox>
+            </LinearBox>
         </LinearBox>
         <LinearBox enabled="false" direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
                    padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">

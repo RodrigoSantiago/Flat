@@ -83,6 +83,7 @@ menu-item.navigation {
     focusable : true;
 
     text-color : $on-card-color;
+    icon-color : alpha($on-card-color, 0.5);
     ripple-color : alpha($primary-color, 0.5);
     background-color : transparent;
 
@@ -91,14 +92,17 @@ menu-item.navigation {
     }
     focused {
         text-color : $primary-color;
+        icon-color : $primary-color;
         background-color : alpha($primary-color-fade, 0.2);
     }
-    pressed {
+    activated {
         text-color : $primary-color;
+        icon-color : $primary-color;
         background-color : alpha($primary-color-fade, 0.5);
     }
     disabled {
-        text-color : $on-disabled-color;
-        shortcut-text-color : $on-disabled-color;
+        text-color : alpha($on-card-color, 0.25);
+        icon-color : alpha($on-card-color, 0.15);
+        shortcut-text-color : alpha($on-card-color, 0.15);
     }
 }

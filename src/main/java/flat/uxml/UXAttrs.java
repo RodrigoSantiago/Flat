@@ -232,7 +232,7 @@ public class UXAttrs {
 
     public Drawable getAttributeResourceAsDrawable(String name, Drawable def, boolean handleException) {
         ResourceStream resource = getAttributeResource(name, null);
-        if (resource != null) {
+        if (resource != null && !resource.isFolder()) {
             try {
                 return DrawableReader.parse(resource);
             } catch (Exception exception) {
@@ -353,7 +353,7 @@ public class UXAttrs {
 
     public Drawable getResourceAsDrawable(String name, StateInfo state, Drawable def, boolean handleException) {
         ResourceStream resource = getResource(name, state, null);
-        if (resource != null) {
+        if (resource != null && !resource.isFolder()) {
             try {
                 return DrawableReader.parse(resource);
             } catch (Exception exception) {

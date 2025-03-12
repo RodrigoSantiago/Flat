@@ -9,6 +9,8 @@ import flat.widget.Scene;
 import flat.widget.Widget;
 import flat.widget.enums.DropdownAlign;
 import flat.widget.enums.HorizontalAlign;
+import flat.widget.enums.Policy;
+import flat.widget.enums.VerticalBarPosition;
 import flat.widget.layout.Panel;
 import flat.window.Activity;
 import flat.window.ActivitySupport;
@@ -60,6 +62,8 @@ public class MenuTest {
         Menu menu = new Menu();
 
         assertEquals(HorizontalAlign.CENTER, menu.getHorizontalAlign());
+        assertEquals(Policy.AS_NEEDED, menu.getVerticalBarPolicy());
+        assertEquals(VerticalBarPosition.RIGHT, menu.getVerticalBarPosition());
         assertEquals(0, menu.getShowTransitionDuration(), 0.001f);
         assertEquals(10, menu.getScrollSensibility(), 0.001f);
         assertNull(menu.getSlideListener());
@@ -69,6 +73,8 @@ public class MenuTest {
         menu.applyAttributes(controller);
 
         assertEquals(HorizontalAlign.CENTER, menu.getHorizontalAlign());
+        assertEquals(Policy.AS_NEEDED, menu.getVerticalBarPolicy());
+        assertEquals(VerticalBarPosition.RIGHT, menu.getVerticalBarPosition());
         assertEquals(0, menu.getShowTransitionDuration(), 0.001f);
         assertEquals(10, menu.getScrollSensibility(), 0.001f);
         assertEquals(action, menu.getSlideListener());
@@ -77,6 +83,8 @@ public class MenuTest {
         menu.applyStyle();
 
         assertEquals(HorizontalAlign.RIGHT, menu.getHorizontalAlign());
+        assertEquals(Policy.ALWAYS, menu.getVerticalBarPolicy());
+        assertEquals(VerticalBarPosition.LEFT, menu.getVerticalBarPosition());
         assertEquals(0.25f, menu.getShowTransitionDuration(), 0.001f);
         assertEquals(5, menu.getScrollSensibility(), 0.001f);
         assertEquals(action, menu.getSlideListener());
@@ -357,6 +365,8 @@ public class MenuTest {
         hash.put(UXHash.getHash("scroll-sensibility"), new UXValueNumber(5));
         hash.put(UXHash.getHash("on-slide"), new UXValueText("onActionWork"));
         hash.put(UXHash.getHash("on-view-offset-change"), new UXValueText("onViewOffsetWork"));
+        hash.put(UXHash.getHash("vertical-bar-policy"), new UXValueText(Policy.ALWAYS.toString()));
+        hash.put(UXHash.getHash("vertical-bar-position"), new UXValueText(VerticalBarPosition.LEFT.toString()));
         return hash;
     }
 

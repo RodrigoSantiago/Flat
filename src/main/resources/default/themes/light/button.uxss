@@ -12,10 +12,6 @@ button : button.default {
     padding-right : 16dp;
     padding-top : 8dp;
     padding-bottom : 8dp;
-    margin-top : 4dp;
-    margin-left : 4dp;
-    margin-right : 4dp;
-    margin-bottom : 4dp;
     horizontal-align : left;
     vertical-align : middle;
     cursor : hand;
