@@ -61,6 +61,7 @@ public class MainController extends Controller {
     @Flat public Tab tabTabs;
     @Flat public Tab tabToolbars;
     @Flat public Tab tabScrolls;
+    @Flat public Tab tabImages;
 
     private ObservableList<String> items = new ObservableList<>();
 
@@ -116,6 +117,12 @@ public class MainController extends Controller {
     @Flat
     public void setTabScrolls() {
         mainTab.selectTab(tabScrolls);
+        mainDrawer.hide();
+    }
+
+    @Flat
+    public void setTabImages() {
+        mainTab.selectTab(tabImages);
         mainDrawer.hide();
     }
 
@@ -204,7 +211,7 @@ public class MainController extends Controller {
             inverse.lineTo(w, h);
             inverse.lineTo(0, h);
             inverse.closePath();
-            inverse.append(new Circle(w, 0, 2000 * Interpolation.exp5.apply(1 - t)), false);
+            inverse.append(new Circle(w, 0, (float) Math.sqrt(w * w + h * h) * Interpolation.exp5.apply(1 - t)), false);
 
             graphics.pushClip(inverse);
             graphics.drawImage(screen, 0, getActivity().getHeight(), getActivity().getWidth(), -getActivity().getHeight());
