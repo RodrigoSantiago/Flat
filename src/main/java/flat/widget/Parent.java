@@ -136,7 +136,7 @@ public abstract class Parent extends Widget {
         setMeasure(mWidth, mHeight);
     }
 
-    protected final void performMeasureVertical() {
+    protected final void performMeasureVertical(List<Widget> childList) {
         float extraWidth = getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
         float extraHeight = getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
         float mWidth = 0;
@@ -144,7 +144,7 @@ public abstract class Parent extends Widget {
         boolean wrapWidth = getLayoutPrefWidth() == WRAP_CONTENT;
         boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
 
-        for (Widget child : getChildrenIterable()) {
+        for (Widget child : childList) {
             if (child.getVisibility() == Visibility.GONE) continue;
 
             child.onMeasure();
@@ -169,14 +169,14 @@ public abstract class Parent extends Widget {
         setMeasure(mWidth, mHeight);
     }
 
-    protected final void performMeasureHorizontal() {
+    protected final void performMeasureHorizontal(List<Widget> childList) {
         float extraWidth = getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
         float extraHeight = getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
         float mWidth = 0;
         float mHeight = 0;
         boolean wrapWidth = getLayoutPrefWidth() == WRAP_CONTENT;
         boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
-        for (Widget child : getChildrenIterable()) {
+        for (Widget child : childList) {
             if (child.getVisibility() == Visibility.GONE) continue;
 
             child.onMeasure();

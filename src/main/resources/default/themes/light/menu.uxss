@@ -17,10 +17,9 @@ menu {
     transition-duration : 0.2;
 }
 
-menu-item {
+menu-item : menu-item.default {
     text-font : font("Roboto");
     text-size : 18sp;
-    text-color : $on-card-color;
     text-all-caps : false;
     vertical-align : middle;
     horizontal-align : left;
@@ -37,10 +36,22 @@ menu-item {
     width : match_parent;
     cursor : hand;
 
+    submenu-icon : '/default/icons/menu-right.svg';
+}
+
+menu-item.icon-left {
+    icon-width : 18sp;
+    icon-height : 18sp;
+    icon-spacing : 8dp;
+}
+
+menu-item.default {
     text-color : $on-card-color;
+    icon-color : alpha($on-card-color, 0.75);
     shortcut-text-color : alpha($on-card-color, 0.5);
-    ripple-color : $card-color-press;
+    submenu-color : alpha($on-card-color, 0.5);
     background-color : $card-color;
+    ripple-color : $card-color-press;
 
     hovered {
         background-color : $card-color-hover;
@@ -49,9 +60,17 @@ menu-item {
         background-color : $card-color-hover;
     }
     disabled {
-        text-color : $on-disabled-color-low;
-        shortcut-text-color : $on-disabled-color-low;
+        text-color : alpha($on-card-color, 0.25);
+        icon-color : alpha($on-card-color, 0.15);
+        shortcut-text-color : alpha($on-card-color, 0.15);
+        submenu-color : alpha($on-card-color, 0.15);
     }
+}
+
+divider {
+    height : 1dp;
+    width : MATCH_PARENT;
+    background-color : alpha($on-card-color, 0.15);
 }
 
 menu-item.navigation {
@@ -79,7 +98,7 @@ menu-item.navigation {
         background-color : alpha($primary-color-fade, 0.5);
     }
     disabled {
-        text-color : $on-disabled-color-low;
-        shortcut-text-color : $on-disabled-color-low;
+        text-color : $on-disabled-color;
+        shortcut-text-color : $on-disabled-color;
     }
 }

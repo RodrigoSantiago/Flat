@@ -136,6 +136,9 @@ vertical-scroll-bar.discrete : vertical-scroll-bar {
     }
 }
 
+mnue-vertical-scroll-bar : vertical-scroll-bar {
+}
+
 text-area-horizontal-scroll-bar : horizontal-scroll-bar.discrete {
 }
 

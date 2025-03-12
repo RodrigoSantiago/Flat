@@ -238,7 +238,8 @@ public class MenuItemTest {
         menuItem.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
         menuItem.onMeasure();
 
-        assertEquals(165, menuItem.getMeasureWidth(), 0.1f);
+        // Menu Item has spacing even without icon
+        assertEquals(165 + 24 + 8f, menuItem.getMeasureWidth(), 0.1f);
         assertEquals(32, menuItem.getMeasureHeight(), 0.1f);
 
         menuItem.setIcon(drawable);
@@ -330,7 +331,7 @@ public class MenuItemTest {
         MenuItem subMenuItem = new MenuItem();
         subMenu.addMenuItem(subMenuItem);
 
-        menuItem.setSubMenu(subMenu);
+        menuItem.setContextMenu(subMenu);
 
         parent.show(activityA, 150, 100, DropdownAlign.TOP_LEFT);
 
@@ -339,14 +340,14 @@ public class MenuItemTest {
         verify(activityA, times(1)).addPointerFilter(parent);
         verify(activityA, times(1)).addResizeFilter(parent);
 
-        menuItem.showSubMenu();
+        menuItem.showContextMenu();
 
         assertTrue(subMenu.isShown());
         assertEquals(sceneA, subMenu.getParent());
         verify(activityA, times(1)).addPointerFilter(subMenu);
         verify(activityA, times(1)).addResizeFilter(subMenu);
 
-        menuItem.hideSubMenu();
+        menuItem.hideSiblingSubMenu();
 
         assertTrue(parent.isShown());
         assertEquals(sceneA, parent.getParent());

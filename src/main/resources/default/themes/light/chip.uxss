@@ -141,11 +141,10 @@ chip.default {
         close-icon-color : $on-card-color;
     }
     disabled {
-        text-color : $on-disabled-color-low;
-        icon-color : $on-disabled-color-low;
-        close-icon-color : $on-disabled-color-low;
-        border-color : $on-disabled-color-low;
-        background-color : $disabled-color-low;
+        text-color : alpha($on-disabled-color, 0.25);
+        icon-color : alpha($on-disabled-color, 0.25);
+        close-icon-color : alpha($on-disabled-color, 0.25);
+        background-color : $disabled-color;
     }
 }
 
@@ -172,11 +171,10 @@ chip.primary {
         close-icon-color : $primary-color;
     }
     disabled {
-        text-color : $on-disabled-color-low;
-        icon-color : $on-disabled-color-low;
-        close-icon-color : $on-disabled-color-low;
-        border-color : $on-disabled-color-low;
-        background-color : $disabled-color-low;
+        text-color : alpha($on-disabled-color, 0.25);
+        icon-color : alpha($on-disabled-color, 0.25);
+        close-icon-color : alpha($on-disabled-color, 0.25);
+        background-color : $disabled-color;
     }
 }
 
@@ -206,10 +204,10 @@ chip.outlined {
         close-icon-color : $on-card-color;
     }
     disabled {
-        text-color : $on-disabled-color-low;
-        icon-color : $on-disabled-color-low;
-        close-icon-color : $on-disabled-color-low;
-        border-color : $on-disabled-color-low;
+        text-color : $disabled-color;
+        icon-color : $disabled-color;
+        close-icon-color : $disabled-color;
+        border-color : $disabled-color;
         background-color : transparent;
     }
 }
@@ -239,10 +237,10 @@ chip.outlined-primary {
         close-icon-color : $primary-color;
     }
     disabled {
-        text-color : $on-disabled-color-low;
-        icon-color : $on-disabled-color-low;
-        close-icon-color : $on-disabled-color-low;
-        border-color : $on-disabled-color-low;
+        text-color : $disabled-color;
+        icon-color : $disabled-color;
+        close-icon-color : $disabled-color;
+        border-color : $disabled-color;
         background-color : transparent;
     }
 }

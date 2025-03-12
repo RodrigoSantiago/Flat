@@ -26,8 +26,8 @@ public abstract class Scrollable extends Parent {
     private HorizontalScrollBar horizontalBar;
     private VerticalScrollBar verticalBar;
 
-    private Policy horizontalPolicy = Policy.AS_NEEDED;
-    private Policy verticalPolicy = Policy.AS_NEEDED;
+    private Policy horizontalBarPolicy = Policy.AS_NEEDED;
+    private Policy verticalBarPolicy = Policy.AS_NEEDED;
     private VerticalBarPosition verticalBarPosition = VerticalBarPosition.RIGHT;
     private HorizontalBarPosition horizontalBarPosition = HorizontalBarPosition.BOTTOM;
     private float scrollSensibility = 10f;
@@ -86,8 +86,8 @@ public abstract class Scrollable extends Parent {
 
         UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
-        setHorizontalPolicy(attrs.getConstant("horizontal-policy", info, getHorizontalPolicy()));
-        setVerticalPolicy(attrs.getConstant("vertical-policy", info, getVerticalPolicy()));
+        setHorizontalBarPolicy(attrs.getConstant("horizontal-bar-policy", info, getHorizontalBarPolicy()));
+        setVerticalBarPolicy(attrs.getConstant("vertical-bar-policy", info, getVerticalBarPolicy()));
         setVerticalBarPosition(attrs.getConstant("vertical-bar-position", info, getVerticalBarPosition()));
         setHorizontalBarPosition(attrs.getConstant("horizontal-bar-position", info, getHorizontalBarPosition()));
         setScrollSensibility(attrs.getNumber("scroll-sensibility", info, getScrollSensibility()));
@@ -122,16 +122,16 @@ public abstract class Scrollable extends Parent {
         float barSizeY = horizontalBar == null || floatingBars ? 0 :
                 Math.min(viewDimensionY, Math.min(horizontalBar.getMeasureHeight(), horizontalBar.getLayoutMaxHeight()));
 
-        boolean isHorizontalLocalVisible = (horizontalPolicy == Policy.ALWAYS) ||
-                (horizontalPolicy == Policy.AS_NEEDED && viewDimensionX < localDimension.x - 0.001f);
-        boolean isVerticalLocalVisible = (verticalPolicy == Policy.ALWAYS) ||
-                (verticalPolicy == Policy.AS_NEEDED && viewDimensionY < localDimension.y - 0.001f);
+        boolean isHorizontalLocalVisible = (horizontalBarPolicy == Policy.ALWAYS) ||
+                (horizontalBarPolicy == Policy.AS_NEEDED && viewDimensionX < localDimension.x - 0.001f);
+        boolean isVerticalLocalVisible = (verticalBarPolicy == Policy.ALWAYS) ||
+                (verticalBarPolicy == Policy.AS_NEEDED && viewDimensionY < localDimension.y - 0.001f);
 
         if (barSizeX > 0 && barSizeY > 0 && (isHorizontalLocalVisible != isVerticalLocalVisible)) {
-            if (!isHorizontalLocalVisible && horizontalPolicy == Policy.AS_NEEDED) {
+            if (!isHorizontalLocalVisible && horizontalBarPolicy == Policy.AS_NEEDED) {
                 isHorizontalLocalVisible = viewDimensionX - barSizeX < localDimension.x - 0.001f;
             }
-            if (!isVerticalLocalVisible && verticalPolicy == Policy.AS_NEEDED) {
+            if (!isVerticalLocalVisible && verticalBarPolicy == Policy.AS_NEEDED) {
                 isVerticalLocalVisible = viewDimensionY - barSizeY < localDimension.y - 0.001f;
             }
         }
@@ -266,28 +266,28 @@ public abstract class Scrollable extends Parent {
         return this;
     }
 
-    public Policy getHorizontalPolicy() {
-        return horizontalPolicy;
+    public Policy getHorizontalBarPolicy() {
+        return horizontalBarPolicy;
     }
 
-    public void setHorizontalPolicy(Policy horizontalPolicy) {
-        if (horizontalPolicy == null) horizontalPolicy = Policy.AS_NEEDED;
+    public void setHorizontalBarPolicy(Policy horizontalBarPolicy) {
+        if (horizontalBarPolicy == null) horizontalBarPolicy = Policy.AS_NEEDED;
 
-        if (this.horizontalPolicy != horizontalPolicy) {
-            this.horizontalPolicy = horizontalPolicy;
+        if (this.horizontalBarPolicy != horizontalBarPolicy) {
+            this.horizontalBarPolicy = horizontalBarPolicy;
             invalidate(true);
         }
     }
 
-    public Policy getVerticalPolicy() {
-        return verticalPolicy;
+    public Policy getVerticalBarPolicy() {
+        return verticalBarPolicy;
     }
 
-    public void setVerticalPolicy(Policy verticalPolicy) {
-        if (verticalPolicy == null) verticalPolicy = Policy.AS_NEEDED;
+    public void setVerticalBarPolicy(Policy verticalBarPolicy) {
+        if (verticalBarPolicy == null) verticalBarPolicy = Policy.AS_NEEDED;
 
-        if (this.verticalPolicy != verticalPolicy) {
-            this.verticalPolicy = verticalPolicy;
+        if (this.verticalBarPolicy != verticalBarPolicy) {
+            this.verticalBarPolicy = verticalBarPolicy;
             invalidate(true);
         }
     }

@@ -1778,7 +1778,15 @@ public class Widget {
     }
 
     public void pointerMenu(PointerEvent event) {
-        showContextMenu(event.getX(), event.getY());
+        Vector2 pointA = localToScreen(getOutX(), getOutY());
+        Vector2 pointB = localToScreen(getOutX(), getOutHeight());
+        Vector2 pointC = localToScreen(getOutWidth(), getOutY());
+        Vector2 pointD = localToScreen(getOutWidth(), getOutHeight());
+        float minX = Math.min(pointA.x, Math.min(pointB.x, Math.min(pointC.x, pointD.x)));
+        float maxX = Math.max(pointA.x, Math.max(pointB.x, Math.max(pointC.x, pointD.x)));
+        float minY = Math.min(pointA.y, Math.min(pointB.y, Math.min(pointC.y, pointD.y)));
+        float maxY = Math.max(pointA.y, Math.max(pointB.y, Math.max(pointC.y, pointD.y)));
+        showContextMenu(Math.min(maxX, Math.max(minX, event.getX())), Math.min(maxY, Math.max(minY, event.getY())));
     }
 
     public void pointer(PointerEvent event) {

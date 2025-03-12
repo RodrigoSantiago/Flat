@@ -68,13 +68,13 @@ public class ScrollBox extends Scrollable {
         }
 
         if (wrapWidth) {
-            if (getVerticalBar() != null && !isFloatingBars() && getVerticalPolicy() == Policy.ALWAYS) {
+            if (getVerticalBar() != null && !isFloatingBars() && getVerticalBarPolicy() == Policy.ALWAYS) {
                 mWidth += Math.min(getVerticalBar().getMeasureWidth(), getVerticalBar().getLayoutMaxWidth());
             }
         }
 
         if (wrapHeight) {
-            if (getHorizontalBar() != null && !isFloatingBars() && getHorizontalPolicy() == Policy.ALWAYS) {
+            if (getHorizontalBar() != null && !isFloatingBars() && getHorizontalBarPolicy() == Policy.ALWAYS) {
                 mHeight += Math.min(getHorizontalBar().getMeasureHeight(), getHorizontalBar().getLayoutMaxHeight());
             }
         }

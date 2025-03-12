@@ -22,9 +22,7 @@ $surface-color : #E0E0E0;
 
 // Disabled Colors (Bg + Details)
 $disabled-color : #C0C0C0FF;
-$on-disabled-color : #808080FF;
-$disabled-color-low : #D0D0D0FF;      // Only for Chips
-$on-disabled-color-low : #B0B0B0FF;   // Only for Chips
+$on-disabled-color : #606060FF;
 
 // Text/Icons/Symbols Colors
 $on-primary-color : #FFFFFF;
@@ -36,12 +34,6 @@ $selection-on-card-color : #64B5F680;
 
 widget {
 
-}
-
-divider {
-    height : 1;
-    width : MATCH_PARENT;
-    background-color : alpha($on-card-color, 0.25);
 }
 
 list-view {

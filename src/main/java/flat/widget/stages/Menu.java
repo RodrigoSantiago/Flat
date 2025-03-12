@@ -6,15 +6,15 @@ import flat.animations.StateInfo;
 import flat.events.ActionEvent;
 import flat.events.PointerEvent;
 import flat.events.ScrollEvent;
+import flat.events.SlideEvent;
 import flat.exception.FlatException;
 import flat.graphics.Graphics;
 import flat.uxml.*;
 import flat.widget.Stage;
 import flat.widget.Widget;
-import flat.widget.enums.DropdownAlign;
-import flat.widget.enums.HorizontalAlign;
-import flat.widget.enums.VerticalAlign;
-import flat.widget.enums.Visibility;
+import flat.widget.enums.*;
+import flat.widget.value.HorizontalScrollBar;
+import flat.widget.value.VerticalScrollBar;
 import flat.window.Activity;
 
 import java.util.ArrayList;
@@ -27,6 +27,11 @@ public class Menu extends Stage {
     private HorizontalAlign horizontalAlign = HorizontalAlign.CENTER;
     private float showTransitionDuration = 0;
     private float scrollSensibility = 10f;
+    private boolean blockEvents;
+
+    private VerticalScrollBar verticalBar;
+    private Policy verticalBarPolicy = Policy.AS_NEEDED;
+    private VerticalBarPosition verticalBarPosition = VerticalBarPosition.RIGHT;
 
     private float viewOffset;
     private float viewDimension;
@@ -42,6 +47,17 @@ public class Menu extends Stage {
     private Menu childMenu;
     private boolean show;
 
+    private final UXListener<SlideEvent> slideY = (event) -> {
+        event.consume();
+        slideTo(event.getValue());
+    };
+
+    public Menu() {
+        var vbar = new VerticalScrollBar();
+        vbar.addStyle(UXAttrs.convertToKebabCase(getClass().getSimpleName()) + "-vertical-scroll-bar");
+        setVerticalBar(vbar);
+    }
+
     @Override
     public void applyChildren(UXChildren children) {
         Widget widget;
@@ -51,6 +67,9 @@ public class Menu extends Stage {
                 addMenuItem(menuItem);
             } else if (child.getWidget() instanceof Divider divider) {
                 addDivider(divider);
+            } else if (child.getAttributeBool("vertical-bar", false) &&
+                    child.getWidget() instanceof VerticalScrollBar bar) {
+                setVerticalBar(bar);
             }
         }
     }
@@ -82,36 +101,75 @@ public class Menu extends Stage {
 
     @Override
     public void onMeasure() {
-        performMeasureVertical();
+        performMeasureVertical(orderedList);
+        if (verticalBar != null) {
+            verticalBar.onMeasure();
+        }
     }
 
     @Override
     public void onLayout(float width, float height) {
         setLayout(width, height);
+        float old = getViewOffset();
+
         totalDimension = performLayoutVerticalScrollable(getInWidth(), getInHeight(), getInX(), getInY(),
                 orderedList, VerticalAlign.TOP, horizontalAlign, getViewOffset());
         viewDimension = getInHeight();
-        setViewOffset(getViewOffset());
+
+        float lx = getInX();
+        float ly = getInY();
+        float lWidth = getInWidth();
+        float lHeight = getInHeight();
+
+        if (verticalBar != null) {
+            float childWidth = Math.min(getDefWidth(verticalBar), lWidth);
+            float childHeight = Math.min(getDefHeight(verticalBar), lHeight);
+            verticalBar.onLayout(childWidth, childHeight);
+
+            if (verticalBarPosition == VerticalBarPosition.LEFT) {
+                verticalBar.setLayoutPosition(lx, ly);
+            } else {
+                verticalBar.setLayoutPosition(lx + lWidth - verticalBar.getLayoutWidth(), ly);
+            }
+
+            verticalBar.setViewOffsetListener(null);
+            verticalBar.setSlideListener(null);
+            verticalBar.setViewDimension(viewDimension);
+            verticalBar.setTotalDimension(totalDimension);
+            verticalBar.setSlideFilter(slideY);
+        }
+
+        if (old != getViewOffset() && getActivity() != null) {
+            getActivity().runLater(() -> setViewOffset(getViewOffset()));
+        }
+
         setLayoutPosition(targetX, targetY);
     }
 
     @Override
     public void onDraw(Graphics graphics) {
-        if (getInWidth() <= 0 || getInHeight() <= 0) return;
-
         drawBackground(graphics);
         drawRipple(graphics);
+
+        if (getInWidth() <= 0 || getInHeight() <= 0) return;
 
         if (isScrollable()) {
             graphics.pushClip(getBackgroundShape());
             for (Widget child : getChildrenIterable()) {
-                if (child.getVisibility() == Visibility.VISIBLE) {
+                if (child != verticalBar && child.getVisibility() == Visibility.VISIBLE) {
                     child.onDraw(graphics);
                 }
             }
             graphics.popClip();
+            if (isVerticalVisible() && verticalBar != null && verticalBar.getVisibility() == Visibility.VISIBLE) {
+                verticalBar.onDraw(graphics);
+            }
         } else {
-            drawChildren(graphics);
+            for (Widget child : getChildrenIterable()) {
+                if (child != verticalBar && child.getVisibility() == Visibility.VISIBLE) {
+                    child.onDraw(graphics);
+                }
+            }
         }
     }
 
@@ -160,7 +218,9 @@ public class Menu extends Stage {
     @Override
     protected boolean attachChild(Widget child) {
         if (super.attachChild(child)) {
-            orderedList.add(child);
+            if (!(child instanceof VerticalScrollBar)) {
+                orderedList.add(child);
+            }
             return true;
         }
         return false;
@@ -168,6 +228,9 @@ public class Menu extends Stage {
 
     @Override
     protected boolean detachChild(Widget child) {
+        if (child == verticalBar) {
+            return false;
+        }
         if (super.detachChild(child)) {
             orderedList.remove(child);
             return true;
@@ -199,6 +262,86 @@ public class Menu extends Stage {
         hide();
     }
 
+    @Override
+    public Widget findByPosition(float x, float y, boolean includeDisabled) {
+        if (!isCurrentHandleEventsEnabled()
+                || getVisibility() != Visibility.VISIBLE
+                || (!includeDisabled && !isEnabled())
+                || (!contains(x, y))) {
+            return null;
+        }
+        if (!blockEvents) {
+            if (isVerticalVisible() && verticalBar != null) {
+                Widget found = verticalBar.findByPosition(x, y, includeDisabled);
+                if (found != null) return found;
+            }
+
+            for (Widget child : getChildrenIterableReverse()) {
+                if (child != verticalBar) {
+                    Widget found = child.findByPosition(x, y, includeDisabled);
+                    if (found != null) return found;
+                }
+            }
+            return this;
+        }
+        return null;
+    }
+
+    public VerticalScrollBar getVerticalBar() {
+        return verticalBar;
+    }
+
+    public void setVerticalBar(VerticalScrollBar verticalBar) {
+        if (this.verticalBar != verticalBar) {
+            if (verticalBar == null) {
+                var old = this.verticalBar;
+                this.verticalBar = null;
+                remove(old);
+            } else {
+                add(verticalBar);
+                if (verticalBar.getParent() == this) {
+                    var old = this.verticalBar;
+                    this.verticalBar = verticalBar;
+                    if (old != null) {
+                        remove(old);
+                    }
+                    this.verticalBar.setViewOffsetListener(null);
+                    this.verticalBar.setSlideListener(null);
+                    this.verticalBar.setViewDimension(viewDimension);
+                    this.verticalBar.setTotalDimension(totalDimension);
+                    this.verticalBar.setViewOffset(viewOffset);
+                    this.verticalBar.setSlideFilter(slideY);
+                }
+            }
+        }
+    }
+
+    public Policy getVerticalBarPolicy() {
+        return verticalBarPolicy;
+    }
+
+    public void setVerticalBarPolicy(Policy verticalBarPolicy) {
+        if (verticalBarPolicy == null) verticalBarPolicy = Policy.AS_NEEDED;
+
+        if (this.verticalBarPolicy != verticalBarPolicy) {
+            this.verticalBarPolicy = verticalBarPolicy;
+            invalidate(true);
+        }
+    }
+
+    public VerticalBarPosition getVerticalBarPosition() {
+        return verticalBarPosition;
+    }
+
+    public void setVerticalBarPosition(VerticalBarPosition verticalBarPosition) {
+        if (verticalBarPosition == null) verticalBarPosition = VerticalBarPosition.RIGHT;
+
+        if (this.verticalBarPosition != verticalBarPosition) {
+            this.verticalBarPosition = verticalBarPosition;
+            invalidate(true);
+        }
+    }
+
     public HorizontalAlign getHorizontalAlign() {
         return horizontalAlign;
     }
@@ -228,6 +371,10 @@ public class Menu extends Stage {
         return viewDimension < totalDimension - 0.001f;
     }
 
+    protected boolean isVerticalVisible() {
+        return isScrollable() && verticalBarPolicy != Policy.NEVER;
+    }
+
     public float getTotalDimension() {
         return totalDimension;
     }
@@ -249,6 +396,10 @@ public class Menu extends Stage {
             this.viewOffset = viewOffset;
             invalidate(true);
             fireViewOffsetListener(old);
+            if (verticalBar != null) {
+                verticalBar.setViewOffsetListener(null);
+                verticalBar.setViewOffset(this.viewOffset);
+            }
         }
     }
 
@@ -481,6 +632,7 @@ public class Menu extends Stage {
             setFollowStyleProperty("center-y", false);
             setCenterX(animX);
             setCenterY(animY);
+            blockEvents = true;
         }
 
         @Override
@@ -493,6 +645,7 @@ public class Menu extends Stage {
             setFollowStyleProperty("scale-y", followY);
             setFollowStyleProperty("scale-x", followCX);
             setFollowStyleProperty("scale-y", followCY);
+            blockEvents = false;
         }
     }
 }

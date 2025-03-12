@@ -42,9 +42,9 @@ public class LinearBox extends Parent {
     @Override
     public void onMeasure() {
         if (direction == Direction.VERTICAL || direction == Direction.IVERTICAL) {
-            performMeasureVertical();
+            performMeasureVertical(orderedList);
         } else {
-            performMeasureHorizontal();
+            performMeasureHorizontal(orderedList);
         }
     }
 

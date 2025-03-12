@@ -62,6 +62,7 @@ public class MainController extends Controller {
     @Flat public Tab tabToolbars;
     @Flat public Tab tabScrolls;
     @Flat public Tab tabImages;
+    @Flat public Tab tabMenus;
 
     private ObservableList<String> items = new ObservableList<>();
 
@@ -123,6 +124,12 @@ public class MainController extends Controller {
     @Flat
     public void setTabImages() {
         mainTab.selectTab(tabImages);
+        mainDrawer.hide();
+    }
+
+    @Flat
+    public void setTabMenus() {
+        mainTab.selectTab(tabMenus);
         mainDrawer.hide();
     }
 
