@@ -48,8 +48,8 @@ public class UXBuilder {
         UXBuilder.install("ScrollBox", ScrollBox::new);
         UXBuilder.install("Menu", Menu::new);
         UXBuilder.install("Frame", Frame::new);
+        UXBuilder.install("TabView", TabView::new);
         UXBuilder.install("Tab", Tab::new);
-        UXBuilder.install("Page", Page::new);
         UXBuilder.install("ListView", ListView::new);
         UXBuilder.install("Chip", Chip::new);
         UXBuilder.install("Slider", Slider::new);

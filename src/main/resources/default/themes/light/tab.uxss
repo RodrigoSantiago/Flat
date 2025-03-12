@@ -1,27 +1,27 @@
-tab : tab.default {
+tab-view : tab-view.default {
     line-width : 2dp;
     line-cap : BUTT;
     line-animation-duration : 0.2;
-    pages-elevation : 8dp;
+    tabs-elevation : 8dp;
 }
 
-tab.default {
+tab-view.default {
     line-color : $primary-color;
-    pages-bg-color : $card-color-fade;
+    tabs-bg-color : $card-color-fade;
     disabled {
         line-color : $on-disabled-color;
     }
 }
 
-tab.primary {
+tab-view.primary {
     line-color : $on-primary-color;
-    pages-bg-color : $card-color-fade;
+    tabs-bg-color : $card-color-fade;
     disabled {
         line-color : $on-disabled-color;
     }
 }
 
-page : page.default {
+tab : tab.default {
     text-font : font("Roboto", BOLD);
     text-size : 18sp;
     padding-top : 15dp;
@@ -37,14 +37,14 @@ page : page.default {
     horizontal-align : center;
 }
 
-page.dense {
+tab.dense {
     padding-top : 8dp;
     padding-left : 8dp;
     padding-right : 8dp;
     padding-bottom : 8dp;
 }
 
-page.icon-left {
+tab.icon-left {
     icon-position : left;
     icon-spacing : 8dp;
     padding-left : 12dp;
@@ -52,7 +52,7 @@ page.icon-left {
     icon-height : 18dp;
 }
 
-page.icon-right {
+tab.icon-right {
     icon-position : right;
     icon-spacing : 8dp;
     padding-right : 12dp;
@@ -60,7 +60,7 @@ page.icon-right {
     icon-height : 18dp;
 }
 
-page.close-icon-right {
+tab.close-icon-right {
     icon-position : left;
     close-icon-spacing : 8dp;
     close-icon-width : 18dp;
@@ -71,7 +71,7 @@ page.close-icon-right {
     }
 }
 
-page.close-icon-left {
+tab.close-icon-left {
     icon-position : right;
     close-icon-spacing : 8dp;
     close-icon-width : 18dp;
@@ -82,7 +82,7 @@ page.close-icon-left {
     }
 }
 
-page.complete-left {
+tab.complete-left {
     icon-position : left;
     padding-left : 12dp;
     padding-right : 12dp;
@@ -96,7 +96,7 @@ page.complete-left {
     }
 }
 
-page.complete-right {
+tab.complete-right {
     icon-position : right;
     padding-left : 12dp;
     padding-right : 12dp;
@@ -110,7 +110,7 @@ page.complete-right {
     }
 }
 
-page.default {
+tab.default {
     text-color : $primary-color;
     icon-color : $primary-color;
     close-icon-color : alpha($primary-color, 0.5);
@@ -137,7 +137,7 @@ page.default {
     }
 }
 
-page.primary {
+tab.primary {
     text-color : $on-primary-color;
     icon-color : $on-primary-color;
     close-icon-color : alpha($on-primary-color, 0.5);

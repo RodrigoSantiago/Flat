@@ -550,7 +550,7 @@ public class PanelTest {
         assertEquals(150, child.getLayoutWidth(), 0.0001f);
         assertEquals(250, child.getLayoutHeight(), 0.0001f);
 
-        // Parent size does not affect Child
+        // Parent size does affect Child
         parent.setPrefSize(100, 200);
         child.setPrefSize(150, 250);
         parent.onMeasure();
@@ -560,8 +560,8 @@ public class PanelTest {
 
         assertEquals(100, parent.getLayoutWidth(), 0.0001f);
         assertEquals(200, parent.getLayoutHeight(), 0.0001f);
-        assertEquals(150, child.getLayoutWidth(), 0.0001f);
-        assertEquals(250, child.getLayoutHeight(), 0.0001f);
+        assertEquals(100, child.getLayoutWidth(), 0.0001f);
+        assertEquals(200, child.getLayoutHeight(), 0.0001f);
 
         // Child MatchParent should obey Parent size
         parent.setPrefSize(100, 200);
@@ -661,7 +661,7 @@ public class PanelTest {
         assertEquals(150, child2.getLayoutWidth(), 0.0001f);
         assertEquals(250, child2.getLayoutHeight(), 0.0001f);
 
-        // Parent size does not affect Child
+        // Parent size does affect Child
         parent.setPrefSize(100, 200);
         child1.setPrefSize(150, 250);
         child2.setPrefSize(150, 250);
@@ -672,10 +672,10 @@ public class PanelTest {
 
         assertEquals(100, parent.getLayoutWidth(), 0.0001f);
         assertEquals(200, parent.getLayoutHeight(), 0.0001f);
-        assertEquals(150, child1.getLayoutWidth(), 0.0001f);
-        assertEquals(250, child1.getLayoutHeight(), 0.0001f);
-        assertEquals(150, child2.getLayoutWidth(), 0.0001f);
-        assertEquals(250, child2.getLayoutHeight(), 0.0001f);
+        assertEquals(100, child1.getLayoutWidth(), 0.0001f);
+        assertEquals(200, child1.getLayoutHeight(), 0.0001f);
+        assertEquals(100, child2.getLayoutWidth(), 0.0001f);
+        assertEquals(200, child2.getLayoutHeight(), 0.0001f);
 
         // Child MatchParent should obey Parent size
         parent.setPrefSize(100, 200);

@@ -1,12 +1,17 @@
 package test;
 
 import flat.Flat;
+import flat.animations.Interpolation;
 import flat.data.ObservableList;
 import flat.events.ActionEvent;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
+import flat.graphics.context.Context;
 import flat.graphics.context.Font;
+import flat.graphics.context.enums.PixelFormat;
 import flat.graphics.image.PixelMap;
+import flat.math.shapes.Circle;
+import flat.math.shapes.Path;
 import flat.uxml.Controller;
 import flat.widget.Parent;
 import flat.widget.Widget;
@@ -47,14 +52,15 @@ public class MainController extends Controller {
     public Drawer mainDrawer;
     @Flat
     public Drawer drawer2;
-    @Flat public Tab mainTab;
-    @Flat public Page pageButtons;
-    @Flat public Page pageChips;
-    @Flat public Page pageForms;
-    @Flat public Page pageProgress;
-    @Flat public Page pageText;
-    @Flat public Page pageTabs;
-    @Flat public Page pageToolbars;
+    @Flat public TabView mainTab;
+    @Flat public Tab tabButtons;
+    @Flat public Tab tabChips;
+    @Flat public Tab tabForms;
+    @Flat public Tab tabProgress;
+    @Flat public Tab tabText;
+    @Flat public Tab tabTabs;
+    @Flat public Tab tabToolbars;
+    @Flat public Tab tabScrolls;
 
     private ObservableList<String> items = new ObservableList<>();
 
@@ -66,61 +72,69 @@ public class MainController extends Controller {
     }
 
     @Flat
-    public void setPageButtons() {
-        mainTab.selectPage(pageButtons);
+    public void setTabButtons() {
+        mainTab.selectTab(tabButtons);
         mainDrawer.hide();
     }
 
     @Flat
-    public void setPageChips() {
-        mainTab.selectPage(pageChips);
+    public void setTabChips() {
+        mainTab.selectTab(tabChips);
         mainDrawer.hide();
     }
 
     @Flat
-    public void setPageForms() {
-        mainTab.selectPage(pageForms);
+    public void setTabForms() {
+        mainTab.selectTab(tabForms);
         mainDrawer.hide();
     }
 
     @Flat
-    public void setPageProgress() {
-        mainTab.selectPage(pageProgress);
+    public void setTabProgress() {
+        mainTab.selectTab(tabProgress);
         mainDrawer.hide();
     }
 
     @Flat
-    public void setPageText() {
-        mainTab.selectPage(pageText);
+    public void setTabText() {
+        mainTab.selectTab(tabText);
         mainDrawer.hide();
     }
 
     @Flat
-    public void setPageTabs() {
-        mainTab.selectPage(pageTabs);
+    public void setTabTabs() {
+        mainTab.selectTab(tabTabs);
         mainDrawer.hide();
     }
 
     @Flat
-    public void setPageToolbars() {
-        mainTab.selectPage(pageToolbars);
+    public void setTabToolbars() {
+        mainTab.selectTab(tabToolbars);
+        mainDrawer.hide();
+    }
+
+    @Flat
+    public void setTabScrolls() {
+        mainTab.selectTab(tabScrolls);
         mainDrawer.hide();
     }
 
     @Flat
     public void setThemeLight() {
+        savePrint();
         getActivity().setTheme("/default/themes/light");
     }
 
     @Flat
     public void setThemeDark() {
+        savePrint();
         getActivity().setTheme("/default/themes/dark");
     }
 
     @Flat
     public void linearAction(ActionEvent actionEvent) {
-        List<Page> list = new ArrayList<>();
-        new Tab().addPage(list);
+        List<Tab> list = new ArrayList<>();
+        new TabView().addTab(list);
         getActivity().getWindow().setIcon((PixelMap) iconButton.getIcon());
     }
 
@@ -163,14 +177,42 @@ public class MainController extends Controller {
     }
     @Override
     public void onShow() {
-        search(pageChips.getFrame());
+        if (tabChips != null) {
+            search(tabChips.getFrame());
+        }
+    }
+
+    @Flat Drawer testDrawer;
+    @Flat
+    public void toggleTestDrawer() {
+        testDrawer.toggle();
     }
 
     float t = 0;
-    float speed = 0.01f;
+
     @Override
     public void onDraw(Graphics graphics) {
         super.onDraw(graphics);
+        if (t > 0) {
+            int w = (int) getActivity().getWidth();
+            int h = (int) getActivity().getHeight();
+            graphics.setTransform2D(null);
+
+            Path inverse = new Path();
+            inverse.moveTo(0, 0);
+            inverse.lineTo(w, 0);
+            inverse.lineTo(w, h);
+            inverse.lineTo(0, h);
+            inverse.closePath();
+            inverse.append(new Circle(w, 0, 2000 * Interpolation.exp5.apply(1 - t)), false);
+
+            graphics.pushClip(inverse);
+            graphics.drawImage(screen, 0, getActivity().getHeight(), getActivity().getWidth(), -getActivity().getHeight());
+            graphics.popClip();
+            t -= Application.getLoopTime();
+            getActivity().invalidateWidget(getActivity().getScene());
+        }
+
         if (save) {
             save = false;
             Font font = Font.getDefault();
@@ -206,5 +248,16 @@ public class MainController extends Controller {
     @Flat
     public void toggleDrawer2(ActionEvent event) {
         drawer2.toggle();
+    }
+
+    PixelMap screen;
+    public void savePrint() {
+        t = 1;
+        Context context = getActivity().getContext();
+        int w = (int) getActivity().getWidth();
+        int h = (int) getActivity().getHeight();
+        byte[] data = new byte[w * h * 4];
+        context.readPixels(0, 0, w, h, data, 0);
+        screen = new PixelMap(data, w, h, PixelFormat.RGBA);
     }
 }

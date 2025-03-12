@@ -8,6 +8,7 @@ import flat.graphics.context.Font;
 import flat.math.Vector2;
 import flat.uxml.*;
 import flat.widget.Group;
+import flat.widget.Parent;
 import flat.widget.Widget;
 import flat.widget.enums.DropdownAlign;
 import flat.widget.enums.HorizontalAlign;
@@ -23,7 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public class ToolBar extends Group {
+public class ToolBar extends Parent {
 
     private UXListener<ActionEvent> navigationAction;
 
@@ -162,22 +163,22 @@ public class ToolBar extends Group {
         float ih = 0;
         for (ToolItem item : toolItems) {
             item.onMeasure();
-            iw += item.getMeasureWidth();
-            ih = Math.max(ih, item.getMeasureHeight());
+            iw += getDefWidth(item);
+            ih = Math.max(ih, getDefHeight(item));
         }
 
         float ow = 0;
         if (overflowItem != null) {
             overflowItem.onMeasure();
-            ow = overflowItem.getMeasureWidth();
-            ih = Math.max(ih, overflowItem.getMeasureHeight());
+            ow = getDefWidth(overflowItem);
+            ih = Math.max(ih, getDefHeight(overflowItem));
         }
 
         float nw = 0;
         if (navigationItem != null) {
             navigationItem.onMeasure();
-            nw = navigationItem.getMeasureWidth();
-            ih = Math.max(ih, navigationItem.getMeasureHeight());
+            nw = getDefWidth(navigationItem);
+            ih = Math.max(ih, getDefHeight(navigationItem));
         }
 
         if (wrapWidth) {

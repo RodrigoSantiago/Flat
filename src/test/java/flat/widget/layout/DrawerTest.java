@@ -7,6 +7,7 @@ import flat.uxml.UXHash;
 import flat.uxml.value.*;
 import flat.widget.Widget;
 import flat.widget.enums.HorizontalAlign;
+import flat.widget.enums.OverlayMode;
 import flat.widget.enums.Position;
 import flat.widget.enums.VerticalAlign;
 import org.junit.Test;
@@ -27,38 +28,41 @@ public class DrawerTest {
 
         Drawer drawer = new Drawer();
 
-        assertNull(drawer.getSlideContent());
+        assertNull(drawer.getFrontContent());
+        assertNull(drawer.getBackContent());
         assertEquals(0, drawer.getSlideAnimationDuration(), 0.001f);
         assertEquals(Position.LEFT, drawer.getSlidePosition());
         assertEquals(HorizontalAlign.LEFT, drawer.getHorizontalAlign());
         assertEquals(VerticalAlign.TOP, drawer.getVerticalAlign());
         assertEquals(0x00000000, drawer.getBlockColor());
-        assertTrue(drawer.isFloating());
+        assertEquals(OverlayMode.FLOATING, drawer.getOverlayMode());
         assertFalse(drawer.isBlockEvents());
         assertFalse(drawer.isAutoClose());
 
         drawer.setAttributes(createNonDefaultValues(), null);
         drawer.applyAttributes(controller);
 
-        assertNull(drawer.getSlideContent());
+        assertNull(drawer.getFrontContent());
+        assertNull(drawer.getBackContent());
         assertEquals(0, drawer.getSlideAnimationDuration(), 0.001f);
         assertEquals(Position.LEFT, drawer.getSlidePosition());
         assertEquals(HorizontalAlign.LEFT, drawer.getHorizontalAlign());
         assertEquals(VerticalAlign.TOP, drawer.getVerticalAlign());
         assertEquals(0x00000000, drawer.getBlockColor());
-        assertTrue(drawer.isFloating());
-        assertTrue(drawer.isBlockEvents());
-        assertTrue(drawer.isAutoClose());
+        assertEquals(OverlayMode.FLOATING, drawer.getOverlayMode());
+        assertFalse(drawer.isBlockEvents());
+        assertFalse(drawer.isAutoClose());
 
         drawer.applyStyle();
 
-        assertNull(drawer.getSlideContent());
+        assertNull(drawer.getFrontContent());
+        assertNull(drawer.getBackContent());
         assertEquals(1, drawer.getSlideAnimationDuration(), 0.001f);
         assertEquals(Position.BOTTOM, drawer.getSlidePosition());
         assertEquals(HorizontalAlign.RIGHT, drawer.getHorizontalAlign());
         assertEquals(VerticalAlign.MIDDLE, drawer.getVerticalAlign());
         assertEquals(0xFF0000FF, drawer.getBlockColor());
-        assertFalse(drawer.isFloating());
+        assertEquals(OverlayMode.SPLIT, drawer.getOverlayMode());
         assertTrue(drawer.isBlockEvents());
         assertTrue(drawer.isAutoClose());
     }
@@ -72,7 +76,7 @@ public class DrawerTest {
 
         UXChildren uxChild = mockChildren(
                 new Widget[] {childA, childB, content},
-                new String[] {"", "", "slide-content"});
+                new String[] {"back-content", "front-content", ""});
 
         assertNull(childA.getParent());
         assertNull(childB.getParent());
@@ -82,9 +86,10 @@ public class DrawerTest {
 
         assertEquals(drawer, childA.getParent());
         assertEquals(drawer, childB.getParent());
-        assertEquals(drawer, content.getParent());
+        assertNull(content.getParent());
 
-        assertEquals(content, drawer.getSlideContent());
+        assertEquals(childA, drawer.getBackContent());
+        assertEquals(childB, drawer.getFrontContent());
     }
 
     @Test
@@ -93,10 +98,10 @@ public class DrawerTest {
         Panel content = new Panel();
 
         Drawer drawer = new Drawer();
-        drawer.add(childA);
-        drawer.setSlideContent(content);
+        drawer.setBackContent(childA);
+        drawer.setFrontContent(content);
         drawer.setSlidePosition(Position.LEFT);
-        drawer.setFloating(true);
+        drawer.setOverlayMode(OverlayMode.FLOATING);
         drawer.onMeasure();
 
         assertEquals(0, drawer.getMeasureWidth(), 0.1f);
@@ -155,10 +160,10 @@ public class DrawerTest {
         Panel content = new Panel();
 
         Drawer drawer = new Drawer();
-        drawer.add(childA);
-        drawer.setSlideContent(content);
+        drawer.setBackContent(childA);
+        drawer.setFrontContent(content);
         drawer.setSlidePosition(Position.LEFT);
-        drawer.setFloating(false);
+        drawer.setOverlayMode(OverlayMode.SPLIT);
         drawer.onMeasure();
 
         assertEquals(0, drawer.getMeasureWidth(), 0.1f);
@@ -223,10 +228,10 @@ public class DrawerTest {
         Panel content = new Panel();
 
         Drawer drawer = new Drawer();
-        drawer.add(childA);
-        drawer.setSlideContent(content);
+        drawer.setBackContent(childA);
+        drawer.setFrontContent(content);
         drawer.setSlidePosition(Position.TOP);
-        drawer.setFloating(true);
+        drawer.setOverlayMode(OverlayMode.FLOATING);
         drawer.onMeasure();
 
         assertEquals(0, drawer.getMeasureWidth(), 0.1f);
@@ -285,10 +290,10 @@ public class DrawerTest {
         Panel content = new Panel();
 
         Drawer drawer = new Drawer();
-        drawer.add(childA);
-        drawer.setSlideContent(content);
+        drawer.setBackContent(childA);
+        drawer.setFrontContent(content);
         drawer.setSlidePosition(Position.TOP);
-        drawer.setFloating(false);
+        drawer.setOverlayMode(OverlayMode.SPLIT);
         drawer.onMeasure();
 
         assertEquals(0, drawer.getMeasureWidth(), 0.1f);
@@ -353,10 +358,10 @@ public class DrawerTest {
         Panel content = new Panel();
 
         Drawer drawer = new Drawer();
-        drawer.add(childA);
-        drawer.setSlideContent(content);
+        drawer.setBackContent(childA);
+        drawer.setFrontContent(content);
         drawer.setSlidePosition(Position.LEFT);
-        drawer.setFloating(true);
+        drawer.setOverlayMode(OverlayMode.FLOATING);
 
         childA.setPrefSize(300, 250);
         content.setPrefSize(150, 400);
@@ -455,7 +460,7 @@ public class DrawerTest {
         hash.put(UXHash.getHash("slide-position"), new UXValueText(Position.BOTTOM.toString()));
         hash.put(UXHash.getHash("horizontal-align"), new UXValueText(HorizontalAlign.RIGHT.toString()));
         hash.put(UXHash.getHash("vertical-align"), new UXValueText(VerticalAlign.MIDDLE.toString()));
-        hash.put(UXHash.getHash("floating"), new UXValueBool(false));
+        hash.put(UXHash.getHash("overlay-mode"), new UXValueText(OverlayMode.SPLIT.toString()));
         hash.put(UXHash.getHash("block-color"), new UXValueColor(0xFF0000FF));
         hash.put(UXHash.getHash("block-events"), new UXValueBool(true));
         hash.put(UXHash.getHash("auto-close"), new UXValueBool(true));

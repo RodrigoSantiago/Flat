@@ -81,7 +81,7 @@ public class TextFieldTest {
         assertEquals(16f, textField.getTextSize(), 0.1f);
         assertEquals(8f, textField.getTitleSize(), 0.1f);
         assertEquals(0f, textField.getTitleSpacing(), 0.1f);
-        assertEquals(1f, textField.getTitleTransitionDuration(), 0.1f);
+        assertEquals(0f, textField.getTitleTransitionDuration(), 0.1f);
         assertEquals(0.5f, textField.getCaretBlinkDuration(), 0.1f);
         assertEquals(0x000000FF, textField.getTextColor());
         assertEquals(0x000000FF, textField.getTitleColor());
@@ -107,7 +107,7 @@ public class TextFieldTest {
         assertEquals(16f, textField.getTextSize(), 0.1f);
         assertEquals(8f, textField.getTitleSize(), 0.1f);
         assertEquals(0f, textField.getTitleSpacing(), 0.1f);
-        assertEquals(1f, textField.getTitleTransitionDuration(), 0.1f);
+        assertEquals(0f, textField.getTitleTransitionDuration(), 0.1f);
         assertEquals(0.5f, textField.getCaretBlinkDuration(), 0.1f);
         assertEquals(0x000000FF, textField.getTextColor());
         assertEquals(0x000000FF, textField.getTitleColor());

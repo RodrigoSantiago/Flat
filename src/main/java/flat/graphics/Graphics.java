@@ -586,6 +586,7 @@ public class Graphics {
                 .source(srcX1, srcY1, srcX2, srcY2)
                 .destin(dstX1, dstY1, dstX2, dstY2)
                 .color(color)
+                .transform(transform)
                 .build());
         drawRect(dstX1, dstY1, dstX2 - dstX1, dstY2 - dstY1, true);
         context.svgPaint(paint);

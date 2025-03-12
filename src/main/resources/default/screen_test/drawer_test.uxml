@@ -1,0 +1,12 @@
+<Scene background-color="white">
+    <LinearBox direction="VERTICAL" padding-left="16dp" padding-right="16dp" padding-top="16dp" padding-bottom="16dp">
+        <Button text="Toggle" on-action="toggleTestDrawer"/>
+        <Drawer id="testDrawer" slide-position="LEFT" width="0" height="0" background-color="#00FF00FF" overlay-mode="OVERLAPPING"
+            vertical-align="middle" horizontal-align="center">
+            <LinearBox front-content="true" background-color="#FF000080" height="100dp" width="MATCH_PARENT" max-width="400dp"/>
+            <LinearBox back-content="true" background-color="#0000FF80" height="200dp" width="MATCH_PARENT" max-width="200dp">
+                <Slider width="MATCH_PARENT" value="0.5"/>
+            </LinearBox>
+        </Drawer>
+    </LinearBox>
+</Scene>

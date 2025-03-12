@@ -38,121 +38,11 @@ widget {
 
 }
 
-
 divider {
     height : 1;
     width : MATCH_PARENT;
-    background-color : #00000080;
+    background-color : alpha($on-card-color, 0.25);
 }
-
-/*
-  Buttons Styles
-*/
-
-raised : button {
-
-}
-
-outline : button {
-
-}
-
-floating : button {
-
-}
-
-/*
-  TextField Styles
-*/
-text-outline : text-field {
-    radius-top : 4;
-    radius-right : 4;
-    radius-bottom : 4;
-    radius-left : 4;
-
-    high-label-text-size : 10sp;
-    high-label-text-color : #FF0000FF;
-
-    padding-top : 16;
-    border-discret : false;
-}
-
-/*
-  Image
-*/
-
-image-view {
-
-}
-
-canvas {
-
-}
-
-/*
-  Selection
-*/
-
-/*
-  Value
-*/
-
-horizontal-scroll-bar {
-    color : alpha($on-card-color, 0.25);
-    background-color : alpha($on-card-color, 0.1);
-    min-width : 6dp;
-    min-height : 6dp;
-    min-range : 0.15;
-    transition-duration : 0.1;
-    width : match_parent;
-    cursor : hand;
-}
-
-vertical-scroll-bar {
-    color : alpha($on-card-color, 0.25);
-    background-color : alpha($on-card-color, 0.1);
-    min-width : 6dp;
-    min-height : 6dp;
-    min-range : 0.1;
-    transition-duration : 0.1;
-    height : match_parent;
-    cursor : hand;
-}
-
-/*
-  Layout
-*/
-
-parent {
-
-}
-
-scene {
-    focusable : true;
-    cursor : arrow;
-}
-
-box {
-
-}
-
-linear-box {
-
-}
-
-grid {
-
-}
-
-scroll-box {
-    enabled {
-        background-color : #FF000000;
-    }
-    hovered {
-        background-color : #FF000030;
-    }
-}
-
 
 list-view {
     background-color : #FF8080;
@@ -177,14 +67,6 @@ list-item {
     state-icon-cursor : hand;
 }
 
-tree-view {
-
-}
-
-/*
-  Menu
-*/
-
 dialog {
     shadow-enabled : true;
     elevation : 24;
@@ -203,21 +85,4 @@ dialog {
     background-color : #FFFFFF;
     show-transition-duration : 0.25;
     hide-transition-duration : 0.15;
-}
-
-dropdown-menu : menu {
-
-}
-
-shiny {
-    background-color : yellow;
-}
-dark {
-    background-color : purple;
-}
-round {
-    radius-top : 16;
-    radius-right : 16;
-    radius-bottom : 16;
-    radius-left : 16;
 }

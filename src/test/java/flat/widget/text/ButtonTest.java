@@ -305,9 +305,9 @@ public class ButtonTest {
         hash.put(UXHash.getHash("icon-spacing"), new UXValueSizeSp(24));
         hash.put(UXHash.getHash("icon-image-filter"), new UXValueText(ImageFilter.NEAREST.toString()));
         hash.put(UXHash.getHash("icon-clip-circle"), new UXValueBool(true));
-        hash.put(UXHash.getHash("active"), new UXValueBool(true));
+        hash.put(UXHash.getHash("activated"), new UXValueBool(true));
         hash.put(UXHash.getHash("on-action"), new UXValueText("onActionWork"));
-        hash.put(UXHash.getHash("on-active-change"), new UXValueText("onActiveWork"));
+        hash.put(UXHash.getHash("on-activated-change"), new UXValueText("onActiveWork"));
         return hash;
     }
 }

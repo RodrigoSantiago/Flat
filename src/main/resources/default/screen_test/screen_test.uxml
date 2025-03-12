@@ -61,9 +61,9 @@
                                 direction="ivertical" icon-color="#000000" active="true" background-color="#FFFFFF" icon-transition-duration="0.2" ripple-color="#FF000080"/>
                     </LinearBox>
                     <Panel width="MATCH_PARENT" height="MATCH_PARENT" background-color="#FFFFFF"><Label text="Panel Spacing"/>
-                        <Tab width="MATCH_PARENT" height="MATCH_PARENT" background-color="#C8C800" pages-vertical-position="top"
+                        <TabView width="MATCH_PARENT" height="MATCH_PARENT" background-color="#C8C800" pages-vertical-position="top"
                              radius-top="4" radius-bottom="16" radius-right="8" radius-left="20">
-                            <Page text="This is a Page" background-color="#FFC8C8">
+                            <Tab text="This is a Tab" background-color="#FFC8C8">
                                 <Grid width="MATCH_PARENT" height="MATCH_PARENT" background-color="red"
                                       columns="list(0, 0, 0)" rows="list(0, 0, 0)" horizontal-spacing="16" vertical-spacing="8">
                                     <Button text="A" cell-x="0" cell-y="0" width="MATCH_PARENT" height="MATCH_PARENT"/>
@@ -71,8 +71,8 @@
                                     <Button text="C" cell-x="2" cell-y="2" width="MATCH_PARENT" height="MATCH_PARENT"/>
                                     <Button text="D" cell-x="1" cell-y="0" cell-h="3" width="64" height="MATCH_PARENT"/>
                                 </Grid>
-                            </Page>
-                            <Page text="This is a Page" background-color="#FFC8C8">
+                            </Tab>
+                            <Tab text="This is a Tab" background-color="#FFC8C8">
                                 <Button text="open" on-action="toggleDrawer2"/>
                                 <Drawer width="MATCH_PARENT" height="MATCH_PARENT" id="drawer2" slide-animation-duration="0.5"
                                         block-events="true" block-color="#00000080" auto-close="true"
@@ -87,18 +87,18 @@
                                         <ImageView image="/default/image.png"/>
                                     </LinearBox>
                                 </Drawer>
-                            </Page>
-                            <Page text="This is a Page" background-color="#FFC8C8">
+                            </Tab>
+                            <Tab text="This is a Tab" background-color="#FFC8C8">
                                 <ImageView image="/default/image.png"/>
-                            </Page>
-                            <Page text="This is a Page" background-color="#FFC8C8">
+                            </Tab>
+                            <Tab text="This is a Tab" background-color="#FFC8C8">
                                 <Frame height="MATCH_PARENT" width="MATCH_PARENT">
                                     <Button text="Context Menu" margin-top="16"
                                             horizontal-align="RIGHT" on-action="onPageBtnClick">
                                     </Button>
                                 </Frame>
-                            </Page>
-                        </Tab>
+                            </Tab>
+                        </TabView>
                     </Panel>
                     <StackBox width="MATCH_PARENT" height="MATCH_PARENT" max-height="128" background-color="#808080"><Label text="Stack Spacing"/></StackBox>
                 </LinearBox>

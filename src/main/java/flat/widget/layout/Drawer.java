@@ -11,10 +11,7 @@ import flat.uxml.UXAttrs;
 import flat.uxml.UXChildren;
 import flat.widget.Parent;
 import flat.widget.Widget;
-import flat.widget.enums.HorizontalAlign;
-import flat.widget.enums.Position;
-import flat.widget.enums.VerticalAlign;
-import flat.widget.enums.Visibility;
+import flat.widget.enums.*;
 import flat.window.Activity;
 
 import java.util.List;
@@ -25,25 +22,29 @@ public class Drawer extends Parent {
     private HorizontalAlign horizontalAlign = HorizontalAlign.LEFT;
     private Position slidePosition = Position.LEFT;
     private float slideAnimationDuration = 0;
-    private boolean floating = true;
+
     private boolean autoClose;
     private boolean blockEvents;
     private int blockColor = Color.transparent;
-    private Widget slideContent;
+
+    private OverlayMode overlayMode = OverlayMode.FLOATING;
 
     protected final SlideAnimation slideAnimation = new SlideAnimation();
     private boolean shown;
     private float lerpPos;
+
+    private Widget frontContent;
+    private Widget backContent;
 
     @Override
     public void applyChildren(UXChildren children) {
         super.applyChildren(children);
 
         for (var child : children) {
-            if (child.getAttributeBool("slide-content", false)) {
-                setSlideContent(child.getWidget());
-            } else {
-                add(child.getWidget());
+            if (child.getAttributeBool("front-content", false)) {
+                setFrontContent(child.getWidget());
+            } else if (child.getAttributeBool("back-content", false)) {
+                setBackContent(child.getWidget());
             }
         }
     }
@@ -52,8 +53,6 @@ public class Drawer extends Parent {
     public void applyAttributes(Controller controller) {
         super.applyAttributes(controller);
         UXAttrs attrs = getAttrs();
-        setBlockEvents(attrs.getAttributeBool("block-events", isBlockEvents()));
-        setAutoClose(attrs.getAttributeBool("auto-close", isAutoClose()));
     }
 
     @Override
@@ -67,95 +66,86 @@ public class Drawer extends Parent {
         setSlidePosition(attrs.getConstant("slide-position", info, getSlidePosition()));
         setSlideAnimationDuration(attrs.getNumber("slide-animation-duration", info, getSlideAnimationDuration()));
         setBlockColor(attrs.getColor("block-color", info, getBlockColor()));
-        setFloating(attrs.getBool("floating", info, isFloating()));
+        setOverlayMode(attrs.getConstant("overlay-mode", info, getOverlayMode()));
+        setBlockEvents(attrs.getBool("block-events", info, isBlockEvents()));
+        setAutoClose(attrs.getBool("auto-close", info, isAutoClose()));
     }
 
     @Override
     public void onMeasure() {
-        boolean wrapWidth = getLayoutPrefWidth() == WRAP_CONTENT;
-        boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
-
-        if (isFloating() || slideContent == null
-                || (isSlideHorizontal() && !wrapWidth)
-                || (isSlideVertical() && !wrapHeight)) {
-            performMeasureStack();
-            return;
-        }
-        
         float extraWidth = getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
         float extraHeight = getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
 
         float mWidth = 0;
         float mHeight = 0;
+        boolean wrapWidth = getLayoutPrefWidth() == WRAP_CONTENT;
+        boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
 
-        for (Widget child : getChildrenIterable()) {
-            if (child.getVisibility() == Visibility.GONE) continue;
-            child.onMeasure();
-        }
-        for (Widget child : getChildrenIterable()) {
-            if (child.getVisibility() == Visibility.GONE || child == slideContent) continue;
+        boolean overlap = getOverlayMode() == OverlayMode.OVERLAPPING;
+        boolean measureFront = frontContent != null;
+        boolean measureBack = backContent != null;
 
-            if (wrapWidth) {
-                if (child.getMeasureWidth() == MATCH_PARENT) {
-                    float mW = Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth());
-                    if (mW > mWidth) {
-                        mWidth = mW;
+        float mFrontWidth = 0;
+        float mFrontHeight = 0;
+
+        if (measureFront) {
+            if (overlap && !isShown() && !isAnimating()) {
+                measureFront = false;
+            } else {
+                frontContent.onMeasure();
+                mFrontWidth = getDefWidth(frontContent);
+                mFrontHeight = getDefHeight(frontContent);
+                if (getOverlayMode() == OverlayMode.SPLIT) {
+                    if (isSlideHorizontal()) {
+                        if (mFrontWidth != MATCH_PARENT) mFrontWidth = lerp(0, mFrontWidth);
+                    } else {
+                        if (mFrontHeight != MATCH_PARENT) mFrontHeight = lerp(0, mFrontHeight);
                     }
-                } else if (child.getMeasureWidth() > mWidth) {
-                    mWidth = child.getMeasureWidth();
-                }
-            }
-            if (wrapHeight) {
-                if (child.getMeasureHeight() == MATCH_PARENT) {
-                    float mH = Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight());
-                    if (mH > mHeight) {
-                        mHeight = mH;
-                    }
-                } else if (child.getMeasureHeight() > mHeight) {
-                    mHeight = child.getMeasureHeight();
                 }
             }
         }
 
-        if (wrapWidth && slideContent != null) {
-            float mW;
-            if (slideContent.getMeasureWidth() == MATCH_PARENT) {
-                mW = Math.min(slideContent.getMeasureWidth(), slideContent.getLayoutMaxWidth());
+        if (measureBack) {
+            if (overlap && isShown() && !isAnimating()) {
+                measureBack = false;
             } else {
-                mW = slideContent.getMeasureWidth();
-            }
-            if (isSlideHorizontal()) {
-                mWidth += lerp(0, mW);
-            } else if (mW > mWidth) {
-                mWidth = mW;
-            }
-        }
-
-        if (wrapHeight && slideContent != null) {
-            float mH;
-            if (slideContent.getMeasureHeight() == MATCH_PARENT) {
-                mH = Math.min(slideContent.getMeasureHeight(), slideContent.getLayoutMaxHeight());
-            } else {
-                mH = slideContent.getMeasureHeight();
-            }
-            if (isSlideVertical()) {
-                mHeight += lerp(0, mH);
-            } else if (mH > mHeight) {
-                mHeight = mH;
+                backContent.onMeasure();
             }
         }
 
         if (wrapWidth) {
+            if (measureFront && measureBack) {
+                if (getOverlayMode() == OverlayMode.SPLIT && isSlideHorizontal()) {
+                    mWidth = mFrontWidth + getDefWidth(backContent);
+                } else {
+                    mWidth = Math.max(mFrontWidth, getDefWidth(backContent));
+                }
+            } else if (measureFront) {
+                mWidth = mFrontWidth;
+            } else if (measureBack) {
+                mWidth = getDefWidth(backContent);
+            }
             mWidth = Math.max(mWidth + extraWidth, getLayoutMinWidth());
         } else {
             mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
         }
+
         if (wrapHeight) {
+            if (measureFront && measureBack) {
+                if (getOverlayMode() == OverlayMode.SPLIT && isSlideVertical()) {
+                    mHeight = mFrontHeight + getDefHeight(backContent);
+                } else {
+                    mHeight = Math.max(mFrontHeight, getDefHeight(backContent));
+                }
+            } else if (measureFront) {
+                mHeight = mFrontHeight;
+            } else if (measureBack) {
+                mHeight = getDefHeight(backContent);
+            }
             mHeight = Math.max(mHeight + extraHeight, getLayoutMinHeight());
         } else {
             mHeight = Math.max(getLayoutPrefHeight(), getLayoutMinHeight());
         }
-
         setMeasure(mWidth, mHeight);
     }
 
@@ -168,112 +158,219 @@ public class Drawer extends Parent {
         float lWidth = getInWidth();
         float lHeight = getInHeight();
 
-        if (slideContent == null || isFloating() || lerpPos <= 0) {
-            for (Widget child : getChildrenIterable()) {
-                if (child.getVisibility() == Visibility.GONE) continue;
-                if (child == slideContent) {
-                    float sWidth = Math.min(Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth()), lWidth);
-                    float sHeight = Math.min(Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight()), lHeight);
-                    performLayoutContent(slideContent, sWidth, sHeight);
+        boolean layoutFront = frontContent != null;
+        boolean layoutBack = backContent != null;
+        float mFrontWidth = 0;
+        float mFrontHeight = 0;
+
+        if (layoutFront && layoutBack) {
+            if (getOverlayMode() == OverlayMode.SPLIT) {
+                if (isSlideHorizontal()) {
+                    layoutHorizontal();
                 } else {
-                    performSingleLayoutConstraints(getInWidth(), getInHeight(), getInX(), getInY(), child
-                            , verticalAlign, horizontalAlign);
+                    layoutVertical();
                 }
-            }
-        } else {
-            float slw = Math.min(slideContent.getMeasureWidth(), slideContent.getLayoutMaxWidth());
-            float slh = Math.min(slideContent.getMeasureHeight(), slideContent.getLayoutMaxHeight());
-            float cw = 0;
-            float ch = 0;
-            float screenW = 0;
-            float screenH = 0;
-            for (Widget child : getChildrenIterable()) {
-                if (child.getVisibility() == Visibility.GONE || slideContent == child) continue;
-                cw = Math.max(cw, Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth()));
-                ch = Math.max(ch, Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight()));
-            }
-            if (isSlideHorizontal()) {
-                if (cw == MATCH_PARENT && slw == MATCH_PARENT) {
-                    slw = lWidth * 0.5f;
-                } else if (slw == MATCH_PARENT) {
-                    slw = lWidth - cw;
-                } else if (slw + cw > lWidth) {
-                    slw = slw / (slw + cw) * lWidth;
+            } else if (getOverlayMode() == OverlayMode.OVERLAPPING) {
+                if (!isShown() || isAnimating()) {
+                    layoutBack();
                 }
-                screenW = lerp(0, slw);
-                cw = lWidth - screenW;
+                if (isShown() || isAnimating()) {
+                    layoutFront();
+                }
             } else {
-                if (ch == MATCH_PARENT && slh == MATCH_PARENT) {
-                    slh = lHeight * 0.5f;
-                } else if (slh == MATCH_PARENT) {
-                    slh = lHeight - ch;
-                } else if (slh + ch > lHeight) {
-                    slh = slh / (slh + ch) * lHeight;
-                }
-                screenH = lerp(0, slh);
-                ch = lHeight - screenH;
+                layoutBack();
+                layoutFront();
             }
-            cw = Math.min(cw, lWidth);
-            ch = Math.min(ch, lHeight);
-            slw = Math.min(slw, lWidth);
-            slh = Math.min(slh, lHeight);
-            for (Widget child : getChildrenIterable()) {
-                if (child.getVisibility() == Visibility.GONE) continue;
-                if (child == slideContent) {
-                    performLayoutContent(slideContent, slw, slh);
-                } else {
-                    performSingleLayoutConstraints(cw, ch, screenW, screenH, child
-                            , verticalAlign, horizontalAlign);
-                }
-            }
+        } else if (layoutFront) {
+            layoutFront();
+        } else if (layoutBack) {
+            layoutBack();
         }
     }
 
-    private float lerp(float hide, float show) {
-        float t = Interpolation.fade.apply(lerpPos);
-        return hide * (1 - t) + show * t;
-    }
-
-    private void performLayoutContent(Widget child, float childWidth, float childHeight) {
+    private void layoutBack() {
         float lx = getInX();
         float ly = getInY();
         float lWidth = getInWidth();
         float lHeight = getInHeight();
-        child.onLayout(childWidth, childHeight);
 
-        float xPos = off(lx, lx + lWidth, child.getLayoutWidth(), horizontalAlign);
-        float yPos = off(ly, ly + lHeight, child.getLayoutHeight(), verticalAlign);
+        performSingleLayoutConstraints(lWidth, lHeight, lx, ly, backContent, getVerticalAlign(), getHorizontalAlign());
+    }
+
+    private void layoutFront() {
+        float lx = getInX();
+        float ly = getInY();
+        float lWidth = getInWidth();
+        float lHeight = getInHeight();
+
+        float fw = Math.min(getDefWidth(frontContent), lWidth);
+        float fh = Math.min(getDefHeight(frontContent), lHeight);
+
+        frontContent.onLayout(fw, fh);
         if (getSlidePosition() == Position.LEFT) {
-            child.setLayoutPosition(getInX() + lerp(-childWidth, 0), yPos);
+            float fyPos = off(ly, ly + lHeight, frontContent.getLayoutHeight(), verticalAlign);
+            frontContent.setLayoutPosition(lx + lerp(-fw, 0), fyPos);
         } else if (getSlidePosition() == Position.RIGHT) {
-            child.setLayoutPosition(getInX() + getInWidth() + lerp(0, -childWidth), yPos);
+            float fyPos = off(ly, ly + lHeight, frontContent.getLayoutHeight(), verticalAlign);
+            frontContent.setLayoutPosition(lx + lWidth - lerp(0, fw), fyPos);
         } else if (getSlidePosition() == Position.TOP) {
-            child.setLayoutPosition(xPos, getInY() + lerp(-childHeight, 0));
-        } else if (getSlidePosition() == Position.BOTTOM) {
-            child.setLayoutPosition(xPos, getInY() + getInHeight() + lerp(0, -childHeight));
+            float fxPos = off(lx, lx + lWidth, frontContent.getLayoutWidth(), horizontalAlign);
+            frontContent.setLayoutPosition(fxPos, ly + lerp(-fh, 0));
+        } else {
+            float fxPos = off(lx, lx + lWidth, frontContent.getLayoutWidth(), horizontalAlign);
+            frontContent.setLayoutPosition(fxPos, ly + lHeight - lerp(0, fh));
         }
     }
 
-    @Override
-    public boolean onLayoutSingleChild(Widget child) {
-        if (!isFloating()) return false;
+    private void layoutHorizontal() {
+        float lx = getInX();
+        float ly = getInY();
+        float lWidth = getInWidth();
+        float lHeight = getInHeight();
 
-        if (child == slideContent) {
-            child.onMeasure();
-            float lWidth = getInWidth();
-            float lHeight = getInHeight();
-            float sWidth = Math.min(Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth()), lWidth);
-            float sHeight = Math.min(Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight()), lHeight);
-            performLayoutContent(child, sWidth, sHeight);
-            return true;
+        float bmin = backContent.getLayoutMinWidth();
+        float bpre = backContent.getMeasureWidth();
+        float bdef = bpre == MATCH_PARENT ? 0 : getDefWidth(backContent);
+        float bmax = backContent.getLayoutMaxWidth();
+        float bweight = backContent.getWeight();
+
+        float fmin = lerp(0, frontContent.getLayoutMinWidth());
+        float fpre = lerp(0, frontContent.getMeasureWidth());
+        float fdef = fpre == MATCH_PARENT ? 0 : lerp(0, getDefWidth(frontContent));
+        float fmax = lerp(0, frontContent.getLayoutMaxWidth() == MATCH_PARENT ? lWidth : frontContent.getLayoutMaxWidth());
+        float fweight = lerp(0, frontContent.getWeight());
+
+        float totalMinimum = bmin + fmin;
+        float totalDefined = bdef + fdef;
+        float minSpace = Math.min(totalMinimum, lWidth);
+        float defSpace = Math.min(totalDefined - totalMinimum, lWidth - minSpace);
+        float totalSpaceLeft = Math.max(lWidth - minSpace - defSpace, 0);
+        float totalWeight = bweight + fweight;
+
+        float bw = totalMinimum == 0 ? 0 : bmin / totalMinimum * minSpace;
+        float fw = totalMinimum == 0 ? 0 : fmin / totalMinimum * minSpace;
+        bw += totalDefined == 0 ? 0 : bdef / totalDefined * defSpace;
+        fw += totalDefined == 0 ? 0 : fdef / totalDefined * defSpace;
+        if (bpre == MATCH_PARENT && fpre == MATCH_PARENT) {
+            float db = totalWeight == 0 ? totalSpaceLeft * 0.5f : totalSpaceLeft / totalWeight * bweight;
+            float df = totalWeight == 0 ? totalSpaceLeft * 0.5f : totalSpaceLeft / totalWeight * fweight;
+            if (bw + db > bmax) {
+                df += (bw + db) - bmax;
+            }
+            if (fw + df > fmax) {
+                db += (fw + df) - fmax;
+            }
+            bw = Math.min(bmax, bw + db);
+            fw = Math.min(fmax, fw + df);
+        } else if (bpre == MATCH_PARENT) {
+            bw = Math.min(bw + totalSpaceLeft, bmax);
+        } else if (fpre == MATCH_PARENT) {
+            fw = Math.min(fw + totalSpaceLeft, fmax);
         }
-        if (getChildren().contains(child)) {
-            child.onMeasure();
-            performSingleLayoutConstraints(getInWidth(), getInHeight(), getInX(), getInY(), child
-                    , verticalAlign, horizontalAlign);
-            return true;
+        float bh = Math.min(getDefHeight(backContent), lHeight);
+        float fh = Math.min(getDefHeight(frontContent), lHeight);
+        float targetWidth = fw;
+        /*float targetWidth = lerp(0, fw);
+        if (bw < getDefWidth(backContent)) {
+            bw = Math.min(bmax, bw + (fw - targetWidth));
+        }*/
+
+        backContent.onLayout(bw, bh);
+        frontContent.onLayout(targetWidth, fh);
+
+        if (getSlidePosition() == Position.LEFT) {
+            float bxPos = off(lx + targetWidth, lx + lWidth, backContent.getLayoutWidth(), horizontalAlign);
+            float byPos = off(ly, ly + lHeight, backContent.getLayoutHeight(), verticalAlign);
+            backContent.setLayoutPosition(bxPos, byPos);
+
+            float fyPos = off(ly, ly + lHeight, frontContent.getLayoutHeight(), verticalAlign);
+            frontContent.setLayoutPosition(lx, fyPos);
+        } else {
+            float bxPos = off(lx, lx + lWidth - targetWidth, backContent.getLayoutWidth(), horizontalAlign);
+            float byPos = off(ly, ly + lHeight, backContent.getLayoutHeight(), verticalAlign);
+            backContent.setLayoutPosition(bxPos, byPos);
+
+            float fyPos = off(ly, ly + lHeight, frontContent.getLayoutHeight(), verticalAlign);
+            frontContent.setLayoutPosition(lx + lWidth - targetWidth, fyPos);
         }
-        return false;
+    }
+
+    private void layoutVertical() {
+        float lx = getInX();
+        float ly = getInY();
+        float lWidth = getInWidth();
+        float lHeight = getInHeight();
+
+        float bmin = backContent.getLayoutMinHeight();
+        float bpre = backContent.getMeasureHeight();
+        float bdef = bpre == MATCH_PARENT ? 0 : getDefHeight(backContent);
+        float bmax = backContent.getLayoutMaxHeight();
+        float fmin = frontContent.getLayoutMinHeight();
+        float fpre = frontContent.getMeasureHeight();
+        float fdef = fpre == MATCH_PARENT ? 0 : getDefHeight(frontContent);
+        float fmax = frontContent.getLayoutMaxHeight();
+        float bweight = backContent.getWeight();
+        float fweight = backContent.getWeight();
+
+        float totalMinimum = bmin + fmin;
+        float totalDefined = bdef + fdef;
+        float minSpace = Math.min(totalMinimum, lHeight);
+        float defSpace = Math.min(totalDefined - totalMinimum, lHeight - minSpace);
+        float totalSpaceLeft = Math.max(lHeight - minSpace - defSpace, 0);
+        float totalWeight = bweight + fweight;
+
+        float bh = totalMinimum == 0 ? 0 : bmin / totalMinimum * minSpace;
+        float fh = totalMinimum == 0 ? 0 : fmin / totalMinimum * minSpace;
+        bh += totalDefined == 0 ? 0 : bdef / totalDefined * defSpace;
+        fh += totalDefined == 0 ? 0 : fdef / totalDefined * defSpace;
+        if (bpre == MATCH_PARENT && fpre == MATCH_PARENT) {
+            float db = totalWeight == 0 ? totalSpaceLeft * 0.5f : totalSpaceLeft / totalWeight * bweight;
+            float df = totalWeight == 0 ? totalSpaceLeft * 0.5f : totalSpaceLeft / totalWeight * fweight;
+            if (bh + db > bmax) {
+                df += (bh + db) - bmax;
+            }
+            if (fh + df > fmax) {
+                db += (fh + df) - fmax;
+            }
+            bh = Math.min(bmax, bh + db);
+            fh = Math.min(fmax, fh + df);
+        } else if (bpre == MATCH_PARENT) {
+            bh = Math.min(bh + totalSpaceLeft, bmax);
+        } else if (fpre == MATCH_PARENT) {
+            fh = Math.min(fh + totalSpaceLeft, fmax);
+        }
+        float bw = Math.min(getDefWidth(backContent), lWidth);
+        float fw = Math.min(getDefWidth(frontContent), lWidth);
+        float targetHeight = lerp(0, fh);
+        if (bh < getDefHeight(backContent)) {
+            bh = Math.min(bmax, bh + (fh - targetHeight));
+        }
+
+        backContent.onLayout(bw, bh);
+        frontContent.onLayout(fw, fh);
+
+        if (getSlidePosition() == Position.TOP) {
+            float bxPos = off(lx, lx + lWidth, backContent.getLayoutWidth(), horizontalAlign);
+            float byPos = off(ly + targetHeight, ly + lHeight, backContent.getLayoutHeight(), verticalAlign);
+            backContent.setLayoutPosition(bxPos, byPos);
+
+            float fxPos = off(lx, lx + lWidth, frontContent.getLayoutWidth(), horizontalAlign);
+            frontContent.setLayoutPosition(fxPos, ly + lerp(-fh, 0));
+        } else {
+            float bxPos = off(lx, lx + lWidth, backContent.getLayoutWidth(), horizontalAlign);
+            float byPos = off(ly, ly + lHeight - targetHeight, backContent.getLayoutHeight(), verticalAlign);
+            backContent.setLayoutPosition(bxPos, byPos);
+
+            float fxPos = off(lx, lx + lWidth, frontContent.getLayoutWidth(), horizontalAlign);
+            frontContent.setLayoutPosition(fxPos, ly + lHeight - lerp(0, fh));
+        }
+    }
+
+    private float lerp(float hide, float show) {
+        if (lerpPos <= 0) return hide;
+        if (lerpPos >= 1) return show;
+        float t = Interpolation.fade.apply(lerpPos);
+        return hide * (1 - t) + show * t;
     }
 
     @Override
@@ -288,46 +385,32 @@ public class Drawer extends Parent {
 
         if (width <= 0 || height <= 0) return;
 
-        for (Widget child : getChildrenIterable()) {
-            if (child != getSlideContent() && child.getVisibility() == Visibility.VISIBLE) {
-                child.onDraw(graphics);
+        if (backContent != null && backContent.getVisibility() == Visibility.VISIBLE) {
+            if (getOverlayMode() != OverlayMode.OVERLAPPING || !isShown() || isAnimating()) {
+                backContent.onDraw(graphics);
             }
         }
-
-        if (getSlideContent() != null && getSlideContent().getVisibility() == Visibility.VISIBLE && lerpPos > 0) {
-            if (isBlockEvents() && Color.getAlpha(getBlockColor()) > 0) {
+        if (frontContent != null && frontContent.getVisibility() == Visibility.VISIBLE) {
+            if (isShown() || isAnimating()) {
                 graphics.setTransform2D(getTransform());
-                graphics.setColor(Color.multiplyColorAlpha(getBlockColor(), lerp(0, 1)));
-                graphics.drawRect(x, y, width, height, true);
+                if (isBlockEvents() && Color.getAlpha(getBlockColor()) > 0) {
+                    graphics.setColor(Color.multiplyColorAlpha(getBlockColor(), lerp(0, 1)));
+                    graphics.drawRect(x, y, width, height, true);
+                }
+                if (isAnimating()) {
+                    graphics.pushClip(getBackgroundShape());
+                }
+                frontContent.onDraw(graphics);
+                if (isAnimating()) {
+                    graphics.popClip();
+                }
             }
-            boolean clip = (lerpPos != 0 && lerpPos != 1)
-                    && (getActivity() != null && getParent() != getActivity().getScene());
-
-            graphics.setTransform2D(getTransform());
-            if (clip) graphics.pushClip(getBackgroundShape());
-            getSlideContent().onDraw(graphics);
-            if (clip) graphics.popClip();
         }
-    }
-
-    @Override
-    public void add(Widget child) {
-        super.add(child);
-    }
-
-    @Override
-    public void add(Widget... children) {
-        super.add(children);
-    }
-
-    @Override
-    public void add(List<Widget> children) {
-        super.add(children);
     }
 
     @Override
     protected boolean detachChild(Widget child) {
-        if (child == slideContent) {
+        if (child == backContent || child == frontContent) {
             return false;
         }
         return super.detachChild(child);
@@ -341,15 +424,13 @@ public class Drawer extends Parent {
                 || !contains(x, y)) {
             return null;
         }
-        if (isShown() && getSlideContent() != null) {
-            Widget found = getSlideContent().findByPosition(x, y, includeDisabled);
+        if (isShown() && frontContent != null) {
+            Widget found = frontContent.findByPosition(x, y, includeDisabled);
             if (found != null) return found;
         }
-        if (!isBlockEvents() || !isShown()) {
-            for (Widget child : getChildrenIterableReverse()) {
-                Widget found = child.findByPosition(x, y, includeDisabled);
-                if (found != null) return found;
-            }
+        if ((!isBlockEvents() || getOverlayMode() == OverlayMode.SPLIT || !isShown()) && backContent != null) {
+            Widget found = backContent.findByPosition(x, y, includeDisabled);
+            if (found != null) return found;
         }
         return this;
     }
@@ -357,29 +438,66 @@ public class Drawer extends Parent {
     @Override
     public void pointer(PointerEvent event) {
         super.pointer(event);
-        if (isShown() && isAutoClose() && !event.isConsumed() && event.getPointerID() == 1
+        if (isShown()
+                && getOverlayMode() != OverlayMode.SPLIT
+                && isAutoClose() && !event.isConsumed() && event.getPointerID() == 1
                 && event.getType() == PointerEvent.RELEASED && event.getSource() == this) {
             hide();
         }
     }
 
-    public Widget getSlideContent() {
-        return slideContent;
+    public OverlayMode getOverlayMode() {
+        return overlayMode;
     }
 
-    public void setSlideContent(Widget slideContent) {
-        if (this.slideContent != slideContent) {
-            Widget old = this.slideContent;
-            if (slideContent != null) {
-                add(slideContent);
-                if (slideContent.getParent() == this) {
-                    this.slideContent = slideContent;
+    public void setOverlayMode(OverlayMode overlayMode) {
+        if (overlayMode == null) overlayMode = OverlayMode.FLOATING;
+
+        if (this.overlayMode != overlayMode) {
+            this.overlayMode = overlayMode;
+            invalidate(true);
+        }
+    }
+
+    public Widget getBackContent() {
+        return backContent;
+    }
+
+    public void setBackContent(Widget backContent) {
+        if (this.backContent != backContent) {
+            Widget old = this.backContent;
+            if (backContent != null) {
+                add(backContent);
+                if (backContent.getParent() == this) {
+                    this.backContent = backContent;
                     if (old != null) {
                         remove(old);
                     }
                 }
             } else {
-                this.slideContent = null;
+                this.backContent = null;
+                remove(old);
+            }
+        }
+    }
+
+    public Widget getFrontContent() {
+        return frontContent;
+    }
+
+    public void setFrontContent(Widget frontContent) {
+        if (this.frontContent != frontContent) {
+            Widget old = this.frontContent;
+            if (frontContent != null) {
+                add(frontContent);
+                if (frontContent.getParent() == this) {
+                    this.frontContent = frontContent;
+                    if (old != null) {
+                        remove(old);
+                    }
+                }
+            } else {
+                this.frontContent = null;
                 remove(old);
             }
         }
@@ -470,19 +588,12 @@ public class Drawer extends Parent {
         this.autoClose = autoClose;
     }
 
-    public boolean isFloating() {
-        return floating;
-    }
-
-    public void setFloating(boolean floating) {
-        if (this.floating != floating) {
-            this.floating = floating;
-            invalidate(true);
-        }
-    }
-
     public boolean isShown() {
         return shown;
+    }
+
+    public boolean isAnimating() {
+        return (shown && lerpPos < 1) || (!shown && lerpPos > 0);
     }
 
     private void setShown(boolean shown) {

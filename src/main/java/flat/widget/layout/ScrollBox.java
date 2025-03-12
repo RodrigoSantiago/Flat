@@ -6,6 +6,7 @@ import flat.math.Vector2;
 import flat.uxml.Controller;
 import flat.uxml.UXChildren;
 import flat.widget.Widget;
+import flat.widget.enums.Policy;
 import flat.widget.enums.Visibility;
 import flat.widget.value.HorizontalScrollBar;
 import flat.widget.value.VerticalScrollBar;
@@ -59,24 +60,22 @@ public class ScrollBox extends Scrollable {
             if (child == getVerticalBar() || child == getHorizontalBar()) continue;
 
             if (wrapWidth) {
-                if (child.getMeasureWidth() == MATCH_PARENT) {
-                    float mW = Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth());
-                    if (mW > mWidth) {
-                        mWidth = mW;
-                    }
-                } else if (child.getMeasureWidth() > mWidth) {
-                    mWidth = child.getMeasureWidth();
-                }
+                mWidth = Math.max(mWidth, getDefWidth(child));
             }
             if (wrapHeight) {
-                if (child.getMeasureHeight() == MATCH_PARENT) {
-                    float mH = Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight());
-                    if (mH > mHeight) {
-                        mHeight = mH;
-                    }
-                } else if (child.getMeasureHeight() > mHeight) {
-                    mHeight = child.getMeasureHeight();
-                }
+                mHeight = Math.max(mHeight, Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight()));
+            }
+        }
+
+        if (wrapWidth) {
+            if (getVerticalBar() != null && !isFloatingBars() && getVerticalPolicy() == Policy.ALWAYS) {
+                mWidth += Math.min(getVerticalBar().getMeasureWidth(), getVerticalBar().getLayoutMaxWidth());
+            }
+        }
+
+        if (wrapHeight) {
+            if (getHorizontalBar() != null && !isFloatingBars() && getHorizontalPolicy() == Policy.ALWAYS) {
+                mHeight += Math.min(getHorizontalBar().getMeasureHeight(), getHorizontalBar().getLayoutMaxHeight());
             }
         }
 
@@ -128,7 +127,7 @@ public class ScrollBox extends Scrollable {
             if (child.getMeasureWidth() == MATCH_PARENT) {
                 childWidth = Math.min(child.getLayoutMaxWidth(), getTotalDimensionX());
             } else {
-                childWidth = Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth());
+                childWidth = getDefWidth(child);
             }
 
             float childHeight;
@@ -173,8 +172,9 @@ public class ScrollBox extends Scrollable {
         drawBackground(graphics);
         drawRipple(graphics);
 
-        if (getInWidth() <= 0 || getInHeight() <= 0) return;
+        if (getOutWidth() <= 0 || getOutHeight() <= 0) return;
 
+        graphics.setTransform2D(getTransform());
         graphics.pushClip(getBackgroundShape());
         for (Widget child : getChildrenIterable()) {
             if (child.getVisibility() == Visibility.VISIBLE &&

@@ -7,54 +7,60 @@
             <ToolItem icon="/default/icons/sun.svg" style="dense primary" menu-text="Light" on-action="setThemeLight"/>
             <ToolItem icon="/default/icons/night.svg" style="dense primary" menu-text="Dark" on-action="setThemeDark"/>
         </ToolBar>
-        <Drawer id="mainDrawer" width="MATCH_PARENT" height="MATCH_PARENT" block-events="true" auto-close="true">
-            <LinearBox slide-content="true" direction="vertical" width="250dp" height="MATCH_PARENT" style="drawer-menu">
-                <MenuItem text="Buttons" on-action="setPageButtons" style="navigation"/>
-                <MenuItem text="Chips" on-action="setPageChips" style="navigation"/>
-                <MenuItem text="Forms" on-action="setPageForms" style="navigation"/>
-                <MenuItem text="Progress" on-action="setPageProgress" style="navigation"/>
-                <MenuItem text="Text" on-action="setPageText" style="navigation"/>
-                <MenuItem text="Tabs" on-action="setPageTabs" style="navigation"/>
-                <MenuItem text="Toolbars" on-action="setPageToolbars" style="navigation"/>
+        <Drawer id="mainDrawer" width="MATCH_PARENT" height="MATCH_PARENT" block-events="true" auto-close="false" overlay-mode="FLOATING">
+            <LinearBox front-content="true" direction="vertical" width="250dp" height="MATCH_PARENT" style="drawer-menu">
+                <MenuItem text="Buttons" on-action="setTabButtons" style="navigation"/>
+                <MenuItem text="Chips" on-action="setTabChips" style="navigation"/>
+                <MenuItem text="Forms" on-action="setTabForms" style="navigation"/>
+                <MenuItem text="Progress" on-action="setTabProgress" style="navigation"/>
+                <MenuItem text="Text" on-action="setTabText" style="navigation"/>
+                <MenuItem text="Tabs" on-action="setTabTabs" style="navigation"/>
+                <MenuItem text="Toolbars" on-action="setTabToolbars" style="navigation"/>
+                <MenuItem text="Scrolls" on-action="setTabScrolls" style="navigation"/>
             </LinearBox>
-            <LinearBox direction="vertical" width="MATCH_PARENT" height="MATCH_PARENT">
-                <Tab width="MATCH_PARENT" height="MATCH_PARENT" id="mainTab" hidden-pages="true">
-                    <Page text="Buttons" id="pageButtons">
+            <LinearBox back-content="true" direction="vertical" width="MATCH_PARENT" height="MATCH_PARENT">
+                <TabView width="MATCH_PARENT" height="MATCH_PARENT" id="mainTab" hidden-tabs="true">
+                    <Tab text="Buttons" id="tabButtons">
                         <Frame width="MATCH_PARENT" height="MATCH_PARENT">
                             <Include src="buttons.uxml"/>
                         </Frame>
-                    </Page>
-                    <Page text="Chips" id="pageChips">
+                    </Tab>
+                    <Tab text="Chips" id="tabChips">
                         <Frame width="MATCH_PARENT" height="MATCH_PARENT">
                             <Include src="chips.uxml"/>
                         </Frame>
-                    </Page>
-                    <Page text="Forms" id="pageForms">
+                    </Tab>
+                    <Tab text="Forms" id="tabForms">
                         <Frame width="MATCH_PARENT" height="MATCH_PARENT">
                             <Include src="forms.uxml"/>
                         </Frame>
-                    </Page>
-                    <Page text="Progress" id="pageProgress">
+                    </Tab>
+                    <Tab text="Progress" id="tabProgress">
                         <Frame width="MATCH_PARENT" height="MATCH_PARENT">
                             <Include src="progress.uxml"/>
                         </Frame>
-                    </Page>
-                    <Page text="Text" id="pageText">
+                    </Tab>
+                    <Tab text="Text" id="tabText">
                         <Frame width="MATCH_PARENT" height="MATCH_PARENT">
                             <Include src="text.uxml"/>
                         </Frame>
-                    </Page>
-                    <Page text="Tabs" id="pageTabs">
+                    </Tab>
+                    <Tab text="Tabs" id="tabTabs">
                         <Frame width="MATCH_PARENT" height="MATCH_PARENT">
                             <Include src="tabs.uxml"/>
                         </Frame>
-                    </Page>
-                    <Page text="Toolbars" id="pageToolbars">
+                    </Tab>
+                    <Tab text="Toolbars" id="tabToolbars">
                         <Frame width="MATCH_PARENT" height="MATCH_PARENT">
                             <Include src="toolbars.uxml"/>
                         </Frame>
-                    </Page>
-                </Tab>
+                    </Tab>
+                    <Tab text="Scrolls" id="tabScrolls">
+                        <Frame width="MATCH_PARENT" height="MATCH_PARENT">
+                            <Include src="scrolls.uxml"/>
+                        </Frame>
+                    </Tab>
+                </TabView>
             </LinearBox>
         </Drawer>
     </LinearBox>
