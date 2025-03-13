@@ -199,10 +199,9 @@ public class MainController extends Controller {
         }
     }
 
-    @Flat Drawer testDrawer;
     @Flat
     public void toggleTestDrawer() {
-        testDrawer.toggle();
+
     }
 
     float t = 0;

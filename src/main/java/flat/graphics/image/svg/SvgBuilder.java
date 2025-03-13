@@ -32,6 +32,29 @@ public class SvgBuilder {
         return null;
     }
 
+    private SvgNode loadRecursive(SvgNode parent, UXNodeElement node) {
+        // Factory
+        SvgNode svgNode = genNode(parent, node);
+        if (svgNode == null) {
+            return null;
+        }
+
+        // Children
+        SvgChildren children = new SvgChildren();
+        for (var svgChild : node.getChildren()) {
+            SvgNode child = loadRecursive(svgNode, svgChild);
+            if (child != null) {
+                children.add(child, svgChild.getAttributes());
+            }
+        }
+        svgNode.applyChildren(children);
+
+        // Link
+        // svgNode.add(new UXBuilder.KeyValue(id, widget));
+
+        return svgNode;
+    }
+
     private Paint readFill(UXNodeElement node) {
         UXNodeAttribute fillNode = node.getAttributes().get("fill");
         int col = fillNode == null ? 0 : fillNode.getValue().asColor(null);
@@ -135,29 +158,6 @@ public class SvgBuilder {
 
         }
         return null;
-    }
-
-    private SvgNode loadRecursive(SvgNode parent, UXNodeElement node) {
-        // Factory
-        SvgNode svgNode = genNode(parent, node);
-        if (svgNode == null) {
-            return null;
-        }
-
-        // Children
-        SvgChildren children = new SvgChildren();
-        for (var svgChild : node.getChildren()) {
-            SvgNode child = loadRecursive(svgNode, svgChild);
-            if (child != null) {
-                children.add(child, svgChild.getAttributes());
-            }
-        }
-        svgNode.applyChildren(children);
-
-        // Link
-        // svgNode.add(new UXBuilder.KeyValue(id, widget));
-
-        return svgNode;
     }
 
     private void readStyle(UXNodeElement node) {

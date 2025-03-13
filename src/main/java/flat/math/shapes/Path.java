@@ -269,8 +269,8 @@ public class Path implements PathConsumer, Shape, Cloneable {
     }
 
     public void append(PathIterator path, boolean connect) {
+        float[] coords = new float[6];
         while (!path.isDone()) {
-            float[] coords = new float[6];
             switch (path.currentSegment(coords)) {
                 case PathIterator.SEG_MOVETO:
                     if (!connect || typeSize == 0) {

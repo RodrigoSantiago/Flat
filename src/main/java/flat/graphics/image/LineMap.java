@@ -17,10 +17,12 @@ public class LineMap implements Drawable {
 
     private final SvgRoot root;
     private final Rectangle view;
+    private final boolean needClipping;
 
     public LineMap(SvgRoot root) {
         this.root = root;
         this.view = root.getView();
+        needClipping = !root.getView().contains(root.getBoundingBox());
     }
 
     @Override
@@ -46,6 +48,9 @@ public class LineMap implements Drawable {
                 .scale(width / view.width, height / view.height);
 
         graphics.setTransform2D(base);
+        if (needClipping) {
+            graphics.pushClip(view);
+        }
 
         Paint paint = graphics.getPaint();
         Stroke stroke = graphics.getStroker();
@@ -76,7 +81,9 @@ public class LineMap implements Drawable {
                 graphics.setTransform2D(base);
             }
         }
-        graphics.setTransform2D(affine);
+        if (needClipping) {
+            graphics.popClip();
+        }
     }
 
     @Override

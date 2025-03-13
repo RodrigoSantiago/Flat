@@ -22,7 +22,7 @@ public class SVG {
     //      Render styles
     //---------------------------
     public static native void SetAntiAlias(long context, boolean aa);
-    public static native void SetStroke(long context, float width, int cap, int join, float mitter, float[] dash, float dashPhase);
+    public static native void SetStroke(long context, float width, int cap, int join, float miter, float[] dash, float dashPhase);
     public static native void SetPaintColor(long context, int color);
     public static native void SetPaintLinearGradient(long context, float x1, float y1, float x2, float y2, int count, float[] data, int cycleMethod);
     public static native void SetPaintRadialGradient(long context, float x1, float y1, float fx, float fy, float rIn, float rOut, int count, float[] data, int cycleMethod);
