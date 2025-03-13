@@ -200,6 +200,24 @@ public final class Color {
         return rgbaToColor(rInt, gInt, bInt, aInt);
     }
 
+    public static int multiply(int rgba1, int rgba2) {
+        float rFlt1 = ((rgba1 >> 24) & 0xFF) / 255f;
+        float gFlt1 = ((rgba1 >> 16) & 0xFF) / 255f;
+        float bFlt1 = ((rgba1 >> 8) & 0xFF) / 255f;
+        float aFlt1 = (rgba1 & 0xFF) / 255f;
+
+        float rFlt2 = ((rgba2 >> 24) & 0xFF) / 255f * rFlt1;
+        float gFlt2 = ((rgba2 >> 16) & 0xFF) / 255f * gFlt1;
+        float bFlt2 = ((rgba2 >> 8) & 0xFF) / 255f * bFlt1;
+        float aFlt2 = (rgba2 & 0xFF) / 255f * aFlt1;
+
+        int rInt = Math.round(rFlt2 * 255);
+        int gInt = Math.round(gFlt2 * 255);
+        int bInt = Math.round(bFlt2 * 255);
+        int aInt = Math.round(aFlt2 * 255);
+        return rgbaToColor(rInt, gInt, bInt, aInt);
+    }
+
     public static int multiplyColorAlpha(int rgba, float opacity) {
         int rInt = ((rgba >> 24) & 0xFF);
         int gInt = ((rgba >> 16) & 0xFF);

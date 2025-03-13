@@ -330,6 +330,10 @@ public class Path implements PathConsumer, Shape, Cloneable {
         }
     }
 
+    public int length() {
+        return pointSize / 2;
+    }
+
     public void transform(Affine t) {
         optimized = false;
 

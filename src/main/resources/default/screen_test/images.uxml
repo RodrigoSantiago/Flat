@@ -54,6 +54,10 @@
                 <ImageView image="/default/pacman.png" width="172dp" height="128dp" image-scale="STRETCH" image-filter="LINEAR"/>
                 <ImageView margin-left="16dp" image="/default/pacman.png" width="172dp" height="128dp" image-scale="STRETCH" image-filter="NEAREST"/>
             </LinearBox>
+            <Label text="Complex SVG" style="subtitle" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <ImageView image="/default/dragon.svg" width="300dp" height="600dp" image-scale="STRETCH" image-filter="LINEAR"/>
+            </LinearBox>
         </LinearBox>
     </LinearBox>
 </Scene>

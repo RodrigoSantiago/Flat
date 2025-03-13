@@ -7,6 +7,7 @@ import flat.graphics.context.enums.*;
 import flat.graphics.context.paints.ColorPaint;
 import flat.math.Affine;
 import flat.math.Mathf;
+import flat.math.shapes.Path;
 import flat.math.shapes.PathIterator;
 import flat.math.shapes.Shape;
 import flat.math.shapes.Stroke;
@@ -1445,6 +1446,14 @@ public class Context {
         checkDisposed();
 
         if (shape.isEmpty()) return;
+        if (shape instanceof Path p && p.length() > 3000) {
+            if (fill && p.length() < 60000) {
+                svgDrawShapeOptimized(p);
+                return;
+            } else {
+                return; // too much - sorry
+            }
+        }
 
         PathIterator pi = shape.pathIterator(null);
         svgBegin();
@@ -1462,6 +1471,33 @@ public class Context {
                     break;
                 case PathIterator.SEG_CUBICTO:
                     SVG.CubicTo(svgId, data[0], data[1], data[2], data[3], data[4], data[5]);
+                    break;
+                case PathIterator.SEG_CLOSE:
+                    SVG.Close(svgId);
+                    break;
+            }
+            pi.next();
+        }
+        SVG.PathEnd(svgId);
+    }
+
+    private void svgDrawShapeOptimized(Path p) {
+        PathIterator pi = p.pathIterator(null);
+        svgBegin();
+        SVG.PathBegin(svgId, SVGEnums.SVG_FILL, pi.windingRule());
+        while (!pi.isDone()) {
+            switch (pi.currentSegment(data)) {
+                case PathIterator.SEG_MOVETO:
+                    SVG.MoveTo(svgId, data[0], data[1]);
+                    break;
+                case PathIterator.SEG_LINETO:
+                    SVG.LineTo(svgId, data[0], data[1]);
+                    break;
+                case PathIterator.SEG_QUADTO:
+                    SVG.LineTo(svgId, data[2], data[3]);
+                    break;
+                case PathIterator.SEG_CUBICTO:
+                    SVG.LineTo(svgId, data[4], data[5]);
                     break;
                 case PathIterator.SEG_CLOSE:
                     SVG.Close(svgId);

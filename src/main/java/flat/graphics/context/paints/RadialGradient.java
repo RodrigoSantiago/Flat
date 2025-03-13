@@ -38,6 +38,11 @@ public class RadialGradient extends Paint {
         SVG.SetPaintRadialGradient(svgId, x, y, fx, fy, radiusIn, radiusOut, stopCount, data, cycleMethod.ordinal());
     }
 
+    @Override
+    public Paint multiply(int color) {
+        return this; // todo - implement
+    }
+
     public float getX() {
         return x;
     }

@@ -34,6 +34,11 @@ public class LinearGradient extends Paint {
         SVG.SetPaintLinearGradient(svgId, x1, y1, x2, y2, stopCount, data, cycleMethod.ordinal());
     }
 
+    @Override
+    public Paint multiply(int color) {
+        return this; // todo - implement
+    }
+
     public float getX1() {
         return x1;
     }

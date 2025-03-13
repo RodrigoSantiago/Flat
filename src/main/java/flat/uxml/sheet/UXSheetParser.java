@@ -621,7 +621,15 @@ public class UXSheetParser {
     private UXValue parseHex(String source) {
         try {
             int color;
-            if (source.length() == 7) {
+            if (source.length() == 4) {
+                int r = Integer.parseInt(source.substring(1, 2), 16);
+                int g = Integer.parseInt(source.substring(2, 3), 16);
+                int b = Integer.parseInt(source.substring(3, 4), 16);
+                r = r | (r << 4);
+                g = g | (g << 4);
+                b = b | (b << 4);
+                color = Color.rgbToColor(r, g, b);
+            } else if (source.length() == 7) {
                 color = (int) ((Long.parseLong(source.substring(1), 16) << 8) | 0x000000FF);
             } else if (source.length() == 9) {
                 color = (int) Long.parseLong(source.substring(1), 16);

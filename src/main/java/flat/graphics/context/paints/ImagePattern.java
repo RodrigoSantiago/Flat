@@ -55,9 +55,30 @@ public class ImagePattern extends Paint {
         };
     }
 
+    public ImagePattern(ImagePattern other, int color) {
+        this.cycleMethod = other.cycleMethod;
+        this.data = other.data;
+        this.transform = other.transform;
+        this.color = color;
+        this.texture = other.texture;
+        this.dsty2 = other.dsty2;
+        this.dstx2 = other.dstx2;
+        this.dsty1 = other.dsty1;
+        this.dstx1 = other.dstx1;
+        this.srcy2 = other.srcy2;
+        this.srcx2 = other.srcx2;
+        this.srcy1 = other.srcy1;
+        this.srcx1 = other.srcx1;
+    }
+
     @Override
     protected void setInternal(long svgId)  {
         SVG.SetPaintImage(svgId, getTextureId(texture), color, data, cycleMethod.ordinal());
+    }
+
+    @Override
+    public Paint multiply(int color) {
+        return color == -1 ? this : new ImagePattern(this, Color.multiply(this.color, color));
     }
 
     public float getSrcX1() {
