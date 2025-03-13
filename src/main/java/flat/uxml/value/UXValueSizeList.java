@@ -3,13 +3,16 @@ package flat.uxml.value;
 import flat.uxml.UXTheme;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 public class UXValueSizeList extends UXValue {
 
     private final UXValue[] values;
+    private final String name;
 
-    public UXValueSizeList(UXValue[] values) {
+    public UXValueSizeList(String name, UXValue[] values) {
         this.values = values;
+        this.name = name;
     }
 
     public boolean containsVariable() {
@@ -25,6 +28,10 @@ public class UXValueSizeList extends UXValue {
         return false;
     }
 
+    public String getName() {
+        return name;
+    }
+
     @Override
     UXValue internalMix(UXValue uxValue, float t, UXTheme theme, float dpi) {
         if (getSourceType(theme) != uxValue.getSourceType(theme)) {
@@ -36,7 +43,7 @@ public class UXValueSizeList extends UXValue {
                 for (int i = 0; i < mix.length; i++) {
                     mix[i] = uxValues[i].mix(values[i], t, theme, dpi);
                 }
-                return new UXValueSizeList(mix);
+                return new UXValueSizeList(getName(), mix);
             }
             return super.internalMix(uxValue, t, theme, dpi);
         }
@@ -62,16 +69,16 @@ public class UXValueSizeList extends UXValue {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         UXValueSizeList that = (UXValueSizeList) o;
-        return Arrays.equals(values, that.values);
+        return Objects.equals(name, that.name) && Arrays.equals(values, that.values);
     }
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(values);
+        return Objects.hash(name, Arrays.hashCode(values));
     }
 
     @Override
     public String toString() {
-        return "Size LIST : " + Arrays.toString(values);
+        return "List : " + name + " " + Arrays.toString(values);
     }
 }

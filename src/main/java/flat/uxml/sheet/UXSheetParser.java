@@ -29,6 +29,7 @@ public class UXSheetParser {
     private static final int LOCALE     = 13;  // @[a-zA-Z]
 
     private static final List<String> pseudo = List.of("enabled", "focused", "activated", "hovered", "pressed", "dragged", "undefined", "disabled");
+    private static final List<String> lists = List.of("list", "translate", "scale", "rotate", "skewX", "skewX", "matrix");
     private static final char[][] measureChar = {{'c', 'm'}, {'d', 'p'}, {'i', 'n'}, {'m', 'm'}, {'p', 'x', 'c'}, {'s', 'p'}};
 
     private int pos;
@@ -318,7 +319,7 @@ public class UXSheetParser {
                 } else if (state == 2 && currentType == CPARAM) {
                     return parseFunction(functionName, values);
 
-                } else if (state == 1) {
+                } else if (state == 1 || state == 2) {
                     state = 2;
                     var val = parseValue();
                     if (val != null) values.add(val);
@@ -645,10 +646,7 @@ public class UXSheetParser {
     }
 
     private UXValue parseFunction(String source, List<UXValue> values) {
-        if (source.equalsIgnoreCase("list")) {
-            return new UXValueSizeList(values.toArray(new UXValue[0]));
-
-        } else if (source.equalsIgnoreCase("alpha")) {
+        if (source.equalsIgnoreCase("alpha")) {
             if (values.size() >= 2 && values.get(1) instanceof UXValueNumber v0) {
                 float alpha = Math.min(1, Math.max(0, v0.asNumber(null)));
                 if (values.get(0) instanceof UXValueVariable variable) {
@@ -724,7 +722,10 @@ public class UXSheetParser {
                 }
             }
             return new UXValueFont(family, weight, posture, style);
-        } else {
+        } else if (lists.contains(source)) {
+            return new UXValueSizeList(source, values.toArray(new UXValue[0]));
+
+        }  else {
             log(ErroLog.INVALID_FUNCTION);
         }
         return new UXValue();

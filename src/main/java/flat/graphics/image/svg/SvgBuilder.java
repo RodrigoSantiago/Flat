@@ -4,6 +4,7 @@ import flat.graphics.context.Paint;
 import flat.graphics.context.enums.LineCap;
 import flat.graphics.context.enums.LineJoin;
 import flat.graphics.context.paints.ColorPaint;
+import flat.math.Affine;
 import flat.math.shapes.Path;
 import flat.math.shapes.Rectangle;
 import flat.math.shapes.Shape;
@@ -12,10 +13,12 @@ import flat.uxml.node.UXNodeAttribute;
 import flat.uxml.node.UXNodeElement;
 import flat.uxml.sheet.UXSheetParser;
 import flat.uxml.value.UXValue;
+import flat.uxml.value.UXValueSizeList;
 
 public class SvgBuilder {
 
     private final UXNodeElement root;
+    private UXSheetParser innerParser;
 
     public SvgBuilder(UXNodeElement root) {
         this.root = root;
@@ -121,12 +124,12 @@ public class SvgBuilder {
             return new SvgRoot(null, readSize(node, "width"), readSize(node, "height"), readViewBox(node));
 
         } else if ("path".equals(node.getName())) {
-            return new SvgShape(parent, null, null,
+            return new SvgShape(parent, null, readTransform(node),
                     readPath(node), readFill(node), readStroke(node),
                     readStrokeWidth(node), readStrokeMiter(node), readStrokeCap(node), readStrokeJoin(node));
 
         } else if ("g".equals(node.getName())) {
-            return new SvgGroup(parent, null, null,
+            return new SvgGroup(parent, null, readTransform(node),
                     readFill(node), readStroke(node),
                     readStrokeWidth(node), readStrokeMiter(node), readStrokeCap(node), readStrokeJoin(node));
 
@@ -157,8 +160,6 @@ public class SvgBuilder {
         return svgNode;
     }
 
-    UXSheetParser innerParser;
-
     private void readStyle(UXNodeElement node) {
         UXNodeAttribute pathNode = node.getAttributes().get("style");
         String val = pathNode == null ? "" : pathNode.getValue().asString(null);
@@ -180,5 +181,46 @@ public class SvgBuilder {
             } catch (Exception ignored) {
             }
         }
+    }
+
+    private Affine readTransform(UXNodeElement node) {
+        UXNodeAttribute pathNode = node.getAttributes().get("transform");
+        if (pathNode != null && pathNode.getValue() != null) {
+            UXValue val = pathNode.getValue().getSource(null);
+            if (val instanceof UXValueSizeList list) {
+                if ("translate".equalsIgnoreCase(list.getName())) {
+                    float[] numbers = list.asSizeList(null, 160);
+                    if (numbers.length == 2) {
+                        return new Affine().translate(numbers[0], numbers[1]);
+                    }
+                } else if ("scale".equalsIgnoreCase(list.getName())) {
+                    float[] numbers = list.asSizeList(null, 160);
+                    if (numbers.length == 2) {
+                        return new Affine().scale(numbers[0], numbers[1]);
+                    }
+                } else if ("rotate".equalsIgnoreCase(list.getName())) {
+                    float[] numbers = list.asSizeList(null, 160);
+                    if (numbers.length == 1) {
+                        return new Affine().rotate(numbers[0]);
+                    }
+                } else if ("skewX".equalsIgnoreCase(list.getName())) {
+                    float[] numbers = list.asSizeList(null, 160);
+                    if (numbers.length == 1) {
+                        return new Affine().shear(numbers[0], 0);
+                    }
+                } else if ("skewY".equalsIgnoreCase(list.getName())) {
+                    float[] numbers = list.asSizeList(null, 160);
+                    if (numbers.length == 1) {
+                        return new Affine().shear(0, numbers[0]);
+                    }
+                } else if ("matrix".equalsIgnoreCase(list.getName())) {
+                    float[] numbers = list.asSizeList(null, 160);
+                    if (numbers.length == 6) {
+                        return new Affine(numbers[0], numbers[1], numbers[2], numbers[3], numbers[4], numbers[5]);
+                    }
+                }
+            }
+        }
+        return null;
     }
 }

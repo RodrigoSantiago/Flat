@@ -592,7 +592,7 @@ public class UXSheetParserTest {
                 "function-incomplete", new UXValueFont("something", null, null, null)
         );
         assertStyle(reader.getStyles(), "style-list", null,
-                "list-on", new UXValueSizeList(new UXValue[] {
+                "list-on", new UXValueSizeList("list", new UXValue[] {
                         new UXValueNumber(1), new UXValueSizeDp(2),
                         new UXValueSizeMp(), new UXValueNumber(0),
                         new UXValueText("10"), new UXValueVariable("$var"), new UXValueLocale("@locale")
@@ -784,6 +784,36 @@ public class UXSheetParserTest {
                 UXSheetParser.ErroLog.UNEXPECTED_END_OF_TOKENS, 7,
                 UXSheetParser.ErroLog.INVALID_INCLUDE, 7
         );
+    }
+
+    @Test
+    public void listFunctions() {
+        UXSheetParser reader = new UXSheetParser(
+                """
+                style-list {
+                    list-on : list(1, 2dp, MATCH_PARENT, WRAP_CONTENT, "10", $var, @locale);
+                    list-space : list(1 2dp MATCH_PARENT WRAP_CONTENT "10" $var @locale);
+                }
+                """
+        );
+        reader.parse();
+
+        assertEquals(1, reader.getStyles().size());
+        assertStyle(reader.getStyles(), "style-list", null,
+                "list-on", new UXValueSizeList("list", new UXValue[] {
+                        new UXValueNumber(1), new UXValueSizeDp(2),
+                        new UXValueSizeMp(), new UXValueNumber(0),
+                        new UXValueText("10"), new UXValueVariable("$var"), new UXValueLocale("@locale")
+                }),
+                "list-space", new UXValueSizeList("list", new UXValue[] {
+                        new UXValueNumber(1), new UXValueSizeDp(2),
+                        new UXValueSizeMp(), new UXValueNumber(0),
+                        new UXValueText("10"), new UXValueVariable("$var"), new UXValueLocale("@locale")
+                })
+        );
+
+        assertEquals(0, reader.getVariables().size());
+        assertLog(reader.getLogs());
     }
 
     @Test
