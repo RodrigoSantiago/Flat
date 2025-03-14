@@ -116,5 +116,5 @@ tool-item.navigation {
 }
 
 tool-item.overflow {
-    icon : '/default/icons/baseline-more_vert.svg';
+    icon : '/default/icons/dots-vertical.svg';
 }

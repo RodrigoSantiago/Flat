@@ -33,7 +33,7 @@
             </LinearBox>
             <Label text="Bottom" style="subtitle" margin-left="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <TabView height="70dp" style="primary" background-color="$card-color" width="MATCH_PARENT" pages-vertical-position="bottom">
+                <TabView height="70dp" style="primary" background-color="$card-color" width="MATCH_PARENT" tabs-vertical-position="bottom">
                     <Tab text="Tab 1" style="complete-left primary" icon="/default/icons/star.svg"/>
                     <Tab text="Tab 2" style="complete-left primary" icon="/default/icons/star.svg"/>
                     <Tab text="Tab 3" style="complete-left primary" icon="/default/icons/star.svg"/>
@@ -73,7 +73,7 @@
             </LinearBox>
             <Label text="Bottom" style="subtitle" margin-left="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <TabView height="48dp" style="dense primary" background-color="$card-color" width="MATCH_PARENT" pages-vertical-position="bottom">
+                <TabView height="48dp" style="dense primary" background-color="$card-color" width="MATCH_PARENT" tabs-vertical-position="bottom">
                     <Tab text="Tab 1" style="complete-left dense primary" icon="/default/icons/star.svg"/>
                     <Tab text="Tab 2" style="complete-left dense primary" icon="/default/icons/star.svg"/>
                     <Tab text="Tab 3" style="complete-left dense primary" icon="/default/icons/star.svg"/>
@@ -116,7 +116,7 @@
             </LinearBox>
             <Label text="Bottom" style="subtitle" margin-left="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <TabView height="70dp" style="primary" background-color="$card-color" width="MATCH_PARENT" pages-vertical-position="bottom">
+                <TabView height="70dp" style="primary" background-color="$card-color" width="MATCH_PARENT" tabs-vertical-position="bottom">
                     <Tab text="Tab 1" style="complete-left primary" icon="/default/icons/star.svg"/>
                     <Tab text="Tab 2" style="complete-left primary" icon="/default/icons/star.svg"/>
                     <Tab text="Tab 3" style="complete-left primary" icon="/default/icons/star.svg"/>
@@ -156,7 +156,7 @@
             </LinearBox>
             <Label text="Bottom" style="subtitle" margin-left="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <TabView height="48dp" style="dense primary" background-color="$card-color" width="MATCH_PARENT" pages-vertical-position="bottom">
+                <TabView height="48dp" style="dense primary" background-color="$card-color" width="MATCH_PARENT" tabs-vertical-position="bottom">
                     <Tab text="Tab 1" style="complete-left dense primary" icon="/default/icons/star.svg"/>
                     <Tab text="Tab 2" style="complete-left dense primary" icon="/default/icons/star.svg"/>
                     <Tab text="Tab 3" style="complete-left dense primary" icon="/default/icons/star.svg"/>

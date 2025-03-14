@@ -26,7 +26,7 @@ slider : slider.primary {
 }
 
 slider.primary {
-    icon : '/default/icons/switch-shape.svg';
+    icon : '/default/icons/circle.svg';
     icon-color : $primary-color;
     line-color : $disabled-color;
     line-filled-color : $primary-color-active;

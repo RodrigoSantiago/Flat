@@ -18,6 +18,7 @@ import flat.widget.value.VerticalScrollBar;
 import flat.window.Activity;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Menu extends Stage {
@@ -41,6 +42,7 @@ public class Menu extends Stage {
     private final ShowAnimation showAnimation = new ShowAnimation();
 
     private final ArrayList<Widget> orderedList = new ArrayList<>();
+    private final List<Widget> unmodifiableItemsList = Collections.unmodifiableList(orderedList);
     private float[] tempSize;
 
     private Menu parentMenu;
@@ -215,6 +217,10 @@ public class Menu extends Stage {
             orderedList.remove(child);
             orderedList.add(index, child);
         }
+    }
+
+    public List<Widget> getUnmodifiableItemsList() {
+        return unmodifiableItemsList;
     }
 
     @Override

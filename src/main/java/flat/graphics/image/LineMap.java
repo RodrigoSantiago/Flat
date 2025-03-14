@@ -84,6 +84,7 @@ public class LineMap implements Drawable {
         if (needClipping) {
             graphics.popClip();
         }
+        graphics.setTransform2D(affine);
     }
 
     @Override

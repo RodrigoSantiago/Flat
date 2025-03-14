@@ -316,7 +316,7 @@ public class ToolBar extends Parent {
 
     private boolean hasExtraContextMenuItems() {
         if (getContextMenu() != null) {
-            if (getContextMenu().getChildrenIterable().size() - menuItems.size() > 0) {
+            if (getContextMenu().getUnmodifiableItemsList().size() - menuItems.size() - (divider == null ? 0 : 1) > 0) {
                 return true;
             }
         }
@@ -357,6 +357,7 @@ public class ToolBar extends Parent {
                 menuItem = new MenuItem();
                 menuItem.addStyle("tool-bar-menu-item");
                 menuItem.setActionListener(this::onToolItemAction);
+                menuItems.add(menuItem);
                 if (divider == null && hasExtraContextMenuItems()) {
                     divider = new Divider();
                     overflowMenu.addDivider(divider);
@@ -364,7 +365,6 @@ public class ToolBar extends Parent {
                 }
                 overflowMenu.addMenuItem(menuItem);
                 overflowMenu.moveChild(menuItem, 0);
-                menuItems.add(menuItem);
             }
             ToolItem item = toolItems.get(toolItems.size() - 1 - i);
             menuItem.setEnabled(item.isEnabled());
