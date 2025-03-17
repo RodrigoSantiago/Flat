@@ -45,17 +45,8 @@ public final class Frame extends ContextObject {
         return GL.FrameBufferGetStatus(GLEnums.FB_FRAMEBUFFER) == GLEnums.FS_FRAMEBUFFER_COMPLETE;
     }
 
-    public void attachTexture(int index, Texture2D texture) {
-
-    }
-
-    public void attachTexture(int index, Cubemap cubemap) {
-
-    }
-
     public void attach(int index, Render render) {
         if (index == DEPTH_STENCIL) {
-            // TODO - PODE ESTAR INCORRETO
             attach(DEPTH, render);
             attach(STENCIL, render);
         } else {
@@ -72,7 +63,6 @@ public final class Frame extends ContextObject {
 
     public void attach(int index, Texture2D texture, int level) {
         if (index == DEPTH_STENCIL) {
-            // TODO - PODE ESTAR INCORRETO
             attach(DEPTH, texture, level);
             attach(STENCIL, texture, level);
         } else {
@@ -83,13 +73,28 @@ public final class Frame extends ContextObject {
         }
     }
 
+    public void attach(int index, TextureMultisample2D texture, int level) {
+        if (index == DEPTH_STENCIL) {
+            attach(DEPTH, texture, level);
+            attach(STENCIL, texture, level);
+        } else {
+            boundCheck();
+
+            Layer layer = layers[index + 2].set(texture, level);
+            GL.FrameBufferTextureMultisample(GLEnums.FB_FRAMEBUFFER, getAttacEnum(index), layer.getInternalID());
+        }
+    }
+
+    public void attach(int index, TextureMultisample2D texture) {
+        attach(index, texture, 0);
+    }
+
     public void attach(int index, Cubemap cubemap, CubeFace face) {
         attach(index, cubemap, face, 0);
     }
 
     public void attach(int index, Cubemap cubemap, CubeFace face, int level) {
         if (index == DEPTH_STENCIL) {
-            // TODO - PODE ESTAR INCORRETO
             attach(DEPTH, cubemap, face, level);
             attach(STENCIL, cubemap, face, level);
         } else {
@@ -103,7 +108,6 @@ public final class Frame extends ContextObject {
 
     public void detach(int index) {
         if (index == DEPTH_STENCIL) {
-            // TODO - PODE ESTAR INCORRETO
             detach(DEPTH);
             detach(STENCIL);
         } else {
@@ -131,8 +135,7 @@ public final class Frame extends ContextObject {
                         index == DEPTH_STENCIL ? GLEnums.FA_DEPTH_STENCIL_ATTACHMENT : GLEnums.FA_COLOR_ATTACHMENT0 + index;
     }
 
-    class Layer {
-
+    private static class Layer {
         private boolean render;
         private int internalID;
         private int internalEnum;
@@ -159,6 +162,15 @@ public final class Frame extends ContextObject {
         Layer set(Texture2D source, int level) {
             internalID = source.getInternalID();
             internalEnum = GLEnums.TT_TEXTURE_2D;
+            internalLevel = level;
+            render = false;
+            return this;
+        }
+
+        // Texture2D
+        Layer set(TextureMultisample2D source, int level) {
+            internalID = source.getInternalID();
+            internalEnum = GLEnums.TB_TEXTURE_2D_MULTISAMPLE;
             internalLevel = level;
             render = false;
             return this;

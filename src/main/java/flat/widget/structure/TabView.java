@@ -310,7 +310,7 @@ public class TabView extends Parent {
                     && getLineWidth() > 0 && selectedTab.getLayoutWidth() > 0) {
                 float lineW = Math.min(width, Math.min(height, getLineWidth()));
                 graphics.setTransform2D(getTransform());
-                graphics.setStroker(new BasicStroke(lineW, getLineCap().ordinal(), 0));
+                graphics.setStroke(new BasicStroke(lineW, getLineCap().ordinal(), 0));
                 graphics.setColor(getLineColor());
                 float ty = tabsVerticalPosition == VerticalPosition.TOP
                         ? selectedTab.getLayoutY() + selectedTab.getLayoutHeight() - lineW * 0.5f

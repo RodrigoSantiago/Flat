@@ -89,7 +89,7 @@ public class ProgressBar extends Widget {
 
         float lineWidth = Math.min(getLineWidth(), Math.min(width, height));
         graphics.setTransform2D(getTransform());
-        graphics.setStroker(new BasicStroke(lineWidth, getLineMode() == ProgressLineMode.REGULAR ? 0 : 1, 0));
+        graphics.setStroke(new BasicStroke(lineWidth, getLineMode() == ProgressLineMode.REGULAR ? 0 : 1, 0));
 
         float lineRadius = lineWidth * 0.5f;
 

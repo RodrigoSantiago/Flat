@@ -56,7 +56,8 @@
             </LinearBox>
             <Label text="Complex SVG" style="subtitle" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <ImageView image="/default/dragon.svg" width="300dp" height="600dp" image-scale="STRETCH" image-filter="LINEAR"/>
+                <ImageView image="/default/dragon.svg" width="300dp" height="600dp" image-scale="STRETCH" image-filter="LINEAR"
+                           on-pointer="optimize"/>
             </LinearBox>
         </LinearBox>
     </LinearBox>

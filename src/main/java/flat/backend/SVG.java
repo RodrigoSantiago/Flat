@@ -64,7 +64,7 @@ public class SVG {
     public static native long FontLoad(byte[] data, float size, int sdf);
     public static native void FontUnload(long font);
 
-    public static native long FontPaintCreate(long font);
+    public static native long FontPaintCreate(long context, long font);
     public static native void FontPaintDestroy(long fontPaint);
     public static native long FontPaintGetAtlas(long fontPaint, int[] size);
 

@@ -116,7 +116,7 @@ public class ScrollBar extends Widget {
         graphics.setTransform2D(getTransform());
         if (Color.getAlpha(getLineColor()) > 0) {
             graphics.setColor(getLineColor());
-            graphics.setStroker(new BasicStroke(lineW, getLineCap().ordinal(), 0));
+            graphics.setStroke(new BasicStroke(lineW, getLineCap().ordinal(), 0));
             if (empty) {
                 if (getLineCap() == LineCap.ROUND) {
                     graphics.drawEllipse(x1 - lineW * 0.5f, y1 - lineW * 0.5f, lineW, lineW, true);
@@ -130,7 +130,7 @@ public class ScrollBar extends Widget {
 
         if (Color.getAlpha(getLineFilledColor()) > 0) {
             graphics.setColor(getLineFilledColor());
-            graphics.setStroker(new BasicStroke(lineFilledW, getLineCap().ordinal(), 0));
+            graphics.setStroke(new BasicStroke(lineFilledW, getLineCap().ordinal(), 0));
             if (emptyH) {
                 if (getLineCap() == LineCap.ROUND) {
                     graphics.drawEllipse(hx1 - lineFilledW * 0.5f, hy1 - lineFilledW * 0.5f, lineFilledW, lineFilledW, true);

@@ -71,11 +71,6 @@ public class Context {
     private BufferObject[] buffers = new BufferObject[8];
     private Texture[] textures = new Texture[32];
 
-    private boolean unbindShaderProgram, unbindVertexArray, unbindRender;
-    private boolean[] unbindBuffer = new boolean[8];
-    private boolean[] unbindTexture = new boolean[32];
-    private BufferObject preVertexElementBuffer;
-
     // ---- SVG ---- //
     private boolean svgMode;
     private boolean svgAntialias;
@@ -241,7 +236,6 @@ public class Context {
         checkDisposed();
 
         hardFlush();
-        refreshBinds();
         bindFrame(null);
 
         for (Runnable disposeTask : disposeTasks) {
@@ -270,7 +264,6 @@ public class Context {
         checkDisposed();
 
         svgEnd();
-        refreshBinds();
     }
 
     public void hardFlush() {
@@ -891,6 +884,19 @@ public class Context {
         bindFrame(null);
     }
 
+    public void blitFrameNow(Frame source, Frame target,
+            int srcX, int srcY, int srcW, int srcH,
+            int dstX, int dstY, int dstW, int dstH, BlitMask blitMask, MagFilter filter) {
+        checkDisposed();
+
+        GL.FrameBufferBind(GLEnums.FB_DRAW_FRAMEBUFFER, target == null ? 0 : target.getInternalID());
+        GL.FrameBufferBind(GLEnums.FB_READ_FRAMEBUFFER, source == null ? 0 : source.getInternalID());
+
+        GL.FrameBufferBlit(srcX, srcY, srcW, srcH, dstX, dstY, dstW, dstH, blitMask.getInternalEnum(), filter.getInternalEnum());
+
+        GL.FrameBufferBind(GLEnums.FB_FRAMEBUFFER, frame == null ? 0 : frame.getInternalID());
+    }
+
     public Frame getBoundFrame() {
         return frame;
     }
@@ -908,18 +914,24 @@ public class Context {
         return activeTexture;
     }
 
-    boolean isTextureBound(Texture texture) {
+    int indexOfTextureBound(Texture texture) {
         for (int i = 0; i < textures.length; i++) {
-            if (textures[i] == texture) return true;
+            if (textures[i] == texture) return i;
         }
-        return false;
+        return -1;
     }
 
     void bindTexture(Texture texture, int index) {
         checkDisposed();
 
+        if (texture != null) {
+            int prevIndex = indexOfTextureBound(texture);
+            if (prevIndex != -1 && prevIndex != index) {
+                texture.end();
+            }
+        }
+
         setActiveTexture(index);
-        unbindTexture[index] = false;
         if (textures[index] != texture) {
             svgEnd();
             if (texture == null) {
@@ -933,10 +945,6 @@ public class Context {
     }
 
     void unbindTexture(int index) {
-        unbindTexture[index] = true;
-    }
-
-    public void clearBindTexture(int index) {
         bindTexture(null, index);
     }
 
@@ -944,21 +952,27 @@ public class Context {
         return textures[index];
     }
 
-    boolean isBufferBound(BufferObject buffer) {
+    int indexOfBufferBound(BufferObject buffer) {
         for (int i = 0; i < buffers.length; i++) {
-            if (buffers[i] == buffer) return true;
+            if (buffers[i] == buffer) return i;
         }
-        return false;
+        return -1;
     }
 
     void bindBuffer(BufferObject buffer, BufferType type) {
         checkDisposed();
-
         int index = type.ordinal();
-        unbindBuffer[index] = false;
+
+        if (buffer != null) {
+            int prevIndex = indexOfBufferBound(buffer);
+            if (prevIndex != -1 && prevIndex != index) {
+                buffer.end();
+            }
+        }
+
         if (buffers[index] != buffer) {
             svgEnd();
-            clearBindVertexArray();
+
             if (buffer == null) {
                 GL.BufferBind(type.getInternalEnum(), 0);
             } else {
@@ -973,11 +987,6 @@ public class Context {
     }
 
     void unbindBuffer(BufferType type) {
-        int index = type.ordinal();
-        unbindBuffer[index] = true;
-    }
-
-    public void clearBindBuffer(BufferType type) {
         bindBuffer(null, type);
     }
 
@@ -992,34 +1001,23 @@ public class Context {
     void bindVertexArray(VertexArray array) {
         checkDisposed();
 
-        unbindVertexArray = false;
         if (vertexArray != array) {
             svgEnd();
 
-            // unbind element buffer is always false
-            final int i = BufferType.Element.ordinal();
-
             if (array == null) {
                 GL.VertexArrayBind(0);
-                buffers[i] = preVertexElementBuffer;
-                preVertexElementBuffer = null;
+                buffers[BufferType.Element.ordinal()] = null;
+                GL.BufferBind(BufferType.Element.getInternalEnum(), 0);
             } else {
                 GL.VertexArrayBind(array.getInternalID());
-                preVertexElementBuffer = buffers[i];
-                buffers[i] = array.getElementBuffer();
+                buffers[BufferType.Element.ordinal()] = array.getElementBuffer();
             }
             vertexArray = array;
         }
     }
 
     void unbindVertexArray() {
-        unbindVertexArray = true;
-    }
-
-    private void clearBindVertexArray() {
-        if (unbindVertexArray) {
-            bindVertexArray(null);
-        }
+        bindVertexArray(null);
     }
 
     public VertexArray getBoundVertexArray() {
@@ -1033,26 +1031,23 @@ public class Context {
     void bindShaderProgram(ShaderProgram program) {
         checkDisposed();
 
-        unbindShaderProgram = false;
         if (shaderProgram != program) {
             svgEnd();
+
             if (program == null) {
                 GL.ProgramUse(0);
             } else {
                 GL.ProgramUse(program.getInternalID());
             }
             shaderProgram = program;
+            if (shaderProgram != null) {
+                shaderProgram.onBound();
+            }
         }
     }
 
     void unbindShaderProgram() {
-        unbindShaderProgram = true;
-    }
-
-    private void clearBindShaderProgram() {
-        if (unbindShaderProgram) {
-            bindShaderProgram(null);
-        }
+        bindShaderProgram(null);
     }
 
     public ShaderProgram getBoundShaderProgram() {
@@ -1066,9 +1061,9 @@ public class Context {
     void bindRender(Render render) {
         checkDisposed();
 
-        unbindRender = false;
         if (this.render != render) {
             svgEnd();
+
             if (render == null) {
                 GL.RenderBufferBind(0);
             } else {
@@ -1079,42 +1074,11 @@ public class Context {
     }
 
     void unbindRender() {
-        unbindRender = true;
-    }
-
-    private void clearBindRender() {
-        if (unbindRender) {
-            bindRender(null);
-        }
+        bindRender(null);
     }
 
     public Render getBoundRender() {
         return render;
-    }
-
-    private void refreshBinds() {
-        clearBindShaderProgram();
-        clearBindVertexArray();
-        clearBindRender();
-        refreshBufferBinds();
-        refreshTextureBinds();
-    }
-
-    private void refreshBufferBinds() {
-        BufferType[] values = BufferType.values();
-        for (int i = 0; i < unbindBuffer.length; i++) {
-            if (unbindBuffer[i]) {
-                clearBindBuffer(values[i]);
-            }
-        }
-    }
-
-    private void refreshTextureBinds() {
-        for (int i = 0; i < unbindTexture.length; i++) {
-            if (unbindTexture[i]) {
-                clearBindTexture(i);
-            }
-        }
     }
 
     // ---- SVG ---- //
@@ -1122,9 +1086,16 @@ public class Context {
         checkDisposed();
 
         if (!svgMode) {
-            refreshBinds();
-
             svgMode = true;
+
+            buffers[BufferType.Array.ordinal()] = null;
+            buffers[BufferType.Uniform.ordinal()] = null;
+            vertexArray = null;
+            shaderProgram = null;
+            textures[0] = null;
+            textures[1] = null;
+            activeTexture = 0;
+
             SVG.BeginFrame(svgId, viewWidth, viewHeight);
 
             svgApplyTransformGradients();
@@ -1184,32 +1155,11 @@ public class Context {
 
         GL.SetColorMask(rMask, gMask, bMask, aMask);
 
-        BufferObject uniformBuffer = buffers[BufferType.Uniform.ordinal()];
-        GL.BufferBind(BufferType.Uniform.getInternalEnum(), uniformBuffer == null ? 0 : uniformBuffer.getInternalID());
-
-        BufferObject arrayBuffer = buffers[BufferType.Array.ordinal()];
-        if (arrayBuffer != null)
-            GL.BufferBind(BufferType.Array.getInternalEnum(), arrayBuffer.getInternalID());
-
-        if (vertexArray != null)
-            GL.VertexArrayBind(vertexArray.getInternalID());
-
-        if (shaderProgram != null)
-            GL.ProgramUse(shaderProgram.getInternalID());
-
         GL.SetPixelStore(GLEnums.PS_UNPACK_ALIGNMENT, pixelUnpackAlignment);
         GL.SetPixelStore(GLEnums.PS_UNPACK_ROW_LENGTH, pixelUnpackRowLength);
         GL.SetPixelStore(GLEnums.PS_UNPACK_SKIP_PIXELS, pixelUnpackSkipPixels);
         GL.SetPixelStore(GLEnums.PS_UNPACK_SKIP_ROWS, pixelUnpackSkipRows);
 
-        if (textures[1] != null) {
-            GL.SetActiveTexture(1);
-            GL.TextureBind(textures[1].getInternalType(), textures[1].getInternalID());
-        }
-        if (textures[0] != null) {
-            GL.SetActiveTexture(0);
-            GL.TextureBind(textures[0].getInternalType(), textures[0].getInternalID());
-        }
         GL.SetActiveTexture(activeTexture);
     }
 
@@ -1354,22 +1304,22 @@ public class Context {
         return svgDashPhase;
     }
 
-    public void svgStroke(Stroke stroker) {
+    public void svgStroke(Stroke stroke) {
         checkDisposed();
 
-        if (svgStrokeWidth != stroker.getLineWidth() ||
-                svgLineCap != LineCap.values()[stroker.getEndCap()] ||
-                svgLineJoin != LineJoin.values()[stroker.getLineJoin()] ||
-                svgMiterLimit != stroker.getMiterLimit() ||
-                svgDashPhase != stroker.getDashPhase() ||
-                !Arrays.equals(svgDash, stroker.getDashArray())) {
+        if (svgStrokeWidth != stroke.getLineWidth() ||
+                svgLineCap != LineCap.values()[stroke.getEndCap()] ||
+                svgLineJoin != LineJoin.values()[stroke.getLineJoin()] ||
+                svgMiterLimit != stroke.getMiterLimit() ||
+                svgDashPhase != stroke.getDashPhase() ||
+                !Arrays.equals(svgDash, stroke.getDashArray())) {
 
-            svgStrokeWidth = stroker.getLineWidth();
-            svgLineCap = LineCap.values()[stroker.getEndCap()];
-            svgLineJoin = LineJoin.values()[stroker.getLineJoin()];
-            svgMiterLimit = stroker.getMiterLimit();
-            svgDashPhase = stroker.getDashPhase();
-            svgDash = stroker.getDashArray();
+            svgStrokeWidth = stroke.getLineWidth();
+            svgLineCap = LineCap.values()[stroke.getEndCap()];
+            svgLineJoin = LineJoin.values()[stroke.getLineJoin()];
+            svgMiterLimit = stroke.getMiterLimit();
+            svgDashPhase = stroke.getDashPhase();
+            svgDash = stroke.getDashArray();
 
             if (svgMode) {
                 SVG.SetStroke(svgId, svgStrokeWidth,
@@ -1446,14 +1396,6 @@ public class Context {
         checkDisposed();
 
         if (shape.isEmpty()) return;
-        if (shape instanceof Path p && p.length() > 3000) {
-            if (fill && p.length() < 60000) {
-                svgDrawShapeOptimized(p);
-                return;
-            } else {
-                return; // too much - sorry
-            }
-        }
 
         PathIterator pi = shape.pathIterator(null);
         svgBegin();
@@ -1481,7 +1423,7 @@ public class Context {
         SVG.PathEnd(svgId);
     }
 
-    private void svgDrawShapeOptimized(Path p) {
+    public void svgDrawShapeOptimized(Path p) {
         PathIterator pi = p.pathIterator(null);
         svgBegin();
         SVG.PathBegin(svgId, SVGEnums.SVG_FILL, pi.windingRule());
@@ -1494,9 +1436,12 @@ public class Context {
                     SVG.LineTo(svgId, data[0], data[1]);
                     break;
                 case PathIterator.SEG_QUADTO:
+                    SVG.LineTo(svgId, data[0], data[1]);
                     SVG.LineTo(svgId, data[2], data[3]);
                     break;
                 case PathIterator.SEG_CUBICTO:
+                    SVG.LineTo(svgId, data[0], data[1]);
+                    SVG.LineTo(svgId, data[2], data[3]);
                     SVG.LineTo(svgId, data[4], data[5]);
                     break;
                 case PathIterator.SEG_CLOSE:

@@ -143,7 +143,7 @@ public class Slider extends Widget {
 
         float lineWidth = Math.min(getLineWidth(), Math.min(width, height));
 
-        graphics.setStroker(new BasicStroke(lineWidth, getLineCap().ordinal(), 0));
+        graphics.setStroke(new BasicStroke(lineWidth, getLineCap().ordinal(), 0));
         if (hor) {
             graphics.setColor(getLineColor());
             graphics.drawLine(lineStart, ypos, lineEnd, ypos);

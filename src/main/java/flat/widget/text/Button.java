@@ -111,7 +111,7 @@ public class Button extends Label {
         if (!isIconClipCircle()) {
             getIcon().draw(graphics, x, y, width, height, getIconColor(), getIconImageFilter());
         } else if (getIcon() instanceof PixelMap pixelMap) {
-            var tex = pixelMap.readTexture(graphics.getContext(), getIconImageFilter());
+            var tex = pixelMap.getTexture(graphics.getContext(), getIconImageFilter());
             ImagePattern paint = new ImagePattern.Builder(tex, x, y, width, height)
                     .color(getIconColor())
                     .build();

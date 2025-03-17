@@ -267,7 +267,7 @@ public class Widget {
         if (borderOpacity > 0 && borderWidth > 0) {
             graphics.setTransform2D(getTransform());
             graphics.setColor(borderColor);
-            graphics.setStroker(new BasicStroke(borderWidth));
+            graphics.setStroke(new BasicStroke(borderWidth));
             graphics.drawRoundRect(
                     bg.x - b2, bg.y - b2, bg.width + b, bg.height + b,
                     bg.arcTop + b2, bg.arcRight + b2, bg.arcBottom + b2, bg.arcLeft + b2,

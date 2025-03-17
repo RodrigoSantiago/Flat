@@ -34,13 +34,17 @@ public final class Render extends ContextObject {
         getContext().unbindRender();
     }
 
-    public void setSize(int width, int height, PixelFormat format) {
+    public void setSize(int width, int height, int multisamples, PixelFormat format) {
         boundCheck();
 
         this.width = width;
         this.height = height;
         this.format = format;
-        GL.RenderBufferStorage(format.getInternalEnum(), width, height);
+        if (multisamples <= 0) {
+            GL.RenderBufferStorage(format.getInternalEnum(), width, height);
+        } else {
+            GL.RenderBufferStorageMultsample(format.getInternalEnum(), multisamples, width, height);
+        }
     }
 
     public int getWidth() {

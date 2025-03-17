@@ -37,7 +37,7 @@ public class VertexData {
         vertexArray.begin();
         vertices.begin(BufferType.Array);
         vertexArray.setAttributeEnabled(att, true);
-        vertexArray.setAttributePointer(att, false, type.getSize(), stride, AttributeType.FLOAT, offset);
+        vertexArray.setAttributePointer(att, type.getSize(), AttributeType.FLOAT, false, stride, offset);
         vertices.end();
         vertexArray.end();
     }

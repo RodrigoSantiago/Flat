@@ -264,7 +264,7 @@ public class TextArea extends Scrollable {
                 caretX += xpos;
             }
             context.setColor(getCaretColor());
-            context.setStroker(new BasicStroke(2));
+            context.setStroke(new BasicStroke(2));
             context.drawLine(
                     caretX, ypos + endCaret.getLine() * lineH,
                     caretX, ypos + (endCaret.getLine() + 1) * lineH);

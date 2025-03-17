@@ -2,6 +2,7 @@ package flat.graphics.context;
 
 import flat.backend.GL;
 import flat.backend.GLEnums;
+import flat.graphics.ImageTexture;
 import flat.graphics.context.enums.MagFilter;
 import flat.graphics.context.enums.MinFilter;
 import flat.graphics.context.enums.PixelFormat;
@@ -9,7 +10,7 @@ import flat.graphics.context.enums.WrapMode;
 
 import java.nio.Buffer;
 
-public final class Texture2D extends Texture {
+public final class Texture2D extends Texture implements ImageTexture {
 
     private final int textureId;
 
@@ -161,9 +162,14 @@ public final class Texture2D extends Texture {
     }
 
     private void dataBoundsCheck(int length, int width, int height) {
-        int required = width * height * PixelFormat.getPixelBytes(format);
+        int required = width * height * format.getPixelBytes();
         if (length < required) {
             throw new RuntimeException("The image data is too short. Provided : " + length + ", Required : " + required);
         }
+    }
+
+    @Override
+    public Texture2D getTexture(Context context) {
+        return context == this.getContext() ? this : null;
     }
 }

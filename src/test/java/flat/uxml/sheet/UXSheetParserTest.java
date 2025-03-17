@@ -563,7 +563,6 @@ public class UXSheetParserTest {
                     rgba-off : rgba(255, 128, 128, 128dp);
                 }
                 style-function {
-                    function-off : function("something");
                     function-incomplete : font("something";
                 }
                 style-list {
@@ -588,7 +587,6 @@ public class UXSheetParserTest {
                 "rgba-off", new UXValue()
         );
         assertStyle(reader.getStyles(), "style-function", null,
-                "function-off", new UXValue(),
                 "function-incomplete", new UXValueFont("something", null, null, null)
         );
         assertStyle(reader.getStyles(), "style-list", null,
@@ -602,12 +600,11 @@ public class UXSheetParserTest {
         assertEquals(0, reader.getVariables().size());
         assertLog(reader.getLogs(),
                 UXSheetParser.ErroLog.INVALID_COLOR, 2,
-                UXSheetParser.ErroLog.UNEXPECTED_TOKEN, 6,
+                UXSheetParser.ErroLog.INVALID_FONT, 6,
                 UXSheetParser.ErroLog.INVALID_FONT, 7,
                 UXSheetParser.ErroLog.INVALID_FONT, 7,
                 UXSheetParser.ErroLog.INVALID_COLOR, 11,
-                UXSheetParser.ErroLog.INVALID_FUNCTION, 14,
-                UXSheetParser.ErroLog.UNEXPECTED_END_OF_TOKENS, 15
+                UXSheetParser.ErroLog.UNEXPECTED_END_OF_TOKENS, 14
         );
     }
 
@@ -653,7 +650,7 @@ public class UXSheetParserTest {
                 """
                 style {
                     color : #FFFFFF;
-                    color-off : #FFF;
+                    color-off : #FF;
                 }
                 """
         );

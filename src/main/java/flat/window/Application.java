@@ -3,6 +3,7 @@ package flat.window;
 import flat.backend.FlatLibrary;
 import flat.backend.WL;
 import flat.exception.FlatException;
+import flat.graphics.context.Context;
 import flat.resources.ResourcesManager;
 import flat.window.event.EventData;
 
@@ -301,6 +302,13 @@ public class Application {
         autoFrameLimit = System.nanoTime();
 
         WL.HandleEvents(0);
+    }
+
+    public static Context getCurrentContext() {
+        if (assignedWindow != null) {
+            return assignedWindow.getContext();
+        }
+        return null;
     }
 
     public static void setVsync(int vsync) {

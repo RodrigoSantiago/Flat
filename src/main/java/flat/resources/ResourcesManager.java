@@ -138,10 +138,11 @@ public class ResourcesManager {
     }
 
     public boolean isFolder(String pathName) {
+        pathName = pathName.startsWith("/") ? pathName : "/" + pathName;
+
         if (zip != null) {
             try {
-                ZipEntry zipEntry = zip.getEntry(pathName);
-                return zipEntry.isDirectory();
+                return (zip.getEntry(pathName.endsWith("/") ? pathName : pathName + "/") != null);
             } catch (Exception ignored) {
             }
         }
@@ -155,7 +156,7 @@ public class ResourcesManager {
         }
 
         try {
-            URL dirURL = Flat.class.getResource(pathName.startsWith("/") ? pathName : "/" + pathName);
+            URL dirURL = Flat.class.getResource(pathName);
 
             if (dirURL != null && dirURL.getProtocol().equals("file")) {
                 return new File(dirURL.toURI()).isDirectory();
@@ -165,7 +166,8 @@ public class ResourcesManager {
                 String jarPath = dirURL.getPath().substring(5, dirURL.getPath().indexOf("!"));
 
                 try (JarFile jar = new JarFile(URLDecoder.decode(jarPath, StandardCharsets.UTF_8))) {
-                    return jar.getEntry(pathName).isDirectory();
+                    pathName = pathName.substring(1);
+                    return jar.getEntry(pathName.endsWith("/") ? pathName : pathName + "/") != null;
                 }
             }
         } catch (Exception ignored) {
@@ -241,6 +243,7 @@ public class ResourcesManager {
 
                     try (JarFile jar = new JarFile(URLDecoder.decode(jarPath, StandardCharsets.UTF_8))) {
                         Enumeration<JarEntry> entries = jar.entries();
+                        pathName = pathName.startsWith("/") ? pathName.substring(1) : pathName;
                         while (entries.hasMoreElements()) {
                             JarEntry entry = entries.nextElement();
                             String name = entry.getName();

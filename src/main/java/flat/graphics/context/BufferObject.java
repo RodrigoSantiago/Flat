@@ -3,6 +3,7 @@ package flat.graphics.context;
 import flat.backend.GL;
 import flat.graphics.context.enums.BufferType;
 import flat.graphics.context.enums.UsageType;
+import flat.window.Application;
 
 import java.nio.Buffer;
 
@@ -29,7 +30,7 @@ public final class BufferObject extends ContextObject {
 
     @Override
     protected boolean isBound() {
-        return getContext().isBufferBound(this);
+        return getContext().indexOfBufferBound(this) != -1;
     }
 
     public void begin(BufferType bufferType) {

@@ -137,7 +137,7 @@ public class SwitchToggle extends Widget {
 
         float lineW = Math.min(getLineWidth(), Math.min(height, width));
         if (lineW > 0 && Color.getAlpha(getLineColor()) > 0) {
-            graphics.setStroker(new BasicStroke(lineW, getLineCap().ordinal(), 0));
+            graphics.setStroke(new BasicStroke(lineW, getLineCap().ordinal(), 0));
             graphics.setColor(getLineColor());
             graphics.drawLine(cx1, cy1, cx2, cy2);
         }

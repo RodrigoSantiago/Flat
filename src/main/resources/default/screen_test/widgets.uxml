@@ -4,6 +4,7 @@
                  title="Flat.UI Showcase" subtitle="Material" style="double-dense primary">
             <ToolItem navigation-item="true" style="navigation dense primary"/>
             <ToolItem overflow-item="true" style="overflow dense primary"/>
+            <ToolItem icon="/default/icons/bug.svg" style="dense primary" menu-text="Dark" on-action="toggleDebugMode"/>
             <ToolItem icon="/default/icons/sun.svg" style="dense primary" menu-text="Light" on-action="setThemeLight"/>
             <ToolItem icon="/default/icons/night.svg" style="dense primary" menu-text="Dark" on-action="setThemeDark"/>
         </ToolBar>

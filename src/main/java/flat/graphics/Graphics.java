@@ -1,42 +1,37 @@
 package flat.graphics;
 
+import flat.backend.GL;
+import flat.exception.FlatException;
 import flat.graphics.context.*;
-import flat.graphics.context.enums.BlendFunction;
+import flat.graphics.context.enums.*;
 import flat.graphics.context.paints.ColorPaint;
 import flat.graphics.context.paints.GaussianShadow;
 import flat.graphics.context.paints.ImagePattern;
-import flat.graphics.image.PixelMap;
-import flat.graphics.material.Material;
-import flat.graphics.material.MaterialValue;
-import flat.graphics.mesh.Mesh;
 import flat.math.Affine;
-import flat.math.Matrix4;
+import flat.math.Vector2;
 import flat.math.shapes.*;
 
 import java.nio.Buffer;
 import java.util.ArrayList;
-import java.util.List;
 
 public class Graphics {
 
     private final Context context;
 
-    private int mode;
     private Surface surface;
 
-    // -- 2D
-    private Affine transform2D = new Affine();
-    private ArrayList<Shape> clipShapes = new ArrayList<>();
-    private ArrayList<Rectangle> clipBox = new ArrayList<>();
-    private Stroke stroker;
+    private final Affine transform2D = new Affine();
+    private final ArrayList<Shape> clipShapes = new ArrayList<>();
+    private final ArrayList<Rectangle> clipBox = new ArrayList<>();
+    private Stroke stroke;
     private float textSize;
-    private float textBlur;
 
-    // -- 3D
-    private Matrix4 projection3D = new Matrix4();
-    private Matrix4 transform3D = new Matrix4();
-    private ShaderProgram shader3D;
-    private List<MaterialValue> matValues3D = new ArrayList<>();
+    // Custom Draw
+    private Shader vertex;
+    private Shader fragment;
+    private VertexArray ver;
+    private BufferObject vbo;
+    private BufferObject ebo;
 
     public Graphics(Context context) {
         this.context = context;
@@ -44,7 +39,51 @@ public class Graphics {
         context.setBlendEnabled(true);
         context.setBlendFunction(BlendFunction.SRC_ALPHA, BlendFunction.ONE_MINUS_SRC_ALPHA, BlendFunction.ONE, BlendFunction.ONE);
 
-        stroker = getStroker();
+        stroke = getStroke();
+
+        textSize = 24;
+        context.svgTextScale(textSize);
+
+        vertex = new Shader(context, ShaderType.Vertex);
+        vertex.setSource(
+                """
+                #version 330 core
+                layout (location = 0) in vec2 iPos;
+                layout (location = 1) in vec2 iTex;
+                uniform vec2 view;
+                out vec2 oPos;
+                out vec2 oTex;
+                void main() {
+                    oPos = iPos;
+                    oTex = iTex;
+                	gl_Position = vec4(iPos.x * 2.0 / view.x - 1.0, 1.0 - iPos.y * 2.0 / view.y, 0, 1);
+                }
+                """
+        );
+        vertex.compile();
+        if (!vertex.compile()) {
+            throw new FlatException("The default image vertex shader fail to compile : " + vertex.getLog());
+        }
+
+        fragment = new Shader(context, ShaderType.Fragment);
+        fragment.setSource(
+                """
+                #version 330 core
+                out vec4 FragColor;
+                in vec2 oPos;
+                in vec2 oTex;
+                
+                vec4 fragment(vec2 pos, vec2 uv);
+                
+                void main() {
+                    FragColor = fragment(oPos, oTex);
+                }
+                """
+        );
+        fragment.compile();
+        if (!fragment.compile()) {
+            throw new FlatException("The default image fragment shader fail to compile : " + fragment.getLog());
+        }
     }
 
     public Context getContext() {
@@ -52,61 +91,37 @@ public class Graphics {
     }
 
     public int getWidth() {
-        return context.getWidth();
+        return surface == null ? context.getWidth() : surface.getWidth();
     }
 
     public int getHeight() {
-        return context.getHeight();
+        return surface == null ? context.getHeight() : surface.getHeight();
     }
 
     public float getDensity() {
         return context.getHeight();
     }
 
-    // ---- CLEAR ---- //
-    private void clearMode() {
-        if (mode != 0) {
-            if (mode == 1) svgEnd();
-            if (mode == 2) meshEnd();
-            mode = 0;
-        }
-    }
-
-    public void softFlush() {
-        clearMode();
-        context.softFlush();
-    }
-
-    public void hardFlush() {
-        clearMode();
-        context.hardFlush();
-    }
-
     public void clear(int color) {
-        clearMode();
         context.setClearColor(color);
         context.clear(true, false, false);
     }
 
     public void clear(int color, double depth) {
-        clearMode();
         context.setClearColor(color);
         context.setClearDepth(depth);
         context.clear(true, true, false);
     }
 
     public void clear(int color, double depth, int stencil) {
-        clearMode();
         context.setClearColor(color);
         context.setClearDepth(depth);
         context.setClearStencil(stencil);
         context.clear(true, true, true);
     }
 
-    // ---- Properties ---- //
     public void setSurface(Surface surface) {
         if (this.surface != surface) {
-            clearMode();
             if (this.surface != null) {
                 this.surface.unbind();
             }
@@ -114,6 +129,7 @@ public class Graphics {
             if (this.surface != null) {
                 this.surface.bind(context);
             }
+            setView(0, 0, getWidth(), getHeight());
         }
     }
 
@@ -122,24 +138,11 @@ public class Graphics {
     }
 
     public void setView(int x, int y, int width, int height) {
-        clearMode();
         context.setViewPort(x, y, width, height);
     }
 
     public Rectangle getView() {
         return new Rectangle(context.getViewX(), context.getViewY(), context.getViewWidth(), context.getViewHeight());
-    }
-
-    public void setProjection(Matrix4 projection) {
-        if (projection == null) {
-            this.projection3D.identity();
-        } else {
-            this.projection3D.set(projection);
-        }
-    }
-
-    public Matrix4 getProjection() {
-        return new Matrix4(projection3D);
     }
 
     public void setTransform2D(Affine transform2D) {
@@ -160,21 +163,6 @@ public class Graphics {
         return context.svgTransform();
     }
 
-    public void setTransform3D(Matrix4 transform3D) {
-        if (transform3D == null) {
-            this.transform3D.identity();
-        } else {
-            this.transform3D.set(transform3D);
-        }
-    }
-
-    public Matrix4 getTransform3D() {
-        return new Matrix4(this.transform3D);
-    }
-
-    /**
-     * Clear the clipping
-     */
     public void clearClip() {
         clipShapes.clear();
         clipBox.clear();
@@ -218,7 +206,7 @@ public class Graphics {
     }
 
     public void popClip() {
-        if (clipShapes.size() > 0) {
+        if (!clipShapes.isEmpty()) {
             clipShapes.remove(clipShapes.size() - 1);
             clipBox.remove(clipBox.size() - 1);
         }
@@ -226,7 +214,7 @@ public class Graphics {
     }
 
     private void updateClip() {
-        if (clipBox.size() == 0) {
+        if (clipBox.isEmpty()) {
             context.svgClearClip(false);
 
         } else if (clipBox.get(clipBox.size() - 1) == null) {
@@ -239,9 +227,7 @@ public class Graphics {
                 context.svgClip(clipShapes.get(0));
             }
             context.svgTransform(transform2D);
-
         }
-
     }
 
     public void setAntialiasEnabled(boolean enabled) {
@@ -264,13 +250,13 @@ public class Graphics {
         return context.svgPaint();
     }
 
-    public void setStroker(Stroke stroker) {
-        this.stroker = stroker;
-        context.svgStroke(stroker);
+    public void setStroke(Stroke stroke) {
+        this.stroke = stroke;
+        context.svgStroke(stroke);
     }
 
-    public Stroke getStroker() {
-        return stroker;
+    public Stroke getStroke() {
+        return stroke;
     }
 
     public void setTextFont(Font font) {
@@ -292,134 +278,103 @@ public class Graphics {
     }
 
     public void setTextBlur(float blur) {
-        textBlur = Math.min(1, Math.max(0, blur));
-        context.svgTextBlur(textBlur);
+        context.svgTextBlur(Math.min(1, Math.max(0, blur)));
     }
 
     public float getTextBlur() {
-        return textBlur;
-    }
-
-    // ---- CANVAS ---- //
-
-    // ---- SVG ---- //
-
-    private void svgMode() {
-        if (mode != 1) {
-            if (mode == 2) meshEnd();
-            mode = 1;
-        }
-    }
-
-    private void svgEnd() {
-        context.softFlush();
+        return context.svgTextBlur();
     }
 
     public void drawShape(Shape shape, boolean fill) {
-        svgMode();
-        if (shape instanceof Path) {
-            context.svgDrawShape(shape, fill);
-        }
-        else if (shape instanceof Circle) drawCircle((Circle) shape, fill);
-        else if (shape instanceof Rectangle) drawRect((Rectangle) shape, fill);
-        else if (shape instanceof RoundRectangle) drawRoundRect((RoundRectangle) shape, fill);
-        else if (shape instanceof Ellipse) drawEllipse((Ellipse) shape, fill);
-        else if (shape instanceof Line) drawLine((Line) shape);
-        else if (shape instanceof QuadCurve) drawQuadCurve((QuadCurve) shape);
-        else if (shape instanceof CubicCurve) drawCubicCurve((CubicCurve) shape);
-        else {
-            context.svgDrawShape(shape, fill);
+        if (shape instanceof Path path) drawPath(path, fill, true);
+        else if (shape instanceof RoundRectangle roundRect) drawRoundRect(roundRect, fill);
+        else if (shape instanceof Circle circle) drawCircle(circle, fill);
+        else if (shape instanceof Rectangle rect) drawRect(rect, fill);
+        else if (shape instanceof Ellipse ellipse) drawEllipse(ellipse, fill);
+        else if (shape instanceof Line line) drawLine(line);
+        else if (shape instanceof QuadCurve quad) drawQuadCurve(quad);
+        else if (shape instanceof CubicCurve cubic) drawCubicCurve(cubic);
+        else context.svgDrawShape(shape, fill);
+    }
+
+    public void drawPath(Path path, boolean fill, boolean optimize) {
+        if (optimize && fill && path.length() > 3000) {
+            context.svgDrawShapeOptimized(path);
+        } else {
+            context.svgDrawShape(path, fill);
         }
     }
 
     public void drawCircle(float x, float y, float radius, boolean fill) {
-        svgMode();
         context.svgDrawEllipse(x - radius, y - radius, radius * 2, radius * 2, fill);
     }
 
     public void drawCircle(Circle circle,  boolean fill) {
-        svgMode();
         context.svgDrawEllipse(circle.x - circle.radius, circle.y - circle.radius, circle.radius * 2, circle.radius * 2, fill);
     }
 
     public void drawEllipse(Ellipse ellipse, boolean fill) {
-        svgMode();
         context.svgDrawEllipse(ellipse.x, ellipse.y, ellipse.width, ellipse.height, fill);
     }
 
     public void drawEllipse(float x, float y, float width, float height, boolean fill) {
-        svgMode();
         context.svgDrawEllipse(x, y, width, height, fill);
     }
 
     public void drawRect(Rectangle rect, boolean fill) {
-        svgMode();
         context.svgDrawRect(rect.x, rect.y, rect.width, rect.height, fill);
     }
 
     public void drawRect(float x, float y, float width, float height, boolean fill) {
-        svgMode();
         context.svgDrawRect(x, y, width, height, fill);
     }
 
     public void drawRoundRect(RoundRectangle rect, boolean fill) {
-        svgMode();
         context.svgDrawRoundRect(rect.x, rect.y, rect.width, rect.height, rect.arcTop, rect.arcRight, rect.arcBottom, rect.arcLeft, fill);
     }
 
     public void drawRoundRect(float x, float y, float width, float height, float cTop, float cRight, float cBottom, float cLeft, boolean fill) {
-        svgMode();
         context.svgDrawRoundRect(x, y, width, height, cTop, cRight, cBottom, cLeft, fill);
     }
 
     public void drawLine(Line line) {
-        svgMode();
         context.svgDrawLine(line.x1, line.y1, line.x2, line.y2);
     }
 
     public void drawLine(float x1, float y1, float x2, float y2) {
-        svgMode();
         context.svgDrawLine(x1, y1, x2, y2);
     }
 
     public void drawQuadCurve(QuadCurve curve) {
-        svgMode();
         context.svgDrawQuadCurve(curve.x1, curve.y1, curve.ctrlx, curve.ctrly, curve.x2, curve.y2);
     }
 
     public void drawQuadCurve(float x1, float y1, float cx, float cy, float x2, float y2) {
-        svgMode();
         context.svgDrawQuadCurve(x1, y1, cx, cy, x2, y2);
     }
 
     public void drawCubicCurve(CubicCurve curve) {
-        svgMode();
         context.svgDrawCubicCurve(curve.x1, curve.y1, curve.ctrlx1, curve.ctrly1,  curve.ctrlx2, curve.ctrly2, curve.x2, curve.y2);
     }
 
     public void drawCubicCurve(float x1, float y1, float cx1, float cy1, float cx2, float cy2, float x2, float y2) {
-        svgMode();
         context.svgDrawCubicCurve(x1, y1, cx1, cy1, cx2, cy2, x2, y2);
     }
 
     public void drawText(float x, float y, String text) {
-        svgMode();
         context.svgDrawText(x, y, text, 0, 0);
     }
 
     public void drawText(float x, float y, Buffer text, int offset, int length) {
-        svgMode();
         context.svgDrawText(x, y, text, offset, length, 0, 0);
     }
 
-    public int drawTextSlice(float x, float y, float maxWidth, float maxHeight, String text) {
-        svgMode();
-        return context.svgDrawText(x, y, text, maxWidth, maxHeight);
+    public void drawTextSlice(float x, float y, float maxWidth, float maxHeight, String text) {
+        context.svgDrawText(x, y, text, maxWidth, maxHeight);
     }
 
-    public int drawTextSlice(float x, float y, float maxWidth, float maxHeight, Buffer text, int offset, int length) {
-        svgMode();
-        return context.svgDrawText(x, y, text, offset, length, maxWidth, maxHeight);
+    public void drawTextSlice(float x, float y, float maxWidth, float maxHeight, Buffer text, int offset, int length) {
+        context.svgDrawText(x, y, text, offset, length, maxWidth, maxHeight);
     }
 
     public void drawLinearShadowDown(float x, float y, float width, float height, float alpha) {
@@ -506,54 +461,53 @@ public class Graphics {
     }
 
     public void drawRoundRectShadow(RoundRectangle rect, float blur, float alpha) {
-        svgMode();
         drawRoundRectShadow(rect.x, rect.y, rect.width, rect.height, rect.arcTop, rect.arcRight, rect.arcBottom, rect.arcLeft, blur, alpha);
     }
 
-    public void drawImage(PixelMap image, float x, float y) {
-        svgMode();
-        drawImage(image.readTexture(context),
-                0, 0, image.getWidth(), image.getHeight(),
-                x, y, x + image.getWidth(), y + image.getHeight(), 0xFFFFFFFF, null);
+    public void drawImage(ImageTexture image, float x, float y) {
+        Texture2D tex = image.getTexture(context);
+        drawImage(tex,
+                0, 0, tex.getWidth(), tex.getHeight(),
+                x, y, x + tex.getWidth(), y + tex.getHeight(), 0xFFFFFFFF, null);
     }
 
-    public void drawImage(PixelMap image, float x, float y, float width, float height) {
-        svgMode();
-        drawImage(image.readTexture(context),
-                0, 0, image.getWidth(), image.getHeight(),
+    public void drawImage(ImageTexture image, float x, float y, float width, float height) {
+        Texture2D tex = image.getTexture(context);
+        drawImage(tex,
+                0, 0, tex.getWidth(), tex.getHeight(),
                 x, y, x + width, y + height, 0xFFFFFFFF, null);
     }
 
-    public void drawImage(PixelMap image, float x, float y, float width, float height, int color) {
-        svgMode();
-        drawImage(image.readTexture(context),
-                0, 0, image.getWidth(), image.getHeight(),
+    public void drawImage(ImageTexture image, float x, float y, float width, float height, int color) {
+        Texture2D tex = image.getTexture(context);
+        drawImage(tex,
+                0, 0, tex.getWidth(), tex.getHeight(),
                 x, y, x + width, y + height, color, null);
     }
 
-    public void drawImage(PixelMap image, float x, float y, float width, float height, int color, Affine transform) {
-        svgMode();
-        drawImage(image.readTexture(context),
-                0, 0, image.getWidth(), image.getHeight(),
+    public void drawImage(ImageTexture image, float x, float y, float width, float height, int color, Affine transform) {
+        Texture2D tex = image.getTexture(context);
+        drawImage(tex,
+                0, 0, tex.getWidth(), tex.getHeight(),
                 x, y, x + width, y + height, color, transform);
     }
 
-    public void drawImage(PixelMap image,
+    public void drawImage(ImageTexture image,
                           float srcX1, float srcY1, float srcX2, float srcY2,
                           float dstX1, float dstY1, float dstX2, float dstY2,
                           int color) {
-        svgMode();
-        drawImage(image.readTexture(context),
+        Texture2D tex = image.getTexture(context);
+        drawImage(tex,
                 srcX1, srcY1, srcX2, srcY2,
                 dstX1, dstY1, dstX2, dstY2, color, null);
     }
 
-    public void drawImage(PixelMap image,
+    public void drawImage(ImageTexture image,
                           float srcX1, float srcY1, float srcX2, float srcY2,
                           float dstX1, float dstY1, float dstX2, float dstY2,
                           int color, Affine transform) {
-        svgMode();
-        drawImage(image.readTexture(context),
+        Texture2D tex = image.getTexture(context);
+        drawImage(tex,
                 srcX1, srcY1, srcX2, srcY2,
                 dstX1, dstY1, dstX2, dstY2, color, transform);
     }
@@ -562,7 +516,6 @@ public class Graphics {
                           float srcX1, float srcY1, float srcX2, float srcY2,
                           float dstX1, float dstY1, float dstX2, float dstY2,
                           int color, Affine transform) {
-        svgMode();
         if (dstX1 > dstX2) {
             float v = dstX1;
             dstX1 = dstX2;
@@ -592,41 +545,52 @@ public class Graphics {
         context.svgPaint(paint);
     }
 
-    // ---- MESH ---- //
+    public void drawImageCustomShader(ShaderProgram program) {
+        if (ver == null) {
+            ver = new VertexArray(context);
+            ver.begin();
 
-    private void meshMode() {
-        if (mode != 2) {
-            if (mode == 1) svgEnd();
-            mode = 2;
+            ebo = new BufferObject(context);
+            ebo.begin(BufferType.Element);
+            ebo.setSize(6 * 4, UsageType.STATIC_DRAW);
+            ebo.setData(0, new int[]{0, 1, 2, 0, 2, 3}, 0, 6);
+
+            vbo = new BufferObject(context);
+            vbo.begin(BufferType.Array);
+            vbo.setSize(16 * 4, UsageType.STATIC_DRAW);
+            vbo.setData(0, new float[]{0, 0, 0, 0, 100, 0,  1,  0, 100,  100,  1,  1, 0, 100, 0,  1}, 0, 16);
+
+            ver.setAttributePointer(0, 2, AttributeType.FLOAT, false, 4 * 4, 0);
+            ver.setAttributeEnabled(0, true);
+            ver.setAttributePointer(1, 2, AttributeType.FLOAT, false, 4 * 4, 2 * 4);
+            ver.setAttributeEnabled(1, true);
+
+            vbo.end();
+            ver.end();
         }
+
+        program.begin();
+        program.set("view", new Vector2(getWidth(), getHeight()));
+        ver.begin();
+        context.drawElements(VertexMode.TRIANGLES, 0, 6, 1);
+        ver.end();
+        program.end();
     }
 
-    private void meshEnd() {
+    public ShaderProgram createImageRenderShader(String compatibleFragment) {
 
-    }
+        Shader compatible = new Shader(context, ShaderType.Fragment);
+        compatible.setSource(compatibleFragment);
+        compatible.compile();
+        if (!compatible.compile()) {
+            throw new FlatException("The Fragment is not compatible. Compile returned the error: " + compatible.getLog());
+        }
 
-    public void setMeshMaterial(Material material) {
-        meshMode();
+        ShaderProgram program = new ShaderProgram(context, vertex, fragment, compatible);
+        if (!program.link()) {
+            throw new FlatException("The Fragment is not compatible. Compile returned the error: " + compatible.getLog());
+        }
 
-    }
-
-    public void drawMesh(Mesh mesh) {
-        meshMode();
-
-    }
-
-    public void drawMesh(Mesh mesh, Matrix4 transform) {
-        meshMode();
-
-    }
-
-    public void drawMesh(Mesh mesh, Matrix4 transform, int anim, float frame) {
-        meshMode();
-
-    }
-
-    public void drawMesh(Mesh mesh, Matrix4[] transforms, int offset, int length) {
-        meshMode();
-
+        return program;
     }
 }

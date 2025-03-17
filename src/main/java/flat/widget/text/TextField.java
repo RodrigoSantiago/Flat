@@ -183,7 +183,7 @@ public class TextField extends TextArea {
     protected void onDrawTextDivider(Graphics context, float x, float y, float width, float height) {
         if (width > 0 && height > 0) {
             context.setTransform2D(getTransform());
-            context.setStroker(new BasicStroke(height));
+            context.setStroke(new BasicStroke(height));
             context.setColor(getTextDividerColor());
             context.drawLine(x, y, x + width, y);
         }

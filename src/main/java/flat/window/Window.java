@@ -114,7 +114,7 @@ public class Window {
 
         if (activity.draw(context.getGraphics())) {
             bufferInvalid = true;
-            context.getGraphics().softFlush();
+            context.softFlush();
         }
 
         // Cursor

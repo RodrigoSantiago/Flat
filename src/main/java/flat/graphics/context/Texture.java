@@ -10,7 +10,7 @@ public abstract class Texture extends ContextObject {
 
     @Override
     protected boolean isBound() {
-        return getContext().isTextureBound(this);
+        return getContext().indexOfTextureBound(this) != -1;
     }
 
     public void begin(int index) {

@@ -128,7 +128,7 @@ public class ListItem extends Button {
         if (width <= 0 || height <= 0) return;
 
         graphics.setTransform2D(getTransform());
-        graphics.setStroker(new BasicStroke(getLayerLineWidth()));
+        graphics.setStroke(new BasicStroke(getLayerLineWidth()));
         graphics.setColor(getLayerLineColor());
 
         float inX = x;
