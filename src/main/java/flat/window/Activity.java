@@ -277,11 +277,7 @@ public class Activity {
     }
 
     private void drawBackground(Graphics graphics) {
-        graphics.setSurface(null);
-        graphics.setAntialiasEnabled(true);
-        graphics.setView(0, 0, (int) getWidth(), (int) getHeight());
         graphics.clear(scene.getBackgroundColor(), 1, 0);
-        graphics.clearClip();
     }
 
     private void drawWidgets(Graphics graphics) {

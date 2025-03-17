@@ -49,15 +49,12 @@ public class PixelMap implements Drawable, ImageTexture {
     public Texture2D getTexture(Context context, ImageFilter filter) {
         var texture = textures.get(context);
         if (texture == null) {
-            texture = new Texture2D(context);
-            texture.begin(0);
-            texture.setSize(width, height, format);
+            texture = new Texture2D(context, width, height, format);
             texture.setData(0, data, 0, 0, 0, width, height);
             texture.setLevels(0);
             texture.generateMipmapLevels();
             texture.setScaleFilters(MagFilter.NEAREST, MinFilter.NEAREST);
             texture.setWrapModes(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
-            texture.end();
             textures.put(context, texture);
         }
         for (var ctx : textures.keySet()) {
@@ -68,11 +65,9 @@ public class PixelMap implements Drawable, ImageTexture {
         }
         if (filter != null) {
             if ((texture.getMagFilter() == MagFilter.NEAREST) != (filter == ImageFilter.NEAREST)) {
-                texture.begin(0);
                 texture.setScaleFilters(
                         filter == ImageFilter.LINEAR ? MagFilter.LINEAR : MagFilter.NEAREST,
                         filter == ImageFilter.LINEAR ? MinFilter.LINEAR : MinFilter.NEAREST);
-                texture.end();
             }
         }
         return texture;

@@ -335,9 +335,8 @@ public class Font {
             return new PixelMap(imageData, w, h, PixelFormat.RED);
         } else {
             Texture2D tex = new Texture2D(context, imageId, w, h, 0, PixelFormat.RED);
-            tex.begin(0);
             tex.getData(0, imageData, 0);
-            tex.end();
+            context.bindTexture(null); // TODO - force release
             return new PixelMap(imageData, w, h, PixelFormat.RED);
         }
     }

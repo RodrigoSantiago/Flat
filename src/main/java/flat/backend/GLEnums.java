@@ -154,7 +154,7 @@ public class GLEnums {
     //----FRAMEBUFFER ATTACHMENT OBJECT TYPE
     public static final int FO_RENDERBUFFER = 0x8D41;
     public static final int FO_TEXTURE = 0x1702;
-    public static final int FO_NONE = 0x0;
+    public static final int FO_TEXTURE_2D = 0x0DE1;
 
     //----FRAMEBUFFER BLIT MASK
     public static final int BM_COLOR_BUFFER_BIT = 0x00004000;

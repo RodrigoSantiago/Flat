@@ -1,6 +1,5 @@
 package flat.graphics;
 
-import flat.backend.GL;
 import flat.exception.FlatException;
 import flat.graphics.context.*;
 import flat.graphics.context.enums.*;
@@ -10,6 +9,7 @@ import flat.graphics.context.paints.ImagePattern;
 import flat.math.Affine;
 import flat.math.Vector2;
 import flat.math.shapes.*;
+import flat.math.stroke.BasicStroke;
 
 import java.nio.Buffer;
 import java.util.ArrayList;
@@ -17,12 +17,12 @@ import java.util.ArrayList;
 public class Graphics {
 
     private final Context context;
-
     private Surface surface;
 
     private final Affine transform2D = new Affine();
-    private final ArrayList<Shape> clipShapes = new ArrayList<>();
-    private final ArrayList<Rectangle> clipBox = new ArrayList<>();
+    private final ClipState clipState = new ClipState();
+    private final ClipState surfaceClipState = new ClipState();
+    private ClipState currentClipState = clipState;
     private Stroke stroke;
     private float textSize;
 
@@ -39,10 +39,10 @@ public class Graphics {
         context.setBlendEnabled(true);
         context.setBlendFunction(BlendFunction.SRC_ALPHA, BlendFunction.ONE_MINUS_SRC_ALPHA, BlendFunction.ONE, BlendFunction.ONE);
 
-        stroke = getStroke();
-
+        stroke = new BasicStroke(1);
         textSize = 24;
         context.svgTextScale(textSize);
+        context.svgStroke(stroke);
 
         vertex = new Shader(context, ShaderType.Vertex);
         vertex.setSource(
@@ -90,6 +90,27 @@ public class Graphics {
         return context;
     }
 
+    public void refreshState() {
+        surface = null;
+        clipState.clipShapes.clear();
+        clipState.clipBox.clear();
+        refreshLocalState();
+    }
+
+    private void refreshLocalState() {
+        surfaceClipState.clipShapes.clear();
+        surfaceClipState.clipBox.clear();
+        stroke = new BasicStroke(1);
+        textSize = 24;
+        context.svgTextScale(textSize);
+        context.svgStroke(stroke);
+        context.svgTextFont(Font.getDefault());
+        context.svgTextBlur(0);
+        context.svgPaint(new ColorPaint(0xFFFFFFFF));
+        context.svgAntialias(true);
+        setView(0, 0, getWidth(), getHeight());
+    }
+
     public int getWidth() {
         return surface == null ? context.getWidth() : surface.getWidth();
     }
@@ -114,6 +135,7 @@ public class Graphics {
     }
 
     public void clear(int color, double depth, int stencil) {
+        clearClip();
         context.setClearColor(color);
         context.setClearDepth(depth);
         context.setClearStencil(stencil);
@@ -122,19 +144,15 @@ public class Graphics {
 
     public void setSurface(Surface surface) {
         if (this.surface != surface) {
-            if (this.surface != null) {
-                this.surface.unbind();
-            }
             this.surface = surface;
             if (this.surface != null) {
-                this.surface.bind(context);
+                this.surface.begin(context);
+                context.setFrameBuffer(this.surface.frameBuffer);
+            } else {
+                context.setFrameBuffer(null);
             }
-            setView(0, 0, getWidth(), getHeight());
+            refreshLocalState();
         }
-    }
-
-    public Surface getSurface() {
-        return surface;
     }
 
     public void setView(int x, int y, int width, int height) {
@@ -164,8 +182,8 @@ public class Graphics {
     }
 
     public void clearClip() {
-        clipShapes.clear();
-        clipBox.clear();
+        currentClipState.clipShapes.clear();
+        currentClipState.clipBox.clear();
         context.svgClearClip(false);
     }
 
@@ -181,11 +199,11 @@ public class Graphics {
 
         Rectangle bounds = real.bounds();
 
-        clipShapes.add(inverse);
-        if (clipBox.size() == 0) {
-            clipBox.add(bounds);
+        currentClipState.clipShapes.add(inverse);
+        if (currentClipState.clipBox.isEmpty()) {
+            currentClipState.clipBox.add(bounds);
         } else {
-            Rectangle currentBounds = clipBox.get(clipBox.size() - 1);
+            Rectangle currentBounds = currentClipState.clipBox.get(currentClipState.clipBox.size() - 1);
             if (currentBounds != null) {
                 float inX = Math.max(currentBounds.x, bounds.x);
                 float inY = Math.max(currentBounds.y, bounds.y);
@@ -193,12 +211,12 @@ public class Graphics {
                 float inHeight = Math.min(currentBounds.y + currentBounds.height, bounds.y + bounds.height) - inY;
 
                 if (inWidth > 0 && inHeight > 0) {
-                    clipBox.add(new Rectangle(inX, inY, inWidth, inHeight));
+                    currentClipState.clipBox.add(new Rectangle(inX, inY, inWidth, inHeight));
                 } else {
-                    clipBox.add(null);
+                    currentClipState.clipBox.add(null);
                 }
             } else {
-                clipBox.add(null);
+                currentClipState.clipBox.add(null);
             }
         }
 
@@ -206,25 +224,25 @@ public class Graphics {
     }
 
     public void popClip() {
-        if (!clipShapes.isEmpty()) {
-            clipShapes.remove(clipShapes.size() - 1);
-            clipBox.remove(clipBox.size() - 1);
+        if (!currentClipState.clipShapes.isEmpty()) {
+            currentClipState.clipShapes.remove(currentClipState.clipShapes.size() - 1);
+            currentClipState.clipBox.remove(currentClipState.clipBox.size() - 1);
         }
         updateClip();
     }
 
-    private void updateClip() {
-        if (clipBox.isEmpty()) {
+    public void updateClip() {
+        if (currentClipState.clipBox.isEmpty()) {
             context.svgClearClip(false);
 
-        } else if (clipBox.get(clipBox.size() - 1) == null) {
+        } else if (currentClipState.clipBox.get(currentClipState.clipBox.size() - 1) == null) {
             context.svgClearClip(true);
 
         } else {
             context.svgClearClip(false);
             context.svgTransform(null);
-            for (int i = 0; i < clipShapes.size(); i++) {
-                context.svgClip(clipShapes.get(0));
+            for (int i = 0; i < currentClipState.clipShapes.size(); i++) {
+                context.svgClip(currentClipState.clipShapes.get(0));
             }
             context.svgTransform(transform2D);
         }
@@ -548,33 +566,22 @@ public class Graphics {
     public void drawImageCustomShader(ShaderProgram program) {
         if (ver == null) {
             ver = new VertexArray(context);
-            ver.begin();
-
-            ebo = new BufferObject(context);
-            ebo.begin(BufferType.Element);
-            ebo.setSize(6 * 4, UsageType.STATIC_DRAW);
+            ebo = new BufferObject(context, BufferType.Element, 6 * 4, UsageType.STATIC_DRAW);
             ebo.setData(0, new int[]{0, 1, 2, 0, 2, 3}, 0, 6);
 
-            vbo = new BufferObject(context);
-            vbo.begin(BufferType.Array);
-            vbo.setSize(16 * 4, UsageType.STATIC_DRAW);
+            vbo = new BufferObject(context, BufferType.Array, 16 * 4, UsageType.STATIC_DRAW);
             vbo.setData(0, new float[]{0, 0, 0, 0, 100, 0,  1,  0, 100,  100,  1,  1, 0, 100, 0,  1}, 0, 16);
 
-            ver.setAttributePointer(0, 2, AttributeType.FLOAT, false, 4 * 4, 0);
-            ver.setAttributeEnabled(0, true);
-            ver.setAttributePointer(1, 2, AttributeType.FLOAT, false, 4 * 4, 2 * 4);
-            ver.setAttributeEnabled(1, true);
-
-            vbo.end();
-            ver.end();
+            ver.setAttributeEnabled(vbo, 0, 2, AttributeType.FLOAT, false, 4 * 4, 0);
+            ver.setAttributeEnabled(vbo, 1, 2, AttributeType.FLOAT, false, 4 * 4, 2 * 4);
+            ver.setElements(ebo);
         }
 
-        program.begin();
+        ShaderProgram current = context.getShaderProgram();
+        context.setShaderProgram(program);
         program.set("view", new Vector2(getWidth(), getHeight()));
-        ver.begin();
-        context.drawElements(VertexMode.TRIANGLES, 0, 6, 1);
-        ver.end();
-        program.end();
+        ver.drawElements(VertexMode.TRIANGLES, 0, 6, 1);
+        context.setShaderProgram(current);
     }
 
     public ShaderProgram createImageRenderShader(String compatibleFragment) {
@@ -592,5 +599,10 @@ public class Graphics {
         }
 
         return program;
+    }
+
+    private static class ClipState {
+        private final ArrayList<Shape> clipShapes = new ArrayList<>();
+        private final ArrayList<Rectangle> clipBox = new ArrayList<>();
     }
 }

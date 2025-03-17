@@ -209,7 +209,7 @@ public class MainController extends Controller {
                 uniform vec2 view;
                 uniform vec4 col;
                 vec4 fragment(vec2 pos, vec2 uv) {
-                    return col;
+                    return pos.x < view.x / 2 ? col : vec4(1,1,1,1);
                 }
                 """);
 
@@ -217,7 +217,12 @@ public class MainController extends Controller {
 
         Surface surface = new Surface(graphics.getContext(), 64, 64, 8, PixelFormat.RGBA);
         graphics.setSurface(surface);
+        graphics.clear(0, 0, 0x00);
+        graphics.clearClip();
         graphics.drawImageCustomShader(shader);
+        graphics.setColor(Color.red);
+        graphics.setTransform2D(null);
+        graphics.drawRect(10, 10, 20, 20, true);
         graphics.setSurface(null);
 
         pix = surface.createPixelMap();
@@ -275,13 +280,15 @@ public class MainController extends Controller {
         }
         graphics.setTransform2D(null);
 
+        graphics.setColor(Color.white);
+        graphics.drawRect(0, getActivity().getHeight() - 16, 52, 16, true);
         graphics.setColor(Color.red);
         if (av == 0) {
             av = Application.getLoopTime();
         } else {
-            av = (av + Application.getLoopTime()) * 0.5f;
+            av = (av * 0.8f + Application.getLoopTime() * 0.2f);
         }
-        graphics.drawText(10, 10, "FPS : " + (1f / av));
+        graphics.drawText(10, getActivity().getHeight() - 16, "FPS : " + (int)(1f / av));
 
         graphics.setTransform2D(null);
         graphics.drawImage(pix, 100, 100, 200, 200);

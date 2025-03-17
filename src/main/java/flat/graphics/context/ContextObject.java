@@ -25,15 +25,6 @@ abstract class ContextObject {
         return true;
     }
 
-    protected void boundCheck() {
-        if (isDisposed()) {
-            throw new RuntimeException("The " + getClass().getSimpleName() + " is disposed.");
-        }
-        if (!isBound()) {
-            throw new RuntimeException("The " + getClass().getSimpleName() + " must be between begin and end for writing values.");
-        }
-    }
-
     public boolean isDisposed() {
         return disposed;
     }

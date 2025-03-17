@@ -100,6 +100,8 @@ public class Window {
     void loop(float loopTime) {
         this.loopTime = loopTime;
 
+        context.getGraphics().refreshState();
+
         processStartup();
 
         activity.refreshScene();
@@ -114,7 +116,7 @@ public class Window {
 
         if (activity.draw(context.getGraphics())) {
             bufferInvalid = true;
-            context.softFlush();
+            context.endFrame();
         }
 
         // Cursor

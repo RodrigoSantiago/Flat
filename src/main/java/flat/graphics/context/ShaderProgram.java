@@ -39,11 +39,6 @@ public final class ShaderProgram extends ContextObject {
         }
     }
 
-    @Override
-    protected boolean isBound() {
-        return getContext().isShaderProgramBound(this);
-    }
-
     int getInternalID() {
         return programId;
     }
@@ -123,14 +118,6 @@ public final class ShaderProgram extends ContextObject {
 
     public String getLog() {
         return log;
-    }
-
-    public void begin() {
-        getContext().bindShaderProgram(this);
-    }
-
-    public void end() {
-        getContext().unbindShaderProgram();
     }
 
     void onBound() {
@@ -324,35 +311,29 @@ public final class ShaderProgram extends ContextObject {
     }
 
     void setInt(int att, int typeSize, int arraySize, int... values) {
-        boundCheck();
-
         GL.ProgramSetUniformI(att, typeSize, arraySize, values, 0);
     }
 
     void setFloat(int att, int typeSize, int arraySize, float... values) {
-        boundCheck();
-
         GL.ProgramSetUniformF(att, typeSize, arraySize, values, 0);
     }
 
     void setMatrix(int att, int w, int h, int arraySize, boolean transpose, float... value) {
-        boundCheck();
-
         GL.ProgramSetUniformMatrix(att, w, h, arraySize, transpose, value, 0);
     }
 
-    public class AttributeValue {
-        final Attribute att;
-        final int stride;
-        float[] valFloat;
-        int[] valInt;
+    private class AttributeValue {
+        private final Attribute att;
+        private final int stride;
+        private float[] valFloat;
+        private int[] valInt;
 
         private boolean invalid;
         private boolean transpose;
 
         public AttributeValue(Attribute att) {
             this.att = att;
-            this.stride = att.getType().getSize();//((att.getType().getSize() - 1) / 4 + 1) * 4;
+            this.stride = att.getType().getSize();
             if (att.getType().isFloat()) {
                 valFloat = new float[stride * att.getArraySize()];
             } else {
@@ -438,7 +419,7 @@ public final class ShaderProgram extends ContextObject {
         }
 
         private void onUpdate() {
-            if (isBound()) {
+            if (getContext().getShaderProgram() == ShaderProgram.this) {
                 setShaderValue();
                 invalid = false;
             } else {

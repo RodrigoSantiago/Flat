@@ -62,8 +62,10 @@ public class Context {
     private boolean multiSampleEnabled;
     private float lineWidth;
 
+    private boolean invalidFrameBufferSwap;
+
     // ---- Objects ---- //
-    private Frame frame;
+    private FrameBuffer frameBuffer;
     private ShaderProgram shaderProgram;
     private VertexArray vertexArray;
     private Render render;
@@ -236,7 +238,13 @@ public class Context {
         checkDisposed();
 
         hardFlush();
-        bindFrame(null);
+        bindVertexArray(null);
+        bindTexture(null);
+        bindRender(null);
+        setFrameBuffer(null);
+        for (int i = 0; i < buffers.length; i++) {
+            bindBuffer(null, BufferType.values()[i]);
+        }
 
         for (Runnable disposeTask : disposeTasks) {
             disposeTask.run();
@@ -244,7 +252,7 @@ public class Context {
         disposeTasks.clear();
 
         graphics = null;
-        frame = null;
+        frameBuffer = null;
         shaderProgram = null;
         vertexArray = null;
         render = null;
@@ -258,7 +266,22 @@ public class Context {
         return disposed;
     }
 
-    // ---- CORE ---- //
+    public void endFrame() {
+        softFlush();
+
+        bindVertexArray(null);
+        bindTexture(null);
+        bindRender(null);
+        setFrameBuffer(null);
+        for (int i = 0; i < buffers.length; i++) {
+            bindBuffer(null, BufferType.values()[i]);
+        }
+        invalidFrameBufferSwap = false;
+    }
+
+    public boolean isInvalidFrameBufferSwap() {
+        return invalidFrameBufferSwap;
+    }
 
     public void softFlush() {
         checkDisposed();
@@ -853,52 +876,75 @@ public class Context {
         GL.ReadPixelsB(x, y, width, height, data, offset);
     }
 
-    public void drawArray(VertexMode vertexMode, int first, int count, int instances) {
+    void drawArray(VertexMode vertexMode, int first, int count, int instances) {
         softFlush();
         GL.DrawArrays(vertexMode.getInternalEnum(), first, count, instances);
     }
 
-    public void drawElements(VertexMode vertexMode, int first, int count, int instances) {
+    void drawElements(VertexMode vertexMode, int first, int count, int instances) {
         softFlush();
         GL.DrawElements(vertexMode.getInternalEnum(), count, instances, GLEnums.DT_INT, first);
     }
 
-    boolean isFrameBound(Frame frame) {
-        return this.frame == frame;
-    }
-
-    void bindFrame(Frame frame) {
+    public void setFrameBuffer(FrameBuffer frameBuffer) {
         checkDisposed();
 
-        if (this.frame != frame) {
+        if (this.frameBuffer != frameBuffer) {
             svgEnd();
 
-            int id = frame == null ? 0 : frame.getInternalID();
-            this.frame = frame;
-            GL.FrameBufferBind(GLEnums.FB_FRAMEBUFFER, id);
+            if (frameBuffer == null) {
+                GL.FrameBufferBind(GLEnums.FB_FRAMEBUFFER, 0);
+            } else {
+                GL.FrameBufferBind(GLEnums.FB_FRAMEBUFFER, frameBuffer.getInternalID());
+            }
+            this.frameBuffer = frameBuffer;
+            if (this.frameBuffer != null) {
+                this.frameBuffer.onBound();
+            }
+
+            invalidFrameBufferSwap = true;
         }
     }
 
-    void unbindFrame() {
-        hardFlush();
-        bindFrame(null);
+    public boolean isCurrentFrameValid() {
+        return GL.FrameBufferGetStatus(GLEnums.FB_FRAMEBUFFER) == GLEnums.FS_FRAMEBUFFER_COMPLETE;
     }
 
-    public void blitFrameNow(Frame source, Frame target,
-            int srcX, int srcY, int srcW, int srcH,
-            int dstX, int dstY, int dstW, int dstH, BlitMask blitMask, MagFilter filter) {
+    public FrameBuffer getFrameBuffer() {
+        return frameBuffer;
+    }
+
+    public void blitFrames(FrameBuffer source, FrameBuffer target,
+                           int srcX, int srcY, int srcW, int srcH,
+                           int dstX, int dstY, int dstW, int dstH, BlitMask blitMask, MagFilter filter) {
         checkDisposed();
 
-        GL.FrameBufferBind(GLEnums.FB_DRAW_FRAMEBUFFER, target == null ? 0 : target.getInternalID());
-        GL.FrameBufferBind(GLEnums.FB_READ_FRAMEBUFFER, source == null ? 0 : source.getInternalID());
+        if (source == null) {
+            throw new FlatException("Invalid argument : source");
+        }
+        if (target == null || target == source) {
+            throw new FlatException("Invalid argument : target");
+        }
+        FrameBuffer current = getFrameBuffer();
+        if (source.isInvalid()) {
+            setFrameBuffer(source);
+        }
+        if (target.isInvalid()) {
+            setFrameBuffer(target);
+        }
 
-        GL.FrameBufferBlit(srcX, srcY, srcW, srcH, dstX, dstY, dstW, dstH, blitMask.getInternalEnum(), filter.getInternalEnum());
-
-        GL.FrameBufferBind(GLEnums.FB_FRAMEBUFFER, frame == null ? 0 : frame.getInternalID());
-    }
-
-    public Frame getBoundFrame() {
-        return frame;
+        try {
+            GL.FrameBufferBind(GLEnums.FB_DRAW_FRAMEBUFFER, target.getInternalID());
+            GL.FrameBufferBind(GLEnums.FB_READ_FRAMEBUFFER, source.getInternalID());
+            GL.FrameBufferBlit(srcX, srcY, srcW, srcH, dstX, dstY, dstW, dstH, blitMask.getInternalEnum(), filter.getInternalEnum());
+        } finally {
+            if (current != getFrameBuffer()) {
+                setFrameBuffer(current);
+            } else {
+                GL.FrameBufferBind(GLEnums.FB_FRAMEBUFFER, frameBuffer == null ? 0 : frameBuffer.getInternalID());
+            }
+            invalidFrameBufferSwap = true;
+        }
     }
 
     public void setActiveTexture(int index) {
@@ -921,141 +967,50 @@ public class Context {
         return -1;
     }
 
-    void bindTexture(Texture texture, int index) {
+    void bindTextures(Texture... textures) {
         checkDisposed();
 
-        if (texture != null) {
-            int prevIndex = indexOfTextureBound(texture);
-            if (prevIndex != -1 && prevIndex != index) {
-                texture.end();
+        for (int i = 0; i < this.textures.length; i++) {
+            if (this.textures[i] != null) {
+                svgEnd();
+
+                this.textures[i] = null;
+                setActiveTexture(i);
+                GL.TextureBind(textures[i].getInternalType(), 0);
+            }
+        }
+        for (int i = 0; i < textures.length; i++) {
+            svgEnd();
+
+            this.textures[i] = textures[i];
+            setActiveTexture(i);
+            GL.TextureBind(textures[i].getInternalType(), textures[i].getInternalID());
+        }
+    }
+
+    void bindTexture(Texture texture) {
+        checkDisposed();
+
+        for (int i = 1; i < this.textures.length; i++) {
+            if (this.textures[i] != null) {
+                svgEnd();
+
+                this.textures[i] = null;
+                setActiveTexture(i);
+                GL.TextureBind(textures[i].getInternalType(), 0);
             }
         }
 
-        setActiveTexture(index);
-        if (textures[index] != texture) {
+        setActiveTexture(0);
+        if (textures[0] != texture) {
             svgEnd();
             if (texture == null) {
-                GL.TextureBind(textures[index].getInternalType(), 0);
+                GL.TextureBind(textures[0].getInternalType(), 0);
             } else {
                 GL.TextureBind(texture.getInternalType(), texture.getInternalID());
-                texture.setActivePos(index);
             }
-            textures[index] = texture;
+            textures[0] = texture;
         }
-    }
-
-    void unbindTexture(int index) {
-        bindTexture(null, index);
-    }
-
-    public Texture getBoundTexture(int index) {
-        return textures[index];
-    }
-
-    int indexOfBufferBound(BufferObject buffer) {
-        for (int i = 0; i < buffers.length; i++) {
-            if (buffers[i] == buffer) return i;
-        }
-        return -1;
-    }
-
-    void bindBuffer(BufferObject buffer, BufferType type) {
-        checkDisposed();
-        int index = type.ordinal();
-
-        if (buffer != null) {
-            int prevIndex = indexOfBufferBound(buffer);
-            if (prevIndex != -1 && prevIndex != index) {
-                buffer.end();
-            }
-        }
-
-        if (buffers[index] != buffer) {
-            svgEnd();
-
-            if (buffer == null) {
-                GL.BufferBind(type.getInternalEnum(), 0);
-            } else {
-                GL.BufferBind(type.getInternalEnum(), buffer.getInternalID());
-                buffer.setBindType(type);
-            }
-            if (vertexArray != null && type == BufferType.Element) {
-                vertexArray.setElementBuffer(buffer);
-            }
-            buffers[index] = buffer;
-        }
-    }
-
-    void unbindBuffer(BufferType type) {
-        bindBuffer(null, type);
-    }
-
-    public BufferObject getBoundBuffer(BufferType type) {
-        return buffers[type.ordinal()];
-    }
-
-    boolean isVertexArrayBound(VertexArray array) {
-        return vertexArray == array;
-    }
-
-    void bindVertexArray(VertexArray array) {
-        checkDisposed();
-
-        if (vertexArray != array) {
-            svgEnd();
-
-            if (array == null) {
-                GL.VertexArrayBind(0);
-                buffers[BufferType.Element.ordinal()] = null;
-                GL.BufferBind(BufferType.Element.getInternalEnum(), 0);
-            } else {
-                GL.VertexArrayBind(array.getInternalID());
-                buffers[BufferType.Element.ordinal()] = array.getElementBuffer();
-            }
-            vertexArray = array;
-        }
-    }
-
-    void unbindVertexArray() {
-        bindVertexArray(null);
-    }
-
-    public VertexArray getBoundVertexArray() {
-        return vertexArray;
-    }
-
-    boolean isShaderProgramBound(ShaderProgram program) {
-        return this.shaderProgram == program;
-    }
-
-    void bindShaderProgram(ShaderProgram program) {
-        checkDisposed();
-
-        if (shaderProgram != program) {
-            svgEnd();
-
-            if (program == null) {
-                GL.ProgramUse(0);
-            } else {
-                GL.ProgramUse(program.getInternalID());
-            }
-            shaderProgram = program;
-            if (shaderProgram != null) {
-                shaderProgram.onBound();
-            }
-        }
-    }
-
-    void unbindShaderProgram() {
-        bindShaderProgram(null);
-    }
-
-    public ShaderProgram getBoundShaderProgram() {
-        return shaderProgram;
-    }
-
-    boolean isRenderBound(Render render) {
-        return this.render == render;
     }
 
     void bindRender(Render render) {
@@ -1073,12 +1028,59 @@ public class Context {
         }
     }
 
-    void unbindRender() {
-        bindRender(null);
+    void bindBuffer(BufferObject buffer, BufferType type) {
+        checkDisposed();
+        int index = type.ordinal();
+
+        if (buffers[index] != buffer) {
+            svgEnd();
+
+            if (buffer == null) {
+                GL.BufferBind(type.getInternalEnum(), 0);
+            } else {
+                GL.BufferBind(type.getInternalEnum(), buffer.getInternalID());
+            }
+            buffers[index] = buffer;
+        }
     }
 
-    public Render getBoundRender() {
-        return render;
+    void bindVertexArray(VertexArray array) {
+        checkDisposed();
+
+        if (vertexArray != array) {
+            svgEnd();
+
+            if (array == null) {
+                GL.VertexArrayBind(0);
+                buffers[BufferType.Element.ordinal()] = null;
+                GL.BufferBind(BufferType.Element.getInternalEnum(), 0);
+            } else {
+                GL.VertexArrayBind(array.getInternalID());
+            }
+            vertexArray = array;
+        }
+    }
+
+    public void setShaderProgram(ShaderProgram shaderProgram) {
+        checkDisposed();
+
+        if (this.shaderProgram != shaderProgram) {
+            svgEnd();
+
+            if (shaderProgram == null) {
+                GL.ProgramUse(0);
+            } else {
+                GL.ProgramUse(shaderProgram.getInternalID());
+            }
+            this.shaderProgram = shaderProgram;
+            if (this.shaderProgram != null) {
+                this.shaderProgram.onBound();
+            }
+        }
+    }
+
+    public ShaderProgram getShaderProgram() {
+        return shaderProgram;
     }
 
     // ---- SVG ---- //
@@ -1136,8 +1138,6 @@ public class Context {
 
     private void svgRestore() {
         GL.EnableDepthTest(depthEnabled);
-        GL.EnableScissorTest(scissorEnabled);
-
         GL.EnableStencilTest(stencilEnabled);
         GL.SetStencilMask(GLEnums.FC_FRONT, stencilFrontMask);
         GL.SetStencilMask(GLEnums.FC_BACK, stencilBackMask);
@@ -1145,13 +1145,17 @@ public class Context {
         GL.SetStencilFunction(GLEnums.FC_FRONT, stencilFrontFunction.getInternalEnum(), stencilFrontFunRef, stencilFrontFunMask);
         GL.SetStencilFunction(GLEnums.FC_BACK, stencilBackFunction.getInternalEnum(), stencilBackFunRef, stencilBackFunMask);
 
+        GL.SetStencilOperation(GLEnums.FC_FRONT,
+                stencilFrontSFail.getInternalEnum(), stencilFrontDFail.getInternalEnum(), stencilFrontDPass.getInternalEnum());
+        GL.SetStencilOperation(GLEnums.FC_BACK,
+                stencilBackSFail.getInternalEnum(), stencilBackDFail.getInternalEnum(), stencilBackDPass.getInternalEnum());
+
         GL.EnableBlend(blendEnabled);
-        GL.SetBlendFunction(blendSrcColorFun.getInternalEnum(), blendDstColorFun.getInternalEnum(),
+        GL.SetBlendFunction(
+                blendSrcColorFun.getInternalEnum(), blendDstColorFun.getInternalEnum(),
                 blendSrcAlphaFun.getInternalEnum(), blendDstAlphaFun.getInternalEnum());
 
-        GL.SetCullface(cullFrontFace ? cullBackFace ? GLEnums.FC_FRONT_AND_BACK : GLEnums.FC_FRONT : cullBackFace ? GLEnums.FC_BACK : 0);
-
-        GL.SetFrontFace(clockWiseFrontFace ? GLEnums.FF_CW : GLEnums.FF_CCW);
+        GL.EnableCullface(cullFaceEnabled);
 
         GL.SetColorMask(rMask, gMask, bMask, aMask);
 

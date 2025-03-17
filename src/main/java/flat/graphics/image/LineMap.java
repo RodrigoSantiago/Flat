@@ -19,7 +19,7 @@ public class LineMap implements Drawable {
     private final Rectangle view;
     private final boolean needClipping;
     private PixelMap pixelMap;
-    private boolean optimize;
+    private boolean optimize = true;
 
     public LineMap(SvgRoot root) {
         this.root = root;
@@ -34,13 +34,15 @@ public class LineMap implements Drawable {
     private void bake(Graphics graphics) {
         float d = getWidth() / getHeight();
         int w, h;
-        if (d > 1) { // width > height
+        if (d > 1) {
             w = view.width > 4096 ? 4096 : (int) view.width;
             h = (int) (w / d);
         } else {
             h = view.height > 4096 ? 4096 : (int) view.height;
             w = (int) (h * d);
         }
+
+        var transform = graphics.getTransform2D();
 
         Surface surface = new Surface(graphics.getContext(), w, h, 8, PixelFormat.RGBA);
         graphics.setSurface(surface);
@@ -51,6 +53,8 @@ public class LineMap implements Drawable {
         graphics.setSurface(null);
 
         pixelMap = surface.createPixelMap();
+
+        graphics.setTransform2D(transform);
     }
 
     @Override

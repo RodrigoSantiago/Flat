@@ -8,42 +8,39 @@ public final class Render extends ContextObject {
     private final int renderBufferId;
     private PixelFormat format;
 
-    private int width, height;
+    private int width, height, samples;
 
-    public Render(Context context) {
+    public Render(Context context, int width, int height, int samples, PixelFormat format) {
         super(context);
         final int renderBufferId = GL.RenderBufferCreate();
         this.renderBufferId = renderBufferId;
         assignDispose(() -> GL.RenderBufferDestroy(renderBufferId));
-    }
-
-    @Override
-    protected boolean isBound() {
-        return getContext().isRenderBound(this);
+        setSize(width, height, samples, format);
     }
 
     int getInternalID() {
         return renderBufferId;
     }
 
-    public void begin() {
+    private void boundCheck() {
+        if (isDisposed()) {
+            throw new RuntimeException("The " + getClass().getSimpleName() + " is disposed.");
+        }
         getContext().bindRender(this);
     }
 
-    public void end() {
-        getContext().unbindRender();
-    }
-
-    public void setSize(int width, int height, int multisamples, PixelFormat format) {
+    public void setSize(int width, int height, int samples, PixelFormat format) {
+        dataBoundsCheck(width, height, samples);
         boundCheck();
 
         this.width = width;
         this.height = height;
+        this.samples = samples;
         this.format = format;
-        if (multisamples <= 0) {
+        if (samples <= 0) {
             GL.RenderBufferStorage(format.getInternalEnum(), width, height);
         } else {
-            GL.RenderBufferStorageMultsample(format.getInternalEnum(), multisamples, width, height);
+            GL.RenderBufferStorageMultsample(format.getInternalEnum(), samples, width, height);
         }
     }
 
@@ -55,7 +52,17 @@ public final class Render extends ContextObject {
         return height;
     }
 
+    public int getSamples() {
+        return samples;
+    }
+
     public PixelFormat getFormat() {
         return format;
+    }
+
+    private void dataBoundsCheck(int width, int height, int samples) {
+        if (width <= 0 || height <= 0 || samples < 0) {
+            throw new RuntimeException("Zero or negative values are not allowed (" + width + ", " + height + ", " + samples + ")");
+        }
     }
 }

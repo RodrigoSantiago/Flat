@@ -11,22 +11,33 @@ public final class TextureMultisample2D extends Texture {
     private PixelFormat format;
     private int width, height, samples;
 
-    public TextureMultisample2D(Context context) {
+    public TextureMultisample2D(Context context, int width, int height, int samples, PixelFormat format) {
         super(context);
         final int textureId = GL.TextureCreate();
         this.textureId = textureId;
         assignDispose(() -> GL.TextureDestroy(textureId));
+        setSize(width, height, samples, format);
     }
 
+    @Override
     int getInternalID() {
         return textureId;
     }
 
+    @Override
     int getInternalType() {
         return GLEnums.TB_TEXTURE_2D_MULTISAMPLE;
     }
 
+    private void boundCheck() {
+        if (isDisposed()) {
+            throw new RuntimeException("The " + getClass().getSimpleName() + " is disposed.");
+        }
+        getContext().bindTexture(this);
+    }
+
     public void setSize(int width, int height, int samples, PixelFormat format) {
+        dataBoundsCheck(width, height, samples);
         boundCheck();
 
         this.width = width;
@@ -48,10 +59,13 @@ public final class TextureMultisample2D extends Texture {
         return samples;
     }
 
-    private void dataBoundsCheck(int length, int width, int height) {
-        int required = width * height * format.getPixelBytes();
-        if (length < required) {
-            throw new RuntimeException("The image data is too short. Provided : " + length + ", Required : " + required);
+    public PixelFormat getFormat() {
+        return format;
+    }
+
+    private void dataBoundsCheck(int width, int height, int samples) {
+        if (width <= 0 || height <= 0 || samples < 0) {
+            throw new RuntimeException("Zero or negative values are not allowed (" + width + ", " + height + ", " + samples + ")");
         }
     }
 }

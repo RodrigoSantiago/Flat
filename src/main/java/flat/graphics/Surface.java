@@ -1,9 +1,8 @@
 package flat.graphics;
 
-import flat.backend.GL;
-import flat.backend.GLEnums;
 import flat.graphics.context.*;
 import flat.graphics.context.enums.BlitMask;
+import flat.graphics.context.enums.LayerTarget;
 import flat.graphics.context.enums.MagFilter;
 import flat.graphics.context.enums.PixelFormat;
 import flat.graphics.image.PixelMap;
@@ -15,8 +14,8 @@ public class Surface {
     private final PixelFormat format;
     private Context context;
 
-    Frame frame;
-    Frame frameTransfer;
+    FrameBuffer frameBuffer;
+    FrameBuffer frameBufferTransfer;
     Render render;
     TextureMultisample2D textureMultisamples;
     Texture2D texture;
@@ -55,74 +54,49 @@ public class Surface {
     }
 
     public PixelMap createPixelMap() {
-        if (frame == null) {
+        if (frameBuffer == null) {
             return null;
         }
 
         byte[] imageData = new byte[width * height * format.getPixelBytes()];
 
         if (multiSamples > 0) {
-            if (frameTransfer == null) {
-                frameTransfer = new Frame(context);
+            if (frameBufferTransfer == null) {
+                frameBufferTransfer = new FrameBuffer(context);
                 if (texture == null) {
-                    texture = new Texture2D(context);
-                    texture.begin(0);
-                    texture.setSize(width, height, format);
-                    texture.end();
+                    texture = new Texture2D(context, width, height, format);
                 }
-                Frame before = context.getBoundFrame();
-                frameTransfer.begin();
-                frameTransfer.attach(0, texture);
-                frameTransfer.end();
-                if (before != null) {
-                    before.begin();
-                }
+                frameBufferTransfer.attach(LayerTarget.COLOR_0, texture, 0);
             }
-            context.blitFrameNow(frame, frameTransfer,
+            context.blitFrames(frameBuffer, frameBufferTransfer,
                     0, 0, width, height,
                     0, 0, width, height, BlitMask.Color, MagFilter.LINEAR);
         }
 
-        texture.begin(0);
         texture.getData(0, imageData, 0);
-        texture.end();
         return new PixelMap(imageData, width, height, PixelFormat.RGBA);
     }
 
-    void bind(Context context) {
-        if (frame == null) {
-            frame = new Frame(context);
+    void begin(Context context) {
+        if (frameBuffer == null) {
+            frameBuffer = new FrameBuffer(context);
         }
-
         if (multiSamples > 0 && textureMultisamples == null) {
-            textureMultisamples = new TextureMultisample2D(context);
-            textureMultisamples.begin(0);
-            textureMultisamples.setSize(width, height, multiSamples, format);
-            textureMultisamples.end();
+            textureMultisamples = new TextureMultisample2D(context, width, height, multiSamples, format);
         }
         if (multiSamples <= 0 && texture == null) {
-            texture = new Texture2D(context);
-            texture.begin(0);
-            texture.setSize(width, height, format);
-            texture.end();
+            texture = new Texture2D(context, width, height, format);
         }
         if (render == null) {
-            render = new Render(context);
-            render.begin();
-            render.setSize(width, height, multiSamples, PixelFormat.DEPTH24_STENCIL8);
-            render.end();
+            render = new Render(context, width, height, multiSamples, PixelFormat.DEPTH24_STENCIL8);
         }
 
-        frame.begin();
+        context.setFrameBuffer(frameBuffer);
         if (multiSamples > 0) {
-            frame.attach(0, textureMultisamples);
+            frameBuffer.attach(LayerTarget.COLOR_0, textureMultisamples, 0);
         } else {
-            frame.attach(0, texture);
+            frameBuffer.attach(LayerTarget.COLOR_0, texture, 0);
         }
-        frame.attach(Frame.DEPTH_STENCIL, render);
-    }
-
-    void unbind() {
-        frame.end();
+        frameBuffer.attach(LayerTarget.DEPTH_STENCIL, render);
     }
 }
