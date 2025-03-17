@@ -314,31 +314,28 @@ public final class ShaderProgram extends ContextObject {
         }
     }
 
-    public void setInt(String name, int typeSize, int arraySize, int... values) {
-        setInt(getUniform(name).getLocation(), typeSize, arraySize, values);
+    public boolean setTranspose(String name, boolean transpose) {
+        try {
+            getUniformValue(name).setTranspose(transpose);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
-    public void setInt(int att, int typeSize, int arraySize, int... values) {
+    void setInt(int att, int typeSize, int arraySize, int... values) {
         boundCheck();
 
         GL.ProgramSetUniformI(att, typeSize, arraySize, values, 0);
     }
 
-    public void setFloat(String name, int typeSize, int arraySize, float... values) {
-        setFloat(getUniform(name).getLocation(), typeSize, arraySize, values);
-    }
-
-    public void setFloat(int att, int typeSize, int arraySize, float... values) {
+    void setFloat(int att, int typeSize, int arraySize, float... values) {
         boundCheck();
 
         GL.ProgramSetUniformF(att, typeSize, arraySize, values, 0);
     }
 
-    public void setMatrix(String name, int w, int h, int arraySize, boolean transpose, float... value) {
-        setMatrix(getUniform(name).getLocation(), w, h, arraySize, transpose, value);
-    }
-
-    public void setMatrix(int att, int w, int h, int arraySize, boolean transpose, float... value) {
+    void setMatrix(int att, int w, int h, int arraySize, boolean transpose, float... value) {
         boundCheck();
 
         GL.ProgramSetUniformMatrix(att, w, h, arraySize, transpose, value, 0);
@@ -351,6 +348,7 @@ public final class ShaderProgram extends ContextObject {
         int[] valInt;
 
         private boolean invalid;
+        private boolean transpose;
 
         public AttributeValue(Attribute att) {
             this.att = att;
@@ -391,10 +389,16 @@ public final class ShaderProgram extends ContextObject {
         }
 
         private void setShaderValue() {
-            if (valInt != null) {
+            if (!att.getType().isFloat()) {
                 setInt(att.getLocation(), stride, valInt.length / stride, valInt);
             } else {
-                setFloat(att.getLocation(), stride, valFloat.length / stride, valFloat);
+                int mw = att.getType().getMatrixWidth();
+                int mh = att.getType().getMatrixHeight();
+                if (mw == 0 || mh == 0) {
+                    setFloat(att.getLocation(), stride, valFloat.length / stride, valFloat);
+                } else {
+                    setMatrix(att.getLocation(), mw, mh, valFloat.length / stride, transpose, valFloat);
+                }
             }
         }
 
@@ -439,6 +443,17 @@ public final class ShaderProgram extends ContextObject {
                 invalid = false;
             } else {
                 invalid = true;
+            }
+        }
+
+        public boolean isTranspose() {
+            return transpose;
+        }
+
+        public void setTranspose(boolean transpose) {
+            if (this.transpose != transpose) {
+                this.transpose = transpose;
+                onUpdate();
             }
         }
 
