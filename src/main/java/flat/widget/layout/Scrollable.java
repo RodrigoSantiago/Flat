@@ -26,8 +26,8 @@ public abstract class Scrollable extends Parent {
     private HorizontalScrollBar horizontalBar;
     private VerticalScrollBar verticalBar;
 
-    private Policy horizontalPolicy = Policy.AS_NEEDED;
-    private Policy verticalPolicy = Policy.AS_NEEDED;
+    private Policy horizontalBarPolicy = Policy.AS_NEEDED;
+    private Policy verticalBarPolicy = Policy.AS_NEEDED;
     private VerticalBarPosition verticalBarPosition = VerticalBarPosition.RIGHT;
     private HorizontalBarPosition horizontalBarPosition = HorizontalBarPosition.BOTTOM;
     private float scrollSensibility = 10f;
@@ -40,6 +40,9 @@ public abstract class Scrollable extends Parent {
     private float viewDimensionY;
     private float viewDimensionX;
 
+    private boolean verticalScrollEnabled = true;
+    private boolean horizontalScrollEnabled = true;
+
     private final UXListener<SlideEvent> slideX = (event) -> {
         event.consume();
         slideHorizontalTo(event.getValue());
@@ -51,8 +54,12 @@ public abstract class Scrollable extends Parent {
     };
 
     public Scrollable() {
-        setHorizontalBar(new HorizontalScrollBar());
-        setVerticalBar(new VerticalScrollBar());
+        var hbar = new HorizontalScrollBar();
+        hbar.addStyle(UXAttrs.convertToKebabCase(getClass().getSimpleName()) + "-horizontal-scroll-bar");
+        setHorizontalBar(hbar);
+        var vbar = new VerticalScrollBar();
+        vbar.addStyle(UXAttrs.convertToKebabCase(getClass().getSimpleName()) + "-vertical-scroll-bar");
+        setVerticalBar(vbar);
     }
 
     @Override
@@ -79,12 +86,14 @@ public abstract class Scrollable extends Parent {
 
         UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
-        setHorizontalPolicy(attrs.getConstant("horizontal-policy", info, getHorizontalPolicy()));
-        setVerticalPolicy(attrs.getConstant("vertical-policy", info, getVerticalPolicy()));
+        setHorizontalBarPolicy(attrs.getConstant("horizontal-bar-policy", info, getHorizontalBarPolicy()));
+        setVerticalBarPolicy(attrs.getConstant("vertical-bar-policy", info, getVerticalBarPolicy()));
         setVerticalBarPosition(attrs.getConstant("vertical-bar-position", info, getVerticalBarPosition()));
         setHorizontalBarPosition(attrs.getConstant("horizontal-bar-position", info, getHorizontalBarPosition()));
         setScrollSensibility(attrs.getNumber("scroll-sensibility", info, getScrollSensibility()));
         setFloatingBars(attrs.getBool("floating-bars", info, isFloatingBars()));
+        setHorizontalScrollEnabled(attrs.getBool("horizontal-scroll-enabled", info, isHorizontalScrollEnabled()));
+        setVerticalScrollEnabled(attrs.getBool("vertical-scroll-enabled", info, isVerticalScrollEnabled()));
     }
 
     public Vector2 onLayoutViewDimension(float width, float height) {
@@ -113,16 +122,16 @@ public abstract class Scrollable extends Parent {
         float barSizeY = horizontalBar == null || floatingBars ? 0 :
                 Math.min(viewDimensionY, Math.min(horizontalBar.getMeasureHeight(), horizontalBar.getLayoutMaxHeight()));
 
-        boolean isHorizontalLocalVisible = (horizontalPolicy == Policy.ALWAYS) ||
-                (horizontalPolicy == Policy.AS_NEEDED && viewDimensionX < localDimension.x - 0.001f);
-        boolean isVerticalLocalVisible = (verticalPolicy == Policy.ALWAYS) ||
-                (verticalPolicy == Policy.AS_NEEDED && viewDimensionY < localDimension.y - 0.001f);
+        boolean isHorizontalLocalVisible = (horizontalBarPolicy == Policy.ALWAYS) ||
+                (horizontalBarPolicy == Policy.AS_NEEDED && viewDimensionX < localDimension.x - 0.001f);
+        boolean isVerticalLocalVisible = (verticalBarPolicy == Policy.ALWAYS) ||
+                (verticalBarPolicy == Policy.AS_NEEDED && viewDimensionY < localDimension.y - 0.001f);
 
         if (barSizeX > 0 && barSizeY > 0 && (isHorizontalLocalVisible != isVerticalLocalVisible)) {
-            if (!isHorizontalLocalVisible && horizontalPolicy == Policy.AS_NEEDED) {
+            if (!isHorizontalLocalVisible && horizontalBarPolicy == Policy.AS_NEEDED) {
                 isHorizontalLocalVisible = viewDimensionX - barSizeX < localDimension.x - 0.001f;
             }
-            if (!isVerticalLocalVisible && verticalPolicy == Policy.AS_NEEDED) {
+            if (!isVerticalLocalVisible && verticalBarPolicy == Policy.AS_NEEDED) {
                 isVerticalLocalVisible = viewDimensionY - barSizeY < localDimension.y - 0.001f;
             }
         }
@@ -209,10 +218,10 @@ public abstract class Scrollable extends Parent {
         float oldX = viewOffsetX;
         float oldY = viewOffsetY;
         if (viewOffsetX != viewX && getActivity() != null) {
-            getActivity().getWindow().runSync(() -> setViewOffsetX(getViewOffsetX()));
+            getActivity().runLater(() -> setViewOffsetX(getViewOffsetX()));
         }
         if (viewOffsetY != viewY && getActivity() != null) {
-            getActivity().getWindow().runSync(() -> setViewOffsetY(getViewOffsetY()));
+            getActivity().runLater(() -> setViewOffsetY(getViewOffsetY()));
         }
     }
 
@@ -257,28 +266,28 @@ public abstract class Scrollable extends Parent {
         return this;
     }
 
-    public Policy getHorizontalPolicy() {
-        return horizontalPolicy;
+    public Policy getHorizontalBarPolicy() {
+        return horizontalBarPolicy;
     }
 
-    public void setHorizontalPolicy(Policy horizontalPolicy) {
-        if (horizontalPolicy == null) horizontalPolicy = Policy.AS_NEEDED;
+    public void setHorizontalBarPolicy(Policy horizontalBarPolicy) {
+        if (horizontalBarPolicy == null) horizontalBarPolicy = Policy.AS_NEEDED;
 
-        if (this.horizontalPolicy != horizontalPolicy) {
-            this.horizontalPolicy = horizontalPolicy;
+        if (this.horizontalBarPolicy != horizontalBarPolicy) {
+            this.horizontalBarPolicy = horizontalBarPolicy;
             invalidate(true);
         }
     }
 
-    public Policy getVerticalPolicy() {
-        return verticalPolicy;
+    public Policy getVerticalBarPolicy() {
+        return verticalBarPolicy;
     }
 
-    public void setVerticalPolicy(Policy verticalPolicy) {
-        if (verticalPolicy == null) verticalPolicy = Policy.AS_NEEDED;
+    public void setVerticalBarPolicy(Policy verticalBarPolicy) {
+        if (verticalBarPolicy == null) verticalBarPolicy = Policy.AS_NEEDED;
 
-        if (this.verticalPolicy != verticalPolicy) {
-            this.verticalPolicy = verticalPolicy;
+        if (this.verticalBarPolicy != verticalBarPolicy) {
+            this.verticalBarPolicy = verticalBarPolicy;
             invalidate(true);
         }
     }
@@ -385,6 +394,9 @@ public abstract class Scrollable extends Parent {
     }
 
     public void setViewOffsetX(float viewOffsetX) {
+        if (!isHorizontalScrollEnabled()) {
+            viewOffsetX = getViewOffsetX();
+        }
         viewOffsetX = Math.max(0, Math.min(viewOffsetX, totalDimensionX - viewDimensionX));
 
         if (this.viewOffsetX != viewOffsetX) {
@@ -404,6 +416,9 @@ public abstract class Scrollable extends Parent {
     }
 
     public void setViewOffsetY(float viewOffsetY) {
+        if (!isVerticalScrollEnabled()) {
+            viewOffsetY = getViewOffsetY();
+        }
         viewOffsetY = Math.max(0, Math.min(viewOffsetY, totalDimensionY - viewDimensionY));
 
         if (this.viewOffsetY != viewOffsetY) {
@@ -416,6 +431,22 @@ public abstract class Scrollable extends Parent {
                 verticalBar.setViewOffset(this.viewOffsetY);
             }
         }
+    }
+
+    public boolean isHorizontalScrollEnabled() {
+        return horizontalScrollEnabled;
+    }
+
+    public void setHorizontalScrollEnabled(boolean horizontalScrollEnabled) {
+        this.horizontalScrollEnabled = horizontalScrollEnabled;
+    }
+
+    public boolean isVerticalScrollEnabled() {
+        return verticalScrollEnabled;
+    }
+
+    public void setVerticalScrollEnabled(boolean verticalScrollEnabled) {
+        this.verticalScrollEnabled = verticalScrollEnabled;
     }
 
     public UXValueListener<Float> getViewOffsetXListener() {
@@ -445,6 +476,8 @@ public abstract class Scrollable extends Parent {
     }
 
     public void slideHorizontalTo(float offsetX) {
+        if (!isHorizontalScrollEnabled()) return;
+
         offsetX = Math.max(0, Math.min(offsetX, totalDimensionX - viewDimensionX));
 
         float old = viewOffsetX;
@@ -459,6 +492,8 @@ public abstract class Scrollable extends Parent {
     }
 
     public void slideVerticalTo(float offsetY) {
+        if (!isVerticalScrollEnabled()) return;
+
         offsetY = Math.max(0, Math.min(offsetY, totalDimensionY - viewDimensionY));
 
         float old = viewOffsetY;

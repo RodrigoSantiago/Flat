@@ -100,13 +100,15 @@ public class Window {
     void loop(float loopTime) {
         this.loopTime = loopTime;
 
+        context.getGraphics().refreshState();
+
         processStartup();
 
         activity.refreshScene();
 
-        processEvents();
-
         processSyncCalls();
+
+        processEvents();
 
         activity.animate(loopTime);
 
@@ -114,10 +116,18 @@ public class Window {
 
         if (activity.draw(context.getGraphics())) {
             bufferInvalid = true;
-            context.getGraphics().softFlush();
+            context.endFrame();
         }
 
         // Cursor
+        var pointer = getPointer();
+        if (pointer.getPressed() != null) {
+            setCursor(pointer.getPressed().getCursor());
+        } else if (pointer.getHover() != null) {
+            setCursor(pointer.getHover().getCursor());
+        } else {
+            setCursor(Cursor.UNSET);
+        }
         if (cursor != currentCursor) {
             if (currentCursor == Cursor.NONE) {
                 WL.SetInputMode(windowId, WLEnums.CURSOR, WLEnums.CURSOR_NORMAL);

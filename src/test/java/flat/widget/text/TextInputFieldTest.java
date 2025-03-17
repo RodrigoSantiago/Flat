@@ -22,8 +22,8 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.HashMap;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.powermock.api.mockito.PowerMockito.mock;
@@ -99,9 +99,7 @@ public class TextInputFieldTest {
         assertEquals(0, textField.getIconHeight(), 0.001f);
         assertNull(textField.getActionIcon());
         assertEquals(0, textField.getActionIconSpacing(), 0.001f);
-        assertEquals(0x00000000, textField.getActionIconBgColor());
         assertEquals(0xFFFFFFFF, textField.getActionIconColor());
-        assertEquals(Cursor.UNSET, textField.getActionIconCursor());
         assertEquals(ImageFilter.LINEAR, textField.getActionIconImageFilter());
         assertEquals(0, textField.getActionIconWidth(), 0.001f);
         assertEquals(0, textField.getActionIconHeight(), 0.001f);
@@ -118,9 +116,7 @@ public class TextInputFieldTest {
         assertEquals(0, textField.getIconHeight(), 0.001f);
         assertNull(textField.getActionIcon());
         assertEquals(0, textField.getActionIconSpacing(), 0.001f);
-        assertEquals(0x00000000, textField.getActionIconBgColor());
         assertEquals(0xFFFFFFFF, textField.getActionIconColor());
-        assertEquals(Cursor.UNSET, textField.getActionIconCursor());
         assertEquals(ImageFilter.LINEAR, textField.getActionIconImageFilter());
         assertEquals(0, textField.getActionIconWidth(), 0.001f);
         assertEquals(0, textField.getActionIconHeight(), 0.001f);
@@ -136,13 +132,14 @@ public class TextInputFieldTest {
         assertEquals(18, textField.getIconHeight(), 0.001f);
         assertEquals(iconAction, textField.getActionIcon());
         assertEquals(16, textField.getActionIconSpacing(), 0.001f);
-        assertEquals(0xFF00F0FF, textField.getActionIconBgColor());
         assertEquals(0xFF0000FF, textField.getActionIconColor());
-        assertEquals(Cursor.HAND, textField.getActionIconCursor());
         assertEquals(ImageFilter.NEAREST, textField.getActionIconImageFilter());
         assertEquals(20, textField.getActionIconWidth(), 0.001f);
         assertEquals(22, textField.getActionIconHeight(), 0.001f);
         assertEquals(action, textField.getActionListener());
+
+        assertTrue(textField.getHorizontalBar().getStyles().contains("text-input-field-horizontal-scroll-bar"));
+        assertTrue(textField.getVerticalBar().getStyles().contains("text-input-field-vertical-scroll-bar"));
     }
 
     @Test

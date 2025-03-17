@@ -36,18 +36,28 @@ public class Controller {
         return activity;
     }
 
-    public <T> UXListener<T> getListenerMethod(String name, Class<T> argument) {
+    private Method findMethod(String name, Class<?> argument) {
         try {
-            Method method = getClass().getMethod(name, argument);
+            Method method = argument == null ? getClass().getMethod(name) : getClass().getMethod(name, argument);
             method.setAccessible(true);
             if (method.isAnnotationPresent(Flat.class)
                     && Modifier.isPublic(method.getModifiers())
                     && !Modifier.isStatic(method.getModifiers())) {
-                return new ControllerListener<>(this, method);
+                return method;
             }
         } catch (Exception ignored) {
         }
+        return null;
+    }
 
+    public <T> UXListener<T> getListenerMethod(String name, Class<T> argument) {
+        Method method = findMethod(name, argument);
+        if (method == null) {
+            method = findMethod(name, null);
+        }
+        if (method != null) {
+            return new ControllerListener<>(this, method);
+        }
         return null;
     }
 
@@ -68,9 +78,12 @@ public class Controller {
                     }
                 }
             }
+            method = findMethod(name, null);
+            if (method != null) {
+                return new ControllerValueListener<>(this, method);
+            }
         } catch (Exception ignored) {
         }
-
         return null;
     }
 

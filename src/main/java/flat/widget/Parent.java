@@ -18,6 +18,11 @@ public abstract class Parent extends Widget {
         return super.getChildren();
     }
 
+    @Override
+    public void onMeasure() {
+        super.onMeasure();
+    }
+
     public boolean onLayoutSingleChild(Widget child) {
         return false;
     }
@@ -110,24 +115,10 @@ public abstract class Parent extends Widget {
 
             child.onMeasure();
             if (wrapWidth) {
-                if (child.getMeasureWidth() == MATCH_PARENT) {
-                    float mW = Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth());
-                    if (mW > mWidth) {
-                        mWidth = mW;
-                    }
-                } else if (child.getMeasureWidth() > mWidth) {
-                    mWidth = child.getMeasureWidth();
-                }
+                mWidth = Math.max(getDefWidth(child), mWidth);
             }
             if (wrapHeight) {
-                if (child.getMeasureHeight() == MATCH_PARENT) {
-                    float mH = Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight());
-                    if (mH > mHeight) {
-                        mHeight = mH;
-                    }
-                } else if (child.getMeasureHeight() > mHeight) {
-                    mHeight = child.getMeasureHeight();
-                }
+                mHeight = Math.max(getDefHeight(child), mHeight);
             }
         }
 
@@ -145,7 +136,7 @@ public abstract class Parent extends Widget {
         setMeasure(mWidth, mHeight);
     }
 
-    protected final void performMeasureVertical() {
+    protected final void performMeasureVertical(List<Widget> childList) {
         float extraWidth = getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
         float extraHeight = getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
         float mWidth = 0;
@@ -153,26 +144,15 @@ public abstract class Parent extends Widget {
         boolean wrapWidth = getLayoutPrefWidth() == WRAP_CONTENT;
         boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
 
-        for (Widget child : getChildrenIterable()) {
+        for (Widget child : childList) {
             if (child.getVisibility() == Visibility.GONE) continue;
 
             child.onMeasure();
             if (wrapWidth) {
-                if (child.getMeasureWidth() == MATCH_PARENT) {
-                    float mW = Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth());
-                    if (mW > mWidth) {
-                        mWidth = mW;
-                    }
-                } else if (child.getMeasureWidth() > mWidth) {
-                    mWidth = child.getMeasureWidth();
-                }
+                mWidth = Math.max(getDefWidth(child), mWidth);
             }
             if (wrapHeight) {
-                if (child.getMeasureHeight() == MATCH_PARENT) {
-                    mHeight += Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight());
-                } else {
-                    mHeight += child.getMeasureHeight();
-                }
+                mHeight += getDefHeight(child);
             }
         }
         if (wrapWidth) {
@@ -189,33 +169,22 @@ public abstract class Parent extends Widget {
         setMeasure(mWidth, mHeight);
     }
 
-    protected final void performMeasureHorizontal() {
+    protected final void performMeasureHorizontal(List<Widget> childList) {
         float extraWidth = getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
         float extraHeight = getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
         float mWidth = 0;
         float mHeight = 0;
         boolean wrapWidth = getLayoutPrefWidth() == WRAP_CONTENT;
         boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
-        for (Widget child : getChildrenIterable()) {
+        for (Widget child : childList) {
             if (child.getVisibility() == Visibility.GONE) continue;
 
             child.onMeasure();
             if (wrapWidth) {
-                if (child.getMeasureWidth() == MATCH_PARENT) {
-                    mWidth += Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth());
-                } else {
-                    mWidth += child.getMeasureWidth();
-                }
+                mWidth += getDefWidth(child);
             }
             if (wrapHeight) {
-                if (child.getMeasureHeight() == MATCH_PARENT) {
-                    float mH = Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight());
-                    if (mH > mHeight) {
-                        mHeight = mH;
-                    }
-                } else if (child.getMeasureHeight() > mHeight) {
-                    mHeight = child.getMeasureHeight();
-                }
+                mHeight = Math.max(getDefHeight(child), mHeight);
             }
         }
         if (wrapWidth) {
@@ -236,20 +205,8 @@ public abstract class Parent extends Widget {
         for (Widget child : getChildrenIterable()) {
             if (child.getVisibility() == Visibility.GONE) continue;
 
-            float childWidth;
-            if (child.getMeasureWidth() == MATCH_PARENT) {
-                childWidth = Math.min(Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth()), lWidth);
-            } else {
-                childWidth = Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth());
-            }
-
-            float childHeight;
-            if (child.getMeasureHeight() == MATCH_PARENT) {
-                childHeight = Math.min(Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight()), lHeight);
-            } else {
-                childHeight = Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight());
-            }
-
+            float childWidth = Math.min(getDefWidth(child), lWidth);
+            float childHeight = Math.min(getDefHeight(child), lHeight);
             child.onLayout(childWidth, childHeight);
         }
     }
@@ -260,8 +217,8 @@ public abstract class Parent extends Widget {
         for (Widget child : getChildrenIterable()) {
             if (child.getVisibility() == Visibility.GONE) continue;
 
-            float childWidth = Math.min(Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth()), lWidth);
-            float childHeight = Math.min(Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight()), lHeight);
+            float childWidth = Math.min(getDefWidth(child), lWidth);
+            float childHeight = Math.min(getDefHeight(child), lHeight);
             child.onLayout(childWidth, childHeight);
 
             float xPos = off(lx, lx + lWidth, child.getLayoutWidth(), horizontalAlign);
@@ -270,29 +227,16 @@ public abstract class Parent extends Widget {
         }
     }
 
-
     protected final void performSingleLayoutFree(float lWidth, float lHeight, Widget child) {
-        float childWidth;
-        if (child.getMeasureWidth() == MATCH_PARENT) {
-            childWidth = Math.min(Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth()), lWidth);
-        } else {
-            childWidth = Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth());
-        }
-
-        float childHeight;
-        if (child.getMeasureHeight() == MATCH_PARENT) {
-            childHeight = Math.min(Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight()), lHeight);
-        } else {
-            childHeight = Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight());
-        }
-
+        float childWidth = Math.min(getDefWidth(child), lWidth);
+        float childHeight = Math.min(getDefHeight(child), lHeight);
         child.onLayout(childWidth, childHeight);
     }
 
     protected final void performSingleLayoutConstraints(float lWidth, float lHeight, float lx, float ly, Widget child
             , VerticalAlign verticalAlign, HorizontalAlign horizontalAlign) {
-        float childWidth = Math.min(Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth()), lWidth);
-        float childHeight = Math.min(Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight()), lHeight);
+        float childWidth = Math.min(getDefWidth(child), lWidth);
+        float childHeight = Math.min(getDefHeight(child), lHeight);
         child.onLayout(childWidth, childHeight);
 
         float xPos = off(lx, lx + lWidth, child.getLayoutWidth(), horizontalAlign);
@@ -332,7 +276,7 @@ public abstract class Parent extends Widget {
             float childHeightM = totalMinimum == 0 ? 0 : (childMin / totalMinimum) * minSpace;
             float childHeightD = totalDefined == 0 ? 0 : (childDef / totalDefined) * defSpace;
 
-            float childWidth = Math.min(Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth()), lWidth);
+            float childWidth = Math.min(getDefWidth(child), lWidth);
             float childHeight = childHeightM + childHeightD;
             child.onLayout(childWidth, childHeight);
         }
@@ -393,7 +337,7 @@ public abstract class Parent extends Widget {
             if (child.getVisibility() == Visibility.GONE || child.getMeasureHeight() != MATCH_PARENT) continue;
             float childMin = totalMinimum == 0 ? 0 : (child.getLayoutMinHeight() / totalMinimum) * minSpace;
 
-            float childWidth = Math.min(Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth()), lWidth);
+            float childWidth = Math.min(getDefWidth(child), lWidth);
             float childHeight = childMin + tempSize[j++];
             child.onLayout(childWidth, childHeight);
         }
@@ -463,7 +407,7 @@ public abstract class Parent extends Widget {
             float childWidthD = totalDefined == 0 ? 0 : (childDef / totalDefined) * defSpace;
 
             float childWidth = childWidthM + childWidthD;
-            float childHeight = Math.min(Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight()), lHeight);
+            float childHeight = Math.min(getDefHeight(child), lHeight);
             child.onLayout(childWidth, childHeight);
         }
 
@@ -524,7 +468,7 @@ public abstract class Parent extends Widget {
             float childMin = totalMinimum == 0 ? 0 : (child.getLayoutMinWidth() / totalMinimum) * minSpace;
 
             float childWidth = childMin + tempSize[j++];
-            float childHeight = Math.min(Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight()), lHeight);
+            float childHeight = Math.min(getDefHeight(child), lHeight);
             child.onLayout(childWidth, childHeight);
         }
 
@@ -612,7 +556,7 @@ public abstract class Parent extends Widget {
             float childHeightM = totalMinimum == 0 ? 0 : (childMin / totalMinimum) * minSpace;
             float childHeightD = totalDefined == 0 ? 0 : (childDef / totalDefined) * defSpace;
 
-            float childWidth = Math.min(Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth()), lWidth);
+            float childWidth = Math.min(getDefWidth(child), lWidth);
             float childHeight = childHeightM + childHeightD;
             child.onLayout(childWidth, childHeight);
         }
@@ -673,7 +617,7 @@ public abstract class Parent extends Widget {
             if (child.getVisibility() == Visibility.GONE || child.getMeasureHeight() != MATCH_PARENT) continue;
             float childMin = totalMinimum == 0 ? 0 : (child.getLayoutMinHeight() / totalMinimum) * minSpace;
 
-            float childWidth = Math.min(Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth()), lWidth);
+            float childWidth = Math.min(getDefWidth(child), lWidth);
             float childHeight = childMin + tempSize[j++];
             child.onLayout(childWidth, childHeight);
         }
@@ -752,7 +696,7 @@ public abstract class Parent extends Widget {
             float childWidthD = totalDefined == 0 ? 0 : (childDef / totalDefined) * defSpace;
 
             float childWidth = childWidthM + childWidthD;
-            float childHeight = Math.min(Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight()), lHeight);
+            float childHeight = Math.min(getDefHeight(child), lHeight);
             child.onLayout(childWidth, childHeight);
         }
 
@@ -813,7 +757,7 @@ public abstract class Parent extends Widget {
             float childMin = totalMinimum == 0 ? 0 : (child.getLayoutMinWidth() / totalMinimum) * minSpace;
 
             float childWidth = childMin + tempSize[j++];
-            float childHeight = Math.min(Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight()), lHeight);
+            float childHeight = Math.min(getDefHeight(child), lHeight);
             child.onLayout(childWidth, childHeight);
         }
 
@@ -838,21 +782,21 @@ public abstract class Parent extends Widget {
         return Math.max(lWidth, localDimensionX);
     }
 
-    private float getDefWidth(Widget widget) {
-        return Math.min(widget.getLayoutMaxWidth(), widget.getMeasureWidth());
+    protected final float getDefWidth(Widget child) {
+        return Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth());
     }
 
-    private float getDefHeight(Widget widget) {
-        return Math.min(widget.getLayoutMaxHeight(), widget.getMeasureHeight());
+    protected final float getDefHeight(Widget child) {
+        return Math.min(child.getMeasureHeight(), child.getLayoutMaxHeight());
     }
 
-    private float off(float start, float end, float size, VerticalAlign verticalAlign) {
+    protected final float off(float start, float end, float size, VerticalAlign verticalAlign) {
         if (verticalAlign == VerticalAlign.BOTTOM) return end - size;
         if (verticalAlign == VerticalAlign.MIDDLE) return (start + end - size) / 2f;
         return start;
     }
 
-    private float off(float start, float end, float size, HorizontalAlign horizontalAlign) {
+    protected final float off(float start, float end, float size, HorizontalAlign horizontalAlign) {
         if (horizontalAlign == HorizontalAlign.RIGHT) return end - size;
         if (horizontalAlign == HorizontalAlign.CENTER) return (start + end - size) / 2f;
         return start;

@@ -1,0 +1,50 @@
+ranged-slider : ranged-slider.primary {
+    ripple-enabled : true;
+    ripple-overflow : true;
+    radius-top : 100;
+    radius-left : 100;
+    radius-right : 100;
+    radius-bottom : 100;
+    padding-top : 8dp;
+    padding-left : 8dp;
+    padding-right : 8dp;
+    padding-bottom : 8dp;
+    radius-top : 100;
+    radius-bottom : 100;
+    radius-left : 100;
+    radius-right : 100;
+
+    icon-width : 20dp;
+    icon-height : 20dp;
+    elevation : 1dp;
+
+    transition-duration : 0.2;
+    slide-transition-duration : 0.2;
+
+    focusable : true;
+    cursor : hand;
+}
+
+ranged-slider.primary {
+    icon : '/default/icons/circle.svg';
+    icon-color : $primary-color;
+    line-color : $disabled-color;
+    line-filled-color : $primary-color-active;
+    icon-bg-color : transparent;
+    line-width : 6dp;
+    line-cap : ROUND;
+    ripple-color : alpha($primary-color-fade, 0.5);
+    hovered {
+        icon-bg-color : alpha($primary-color-fade, 0.15);
+    }
+    focused {
+        icon-bg-color : alpha($primary-color-fade, 0.2);
+    }
+    disabled {
+        icon-color : $disabled-color;
+        icon-bg-color : transparent;
+        background-color : transparent;
+        line-filled-color : $disabled-color;
+        line-color : alpha($disabled-color, 0.5);
+    }
+}

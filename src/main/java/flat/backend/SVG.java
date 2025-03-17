@@ -22,7 +22,7 @@ public class SVG {
     //      Render styles
     //---------------------------
     public static native void SetAntiAlias(long context, boolean aa);
-    public static native void SetStroke(long context, float width, int cap, int join, float mitter, float[] dash, float dashPhase);
+    public static native void SetStroke(long context, float width, int cap, int join, float miter, float[] dash, float dashPhase);
     public static native void SetPaintColor(long context, int color);
     public static native void SetPaintLinearGradient(long context, float x1, float y1, float x2, float y2, int count, float[] data, int cycleMethod);
     public static native void SetPaintRadialGradient(long context, float x1, float y1, float fx, float fy, float rIn, float rOut, int count, float[] data, int cycleMethod);
@@ -64,7 +64,7 @@ public class SVG {
     public static native long FontLoad(byte[] data, float size, int sdf);
     public static native void FontUnload(long font);
 
-    public static native long FontPaintCreate(long font);
+    public static native long FontPaintCreate(long context, long font);
     public static native void FontPaintDestroy(long fontPaint);
     public static native long FontPaintGetAtlas(long fontPaint, int[] size);
 
@@ -93,4 +93,5 @@ public class SVG {
     //           Image
     //---------------------------
     public static native byte[] ReadImage(byte[] data, int[] imageData);
+    public static native byte[] WriteImage(byte[] imageData, int width, int height, int channels, int format, int quality);
 }

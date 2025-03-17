@@ -1,0 +1,331 @@
+<Scene width="MATCH_PARENT" height="MATCH_PARENT" background-color="$surface-color">
+    <LinearBox direction="HORIZONTAL" width="MATCH_PARENT" height="MATCH_PARENT" vertical-align="top">
+        <LinearBox direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
+                   padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
+            <Label text="Default" style="subtitle" margin-left="4dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Button text="Right Click-Me" style="">
+                    <Menu>
+                        <MenuItem text="Menu Item A" style=""/>
+                        <MenuItem text="Menu Item B" style=""/>
+                        <MenuItem text="Menu Item C" style=""/>
+                        <Divider/>
+                        <MenuItem text="Menu Item D" style=""/>
+                        <MenuItem text="Menu Item E" style="" enabled="false"/>
+                    </Menu>
+                </Button>
+                <Button margin-left="16dp" text="Right Click-Me" style="">
+                    <Menu>
+                        <MenuItem text="Menu Item A" icon="/default/icons/star.svg" style="icon-left"/>
+                        <MenuItem text="Menu Item B" icon="/default/icons/star.svg" style="icon-left"/>
+                        <MenuItem text="Menu Item C" icon="/default/icons/star.svg" style="icon-left"/>
+                        <Divider/>
+                        <MenuItem text="Menu Item D" style="icon-left"/>
+                        <MenuItem text="Menu Item E" icon="/default/icons/star.svg" style="icon-left" enabled="false"/>
+                    </Menu>
+                </Button>
+                <Button margin-left="16dp" text="Right Click-Me" style="">
+                    <Menu>
+                        <MenuItem text="Menu Item A" icon="/default/icons/star.svg" shortcut-text="ctrl+A" style="icon-left"/>
+                        <MenuItem text="Menu Item B" icon="/default/icons/star.svg" shortcut-text="ctrl+B" style="icon-left"/>
+                        <MenuItem text="Menu Item C" icon="/default/icons/star.svg" shortcut-text="ctrl+C" style="icon-left"/>
+                        <Divider/>
+                        <MenuItem text="Menu Item D" style="icon-left"/>
+                        <MenuItem text="Menu Item E" icon="/default/icons/star.svg" shortcut-text="ctrl+E" style="icon-left" enabled="false"/>
+                    </Menu>
+                </Button>
+                <Button margin-left="16dp" text="Right Click-Me" style="">
+                    <Menu>
+                        <MenuItem text="Menu Item A" shortcut-text="ctrl+A" style=""/>
+                        <MenuItem text="Menu Item B" shortcut-text="ctrl+B" style=""/>
+                        <MenuItem text="Menu Item C" shortcut-text="ctrl+C" style=""/>
+                        <Divider/>
+                        <MenuItem text="Menu Item D" style=""/>
+                        <MenuItem text="Menu Item E" shortcut-text="ctrl+E" style="" enabled="false"/>
+                    </Menu>
+                </Button>
+            </LinearBox>
+            <Label text="Submenus" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Button text="Right Click-Me" style="">
+                    <Menu>
+                        <MenuItem text="Menu Item A"/>
+                        <MenuItem text="Menu Item B"/>
+                        <MenuItem text="Menu Item C">
+                            <Menu>
+                                <MenuItem text="Menu Item A"/>
+                                <MenuItem text="Menu Item B">
+                                    <Menu>
+                                        <MenuItem text="Menu Item A"/>
+                                        <MenuItem text="Menu Item B"/>
+                                        <MenuItem text="Menu Item C"/>
+                                    </Menu>
+                                </MenuItem>
+                                <MenuItem text="Menu Item C"/>
+                                <Divider/>
+                                <MenuItem text="Menu Item D"/>
+                                <MenuItem text="Menu Item E"/>
+                            </Menu>
+                        </MenuItem>
+                        <Divider/>
+                        <MenuItem text="Menu Item D"/>
+                        <MenuItem text="Menu Item E" enabled="false">
+                            <Menu>
+                                <MenuItem text="Menu Item A"/>
+                                <MenuItem text="Menu Item B"/>
+                                <MenuItem text="Menu Item C"/>
+                            </Menu>
+                        </MenuItem>
+                    </Menu>
+                </Button>
+                <Button margin-left="16dp" text="Right Click-Me" style="">
+                    <Menu>
+                        <MenuItem text="Menu Item A" icon="/default/icons/star.svg" style="icon-left"/>
+                        <MenuItem text="Menu Item B" icon="/default/icons/star.svg" style="icon-left"/>
+                        <MenuItem text="Menu Item C" icon="/default/icons/star.svg" style="icon-left">
+                            <Menu>
+                                <MenuItem text="Menu Item A"/>
+                                <MenuItem text="Menu Item B">
+                                    <Menu>
+                                        <MenuItem text="Menu Item A"/>
+                                        <MenuItem text="Menu Item B"/>
+                                        <MenuItem text="Menu Item C"/>
+                                    </Menu>
+                                </MenuItem>
+                                <MenuItem text="Menu Item C"/>
+                                <Divider/>
+                                <MenuItem text="Menu Item D"/>
+                                <MenuItem text="Menu Item E"/>
+                            </Menu>
+                        </MenuItem>
+                        <Divider/>
+                        <MenuItem text="Menu Item D" style="icon-left"/>
+                        <MenuItem text="Menu Item E" icon="/default/icons/star.svg" style="icon-left" enabled="false">
+                            <Menu>
+                                <MenuItem text="Menu Item A"/>
+                                <MenuItem text="Menu Item B"/>
+                                <MenuItem text="Menu Item C"/>
+                            </Menu>
+                        </MenuItem>
+                    </Menu>
+                </Button>
+                <Button margin-left="16dp" text="Right Click-Me" style="">
+                    <Menu>
+                        <MenuItem text="Menu Item A" icon="/default/icons/star.svg" shortcut-text="ctrl+A" style="icon-left"/>
+                        <MenuItem text="Menu Item B" icon="/default/icons/star.svg" shortcut-text="ctrl+B" style="icon-left"/>
+                        <MenuItem text="Menu Item C" icon="/default/icons/star.svg" shortcut-text="ctrl+C" style="icon-left">
+                            <Menu>
+                                <MenuItem text="Menu Item A"/>
+                                <MenuItem text="Menu Item B">
+                                    <Menu>
+                                        <MenuItem text="Menu Item A"/>
+                                        <MenuItem text="Menu Item B"/>
+                                        <MenuItem text="Menu Item C"/>
+                                    </Menu>
+                                </MenuItem>
+                                <MenuItem text="Menu Item C"/>
+                                <Divider/>
+                                <MenuItem text="Menu Item D"/>
+                                <MenuItem text="Menu Item E"/>
+                            </Menu>
+                        </MenuItem>
+                        <Divider/>
+                        <MenuItem text="Menu Item D" style="icon-left"/>
+                        <MenuItem text="Menu Item E" icon="/default/icons/star.svg" shortcut-text="ctrl+E" style="icon-left" enabled="false">
+                            <Menu>
+                                <MenuItem text="Menu Item A"/>
+                                <MenuItem text="Menu Item B"/>
+                                <MenuItem text="Menu Item C"/>
+                            </Menu>
+                        </MenuItem>
+                    </Menu>
+                </Button>
+                <Button margin-left="16dp" text="Right Click-Me" style="">
+                    <Menu>
+                        <MenuItem text="Menu Item A" shortcut-text="ctrl+A" style=""/>
+                        <MenuItem text="Menu Item B" shortcut-text="ctrl+B" style=""/>
+                        <MenuItem text="Menu Item C" shortcut-text="ctrl+C" style="">
+                            <Menu>
+                                <MenuItem text="Menu Item A"/>
+                                <MenuItem text="Menu Item B">
+                                    <Menu>
+                                        <MenuItem text="Menu Item A"/>
+                                        <MenuItem text="Menu Item B"/>
+                                        <MenuItem text="Menu Item C"/>
+                                    </Menu>
+                                </MenuItem>
+                                <MenuItem text="Menu Item C"/>
+                                <Divider/>
+                                <MenuItem text="Menu Item D"/>
+                                <MenuItem text="Menu Item E"/>
+                            </Menu>
+                        </MenuItem>
+                        <Divider/>
+                        <MenuItem text="Menu Item D" style=""/>
+                        <MenuItem text="Menu Item E" shortcut-text="ctrl+E" style="" enabled="false">
+                            <Menu>
+                                <MenuItem text="Menu Item A"/>
+                                <MenuItem text="Menu Item B"/>
+                                <MenuItem text="Menu Item C"/>
+                            </Menu>
+                        </MenuItem>
+                    </Menu>
+                </Button>
+            </LinearBox>
+            <Label text="Scroll" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Button text="Right Click-Me" style="">
+                    <Menu>
+                        <MenuItem text="Menu Item 1" style=""/>
+                        <MenuItem text="Menu Item 2" icon="/default/icons/star.svg" style="icon-left"/>
+                        <MenuItem text="Menu Item 3" icon="/default/icons/star.svg" style="icon-left"/>
+                        <MenuItem text="Menu Item 4" icon="/default/icons/star.svg" shortcut-text="ctrl+A" style="icon-left"/>
+                        <MenuItem text="Menu Item 5" style="">
+                            <Menu>
+                                <MenuItem text="Menu Item A" style=""/>
+                                <MenuItem text="Menu Item B" style=""/>
+                                <MenuItem text="Menu Item C" style=""/>
+                            </Menu>
+                        </MenuItem>
+                        <Divider/>
+                        <MenuItem text="Menu Item A" style=""/>
+                        <MenuItem text="Menu Item B" style=""/>
+                        <MenuItem text="Menu Item C" style=""/>
+                        <MenuItem text="Menu Item D" style=""/>
+                        <MenuItem text="Menu Item E" style=""/>
+                        <MenuItem text="Menu Item F" style=""/>
+                        <MenuItem text="Menu Item G" style=""/>
+                        <MenuItem text="Menu Item H" style=""/>
+                        <MenuItem text="Menu Item I" style=""/>
+                        <MenuItem text="Menu Item J" style=""/>
+                        <MenuItem text="Menu Item K" style=""/>
+                        <MenuItem text="Menu Item L" style=""/>
+                        <MenuItem text="Menu Item M" style=""/>
+                        <MenuItem text="Menu Item N" style=""/>
+                        <MenuItem text="Menu Item O" style=""/>
+                        <MenuItem text="Menu Item P" style=""/>
+                        <MenuItem text="Menu Item Q" style=""/>
+                        <MenuItem text="Menu Item R" style=""/>
+                        <MenuItem text="Menu Item S" style=""/>
+                        <MenuItem text="Menu Item T" style=""/>
+                        <MenuItem text="Menu Item U" style=""/>
+                        <MenuItem text="Menu Item V" style=""/>
+                        <MenuItem text="Menu Item W" style=""/>
+                        <MenuItem text="Menu Item X" style=""/>
+                        <Divider/>
+                        <MenuItem text="Menu Item 6" style=""/>
+                        <MenuItem text="Menu Item 7" style=""/>
+                        <MenuItem text="Menu Item 8" style=""/>
+                        <MenuItem text="Menu Item 9" style=""/>
+                        <MenuItem text="Menu Item 10" style=""/>
+                    </Menu>
+                </Button>
+            </LinearBox>
+            <Label text="Too Much Submenus" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Button text="Right Click-Me" style="">
+                    <Menu>
+                        <MenuItem text="Menu Item A" style="">
+                            <Menu>
+                                <MenuItem text="Menu Item A" style="">
+                                    <Menu>
+                                        <MenuItem text="Menu Item A" style="">
+                                            <Menu>
+                                                <MenuItem text="Menu Item A" style="">
+                                                    <Menu>
+                                                        <MenuItem text="Menu Item A" style="">
+                                                            <Menu>
+                                                                <MenuItem text="Menu Item A" style="">
+                                                                    <Menu>
+                                                                        <MenuItem text="Menu Item A" style="">
+                                                                            <Menu>
+                                                                                <MenuItem text="Menu Item A" style="">
+                                                                                    <Menu>
+                                                                                        <MenuItem text="Menu Item A" style="">
+                                                                                            <Menu>
+                                                                                                <MenuItem text="Menu Item A" style="">
+                                                                                                    <Menu>
+                                                                                                        <MenuItem text="Menu Item A" style="">
+
+                                                                                                        </MenuItem>
+                                                                                                        <MenuItem text="Menu Item B" style=""/>
+                                                                                                        <MenuItem text="Menu Item C" style=""/>
+                                                                                                    </Menu>
+                                                                                                </MenuItem>
+                                                                                                <MenuItem text="Menu Item B" style=""/>
+                                                                                                <MenuItem text="Menu Item C" style=""/>
+                                                                                            </Menu>
+                                                                                        </MenuItem>
+                                                                                        <MenuItem text="Menu Item B" style=""/>
+                                                                                        <MenuItem text="Menu Item C" style=""/>
+                                                                                    </Menu>
+                                                                                </MenuItem>
+                                                                                <MenuItem text="Menu Item B" style=""/>
+                                                                                <MenuItem text="Menu Item C" style=""/>
+                                                                            </Menu>
+                                                                        </MenuItem>
+                                                                        <MenuItem text="Menu Item B" style=""/>
+                                                                        <MenuItem text="Menu Item C" style=""/>
+                                                                    </Menu>
+                                                                </MenuItem>
+                                                                <MenuItem text="Menu Item B" style=""/>
+                                                                <MenuItem text="Menu Item C" style=""/>
+                                                            </Menu>
+                                                        </MenuItem>
+                                                        <MenuItem text="Menu Item B" style=""/>
+                                                        <MenuItem text="Menu Item C" style=""/>
+                                                    </Menu>
+                                                </MenuItem>
+                                                <MenuItem text="Menu Item B" style=""/>
+                                                <MenuItem text="Menu Item C" style=""/>
+                                            </Menu>
+                                        </MenuItem>
+                                        <MenuItem text="Menu Item B" style=""/>
+                                        <MenuItem text="Menu Item C" style=""/>
+                                    </Menu>
+                                </MenuItem>
+                                <MenuItem text="Menu Item B" style=""/>
+                                <MenuItem text="Menu Item C" style=""/>
+                            </Menu>
+                        </MenuItem>
+                        <MenuItem text="Menu Item B" style=""/>
+                        <MenuItem text="Menu Item C" style=""/>
+                    </Menu>
+                </Button>
+            </LinearBox>
+            <Label text="Navigation" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <LinearBox direction="VERTICAL" horizontal-align="LEFT" background-color="$card-color" width="200dp"
+                           padding-left="8dp" padding-right="8dp" padding-top="8dp" padding-bottom="8dp">
+                    <MenuItem text="Menu Item A" style="navigation"/>
+                    <MenuItem text="Menu Item B" style="navigation"/>
+                    <MenuItem text="Menu Item C" style="navigation"/>
+                    <MenuItem text="Menu Item D" style="navigation"/>
+                    <MenuItem text="Menu Item E" style="navigation" enabled="false"/>
+                </LinearBox>
+                <LinearBox margin-left="16dp" direction="VERTICAL" horizontal-align="LEFT" background-color="$card-color" width="200dp"
+                           padding-left="8dp" padding-right="8dp" padding-top="8dp" padding-bottom="8dp">
+                    <MenuItem text="Menu Item A" icon="/default/icons/star.svg" style="navigation icon-left"/>
+                    <MenuItem text="Menu Item B" icon="/default/icons/star.svg" style="navigation icon-left"/>
+                    <MenuItem text="Menu Item C" icon="/default/icons/star.svg" style="navigation icon-left"/>
+                    <MenuItem text="Menu Item D" style="navigation icon-left"/>
+                    <MenuItem text="Menu Item E" icon="/default/icons/star.svg" style="navigation icon-left" enabled="false"/>
+                </LinearBox>
+                <LinearBox margin-left="16dp" direction="VERTICAL" horizontal-align="LEFT" background-color="$card-color" width="200dp"
+                           padding-left="8dp" padding-right="8dp" padding-top="8dp" padding-bottom="8dp">
+                    <MenuItem text="Menu Item A" icon="/default/icons/star.svg" style="navigation icon-left"/>
+                    <MenuItem text="Menu Item B" icon="/default/icons/star.svg" style="navigation icon-left"/>
+                    <MenuItem text="Menu Item C" icon="/default/icons/star.svg" style="navigation icon-left"/>
+                    <MenuItem text="Right Click-Me" icon="/default/icons/star.svg" style="navigation icon-left">
+                        <Menu>
+                            <MenuItem text="Menu Item A" style=""/>
+                            <MenuItem text="Menu Item B" style=""/>
+                            <MenuItem text="Menu Item C" style=""/>
+                        </Menu>
+                    </MenuItem>
+                    <MenuItem text="Menu Item E" icon="/default/icons/star.svg" style="navigation icon-left" enabled="false"/>
+                </LinearBox>
+            </LinearBox>
+        </LinearBox>
+    </LinearBox>
+</Scene>

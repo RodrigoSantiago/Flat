@@ -76,10 +76,12 @@ public class TextFieldTest {
         assertEquals(HorizontalAlign.LEFT, textField.getHorizontalAlign());
         assertEquals(VerticalAlign.TOP, textField.getVerticalAlign());
         assertEquals(defaultFont, textField.getTextFont());
+        assertTrue(textField.isEditable());
+        assertTrue(textField.isMultiLineEnabled());
         assertEquals(16f, textField.getTextSize(), 0.1f);
         assertEquals(8f, textField.getTitleSize(), 0.1f);
         assertEquals(0f, textField.getTitleSpacing(), 0.1f);
-        assertEquals(1f, textField.getTitleTransitionDuration(), 0.1f);
+        assertEquals(0f, textField.getTitleTransitionDuration(), 0.1f);
         assertEquals(0.5f, textField.getCaretBlinkDuration(), 0.1f);
         assertEquals(0x000000FF, textField.getTextColor());
         assertEquals(0x000000FF, textField.getTitleColor());
@@ -100,10 +102,12 @@ public class TextFieldTest {
         assertEquals(HorizontalAlign.LEFT, textField.getHorizontalAlign());
         assertEquals(VerticalAlign.TOP, textField.getVerticalAlign());
         assertEquals(defaultFont, textField.getTextFont());
+        assertFalse(textField.isEditable());
+        assertFalse(textField.isMultiLineEnabled());
         assertEquals(16f, textField.getTextSize(), 0.1f);
         assertEquals(8f, textField.getTitleSize(), 0.1f);
         assertEquals(0f, textField.getTitleSpacing(), 0.1f);
-        assertEquals(1f, textField.getTitleTransitionDuration(), 0.1f);
+        assertEquals(0f, textField.getTitleTransitionDuration(), 0.1f);
         assertEquals(0.5f, textField.getCaretBlinkDuration(), 0.1f);
         assertEquals(0x000000FF, textField.getTextColor());
         assertEquals(0x000000FF, textField.getTitleColor());
@@ -123,6 +127,8 @@ public class TextFieldTest {
         assertEquals(HorizontalAlign.RIGHT, textField.getHorizontalAlign());
         assertEquals(VerticalAlign.BOTTOM, textField.getVerticalAlign());
         assertEquals(boldFont, textField.getTextFont());
+        assertFalse(textField.isEditable());
+        assertFalse(textField.isMultiLineEnabled());
         assertEquals(24f, textField.getTextSize(), 0.1f);
         assertEquals(12f, textField.getTitleSize(), 0.1f);
         assertEquals(2f, textField.getTitleSpacing(), 0.1f);
@@ -140,6 +146,9 @@ public class TextFieldTest {
         assertEquals(filter, textField.getTextChangeFilter());
         assertEquals(action, textField.getTextChangeListener());
         assertEquals(inputFilter, textField.getTextInputFilter());
+
+        assertTrue(textField.getHorizontalBar().getStyles().contains("text-field-horizontal-scroll-bar"));
+        assertTrue(textField.getVerticalBar().getStyles().contains("text-field-vertical-scroll-bar"));
     }
 
     @Test
@@ -286,6 +295,8 @@ public class TextFieldTest {
         UXValue uxBoldFont = mock(UXValue.class);
         when(uxBoldFont.asFont(any())).thenReturn(boldFont);
 
+        hash.put(UXHash.getHash("editable"), new UXValueBool(false));
+        hash.put(UXHash.getHash("multiline-enabled"), new UXValueBool(false));
         hash.put(UXHash.getHash("horizontal-align"), new UXValueText(HorizontalAlign.RIGHT.toString()));
         hash.put(UXHash.getHash("vertical-align"), new UXValueText(VerticalAlign.BOTTOM.toString()));
         hash.put(UXHash.getHash("text"), new UXValueText("A"));

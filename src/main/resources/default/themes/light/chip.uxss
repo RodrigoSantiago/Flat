@@ -1,0 +1,246 @@
+chip : chip.default {
+    text-font : font("Roboto");
+    ripple-enabled : true;
+    radius-top : 100;
+    radius-left : 100;
+    radius-right : 100;
+    radius-bottom : 100;
+    padding-left : 12dp;
+    padding-right : 12dp;
+    padding-top : 7dp;
+    padding-bottom : 7dp;
+    focusable : true;
+
+    icon-spacing : 8dp;
+    action-spacing : 8dp;
+    text-size : 18sp;
+
+    transition-duration : 0.2;
+    vertical-align : middle;
+    close-icon-cursor : hand;
+    close-icon-bg-color : #00000030;
+    close-icon-spacing : 8px;
+
+    cursor : hand;
+    undefined {
+        cursor : hand;
+    }
+}
+
+chip.icon-left {
+    icon-position : left;
+    padding-left : 4dp;
+    padding-top : 4dp;
+    padding-bottom : 4dp;
+    icon-spacing : 8dp;
+    icon-width : 24dp;
+    icon-height : 24dp;
+}
+
+chip.icon-right {
+    icon-position : right;
+    padding-right : 4dp;
+    padding-top : 4dp;
+    padding-bottom : 4dp;
+    icon-spacing : 8dp;
+    icon-width : 24dp;
+    icon-height : 24dp;
+}
+
+chip.close-icon-right {
+    icon-position : left;
+    padding-right : 8dp;
+    close-icon-spacing : 8dp;
+    close-icon-width : 18dp;
+    close-icon-height : 18dp;
+    close-icon : "/default/icons/close.svg";
+    undefined {
+        close-icon : "/default/icons/close-thick.svg";
+    }
+}
+
+chip.close-icon-left {
+    icon-position : right;
+    padding-left : 8dp;
+    close-icon-spacing : 8dp;
+    close-icon-width : 18dp;
+    close-icon-height : 18dp;
+    close-icon : "/default/icons/close.svg";
+    undefined {
+        close-icon : "/default/icons/close-thick.svg";
+    }
+}
+
+chip.complete-left {
+    icon-position : left;
+    padding-right : 8dp;
+    padding-top : 4dp;
+    padding-bottom : 4dp;
+    padding-left : 4dp;
+    icon-spacing : 8dp;
+    icon-width : 24dp;
+    icon-height : 24dp;
+    close-icon-spacing : 8dp;
+    close-icon-width : 18dp;
+    close-icon-height : 18dp;
+    close-icon : "/default/icons/close.svg";
+    undefined {
+        close-icon : "/default/icons/close-thick.svg";
+    }
+}
+
+chip.complete-right {
+    icon-position : right;
+    padding-right : 4dp;
+    padding-top : 4dp;
+    padding-bottom : 4dp;
+    padding-left : 8dp;
+    icon-spacing : 8dp;
+    icon-width : 24dp;
+    icon-height : 24dp;
+    close-icon-spacing : 8dp;
+    close-icon-width : 18dp;
+    close-icon-height : 18dp;
+    close-icon : "/default/icons/close.svg";
+    undefined {
+        close-icon : "/default/icons/close-thick.svg";
+    }
+}
+
+chip.dense {
+    padding-top : 4dp;
+    padding-bottom : 4dp;
+    close-icon-spacing : 8dp;
+    close-icon-width : 18dp;
+    close-icon-height : 18dp;
+    icon-spacing : 8dp;
+    icon-width : 18dp;
+    icon-height : 18dp;
+}
+
+chip.default {
+    text-color : alpha($on-card-color, 0.5);
+    icon-color : alpha($on-card-color, 0.5);
+    close-icon-color : alpha($on-card-color, 0.5);
+    background-color : alpha($on-card-color, 0.05);
+    ripple-color : alpha($on-card-color, 0.5);
+
+    hovered {
+        background-color : alpha($on-card-color, 0.10);
+    }
+    focused {
+        background-color : alpha($on-card-color, 0.10);
+    }
+    activated {
+        text-color : $on-card-color;
+        icon-color : $on-card-color;
+        close-icon-color : alpha($on-card-color, 0.75);
+        background-color : alpha($on-card-color, 0.20);
+    }
+    undefined {
+        close-icon-color : $on-card-color;
+    }
+    disabled {
+        text-color : alpha($on-disabled-color, 0.25);
+        icon-color : alpha($on-disabled-color, 0.25);
+        close-icon-color : alpha($on-disabled-color, 0.25);
+        background-color : $disabled-color;
+    }
+}
+
+chip.primary {
+    text-color : alpha($on-card-color, 0.5);
+    icon-color : alpha($on-card-color, 0.5);
+    close-icon-color : alpha($on-card-color, 0.5);
+    background-color : alpha($on-card-color, 0.05);
+    ripple-color : alpha($primary-color, 0.5);
+
+    hovered {
+        background-color : alpha($on-card-color, 0.10);
+    }
+    focused {
+        background-color : alpha($on-card-color, 0.10);
+    }
+    activated {
+        text-color : $primary-color;
+        icon-color : $primary-color;
+        close-icon-color : alpha($primary-color, 0.75);
+        background-color : alpha($primary-color-fade, 0.25);
+    }
+    undefined {
+        close-icon-color : $primary-color;
+    }
+    disabled {
+        text-color : alpha($on-disabled-color, 0.25);
+        icon-color : alpha($on-disabled-color, 0.25);
+        close-icon-color : alpha($on-disabled-color, 0.25);
+        background-color : $disabled-color;
+    }
+}
+
+chip.outlined {
+    text-color : alpha($on-card-color, 0.5);
+    icon-color : alpha($on-card-color, 0.5);
+    close-icon-color : alpha($on-card-color, 0.5);
+    background-color : transparent;
+    border-color : alpha($on-card-color, 0.5);
+    border-width : 1dp;
+    ripple-color : alpha($on-card-color, 0.5);
+
+    hovered {
+        background-color : alpha($on-card-color, 0.05);
+    }
+    focused {
+        background-color : alpha($on-card-color, 0.10);
+    }
+    activated {
+        text-color : $on-card-color;
+        icon-color : $on-card-color;
+        close-icon-color : alpha($on-card-color, 0.75);
+        border-color : $on-card-color;
+        background-color : alpha($on-card-color, 0.20);
+    }
+    undefined {
+        close-icon-color : $on-card-color;
+    }
+    disabled {
+        text-color : $disabled-color;
+        icon-color : $disabled-color;
+        close-icon-color : $disabled-color;
+        border-color : $disabled-color;
+        background-color : transparent;
+    }
+}
+
+chip.outlined-primary {
+    text-color : alpha($primary-color, 0.75);
+    icon-color : alpha($primary-color, 0.75);
+    close-icon-color : alpha($primary-color, 0.75);
+    background-color : transparent;
+    border-color : $primary-color;
+    border-width : 1dp;
+    ripple-color : alpha($primary-color-fade, 0.25);
+
+    hovered {
+        background-color : alpha($primary-color-fade, 0.05);
+    }
+    focused {
+        background-color : alpha($primary-color-fade, 0.10);
+    }
+    activated {
+        text-color : $primary-color;
+        icon-color : $primary-color;
+        close-icon-color : alpha($primary-color, 0.75);
+        background-color : alpha($primary-color-fade, 0.25);
+    }
+    undefined {
+        close-icon-color : $primary-color;
+    }
+    disabled {
+        text-color : $disabled-color;
+        icon-color : $disabled-color;
+        close-icon-color : $disabled-color;
+        border-color : $disabled-color;
+        background-color : transparent;
+    }
+}

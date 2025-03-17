@@ -8,6 +8,7 @@ import flat.graphics.context.Font;
 import flat.math.Vector2;
 import flat.uxml.*;
 import flat.widget.Group;
+import flat.widget.Parent;
 import flat.widget.Widget;
 import flat.widget.enums.DropdownAlign;
 import flat.widget.enums.HorizontalAlign;
@@ -23,7 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public class ToolBar extends Group {
+public class ToolBar extends Parent {
 
     private UXListener<ActionEvent> navigationAction;
 
@@ -71,10 +72,10 @@ public class ToolBar extends Group {
         subtitleRender.setTextSize(subtitleSize);
         unmodifiableToolItems = Collections.unmodifiableList(toolItems);
         var overflow = new ToolItem();
-        overflow.addStyle("tool-item-overflow");
+        overflow.addStyle("overflow");
         setOverflowItem(overflow);
         var navigation = new ToolItem();
-        navigation.addStyle("tool-item-navigation");
+        navigation.addStyle("navigation");
         setNavigationItem(navigation);
     }
 
@@ -162,32 +163,32 @@ public class ToolBar extends Group {
         float ih = 0;
         for (ToolItem item : toolItems) {
             item.onMeasure();
-            iw += item.getMeasureWidth();
-            ih = Math.max(ih, item.getMeasureHeight());
+            iw += getDefWidth(item);
+            ih = Math.max(ih, getDefHeight(item));
         }
 
         float ow = 0;
         if (overflowItem != null) {
             overflowItem.onMeasure();
-            ow = overflowItem.getMeasureWidth();
-            ih = Math.max(ih, overflowItem.getMeasureHeight());
+            ow = getDefWidth(overflowItem);
+            ih = Math.max(ih, getDefHeight(overflowItem));
         }
 
         float nw = 0;
         if (navigationItem != null) {
             navigationItem.onMeasure();
-            nw = navigationItem.getMeasureWidth();
-            ih = Math.max(ih, navigationItem.getMeasureHeight());
+            nw = getDefWidth(navigationItem);
+            ih = Math.max(ih, getDefHeight(navigationItem));
         }
 
         if (wrapWidth) {
-            float tw = Math.max(getTitleWidth(), getSubtitleWidth());
+            float tw = Math.max(hasTitle() ? getTitleWidth() : 0, hasSubtitle() ? getSubtitleWidth() : 0);
             mWidth = Math.max(tw + extraWidth + ow + nw + iw, getLayoutMinWidth());
         } else {
             mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
         }
         if (wrapHeight) {
-            float th = getTitleHeight() + getSubtitleHeight();
+            float th = (hasTitle() ? getTitleHeight() : 0) + (hasSubtitle() ? getSubtitleHeight() : 0);
             mHeight = Math.max(Math.max(th, ih) + extraHeight, getLayoutMinHeight());
         } else {
             mHeight = Math.max(getLayoutPrefHeight(), getLayoutMinHeight());
@@ -315,7 +316,7 @@ public class ToolBar extends Group {
 
     private boolean hasExtraContextMenuItems() {
         if (getContextMenu() != null) {
-            if (getContextMenu().getChildrenIterable().size() - menuItems.size() > 0) {
+            if (getContextMenu().getUnmodifiableItemsList().size() - menuItems.size() - (divider == null ? 0 : 1) > 0) {
                 return true;
             }
         }
@@ -330,6 +331,7 @@ public class ToolBar extends Group {
                 if (item == toolItem) {
                     MenuItem menuItem = i >= menuItems.size() ? null : menuItems.get(i);
                     if (menuItem != null) {
+                        menuItem.setEnabled(item.isEnabled());
                         menuItem.setText(item.getMenuText());
                         menuItem.setShortcutText(item.getMenuShortcutText());
                     }
@@ -355,6 +357,7 @@ public class ToolBar extends Group {
                 menuItem = new MenuItem();
                 menuItem.addStyle("tool-bar-menu-item");
                 menuItem.setActionListener(this::onToolItemAction);
+                menuItems.add(menuItem);
                 if (divider == null && hasExtraContextMenuItems()) {
                     divider = new Divider();
                     overflowMenu.addDivider(divider);
@@ -362,9 +365,9 @@ public class ToolBar extends Group {
                 }
                 overflowMenu.addMenuItem(menuItem);
                 overflowMenu.moveChild(menuItem, 0);
-                menuItems.add(menuItem);
             }
             ToolItem item = toolItems.get(toolItems.size() - 1 - i);
+            menuItem.setEnabled(item.isEnabled());
             menuItem.setText(item.getMenuText());
             menuItem.setShortcutText(item.getMenuShortcutText());
         }
@@ -409,6 +412,9 @@ public class ToolBar extends Group {
 
         boolean hasTitle = hasTitle() && getTitleFont() != null && getTitleSize() > 0;
         boolean hasSubtitle = hasSubtitle() && getSubtitleFont() != null && getSubtitleSize() > 0;
+        if (hasTitle && hasSubtitle && getTitleHeight() + getSubtitleHeight() > height + 0.001f) {
+            hasSubtitle = false;
+        }
         if (hasTitle || hasSubtitle) {
 
             float titleH = (hasTitle ? getTitleHeight() : 0);
@@ -513,8 +519,8 @@ public class ToolBar extends Group {
     }
 
     private void onOverflowBtnAction(ActionEvent actionEvent) {
+        updateMenuItems();
         if (overflowItem != null && overflowMenu != null && getActivity() != null) {
-            updateMenuItems();
             Vector2 center = localToScreen(
                     overflowItem.getLayoutX() + overflowItem.getLayoutWidth() * 0.5f,
                     overflowItem.getLayoutY() + overflowItem.getLayoutHeight() * 0.5f);
@@ -753,10 +759,6 @@ public class ToolBar extends Group {
         if (navigationAction != null) {
             UXListener.safeHandle(navigationAction, new ActionEvent(this));
         }
-    }
-
-    protected boolean isWrapContent() {
-        return getPrefWidth() == WRAP_CONTENT || getPrefHeight() == WRAP_CONTENT;
     }
 
     protected float xOff(float start, float end, float textWidth) {

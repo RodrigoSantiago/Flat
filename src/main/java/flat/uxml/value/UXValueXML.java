@@ -19,6 +19,11 @@ public class UXValueXML extends  UXValue {
     }
 
     @Override
+    public UXValue getSource(UXTheme theme) {
+        return value.getSource(theme);
+    }
+
+    @Override
     public UXValue getVariable(UXTheme theme) {
         return value.getVariable(theme);
     }

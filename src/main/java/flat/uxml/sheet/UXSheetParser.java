@@ -7,12 +7,9 @@ import flat.graphics.text.FontWeight;
 import flat.resources.Parser;
 import flat.uxml.value.UXValue;
 import flat.uxml.value.*;
-import flat.widget.Widget;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.regex.Pattern;
 
 public class UXSheetParser {
 
@@ -32,6 +29,7 @@ public class UXSheetParser {
     private static final int LOCALE     = 13;  // @[a-zA-Z]
 
     private static final List<String> pseudo = List.of("enabled", "focused", "activated", "hovered", "pressed", "dragged", "undefined", "disabled");
+    private static final List<String> lists = List.of("list", "translate", "scale", "rotate", "skewX", "skewX", "matrix");
     private static final char[][] measureChar = {{'c', 'm'}, {'d', 'p'}, {'i', 'n'}, {'m', 'm'}, {'p', 'x', 'c'}, {'s', 'p'}};
 
     private int pos;
@@ -54,6 +52,7 @@ public class UXSheetParser {
 
     private List<UXSheetStyle> styles = new ArrayList<>();
     private List<UXSheetAttribute> variables = new ArrayList<>();
+    private List<UXSheetAttribute> includes = new ArrayList<>();
     private List<ErroLog> logs = new ArrayList<>();
 
     public UXSheetParser(String text) {
@@ -89,11 +88,22 @@ public class UXSheetParser {
             if (currentType == VARIABLE) {
                 var variable = parseAttribute();
                 if (variable != null) {
-                    if (variable.getValue() instanceof UXValueVariable) {
+                    if (variable.getValue() instanceof UXValueVariable ||
+                        variable.getValue() instanceof UXValueSizeList list && list.containsVariable()) {
                         log(ErroLog.VARIABLE_CANNOT_REFERENCE_A_VARIABLE);
                     } else {
                         getVariables().add(variable);
                     }
+                }
+
+            } else if (currentType == LOCALE) {
+                var value = parseImport();
+                if (value == null
+                        || !"@include".equals(value.getName())
+                        || !(value.getValue() instanceof UXValueText)) {
+                    log(ErroLog.INVALID_INCLUDE);
+                } else {
+                    getIncludes().add(value);
                 }
 
             } else if (currentType == TEXT) {
@@ -111,7 +121,7 @@ public class UXSheetParser {
         if (text.length() == 0) return new UXValueText(text);
 
         int init = text.codePointAt(0);
-        if (isCharacter(init) || init == '+' || init == '#' || init == '$' || init == '@') {
+        if (isCharacter(init) || init == '+' || init == '-' || init == '#' || init == '$' || init == '@') {
             read();
             if (readNext()) {
                 UXValue value = parseValue();
@@ -141,6 +151,10 @@ public class UXSheetParser {
 
     public List<ErroLog> getLogs() {
         return logs;
+    }
+
+    public List<UXSheetAttribute> getIncludes() {
+        return includes;
     }
 
     private UXSheetStyle parseStyle() {
@@ -230,6 +244,33 @@ public class UXSheetParser {
         return new UXSheetAttribute(name, value == null ? new UXValue() : value);
     }
 
+    private UXSheetAttribute parseImport() {
+        String name = currentText;
+        UXValue value = null;
+        int state = 0;
+        while (nextType != CBRACE && readNext()) {
+            if (state == 0 && (value = parseValue()) != null) {
+                state = 1;
+            } else if (state == 1 && currentType == SEMICOLON) {
+                state = 2;
+                break;
+            } else if (currentType == INVALID) {
+                log(ErroLog.UNEXPECTED_TOKEN);
+
+            } else {
+                log(ErroLog.UNEXPECTED_TOKEN);
+                break;
+            }
+        }
+        if (state != 2) {
+            log(ErroLog.UNEXPECTED_END_OF_TOKENS);
+        }
+        if (state < 1) {
+            return null;
+        }
+        return new UXSheetAttribute(name, value == null ? new UXValue() : value);
+    }
+
     private UXValue parseValue() {
 
         if (currentType == VARIABLE) {
@@ -255,10 +296,10 @@ public class UXSheetParser {
                 return new UXValueBool(false);
             }
             if (currentText.equalsIgnoreCase("MATCH_PARENT")) {
-                return new UXValueNumber(Widget.MATCH_PARENT);
+                return new UXValueSizeMp();
             }
             if (currentText.equalsIgnoreCase("WRAP_CONTENT")) {
-                 return new UXValueNumber(Widget.WRAP_CONTENT);
+                 return new UXValueNumber(0);
             }
             return new UXValueText(currentText);
         }
@@ -278,9 +319,10 @@ public class UXSheetParser {
                 } else if (state == 2 && currentType == CPARAM) {
                     return parseFunction(functionName, values);
 
-                } else if (state == 1) {
+                } else if (state == 1 || state == 2) {
                     state = 2;
-                    values.add(parseValue());
+                    var val = parseValue();
+                    if (val != null) values.add(val);
 
                 }  else {
                     log(ErroLog.UNEXPECTED_TOKEN);
@@ -464,7 +506,7 @@ public class UXSheetParser {
         // [a-zA-Z_\-]+
 
         builder.appendCodePoint(current);
-        while (isCharacter(next)) {
+        while (isCharacter(next) || next == '.') {
             readNextChar();
             builder.appendCodePoint(current);
         }
@@ -580,7 +622,15 @@ public class UXSheetParser {
     private UXValue parseHex(String source) {
         try {
             int color;
-            if (source.length() == 7) {
+            if (source.length() == 4) {
+                int r = Integer.parseInt(source.substring(1, 2), 16);
+                int g = Integer.parseInt(source.substring(2, 3), 16);
+                int b = Integer.parseInt(source.substring(3, 4), 16);
+                r = r | (r << 4);
+                g = g | (g << 4);
+                b = b | (b << 4);
+                color = Color.rgbToColor(r, g, b);
+            } else if (source.length() == 7) {
                 color = (int) ((Long.parseLong(source.substring(1), 16) << 8) | 0x000000FF);
             } else if (source.length() == 9) {
                 color = (int) Long.parseLong(source.substring(1), 16);
@@ -596,10 +646,7 @@ public class UXSheetParser {
     }
 
     private UXValue parseFunction(String source, List<UXValue> values) {
-        if (source.equalsIgnoreCase("list")) {
-            return new UXValueSizeList(values.toArray(new UXValue[0]));
-
-        } else if (source.equalsIgnoreCase("alpha")) {
+        if (source.equalsIgnoreCase("alpha")) {
             if (values.size() >= 2 && values.get(1) instanceof UXValueNumber v0) {
                 float alpha = Math.min(1, Math.max(0, v0.asNumber(null)));
                 if (values.get(0) instanceof UXValueVariable variable) {
@@ -675,7 +722,10 @@ public class UXSheetParser {
                 }
             }
             return new UXValueFont(family, weight, posture, style);
-        } else {
+        } else if (lists.contains(source)) {
+            return new UXValueSizeList(source, values.toArray(new UXValue[0]));
+
+        }  else {
             log(ErroLog.INVALID_FUNCTION);
         }
         return new UXValue();
@@ -689,6 +739,7 @@ public class UXSheetParser {
         public static final String VARIABLE_CANNOT_REFERENCE_A_VARIABLE = "Variable cannot reference a variable";
         public static final String UNEXPECTED_TOKEN = "Unexpected token";
         public static final String UNEXPECTED_END_OF_TOKENS = "Unexpected end of tokens";
+        public static final String INVALID_INCLUDE = "Invalid import";
         public static final String INVALID_NUMBER = "Invalid number";
         public static final String INVALID_FONT = "Invalid font";
         public static final String INVALID_COLOR = "Invalid color";
@@ -697,6 +748,7 @@ public class UXSheetParser {
         public static final String NAME_EXPECTED = "Name expected";
         public static final String PARENT_NOT_FOUND = "Parent Not Found";
         public static final String CYCLIC_PARENT = "Cyclic Parent";
+        public static final String CYCLIC_INCLUDE = "Cyclic Include";
         public static final String REPEATED_STYLE = "Repeated Style";
         public static final String REPEATED_VARIABLE = "Repeated Variable";
         public static final String INVALID_PROCESSOR = "Invalid processor";

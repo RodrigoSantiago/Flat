@@ -29,11 +29,6 @@ public class ListView extends Scrollable {
     private int endIndex;
     private int totalIndex;
 
-    public ListView() {
-        setHorizontalBar(new HorizontalScrollBar());
-        setVerticalBar(new VerticalScrollBar());
-    }
-
     @Override
     public void applyChildren(UXChildren children) {
         super.applyChildren(children);
@@ -203,14 +198,7 @@ public class ListView extends Scrollable {
             child.onMeasure();
 
             if (wrapWidth) {
-                if (child.getMeasureWidth() == MATCH_PARENT) {
-                    float mW = Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth());
-                    if (mW > mWidth) {
-                        mWidth = mW;
-                    }
-                } else if (child.getMeasureWidth() > mWidth) {
-                    mWidth = child.getMeasureWidth();
-                }
+                mWidth = getDefWidth(child);
             }
         }
 
@@ -249,7 +237,7 @@ public class ListView extends Scrollable {
         for (int i = 0; i < items.size(); i++) {
             var child = items.get(i);
 
-            float childWidth = Math.min(Math.min(child.getMeasureWidth(), child.getLayoutMaxWidth()), getTotalDimensionX());
+            float childWidth = Math.min(getDefWidth(child), getTotalDimensionX());
             child.onLayout(childWidth, itemHeight);
             child.setLayoutPosition(xx, yy + itemHeight * (i + startIndex));
         }
@@ -260,7 +248,7 @@ public class ListView extends Scrollable {
         setLayout(width, height);
 
         if (updateDimensions() && getActivity() != null) {
-            getActivity().getWindow().runSync(() -> refreshItems());
+            getActivity().runLater(() -> refreshItems());
         }
 
         super.onLayout(width, height);

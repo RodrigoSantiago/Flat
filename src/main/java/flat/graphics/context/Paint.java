@@ -8,4 +8,5 @@ public abstract class Paint {
         return texture.getInternalID();
     }
 
+    public abstract Paint multiply(int color);
 }

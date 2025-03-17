@@ -46,7 +46,7 @@ public class HorizontalScrollBarTest {
         assertEquals(0, scrollBar.getTotalDimension(), 0.1f);
         assertEquals(0, scrollBar.getViewDimension(), 0.1f);
         assertEquals(0, scrollBar.getViewOffset(), 0.1f);
-        assertEquals(0f, scrollBar.getMinSize(), 0.0001f);
+        assertEquals(0f, scrollBar.getMinRange(), 0.0001f);
         assertEquals(0xFFFFFFFF, scrollBar.getColor());
         assertNull(scrollBar.getSlideListener());
         assertNull(scrollBar.getViewOffsetListener());
@@ -57,7 +57,7 @@ public class HorizontalScrollBarTest {
         assertEquals(200, scrollBar.getTotalDimension(), 0.1f);
         assertEquals(50, scrollBar.getViewDimension(), 0.1f);
         assertEquals(100, scrollBar.getViewOffset(), 0.1f);
-        assertEquals(0f, scrollBar.getMinSize(), 0.0001f);
+        assertEquals(0f, scrollBar.getMinRange(), 0.0001f);
         assertEquals(0xFFFFFFFF, scrollBar.getColor());
         assertEquals(action, scrollBar.getSlideListener());
         assertEquals(listener, scrollBar.getViewOffsetListener());
@@ -67,7 +67,7 @@ public class HorizontalScrollBarTest {
         assertEquals(200, scrollBar.getTotalDimension(), 0.1f);
         assertEquals(50, scrollBar.getViewDimension(), 0.1f);
         assertEquals(100, scrollBar.getViewOffset(), 0.1f);
-        assertEquals(0.1f, scrollBar.getMinSize(), 0.0001f);
+        assertEquals(0.1f, scrollBar.getMinRange(), 0.0001f);
         assertEquals(0xFF0000FF, scrollBar.getColor());
         assertEquals(action, scrollBar.getSlideListener());
         assertEquals(listener, scrollBar.getViewOffsetListener());
@@ -148,7 +148,7 @@ public class HorizontalScrollBarTest {
         hash.put(UXHash.getHash("total-dimension"), new UXValueNumber(200));
         hash.put(UXHash.getHash("view-dimension"), new UXValueNumber(50));
         hash.put(UXHash.getHash("view-offset"), new UXValueNumber(100));
-        hash.put(UXHash.getHash("min-size"), new UXValueNumber(0.1f));
+        hash.put(UXHash.getHash("min-range"), new UXValueNumber(0.1f));
         hash.put(UXHash.getHash("color"), new UXValueColor(0xFF0000FF));
         return hash;
     }

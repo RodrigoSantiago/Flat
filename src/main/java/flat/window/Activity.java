@@ -16,6 +16,9 @@ import flat.widget.Scene;
 import flat.widget.Widget;
 
 import java.util.ArrayList;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 
 public class Activity {
 
@@ -156,6 +159,18 @@ public class Activity {
         animationsAdd.remove(animation);
     }
 
+    public void runLater(FutureTask<?> task) {
+        window.runSync(task);
+    }
+
+    public <T> Future<T> runLater(Callable<T> task) {
+        return window.runSync(task);
+    }
+
+    public <T> Future<T> runLater(Runnable task) {
+        return window.runSync(task);
+    }
+
     private void updateDensity() {
         float dpi = getWindow() == null ? 160f : getWindow().getDpi();
         if (lastDpi != dpi) {
@@ -191,6 +206,7 @@ public class Activity {
 
         if (invalidDensity) {
             invalidDensity = false;
+            scene.setTheme(theme);
             scene.refreshStyle();
         }
         clearUnusedFilters();
@@ -216,7 +232,7 @@ public class Activity {
                 if (parent == null) {
                     widget.onMeasure();
                     widget.onLayout(widget.getLayoutWidth(), widget.getLayoutHeight());
-                } else if (!parent.onLayoutSingleChild(widget)) {
+                } else if (parent.isWrapContent() || !parent.onLayoutSingleChild(widget)) {
                     parent.onMeasure();
                     parent.onLayout(parent.getLayoutWidth(), parent.getLayoutHeight());
                 }
@@ -261,10 +277,7 @@ public class Activity {
     }
 
     private void drawBackground(Graphics graphics) {
-        graphics.setAntialiasEnabled(true);
-        graphics.setView(0, 0, (int) getWidth(), (int) getHeight());
         graphics.clear(scene.getBackgroundColor(), 1, 0);
-        graphics.clearClip();
     }
 
     private void drawWidgets(Graphics graphics) {

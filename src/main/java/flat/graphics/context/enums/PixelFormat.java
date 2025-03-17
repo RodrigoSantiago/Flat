@@ -3,48 +3,29 @@ package flat.graphics.context.enums;
 import flat.backend.GLEnums;
 
 public enum PixelFormat {
-    RED(GLEnums.TF_RED),
-    RG(GLEnums.TF_RG),
-    RGB(GLEnums.TF_RGB),
-    RGBA(GLEnums.TF_RGBA),
-    DEPTH16(GLEnums.TF_DEPTH_COMPONENT16),
-    DEPTH24(GLEnums.TF_DEPTH_COMPONENT24),
-    DEPTH32(GLEnums.TF_DEPTH_COMPONENT32F),
-    DEPTH24_STENCIL8(GLEnums.TF_DEPTH24_STENCIL8),
-    DEPTH32_STENCIL8(GLEnums.TF_DEPTH32F_STENCIL8);
+    RED(GLEnums.TF_RED, 1),
+    RG(GLEnums.TF_RG, 2),
+    RGB(GLEnums.TF_RGB, 3),
+    RGBA(GLEnums.TF_RGBA, 4),
+    DEPTH16(GLEnums.TF_DEPTH_COMPONENT16, 2),
+    DEPTH24(GLEnums.TF_DEPTH_COMPONENT24, 3),
+    DEPTH32(GLEnums.TF_DEPTH_COMPONENT32F, 4),
+    DEPTH24_STENCIL8(GLEnums.TF_DEPTH24_STENCIL8, 4),
+    DEPTH32_STENCIL8(GLEnums.TF_DEPTH32F_STENCIL8, 5);
 
     private final int glEnum;
+    private final int bytes;
 
-    PixelFormat(int glEnum) {
+    PixelFormat(int glEnum, int bytes) {
         this.glEnum = glEnum;
+        this.bytes= bytes;
     }
-
 
     public int getInternalEnum() {
         return glEnum;
     }
 
-    public static int getPixelBytes(PixelFormat pixelFormat) {
-        if (pixelFormat == RED) {
-            return 1;
-        } else if (pixelFormat == RG) {
-            return 2;
-        } else if (pixelFormat == RGB) {
-            return 3;
-        } else if (pixelFormat == RGBA) {
-            return 4;
-        } else if (pixelFormat == DEPTH32) {
-            return 4;
-        } else if (pixelFormat == DEPTH24) {
-            return 3;
-        } else if (pixelFormat == DEPTH16) {
-            return 2;
-        } else if (pixelFormat == DEPTH32_STENCIL8) {
-            return 5;
-        } else if (pixelFormat == DEPTH24_STENCIL8) {
-            return 4;
-        } else {
-            return 1;
-        }
+    public int getPixelBytes() {
+        return bytes;
     }
 }

@@ -54,7 +54,7 @@ public class ProgressCircle extends ProgressBar {
         if (width <= 0 || height <= 0) return;
 
         graphics.setTransform2D(getTransform());
-        graphics.setStroker(new BasicStroke(lineWidth, getLineMode() == ProgressLineMode.REGULAR ? 0 : 1, 2));
+        graphics.setStroke(new BasicStroke(lineWidth, getLineMode() == ProgressLineMode.REGULAR ? 0 : 1, 2));
         float baseAngle = 90;
         float radius = (float) Math.sqrt(width * width + height * height) * 0.5f;
 

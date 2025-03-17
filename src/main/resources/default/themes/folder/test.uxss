@@ -1,9 +1,0 @@
-
-test-style {
-    font : font("Roboto");
-    text-size : 24sp;
-    text-color : #000000FF;
-    text-all-caps : false;
-    vertical-align : middle;
-    horizontal-align : left;
-}

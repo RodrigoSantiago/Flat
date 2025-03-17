@@ -78,6 +78,9 @@ public class TextDropDownTest {
         textField.applyStyle();
 
         assertEquals(selected, textField.getOptionSelectedListener());
+
+        assertTrue(textField.getHorizontalBar().getStyles().contains("text-drop-down-horizontal-scroll-bar"));
+        assertTrue(textField.getVerticalBar().getStyles().contains("text-drop-down-vertical-scroll-bar"));
     }
 
     @Test
@@ -105,16 +108,17 @@ public class TextDropDownTest {
 
         Menu menu = dropDown.getSubMenu();
         assertTrue(menu.isShown());
+        assertTrue(menu.getStyles().contains("drop-down-menu"));
 
         int i = 0;
-        for (var child : menu.getChildrenIterable()) {
+        for (var child : menu.getUnmodifiableItemsList()) {
             assertEquals(child.getClass(), MenuItem.class);
             MenuItem item = (MenuItem) child;
             assertEquals(options.get(i), item.getText());
             i++;
         }
 
-        for (var child : menu.getChildrenIterable()) {
+        for (var child : menu.getUnmodifiableItemsList()) {
             MenuItem item = (MenuItem) child;
             item.action();
             break;

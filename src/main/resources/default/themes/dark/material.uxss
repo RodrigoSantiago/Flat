@@ -1,0 +1,37 @@
+@include '../light';
+
+// Main Color
+$primary-color : #2196F3;
+$primary-color-hover : #42A5F5;   // Hover / Focus
+$primary-color-active: #64B5F6;   // Activated
+$primary-color-press : #90CAF9;   // Pressed / Ripple
+$primary-color-fade  : #1E88E5;   // Outline Background
+
+// Optional Extra Color
+$secondary-color : #FF1744;
+$secondary-color-acc : #D50000;
+$secondary-color-selected : #FF5252;
+
+// Base Color (Usually used Primary+Card or Card+Primary)
+$card-color : #424242;
+$card-color-hover : #383838;
+$card-color-active: #303030;
+$card-color-press : #282828;
+$card-color-fade  : #3D3D3D;
+
+// Background Color
+$surface-color : #212121;
+
+// Disabled Colors (Bg + Details)
+$disabled-color : #181818FF;
+$on-disabled-color : #484848FF;
+$disabled-color-low : #181818FF;      // Only for Chips
+$on-disabled-color-low : #303030FF;   // Only for Chips
+
+// Text/Icons/Symbols Colors
+$on-primary-color : #FFFFFF;
+$on-secondary-color : #FFFFFF;
+$on-surface-color : #FFFFFF;
+$on-card-color : #FFFFFF;
+$selection-on-primary-color : #FFFFFF80;
+$selection-on-card-color : #64B5F680;

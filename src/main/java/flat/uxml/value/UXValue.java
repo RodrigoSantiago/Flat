@@ -11,6 +11,10 @@ public class UXValue {
     public UXValue() {
     }
 
+    public UXValue getSource(UXTheme theme) {
+        return this;
+    }
+
     public UXValue getVariable(UXTheme theme) {
         return null;
     }

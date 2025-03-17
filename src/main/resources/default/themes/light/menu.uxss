@@ -1,0 +1,108 @@
+menu {
+    width : 200dp;
+    shadow-enabled : true;
+    elevation : 8dp;
+    radius-top : 4dp;
+    radius-left : 4dp;
+    radius-right : 4dp;
+    radius-bottom : 4dp;
+    padding-top : 8dp;
+    padding-bottom : 8dp;
+    margin-top : 8dp;
+    margin-left : 8dp;
+    margin-right : 8dp;
+    margin-bottom : 16dp;
+    background-color : $card-color;
+    show-transition-duration : 0.2;
+    transition-duration : 0.2;
+}
+
+menu-item : menu-item.default {
+    text-font : font("Roboto");
+    text-size : 18sp;
+    text-all-caps : false;
+    vertical-align : middle;
+    horizontal-align : left;
+
+    padding-top : 8dp;
+    padding-left : 16dp;
+    padding-right : 16dp;
+    padding-bottom : 8dp;
+    ripple-enabled : true;
+    transition-duration : 0.2;
+
+    text-size : 18sp;
+    shortcut-text-size : 12sp;
+    width : match_parent;
+    cursor : hand;
+
+    submenu-icon : '/default/icons/menu-right.svg';
+}
+
+menu-item.icon-left {
+    icon-width : 18sp;
+    icon-height : 18sp;
+    icon-spacing : 8dp;
+}
+
+menu-item.default {
+    text-color : $on-card-color;
+    icon-color : alpha($on-card-color, 0.75);
+    shortcut-text-color : alpha($on-card-color, 0.5);
+    submenu-color : alpha($on-card-color, 0.5);
+    background-color : $card-color;
+    ripple-color : $card-color-press;
+
+    hovered {
+        background-color : $card-color-hover;
+    }
+    pressed {
+        background-color : $card-color-hover;
+    }
+    disabled {
+        text-color : alpha($on-card-color, 0.25);
+        icon-color : alpha($on-card-color, 0.15);
+        shortcut-text-color : alpha($on-card-color, 0.15);
+        submenu-color : alpha($on-card-color, 0.15);
+    }
+}
+
+divider {
+    height : 1dp;
+    width : MATCH_PARENT;
+    background-color : alpha($on-card-color, 0.15);
+}
+
+menu-item.navigation {
+    radius-top : 4dp;
+    radius-left : 4dp;
+    radius-bottom : 4dp;
+    radius-right : 4dp;
+    margin-top : 2dp;
+    margin-bottom : 2dp;
+    focusable : true;
+
+    text-color : $on-card-color;
+    icon-color : alpha($on-card-color, 0.5);
+    ripple-color : alpha($primary-color, 0.5);
+    background-color : transparent;
+
+    hovered {
+        background-color : alpha($primary-color-fade, 0.1);
+    }
+    focused {
+        text-color : $primary-color;
+        icon-color : $primary-color;
+        background-color : alpha($primary-color-fade, 0.2);
+    }
+    activated {
+        text-color : $primary-color;
+        icon-color : $primary-color;
+        background-color : alpha($primary-color-fade, 0.5);
+    }
+    disabled {
+        text-color : alpha($on-card-color, 0.25);
+        icon-color : alpha($on-card-color, 0.15);
+        shortcut-text-color : alpha($on-card-color, 0.15);
+    }
+}

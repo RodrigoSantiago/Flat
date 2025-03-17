@@ -6,10 +6,12 @@ import java.lang.reflect.Method;
 public class ControllerValueListener<T> implements UXValueListener<T> {
     private WeakReference<Controller> controller;
     private Method method;
+    private boolean simple;
 
     ControllerValueListener(Controller controller, Method method) {
         this.controller = new WeakReference<>(controller);
         this.method = method;
+        this.simple = method.getParameterCount() == 0;
     }
 
     @Override
@@ -21,7 +23,11 @@ public class ControllerValueListener<T> implements UXValueListener<T> {
         try {
             var obj = controller.get();
             if (obj != null && obj.isListening()) {
-                method.invoke(obj, change);
+                if (simple) {
+                    method.invoke(obj);
+                } else {
+                    method.invoke(obj, change);
+                }
             } else {
                 controller = null;
                 method = null;

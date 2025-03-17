@@ -1,17 +1,16 @@
 package flat.graphics.image;
 
+import flat.backend.SVG;
 import flat.graphics.Graphics;
+import flat.graphics.ImageTexture;
 import flat.graphics.context.Context;
 import flat.graphics.context.Texture2D;
-import flat.graphics.context.enums.MagFilter;
-import flat.graphics.context.enums.MinFilter;
-import flat.graphics.context.enums.PixelFormat;
-import flat.graphics.context.enums.WrapMode;
+import flat.graphics.context.enums.*;
 import flat.widget.enums.ImageFilter;
 
 import java.util.HashMap;
 
-public class PixelMap implements Drawable {
+public class PixelMap implements Drawable, ImageTexture {
 
     private HashMap<Context, Texture2D> textures = new HashMap<>();
     private PixelFormat format;
@@ -24,32 +23,38 @@ public class PixelMap implements Drawable {
         this.data = data;
         this.format = format;
 
-        int required = width * height * PixelFormat.getPixelBytes(format);
+        int required = width * height * format.getPixelBytes();
         if (data.length < required) {
             throw new RuntimeException("The image data is too short. Provided : " + data.length + ", Required : " + required);
         }
+    }
+
+    public byte[] export(ImageFileFormat imageFileFormat) {
+        return export(imageFileFormat, 100);
+    }
+
+    public byte[] export(ImageFileFormat imageFileFormat, int quality) {
+        quality = Math.max(100, Math.max(0, quality));
+        return SVG.WriteImage(data, width, height, format.getPixelBytes(), imageFileFormat.ordinal(), quality);
     }
 
     public byte[] getData() {
         return data;
     }
 
-    public Texture2D readTexture(Context context) {
-        return readTexture(context, null);
+    public Texture2D getTexture(Context context) {
+        return getTexture(context, null);
     }
 
-    public Texture2D readTexture(Context context, ImageFilter filter) {
+    public Texture2D getTexture(Context context, ImageFilter filter) {
         var texture = textures.get(context);
         if (texture == null) {
-            texture = new Texture2D(context);
-            texture.begin(0);
-            texture.setSize(width, height, format);
+            texture = new Texture2D(context, width, height, format);
             texture.setData(0, data, 0, 0, 0, width, height);
             texture.setLevels(0);
             texture.generateMipmapLevels();
             texture.setScaleFilters(MagFilter.NEAREST, MinFilter.NEAREST);
             texture.setWrapModes(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
-            texture.end();
             textures.put(context, texture);
         }
         for (var ctx : textures.keySet()) {
@@ -60,11 +65,9 @@ public class PixelMap implements Drawable {
         }
         if (filter != null) {
             if ((texture.getMagFilter() == MagFilter.NEAREST) != (filter == ImageFilter.NEAREST)) {
-                texture.begin(0);
                 texture.setScaleFilters(
                         filter == ImageFilter.LINEAR ? MagFilter.LINEAR : MagFilter.NEAREST,
                         filter == ImageFilter.LINEAR ? MinFilter.LINEAR : MinFilter.NEAREST);
-                texture.end();
             }
         }
         return texture;
@@ -91,7 +94,7 @@ public class PixelMap implements Drawable {
 
     @Override
     public void draw(Graphics context, float x, float y, float width, float height, int color, ImageFilter filter) {
-        var texture = readTexture(context.getContext(), filter);
+        var texture = getTexture(context.getContext(), filter);
         context.drawImage(this, x, y, width, height, color);
     }
 

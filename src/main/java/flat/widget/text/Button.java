@@ -16,8 +16,7 @@ import flat.widget.enums.ImageFilter;
 public class Button extends Label {
 
     private UXListener<ActionEvent> actionListener;
-    private UXValueListener<Boolean> activeListener;
-    private boolean active;
+    private UXValueListener<Boolean> activatedListener;
 
     private Drawable icon;
     private float iconWidth;
@@ -33,9 +32,9 @@ public class Button extends Label {
         super.applyAttributes(controller);
 
         UXAttrs attrs = getAttrs();
-        setActive(attrs.getAttributeBool("active", isActive()));
+        setActivated(attrs.getAttributeBool("activated", isActivated()));
         setActionListener(attrs.getAttributeListener("on-action", ActionEvent.class, controller));
-        setActiveListener(attrs.getAttributeValueListener("on-active-change", Boolean.class, controller));
+        setActivatedListener(attrs.getAttributeValueListener("on-activated-change", Boolean.class, controller));
     }
 
     @Override
@@ -112,7 +111,7 @@ public class Button extends Label {
         if (!isIconClipCircle()) {
             getIcon().draw(graphics, x, y, width, height, getIconColor(), getIconImageFilter());
         } else if (getIcon() instanceof PixelMap pixelMap) {
-            var tex = pixelMap.readTexture(graphics.getContext(), getIconImageFilter());
+            var tex = pixelMap.getTexture(graphics.getContext(), getIconImageFilter());
             ImagePattern paint = new ImagePattern.Builder(tex, x, y, width, height)
                     .color(getIconColor())
                     .build();
@@ -283,31 +282,26 @@ public class Button extends Label {
         }
     }
 
-    public boolean isActive() {
-        return active;
-    }
+    public void setActivated(boolean active) {
+        if (this.isActivated() != active) {
+            boolean old = this.isActivated();
+            super.setActivated(active);
 
-    public void setActive(boolean active) {
-        if (this.active != active) {
-            boolean old = this.active;
-            this.active = active;
-
-            setActivated(active);
             fireActiveListener(old);
         }
     }
 
-    public UXValueListener<Boolean> getActiveListener() {
-        return activeListener;
+    public UXValueListener<Boolean> getActivatedListener() {
+        return activatedListener;
     }
 
-    public void setActiveListener(UXValueListener<Boolean> activeListener) {
-        this.activeListener = activeListener;
+    public void setActivatedListener(UXValueListener<Boolean> activatedListener) {
+        this.activatedListener = activatedListener;
     }
 
     private void fireActiveListener(boolean oldValue) {
-        if (activeListener != null && oldValue != active) {
-            UXValueListener.safeHandle(activeListener, new ValueChange<>(this, oldValue, active));
+        if (activatedListener != null && oldValue != isActivated()) {
+            UXValueListener.safeHandle(activatedListener, new ValueChange<>(this, oldValue, isActivated()));
         }
     }
 }

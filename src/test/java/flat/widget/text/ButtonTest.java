@@ -82,9 +82,9 @@ public class ButtonTest {
         assertFalse(button.isIconClipCircle());
         assertNull(button.getIcon());
         assertEquals(0xFFFFFFFF, button.getIconColor());
-        assertFalse(button.isActive());
+        assertFalse(button.isActivated());
         assertNull(button.getActionListener());
-        assertNull(button.getActiveListener());
+        assertNull(button.getActivatedListener());
 
         button.setAttributes(createNonDefaultValues(), null);
         button.applyAttributes(controller);
@@ -97,9 +97,9 @@ public class ButtonTest {
         assertFalse(button.isIconClipCircle());
         assertNull(button.getIcon());
         assertEquals(0xFFFFFFFF, button.getIconColor());
-        assertTrue(button.isActive());
+        assertTrue(button.isActivated());
         assertEquals(action, button.getActionListener());
-        assertEquals(active, button.getActiveListener());
+        assertEquals(active, button.getActivatedListener());
 
         button.applyStyle();
 
@@ -111,9 +111,9 @@ public class ButtonTest {
         assertTrue(button.isIconClipCircle());
         assertEquals(icon, button.getIcon());
         assertEquals(0xFFFF00FF, button.getIconColor());
-        assertTrue(button.isActive());
+        assertTrue(button.isActivated());
         assertEquals(action, button.getActionListener());
-        assertEquals(active, button.getActiveListener());
+        assertEquals(active, button.getActivatedListener());
     }
 
     @Test
@@ -305,9 +305,9 @@ public class ButtonTest {
         hash.put(UXHash.getHash("icon-spacing"), new UXValueSizeSp(24));
         hash.put(UXHash.getHash("icon-image-filter"), new UXValueText(ImageFilter.NEAREST.toString()));
         hash.put(UXHash.getHash("icon-clip-circle"), new UXValueBool(true));
-        hash.put(UXHash.getHash("active"), new UXValueBool(true));
+        hash.put(UXHash.getHash("activated"), new UXValueBool(true));
         hash.put(UXHash.getHash("on-action"), new UXValueText("onActionWork"));
-        hash.put(UXHash.getHash("on-active-change"), new UXValueText("onActiveWork"));
+        hash.put(UXHash.getHash("on-activated-change"), new UXValueText("onActiveWork"));
         return hash;
     }
 }

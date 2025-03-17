@@ -1,0 +1,53 @@
+label : label.default {
+    text-font : font("Roboto");
+    text-size : 18sp;
+    text-all-caps : false;
+    vertical-align : middle;
+    horizontal-align : left;
+}
+
+label.default {
+    text-color : $on-card-color;
+    disabled {
+        text-color : $on-disabled-color;
+    }
+}
+
+label.on-primary {
+    text-color : $on-primary-color;
+    disabled {
+        text-color : $on-disabled-color;
+    }
+}
+
+label.headline-1 {
+    text-font : font("Roboto", BOLD);
+    text-size : 24sp;
+}
+
+label.headline-2 {
+    text-font : font("Roboto", BOLD);
+    text-size : 20sp;
+}
+
+label.title {
+    text-font : font("Roboto", BOLD);
+    text-size : 18sp;
+    height : 24sp;
+}
+
+label.text {
+    text-font : font("Roboto");
+    text-size : 18sp;
+}
+
+label.subtitle {
+    text-font : font("Roboto");
+    text-size : 16sp;
+    height : 20sp;
+}
+
+label.hint {
+    text-font : font("Roboto");
+    text-size : 12sp;
+}

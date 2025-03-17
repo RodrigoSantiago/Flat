@@ -1,0 +1,165 @@
+tab-view : tab-view.default {
+    line-width : 2dp;
+    line-cap : BUTT;
+    line-animation-duration : 0.2;
+    tabs-elevation : 8dp;
+}
+
+tab-view.default {
+    line-color : $primary-color;
+    tabs-bg-color : $card-color-fade;
+    disabled {
+        line-color : $on-disabled-color;
+    }
+}
+
+tab-view.primary {
+    line-color : $on-primary-color;
+    tabs-bg-color : $card-color-fade;
+    disabled {
+        line-color : $on-disabled-color;
+    }
+}
+
+tab : tab.default {
+    text-font : font("Roboto", BOLD);
+    text-size : 18sp;
+    padding-top : 15dp;
+    padding-left : 15dp;
+    padding-right : 15dp;
+    padding-bottom : 15dp;
+    ripple-enabled : true;
+    icon-spacing : 16dp;
+    min-width : 90dp;
+    max-width : 360dp;
+    transition-duration : 0.2;
+    cursor : hand;
+    horizontal-align : center;
+}
+
+tab.dense {
+    padding-top : 8dp;
+    padding-left : 8dp;
+    padding-right : 8dp;
+    padding-bottom : 8dp;
+}
+
+tab.icon-left {
+    icon-position : left;
+    icon-spacing : 8dp;
+    padding-left : 12dp;
+    icon-width : 18dp;
+    icon-height : 18dp;
+}
+
+tab.icon-right {
+    icon-position : right;
+    icon-spacing : 8dp;
+    padding-right : 12dp;
+    icon-width : 18dp;
+    icon-height : 18dp;
+}
+
+tab.close-icon-right {
+    icon-position : left;
+    close-icon-spacing : 8dp;
+    close-icon-width : 18dp;
+    close-icon-height : 18dp;
+    close-icon : "/default/icons/close.svg";
+    undefined {
+        close-icon : "/default/icons/close-thick.svg";
+    }
+}
+
+tab.close-icon-left {
+    icon-position : right;
+    close-icon-spacing : 8dp;
+    close-icon-width : 18dp;
+    close-icon-height : 18dp;
+    close-icon : "/default/icons/close.svg";
+    undefined {
+        close-icon : "/default/icons/close-thick.svg";
+    }
+}
+
+tab.complete-left {
+    icon-position : left;
+    padding-left : 12dp;
+    padding-right : 12dp;
+    icon-spacing : 8dp;
+    icon-width : 18dp;
+    icon-height : 18dp;
+    close-icon-spacing : 8dp;
+    close-icon : "/default/icons/close.svg";
+    undefined {
+        close-icon : "/default/icons/close-thick.svg";
+    }
+}
+
+tab.complete-right {
+    icon-position : right;
+    padding-left : 12dp;
+    padding-right : 12dp;
+    icon-spacing : 8dp;
+    icon-width : 18dp;
+    icon-height : 18dp;
+    close-icon-spacing : 8dp;
+    close-icon : "/default/icons/close.svg";
+    undefined {
+        close-icon : "/default/icons/close-thick.svg";
+    }
+}
+
+tab.default {
+    text-color : $primary-color;
+    icon-color : $primary-color;
+    close-icon-color : alpha($primary-color, 0.5);
+    background-color : $card-color;
+    ripple-color : $card-color-press;
+
+    hovered {
+        background-color : $card-color-hover;
+    }
+    focused {
+        background-color : $card-color-hover;
+    }
+    activated {
+        background-color : $card-color-active;
+    }
+    undefined {
+        close-icon-color : $primary-color;
+    }
+    disabled {
+        text-color : $on-disabled-color;
+        icon-color : $on-disabled-color;
+        close-icon-color : $on-disabled-color;
+        background-color : $disabled-color;
+    }
+}
+
+tab.primary {
+    text-color : $on-primary-color;
+    icon-color : $on-primary-color;
+    close-icon-color : alpha($on-primary-color, 0.5);
+    background-color : $primary-color;
+    ripple-color : $primary-color-press;
+
+    hovered {
+        background-color : $primary-color-hover;
+    }
+    focused {
+        background-color : $primary-color-hover;
+    }
+    activated {
+        background-color : $primary-color-active;
+    }
+    undefined {
+        close-icon-color : $on-primary-color;
+    }
+    disabled {
+        text-color : $on-disabled-color;
+        icon-color : $on-disabled-color;
+        close-icon-color : $on-disabled-color;
+        background-color : $disabled-color;
+    }
+}

@@ -6,6 +6,7 @@ import flat.events.PointerEvent;
 import flat.widget.Widget;
 import flat.window.Activity;
 import flat.window.Application;
+import flat.window.Window;
 
 public class EventDataPointer {
     public final int pointerId;
@@ -76,16 +77,22 @@ public class EventDataPointer {
         }
     }
 
-    void setReleased() {
-        performReleased(pressed, pressedButton);
+    void setReleased(Window window) {
+        performReleased(window, pressed, pressedButton);
 
         this.pressed = null;
         this.pressedButton = 0;
     }
 
-    void performReleased(Widget released, int button) {
+    void performReleased(Window window, Widget released, int button) {
         if (released != null) {
-            released.firePointer(new PointerEvent(released, PointerEvent.RELEASED, button, x, y));
+            PointerEvent event = new PointerEvent(released, PointerEvent.RELEASED, button, x, y);
+            released.firePointer(event);
+            if (!event.isFocusConsumed()) {
+                window.getActivity().setFocus(null);
+            }
+        } else {
+            window.getActivity().setFocus(null);
         }
     }
 
@@ -215,6 +222,14 @@ public class EventDataPointer {
         if (pressed != null) {
             pressed.firePointer(new PointerEvent(pressed, PointerEvent.DRAGGED, pressedButton, x, y));
         }
+    }
+
+    public Widget getHover() {
+        return hover;
+    }
+
+    public Widget getPressed() {
+        return pressed;
     }
 
     public void reset(float x, float y) {

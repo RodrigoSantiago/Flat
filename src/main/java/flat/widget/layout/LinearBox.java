@@ -14,8 +14,8 @@ import java.util.List;
 public class LinearBox extends Parent {
 
     private Direction direction = Direction.HORIZONTAL;
-    private VerticalAlign verticalAlign = VerticalAlign.MIDDLE;
-    private HorizontalAlign horizontalAlign = HorizontalAlign.CENTER;
+    private VerticalAlign verticalAlign = VerticalAlign.TOP;
+    private HorizontalAlign horizontalAlign = HorizontalAlign.LEFT;
 
     private final ArrayList<Widget> orderedList = new ArrayList<>();
 
@@ -42,9 +42,9 @@ public class LinearBox extends Parent {
     @Override
     public void onMeasure() {
         if (direction == Direction.VERTICAL || direction == Direction.IVERTICAL) {
-            performMeasureVertical();
+            performMeasureVertical(orderedList);
         } else {
-            performMeasureHorizontal();
+            performMeasureHorizontal(orderedList);
         }
     }
 
@@ -126,7 +126,7 @@ public class LinearBox extends Parent {
     }
 
     public void setVerticalAlign(VerticalAlign verticalAlign) {
-        if (verticalAlign == null) verticalAlign = VerticalAlign.MIDDLE;
+        if (verticalAlign == null) verticalAlign = VerticalAlign.TOP;
 
         if (this.verticalAlign != verticalAlign) {
             this.verticalAlign = verticalAlign;
@@ -139,7 +139,7 @@ public class LinearBox extends Parent {
     }
 
     public void setHorizontalAlign(HorizontalAlign horizontalAlign) {
-        if (horizontalAlign == null) horizontalAlign = HorizontalAlign.CENTER;
+        if (horizontalAlign == null) horizontalAlign = HorizontalAlign.LEFT;
 
         if (this.horizontalAlign != horizontalAlign) {
             this.horizontalAlign = horizontalAlign;

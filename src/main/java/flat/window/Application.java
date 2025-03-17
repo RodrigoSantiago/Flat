@@ -3,6 +3,7 @@ package flat.window;
 import flat.backend.FlatLibrary;
 import flat.backend.WL;
 import flat.exception.FlatException;
+import flat.graphics.context.Context;
 import flat.resources.ResourcesManager;
 import flat.window.event.EventData;
 
@@ -303,6 +304,13 @@ public class Application {
         WL.HandleEvents(0);
     }
 
+    public static Context getCurrentContext() {
+        if (assignedWindow != null) {
+            return assignedWindow.getContext();
+        }
+        return null;
+    }
+
     public static void setVsync(int vsync) {
         Application.vsync = vsync;
     }
@@ -311,7 +319,7 @@ public class Application {
         return vsync;
     }
 
-    public static void runVsync(Runnable task) {
+    public static void runOnContextSync(Runnable task) {
         synchronized (vsyncRun) {
             vsyncRun.add(task);
         }

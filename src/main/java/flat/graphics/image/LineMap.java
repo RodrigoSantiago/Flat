@@ -1,8 +1,13 @@
 package flat.graphics.image;
 
 import flat.graphics.Graphics;
+import flat.graphics.Surface;
 import flat.graphics.context.Paint;
+import flat.graphics.context.enums.PixelFormat;
+import flat.graphics.image.svg.SvgRoot;
+import flat.graphics.image.svg.SvgShape;
 import flat.math.Affine;
+import flat.math.shapes.Path;
 import flat.math.shapes.Rectangle;
 import flat.math.shapes.Shape;
 import flat.math.shapes.Stroke;
@@ -10,12 +15,46 @@ import flat.widget.enums.ImageFilter;
 
 public class LineMap implements Drawable {
 
+    private final SvgRoot root;
     private final Rectangle view;
-    private final SVGPath[] svgPaths;
+    private final boolean needClipping;
+    private PixelMap pixelMap;
+    private boolean optimize = true;
 
-    public LineMap(Rectangle view, SVGPath[] svgPaths) {
-        this.view = view;
-        this.svgPaths = svgPaths;
+    public LineMap(SvgRoot root) {
+        this.root = root;
+        this.view = root.getView();
+        needClipping = !root.getView().contains(root.getBoundingBox());
+    }
+
+    public void optimize() {
+        optimize = true;
+    }
+
+    private void bake(Graphics graphics) {
+        float d = getWidth() / getHeight();
+        int w, h;
+        if (d > 1) {
+            w = view.width > 4096 ? 4096 : (int) view.width;
+            h = (int) (w / d);
+        } else {
+            h = view.height > 4096 ? 4096 : (int) view.height;
+            w = (int) (h * d);
+        }
+
+        var transform = graphics.getTransform2D();
+
+        Surface surface = new Surface(graphics.getContext(), w, h, 8, PixelFormat.RGBA);
+        graphics.setSurface(surface);
+        graphics.clear(0, 0, 0x0);
+        graphics.setTransform2D(null);
+        graphics.setAntialiasEnabled(true);
+        drawSvg(graphics, 0, h, w, -h, 0xFFFFFFFF, false);
+        graphics.setSurface(null);
+
+        pixelMap = surface.createPixelMap();
+
+        graphics.setTransform2D(transform);
     }
 
     @Override
@@ -34,58 +73,76 @@ public class LineMap implements Drawable {
     }
 
     @Override
-    public void draw(Graphics context, float x, float y, float width, float height, int color, ImageFilter filter) {
-        Affine affine = context.getTransform2D();
-        context.setTransform2D(
-                context.getTransform2D()
-                        .translate(x, y)
-                        .scale(width / view.width, height / view.height));
-
-        Paint paint = context.getPaint();
-        Stroke stroke = context.getStroker();
-        for (SVGPath svgPath : svgPaths) {
-            if (svgPath.observeFill) {
-                context.setColor(color);
-                context.drawShape(svgPath.shape, true);
-            } else if (svgPath.fillPaint != null) {
-                context.setPaint(svgPath.fillPaint);
-                context.drawShape(svgPath.shape, true);
-            }
-            if (svgPath.observeStroke) {
-                context.setColor(color);
-                context.setStroker(stroke);
-                context.drawShape(svgPath.shape, false);
-            } else if (svgPath.strokePaint != null) {
-                context.setStroker(svgPath.stroke);
-                context.setPaint(svgPath.strokePaint);
-                context.drawShape(svgPath.shape, false);
-            }
+    public void draw(Graphics graphics, float x, float y, float width, float height, int color, ImageFilter filter) {
+        if (optimize && pixelMap == null) {
+            bake(graphics);
         }
-        context.setTransform2D(affine);
+
+        if (pixelMap != null) {
+            pixelMap.draw(graphics, x, y, width, height, color, filter);
+        } else {
+            drawSvg(graphics, x, y, width, height, color, true);
+        }
     }
 
     @Override
-    public void draw(Graphics context, float x, float y, float frame, ImageFilter filter) {
-        draw(context, x, y, getWidth(), getHeight(), 0xFFFFFFFF, filter);
+    public void draw(Graphics graphics, float x, float y, float frame, ImageFilter filter) {
+        drawSvg(graphics, x, y, getWidth(), getHeight(), 0xFFFFFFFF, true);
     }
 
-    public static class SVGPath {
-        public final String id;
-        public final Shape shape;
-        public final Stroke stroke;
-        public final Paint fillPaint, strokePaint;
-        public final boolean observeFill, observeStroke;
+    private void drawSvg(Graphics graphics, float x, float y, float width, float height, int color, boolean optimize) {
+        Affine affine = graphics.getTransform2D();
+        Affine base = graphics.getTransform2D()
+                .translate(x, y)
+                .scale(width / view.width, height / view.height);
 
-        public SVGPath(String id, Shape shape, Stroke stroke, Paint fillPaint, Paint strokePaint,
-                       boolean observeFill, boolean observeStroke) {
-            this.id = id;
-            this.shape = shape;
-            this.stroke = stroke;
-            this.fillPaint = fillPaint;
-            this.strokePaint = strokePaint;
-            this.observeFill = observeFill;
-            this.observeStroke = observeStroke;
+        graphics.setTransform2D(base);
+        if (needClipping) {
+            graphics.pushClip(view);
         }
 
+        Paint paint = graphics.getPaint();
+        Stroke stroke = graphics.getStroke();
+        for (SvgShape svgPath : root.getAllShapes()) {
+
+            Affine local = svgPath.getTransform();
+            if (local != null) {
+                graphics.setTransform2D(local.preMul(base));
+            }
+
+            Shape shape = svgPath.getShape();
+
+            if (svgPath.getFillPaint() != null) {
+                graphics.setPaint(svgPath.getFillPaint().multiply(color));
+                if (shape instanceof Path p) {
+                    graphics.drawPath(p, true, optimize);
+                } else {
+                    graphics.drawShape(shape, true);
+                }
+            }
+
+            if (svgPath.getStrokePaint() != null && svgPath.getStroke() != null) {
+                graphics.setPaint(svgPath.getStrokePaint().multiply(color));
+                graphics.setStroke(svgPath.getStroke());
+                graphics.drawShape(shape, false);
+            }
+
+            if (svgPath.getFillPaint() == null && svgPath.getStrokePaint() == null) {
+                graphics.setColor(color);
+                if (shape instanceof Path p) {
+                    graphics.drawPath(p, true, optimize);
+                } else {
+                    graphics.drawShape(shape, true);
+                }
+            }
+
+            if (local != null) {
+                graphics.setTransform2D(base);
+            }
+        }
+        if (needClipping) {
+            graphics.popClip();
+        }
+        graphics.setTransform2D(affine);
     }
 }

@@ -106,13 +106,13 @@ public class ImageView extends Widget {
                     getRadiusTop() > 0 ||  getRadiusTop() > 0 ||
                     getRadiusLeft() > 0 || getRadiusRight() > 0;
 
-            boolean overflow = dW > width || dH > height;
+            boolean overflow = dW > width + 0.001f || dH > height + 0.001f;
 
             Shape oldClip = null;
+            graphics.setTransform2D(getTransform());
             if (hasRadius || overflow) {
                 graphics.pushClip(getBackgroundShape());
             }
-            graphics.setTransform2D(getTransform());
             image.draw(graphics
                     , xOff(x, x + width, dW)
                     , yOff(y, y + height, dH)
@@ -142,7 +142,7 @@ public class ImageView extends Widget {
             boolean invalidSize = nW != imgWidth || nH != imgHeight;
             imgWidth = nW;
             imgHeight = nH;
-            invalidate(invalidSize);
+            invalidate(invalidSize && isWrapContent());
         }
     }
 

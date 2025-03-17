@@ -1,0 +1,94 @@
+<Scene width="MATCH_PARENT" height="MATCH_PARENT" background-color="$surface-color">
+    <LinearBox direction="HORIZONTAL" width="MATCH_PARENT" height="MATCH_PARENT" vertical-align="top">
+        <LinearBox direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
+                   padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
+            <Label text="Regular" style="subtitle" margin-left="4dp" margin-bottom="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <ProgressBar value="0.0" style="regular"/>
+                <ProgressBar margin-left="16dp" value="0.5" style="regular"/>
+                <ProgressBar margin-left="16dp" value="1.0" style="regular"/>
+                <ProgressBar margin-left="16dp" value="-1.0" style="regular"/>
+            </LinearBox>
+            <Label text="Round" style="subtitle" margin-left="4dp" margin-bottom="16dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <ProgressBar value="0.0" style="round"/>
+                <ProgressBar margin-left="16dp" value="0.5" style="round"/>
+                <ProgressBar margin-left="16dp" value="1.0" style="round"/>
+                <ProgressBar margin-left="16dp" value="-1.0" style="round"/>
+            </LinearBox>
+            <Label text="Split" style="subtitle" margin-left="4dp" margin-bottom="16dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <ProgressBar value="0.0" style="split"/>
+                <ProgressBar margin-left="16dp" value="0.5" style="split"/>
+                <ProgressBar margin-left="16dp" value="1.0" style="split"/>
+                <ProgressBar margin-left="16dp" value="-1.0" style="split"/>
+            </LinearBox>
+            <Label text="Circle" style="subtitle" margin-left="4dp" margin-bottom="16dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <ProgressCircle value="0.0" style="regular"/>
+                <ProgressCircle margin-left="16dp" value="0.5" style="regular"/>
+                <ProgressCircle margin-left="16dp" value="1.0" style="regular"/>
+                <ProgressCircle margin-left="16dp" value="-1.0" style="regular"/>
+            </LinearBox>
+            <Label text="Circle Round" style="subtitle" margin-left="4dp" margin-bottom="16dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <ProgressCircle value="0.0" style="round"/>
+                <ProgressCircle margin-left="16dp" value="0.5" style="round"/>
+                <ProgressCircle margin-left="16dp" value="1.0" style="round"/>
+                <ProgressCircle margin-left="16dp" value="-1.0" style="round"/>
+            </LinearBox>
+            <Label text="Circle Split" style="subtitle" margin-left="4dp" margin-bottom="16dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <ProgressCircle value="0.0" style="split"/>
+                <ProgressCircle margin-left="16dp" value="0.5" style="split"/>
+                <ProgressCircle margin-left="16dp" value="1.0" style="split"/>
+                <ProgressCircle margin-left="16dp" value="-1.0" style="split"/>
+            </LinearBox>
+        </LinearBox>
+        <LinearBox enabled="false" direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
+                   padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
+            <Label text="Regular" style="subtitle" margin-left="4dp" margin-bottom="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <ProgressBar value="0.0" style="regular"/>
+                <ProgressBar margin-left="16dp" value="0.5" style="regular"/>
+                <ProgressBar margin-left="16dp" value="1.0" style="regular"/>
+                <ProgressBar margin-left="16dp" value="-1.0" style="regular"/>
+            </LinearBox>
+            <Label text="Round" style="subtitle" margin-left="4dp" margin-bottom="16dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <ProgressBar value="0.0" style="round"/>
+                <ProgressBar margin-left="16dp" value="0.5" style="round"/>
+                <ProgressBar margin-left="16dp" value="1.0" style="round"/>
+                <ProgressBar margin-left="16dp" value="-1.0" style="round"/>
+            </LinearBox>
+            <Label text="Split" style="subtitle" margin-left="4dp" margin-bottom="16dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <ProgressBar value="0.0" style="split"/>
+                <ProgressBar margin-left="16dp" value="0.5" style="split"/>
+                <ProgressBar margin-left="16dp" value="1.0" style="split"/>
+                <ProgressBar margin-left="16dp" value="-1.0" style="split"/>
+            </LinearBox>
+            <Label text="Circle" style="subtitle" margin-left="4dp" margin-bottom="16dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <ProgressCircle value="0.0" style="regular"/>
+                <ProgressCircle margin-left="16dp" value="0.5" style="regular"/>
+                <ProgressCircle margin-left="16dp" value="1.0" style="regular"/>
+                <ProgressCircle margin-left="16dp" value="-1.0" style="regular"/>
+            </LinearBox>
+            <Label text="Circle Round" style="subtitle" margin-left="4dp" margin-bottom="16dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <ProgressCircle value="0.0" style="round"/>
+                <ProgressCircle margin-left="16dp" value="0.5" style="round"/>
+                <ProgressCircle margin-left="16dp" value="1.0" style="round"/>
+                <ProgressCircle margin-left="16dp" value="-1.0" style="round"/>
+            </LinearBox>
+            <Label text="Circle Split" style="subtitle" margin-left="4dp" margin-bottom="16dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <ProgressCircle value="0.0" style="split"/>
+                <ProgressCircle margin-left="16dp" value="0.5" style="split"/>
+                <ProgressCircle margin-left="16dp" value="1.0" style="split"/>
+                <ProgressCircle margin-left="16dp" value="-1.0" style="split"/>
+            </LinearBox>
+        </LinearBox>
+    </LinearBox>
+</Scene>

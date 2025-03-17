@@ -50,14 +50,14 @@ public class FrameTest {
         Controller controller = mock(Controller.class);
         Frame frame = new Frame();
 
-        assertEquals(HorizontalAlign.CENTER, frame.getHorizontalAlign());
-        assertEquals(VerticalAlign.MIDDLE, frame.getVerticalAlign());
+        assertEquals(HorizontalAlign.LEFT, frame.getHorizontalAlign());
+        assertEquals(VerticalAlign.TOP, frame.getVerticalAlign());
 
         frame.setAttributes(createNonDefaultValues(), null);
         frame.applyAttributes(controller);
 
-        assertEquals(HorizontalAlign.CENTER, frame.getHorizontalAlign());
-        assertEquals(VerticalAlign.MIDDLE, frame.getVerticalAlign());
+        assertEquals(HorizontalAlign.LEFT, frame.getHorizontalAlign());
+        assertEquals(VerticalAlign.TOP, frame.getVerticalAlign());
 
         frame.applyStyle();
 

@@ -1,0 +1,120 @@
+tool-bar : tool-bar.default {
+    title-font : font("Roboto", BOLD);
+    subtitle-font : font("Roboto");
+    title-size : 24sp;
+    subtitle-size : 16sp;
+
+    padding-top : 8dp;
+    padding-left : 8dp;
+    padding-right : 8dp;
+    padding-bottom : 8dp;
+
+    shadow-enabled : true;
+    elevation : 4dp;
+
+    vertical-align : middle;
+}
+
+tool-bar.double {
+    height : 112dp;
+    vertical-align : bottom;
+}
+
+tool-bar.dense {
+    title-size : 20sp;
+    subtitle-size : 12sp;
+    padding-top : 4dp;
+    padding-left : 4dp;
+    padding-right : 4dp;
+    padding-bottom : 4dp;
+}
+
+tool-bar.double-dense {
+    height : 80dp;
+    vertical-align : bottom;
+}
+
+tool-bar.default {
+    title-color : $primary-color;
+    subtitle-color : $primary-color;
+    background-color : $card-color;
+    disabled {
+        title-color : $on-disabled-color;
+        subtitle-color : $on-disabled-color;
+        background-color : $disabled-color;
+    }
+}
+
+tool-bar.primary {
+    title-color : $on-primary-color;
+    subtitle-color : $on-primary-color;
+    background-color : $primary-color;
+    disabled {
+        title-color : $on-disabled-color;
+        subtitle-color : $on-disabled-color;
+        background-color : $disabled-color;
+    }
+}
+
+tool-item : tool-item.default {
+    ripple-enabled : true;
+    ripple-overflow : true;
+    cursor : hand;
+    icon-width : 24dp;
+    icon-height : 24dp;
+    padding-top : 8dp;
+    padding-left : 8dp;
+    padding-right : 8dp;
+    padding-bottom : 8dp;
+    radius-top : 100;
+    radius-left : 100;
+    radius-right : 100;
+    radius-bottom : 100;
+    transition-duration : 0.2;
+}
+
+tool-item.dense {
+    padding-top : 4dp;
+    padding-left : 4dp;
+    padding-right : 4dp;
+    padding-bottom : 4dp;
+}
+
+tool-item.default {
+    icon-color : $primary-color;
+    background-color : transparent;
+    ripple-color : alpha($primary-color-fade, 0.5);
+    hovered {
+        background-color : alpha($primary-color-fade, 0.1);
+    }
+    focused {
+        background-color : alpha($primary-color-fade, 0.2);
+    }
+    disabled {
+        icon-color : alpha($primary-color, 0.25);
+    }
+}
+
+tool-item.primary {
+    icon-color : $on-primary-color;
+    background-color : transparent;
+    ripple-color : alpha($on-primary-color, 0.5);
+    hovered {
+        background-color : alpha($on-primary-color, 0.1);
+    }
+    focused {
+        background-color : alpha($on-primary-color, 0.2);
+    }
+    disabled {
+        icon-color : alpha($on-primary-color, 0.25);
+    }
+}
+
+tool-item.navigation {
+    icon : '/default/icons/menu.svg';
+    margin-right : 32dp;
+}
+
+tool-item.overflow {
+    icon : '/default/icons/dots-vertical.svg';
+}

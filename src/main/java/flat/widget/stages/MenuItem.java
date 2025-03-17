@@ -1,18 +1,19 @@
 package flat.widget.stages;
 
 import flat.animations.StateInfo;
+import flat.events.ActionEvent;
 import flat.events.HoverEvent;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
 import flat.graphics.context.Font;
+import flat.graphics.image.Drawable;
 import flat.math.Vector2;
-import flat.math.shapes.Ellipse;
-import flat.math.shapes.Path;
 import flat.uxml.Controller;
 import flat.uxml.UXAttrs;
-import flat.uxml.UXChildren;
+import flat.uxml.UXListener;
 import flat.widget.enums.DropdownAlign;
 import flat.widget.enums.HorizontalPosition;
+import flat.widget.enums.ImageFilter;
 import flat.widget.text.Button;
 import flat.widget.text.data.TextRender;
 import flat.window.Activity;
@@ -26,32 +27,20 @@ public class MenuItem extends Button {
     private int shortcutTextColor = Color.black;
     private float shortcutTextSize = 16f;
     private float shortcutSpacing;
-    private Menu subMenu;
 
     private boolean invalidShortcutTextSize;
     private float textWidth;
     private float textHeight;
 
-    private final Path submenuIcon = new Path();
+    private Drawable submenuIcon;
+    private ImageFilter submenuImageFilter = ImageFilter.LINEAR;
+    private int submenuColor = Color.black;
     private final TextRender shortcutRender = new TextRender();
 
     public MenuItem() {
         shortcutRender.setFont(shortcutTextFont);
         shortcutRender.setTextSize(shortcutTextSize);
         invalidateShortcutTextSize();
-    }
-
-    @Override
-    public void applyChildren(UXChildren children) {
-        Menu menu = children.getMenu();
-        if (menu != null) {
-            this.subMenu = menu; // todo - it cam be simple the context menu any way
-        }
-    }
-
-    @Override
-    public void setContextMenu(Menu contextMenu) {
-
     }
 
     @Override
@@ -74,6 +63,9 @@ public class MenuItem extends Button {
         setShortcutTextColor(attrs.getColor("shortcut-text-color", info, getShortcutTextColor()));
         setShortcutTextSize(attrs.getSize("shortcut-text-size", info, getShortcutTextSize()));
         setShortcutTextFont(attrs.getFont("shortcut-text-font", info, getShortcutTextFont()));
+        setSubmenuIcon(attrs.getResourceAsDrawable("submenu-icon", info, getSubmenuIcon(), false));
+        setSubmenuColor(attrs.getColor("submenu-color", info, getSubmenuColor()));
+        setSubmenuImageFilter(attrs.getConstant("submenu-image-filter", info, getSubmenuImageFilter()));
     }
 
     @Override
@@ -125,10 +117,10 @@ public class MenuItem extends Button {
         float iH = getLayoutIconHeight();
         float ciW = getShortcutTextWidth();
         float ciH = getShortcutTextHeight();
-        float scImg = getTextSize() * 0.5f;
+        float scImg = getTextSize();
 
         float spaceForIcon = (iW > 0 ? iW + getIconSpacing() : 0);
-        float spaceForShortcutIcon = subMenu != null ? scImg : (ciW > 0 ? ciW + getShortcutSpacing() : 0);
+        float spaceForShortcutIcon = getContextMenu() != null && isMenuSubItem() ? scImg : (ciW > 0 ? ciW + getShortcutSpacing() : 0);
         float spaceForText = getTextWidth();
 
         if (spaceForIcon + spaceForShortcutIcon + spaceForText > width) {
@@ -166,15 +158,11 @@ public class MenuItem extends Button {
             drawText(graphics, xpos, ypos, tw, th);
         }
 
-        if (subMenu != null && spaceForShortcutIcon > 0) {
-            float yoff = yOff(y, y + height, spaceForShortcutIcon) + spaceForShortcutIcon * 0.5f;
-            submenuIcon.reset();
-            submenuIcon.moveTo(x + width, yoff);
-            submenuIcon.lineTo(x + width - spaceForShortcutIcon, yoff + spaceForShortcutIcon * 0.5f);
-            submenuIcon.lineTo(x + width - spaceForShortcutIcon, yoff - spaceForShortcutIcon * 0.5f);
-            submenuIcon.closePath();
-            graphics.setColor(getShortcutTextColor());
-            graphics.drawShape(submenuIcon, true);
+        if (getContextMenu() != null && isMenuSubItem() && spaceForShortcutIcon > 0 && getSubmenuIcon() != null) {
+            float xpos = iconLeft ? x + width - spaceForShortcutIcon : x;
+            float yoff = yOff(y, y + height, spaceForShortcutIcon);
+            graphics.setColor(getSubmenuColor());
+            getSubmenuIcon().draw(graphics, xpos, yoff, spaceForShortcutIcon, spaceForShortcutIcon, getSubmenuColor(), getSubmenuImageFilter());
 
         } else if (ciw > 0 && cih > 0 && getShortcutText() != null) {
             float xpos = iconLeft ? x + width - ciw : x;
@@ -196,16 +184,22 @@ public class MenuItem extends Button {
         }
     }
 
+    private boolean isMenuSubItem() {
+        return getParent() instanceof Menu;
+    }
+
     @Override
     public void hover(HoverEvent event) {
         super.hover(event);
         Activity act = getActivity();
-        if (act != null && getParent() instanceof Menu parentMenu) {
+        if (act != null) {
             if (event.getType() == HoverEvent.ENTERED) {
-                if (subMenu != null) {
-                    showSubMenu();
+                if (getContextMenu() != null) {
+                    if (!getContextMenu().isShown()) {
+                        showContextMenu();
+                    }
                 } else {
-                    parentMenu.hideSubMenu();
+                    hideSiblingSubMenu();
                 }
             }
         }
@@ -213,36 +207,42 @@ public class MenuItem extends Button {
 
     @Override
     public void action() {
-        if (subMenu != null && !subMenu.isShown()) {
-            showSubMenu();
+        if (getContextMenu() != null && !getContextMenu().isShown()) {
+            showContextMenu();
         }
-        super.action();
-    }
-
-    public Menu getSubMenu() {
-        return subMenu;
-    }
-
-    public void setSubMenu(Menu subMenu) {
-        if (this.subMenu != subMenu) {
-            if (this.subMenu != null) {
-                this.subMenu.hide();
+        if (getActionListener() != null) {
+            ActionEvent event = new ActionEvent(this);
+            UXListener.safeHandle(getActionListener(), event);
+            if (getContextMenu() == null && !event.isConsumed() && getParent() instanceof Menu menu) {
+                menu.hide();
             }
-            this.subMenu = subMenu;
+        } else {
+            if (getContextMenu() == null && getParent() instanceof Menu menu) {
+                menu.hide();
+            }
         }
     }
 
-    public void showSubMenu() {
+    @Override
+    public void showContextMenu(float x, float y) {
+        if (getParent() instanceof Menu) {
+            showContextMenu();
+        } else {
+            super.showContextMenu(x, y);
+        }
+    }
+
+    public void showContextMenu() {
         Activity act = getActivity();
         if (act != null && getParent() instanceof Menu parentMenu) {
-            if (subMenu != null) {
+            if (getContextMenu() != null) {
                 float x = getOutX();
                 float y = getOutY();
                 float width = getOutWidth();
                 float height = getOutHeight();
                 Vector2 screen1 = localToScreen(x, y);
                 Vector2 screen2 = localToScreen(x + width, y + height);
-                subMenu.show(parentMenu
+                getContextMenu().show(parentMenu
                         , screen1.x, screen1.y
                         , screen2.x - screen1.x, screen2.y - screen1.y
                         , DropdownAlign.TOP_LEFT_ADAPTATIVE);
@@ -250,7 +250,7 @@ public class MenuItem extends Button {
         }
     }
 
-    public void hideSubMenu() {
+    protected void hideSiblingSubMenu() {
         Activity act = getActivity();
         if (act != null && getParent() instanceof Menu parentMenu) {
             parentMenu.hideSubMenu();
@@ -316,6 +316,51 @@ public class MenuItem extends Button {
         }
     }
 
+    public Drawable getSubmenuIcon() {
+        return submenuIcon;
+    }
+
+    public void setSubmenuIcon(Drawable submenuIcon) {
+        if (this.submenuIcon != submenuIcon) {
+            this.submenuIcon = submenuIcon;
+            invalidate(false);
+        }
+    }
+
+    public int getSubmenuColor() {
+        return submenuColor;
+    }
+
+    public void setSubmenuColor(int submenuColor) {
+        if (this.submenuColor != submenuColor) {
+            this.submenuColor = submenuColor;
+            invalidate(false);
+        }
+    }
+
+    public ImageFilter getSubmenuImageFilter() {
+        return submenuImageFilter;
+    }
+
+    public void setSubmenuImageFilter(ImageFilter submenuImageFilter) {
+        if (submenuImageFilter == null) submenuImageFilter = ImageFilter.LINEAR;
+
+        if (this.submenuImageFilter != submenuImageFilter) {
+            this.submenuImageFilter = submenuImageFilter;
+            invalidate(false);
+        }
+    }
+
+    @Override
+    protected float getLayoutIconWidth() {
+        return (getIconWidth() == 0 || getIconWidth() == MATCH_PARENT) && getIcon() != null ? getTextHeight() : getIconWidth();
+    }
+
+    @Override
+    protected float getLayoutIconHeight() {
+        return (getIconHeight() == 0 || getIconHeight() == MATCH_PARENT) && getIcon() != null ? getTextHeight() : getIconHeight();
+    }
+    
     protected void invalidateShortcutTextSize() {
         invalidShortcutTextSize = true;
         invalidate(isWrapContent());

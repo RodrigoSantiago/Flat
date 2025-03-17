@@ -2,6 +2,7 @@ package flat.graphics.context;
 
 import flat.backend.GL;
 import flat.backend.GLEnums;
+import flat.exception.FlatException;
 import flat.graphics.context.enums.*;
 
 import java.nio.Buffer;
@@ -16,22 +17,33 @@ public final class Cubemap extends Texture {
     private MagFilter magFilter;
     private WrapMode wrapModeX, wrapModeY;
 
-    public Cubemap(Context context) {
+    public Cubemap(Context context, int width, int height, PixelFormat format) {
         super(context);
         final int cubemapId = GL.TextureCreate();
         this.cubemapId = cubemapId;
         assignDispose(() -> GL.TextureDestroy(cubemapId));
+        setSize(width, height, format);
     }
 
+    @Override
     int getInternalID() {
         return cubemapId;
     }
 
+    @Override
     int getInternalType() {
         return GLEnums.TB_TEXTURE_CUBE_MAP;
     }
 
+    private void boundCheck() {
+        if (isDisposed()) {
+            throw new RuntimeException("The " + getClass().getSimpleName() + " is disposed.");
+        }
+        getContext().bindTexture(this);
+    }
+
     public void setSize(int width, int height, PixelFormat format) {
+        parameterBoundsCheck(width, height);
         boundCheck();
 
         this.width = width;
@@ -62,25 +74,50 @@ public final class Cubemap extends Texture {
         return (int) Math.max(1, Math.floor(height / Math.pow(2,level)));
     }
 
+    public void getData(CubeFace face, int level, Buffer buffer, int offset) {
+        dataBoundsCheckSize(level, buffer.capacity() - offset, 1);
+        boundCheck();
+
+        GL.TexGetImageBuffer(face.getInternalEnum(), level, format.getInternalEnum(), buffer, offset);
+    }
+
+    public void getData(CubeFace face, int level, int[] data, int offset) {
+        dataBoundsCheckSize(level, data.length - offset, 4);
+        boundCheck();
+
+        GL.TexGetImageI(face.getInternalEnum(), level, format.getInternalEnum(), data, offset);
+    }
+
+    public void getData(CubeFace face, int level, byte[] data, int offset) {
+        dataBoundsCheckSize(level, data.length - offset, 1);
+        boundCheck();
+
+        GL.TexGetImageB(face.getInternalEnum(), level, format.getInternalEnum(), data, offset);
+    }
+
     public void setData(CubeFace face, int level, Buffer buffer, int offset, int x, int y, int width, int height) {
+        dataBoundsCheckBox(level, buffer.capacity() - offset, 1, x, y, width, height);
         boundCheck();
 
         GL.TextureSubDataBuffer(face.getInternalEnum(), level, x, y, width, height, format.getInternalEnum(), buffer, offset);
     }
 
     public void setData(CubeFace face, int level, int[] data, int offset, int x, int y, int width, int height) {
+        dataBoundsCheckBox(level, data.length - offset, 4, x, y, width, height);
         boundCheck();
 
         GL.TextureSubDataI(face.getInternalEnum(), level, x, y, width, height, format.getInternalEnum(), data, offset);
     }
 
     public void setData(CubeFace face, int level, byte[] data, int offset, int x, int y, int width, int height) {
+        dataBoundsCheckBox(level, data.length - offset, 1, x, y, width, height);
         boundCheck();
 
         GL.TextureSubDataB(face.getInternalEnum(), level, x, y, width, height, format.getInternalEnum(), data, offset);
     }
 
     public void setLevels(int levels) {
+        parameterLevelsCheck(levels);
         boundCheck();
 
         this.levels = levels;
@@ -127,5 +164,39 @@ public final class Cubemap extends Texture {
 
     public WrapMode getWrapModeY() {
         return wrapModeY;
+    }
+
+    private void parameterLevelsCheck(int levels) {
+        if (levels < 0) {
+            throw new FlatException("Negative values are not allowed (" + levels + ")");
+        }
+    }
+
+    private void parameterBoundsCheck(int width, int height) {
+        if (width <= 0 || height <= 0) {
+            throw new FlatException("Zero or negative values are not allowed (" + width + ", " + height + ")");
+        }
+    }
+
+    private void dataBoundsCheckSize(int level, int arrayLen, int bytes) {
+        int width = getWidth(level);
+        int height = getHeight(level);
+        int required = width * height * format.getPixelBytes();
+        if (arrayLen * bytes < required) {
+            throw new RuntimeException("The array is too short. Provided : " + arrayLen + ". Required : " + ((required - 1) / bytes + 1));
+        }
+    }
+
+    private void dataBoundsCheckBox(int level, int arrayLen, int bytes, int x, int y, int w, int h) {
+        int width = getWidth(level);
+        int height = getHeight(level);
+        if (x < 0 || w <= 0 || x + w > width || y < 0 || h <= 0 || y + h > height) {
+            throw new FlatException("The coordinates are out of bounds (" + x + ", " + y + ", " + w + ", " + h + ")");
+        }
+
+        int required = w * h * format.getPixelBytes();
+        if (arrayLen * bytes < required) {
+            throw new RuntimeException("The array is too short. Provided : " + arrayLen + ". Required : " + ((required - 1) / bytes + 1));
+        }
     }
 }

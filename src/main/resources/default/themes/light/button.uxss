@@ -1,0 +1,162 @@
+button : button.default {
+    text-font : font("Roboto", BOLD);
+    text-size : 18sp;
+    icon-width : 0;
+    icon-height : 0;
+    ripple-enabled : true;
+    radius-top : 4dp;
+    radius-left : 4dp;
+    radius-right : 4dp;
+    radius-bottom : 4dp;
+    padding-left : 16dp;
+    padding-right : 16dp;
+    padding-top : 8dp;
+    padding-bottom : 8dp;
+    horizontal-align : left;
+    vertical-align : middle;
+    cursor : hand;
+    focusable : true;
+    transition-duration : 0.2;
+    text-all-caps : true;
+
+    enabled {
+        elevation : 1dp;
+    }
+    hovered {
+        elevation : 2dp;
+    }
+    pressed {
+        elevation : 4dp;
+    }
+    disabled {
+        elevation : 0dp;
+    }
+}
+
+button.dense {
+    padding-left : 8dp;
+    padding-right : 8dp;
+    padding-top : 6dp;
+    padding-bottom : 6dp;
+}
+
+button.icon {
+    padding-left : 8dp;
+    padding-right : 8dp;
+    radius-top : 36dp;
+    radius-left : 36dp;
+    radius-right : 36dp;
+    radius-bottom : 36dp;
+    icon-width : 18dp;
+    icon-height : 18dp;
+}
+
+button.icon-dense {
+    padding-left : 6dp;
+    padding-right : 6dp;
+    padding-top : 6dp;
+    padding-bottom : 6dp;
+    radius-top : 36dp;
+    radius-left : 36dp;
+    radius-right : 36dp;
+    radius-bottom : 36dp;
+    icon-width : 18dp;
+    icon-height : 18dp;
+}
+
+button.icon-left {
+    icon-position : left;
+    padding-left : 12dp;
+    icon-spacing : 8dp;
+    icon-width : 18dp;
+    icon-height : 18dp;
+}
+
+button.icon-right {
+    icon-position : right;
+    padding-right : 12dp;
+    icon-spacing : 8dp;
+    icon-width : 18dp;
+    icon-height : 18dp;
+}
+
+button.default {
+    shadow-enabled : true;
+    text-color : $on-card-color;
+    icon-color : $on-card-color;
+    background-color : $card-color;
+    ripple-color : $card-color-press;
+
+    hovered {
+        background-color : $card-color-hover;
+    }
+    focused {
+        background-color : $card-color-hover;
+    }
+    disabled {
+        text-color : $on-disabled-color;
+        icon-color : $on-disabled-color;
+        background-color : $disabled-color;
+    }
+}
+
+button.primary {
+    shadow-enabled : true;
+    text-color : $on-primary-color;
+    icon-color : $on-primary-color;
+    background-color : $primary-color;
+    ripple-color : $primary-color-press;
+
+    hovered {
+        background-color : $primary-color-hover;
+    }
+    focused {
+        background-color : $primary-color-hover;
+    }
+    disabled {
+        text-color : $on-disabled-color;
+        icon-color : $on-disabled-color;
+        background-color : $disabled-color;
+    }
+}
+
+button.outlined-primary {
+    shadow-enabled : false;
+    text-color : $primary-color;
+    icon-color : $primary-color;
+    background-color : transparent;
+    ripple-color : alpha($primary-color-fade, 0.25);
+    border-color : $primary-color;
+    border-width : 1dp;
+
+    hovered {
+        background-color : alpha($primary-color-fade, 0.15);
+    }
+    focused {
+        background-color : alpha($primary-color-fade, 0.25);
+    }
+    disabled {
+        text-color : $on-disabled-color;
+        icon-color : $on-disabled-color;
+        border-color : $on-disabled-color;
+    }
+}
+
+button.text-primary {
+    shadow-enabled : false;
+    text-color : $primary-color;
+    icon-color : $primary-color;
+    background-color : transparent;
+    ripple-color : alpha($primary-color-fade, 0.25);
+
+    hovered {
+        background-color : alpha($primary-color-fade, 0.15);
+    }
+    focused {
+        background-color : alpha($primary-color-fade, 0.25);
+    }
+    disabled {
+        text-color : $on-disabled-color;
+        icon-color : $on-disabled-color;
+    }
+}

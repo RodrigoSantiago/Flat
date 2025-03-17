@@ -91,7 +91,9 @@ public class Widget {
     private UXAttrs attrs;
     private UXTheme theme;
     private byte states = 1;
+    private byte currentStateMask = 1;
     private StateAnimation stateAnimation;
+    private boolean currentDisabled;
 
     private final RoundRectangle bg = new RoundRectangle();
     private float inx, iny, inw, inh;
@@ -145,7 +147,7 @@ public class Widget {
         setTransitionDuration(attrs.getNumber("transition-duration", null, getTransitionDuration()));
 
         // Disabled State Overlay
-        if (parent != null) {
+        /*if (parent != null) {
             if (parent.isDisabled()) {
                 if (stateAnimation == null) {
                     stateAnimation = new StateAnimation(this);
@@ -167,7 +169,7 @@ public class Widget {
             for (Widget child : getChildrenIterable()) {
                 child.applyStyle();
             }
-        }
+        }*/
 
         StateInfo info = getStateInfo();
 
@@ -265,7 +267,7 @@ public class Widget {
         if (borderOpacity > 0 && borderWidth > 0) {
             graphics.setTransform2D(getTransform());
             graphics.setColor(borderColor);
-            graphics.setStroker(new BasicStroke(borderWidth));
+            graphics.setStroke(new BasicStroke(borderWidth));
             graphics.drawRoundRect(
                     bg.x - b2, bg.y - b2, bg.width + b, bg.height + b,
                     bg.arcTop + b2, bg.arcRight + b2, bg.arcBottom + b2, bg.arcLeft + b2,
@@ -536,6 +538,7 @@ public class Widget {
         if (themeA != themeB) {
             onThemeChangeLocal();
         }
+        onDisabledChangeLocal();
         onCursorChangeLocal();
         onHandleEventsChangeLocal();
     }
@@ -612,6 +615,14 @@ public class Widget {
         currentHandleEventsEnabled = getCurrentHandleEventsEnabled();
         for (Widget child : getChildrenIterable()) {
             child.onHandleEventsChangeLocal();
+        }
+    }
+
+    void onDisabledChangeLocal() {
+        currentDisabled = getCurrentDisabled();
+        setStates(states);
+        for (Widget child : getChildrenIterable()) {
+            child.onDisabledChangeLocal();
         }
     }
 
@@ -710,20 +721,23 @@ public class Widget {
 
     // ---- STATES ---- //
     protected void setStates(byte bitmask) {
-        if (states != bitmask) {
-            boolean applyStyle = getAttrs().containsChange(states, bitmask);
-            states = bitmask;
+        states = bitmask;
+        byte targetBitMask = (byte) (currentDisabled ? states | DISABLED.bitset() : states);
+
+        if (currentStateMask != targetBitMask) {
+            boolean applyStyle = getAttrs().containsChange(currentStateMask, targetBitMask);
+            currentStateMask = targetBitMask;
 
             if (transitionDuration > 0) {
                 if (applyStyle) {
                     if (stateAnimation == null) {
                         stateAnimation = new StateAnimation(this);
                     }
-                    stateAnimation.play(bitmask);
+                    stateAnimation.play(currentStateMask);
                 } else if (stateAnimation != null && stateAnimation.isPlaying()) {
-                    stateAnimation.play(bitmask);
+                    stateAnimation.play(currentStateMask);
                 } else if (stateAnimation != null) {
-                    stateAnimation.set(bitmask);
+                    stateAnimation.set(currentStateMask);
                 }
             } else if (applyStyle) {
                 applyStyle();
@@ -736,7 +750,7 @@ public class Widget {
     }
 
     protected StateInfo getStateInfo() {
-        return stateAnimation != null ? stateAnimation : StateBitset.getState(states);
+        return stateAnimation != null ? stateAnimation : StateBitset.getState(currentStateMask);
     }
 
     protected UXAttrs getAttrs() {
@@ -804,30 +818,39 @@ public class Widget {
 
             if (transitionDuration == 0) {
                 if (stateAnimation != null) {
-                    stateAnimation.set(states);
+                    stateAnimation.set(currentStateMask);
                 }
             } else {
                 if (stateAnimation == null) {
                     stateAnimation = new StateAnimation(this);
-                    stateAnimation.set(states);
+                    stateAnimation.set(currentStateMask);
                 }
                 stateAnimation.setDuration(transitionDuration);
             }
         }
     }
 
-    public boolean isDisabled() {
-        return !isEnabled() || (parent != null && parent.isDisabled());
-    }
-
     public boolean isEnabled() {
-        return !DISABLED.contains(states);
+        return !isDisabled();
     }
 
     public void setEnabled(boolean enabled) {
-        if (isEnabled() != enabled) {
-            setStates((byte) (!enabled ? states | DISABLED.bitset() : states & ~DISABLED.bitset()));
+        setDisabled(!enabled);
+    }
+
+    public boolean isDisabled() {
+        return currentDisabled;
+    }
+
+    public void setDisabled(boolean disabled) {
+        if ((DISABLED.contains(states)) != disabled) {
+            setStates((byte) (disabled ? states | DISABLED.bitset() : states & ~DISABLED.bitset()));
+            onDisabledChangeLocal();
         }
+    }
+
+    protected boolean getCurrentDisabled() {
+        return DISABLED.contains(states) || (parent != null && parent.getCurrentDisabled());
     }
 
     public boolean isActivated() {
@@ -917,8 +940,8 @@ public class Widget {
     public void requestFocus(boolean focus) {
         if (focusable) {
             Activity activity = getActivity();
-            if (activity != null && activity.getWindow() != null) {
-                activity.getWindow().runSync(() -> setFocused(focus));
+            if (activity != null) {
+                activity.runLater(() -> setFocused(focus));
             }
         }
     }
@@ -1281,6 +1304,10 @@ public class Widget {
 
             invalidate(true);
         }
+    }
+
+    public boolean isWrapContent() {
+        return getPrefWidth() == WRAP_CONTENT || getPrefHeight() == WRAP_CONTENT;
     }
 
     public float getCenterX() {
@@ -1751,7 +1778,15 @@ public class Widget {
     }
 
     public void pointerMenu(PointerEvent event) {
-        showContextMenu(event.getX(), event.getY());
+        Vector2 pointA = localToScreen(getOutX(), getOutY());
+        Vector2 pointB = localToScreen(getOutX(), getOutHeight());
+        Vector2 pointC = localToScreen(getOutWidth(), getOutY());
+        Vector2 pointD = localToScreen(getOutWidth(), getOutHeight());
+        float minX = Math.min(pointA.x, Math.min(pointB.x, Math.min(pointC.x, pointD.x)));
+        float maxX = Math.max(pointA.x, Math.max(pointB.x, Math.max(pointC.x, pointD.x)));
+        float minY = Math.min(pointA.y, Math.min(pointB.y, Math.min(pointC.y, pointD.y)));
+        float maxY = Math.max(pointA.y, Math.max(pointB.y, Math.max(pointC.y, pointD.y)));
+        showContextMenu(Math.min(maxX, Math.max(minX, event.getX())), Math.min(maxY, Math.max(minY, event.getY())));
     }
 
     public void pointer(PointerEvent event) {

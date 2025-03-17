@@ -17,6 +17,8 @@ public class UXNodeParser {
     private static final int BAR        = 6;   // /
     private static final int EQUAL      = 7;   // =
     private static final int EMPTY_TEXT = 8;   // >\s+<
+    private static final int PRO_IN     = 9;   // <?
+    private static final int PRO_OUT    = 10;  // ?>
 
     private String text;
     private int pos;
@@ -36,6 +38,7 @@ public class UXNodeParser {
 
     private UXSheetParser parser;
     private UXNodeElement rootElement;
+    private UXNodeElement prologElement;
     private StringBuilder builder = new StringBuilder();
     private List<ErroLog> logs;
 
@@ -47,6 +50,10 @@ public class UXNodeParser {
         return rootElement;
     }
 
+    public UXNodeElement getPrologElement() {
+        return prologElement;
+    }
+
     public List<ErroLog> getLogs() {
         if (logs == null) {
             logs = new ArrayList<>();
@@ -56,14 +63,16 @@ public class UXNodeParser {
 
     public void parse() {
         int state = 0;
+        boolean pro = false;
         read();
         boolean closure = false;
         String currentAttr = null;
         String currentName = null;
         UXNodeElement currentElement = null;
         while (readNext()) {
-            if (state == 0 && currentType == LESS) {
+            if (state == 0 && (currentType == LESS || currentType == PRO_IN)) {
                 state = 1;
+                pro = currentType == PRO_IN;
 
             } else if (state == 0 && (currentType == TEXT || currentType == EMPTY_TEXT)) {
                 if (currentElement != null) {
@@ -92,10 +101,20 @@ public class UXNodeParser {
                     if (currentElement != null) {
                         currentElement.getChildren().add(element);
                     } else {
-                        if (rootElement != null) {
-                            log(ErroLog.MULTIPLE_ROOT_ELEMENTS);
+                        if (pro) {
+                            if (prologElement != null) {
+                                log(ErroLog.MULTIPLE_PROLOG_ELEMENTS);
+                            }
+                            if (rootElement != null) {
+                                log(ErroLog.PROLOG_FIRST);
+                            }
+                            prologElement = element;
+                        } else {
+                            if (rootElement != null) {
+                                log(ErroLog.MULTIPLE_ROOT_ELEMENTS);
+                            }
+                            rootElement = element;
                         }
-                        rootElement = element;
                     }
                     currentElement = element;
                     state = 2;
@@ -116,11 +135,18 @@ public class UXNodeParser {
                 currentElement.getAttributes().put(currentAttr, new UXNodeAttribute(currentAttr, parseXmlAttribute(currentText)));
                 state = 2;
 
-            } else if ((state == 2 || state == 3 || state == 4 || state == 5) && (currentType == GREAT || (currentType == BAR && nextType == GREAT))) {
+            } else if ((state == 2 || state == 3 || state == 4 || state == 5)
+                    && (currentType == GREAT || (currentType == BAR && nextType == GREAT) || currentType == PRO_OUT)) {
                 boolean selfClosure = false;
                 if (currentType == BAR) {
                     selfClosure = true;
                     readNext();
+                }
+                if ((pro && currentType != PRO_OUT)) {
+                    log(ErroLog.UNEXPECTED_TOKEN);
+                }
+                if ((!pro && currentType == PRO_OUT)) {
+                    log(ErroLog.UNEXPECTED_TOKEN);
                 }
                 if (closure && selfClosure) {
                     log(ErroLog.UNEXPECTED_TOKEN);
@@ -132,7 +158,7 @@ public class UXNodeParser {
                 if (state == 4) {
                     log(ErroLog.MISSING_VALUE);
                 }
-                if (selfClosure) {
+                if (selfClosure || pro) {
                     if (currentElement != null) currentElement = currentElement.getParent();
 
                 } else if (closure) {
@@ -146,6 +172,7 @@ public class UXNodeParser {
                 currentAttr = null;
                 currentName = null;
                 state = 0;
+                pro = false;
 
             } else {
                 log(ErroLog.UNEXPECTED_TOKEN);
@@ -261,7 +288,17 @@ public class UXNodeParser {
     }
 
     private void readToken() {
-        if (current == '<') {
+        if (current == '<' && next == '?') {
+            readNextChar();
+            nextText = "<?";
+            nextType = PRO_IN;
+
+        } else if (current == '?' && next == '>') {
+            readNextChar();
+            nextText = "?>";
+            nextType = PRO_OUT;
+
+        } else if (current == '<') {
             nextText = "<";
             nextType = LESS;
 
@@ -296,7 +333,7 @@ public class UXNodeParser {
         // [a-zA-Z_\-]+
 
         builder.appendCodePoint(current);
-        while (isCharacter(next)) {
+        while (isCharacter(next) || next == ':') {
             readNextChar();
             builder.appendCodePoint(current);
         }
@@ -411,6 +448,8 @@ public class UXNodeParser {
         public static final String UNEXPECTED_END_OF_TOKENS = "Unexpected end of tokens";
         public static final String INVALID_CLOSE_TAG = "Invalid close tag";
         public static final String MULTIPLE_ROOT_ELEMENTS = "Multiple root elements";
+        public static final String MULTIPLE_PROLOG_ELEMENTS = "Multiple prolog elements";
+        public static final String PROLOG_FIRST = "Prolog must be first";
         public static final String MALFORMED_STRING = "Malformed String";
         public static final String MISSING_TAG_CLOSURE = "Missing tag closure";
         public static final String UNEXPECTED_TEXT = "Unexpected text";

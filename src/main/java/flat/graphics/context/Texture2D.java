@@ -2,6 +2,8 @@ package flat.graphics.context;
 
 import flat.backend.GL;
 import flat.backend.GLEnums;
+import flat.exception.FlatException;
+import flat.graphics.ImageTexture;
 import flat.graphics.context.enums.MagFilter;
 import flat.graphics.context.enums.MinFilter;
 import flat.graphics.context.enums.PixelFormat;
@@ -9,7 +11,7 @@ import flat.graphics.context.enums.WrapMode;
 
 import java.nio.Buffer;
 
-public final class Texture2D extends Texture {
+public final class Texture2D extends Texture implements ImageTexture {
 
     private final int textureId;
 
@@ -19,11 +21,12 @@ public final class Texture2D extends Texture {
     private MagFilter magFilter;
     private WrapMode wrapModeX, wrapModeY;
 
-    public Texture2D(Context context) {
+    public Texture2D(Context context, int width, int height, PixelFormat format) {
         super(context);
         final int textureId = GL.TextureCreate();
         this.textureId = textureId;
         assignDispose(() -> GL.TextureDestroy(textureId));
+        setSize(width, height, format);
     }
 
     Texture2D(Context context, int id, int width, int height, int levels, PixelFormat format) {
@@ -35,15 +38,25 @@ public final class Texture2D extends Texture {
         this.format = format;
     }
 
+    @Override
     int getInternalID() {
         return textureId;
     }
 
+    @Override
     int getInternalType() {
         return GLEnums.TB_TEXTURE_2D;
     }
 
+    private void boundCheck() {
+        if (isDisposed()) {
+            throw new RuntimeException("The " + getClass().getSimpleName() + " is disposed.");
+        }
+        getContext().bindTexture(this);
+    }
+
     public void setSize(int width, int height, PixelFormat format) {
+        parameterBoundsCheck(width, height);
         boundCheck();
 
         this.width = width;
@@ -70,48 +83,49 @@ public final class Texture2D extends Texture {
     }
 
     public void getData(int level, Buffer buffer, int offset) {
+        dataBoundsCheckSize(level, buffer.capacity() - offset, 1);
         boundCheck();
-        dataBoundsCheck(buffer.capacity() - offset, width, height);
 
         GL.TexGetImageBuffer(GLEnums.TT_TEXTURE_2D, level, format.getInternalEnum(), buffer, offset);
     }
 
     public void getData(int level, int[] data, int offset) {
+        dataBoundsCheckSize(level, data.length - offset, 4);
         boundCheck();
-        dataBoundsCheck(data.length - offset, width, height);
 
         GL.TexGetImageI(GLEnums.TT_TEXTURE_2D, level, format.getInternalEnum(), data, offset);
     }
 
     public void getData(int level, byte[] data, int offset) {
+        dataBoundsCheckSize(level, data.length - offset, 1);
         boundCheck();
-        dataBoundsCheck(data.length - offset, width, height);
 
         GL.TexGetImageB(GLEnums.TT_TEXTURE_2D, level, format.getInternalEnum(), data, offset);
     }
 
     public void setData(int level, Buffer buffer, int offset, int x, int y, int width, int height) {
+        dataBoundsCheckBox(level, buffer.capacity() - offset, 1, x, y, width, height);
         boundCheck();
-        dataBoundsCheck(buffer.capacity() - offset, width, height);
 
         GL.TextureSubDataBuffer(GLEnums.TT_TEXTURE_2D, level, x, y, width, height, format.getInternalEnum(), buffer, offset);
     }
 
     public void setData(int level, int[] data, int offset, int x, int y, int width, int height) {
+        dataBoundsCheckBox(level, data.length - offset, 4, x, y, width, height);
         boundCheck();
-        dataBoundsCheck(data.length - offset, width, height);
 
         GL.TextureSubDataI(GLEnums.TT_TEXTURE_2D, level, x, y, width, height, format.getInternalEnum(), data, offset);
     }
 
     public void setData(int level, byte[] data, int offset, int x, int y, int width, int height) {
+        dataBoundsCheckBox(level, data.length - offset, 1, x, y, width, height);
         boundCheck();
-        dataBoundsCheck(data.length - offset, width, height);
 
         GL.TextureSubDataB(GLEnums.TT_TEXTURE_2D, level, x, y, width, height, format.getInternalEnum(), data, offset);
     }
 
     public void setLevels(int levels) {
+        parameterLevelsCheck(levels);
         boundCheck();
 
         this.levels = levels;
@@ -160,10 +174,42 @@ public final class Texture2D extends Texture {
         return wrapModeY;
     }
 
-    private void dataBoundsCheck(int length, int width, int height) {
-        int required = width * height * PixelFormat.getPixelBytes(format);
-        if (length < required) {
-            throw new RuntimeException("The image data is too short. Provided : " + length + ", Required : " + required);
+    private void parameterLevelsCheck(int levels) {
+        if (levels < 0) {
+            throw new FlatException("Negative values are not allowed (" + levels + ")");
         }
+    }
+
+    private void parameterBoundsCheck(int width, int height) {
+        if (width <= 0 || height <= 0) {
+            throw new FlatException("Zero or negative values are not allowed (" + width + ", " + height + ")");
+        }
+    }
+
+    private void dataBoundsCheckSize(int level, int arrayLen, int bytes) {
+        int width = getWidth(level);
+        int height = getHeight(level);
+        int required = width * height * format.getPixelBytes();
+        if (arrayLen * bytes < required) {
+            throw new RuntimeException("The array is too short. Provided : " + arrayLen + ". Required : " + ((required - 1) / bytes + 1));
+        }
+    }
+
+    private void dataBoundsCheckBox(int level, int arrayLen, int bytes, int x, int y, int w, int h) {
+        int width = getWidth(level);
+        int height = getHeight(level);
+        if (x < 0 || w <= 0 || x + w > width || y < 0 || h <= 0 || y + h > height) {
+            throw new FlatException("The coordinates are out of bounds (" + x + ", " + y + ", " + w + ", " + h + ")");
+        }
+
+        int required = w * h * format.getPixelBytes();
+        if (arrayLen * bytes < required) {
+            throw new RuntimeException("The array is too short. Provided : " + arrayLen + ". Required : " + ((required - 1) / bytes + 1));
+        }
+    }
+
+    @Override
+    public Texture2D getTexture(Context context) {
+        return context == this.getContext() ? this : null;
     }
 }

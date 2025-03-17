@@ -1,0 +1,106 @@
+<Scene width="MATCH_PARENT" height="MATCH_PARENT" background-color="$surface-color">
+    <LinearBox direction="HORIZONTAL" width="MATCH_PARENT" height="MATCH_PARENT" vertical-align="top">
+        <LinearBox direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
+                   padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
+            <Label text="Default" style="subtitle" margin-left="4dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <ScrollBox style="" width="200dp" height="160dp">
+                    <ImageView image="/default/placeholder_img.jpg" width="400dp" height="320dp"/>
+                </ScrollBox>
+                <ScrollBox margin-left="16dp" style="primary" width="200dp" height="160dp">
+                    <VerticalScrollBar style="primary" vertical-bar="true"/>
+                    <HorizontalScrollBar style="primary" horizontal-bar="true"/>
+                    <ImageView image="/default/placeholder_img.jpg" width="400dp" height="320dp"/>
+                </ScrollBox>
+                <ScrollBox margin-left="16dp" style="" width="200dp" height="160dp">
+                    <VerticalScrollBar style="discrete" vertical-bar="true"/>
+                    <HorizontalScrollBar style="discrete" horizontal-bar="true"/>
+                    <ImageView image="/default/placeholder_img.jpg" width="400dp" height="320dp"/>
+                </ScrollBox>
+            </LinearBox>
+            <Label text="Reverse" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <ScrollBox style="" width="200dp" height="160dp" vertical-bar-position="LEFT" horizontal-bar-position="TOP">
+                    <ImageView image="/default/placeholder_img.jpg" width="400dp" height="320dp"/>
+                </ScrollBox>
+                <ScrollBox margin-left="16dp" style="primary" width="200dp" height="160dp" vertical-bar-position="LEFT" horizontal-bar-position="TOP">
+                    <VerticalScrollBar style="primary" vertical-bar="true"/>
+                    <HorizontalScrollBar style="primary" horizontal-bar="true"/>
+                    <ImageView image="/default/placeholder_img.jpg" width="400dp" height="320dp"/>
+                </ScrollBox>
+                <ScrollBox margin-left="16dp" style="" width="200dp" height="160dp" vertical-bar-position="LEFT" horizontal-bar-position="TOP">
+                    <VerticalScrollBar style="discrete" vertical-bar="true"/>
+                    <HorizontalScrollBar style="discrete" horizontal-bar="true"/>
+                    <ImageView image="/default/placeholder_img.jpg" width="400dp" height="320dp"/>
+                </ScrollBox>
+            </LinearBox>
+            <Label text="Floating" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <ScrollBox style="" width="200dp" height="160dp" floating-bars="true">
+                    <ImageView image="/default/placeholder_img.jpg" width="400dp" height="320dp"/>
+                </ScrollBox>
+                <ScrollBox margin-left="16dp" style="primary" width="200dp" height="160dp" floating-bars="true">
+                    <VerticalScrollBar style="primary" vertical-bar="true"/>
+                    <HorizontalScrollBar style="primary" horizontal-bar="true"/>
+                    <ImageView image="/default/placeholder_img.jpg" width="400dp" height="320dp"/>
+                </ScrollBox>
+                <ScrollBox margin-left="16dp" style="" width="200dp" height="160dp" floating-bars="true">
+                    <VerticalScrollBar style="discrete" vertical-bar="true"/>
+                    <HorizontalScrollBar style="discrete" horizontal-bar="true"/>
+                    <ImageView image="/default/placeholder_img.jpg" width="400dp" height="320dp"/>
+                </ScrollBox>
+            </LinearBox>
+        </LinearBox>
+        <LinearBox enabled="false" direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
+                   padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
+            <Label text="Default" style="subtitle" margin-left="4dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <ScrollBox style="" width="200dp" height="160dp">
+                    <ImageView image="/default/placeholder_img.jpg" width="400dp" height="320dp"/>
+                </ScrollBox>
+                <ScrollBox margin-left="16dp" style="primary" width="200dp" height="160dp">
+                    <VerticalScrollBar style="primary" vertical-bar="true"/>
+                    <HorizontalScrollBar style="primary" horizontal-bar="true"/>
+                    <ImageView image="/default/placeholder_img.jpg" width="400dp" height="320dp"/>
+                </ScrollBox>
+                <ScrollBox margin-left="16dp" style="" width="200dp" height="160dp">
+                    <VerticalScrollBar style="discrete" vertical-bar="true"/>
+                    <HorizontalScrollBar style="discrete" horizontal-bar="true"/>
+                    <ImageView image="/default/placeholder_img.jpg" width="400dp" height="320dp"/>
+                </ScrollBox>
+            </LinearBox>
+            <Label text="Reverse" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <ScrollBox style="" width="200dp" height="160dp" vertical-bar-position="LEFT" horizontal-bar-position="TOP">
+                    <ImageView image="/default/placeholder_img.jpg" width="400dp" height="320dp"/>
+                </ScrollBox>
+                <ScrollBox margin-left="16dp" style="primary" width="200dp" height="160dp" vertical-bar-position="LEFT" horizontal-bar-position="TOP">
+                    <VerticalScrollBar style="primary" vertical-bar="true"/>
+                    <HorizontalScrollBar style="primary" horizontal-bar="true"/>
+                    <ImageView image="/default/placeholder_img.jpg" width="400dp" height="320dp"/>
+                </ScrollBox>
+                <ScrollBox margin-left="16dp" style="" width="200dp" height="160dp" vertical-bar-position="LEFT" horizontal-bar-position="TOP">
+                    <VerticalScrollBar style="discrete" vertical-bar="true"/>
+                    <HorizontalScrollBar style="discrete" horizontal-bar="true"/>
+                    <ImageView image="/default/placeholder_img.jpg" width="400dp" height="320dp"/>
+                </ScrollBox>
+            </LinearBox>
+            <Label text="Floating" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <ScrollBox style="" width="200dp" height="160dp" floating-bars="true">
+                    <ImageView image="/default/placeholder_img.jpg" width="400dp" height="320dp"/>
+                </ScrollBox>
+                <ScrollBox margin-left="16dp" style="primary" width="200dp" height="160dp" floating-bars="true">
+                    <VerticalScrollBar style="primary" vertical-bar="true"/>
+                    <HorizontalScrollBar style="primary" horizontal-bar="true"/>
+                    <ImageView image="/default/placeholder_img.jpg" width="400dp" height="320dp"/>
+                </ScrollBox>
+                <ScrollBox margin-left="16dp" style="" width="200dp" height="160dp" floating-bars="true">
+                    <VerticalScrollBar style="discrete" vertical-bar="true"/>
+                    <HorizontalScrollBar style="discrete" horizontal-bar="true"/>
+                    <ImageView image="/default/placeholder_img.jpg" width="400dp" height="320dp"/>
+                </ScrollBox>
+            </LinearBox>
+        </LinearBox>
+    </LinearBox>
+</Scene>

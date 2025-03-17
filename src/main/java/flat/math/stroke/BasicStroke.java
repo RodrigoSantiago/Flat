@@ -215,7 +215,7 @@ public class BasicStroke implements Stroke {
             }
         }
         return hash.hashCode();*/
-        return 0;
+        return super.hashCode();
     }
 
     @Override

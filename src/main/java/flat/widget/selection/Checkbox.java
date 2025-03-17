@@ -238,10 +238,6 @@ public class Checkbox extends Widget {
         fireToggle();
     }
 
-    protected boolean isWrapContent() {
-        return getPrefWidth() == WRAP_CONTENT || getPrefHeight() == WRAP_CONTENT;
-    }
-
     private class IconChange extends NormalizedAnimation {
         @Override
         public Activity getSource() {

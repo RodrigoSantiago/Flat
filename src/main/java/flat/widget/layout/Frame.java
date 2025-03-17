@@ -15,8 +15,8 @@ import java.util.List;
 
 public class Frame extends Group {
 
-    private VerticalAlign verticalAlign = VerticalAlign.MIDDLE;
-    private HorizontalAlign horizontalAlign = HorizontalAlign.CENTER;
+    private VerticalAlign verticalAlign = VerticalAlign.TOP;
+    private HorizontalAlign horizontalAlign = HorizontalAlign.LEFT;
 
     private Controller controller;
 
@@ -140,7 +140,7 @@ public class Frame extends Group {
     }
 
     public void setVerticalAlign(VerticalAlign verticalAlign) {
-        if (verticalAlign == null) verticalAlign = VerticalAlign.MIDDLE;
+        if (verticalAlign == null) verticalAlign = VerticalAlign.TOP;
 
         if (this.verticalAlign != verticalAlign) {
             this.verticalAlign = verticalAlign;
@@ -153,7 +153,7 @@ public class Frame extends Group {
     }
 
     public void setHorizontalAlign(HorizontalAlign horizontalAlign) {
-        if (horizontalAlign == null) horizontalAlign = HorizontalAlign.CENTER;
+        if (horizontalAlign == null) horizontalAlign = HorizontalAlign.LEFT;
 
         if (this.horizontalAlign != horizontalAlign) {
             this.horizontalAlign = horizontalAlign;

@@ -334,8 +334,8 @@ public class GridTest {
 
         hash.put(UXHash.getHash("horizontal-spacing"), new UXValueSizeDp(16));
         hash.put(UXHash.getHash("vertical-spacing"), new UXValueSizeDp(8));
-        hash.put(UXHash.getHash("columns"), new UXValueSizeList(new UXValue[]{new UXValueSizeDp(10), new UXValueSizeDp(20)}));
-        hash.put(UXHash.getHash("rows"), new UXValueSizeList(new UXValue[]{new UXValueSizeDp(15), new UXValueSizeDp(25)}));
+        hash.put(UXHash.getHash("columns"), new UXValueSizeList("list", new UXValue[]{new UXValueSizeDp(10), new UXValueSizeDp(20)}));
+        hash.put(UXHash.getHash("rows"), new UXValueSizeList("list", new UXValue[]{new UXValueSizeDp(15), new UXValueSizeDp(25)}));
         return hash;
     }
 

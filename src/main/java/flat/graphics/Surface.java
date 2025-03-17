@@ -1,50 +1,102 @@
 package flat.graphics;
 
-import flat.graphics.context.Context;
-import flat.graphics.context.Frame;
-import flat.graphics.context.Render;
-import flat.graphics.context.Texture2D;
+import flat.graphics.context.*;
+import flat.graphics.context.enums.BlitMask;
+import flat.graphics.context.enums.LayerTarget;
+import flat.graphics.context.enums.MagFilter;
 import flat.graphics.context.enums.PixelFormat;
+import flat.graphics.image.PixelMap;
 
 public class Surface {
-    Frame frame;
-    Texture2D texture;
+    private final int width;
+    private final int height;
+    private final int multiSamples;
+    private final PixelFormat format;
+    private Context context;
+
+    FrameBuffer frameBuffer;
+    FrameBuffer frameBufferTransfer;
     Render render;
+    TextureMultisample2D textureMultisamples;
+    Texture2D texture;
+    boolean disposed;
 
-    public Surface() {
-
+    public Surface(Context context, int width, int height) {
+        this(context, width, height, 8);
     }
 
-    public void setTexture(Texture2D texture) {
-        this.texture = texture;
+    public Surface(Context context, int width, int height, int multiSamples) {
+        this(context, width, height, multiSamples, PixelFormat.RGBA);
     }
 
-    public Texture2D getTexture() {
-        return texture;
+    public Surface(Context context, int width, int height, int multiSamples, PixelFormat format) {
+        this.context = context;
+        this.width = width;
+        this.height = height;
+        this.multiSamples = multiSamples;
+        this.format = format;
     }
 
-    void bind(Context context) {
-        if (frame == null) {
-            frame = new Frame(context);
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public int getMultiSamples() {
+        return multiSamples;
+    }
+
+    public PixelFormat getFormat() {
+        return format;
+    }
+
+    public PixelMap createPixelMap() {
+        if (frameBuffer == null) {
+            return null;
         }
-        frame.begin();
 
-        frame.attach(0, texture);
+        byte[] imageData = new byte[width * height * format.getPixelBytes()];
 
+        if (multiSamples > 0) {
+            if (frameBufferTransfer == null) {
+                frameBufferTransfer = new FrameBuffer(context);
+                if (texture == null) {
+                    texture = new Texture2D(context, width, height, format);
+                }
+                frameBufferTransfer.attach(LayerTarget.COLOR_0, texture, 0);
+            }
+            context.blitFrames(frameBuffer, frameBufferTransfer,
+                    0, 0, width, height,
+                    0, 0, width, height, BlitMask.Color, MagFilter.LINEAR);
+        }
+
+        texture.getData(0, imageData, 0);
+        return new PixelMap(imageData, width, height, PixelFormat.RGBA);
+    }
+
+    void begin(Context context) {
+        if (frameBuffer == null) {
+            frameBuffer = new FrameBuffer(context);
+        }
+        if (multiSamples > 0 && textureMultisamples == null) {
+            textureMultisamples = new TextureMultisample2D(context, width, height, multiSamples, format);
+        }
+        if (multiSamples <= 0 && texture == null) {
+            texture = new Texture2D(context, width, height, format);
+        }
         if (render == null) {
-            render = new Render(context);
-            render.begin();
-            render.setSize(texture.getWidth(), texture.getHeight(), PixelFormat.DEPTH24_STENCIL8);
-            render.end();
-        } else if (render.getWidth() != texture.getWidth() || render.getHeight() != texture.getHeight()) {
-            render.begin();
-            render.setSize(texture.getWidth(), texture.getHeight(), PixelFormat.DEPTH24_STENCIL8);
-            render.end();
+            render = new Render(context, width, height, multiSamples, PixelFormat.DEPTH24_STENCIL8);
         }
-        frame.attach(Frame.DEPTH_STENCIL, render);
-    }
 
-    void unbind() {
-        frame.end();
+        context.setFrameBuffer(frameBuffer);
+        if (multiSamples > 0) {
+            frameBuffer.attach(LayerTarget.COLOR_0, textureMultisamples, 0);
+        } else {
+            frameBuffer.attach(LayerTarget.COLOR_0, texture, 0);
+        }
+        frameBuffer.attach(LayerTarget.DEPTH_STENCIL, render);
     }
 }

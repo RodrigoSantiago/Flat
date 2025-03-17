@@ -29,6 +29,16 @@ public class UXValueVariable extends UXValue {
     }
 
     @Override
+    public UXValue getSource(UXTheme theme) {
+        return getVariable(theme);
+    }
+
+    @Override
+    public UXValue getVariable(UXTheme theme) {
+        return theme == null ? null : theme.getVariable(name);
+    }
+
+    @Override
     UXValue internalMix(UXValue uxValue, float t, UXTheme theme, float dpi) {
         UXValue variable = getVariable(theme);
         if (variable != null) {
@@ -71,11 +81,6 @@ public class UXValueVariable extends UXValue {
         } else {
             return super.getSourceType(theme);
         }
-    }
-
-    @Override
-    public UXValue getVariable(UXTheme theme) {
-        return theme == null ? null : theme.getVariable(name);
     }
 
     @Override

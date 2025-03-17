@@ -1,0 +1,56 @@
+progress-bar : progress-bar.primary {
+    height : 4dp;
+    line-width : 4dp;
+    width : 240dp;
+    animation-duration : 3.0;
+    smooth-transition-duration : 0.2;
+    line-mode : regular;
+}
+
+progress-bar.regular {
+    line-mode : regular;
+}
+
+progress-bar.round {
+    line-mode : round;
+}
+
+progress-bar.split {
+    line-mode : split;
+}
+
+progress-bar.primary {
+    line-color : $disabled-color;
+    line-filled-color : $primary-color;
+    disabled {
+        line-color : $disabled-color;
+        line-filled-color : $on-disabled-color;
+    }
+}
+
+progress-circle : progress-circle.primary {
+    height : 48dp;
+    width : 48dp;
+    line-width : 4dp;
+}
+
+progress-circle.primary {
+    line-color : $disabled-color;
+    line-filled-color : $primary-color;
+    disabled {
+        line-color : $disabled-color;
+        line-filled-color : $on-disabled-color;
+    }
+}
+
+progress-circle.regular {
+    line-mode : regular;
+}
+
+progress-circle.round {
+    line-mode : round;
+}
+
+progress-circle.split {
+    line-mode : split;
+}

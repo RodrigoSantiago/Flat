@@ -2,14 +2,21 @@ package flat.backend;
 
 public class GLEnums {
     //----CLEAR BITMASK
+    public static final int TRUE = 0x1;
+    public static final int FALSE = 0x0;
+
+    //----CLEAR BITMASK
     public static final int CB_COLOR_BUFFER_BIT = 0x00004000;
     public static final int CB_DEPTH_BUFFER_BIT = 0x00000100;
     public static final int CB_STENCIL_BUFFER_BIT = 0x00000400;
 
     //----DATA TYPES
     public static final int DT_BYTE = 0x1400;
+    public static final int DT_UNSIGNED_BYTE = 0x1401;
     public static final int DT_SHORT = 0x1402;
+    public static final int DT_UNSIGNED_SHORT = 0x1403;
     public static final int DT_INT = 0x1404;
+    public static final int DT_UNSIGNED_INT = 0x1405;
     public static final int DT_FLOAT = 0x1406;
     public static final int DT_DOUBLE = 0x140A;
 
@@ -147,7 +154,7 @@ public class GLEnums {
     //----FRAMEBUFFER ATTACHMENT OBJECT TYPE
     public static final int FO_RENDERBUFFER = 0x8D41;
     public static final int FO_TEXTURE = 0x1702;
-    public static final int FO_NONE = 0x0;
+    public static final int FO_TEXTURE_2D = 0x0DE1;
 
     //----FRAMEBUFFER BLIT MASK
     public static final int BM_COLOR_BUFFER_BIT = 0x00004000;

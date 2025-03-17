@@ -168,7 +168,7 @@ public class RangedSlider extends Widget {
 
         float lineWidth = Math.min(getLineWidth(), Math.min(width, height));
 
-        graphics.setStroker(new BasicStroke(lineWidth, getLineCap().ordinal(), 0));
+        graphics.setStroke(new BasicStroke(lineWidth, getLineCap().ordinal(), 0));
         if (hor) {
             graphics.setColor(getLineColor());
             graphics.drawLine(lineStart, yposStart, lineEnd, yposStart);
@@ -667,9 +667,5 @@ public class RangedSlider extends Widget {
         if (endValueListener != null && old != endValue) {
             UXValueListener.safeHandle(endValueListener, new ValueChange<>(this, old, endValue));
         }
-    }
-
-    protected boolean isWrapContent() {
-        return getPrefWidth() == WRAP_CONTENT || getPrefHeight() == WRAP_CONTENT;
     }
 }

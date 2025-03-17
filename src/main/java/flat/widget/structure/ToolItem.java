@@ -19,6 +19,8 @@ public class ToolItem extends Widget {
 
     private Drawable icon;
     private int iconColor = Color.white;
+    private float iconWidth;
+    private float iconHeight;
     private ImageFilter iconImageFilter = ImageFilter.LINEAR;
 
     private String menuText;
@@ -44,6 +46,35 @@ public class ToolItem extends Widget {
         setIcon(attrs.getResourceAsDrawable("icon", info, getIcon(), false));
         setIconColor(attrs.getColor("icon-color", info, getIconColor()));
         setIconImageFilter(attrs.getConstant("icon-image-filter", info, getIconImageFilter()));
+        setIconWidth(attrs.getSize("icon-width", info, getIconWidth()));
+        setIconHeight(attrs.getSize("icon-height", info, getIconHeight()));
+    }
+
+    @Override
+    public void onMeasure() {
+        float extraWidth = getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
+        float extraHeight = getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
+
+        float mWidth;
+        float mHeight;
+        boolean wrapWidth = getLayoutPrefWidth() == WRAP_CONTENT;
+        boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
+
+        float iW = getLayoutIconWidth();
+        float iH = getLayoutIconHeight();
+
+        if (wrapWidth) {
+            mWidth = Math.max(extraWidth + iW, getLayoutMinWidth());
+        } else {
+            mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
+        }
+        if (wrapHeight) {
+            mHeight = Math.max(extraHeight + iH, getLayoutMinHeight());
+        } else {
+            mHeight = Math.max(getLayoutPrefHeight(), getLayoutMinHeight());
+        }
+
+        setMeasure(mWidth, mHeight);
     }
 
     @Override
@@ -58,8 +89,12 @@ public class ToolItem extends Widget {
 
         if (width <= 0 || height <= 0 || getIcon() == null) return;
 
-        graphics.setTransform2D(getTransform());
-        getIcon().draw(graphics, x, y, width, height, getIconColor(), getIconImageFilter());
+        float iW = Math.min(getLayoutIconWidth(), width);
+        float iH = Math.min(getLayoutIconHeight(), height);
+        if (iW > 0 && iH > 0 && getIcon() != null) {
+            graphics.setTransform2D(getTransform());
+            getIcon().draw(graphics, x, y, iW, iH, getIconColor(), getIconImageFilter());
+        }
     }
 
     @Override
@@ -132,6 +167,36 @@ public class ToolItem extends Widget {
         }
     }
 
+    public float getIconWidth() {
+        return iconWidth;
+    }
+
+    public void setIconWidth(float iconWidth) {
+        if (this.iconWidth != iconWidth) {
+            this.iconWidth = iconWidth;
+            invalidate(isWrapContent());
+        }
+    }
+    
+    protected float getLayoutIconWidth() {
+        return iconWidth == 0 && icon != null ? icon.getWidth() : iconWidth;
+    }
+
+    public float getIconHeight() {
+        return iconHeight;
+    }
+
+    public void setIconHeight(float iconHeight) {
+        if (this.iconHeight != iconHeight) {
+            this.iconHeight = iconHeight;
+            invalidate(isWrapContent());
+        }
+    }
+
+    protected float getLayoutIconHeight() {
+        return iconHeight == 0 && icon != null ? icon.getHeight() : iconHeight;
+    }
+
     public ImageFilter getIconImageFilter() {
         return iconImageFilter;
     }
@@ -149,9 +214,5 @@ public class ToolItem extends Widget {
         if (getParent() instanceof ToolBar toolBar) {
             toolBar.invalidateToolItem(this);
         }
-    }
-
-    protected boolean isWrapContent() {
-        return getPrefWidth() == WRAP_CONTENT || getPrefHeight() == WRAP_CONTENT;
     }
 }

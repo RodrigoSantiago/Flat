@@ -48,8 +48,8 @@ public class UXBuilder {
         UXBuilder.install("ScrollBox", ScrollBox::new);
         UXBuilder.install("Menu", Menu::new);
         UXBuilder.install("Frame", Frame::new);
+        UXBuilder.install("TabView", TabView::new);
         UXBuilder.install("Tab", Tab::new);
-        UXBuilder.install("Page", Page::new);
         UXBuilder.install("ListView", ListView::new);
         UXBuilder.install("Chip", Chip::new);
         UXBuilder.install("Slider", Slider::new);
@@ -65,9 +65,9 @@ public class UXBuilder {
         UXBuilder.install("ToolBar", ToolBar::new);
         UXBuilder.install("ToolItem", ToolItem::new);
         UXBuilder.install("Grid", Grid::new);
+        UXBuilder.install("Drawer", Drawer::new);
         /*
-        UXBuilder.install("Canvas", Canvas::new);
-        UXBuilder.install("Drawer", Drawer::new);*/
+        UXBuilder.install("Canvas", Canvas::new);*/
         // RichText text + multiple fonts + images + Emoji icons
         // MonoText text + multiple monospaced fonts
         // RawText text + monospaced infinity reading efficiency

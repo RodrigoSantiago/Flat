@@ -66,9 +66,9 @@ public class EventDataMouseButton extends EventData {
         }
 
         if (pointer.isPressed(button)) {
-            pointer.setReleased();
+            pointer.setReleased(window);
         } else {
-            pointer.performReleased(widget, button);
+            pointer.performReleased(window, widget, button);
         }
     }
 }

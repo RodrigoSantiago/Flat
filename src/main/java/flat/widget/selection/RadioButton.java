@@ -235,10 +235,6 @@ public class RadioButton extends Widget {
         }
     }
 
-    protected boolean isWrapContent() {
-        return getPrefWidth() == WRAP_CONTENT || getPrefHeight() == WRAP_CONTENT;
-    }
-
     private class IconChange extends NormalizedAnimation {
         @Override
         public Activity getSource() {

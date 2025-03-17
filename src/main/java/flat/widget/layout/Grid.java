@@ -313,7 +313,7 @@ public class Grid extends Parent {
 
             for (Cell cell : orderedCells) {
                 if (cell.x < columnCount) {
-                    columnsMeasureSize[cell.x] = Math.max(columnsMeasureSize[cell.x], cell.widget.getMeasureWidth());
+                    columnsMeasureSize[cell.x] = Math.max(columnsMeasureSize[cell.x], getDefWidth(cell.widget));
                 }
             }
             float definedWidth = 0;
@@ -332,7 +332,7 @@ public class Grid extends Parent {
 
             for (Cell cell : orderedCells) {
                 if (cell.y < rowCount) {
-                    rowsMeasureSize[cell.y] = Math.max(rowsMeasureSize[cell.y], cell.widget.getMeasureHeight());
+                    rowsMeasureSize[cell.y] = Math.max(rowsMeasureSize[cell.y], getDefHeight(cell.widget));
                 }
             }
             float definedHeight = 0;
@@ -369,14 +369,14 @@ public class Grid extends Parent {
         for (Cell cell : orderedCells) {
             if (cell.x >= 0 && cell.x < columnCount && columns[cell.x] == WRAP_CONTENT) {
                 if (cell.widget.getMeasureWidth() != MATCH_PARENT) {
-                    columnsMeasureSize[cell.x] = Math.max(columnsMeasureSize[cell.x], cell.widget.getMeasureWidth());
+                    columnsMeasureSize[cell.x] = Math.max(columnsMeasureSize[cell.x], getDefWidth(cell.widget));
                 } else {
                     columnsTempSize[cell.x] = 1;
                 }
             }
             if (cell.y >= 0 && cell.y < rowCount && rows[cell.y] == WRAP_CONTENT) {
                 if (cell.widget.getMeasureHeight() != MATCH_PARENT) {
-                    rowsMeasureSize[cell.y] = Math.max(rowsMeasureSize[cell.y], cell.widget.getMeasureHeight());
+                    rowsMeasureSize[cell.y] = Math.max(rowsMeasureSize[cell.y], getDefHeight(cell.widget));
                 } else {
                     rowsTempSize[cell.y] = 1;
                 }
@@ -466,10 +466,8 @@ public class Grid extends Parent {
                     }
                 }
 
-                float cW = Math.min(envWidth,
-                        Math.min(cell.widget.getMeasureWidth(), cell.widget.getLayoutMaxWidth()));
-                float cH = Math.min(envHeight,
-                        Math.min(cell.widget.getMeasureHeight(), cell.widget.getLayoutMaxHeight()));
+                float cW = Math.min(envWidth, Math.min(cell.widget.getMeasureWidth(), getDefWidth(cell.widget)));
+                float cH = Math.min(envHeight, Math.min(cell.widget.getMeasureHeight(), getDefHeight(cell.widget)));
                 
                 cell.widget.onLayout(cW, cH);
                 cell.widget.setLayoutPosition(column.x, row.y);
@@ -482,31 +480,6 @@ public class Grid extends Parent {
 
     @Override
     public boolean onLayoutSingleChild(Widget child) {
-        Integer index = cells.get(child);
-        if (index != null) {
-            Cell cell = orderedCells.get((int) index);
-            if (cell.x >= 0 && cell.x < columnCount && cell.y >= 0 && cell.y < rowCount) {
-                if (columns[cell.x] == WRAP_CONTENT || columns[cell.x] == MATCH_PARENT ||
-                        columns[cell.y] == WRAP_CONTENT || columns[cell.y] == MATCH_PARENT) {
-                    return false;
-                }
-                
-                Column column = layoutColumns[cell.x];
-                Row row = layoutRows[cell.y];
-                cell.widget.onMeasure();
-                float cW = Math.min(column.width,
-                        Math.min(cell.widget.getMeasureWidth(), cell.widget.getLayoutMaxWidth()));
-                float cH = Math.min(row.height,
-                        Math.min(cell.widget.getMeasureHeight(), cell.widget.getLayoutMaxHeight()));
-
-                cell.widget.onLayout(cW, cH);
-                cell.widget.setLayoutPosition(column.x, row.y);
-            } else {
-                cell.widget.onLayout(0, 0);
-                cell.widget.setLayoutPosition(0, 0);
-            }
-            return true;
-        }
         return false;
     }
 

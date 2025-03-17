@@ -75,6 +75,21 @@ public class UXNodeParserTest {
     }
 
     @Test
+    public void prolog() {
+        UXNodeParser parser = new UXNodeParser("<?xml value=\"\"?><button></button>");
+        parser.parse();
+        UXNodeElement result = parser.getRootElement();
+        UXNodeElement prolog = parser.getPrologElement();
+
+        assertElement(result, "button");
+        assertElement(prolog, "xml",
+                "value", new UXValueText("")
+        );
+        assertChild(result);
+        assertLog(parser.getLogs());
+    }
+
+    @Test
     public void parse_FailMalformedString() {
         UXNodeParser parser = new UXNodeParser(
                 """
@@ -594,6 +609,40 @@ public class UXNodeParserTest {
         assertChild(result);
         assertLog(parser.getLogs(),
                 UXNodeParser.ErroLog.MULTIPLE_ROOT_ELEMENTS, 1
+        );
+    }
+
+    @Test
+    public void parse_FailMultipleProlog() {
+        UXNodeParser parser = new UXNodeParser("<?xml value=\"\"?><?xml value=\"\"?><button></button>");
+        parser.parse();
+        UXNodeElement result = parser.getRootElement();
+        UXNodeElement prolog = parser.getPrologElement();
+
+        assertElement(result, "button");
+        assertElement(prolog, "xml",
+                "value", new UXValueText("")
+        );
+        assertChild(result);
+        assertLog(parser.getLogs(),
+                UXNodeParser.ErroLog.MULTIPLE_PROLOG_ELEMENTS, 0
+        );
+    }
+
+    @Test
+    public void parse_FailPrologLater() {
+        UXNodeParser parser = new UXNodeParser("<button></button><?xml value=\"\"?>");
+        parser.parse();
+        UXNodeElement result = parser.getRootElement();
+        UXNodeElement prolog = parser.getPrologElement();
+
+        assertElement(result, "button");
+        assertElement(prolog, "xml",
+                "value", new UXValueText("")
+        );
+        assertChild(result);
+        assertLog(parser.getLogs(),
+                UXNodeParser.ErroLog.PROLOG_FIRST, 0
         );
     }
 

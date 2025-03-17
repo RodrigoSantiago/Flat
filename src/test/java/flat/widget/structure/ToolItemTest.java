@@ -10,6 +10,7 @@ import flat.uxml.UXListener;
 import flat.uxml.value.*;
 import flat.widget.Widget;
 import flat.widget.enums.ImageFilter;
+import flat.widget.selection.Checkbox;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -56,6 +57,8 @@ public class ToolItemTest {
         assertNull(toolItem.getIcon());
         assertNull(toolItem.getMenuText());
         assertNull(toolItem.getMenuShortcutText());
+        assertEquals(0, toolItem.getIconWidth(), 0.001f);
+        assertEquals(0, toolItem.getIconHeight(), 0.001f);
         assertEquals(0xFFFFFFFF, toolItem.getIconColor());
         assertEquals(ImageFilter.LINEAR, toolItem.getIconImageFilter());
         assertNull(toolItem.getActionListener());
@@ -66,6 +69,8 @@ public class ToolItemTest {
         assertNull(toolItem.getIcon());
         assertEquals("Hello World", toolItem.getMenuText());
         assertEquals("Ctrl+C", toolItem.getMenuShortcutText());
+        assertEquals(0, toolItem.getIconWidth(), 0.001f);
+        assertEquals(0, toolItem.getIconHeight(), 0.001f);
         assertEquals(0xFFFFFFFF, toolItem.getIconColor());
         assertEquals(ImageFilter.LINEAR, toolItem.getIconImageFilter());
         assertEquals(action, toolItem.getActionListener());
@@ -75,6 +80,8 @@ public class ToolItemTest {
         assertEquals(icon, toolItem.getIcon());
         assertEquals("Hello World", toolItem.getMenuText());
         assertEquals("Ctrl+C", toolItem.getMenuShortcutText());
+        assertEquals(16f, toolItem.getIconWidth(), 0.001f);
+        assertEquals(18f, toolItem.getIconHeight(), 0.001f);
         assertEquals(0xFF0000FF, toolItem.getIconColor());
         assertEquals(ImageFilter.NEAREST, toolItem.getIconImageFilter());
         assertEquals(action, toolItem.getActionListener());
@@ -86,10 +93,11 @@ public class ToolItemTest {
         toolItem.setIcon(icon);
         toolItem.onMeasure();
 
-        assertEquals(0, toolItem.getMeasureWidth(), 0.1f);
-        assertEquals(0, toolItem.getMeasureHeight(), 0.1f);
+        assertEquals(16, toolItem.getMeasureWidth(), 0.1f);
+        assertEquals(20, toolItem.getMeasureHeight(), 0.1f);
 
-        toolItem.setPrefSize(20, 20);
+        toolItem.setIconWidth(20);
+        toolItem.setIconHeight(20);
         toolItem.onMeasure();
 
         assertEquals(20, toolItem.getMeasureWidth(), 0.1f);
@@ -99,8 +107,14 @@ public class ToolItemTest {
         toolItem.setPadding(5, 4, 2, 3);
         toolItem.onMeasure();
 
-        assertEquals(26, toolItem.getMeasureWidth(), 0.1f);
-        assertEquals(24, toolItem.getMeasureHeight(), 0.1f);
+        assertEquals(20 + 13, toolItem.getMeasureWidth(), 0.1f);
+        assertEquals(20 + 11, toolItem.getMeasureHeight(), 0.1f);
+
+        toolItem.setPrefSize(100, 200);
+        toolItem.onMeasure();
+
+        assertEquals(106, toolItem.getMeasureWidth(), 0.1f);
+        assertEquals(204, toolItem.getMeasureHeight(), 0.1f);
 
         toolItem.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
         toolItem.onMeasure();
@@ -131,6 +145,8 @@ public class ToolItemTest {
         hash.put(UXHash.getHash("icon-color"), new UXValueColor(0xFF0000FF));
         hash.put(UXHash.getHash("icon-image-filter"), new UXValueText(ImageFilter.NEAREST.toString()));
         hash.put(UXHash.getHash("icon"), uxIconActive);
+        hash.put(UXHash.getHash("icon-width"), new UXValueSizeDp(16));
+        hash.put(UXHash.getHash("icon-height"), new UXValueSizeDp(18));
         hash.put(UXHash.getHash("menu-text"), new UXValueText("Hello World"));
         hash.put(UXHash.getHash("menu-shortcut-text"),  new UXValueText("Ctrl+C"));
         return hash;

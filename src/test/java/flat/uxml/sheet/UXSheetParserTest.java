@@ -5,7 +5,6 @@ import flat.graphics.text.FontStyle;
 import flat.graphics.text.FontWeight;
 import flat.uxml.value.UXValue;
 import flat.uxml.value.*;
-import flat.widget.Widget;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -58,6 +57,18 @@ public class UXSheetParserTest {
         assertEquals(0, reader.getStyles().size());
 
         assertVariables(reader.getVariables(), "$variable", new UXValueNumber(10));
+        assertLog(reader.getLogs());
+    }
+
+    @Test
+    public void subStyle() {
+        UXSheetParser reader = new UXSheetParser("widget.style {}");
+        reader.parse();
+
+        assertEquals(1, reader.getStyles().size());
+        assertStyle(reader.getStyles(), "widget.style", null);
+
+        assertEquals(0, reader.getVariables().size());
         assertLog(reader.getLogs());
     }
 
@@ -552,7 +563,6 @@ public class UXSheetParserTest {
                     rgba-off : rgba(255, 128, 128, 128dp);
                 }
                 style-function {
-                    function-off : function("something");
                     function-incomplete : font("something";
                 }
                 style-list {
@@ -577,13 +587,12 @@ public class UXSheetParserTest {
                 "rgba-off", new UXValue()
         );
         assertStyle(reader.getStyles(), "style-function", null,
-                "function-off", new UXValue(),
                 "function-incomplete", new UXValueFont("something", null, null, null)
         );
         assertStyle(reader.getStyles(), "style-list", null,
-                "list-on", new UXValueSizeList(new UXValue[] {
+                "list-on", new UXValueSizeList("list", new UXValue[] {
                         new UXValueNumber(1), new UXValueSizeDp(2),
-                        new UXValueNumber(Widget.MATCH_PARENT), new UXValueNumber(Widget.WRAP_CONTENT),
+                        new UXValueSizeMp(), new UXValueNumber(0),
                         new UXValueText("10"), new UXValueVariable("$var"), new UXValueLocale("@locale")
                 })
         );
@@ -591,12 +600,11 @@ public class UXSheetParserTest {
         assertEquals(0, reader.getVariables().size());
         assertLog(reader.getLogs(),
                 UXSheetParser.ErroLog.INVALID_COLOR, 2,
-                UXSheetParser.ErroLog.UNEXPECTED_TOKEN, 6,
+                UXSheetParser.ErroLog.INVALID_FONT, 6,
                 UXSheetParser.ErroLog.INVALID_FONT, 7,
                 UXSheetParser.ErroLog.INVALID_FONT, 7,
                 UXSheetParser.ErroLog.INVALID_COLOR, 11,
-                UXSheetParser.ErroLog.INVALID_FUNCTION, 14,
-                UXSheetParser.ErroLog.UNEXPECTED_END_OF_TOKENS, 15
+                UXSheetParser.ErroLog.UNEXPECTED_END_OF_TOKENS, 14
         );
     }
 
@@ -642,7 +650,7 @@ public class UXSheetParserTest {
                 """
                 style {
                     color : #FFFFFF;
-                    color-off : #FFF;
+                    color-off : #FF;
                 }
                 """
         );
@@ -674,8 +682,8 @@ public class UXSheetParserTest {
 
         assertEquals(1, reader.getStyles().size());
         assertStyle(reader.getStyles(), "style", null,
-                "number-m", new UXValueNumber(Widget.MATCH_PARENT),
-                "number-w", new UXValueNumber(Widget.WRAP_CONTENT)
+                "number-m", new UXValueSizeMp(),
+                "number-w", new UXValueNumber(0)
         );
 
         assertEquals(0, reader.getVariables().size());
@@ -703,6 +711,102 @@ public class UXSheetParserTest {
         var list = reader.getStyles().get(0).getStates().values();
         assertStyle(new ArrayList<>(list), "hovered", null,
                 "color", new UXValueColor(0xFF0000FF)
+        );
+
+        assertEquals(0, reader.getVariables().size());
+        assertLog(reader.getLogs());
+    }
+
+    @Test
+    public void include() {
+        UXSheetParser reader = new UXSheetParser(
+                """
+                @include '../class';
+                style {
+                    color : #FFFFFF;
+                    hovered {
+                        color : #FF0000;
+                    }
+                }
+                @include 'other';
+                """
+        );
+        reader.parse();
+
+        assertEquals(1, reader.getStyles().size());
+        assertStyle(reader.getStyles(), "style", null,
+                "color", new UXValueColor(0xFFFFFFFF)
+        );
+        var list = reader.getStyles().get(0).getStates().values();
+        assertStyle(new ArrayList<>(list), "hovered", null,
+                "color", new UXValueColor(0xFF0000FF)
+        );
+        var includes = reader.getIncludes();
+        assertIncludes(new ArrayList<>(includes), "../class", "other");
+
+        assertEquals(0, reader.getVariables().size());
+        assertLog(reader.getLogs());
+    }
+
+    @Test
+    public void parse_FailedInvalidInclude() {
+        UXSheetParser reader = new UXSheetParser(
+                """
+                @include '../class';
+                style {
+                    color : #FFFFFF;
+                    hovered {
+                        color : #FF0000;
+                    }
+                }
+                @include;
+                """
+        );
+        reader.parse();
+
+        assertEquals(1, reader.getStyles().size());
+        assertStyle(reader.getStyles(), "style", null,
+                "color", new UXValueColor(0xFFFFFFFF)
+        );
+        var list = reader.getStyles().get(0).getStates().values();
+        assertStyle(new ArrayList<>(list), "hovered", null,
+                "color", new UXValueColor(0xFF0000FF)
+        );
+        var includes = reader.getIncludes();
+        assertIncludes(new ArrayList<>(includes), "../class");
+
+        assertEquals(0, reader.getVariables().size());
+        assertLog(reader.getLogs(),
+                UXSheetParser.ErroLog.UNEXPECTED_TOKEN, 7,
+                UXSheetParser.ErroLog.UNEXPECTED_END_OF_TOKENS, 7,
+                UXSheetParser.ErroLog.INVALID_INCLUDE, 7
+        );
+    }
+
+    @Test
+    public void listFunctions() {
+        UXSheetParser reader = new UXSheetParser(
+                """
+                style-list {
+                    list-on : list(1, 2dp, MATCH_PARENT, WRAP_CONTENT, "10", $var, @locale);
+                    list-space : list(1 2dp MATCH_PARENT WRAP_CONTENT "10" $var @locale);
+                }
+                """
+        );
+        reader.parse();
+
+        assertEquals(1, reader.getStyles().size());
+        assertStyle(reader.getStyles(), "style-list", null,
+                "list-on", new UXValueSizeList("list", new UXValue[] {
+                        new UXValueNumber(1), new UXValueSizeDp(2),
+                        new UXValueSizeMp(), new UXValueNumber(0),
+                        new UXValueText("10"), new UXValueVariable("$var"), new UXValueLocale("@locale")
+                }),
+                "list-space", new UXValueSizeList("list", new UXValue[] {
+                        new UXValueNumber(1), new UXValueSizeDp(2),
+                        new UXValueSizeMp(), new UXValueNumber(0),
+                        new UXValueText("10"), new UXValueVariable("$var"), new UXValueLocale("@locale")
+                })
         );
 
         assertEquals(0, reader.getVariables().size());
@@ -845,6 +949,34 @@ public class UXSheetParserTest {
         for (var key : variables) {
             if (!list.contains(key.getName())) {
                 fail("Variable not expected : " + key);
+            }
+        }
+    }
+
+    public void assertIncludes(List<UXSheetAttribute> includes, String... names) {
+        var list = new ArrayList<String>();
+        for (int i = 0; i < names.length; i ++) {
+            String name = names[i];
+
+            UXSheetAttribute variable = null;
+            for (var vr : includes) {
+                if (name.equals(vr.getValue().asString(null))) {
+                    variable = vr;
+                    break;
+                }
+            }
+            if (variable == null) {
+                fail("Include not found : " + name);
+            }
+            list.add(name);
+        }
+        for (var key : includes) {
+            String str = key.getValue().asString(null);
+            if (str == null) {
+                fail("Include not expected : " + str);
+            }
+            if (!list.contains(str)) {
+                fail("Include not expected : " + str);
             }
         }
     }

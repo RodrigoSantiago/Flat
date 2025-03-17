@@ -57,8 +57,8 @@ public class ScrollBoxTest {
 
         ScrollBox scrollBox = new ScrollBox();
 
-        assertEquals(Policy.AS_NEEDED, scrollBox.getHorizontalPolicy());
-        assertEquals(Policy.AS_NEEDED, scrollBox.getVerticalPolicy());
+        assertEquals(Policy.AS_NEEDED, scrollBox.getHorizontalBarPolicy());
+        assertEquals(Policy.AS_NEEDED, scrollBox.getVerticalBarPolicy());
         assertEquals(HorizontalBarPosition.BOTTOM, scrollBox.getHorizontalBarPosition());
         assertEquals(VerticalBarPosition.RIGHT, scrollBox.getVerticalBarPosition());
         assertEquals(10f, scrollBox.getScrollSensibility(), 0.0001f);
@@ -73,8 +73,8 @@ public class ScrollBoxTest {
         scrollBox.setAttributes(createNonDefaultValues(), null);
         scrollBox.applyAttributes(controller);
 
-        assertEquals(Policy.AS_NEEDED, scrollBox.getHorizontalPolicy());
-        assertEquals(Policy.AS_NEEDED, scrollBox.getVerticalPolicy());
+        assertEquals(Policy.AS_NEEDED, scrollBox.getHorizontalBarPolicy());
+        assertEquals(Policy.AS_NEEDED, scrollBox.getVerticalBarPolicy());
         assertEquals(HorizontalBarPosition.BOTTOM, scrollBox.getHorizontalBarPosition());
         assertEquals(VerticalBarPosition.RIGHT, scrollBox.getVerticalBarPosition());
         assertEquals(10f, scrollBox.getScrollSensibility(), 0.0001f);
@@ -88,8 +88,8 @@ public class ScrollBoxTest {
 
         scrollBox.applyStyle();
 
-        assertEquals(Policy.ALWAYS, scrollBox.getHorizontalPolicy());
-        assertEquals(Policy.ALWAYS, scrollBox.getVerticalPolicy());
+        assertEquals(Policy.ALWAYS, scrollBox.getHorizontalBarPolicy());
+        assertEquals(Policy.ALWAYS, scrollBox.getVerticalBarPolicy());
         assertEquals(HorizontalBarPosition.TOP, scrollBox.getHorizontalBarPosition());
         assertEquals(VerticalBarPosition.LEFT, scrollBox.getVerticalBarPosition());
         assertEquals(5f, scrollBox.getScrollSensibility(), 0.0001f);
@@ -100,6 +100,9 @@ public class ScrollBoxTest {
         assertEquals(slideVertical, scrollBox.getSlideVerticalListener());
         assertEquals(listenerx, scrollBox.getViewOffsetXListener());
         assertEquals(listenery, scrollBox.getViewOffsetYListener());
+
+        assertTrue(scrollBox.getHorizontalBar().getStyles().contains("scroll-box-horizontal-scroll-bar"));
+        assertTrue(scrollBox.getVerticalBar().getStyles().contains("scroll-box-vertical-scroll-bar"));
     }
 
     @Test
@@ -292,7 +295,7 @@ public class ScrollBoxTest {
         assertEquals(150, scrollBox.getViewDimensionY(), 0.1f);
 
         // Horizontal only Scrollable. Hidden bar
-        scrollBox.setHorizontalPolicy(Policy.NEVER);
+        scrollBox.setHorizontalBarPolicy(Policy.NEVER);
         scrollBox.onMeasure();
         assertMeasure(scrollBox, 500, 350);
         scrollBox.onLayout(250, 400);
@@ -301,10 +304,10 @@ public class ScrollBoxTest {
         assertEquals(400, scrollBox.getTotalDimensionY(), 0.1f);
         assertEquals(250, scrollBox.getViewDimensionX(), 0.1f);
         assertEquals(400, scrollBox.getViewDimensionY(), 0.1f);
-        scrollBox.setHorizontalPolicy(Policy.AS_NEEDED);
+        scrollBox.setHorizontalBarPolicy(Policy.AS_NEEDED);
 
         // Vertical only Scrollable. Hidden bar
-        scrollBox.setVerticalPolicy(Policy.NEVER);
+        scrollBox.setVerticalBarPolicy(Policy.NEVER);
         scrollBox.onMeasure();
         assertMeasure(scrollBox, 500, 350);
         scrollBox.onLayout(600, 150);
@@ -313,7 +316,7 @@ public class ScrollBoxTest {
         assertEquals(350, scrollBox.getTotalDimensionY(), 0.1f);
         assertEquals(600, scrollBox.getViewDimensionX(), 0.1f);
         assertEquals(150, scrollBox.getViewDimensionY(), 0.1f);
-        scrollBox.setVerticalPolicy(Policy.AS_NEEDED);
+        scrollBox.setVerticalBarPolicy(Policy.AS_NEEDED);
 
         // Both Scrollable
         scrollBox.onMeasure();
@@ -326,8 +329,8 @@ public class ScrollBoxTest {
         assertEquals(150 - 16, scrollBox.getViewDimensionY(), 0.1f);
 
         // Both Scrollable. Hidden Bars
-        scrollBox.setVerticalPolicy(Policy.NEVER);
-        scrollBox.setHorizontalPolicy(Policy.NEVER);
+        scrollBox.setVerticalBarPolicy(Policy.NEVER);
+        scrollBox.setHorizontalBarPolicy(Policy.NEVER);
         scrollBox.onMeasure();
         assertMeasure(scrollBox, 500, 350);
         scrollBox.onLayout(250, 150);
@@ -336,8 +339,8 @@ public class ScrollBoxTest {
         assertEquals(350, scrollBox.getTotalDimensionY(), 0.1f);
         assertEquals(250, scrollBox.getViewDimensionX(), 0.1f);
         assertEquals(150, scrollBox.getViewDimensionY(), 0.1f);
-        scrollBox.setVerticalPolicy(Policy.AS_NEEDED);
-        scrollBox.setHorizontalPolicy(Policy.AS_NEEDED);
+        scrollBox.setVerticalBarPolicy(Policy.AS_NEEDED);
+        scrollBox.setHorizontalBarPolicy(Policy.AS_NEEDED);
 
         // Same Size. Hor size poke vertical bar
         scrollBox.onMeasure();
@@ -420,7 +423,7 @@ public class ScrollBoxTest {
         assertEquals(150, scrollBox.getViewDimensionY(), 0.1f);
 
         // Horizontal only Scrollable. Hidden bar
-        scrollBox.setHorizontalPolicy(Policy.NEVER);
+        scrollBox.setHorizontalBarPolicy(Policy.NEVER);
         scrollBox.onMeasure();
         assertMeasure(scrollBox, 500, 350);
         scrollBox.onLayout(250, 400);
@@ -429,10 +432,10 @@ public class ScrollBoxTest {
         assertEquals(400, scrollBox.getTotalDimensionY(), 0.1f);
         assertEquals(250, scrollBox.getViewDimensionX(), 0.1f);
         assertEquals(400, scrollBox.getViewDimensionY(), 0.1f);
-        scrollBox.setHorizontalPolicy(Policy.AS_NEEDED);
+        scrollBox.setHorizontalBarPolicy(Policy.AS_NEEDED);
 
         // Vertical only Scrollable. Hidden bar
-        scrollBox.setVerticalPolicy(Policy.NEVER);
+        scrollBox.setVerticalBarPolicy(Policy.NEVER);
         scrollBox.onMeasure();
         assertMeasure(scrollBox, 500, 350);
         scrollBox.onLayout(600, 150);
@@ -441,7 +444,7 @@ public class ScrollBoxTest {
         assertEquals(350, scrollBox.getTotalDimensionY(), 0.1f);
         assertEquals(600, scrollBox.getViewDimensionX(), 0.1f);
         assertEquals(150, scrollBox.getViewDimensionY(), 0.1f);
-        scrollBox.setVerticalPolicy(Policy.AS_NEEDED);
+        scrollBox.setVerticalBarPolicy(Policy.AS_NEEDED);
 
         // Both Scrollable
         scrollBox.onMeasure();
@@ -454,8 +457,8 @@ public class ScrollBoxTest {
         assertEquals(150, scrollBox.getViewDimensionY(), 0.1f);
 
         // Both Scrollable. Hidden Bars
-        scrollBox.setVerticalPolicy(Policy.NEVER);
-        scrollBox.setHorizontalPolicy(Policy.NEVER);
+        scrollBox.setVerticalBarPolicy(Policy.NEVER);
+        scrollBox.setHorizontalBarPolicy(Policy.NEVER);
         scrollBox.onMeasure();
         assertMeasure(scrollBox, 500, 350);
         scrollBox.onLayout(250, 150);
@@ -464,8 +467,8 @@ public class ScrollBoxTest {
         assertEquals(350, scrollBox.getTotalDimensionY(), 0.1f);
         assertEquals(250, scrollBox.getViewDimensionX(), 0.1f);
         assertEquals(150, scrollBox.getViewDimensionY(), 0.1f);
-        scrollBox.setVerticalPolicy(Policy.AS_NEEDED);
-        scrollBox.setHorizontalPolicy(Policy.AS_NEEDED);
+        scrollBox.setVerticalBarPolicy(Policy.AS_NEEDED);
+        scrollBox.setHorizontalBarPolicy(Policy.AS_NEEDED);
 
         // Same Size. Hor size poke vertical bar
         scrollBox.onMeasure();
@@ -624,8 +627,8 @@ public class ScrollBoxTest {
 
         hash.put(UXHash.getHash("view-offset-x"), new UXValueNumber(100));
         hash.put(UXHash.getHash("view-offset-y"), new UXValueNumber(120));
-        hash.put(UXHash.getHash("horizontal-policy"), new UXValueText(Policy.ALWAYS.toString()));
-        hash.put(UXHash.getHash("vertical-policy"), new UXValueText(Policy.ALWAYS.toString()));
+        hash.put(UXHash.getHash("horizontal-bar-policy"), new UXValueText(Policy.ALWAYS.toString()));
+        hash.put(UXHash.getHash("vertical-bar-policy"), new UXValueText(Policy.ALWAYS.toString()));
         hash.put(UXHash.getHash("horizontal-bar-position"), new UXValueText(HorizontalBarPosition.TOP.toString()));
         hash.put(UXHash.getHash("vertical-bar-position"), new UXValueText(VerticalBarPosition.LEFT.toString()));
         hash.put(UXHash.getHash("scroll-sensibility"), new UXValueNumber(5));

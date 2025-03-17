@@ -130,11 +130,12 @@ Paddings and Margins properties will affect the final Layout/Out/In size indepen
 - StackBox
 - Grid
 - Frame
+- TabView
 - Tab
-- Page
+- ScrollBox
 - VerticalScrollBar
 - HorizontalScrollBar
-- ScrollBox
+- Drawer
 
 #### Text
 - Label
@@ -185,11 +186,11 @@ Some Widgets, like Scene, LinearBox, ScrollBox and such can have children widget
 </Scene>
 ````
 Some Widgets only allow sone specific type for children:
-- `Tab` : Can only have `Page`
+- `TabView` : Can only have `Tab`
 - `Menu` : Can only have `MenuItem` and `Divider`
 - `ToolBar` : Can only have `ToolItem`
 
-`Page` will wrap all the children into a `Frame` (only if the children is not already a `Frame`)
+`Tab` will wrap all the children into a `Frame` (only if the children is not already a `Frame`)
 
 #### Context Menu
 All widgets can have a default context menu as `hello_world.uxml`
@@ -260,8 +261,9 @@ style : parent {
 - `Color` : 
   - `#FFFFFF` : rgb hexadecimal
   - `#FFFFFFFF` : rgba hexadecimal
-  - `rgb(255, 255, 255)' : rgb decimal color
-  - `rgba(255, 255, 255, 1.0)' : rgb decimal color and alpha channel
+  - `rgb(255, 255, 255)` : rgb decimal color
+  - `rgba(255, 255, 255, 1.0)` : rgb decimal color and alpha channel
+  - `alpha(color-or-variable, 1.0)` : alpha modifier
   - `color-name` : basic colors name (same as css)
 - `Font` : as function `font("Arial", BOLD, ITALIC)`. The order does not matter. It can only have one Family, one Weight, one Style and one Posture (For now)
   - Style : `SANS`, `SERIF`, `MONO`, `CURSIVE`, `EMOJI` 
@@ -270,7 +272,7 @@ style : parent {
 - `Text` or `Constant` : simple write the plain text or use quots for spaces and special characters. Constants are case-insensitive
 - `Resource` : simple write the path as `'/path/to/image.svg'`
 - `Variable` : `@variable`. The variable name is case-sensitive. It does not need to follow the java rules for variables names. A variable can have any value. It must have a default value. The variable value can be set at runtime.
- 
+
 ````CSS
 @var-name : 10dp;
 
@@ -287,6 +289,13 @@ style {
    image-resource-2 : '/simple/quots/also/works.png';
    variable : @var-name;
 }
+````
+
+#### Include
+UXSS themes can be a individual uxss file or a folder. An UXSS theme can include other theme.
+
+````CSS
+@include '../other/theme';
 ````
 
 ### Todo - List

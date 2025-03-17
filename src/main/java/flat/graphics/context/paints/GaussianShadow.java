@@ -2,6 +2,7 @@ package flat.graphics.context.paints;
 
 import flat.backend.SVG;
 import flat.exception.FlatException;
+import flat.graphics.Color;
 import flat.graphics.context.Paint;
 import flat.math.Affine;
 import flat.math.Mathf;
@@ -38,9 +39,26 @@ public class GaussianShadow extends Paint {
         }
     }
 
+    public GaussianShadow(GaussianShadow other, int color) {
+        this.x = other.x;
+        this.y = other.y;
+        this.width = other.width;
+        this.height = other.height;
+        this.corners = other.corners;
+        this.blur = other.blur;
+        this.alpha = other.alpha;
+        this.data = other.data;
+        this.color = color;
+    }
+
     @Override
     protected void setInternal(long svgId)  {
         SVG.SetPaintBoxGradient(svgId, x, y, width, height, corners, blur, alpha, color, data);
+    }
+
+    @Override
+    public Paint multiply(int color) {
+        return color == -1 ? this : new GaussianShadow(this, Color.multiply(this.color, color));
     }
 
     public float getX() {

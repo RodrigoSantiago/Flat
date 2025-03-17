@@ -19,7 +19,7 @@ public class TextField extends TextArea {
 
     private String title;
     private int titleColor = 0x000000FF;
-    private float titleTransitionDuration = 1f;
+    private float titleTransitionDuration;
     private float titleSize = 8f;
     private float titleSpacing;
     private boolean titleLocked;
@@ -101,6 +101,8 @@ public class TextField extends TextArea {
 
     @Override
     public Vector2 onLayoutViewDimension(float width, float height) {
+        if (isTextEmpty()) return super.onLayoutViewDimension(width, height);
+
         float titleHeight = hasTitle() ? getTitleHeight() + getTitleSpacing() : 0;
         return new Vector2(getInWidth(), Math.max(0, getInHeight() - titleHeight));
     }
@@ -181,7 +183,7 @@ public class TextField extends TextArea {
     protected void onDrawTextDivider(Graphics context, float x, float y, float width, float height) {
         if (width > 0 && height > 0) {
             context.setTransform2D(getTransform());
-            context.setStroker(new BasicStroke(height));
+            context.setStroke(new BasicStroke(height));
             context.setColor(getTextDividerColor());
             context.drawLine(x, y, x + width, y);
         }
@@ -284,7 +286,6 @@ public class TextField extends TextArea {
     public void setTitleTransitionDuration(float titleTransitionDuration) {
         if (this.titleTransitionDuration != titleTransitionDuration) {
             this.titleTransitionDuration = titleTransitionDuration;
-            invalidateTitleFloating();
         }
     }
 
@@ -326,7 +327,11 @@ public class TextField extends TextArea {
     }
 
     private void invalidateTitleFloating() {
-        titleToTitle.play();
+        if (titleTransitionDuration > 0) {
+            titleToTitle.play();
+        } else {
+            titleToTitle.setPose(isTitleFloating() ? 1 : 0);
+        }
     }
 
     private void invalidateTitleSize() {

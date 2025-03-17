@@ -98,6 +98,10 @@ public class TextRender {
         return byteSize;
     }
 
+    public int getTotalLines() {
+        return lineCount;
+    }
+
     public boolean editText(Caret caretStart, Caret caretEnd, String replace, Caret newCaret) {
         byte[] replaceBytes = replace.getBytes(StandardCharsets.UTF_8);
         int start = caretStart.offset;
@@ -402,6 +406,12 @@ public class TextRender {
             offset = line.start + line.length;
         }
         updateCaret(caret, offset);
+    }
+
+    public boolean isCaretLastOfLine(Caret caret) {
+        if (lineCount <= 1) return caret.offset >= byteSize;
+        if (caret.line >= lineCount) return true;
+        return caret.lineChar >= lines.get(caret.line).length;
     }
 
     private int findLength(byte[] arr, int off, int end, int max) {
