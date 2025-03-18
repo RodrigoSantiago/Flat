@@ -8,6 +8,7 @@ import java.lang.ref.SoftReference;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -18,11 +19,20 @@ import java.util.zip.ZipOutputStream;
 
 public class ResourcesManager {
 
+    private static class CacheObj {
+        SoftReference<Object> obj;
+        long modifyTime;
+        public CacheObj(Object obj, long modifyTime) {
+            this.obj = new SoftReference<>(obj);
+            this.modifyTime = modifyTime;
+        }
+    }
+
     private static boolean libraryLoaded;
 
     private final ZipFile zip;
     private final File dir;
-    private final HashMap<String, SoftReference<Object>> resources = new HashMap<>();
+    private final HashMap<String, CacheObj> resources = new HashMap<>();
 
     public ResourcesManager() {
         this.dir = null;
@@ -95,15 +105,15 @@ public class ResourcesManager {
         resources.remove(pathName);
     }
 
-    public void putResourceCache(String pathName, Object cache) {
-        resources.put(pathName, new SoftReference<>(cache));
+    public void putResourceCache(String pathName, Object cache, long modifyTime) {
+        resources.put(pathName, new CacheObj(cache, modifyTime));
     }
 
-    public Object getResourceCache(String pathName) {
-        SoftReference<Object> reference = resources.get(pathName);
-        if (reference != null) {
-            Object obj = reference.get();
-            if (obj == null) {
+    public Object getResourceCache(String pathName, long modifyTime) {
+        CacheObj cache = resources.get(pathName);
+        if (cache != null) {
+            Object obj = cache.obj.get();
+            if (obj == null || modifyTime != cache.modifyTime) {
                 resources.remove(pathName);
             } else {
                 return obj;

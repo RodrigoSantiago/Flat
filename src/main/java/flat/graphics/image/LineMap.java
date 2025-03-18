@@ -43,8 +43,8 @@ public class LineMap implements Drawable {
 
     private static LineMap loadLineMap(ResourceStream stream) throws IOException {
         byte[] data = stream.readData();
-        if (stream.getStream() == null || data == null) {
-            throw new FlatException("Invalid image" + stream.getResourceName());
+        if (data == null) {
+            throw new FlatException("Invalid image " + stream.getResourceName());
         }
 
         String xml = new String(data, StandardCharsets.UTF_8);

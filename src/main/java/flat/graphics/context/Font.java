@@ -10,6 +10,7 @@ import flat.graphics.text.FontWeight;
 import flat.math.shapes.Path;
 import flat.window.Application;
 
+import java.io.File;
 import java.lang.ref.Cleaner;
 import java.nio.Buffer;
 import java.util.ArrayList;
@@ -387,6 +388,21 @@ public class Font {
             return paintId;
         }
         return render.paintId;
+    }
+
+    public static void listSystemFonts() {
+        String path = System.getenv("WINDIR");
+        File file = new File(path, "Fonts");
+        if (file.exists()) {
+            File[] child = file.listFiles();
+            if (child != null) {
+                for (int i = 0; i < child.length; i++) {
+                    if (child[i].getName().endsWith(".ttf")) {
+                        System.out.println(child[i].getName()); // arialb arialbd ariali arialk
+                    }
+                }
+            }
+        }
     }
 
     @Override

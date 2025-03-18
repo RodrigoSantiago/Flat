@@ -76,12 +76,13 @@ public class UXNode {
     }
 
     private static UXNode read(ResourceStream stream, ArrayList<String> includes) throws IOException {
-        if (stream.getStream() == null) {
+        byte[] data = stream.readData();
+        if (data == null) {
             throw new FlatException("File not found at: " + stream.getResourceName());
         }
-        String data = new String(stream.getStream().readAllBytes(), StandardCharsets.UTF_8);
 
-        UXNodeParser reader = new UXNodeParser(data);
+        String xml = new String(data, StandardCharsets.UTF_8);
+        UXNodeParser reader = new UXNodeParser(xml);
         reader.parse();
 
         UXNodeElement root = reader.getRootElement();

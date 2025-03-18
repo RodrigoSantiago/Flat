@@ -73,11 +73,13 @@ public class UXSheet {
                 readRecursive(sheet, st, includes);
             }
         } else {
-            if (stream.getStream() == null) {
-                throw new FlatException("File not found at: " + stream.getResourceName());
+            byte[] data = stream.readData();
+            if (data == null) {
+                throw new FlatException("Invalid file " + stream.getResourceName());
             }
-            String data = new String(stream.getStream().readAllBytes(), StandardCharsets.UTF_8);
-            UXSheetParser reader = new UXSheetParser(data);
+
+            String uxss = new String(stream.readData(), StandardCharsets.UTF_8);
+            UXSheetParser reader = new UXSheetParser(uxss);
             reader.parse();
 
             // Logs

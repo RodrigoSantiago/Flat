@@ -209,6 +209,8 @@ public class MainController extends Controller {
 
     @Override
     public void onShow() {
+        // Font.listSystemFonts();
+
         var pm = (PixelMap) DrawableReader.parse(new ResourceStream("/default/image_transp_test.png"));
         var pm2 = (PixelMap) DrawableReader.parse(new ResourceStream("/default/image.png"));
         var graphics = getActivity().getContext().getGraphics();

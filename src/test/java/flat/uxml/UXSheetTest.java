@@ -277,7 +277,7 @@ public class UXSheetTest {
 
     private ResourceStream mockStream(String value) {
         ResourceStream stream = mock(ResourceStream.class);
-        when(stream.getStream()).thenReturn(new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8)));
+        when(stream.readData()).thenReturn(value.getBytes(StandardCharsets.UTF_8));
         return stream;
     }
 

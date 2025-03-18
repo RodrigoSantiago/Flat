@@ -35,8 +35,8 @@ public class PixelMap implements Drawable, ImageTexture {
 
     private static PixelMap loadPixelMap(ResourceStream stream) throws IOException {
         byte[] data = stream.readData();
-        if (stream.getStream() == null || data == null) {
-            throw new FlatException("Invalid image" + stream.getResourceName());
+        if (data == null) {
+            throw new FlatException("Invalid image " + stream.getResourceName());
         }
 
         int[] imageData = new int[3];
