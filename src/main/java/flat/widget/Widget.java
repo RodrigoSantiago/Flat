@@ -232,16 +232,21 @@ public class Widget {
     }
 
     public void onDraw(Graphics graphics) {
+        if (discardDraw(graphics)) return;
+
         drawBackground(graphics);
         drawRipple(graphics);
         drawChildren(graphics);
     }
 
-    protected void drawBackground(Graphics graphics) {
-        if (bg.width <= 0 || bg.height <= 0) {
-            return;
-        }
+    protected boolean discardDraw(Graphics graphics) {
+        if (bg.width <= 0 || bg.height <= 0) return true;
+        graphics.setTransform2D(getTransform());
+        return graphics.discardDraw(bg.x - borderWidth, bg.y - borderWidth,
+                bg.width + borderWidth * 2, bg.height + borderWidth * 2);
+    }
 
+    protected void drawBackground(Graphics graphics) {
         float bgOpacity = Color.getOpacity(backgroundColor);
         float borderOpacity = Color.getOpacity(borderColor);
 
@@ -255,17 +260,17 @@ public class Widget {
                     bg.x - b, bg.y - b, bg.width + b * 2, bg.height + b * 2,
                     bg.arcTop + b, bg.arcRight + b, bg.arcBottom + b, bg.arcLeft + b,
                     elevation, 0.55f * bgOpacity);
+            graphics.setTransform2D(getTransform());
         }
+
         // Draw Background
         if (bgOpacity > 0) {
-            graphics.setTransform2D(getTransform());
             graphics.setColor(backgroundColor);
             graphics.drawRoundRect(bg, true);
         }
 
         // Draw Border
         if (borderOpacity > 0 && borderWidth > 0) {
-            graphics.setTransform2D(getTransform());
             graphics.setColor(borderColor);
             graphics.setStroke(new BasicStroke(borderWidth));
             graphics.drawRoundRect(

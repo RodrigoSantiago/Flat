@@ -133,6 +133,8 @@ public class TextInputField extends TextField {
 
     @Override
     public void onDraw(Graphics graphics) {
+        if (discardDraw(graphics)) return;
+
         drawBackground(graphics);
         drawRipple(graphics);
 

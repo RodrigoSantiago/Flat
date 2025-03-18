@@ -13,7 +13,6 @@ import flat.uxml.*;
 import flat.widget.Stage;
 import flat.widget.Widget;
 import flat.widget.enums.*;
-import flat.widget.value.HorizontalScrollBar;
 import flat.widget.value.VerticalScrollBar;
 import flat.window.Activity;
 
@@ -152,6 +151,8 @@ public class Menu extends Stage {
 
     @Override
     public void onDraw(Graphics graphics) {
+        if (discardDraw(graphics)) return;
+
         drawBackground(graphics);
         drawRipple(graphics);
 

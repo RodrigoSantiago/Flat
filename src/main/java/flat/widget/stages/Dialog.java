@@ -96,7 +96,11 @@ public class Dialog extends Stage {
 
     @Override
     public void onDraw(Graphics graphics) {
-        super.onDraw(graphics);
+        if (discardDraw(graphics)) return;
+
+        drawBackground(graphics);
+        drawRipple(graphics);
+        drawChildren(graphics);
 
         if (controller != null && controller.isListening()) {
             try {

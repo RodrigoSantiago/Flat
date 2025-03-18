@@ -117,6 +117,8 @@ public class ListItem extends Button {
 
     @Override
     public void onDraw(Graphics graphics) {
+        if (discardDraw(graphics)) return;
+
         drawBackground(graphics);
         drawRipple(graphics);
 

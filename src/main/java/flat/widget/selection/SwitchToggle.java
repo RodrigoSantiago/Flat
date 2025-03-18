@@ -94,6 +94,8 @@ public class SwitchToggle extends Widget {
 
     @Override
     public void onDraw(Graphics graphics) {
+        if (discardDraw(graphics)) return;
+
         drawBackground(graphics);
         final float x = getInX();
         final float y = getInY();

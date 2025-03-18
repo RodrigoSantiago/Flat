@@ -56,6 +56,8 @@ public class Button extends Label {
 
     @Override
     public void onDraw(Graphics graphics) {
+        if (discardDraw(graphics)) return;
+
         drawBackground(graphics);
         drawRipple(graphics);
 

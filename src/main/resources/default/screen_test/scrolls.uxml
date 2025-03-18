@@ -12,7 +12,7 @@
                     <HorizontalScrollBar style="primary" horizontal-bar="true"/>
                     <StackBox horizontal-align="right">
                         <ImageView image="/default/placeholder_img.jpg" width="400dp" height="320dp"/>
-                        <Slider width="90dp" line-width="16dp"/>
+                        <Slider width="90dp" line-width="16dp" border-width="32dp" border-color="black"/>
                     </StackBox>
                 </ScrollBox>
                 <ScrollBox margin-left="16dp" style="" width="200dp" height="160dp">

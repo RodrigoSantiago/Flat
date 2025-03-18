@@ -112,6 +112,8 @@ public class RangedSlider extends Widget {
 
     @Override
     public void onDraw(Graphics graphics) {
+        if (discardDraw(graphics)) return;
+
         drawBackground(graphics);
 
         float x = getInX();

@@ -78,6 +78,8 @@ public class Scene extends Group {
 
     @Override
     public void onDraw(Graphics graphics) {
+        if (discardDraw(graphics)) return;
+
         if (getVisibility() == Visibility.VISIBLE) {
             super.onDraw(graphics);
         }

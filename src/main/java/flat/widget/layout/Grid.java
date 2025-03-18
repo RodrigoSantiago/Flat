@@ -485,6 +485,8 @@ public class Grid extends Parent {
 
     @Override
     public void onDraw(Graphics graphics) {
+        if (discardDraw(graphics)) return;
+
         drawBackground(graphics);
         drawRipple(graphics);
         drawChildren(graphics);
