@@ -2,6 +2,7 @@ package flat.graphics.context.paints;
 
 import flat.backend.SVG;
 import flat.exception.FlatException;
+import flat.graphics.Color;
 import flat.graphics.context.enums.CycleMethod;
 import flat.graphics.context.Paint;
 import flat.math.Affine;
@@ -29,6 +30,16 @@ public class LinearGradient extends Paint {
         data = builder.data;
     }
 
+    LinearGradient(LinearGradient other, float[] data) {
+        this.x1 = other.x1;
+        this.y1 = other.y1;
+        this.x2 = other.x2;
+        this.y2 = other.y2;
+        this.stopCount = other.stopCount;
+        this.data = data;
+        this.cycleMethod = other.cycleMethod;
+    }
+
     @Override
     protected void setInternal(long svgId)  {
         SVG.SetPaintLinearGradient(svgId, x1, y1, x2, y2, stopCount, data, cycleMethod.ordinal());
@@ -36,7 +47,14 @@ public class LinearGradient extends Paint {
 
     @Override
     public Paint multiply(int color) {
-        return this; // todo - implement
+        if (color == 0XFFFFFFFF) return this;
+
+        float[] newColor = data.clone();
+        for (int i = 0; i < stopCount; i++) {
+            newColor[6 + 16 + i] = Float.intBitsToFloat(Color.multiply(Float.floatToRawIntBits(data[6 + 16 + i]), color));
+        }
+
+        return new LinearGradient(this, newColor);
     }
 
     public float getX1() {
