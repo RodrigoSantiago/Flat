@@ -34,7 +34,7 @@ public final class BufferObject extends ContextObject {
 
     private void boundCheck() {
         if (isDisposed()) {
-            throw new FlatException("The Buffer is disposed.");
+            throw new FlatException("The Buffer is disposed");
         }
         getContext().bindBuffer(this, type);
     }

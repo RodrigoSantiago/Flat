@@ -37,7 +37,7 @@ public final class Cubemap extends Texture {
 
     private void boundCheck() {
         if (isDisposed()) {
-            throw new FlatException("The " + getClass().getSimpleName() + " is disposed.");
+            throw new FlatException("The Cubemap is disposed");
         }
         getContext().bindTexture(this);
     }

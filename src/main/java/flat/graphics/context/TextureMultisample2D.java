@@ -32,7 +32,7 @@ public final class TextureMultisample2D extends Texture {
 
     private void boundCheck() {
         if (isDisposed()) {
-            throw new FlatException("The TextureMultisample2D is disposed.");
+            throw new FlatException("The TextureMultisample2D is disposed");
         }
         getContext().bindTexture(this);
     }

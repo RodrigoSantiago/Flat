@@ -151,7 +151,7 @@ public class RadialGradient extends Paint {
         public Builder stop(float stop, int color) {
             checkReadOnly();
             if (stop < 0 || stop > 1) {
-                throw new FlatException("Stop must be between 0 and 1.");
+                throw new FlatException("Stop must be between 0 and 1");
             }
 
             if (stopCount == 0) {

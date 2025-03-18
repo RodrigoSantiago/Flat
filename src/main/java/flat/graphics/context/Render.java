@@ -25,7 +25,7 @@ public final class Render extends ContextObject {
 
     private void boundCheck() {
         if (isDisposed()) {
-            throw new FlatException("The Render is disposed.");
+            throw new FlatException("The Render is disposed");
         }
         getContext().bindRender(this);
     }

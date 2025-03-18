@@ -1,21 +1,17 @@
 package flat.graphics.context;
 
 import flat.backend.GL;
-import flat.backend.GLEnums;
 import flat.exception.FlatException;
 import flat.graphics.context.enums.AttributeType;
 import flat.graphics.context.enums.BufferType;
 import flat.graphics.context.enums.VertexMode;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public final class VertexArray extends ContextObject {
 
     private final int vertexArrayId;
 
     private BufferObject elementBuffer;
-    private BufferObject[] arrayBuffers = new BufferObject[16];
+    private final BufferObject[] arrayBuffers = new BufferObject[16];
 
     public VertexArray(Context context) {
         super(context);
@@ -30,7 +26,15 @@ public final class VertexArray extends ContextObject {
 
     private void boundCheck() {
         if (isDisposed()) {
-            throw new FlatException("The VertexArray is disposed.");
+            throw new FlatException("The VertexArray is disposed");
+        }
+        if (elementBuffer != null && elementBuffer.isDisposed()) {
+            throw new FlatException("The ElementBuffer is disposed");
+        }
+        for (BufferObject arrayBuffer : arrayBuffers) {
+            if (arrayBuffer != null && arrayBuffer.isDisposed()) {
+                throw new FlatException("The ArrayBuffer is disposed");
+            }
         }
     }
 
@@ -38,6 +42,9 @@ public final class VertexArray extends ContextObject {
         boundCheck();
         if (elementBuffer != null && elementBuffer.getType() != BufferType.Element) {
             throw new FlatException("The buffer should be Element type");
+        }
+        if (elementBuffer != null && elementBuffer.isDisposed()) {
+            throw new FlatException("The ElementBuffer is disposed");
         }
 
         getContext().bindVertexArray(this);
@@ -47,19 +54,22 @@ public final class VertexArray extends ContextObject {
         this.elementBuffer = elementBuffer;
     }
 
-    public void setAttributeEnabled(BufferObject buffer, int att, int size, AttributeType type, boolean normalized, int stride, int offset) {
+    public void setAttributeEnabled(BufferObject arrayBuffer, int att, int size, AttributeType type, boolean normalized, int stride, int offset) {
         boundCheck();
-        if (buffer.getType() != BufferType.Array) {
+        if (arrayBuffer.getType() != BufferType.Array) {
             throw new FlatException("The buffer should be Array type");
+        }
+        if (arrayBuffer.isDisposed()) {
+            throw new FlatException("The Arraybuffer is disposed");
         }
 
         getContext().bindVertexArray(this);
-        getContext().bindBuffer(buffer, BufferType.Array);
+        getContext().bindBuffer(arrayBuffer, BufferType.Array);
         GL.VertexArrayAttribEnable(att, true);
         GL.VertexArrayAttribPointer(att, size, normalized, stride, type.getInternalEnum(), offset);
         getContext().bindVertexArray(null);
         getContext().bindBuffer(null, BufferType.Array);
-        arrayBuffers[att] = buffer;
+        arrayBuffers[att] = arrayBuffer;
     }
 
     public void setAttributeDisabled(int att) {
@@ -93,6 +103,5 @@ public final class VertexArray extends ContextObject {
         getContext().bindVertexArray(this);
         getContext().drawElements(vertexMode, first, count, instances);
         getContext().bindVertexArray(null);
-
     }
 }

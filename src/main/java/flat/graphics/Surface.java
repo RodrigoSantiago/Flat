@@ -1,5 +1,6 @@
 package flat.graphics;
 
+import flat.exception.FlatException;
 import flat.graphics.context.*;
 import flat.graphics.context.enums.BlitMask;
 import flat.graphics.context.enums.LayerTarget;
@@ -12,7 +13,7 @@ public class Surface {
     private final int height;
     private final int multiSamples;
     private final PixelFormat format;
-    private Context context;
+    private final Context context;
 
     FrameBuffer frameBuffer;
     FrameBuffer frameBufferTransfer;
@@ -54,6 +55,8 @@ public class Surface {
     }
 
     public PixelMap createPixelMap() {
+        checkDisposed();
+
         if (frameBuffer == null) {
             return null;
         }
@@ -87,7 +90,40 @@ public class Surface {
         return new PixelMap(imageData, width, height, PixelFormat.RGBA);
     }
 
+    protected void checkDisposed() {
+        if (isDisposed()) {
+            throw new FlatException("The Surface is disposed");
+        }
+    }
+
+    public void dispose() {
+        if (!disposed) {
+            disposed = true;
+            if (textureMultisamples != null) {
+                textureMultisamples.dispose();
+            }
+            if (texture != null) {
+                texture.dispose();
+            }
+            if (render != null) {
+                render.dispose();
+            }
+            if (frameBuffer != null) {
+                frameBuffer.dispose();
+            }
+            if (frameBufferTransfer != null) {
+                frameBufferTransfer.dispose();
+            }
+        }
+    }
+
+    public boolean isDisposed() {
+        return disposed;
+    }
+
     void begin(Context context) {
+        checkDisposed();
+
         if (frameBuffer == null) {
             frameBuffer = new FrameBuffer(context);
         }

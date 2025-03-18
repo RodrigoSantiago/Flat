@@ -50,7 +50,7 @@ public final class Texture2D extends Texture implements ImageTexture {
 
     private void boundCheck() {
         if (isDisposed()) {
-            throw new FlatException("The Texture2D is disposed.");
+            throw new FlatException("The Texture2D is disposed");
         }
         getContext().bindTexture(this);
     }

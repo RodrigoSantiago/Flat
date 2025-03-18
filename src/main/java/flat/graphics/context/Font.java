@@ -344,7 +344,7 @@ public class Font {
 
     private void checkDisposed() {
         if (diposed) {
-            throw new FlatException("Font is disposed.");
+            throw new FlatException("The Font is disposed");
         }
     }
 
@@ -354,7 +354,7 @@ public class Font {
 
     public void dispose() {
         if (this == DefaultFont) {
-            throw new FlatException("Default font cannot be disposed.");
+            throw new FlatException("Default font cannot be disposed");
         }
 
         if (!diposed) {

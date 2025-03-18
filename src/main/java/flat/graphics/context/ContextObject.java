@@ -7,6 +7,7 @@ abstract class ContextObject {
 
     private final Context context;
     private boolean disposed;
+    private Runnable disposeTask;
 
     public ContextObject(Context context) {
         this.context = context;
@@ -18,14 +19,17 @@ abstract class ContextObject {
     }
 
     protected final void assignDispose(Runnable task) {
-        cleaner.register(this, context.createSyncDestroyTask(task));
+        cleaner.register(this, disposeTask = context.createSyncDestroyTask(task));
     }
 
     public boolean isDisposed() {
         return disposed;
     }
 
-    void dispose() {
-        this.disposed = true;
+    public void dispose() {
+        if (!disposed) {
+            disposed = true;
+            disposeTask.run();
+        }
     }
 }

@@ -81,7 +81,7 @@ public class Window {
 
     private void checkDisposed() {
         if (disposed) {
-            throw new FlatException("Window is disposed.");
+            throw new FlatException("The Window is disposed");
         }
     }
 

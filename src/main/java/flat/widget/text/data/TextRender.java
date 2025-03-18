@@ -453,7 +453,7 @@ public class TextRender {
 
     private int getNextCharIndex(int currentIndex) {
         if (currentIndex < 0 || currentIndex >= byteSize) {
-            throw new IndexOutOfBoundsException("Invalid currentIndex.");
+            throw new IndexOutOfBoundsException("Invalid currentIndex");
         }
 
         int nextIndex = currentIndex;
@@ -475,7 +475,7 @@ public class TextRender {
 
     private int getPrevCharIndex(int currentIndex) {
         if (currentIndex <= 0 || currentIndex > byteSize) {
-            throw new IndexOutOfBoundsException("Invalid currentIndex.");
+            throw new IndexOutOfBoundsException("Invalid currentIndex");
         }
 
         int prevIndex = currentIndex - 1;

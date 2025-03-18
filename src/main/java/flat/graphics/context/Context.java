@@ -115,10 +115,10 @@ public class Context {
 
     void checkDisposed() {
         if (disposed) {
-            throw new FlatException("Context is disposed.");
+            throw new FlatException("The Context is disposed");
         }
         if (!window.isAssigned()) {
-            throw new FlatException("The Context is not curretly assigned");
+            throw new FlatException("The Context is not currently assigned");
         }
     }
 
@@ -888,6 +888,9 @@ public class Context {
 
     public void setFrameBuffer(FrameBuffer frameBuffer) {
         checkDisposed();
+        if (frameBuffer != null && frameBuffer.isDisposed()) {
+            throw new FlatException("The FrameBuffer is disposed");
+        }
 
         if (this.frameBuffer != frameBuffer) {
             svgEnd();
@@ -906,7 +909,7 @@ public class Context {
         }
     }
 
-    public boolean isCurrentFrameValid() {
+    public boolean isCurrentFrameBufferValid() {
         return GL.FrameBufferGetStatus(GLEnums.FB_FRAMEBUFFER) == GLEnums.FS_FRAMEBUFFER_COMPLETE;
     }
 
@@ -924,6 +927,12 @@ public class Context {
         }
         if (target == null || target == source) {
             throw new FlatException("Invalid argument : target");
+        }
+        if (source.isDisposed()) {
+            throw new FlatException("The FrameBuffer is disposed");
+        }
+        if (target.isDisposed()) {
+            throw new FlatException("The FrameBuffer is disposed");
         }
         FrameBuffer current = getFrameBuffer();
         if (source.isInvalid()) {
@@ -947,17 +956,13 @@ public class Context {
         }
     }
 
-    public void setActiveTexture(int index) {
+    void setActiveTexture(int index) {
         checkDisposed();
 
         if (activeTexture != index) {
             svgEnd();
             GL.SetActiveTexture(activeTexture = index);
         }
-    }
-
-    public int getActiveTexture() {
-        return activeTexture;
     }
 
     public void setShaderTextures(Texture... textures) {
@@ -1056,6 +1061,9 @@ public class Context {
 
     public void setShaderProgram(ShaderProgram shaderProgram) {
         checkDisposed();
+        if (shaderProgram != null && shaderProgram.isDisposed()) {
+            throw new FlatException("The ShaderProgram is disposed");
+        }
 
         if (this.shaderProgram != shaderProgram) {
             svgEnd();

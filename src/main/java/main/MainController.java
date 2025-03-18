@@ -292,7 +292,7 @@ public class MainController extends Controller {
         }
         graphics.drawText(10, getActivity().getHeight() - 16, "FPS : " + (int)(1f / av));
 
-        graphics.setTransform2D(null);
+        /*graphics.setTransform2D(null);
 
         var clips = graphics.getClipState();
         graphics.pushClip(new Ellipse(100, 100, 200, 200));
@@ -309,7 +309,7 @@ public class MainController extends Controller {
         graphics.setColor(Color.red);
         graphics.drawRect(box1, false);
         graphics.drawRect(box2, false);
-        graphics.drawImage(pix, 100, 100, 640, 640);
+        graphics.drawImage(pix, 100, 100, 640, 640);*/
 
         if (t > 0) {
             if (t == 1) {
