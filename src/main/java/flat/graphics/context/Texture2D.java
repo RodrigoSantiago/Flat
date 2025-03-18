@@ -39,7 +39,7 @@ public final class Texture2D extends Texture implements ImageTexture {
     }
 
     @Override
-    int getInternalID() {
+    int getInternalId() {
         return textureId;
     }
 
@@ -50,7 +50,7 @@ public final class Texture2D extends Texture implements ImageTexture {
 
     private void boundCheck() {
         if (isDisposed()) {
-            throw new RuntimeException("The " + getClass().getSimpleName() + " is disposed.");
+            throw new FlatException("The Texture2D is disposed.");
         }
         getContext().bindTexture(this);
     }
@@ -191,7 +191,7 @@ public final class Texture2D extends Texture implements ImageTexture {
         int height = getHeight(level);
         int required = width * height * format.getPixelBytes();
         if (arrayLen * bytes < required) {
-            throw new RuntimeException("The array is too short. Provided : " + arrayLen + ". Required : " + ((required - 1) / bytes + 1));
+            throw new FlatException("The array is too short. Provided : " + arrayLen + ". Required : " + ((required - 1) / bytes + 1));
         }
     }
 
@@ -204,7 +204,7 @@ public final class Texture2D extends Texture implements ImageTexture {
 
         int required = w * h * format.getPixelBytes();
         if (arrayLen * bytes < required) {
-            throw new RuntimeException("The array is too short. Provided : " + arrayLen + ". Required : " + ((required - 1) / bytes + 1));
+            throw new FlatException("The array is too short. Provided : " + arrayLen + ". Required : " + ((required - 1) / bytes + 1));
         }
     }
 

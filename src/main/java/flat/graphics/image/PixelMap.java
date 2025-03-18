@@ -1,21 +1,56 @@
 package flat.graphics.image;
 
 import flat.backend.SVG;
+import flat.exception.FlatException;
 import flat.graphics.Graphics;
 import flat.graphics.ImageTexture;
 import flat.graphics.context.Context;
 import flat.graphics.context.Texture2D;
 import flat.graphics.context.enums.*;
+import flat.resources.ResourceStream;
 import flat.widget.enums.ImageFilter;
 
+import java.io.IOException;
 import java.util.HashMap;
 
 public class PixelMap implements Drawable, ImageTexture {
 
-    private HashMap<Context, Texture2D> textures = new HashMap<>();
-    private PixelFormat format;
-    private int width, height;
-    private byte[] data;
+    public static PixelMap parse(ResourceStream stream) {
+        Object cache = stream.getCache();
+        if (cache != null) {
+            if (cache instanceof PixelMap) {
+                return (PixelMap) cache;
+            } else {
+                stream.clearCache();
+            }
+        }
+        try {
+            PixelMap pixelMap = loadPixelMap(stream);
+            stream.putCache(pixelMap);
+            return pixelMap;
+        } catch (IOException e) {
+            throw new FlatException(e);
+        }
+    }
+
+    private static PixelMap loadPixelMap(ResourceStream stream) throws IOException {
+        byte[] data = stream.readData();
+        if (stream.getStream() == null || data == null) {
+            throw new FlatException("Invalid image" + stream.getResourceName());
+        }
+
+        int[] imageData = new int[3];
+        byte[] readImage = SVG.ReadImage(data, imageData);
+        if (readImage == null) {
+            throw new FlatException("Invalid image format " + stream.getResourceName());
+        }
+        return new PixelMap(readImage, imageData[0], imageData[1], PixelFormat.RGBA);
+    }
+
+    private final HashMap<Context, Texture2D> textures = new HashMap<>();
+    private final PixelFormat format;
+    private final int width, height;
+    private final byte[] data;
 
     public PixelMap(byte[] data, int width, int height, PixelFormat format) {
         this.width = width;
@@ -25,7 +60,7 @@ public class PixelMap implements Drawable, ImageTexture {
 
         int required = width * height * format.getPixelBytes();
         if (data.length < required) {
-            throw new RuntimeException("The image data is too short. Provided : " + data.length + ", Required : " + required);
+            throw new FlatException("The image data is too short. Provided : " + data.length + ", Required : " + required);
         }
     }
 
@@ -93,13 +128,15 @@ public class PixelMap implements Drawable, ImageTexture {
     }
 
     @Override
-    public void draw(Graphics context, float x, float y, float width, float height, int color, ImageFilter filter) {
-        var texture = getTexture(context.getContext(), filter);
-        context.drawImage(this, x, y, width, height, color);
+    public void draw(Graphics graphics, float x, float y, float width, float height, int color, ImageFilter filter) {
+        if (graphics.discardDraw(x, y, width, height)) return;
+
+        var texture = getTexture(graphics.getContext(), filter);
+        graphics.drawImage(this, x, y, width, height, color);
     }
 
     @Override
-    public void draw(Graphics context, float x, float y, float frame, ImageFilter filter) {
-        draw(context, x, y, getWidth(), getHeight(), 0xFFFFFFFF, filter);
+    public void draw(Graphics graphics, float x, float y, float frame, ImageFilter filter) {
+        draw(graphics, x, y, getWidth(), getHeight(), 0xFFFFFFFF, filter);
     }
 }

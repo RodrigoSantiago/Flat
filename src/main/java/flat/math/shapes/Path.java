@@ -79,6 +79,7 @@ public class Path implements PathConsumer, Shape, Cloneable {
             points[pointSize++] = x;
             points[pointSize++] = y;
         }
+        invalidateComputedBounds();
     }
 
     public void lineTo(float x, float y) {
@@ -88,6 +89,7 @@ public class Path implements PathConsumer, Shape, Cloneable {
         types[typeSize++] = PathIterator.SEG_LINETO;
         points[pointSize++] = x;
         points[pointSize++] = y;
+        invalidateComputedBounds();
     }
 
     public void quadTo(float x1, float y1, float x2, float y2) {
@@ -99,6 +101,7 @@ public class Path implements PathConsumer, Shape, Cloneable {
         points[pointSize++] = y1;
         points[pointSize++] = x2;
         points[pointSize++] = y2;
+        invalidateComputedBounds();
     }
 
     public void curveTo(float x1, float y1, float x2, float y2, float x3, float y3) {
@@ -112,6 +115,7 @@ public class Path implements PathConsumer, Shape, Cloneable {
         points[pointSize++] = y2;
         points[pointSize++] = x3;
         points[pointSize++] = y3;
+        invalidateComputedBounds();
     }
 
     public void arcTo(float rx, float ry, float xAxisRotation, int largeArcFlag, int sweepFlag, float cx, float cy) {
@@ -257,6 +261,7 @@ public class Path implements PathConsumer, Shape, Cloneable {
             checkBuf(0, true);
             types[typeSize++] = PathIterator.SEG_CLOSE;
         }
+        invalidateComputedBounds();
     }
 
     public void pathDone() {
@@ -306,6 +311,7 @@ public class Path implements PathConsumer, Shape, Cloneable {
 
         typeSize = 0;
         pointSize = 0;
+        invalidateComputedBounds();
     }
 
     public void reverse() {
@@ -328,6 +334,7 @@ public class Path implements PathConsumer, Shape, Cloneable {
             types[typeSize - i - 1] = (type == PathIterator.SEG_MOVETO ? PathIterator.SEG_CLOSE :
                     type == PathIterator.SEG_CLOSE ? PathIterator.SEG_MOVETO : type);
         }
+        invalidateComputedBounds();
     }
 
     public int length() {
@@ -338,6 +345,7 @@ public class Path implements PathConsumer, Shape, Cloneable {
         optimized = false;
 
         t.transform(points, 0, points, 0, pointSize / 2);
+        invalidateComputedBounds();
     }
 
     public Shape createTransformedShape(Affine t) {
@@ -376,29 +384,32 @@ public class Path implements PathConsumer, Shape, Cloneable {
 
     @Override
     public Rectangle bounds() {
-        float rx1, ry1, rx2, ry2;
-        if (pointSize == 0) {
-            rx1 = ry1 = rx2 = ry2 = 0f;
-        } else {
-            int i = pointSize - 1;
-            ry1 = ry2 = points[i--];
-            rx1 = rx2 = points[i--];
-            while (i > 0) {
-                float y = points[i--];
-                float x = points[i--];
-                if (x < rx1) {
-                    rx1 = x;
-                } else if (x > rx2) {
-                    rx2 = x;
-                }
-                if (y < ry1) {
-                    ry1 = y;
-                } else if (y > ry2) {
-                    ry2 = y;
+        if (computedBb == null) {
+            float rx1, ry1, rx2, ry2;
+            if (pointSize == 0) {
+                rx1 = ry1 = rx2 = ry2 = 0f;
+            } else {
+                int i = pointSize - 1;
+                ry1 = ry2 = points[i--];
+                rx1 = rx2 = points[i--];
+                while (i > 0) {
+                    float y = points[i--];
+                    float x = points[i--];
+                    if (x < rx1) {
+                        rx1 = x;
+                    } else if (x > rx2) {
+                        rx2 = x;
+                    }
+                    if (y < ry1) {
+                        ry1 = y;
+                    } else if (y > ry2) {
+                        ry2 = y;
+                    }
                 }
             }
+            computedBb = new Rectangle(rx1, ry1, rx2 - rx1, ry2 - ry1);
         }
-        return new Rectangle(rx1, ry1, rx2 - rx1, ry2 - ry1);
+        return computedBb;
     }
 
     @Override
@@ -585,6 +596,13 @@ public class Path implements PathConsumer, Shape, Cloneable {
 
     /* The path rule. */
     protected boolean optimized;
+
+    /* The path rule. */
+    protected Rectangle computedBb;
+
+    private void invalidateComputedBounds() {
+        computedBb = null;
+    }
 
     /**
      * The space required in points buffer for different segment types.

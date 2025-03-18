@@ -45,7 +45,7 @@ public final class ShaderProgram extends ContextObject {
 
     private void checkImmutable() {
         if (linked) {
-            throw new RuntimeException("A Linked shaders program is immutable");
+            throw new FlatException("A Linked shader program is immutable");
         }
     }
 
@@ -83,10 +83,12 @@ public final class ShaderProgram extends ContextObject {
                 String name = GL.ProgramGetAttributeName(programId, i);
                 AttributeType type = AttributeType.fromInternalEnum(GL.ProgramGetAttributeType(programId, i));
                 int arraySize = GL.ProgramGetAttributeSize(programId, i);
+                int id = GL.ProgramGetAttributeId(programId, name);
+
                 if (name.contains("[")) {
                     name = name.substring(0, name.indexOf("["));
                 }
-                Attribute att = new Attribute(i, name, type, arraySize);
+                Attribute att = new Attribute(id, name, type, arraySize);
                 attributes.add(att);
                 attributesNames.put(name, att);
             }
@@ -95,10 +97,12 @@ public final class ShaderProgram extends ContextObject {
                 String name = GL.ProgramGetUniformName(programId, i);
                 AttributeType type = AttributeType.fromInternalEnum(GL.ProgramGetUniformType(programId, i));
                 int arraySize = GL.ProgramGetUniformSize(programId, i);
+                int id = GL.ProgramGetUniformId(programId, name);
+
                 if (name.contains("[")) {
                     name = name.substring(0, name.indexOf("["));
                 }
-                Attribute att = new Attribute(i, name, type, arraySize);
+                Attribute att = new Attribute(id, name, type, arraySize);
                 uniforms.add(att);
                 uniformsNames.put(name, att);
                 uniformsValues.put(name, new AttributeValue(att));

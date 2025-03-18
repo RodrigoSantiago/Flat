@@ -6,6 +6,7 @@ import flat.graphics.context.enums.*;
 import flat.graphics.context.paints.ColorPaint;
 import flat.graphics.context.paints.GaussianShadow;
 import flat.graphics.context.paints.ImagePattern;
+import flat.graphics.image.PixelMap;
 import flat.math.Affine;
 import flat.math.Vector2;
 import flat.math.shapes.*;
@@ -22,9 +23,9 @@ public class Graphics {
     private final Affine transform2D = new Affine();
     private final ClipState clipState = new ClipState();
     private final ClipState surfaceClipState = new ClipState();
-    private ClipState currentClipState = clipState;
     private Stroke stroke;
     private float textSize;
+    private final Rectangle noClip = new Rectangle();
 
     // Custom Draw
     private Shader vertex;
@@ -37,12 +38,15 @@ public class Graphics {
         this.context = context;
 
         context.setBlendEnabled(true);
-        context.setBlendFunction(BlendFunction.SRC_ALPHA, BlendFunction.ONE_MINUS_SRC_ALPHA, BlendFunction.ONE, BlendFunction.ONE);
+        context.setBlendFunction(BlendFunction.SRC_ALPHA, BlendFunction.ONE_MINUS_SRC_ALPHA, BlendFunction.SRC_ALPHA, BlendFunction.ONE_MINUS_SRC_ALPHA);
 
         stroke = new BasicStroke(1);
         textSize = 24;
         context.svgTextScale(textSize);
         context.svgStroke(stroke);
+
+        clipState.box = noClip;
+        surfaceClipState.box = noClip;
 
         vertex = new Shader(context, ShaderType.Vertex);
         vertex.setSource(
@@ -54,9 +58,9 @@ public class Graphics {
                 out vec2 oPos;
                 out vec2 oTex;
                 void main() {
-                    oPos = iPos;
+                    oPos = vec2(iPos.x * 2.0 / view.x - 1.0, 1.0 - iPos.y * 2.0 / view.y);
                     oTex = iTex;
-                	gl_Position = vec4(iPos.x * 2.0 / view.x - 1.0, 1.0 - iPos.y * 2.0 / view.y, 0, 1);
+                	gl_Position = vec4(iPos.x, iPos.y, 0, 1);
                 }
                 """
         );
@@ -91,15 +95,18 @@ public class Graphics {
     }
 
     public void refreshState() {
-        surface = null;
         clipState.clipShapes.clear();
         clipState.clipBox.clear();
-        refreshLocalState();
+        clipState.box = noClip;
+        surface = null;
+        context.setFrameBuffer(null);
+        refreshSurfaceState();
     }
 
-    private void refreshLocalState() {
+    private void refreshSurfaceState() {
         surfaceClipState.clipShapes.clear();
         surfaceClipState.clipBox.clear();
+        surfaceClipState.box = noClip;
         stroke = new BasicStroke(1);
         textSize = 24;
         context.svgTextScale(textSize);
@@ -109,6 +116,28 @@ public class Graphics {
         context.svgPaint(new ColorPaint(0xFFFFFFFF));
         context.svgAntialias(true);
         setView(0, 0, getWidth(), getHeight());
+    }
+
+    public PixelMap createPixelMap() {
+        if (surface != null) {
+            return surface.createPixelMap();
+        } else {
+            int w = getWidth();
+            int h = getHeight();
+            byte[] imageData = new byte[w * h * 4];
+            context.readPixels(0, 0, w, h, imageData, 0);
+            int pixelBytes = PixelFormat.RGBA.getPixelBytes();
+            int rowSize = w * pixelBytes;
+            byte[] tempRow = new byte[rowSize];
+            for (int y = 0; y < h / 2; y++) {
+                int topRowStart = y * rowSize;
+                int bottomRowStart = (h - y - 1) * rowSize;
+                System.arraycopy(imageData, topRowStart, tempRow, 0, rowSize);
+                System.arraycopy(imageData, bottomRowStart, imageData, topRowStart, rowSize);
+                System.arraycopy(tempRow, 0, imageData, bottomRowStart, rowSize);
+            }
+            return new PixelMap(imageData, w, h, PixelFormat.RGBA);
+        }
     }
 
     public int getWidth() {
@@ -151,7 +180,7 @@ public class Graphics {
             } else {
                 context.setFrameBuffer(null);
             }
-            refreshLocalState();
+            refreshSurfaceState();
         }
     }
 
@@ -181,9 +210,15 @@ public class Graphics {
         return context.svgTransform();
     }
 
+    public ClipState getClipState() {
+        return surface == null ? clipState : surfaceClipState;
+    }
+
     public void clearClip() {
-        currentClipState.clipShapes.clear();
-        currentClipState.clipBox.clear();
+        getClipState().clipShapes.clear();
+        getClipState().clipBox.clear();
+        getClipState().box = noClip;
+
         context.svgClearClip(false);
     }
 
@@ -199,11 +234,13 @@ public class Graphics {
 
         Rectangle bounds = real.bounds();
 
-        currentClipState.clipShapes.add(inverse);
-        if (currentClipState.clipBox.isEmpty()) {
-            currentClipState.clipBox.add(bounds);
+        ClipState state = getClipState();
+
+        state.clipShapes.add(inverse);
+        if (state.clipBox.isEmpty()) {
+            state.clipBox.add(bounds);
         } else {
-            Rectangle currentBounds = currentClipState.clipBox.get(currentClipState.clipBox.size() - 1);
+            Rectangle currentBounds = state.box;
             if (currentBounds != null) {
                 float inX = Math.max(currentBounds.x, bounds.x);
                 float inY = Math.max(currentBounds.y, bounds.y);
@@ -211,41 +248,90 @@ public class Graphics {
                 float inHeight = Math.min(currentBounds.y + currentBounds.height, bounds.y + bounds.height) - inY;
 
                 if (inWidth > 0 && inHeight > 0) {
-                    currentClipState.clipBox.add(new Rectangle(inX, inY, inWidth, inHeight));
+                    state.clipBox.add(new Rectangle(inX, inY, inWidth, inHeight));
                 } else {
-                    currentClipState.clipBox.add(null);
+                    state.clipBox.add(null);
                 }
             } else {
-                currentClipState.clipBox.add(null);
+                state.clipBox.add(null);
             }
         }
+        state.box = state.clipBox.get(state.clipBox.size() - 1);
 
         updateClip();
     }
 
     public void popClip() {
-        if (!currentClipState.clipShapes.isEmpty()) {
-            currentClipState.clipShapes.remove(currentClipState.clipShapes.size() - 1);
-            currentClipState.clipBox.remove(currentClipState.clipBox.size() - 1);
+        ClipState state = getClipState();
+        if (!state.clipShapes.isEmpty()) {
+            state.clipShapes.remove(state.clipShapes.size() - 1);
+            state.clipBox.remove(state.clipBox.size() - 1);
+            if (state.clipBox.isEmpty()) {
+                state.box = noClip;
+            } else {
+                state.box = state.clipBox.get(state.clipBox.size() - 1);
+            }
         }
         updateClip();
     }
 
     public void updateClip() {
-        if (currentClipState.clipBox.isEmpty()) {
+        if (getClipState().clipBox.isEmpty()) {
             context.svgClearClip(false);
 
-        } else if (currentClipState.clipBox.get(currentClipState.clipBox.size() - 1) == null) {
+        } else if (getClipState().clipBox.get(getClipState().clipBox.size() - 1) == null) {
             context.svgClearClip(true);
 
         } else {
             context.svgClearClip(false);
             context.svgTransform(null);
-            for (int i = 0; i < currentClipState.clipShapes.size(); i++) {
-                context.svgClip(currentClipState.clipShapes.get(0));
+            for (int i = 0; i < getClipState().clipShapes.size(); i++) {
+                context.svgClip(getClipState().clipShapes.get(0));
             }
             context.svgTransform(transform2D);
         }
+    }
+
+    public boolean discardDraw(float x, float y, float w, float h) {
+        Rectangle box = getClipState().box;
+        if (box == noClip) return false;
+        if (box == null) return true;
+        if (!transform2D.isTranslationOnly()) return false;
+        x += transform2D.m02;
+        y += transform2D.m12;
+
+        float fw = stroke.getLineWidth() + 1;
+        float hw = fw * 0.5f;
+
+        float x1 = box.x - hw;
+        float y1 = box.y - hw;
+        float x2 = x1 + box.width + fw;
+        float y2 = y1 + box.height + fw;
+        return x + w < x1 || x >= x2 || y + h < y1 || y >= y2;
+    }
+
+    public boolean discardDrawLine(float x1, float y1, float x2, float y2) {
+        float minX = Math.min(x1, x2);
+        float maxX = Math.max(x1, x2);
+        float minY = Math.min(y1, y2);
+        float maxY = Math.max(y1, y2);
+        return discardDraw(minX, minY, maxX - minX, maxY - minY);
+    }
+
+    public boolean discardDrawLine(float x1, float y1, float cx, float cy, float x2, float y2) {
+        float minX = Math.min(x1, Math.min(x2, cx));
+        float maxX = Math.max(x1, Math.max(x2, cx));
+        float minY = Math.min(y1, Math.min(y2, cy));
+        float maxY = Math.max(y1, Math.max(y2, cy));
+        return discardDraw(minX, minY, maxX - minX, maxY - minY);
+    }
+
+    public boolean discardDrawLine(float x1, float y1, float cx1, float cy1, float cx2, float cy2, float x2, float y2) {
+        float minX = Math.min(x1, Math.min(x2, Math.min(cx1, cx2)));
+        float maxX = Math.max(x1, Math.max(x2, Math.max(cx1, cx2)));
+        float minY = Math.min(y1, Math.min(y2, Math.min(cy1, cy2)));
+        float maxY = Math.max(y1, Math.max(y2, Math.max(cy1, cy2)));
+        return discardDraw(minX, minY, maxX - minX, maxY - minY);
     }
 
     public void setAntialiasEnabled(boolean enabled) {
@@ -324,78 +410,92 @@ public class Graphics {
     }
 
     public void drawCircle(float x, float y, float radius, boolean fill) {
+        if (discardDraw(x - radius, y - radius, radius * 2, radius * 2)) return;
         context.svgDrawEllipse(x - radius, y - radius, radius * 2, radius * 2, fill);
     }
 
-    public void drawCircle(Circle circle,  boolean fill) {
-        context.svgDrawEllipse(circle.x - circle.radius, circle.y - circle.radius, circle.radius * 2, circle.radius * 2, fill);
-    }
-
-    public void drawEllipse(Ellipse ellipse, boolean fill) {
-        context.svgDrawEllipse(ellipse.x, ellipse.y, ellipse.width, ellipse.height, fill);
+    public void drawCircle(Circle circle, boolean fill) {
+        drawCircle(circle.x, circle.y, circle.radius, fill);
     }
 
     public void drawEllipse(float x, float y, float width, float height, boolean fill) {
+        if (discardDraw(x, y, width, height)) return;
         context.svgDrawEllipse(x, y, width, height, fill);
     }
 
-    public void drawRect(Rectangle rect, boolean fill) {
-        context.svgDrawRect(rect.x, rect.y, rect.width, rect.height, fill);
+    public void drawEllipse(Ellipse ellipse, boolean fill) {
+        drawEllipse(ellipse.x, ellipse.y, ellipse.width, ellipse.height, fill);
     }
 
     public void drawRect(float x, float y, float width, float height, boolean fill) {
+        if (discardDraw(x, y, width, height)) return;
         context.svgDrawRect(x, y, width, height, fill);
     }
 
-    public void drawRoundRect(RoundRectangle rect, boolean fill) {
-        context.svgDrawRoundRect(rect.x, rect.y, rect.width, rect.height, rect.arcTop, rect.arcRight, rect.arcBottom, rect.arcLeft, fill);
+    public void drawRect(Rectangle rect, boolean fill) {
+        drawRect(rect.x, rect.y, rect.width, rect.height, fill);
     }
 
     public void drawRoundRect(float x, float y, float width, float height, float cTop, float cRight, float cBottom, float cLeft, boolean fill) {
+        if (discardDraw(x, y, width, height)) return;
         context.svgDrawRoundRect(x, y, width, height, cTop, cRight, cBottom, cLeft, fill);
     }
 
-    public void drawLine(Line line) {
-        context.svgDrawLine(line.x1, line.y1, line.x2, line.y2);
+    public void drawRoundRect(RoundRectangle rect, boolean fill) {
+        drawRoundRect(rect.x, rect.y, rect.width, rect.height, rect.arcTop, rect.arcRight, rect.arcBottom, rect.arcLeft, fill);
     }
 
     public void drawLine(float x1, float y1, float x2, float y2) {
+        if (discardDrawLine(x1, y1, x2, y2)) return;
         context.svgDrawLine(x1, y1, x2, y2);
     }
 
-    public void drawQuadCurve(QuadCurve curve) {
-        context.svgDrawQuadCurve(curve.x1, curve.y1, curve.ctrlx, curve.ctrly, curve.x2, curve.y2);
+    public void drawLine(Line line) {
+        drawLine(line.x1, line.y1, line.x2, line.y2);
     }
 
     public void drawQuadCurve(float x1, float y1, float cx, float cy, float x2, float y2) {
+        if (discardDrawLine(x1, y1, cx, cy, x2, y2)) return;
         context.svgDrawQuadCurve(x1, y1, cx, cy, x2, y2);
     }
 
-    public void drawCubicCurve(CubicCurve curve) {
-        context.svgDrawCubicCurve(curve.x1, curve.y1, curve.ctrlx1, curve.ctrly1,  curve.ctrlx2, curve.ctrly2, curve.x2, curve.y2);
+    public void drawQuadCurve(QuadCurve curve) {
+        drawQuadCurve(curve.x1, curve.y1, curve.ctrlx, curve.ctrly, curve.x2, curve.y2);
     }
 
     public void drawCubicCurve(float x1, float y1, float cx1, float cy1, float cx2, float cy2, float x2, float y2) {
+        if (discardDrawLine(x1, y1, cx1, cy1, cx2, cy2, x2, y2)) return;
         context.svgDrawCubicCurve(x1, y1, cx1, cy1, cx2, cy2, x2, y2);
     }
 
+    public void drawCubicCurve(CubicCurve curve) {
+        drawCubicCurve(curve.x1, curve.y1, curve.ctrlx1, curve.ctrly1,  curve.ctrlx2, curve.ctrly2, curve.x2, curve.y2);
+    }
+
     public void drawText(float x, float y, String text) {
-        context.svgDrawText(x, y, text, 0, 0);
+        drawTextSlice(x, y, 0, 0, text);
     }
 
     public void drawText(float x, float y, Buffer text, int offset, int length) {
-        context.svgDrawText(x, y, text, offset, length, 0, 0);
+        drawTextSlice(x, y, 0, 0, text, offset, length);
     }
 
     public void drawTextSlice(float x, float y, float maxWidth, float maxHeight, String text) {
+        if (discardDraw(x, y,
+                maxWidth == 0 ? text.length() * textSize * 10 : maxWidth,
+                maxHeight == 0 ? textSize * 2 : maxHeight)) return;
         context.svgDrawText(x, y, text, maxWidth, maxHeight);
     }
 
     public void drawTextSlice(float x, float y, float maxWidth, float maxHeight, Buffer text, int offset, int length) {
+        if (discardDraw(x, y,
+                maxWidth == 0 ? length * textSize * 10 : maxWidth,
+                maxHeight == 0 ? textSize * 2 : maxHeight)) return;
         context.svgDrawText(x, y, text, offset, length, maxWidth, maxHeight);
     }
 
     public void drawLinearShadowDown(float x, float y, float width, float height, float alpha) {
+        if (discardDraw(x, y, width, height)) return;
         Paint paint = context.svgPaint();
         context.svgPaint(new GaussianShadow.Builder(x - height, y - height * 1.5f, width + height * 2f, height * 2f)
                 .corners(0)
@@ -407,6 +507,7 @@ public class Graphics {
     }
 
     public void drawLinearShadowUp(float x, float y, float width, float height, float alpha) {
+        if (discardDraw(x, y, width, height)) return;
         Paint paint = context.svgPaint();
         context.svgPaint(new GaussianShadow.Builder(x - height, y + height * 0.5f, width + height * 2f, height * 2f)
                 .corners(0)
@@ -419,6 +520,8 @@ public class Graphics {
 
     public void drawRoundRectShadow(float x, float y, float width, float height,
                                     float cTop, float cRight, float cBottom, float cLeft, float blur, float alpha) {
+        if (discardDraw(x, y, width, height)) return;
+
         Paint paint = context.svgPaint();
         if (blur > Math.max(width, height)) {
             alpha *= Math.max(width, height) / blur;
@@ -476,6 +579,7 @@ public class Graphics {
                     .build());
             drawRect(x1, ym, hw, hh, true);
         }
+        setPaint(paint);
     }
 
     public void drawRoundRectShadow(RoundRectangle rect, float blur, float alpha) {
@@ -552,6 +656,8 @@ public class Graphics {
             srcY1 = srcY2;
             srcY2 = v;
         }
+        if (discardDraw(dstX1, dstY1, dstX2 - dstX1, dstY2 - dstY1)) return;
+
         Paint paint = context.svgPaint();
         context.svgPaint(new ImagePattern.Builder(texture)
                 .source(srcX1, srcY1, srcX2, srcY2)
@@ -563,14 +669,18 @@ public class Graphics {
         context.svgPaint(paint);
     }
 
-    public void drawImageCustomShader(ShaderProgram program) {
+    public void blitCustomShader(ShaderProgram program, Texture... textures) {
         if (ver == null) {
             ver = new VertexArray(context);
             ebo = new BufferObject(context, BufferType.Element, 6 * 4, UsageType.STATIC_DRAW);
             ebo.setData(0, new int[]{0, 1, 2, 0, 2, 3}, 0, 6);
 
             vbo = new BufferObject(context, BufferType.Array, 16 * 4, UsageType.STATIC_DRAW);
-            vbo.setData(0, new float[]{0, 0, 0, 0, 100, 0,  1,  0, 100,  100,  1,  1, 0, 100, 0,  1}, 0, 16);
+            vbo.setData(0, new float[]{
+                    -1, -1, 0, 0,
+                    1, -1,  1,  0,
+                    1,  1,  1,  1,
+                    -1, 1, 0,  1}, 0, 16);
 
             ver.setAttributeEnabled(vbo, 0, 2, AttributeType.FLOAT, false, 4 * 4, 0);
             ver.setAttributeEnabled(vbo, 1, 2, AttributeType.FLOAT, false, 4 * 4, 2 * 4);
@@ -580,8 +690,10 @@ public class Graphics {
         ShaderProgram current = context.getShaderProgram();
         context.setShaderProgram(program);
         program.set("view", new Vector2(getWidth(), getHeight()));
+        context.setShaderTextures(textures);
         ver.drawElements(VertexMode.TRIANGLES, 0, 6, 1);
         context.setShaderProgram(current);
+        context.setShaderTextures();
     }
 
     public ShaderProgram createImageRenderShader(String compatibleFragment) {
@@ -601,8 +713,9 @@ public class Graphics {
         return program;
     }
 
-    private static class ClipState {
-        private final ArrayList<Shape> clipShapes = new ArrayList<>();
-        private final ArrayList<Rectangle> clipBox = new ArrayList<>();
+    public static class ClipState {
+        public Rectangle box;
+        public final ArrayList<Shape> clipShapes = new ArrayList<>();
+        public final ArrayList<Rectangle> clipBox = new ArrayList<>();
     }
 }

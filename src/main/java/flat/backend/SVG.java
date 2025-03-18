@@ -54,9 +54,9 @@ public class SVG {
     //---------------------------
     //     Economics Shapes
     //---------------------------
-    public static native void Rect(long context, float x, float y, float width, float height);
-    public static native void Ellipse(long context, float x, float y, float width, float height);
-    public static native void RoundRect(long context, float x, float y, float width, float height, float c1, float c2, float c3, float c4);
+    public static native void Rect(long context, float x, float y, float width, float height, boolean fill);
+    public static native void Ellipse(long context, float x, float y, float width, float height, boolean fill);
+    public static native void RoundRect(long context, float x, float y, float width, float height, float c1, float c2, float c3, float c4, boolean fill);
 
     //---------------------------
     //           Text

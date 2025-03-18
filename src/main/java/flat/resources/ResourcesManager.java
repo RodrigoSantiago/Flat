@@ -1,6 +1,7 @@
 package flat.resources;
 
 import flat.Flat;
+import flat.exception.FlatException;
 
 import java.io.*;
 import java.lang.ref.SoftReference;
@@ -37,7 +38,7 @@ public class ResourcesManager {
                 this.dir = null;
                 this.zip = new ZipFile(file);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new FlatException(e);
             }
         } else {
             this.dir = file;
@@ -191,7 +192,7 @@ public class ResourcesManager {
             buffer.flush();
             return buffer.toByteArray();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new FlatException(e);
         }
     }
 

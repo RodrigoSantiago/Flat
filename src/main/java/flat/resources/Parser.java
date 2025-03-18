@@ -84,7 +84,11 @@ public final class Parser {
     }
 
     public static Path svg(String str, int offset) {
-        return new SVGParser().svg(str, offset);
+        try {
+            return new SVGParser().svg(str, offset);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public static int color(String color) {

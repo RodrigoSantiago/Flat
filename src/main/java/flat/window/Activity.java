@@ -51,7 +51,7 @@ public class Activity {
 
     public static Activity create(Window window, WindowSettings settings) {
         if (window.getActivity() != null) {
-            throw new RuntimeException("The Window already have a activity");
+            throw new FlatException("The Window already have a activity");
         } else {
             return new Activity(window, settings);
         }

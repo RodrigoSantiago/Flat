@@ -132,7 +132,7 @@ public class SvgBuilder {
         String val = pathNode == null ? "" : pathNode.getValue().asString(null);
         if (!val.isEmpty()) {
             Path path = Parser.svg(val, 0);
-            if (path.length() < 3000) {
+            if (path != null && path.length() < 3000) {
                 path.optimize();
             }
             return path;

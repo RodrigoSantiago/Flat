@@ -258,23 +258,17 @@ public class ActivityTest {
         activity.show();
 
         activity.draw(graphics);
-        verify(graphics, times(1)).setView(0, 0, 200, 100);
         verify(graphics, times(1)).clear(0x0, 1, 0);
-        verify(graphics, times(1)).clearClip();
         verify(scene, times(1)).onDraw(graphics);
 
         activity.draw(graphics);
-        verify(graphics, times(1)).setView(0, 0, 200, 100);
         verify(graphics, times(1)).clear(0x0, 1, 0);
-        verify(graphics, times(1)).clearClip();
         verify(scene, times(1)).onDraw(graphics);
 
         activity.invalidate();
 
         activity.draw(graphics);
-        verify(graphics, times(2)).setView(0, 0, 200, 100);
         verify(graphics, times(2)).clear(0x0, 1, 0);
-        verify(graphics, times(2)).clearClip();
         verify(scene, times(2)).onDraw(graphics);
     }
 

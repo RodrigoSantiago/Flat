@@ -34,7 +34,7 @@ public final class BufferObject extends ContextObject {
 
     private void boundCheck() {
         if (isDisposed()) {
-            throw new RuntimeException("The " + getClass().getSimpleName() + " is disposed.");
+            throw new FlatException("The Buffer is disposed.");
         }
         getContext().bindBuffer(this, type);
     }
@@ -129,7 +129,7 @@ public final class BufferObject extends ContextObject {
 
         int required = length * bytes;
         if (arrayLen * bytes < required) {
-            throw new RuntimeException("The array is too short. Provided : " + arrayLen + ". Required : " + ((required - 1) / bytes + 1));
+            throw new FlatException("The array is too short. Provided : " + arrayLen + ". Required : " + ((required - 1) / bytes + 1));
         }
     }
 }

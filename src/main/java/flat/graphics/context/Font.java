@@ -1,6 +1,7 @@
 package flat.graphics.context;
 
 import flat.backend.SVG;
+import flat.exception.FlatException;
 import flat.graphics.context.enums.PixelFormat;
 import flat.graphics.image.PixelMap;
 import flat.graphics.text.FontPosture;
@@ -42,7 +43,7 @@ public class Font {
 
     public Font(String family, FontWeight weight, FontPosture posture, FontStyle style, byte[] data, float size, boolean sdf) {
         if (data == null || data.length == 0) {
-            throw new RuntimeException("Invalid font data");
+            throw new FlatException("Invalid font data");
         }
 
         this.family = family;
@@ -54,7 +55,7 @@ public class Font {
 
         final long fontID = SVG.FontLoad(data, size, sdf ? 1 : 0);
         if (fontID == 0) {
-            throw new RuntimeException("Invalid font data");
+            throw new FlatException("Invalid font data");
         }
         this.fontId = fontID;
         this.height = SVG.FontGetHeight(fontID);
@@ -343,7 +344,7 @@ public class Font {
 
     private void checkDisposed() {
         if (diposed) {
-            throw new RuntimeException("Font is disposed.");
+            throw new FlatException("Font is disposed.");
         }
     }
 
@@ -353,7 +354,7 @@ public class Font {
 
     public void dispose() {
         if (this == DefaultFont) {
-            throw new RuntimeException("Default font cannot be disposed.");
+            throw new FlatException("Default font cannot be disposed.");
         }
 
         if (!diposed) {

@@ -28,7 +28,14 @@ public final class VertexArray extends ContextObject {
         return vertexArrayId;
     }
 
+    private void boundCheck() {
+        if (isDisposed()) {
+            throw new FlatException("The VertexArray is disposed.");
+        }
+    }
+
     public void setElements(BufferObject elementBuffer) {
+        boundCheck();
         if (elementBuffer != null && elementBuffer.getType() != BufferType.Element) {
             throw new FlatException("The buffer should be Element type");
         }
@@ -41,6 +48,7 @@ public final class VertexArray extends ContextObject {
     }
 
     public void setAttributeEnabled(BufferObject buffer, int att, int size, AttributeType type, boolean normalized, int stride, int offset) {
+        boundCheck();
         if (buffer.getType() != BufferType.Array) {
             throw new FlatException("The buffer should be Array type");
         }
@@ -55,6 +63,8 @@ public final class VertexArray extends ContextObject {
     }
 
     public void setAttributeDisabled(int att) {
+        boundCheck();
+
         getContext().bindVertexArray(this);
         GL.VertexArrayAttribEnable(att, false);
         getContext().bindVertexArray(null);
@@ -62,18 +72,24 @@ public final class VertexArray extends ContextObject {
     }
 
     public void setAttributeDivisor(int att, int instanceCount) {
+        boundCheck();
+
         getContext().bindVertexArray(this);
         GL.VertexArrayAttribSetDivisor(att, instanceCount);
         getContext().bindVertexArray(null);
     }
 
     public void drawArray(VertexMode vertexMode, int first, int count, int instances) {
+        boundCheck();
+
         getContext().bindVertexArray(this);
         getContext().drawArray(vertexMode, first, count, instances);
         getContext().bindVertexArray(null);
     }
 
     public void drawElements(VertexMode vertexMode, int first, int count, int instances) {
+        boundCheck();
+
         getContext().bindVertexArray(this);
         getContext().drawElements(vertexMode, first, count, instances);
         getContext().bindVertexArray(null);

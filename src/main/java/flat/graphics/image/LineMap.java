@@ -1,9 +1,11 @@
 package flat.graphics.image;
 
+import flat.exception.FlatException;
 import flat.graphics.Graphics;
 import flat.graphics.Surface;
 import flat.graphics.context.Paint;
 import flat.graphics.context.enums.PixelFormat;
+import flat.graphics.image.svg.SvgBuilder;
 import flat.graphics.image.svg.SvgRoot;
 import flat.graphics.image.svg.SvgShape;
 import flat.math.Affine;
@@ -11,15 +13,63 @@ import flat.math.shapes.Path;
 import flat.math.shapes.Rectangle;
 import flat.math.shapes.Shape;
 import flat.math.shapes.Stroke;
+import flat.resources.ResourceStream;
+import flat.uxml.node.UXNodeElement;
+import flat.uxml.node.UXNodeParser;
 import flat.widget.enums.ImageFilter;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
 public class LineMap implements Drawable {
+
+    public static Drawable parse(ResourceStream stream) {
+        Object cache = stream.getCache();
+        if (cache != null) {
+            if (cache instanceof Drawable) {
+                return (LineMap) cache;
+            } else {
+                stream.clearCache();
+            }
+        }
+        try {
+            LineMap lineMap = loadLineMap(stream);
+            stream.putCache(lineMap);
+            return lineMap;
+        } catch (IOException e) {
+            throw new FlatException(e);
+        }
+    }
+
+    private static LineMap loadLineMap(ResourceStream stream) throws IOException {
+        byte[] data = stream.readData();
+        if (stream.getStream() == null || data == null) {
+            throw new FlatException("Invalid image" + stream.getResourceName());
+        }
+
+        String xml = new String(data, StandardCharsets.UTF_8);
+        UXNodeParser parser = new UXNodeParser(xml);
+        parser.parse();
+
+        UXNodeElement root = parser.getRootElement();
+        if (root == null) {
+            throw new FlatException("Invalid image format " + stream.getResourceName());
+        }
+
+        SvgBuilder builder = new SvgBuilder(root);
+        SvgRoot svg = builder.build();
+        if (svg == null) {
+            throw new FlatException("Invalid image format " + stream.getResourceName());
+        }
+
+        return new LineMap(svg);
+    }
 
     private final SvgRoot root;
     private final Rectangle view;
     private final boolean needClipping;
     private PixelMap pixelMap;
-    private boolean optimize = true;
+    private boolean optimize;
 
     public LineMap(SvgRoot root) {
         this.root = root;
@@ -49,7 +99,7 @@ public class LineMap implements Drawable {
         graphics.clear(0, 0, 0x0);
         graphics.setTransform2D(null);
         graphics.setAntialiasEnabled(true);
-        drawSvg(graphics, 0, h, w, -h, 0xFFFFFFFF, false);
+        drawSvg(graphics, 0, 0, w, h, 0xFFFFFFFF, false);
         graphics.setSurface(null);
 
         pixelMap = surface.createPixelMap();
@@ -74,6 +124,8 @@ public class LineMap implements Drawable {
 
     @Override
     public void draw(Graphics graphics, float x, float y, float width, float height, int color, ImageFilter filter) {
+        if (graphics.discardDraw(x, y, width, height)) return;
+
         if (optimize && pixelMap == null) {
             bake(graphics);
         }

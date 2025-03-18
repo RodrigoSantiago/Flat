@@ -74,6 +74,16 @@ public class Surface {
         }
 
         texture.getData(0, imageData, 0);
+        int pixelBytes = PixelFormat.RGBA.getPixelBytes();
+        int rowSize = width * pixelBytes;
+        byte[] tempRow = new byte[rowSize];
+        for (int y = 0; y < height / 2; y++) {
+            int topRowStart = y * rowSize;
+            int bottomRowStart = (height - y - 1) * rowSize;
+            System.arraycopy(imageData, topRowStart, tempRow, 0, rowSize);
+            System.arraycopy(imageData, bottomRowStart, imageData, topRowStart, rowSize);
+            System.arraycopy(tempRow, 0, imageData, bottomRowStart, rowSize);
+        }
         return new PixelMap(imageData, width, height, PixelFormat.RGBA);
     }
 

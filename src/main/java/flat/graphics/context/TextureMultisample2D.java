@@ -2,6 +2,7 @@ package flat.graphics.context;
 
 import flat.backend.GL;
 import flat.backend.GLEnums;
+import flat.exception.FlatException;
 import flat.graphics.context.enums.PixelFormat;
 
 public final class TextureMultisample2D extends Texture {
@@ -20,7 +21,7 @@ public final class TextureMultisample2D extends Texture {
     }
 
     @Override
-    int getInternalID() {
+    int getInternalId() {
         return textureId;
     }
 
@@ -31,7 +32,7 @@ public final class TextureMultisample2D extends Texture {
 
     private void boundCheck() {
         if (isDisposed()) {
-            throw new RuntimeException("The " + getClass().getSimpleName() + " is disposed.");
+            throw new FlatException("The TextureMultisample2D is disposed.");
         }
         getContext().bindTexture(this);
     }
@@ -44,7 +45,7 @@ public final class TextureMultisample2D extends Texture {
         this.height = height;
         this.samples = samples;
         this.format = format;
-        GL.TextureMultisample(samples, 0x8058/*format.getInternalEnum()*/, width, height, true);
+        GL.TextureMultisample(samples, format.getInternalEnum(), width, height, true);
     }
 
     public int getWidth() {
@@ -65,7 +66,7 @@ public final class TextureMultisample2D extends Texture {
 
     private void dataBoundsCheck(int width, int height, int samples) {
         if (width <= 0 || height <= 0 || samples < 0) {
-            throw new RuntimeException("Zero or negative values are not allowed (" + width + ", " + height + ", " + samples + ")");
+            throw new FlatException("Zero or negative values are not allowed (" + width + ", " + height + ", " + samples + ")");
         }
     }
 }

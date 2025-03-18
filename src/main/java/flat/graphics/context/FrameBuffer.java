@@ -171,15 +171,15 @@ public final class FrameBuffer extends ContextObject {
             }
             if (type == LayerType.TEXTURE) {
                 GL.FrameBufferTexture2D(GLEnums.FB_FRAMEBUFFER, target.getInternalEnum(),
-                        texture.getInternalType(), texture.getInternalID(), level);
+                        texture.getInternalType(), texture.getInternalId(), level);
             }
             if (type == LayerType.CUBEMAP) {
                 GL.FrameBufferTexture2D(GLEnums.FB_FRAMEBUFFER, target.getInternalEnum(),
-                        face.getInternalEnum(), cubemap.getInternalID(), level);
+                        face.getInternalEnum(), cubemap.getInternalId(), level);
             }
             if (type == LayerType.TEXTUREMULTISAMPLE) {
                 GL.FrameBufferTextureMultisample(GLEnums.FB_FRAMEBUFFER, target.getInternalEnum(),
-                        textureMultisample.getInternalID());
+                        textureMultisample.getInternalId());
             }
             prevFace = face;
             prevType = type;

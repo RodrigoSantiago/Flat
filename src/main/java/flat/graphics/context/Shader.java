@@ -1,6 +1,7 @@
 package flat.graphics.context;
 
 import flat.backend.GL;
+import flat.exception.FlatException;
 import flat.graphics.context.enums.ShaderType;
 
 public final class Shader extends ContextObject {
@@ -32,7 +33,7 @@ public final class Shader extends ContextObject {
 
     public void setSource(String source) {
         if (compiled) {
-            throw new RuntimeException("A compiled shader is immutable");
+            throw new FlatException("A compiled shader is immutable");
         }
         this.source = source;
     }

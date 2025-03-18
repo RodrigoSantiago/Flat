@@ -21,10 +21,6 @@ abstract class ContextObject {
         cleaner.register(this, context.createSyncDestroyTask(task));
     }
 
-    protected boolean isBound() {
-        return true;
-    }
-
     public boolean isDisposed() {
         return disposed;
     }

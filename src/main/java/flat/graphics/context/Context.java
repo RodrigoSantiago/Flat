@@ -92,7 +92,7 @@ public class Context {
 
     public static Context create(Window window, long svgId) {
         if (window.getContext() != null) {
-            throw new RuntimeException("The Window already have a context");
+            throw new FlatException("The Window already have a context");
         } else {
             return new Context(window, svgId);
         }
@@ -960,23 +960,16 @@ public class Context {
         return activeTexture;
     }
 
-    int indexOfTextureBound(Texture texture) {
-        for (int i = 0; i < textures.length; i++) {
-            if (textures[i] == texture) return i;
-        }
-        return -1;
-    }
-
-    void bindTextures(Texture... textures) {
+    public void setShaderTextures(Texture... textures) {
         checkDisposed();
 
         for (int i = 0; i < this.textures.length; i++) {
             if (this.textures[i] != null) {
                 svgEnd();
 
-                this.textures[i] = null;
                 setActiveTexture(i);
-                GL.TextureBind(textures[i].getInternalType(), 0);
+                GL.TextureBind(this.textures[i].getInternalType(), 0);
+                this.textures[i] = null;
             }
         }
         for (int i = 0; i < textures.length; i++) {
@@ -984,20 +977,20 @@ public class Context {
 
             this.textures[i] = textures[i];
             setActiveTexture(i);
-            GL.TextureBind(textures[i].getInternalType(), textures[i].getInternalID());
+            GL.TextureBind(textures[i].getInternalType(), textures[i].getInternalId());
         }
     }
 
     void bindTexture(Texture texture) {
         checkDisposed();
 
-        for (int i = 1; i < this.textures.length; i++) {
-            if (this.textures[i] != null) {
+        for (int i = 1; i < textures.length; i++) {
+            if (textures[i] != null) {
                 svgEnd();
 
-                this.textures[i] = null;
                 setActiveTexture(i);
                 GL.TextureBind(textures[i].getInternalType(), 0);
+                textures[i] = null;
             }
         }
 
@@ -1007,7 +1000,7 @@ public class Context {
             if (texture == null) {
                 GL.TextureBind(textures[0].getInternalType(), 0);
             } else {
-                GL.TextureBind(texture.getInternalType(), texture.getInternalID());
+                GL.TextureBind(texture.getInternalType(), texture.getInternalId());
             }
             textures[0] = texture;
         }
@@ -1396,6 +1389,38 @@ public class Context {
         SVG.PathEnd(svgId);
     }
 
+    public void svgUnclip(Shape shape) {
+        checkDisposed();
+
+        if (shape.isEmpty()) return;
+
+        PathIterator pi = shape.pathIterator(null);
+
+        svgBegin();
+        SVG.PathBegin(svgId, SVGEnums.SVG_CLIP, pi.windingRule());
+        while (!pi.isDone()) {
+            switch (pi.currentSegment(data)) {
+                case PathIterator.SEG_MOVETO:
+                    SVG.MoveTo(svgId, data[0], data[1]);
+                    break;
+                case PathIterator.SEG_LINETO:
+                    SVG.LineTo(svgId, data[0], data[1]);
+                    break;
+                case PathIterator.SEG_QUADTO:
+                    SVG.QuadTo(svgId, data[0], data[1], data[2], data[3]);
+                    break;
+                case PathIterator.SEG_CUBICTO:
+                    SVG.CubicTo(svgId, data[0], data[1], data[2], data[3], data[4], data[5]);
+                    break;
+                case PathIterator.SEG_CLOSE:
+                    SVG.Close(svgId);
+                    break;
+            }
+            pi.next();
+        }
+        SVG.PathEnd(svgId);
+    }
+
     public void svgDrawShape(Shape shape, boolean fill) {
         checkDisposed();
 
@@ -1463,20 +1488,8 @@ public class Context {
         if (width <= 0 || height <= 0) return;
 
         svgBegin();
-        if (fill) {
-            SVG.Rect(svgId, x, y, width, height);
-        } else {
-            SVG.PathBegin(svgId, SVGEnums.SVG_STROKE, 0);
-            SVG.MoveTo(svgId, x, y);
-            SVG.LineTo(svgId, x, y + height);
-            SVG.LineTo(svgId, x + width, y + height);
-            SVG.LineTo(svgId, x + width, y);
-            SVG.Close(svgId);
-            SVG.PathEnd(svgId);
-        }
+        SVG.Rect(svgId, x, y, width, height, fill);
     }
-
-    private static final float _el90 = 0.5522847493f;
 
     public void svgDrawEllipse(float x, float y, float width, float height, boolean fill) {
         checkDisposed();
@@ -1484,62 +1497,15 @@ public class Context {
         if (width <= 0 || height <= 0) return;
 
         svgBegin();
-        if (fill) {
-            SVG.Ellipse(svgId, x, y, width, height);
-        } else {
-            float cx = x + width / 2f;
-            float cy = y + height / 2f;
-            float rx = width / 2f;
-            float ry = height / 2f;
-            SVG.PathBegin(svgId, SVGEnums.SVG_STROKE, 0);
-            SVG.MoveTo(svgId, cx - rx, cy);
-            SVG.CubicTo(svgId, cx - rx, cy + ry * _el90, cx - rx * _el90, cy + ry, cx, cy + ry);
-            SVG.CubicTo(svgId, cx + rx * _el90, cy + ry, cx + rx, cy + ry * _el90, cx + rx, cy);
-            SVG.CubicTo(svgId, cx + rx, cy - ry * _el90, cx + rx * _el90, cy - ry, cx, cy - ry);
-            SVG.CubicTo(svgId, cx - rx * _el90, cy - ry, cx - rx, cy - ry * _el90, cx - rx, cy);
-            SVG.Close(svgId);
-            SVG.PathEnd(svgId);
-        }
+        SVG.Ellipse(svgId, x, y, width, height, fill);
     }
 
     public void svgDrawRoundRect(float x, float y, float width, float height, float cTop, float cRight, float cBottom, float cLeft, boolean fill) {
         checkDisposed();
         if (width <= 0 || height <= 0) return;
 
-        float max = Math.min(width, height) / 2f;
-        cTop = Math.max(0, Math.min(max, cTop));
-        cRight = Math.max(0, Math.min(max, cRight));
-        cBottom = Math.max(0, Math.min(max, cBottom));
-        cLeft = Math.max(0, Math.min(max, cLeft));
-
-        if (Mathf.epsilonEquals(cTop, cRight) && Mathf.epsilonEquals(cRight, cBottom)
-                && Mathf.epsilonEquals(cBottom, cLeft) && Mathf.epsilonEquals(cLeft, 0)) {
-            svgDrawRect(x, y, width, height, fill);
-            return;
-        }
-
         svgBegin();
-        if (fill) {
-            SVG.RoundRect(svgId, x, y, width, height, cTop, cRight, cBottom, cLeft);
-        } else {
-            float halfw = Math.abs(width) * 0.5f;
-            float halfh = Math.abs(height) * 0.5f;
-            float rxBL = Math.min(cLeft, halfw) * Math.signum(width), ryBL = Math.min(cLeft, halfh) * Math.signum(height);
-            float rxBR = Math.min(cBottom, halfw) * Math.signum(width), ryBR = Math.min(cBottom, halfh) * Math.signum(height);
-            float rxTR = Math.min(cRight, halfw) * Math.signum(width), ryTR = Math.min(cRight, halfh) * Math.signum(height);
-            float rxTL = Math.min(cTop, halfw) * Math.signum(width), ryTL = Math.min(cTop, halfh) * Math.signum(height);
-            SVG.PathBegin(svgId, SVGEnums.SVG_STROKE, 0);
-            SVG.MoveTo(svgId, x, y + ryTL);
-            SVG.CubicTo(svgId, x, y + ryTL * (1 - _el90), x + rxTL * (1 - _el90), y, x + rxTL, y);
-            SVG.LineTo(svgId, x + width - rxTR, y);
-            SVG.CubicTo(svgId, x + width - rxTR * (1 - _el90), y, x + width, y + ryTR * (1 - _el90), x + width, y + ryTR);
-            SVG.LineTo(svgId, x + width, y + height - ryBR);
-            SVG.CubicTo(svgId, x + width, y + height - ryBR * (1 - _el90), x + width - rxBR * (1 - _el90), y + height, x + width - rxBR, y + height);
-            SVG.LineTo(svgId, x + rxBL, y + height);
-            SVG.CubicTo(svgId, x + rxBL * (1 - _el90), y + height, x, y + height - ryBL * (1 - _el90), x, y + height - ryBL);
-            SVG.Close(svgId);
-            SVG.PathEnd(svgId);
-        }
+        SVG.RoundRect(svgId, x, y, width, height, cTop, cRight, cBottom, cLeft, fill);
     }
 
     public void svgDrawLine(float x1, float y1, float x2, float y2) {
@@ -1651,10 +1617,7 @@ public class Context {
                 svgTextFont = Font.getDefault();
                 SVG.SetFont(svgId, svgTextFont.getInternalPaintID(this));
             }
-
-            // SVG.PathBegin(svgId, SVG_TEXT, 0);
             w = SVG.DrawText(svgId, x, y, text, maxWidth, maxHeight);
-            // SVG.PathEnd(svgId);
         }
         return w;
     }
@@ -1669,10 +1632,7 @@ public class Context {
                 svgTextFont = Font.getDefault();
                 SVG.SetFont(svgId, svgTextFont.getInternalPaintID(this));
             }
-
-            // SVG.PathBegin(svgId, SVG_TEXT, 0);
             w = SVG.DrawTextBuffer(svgId, x, y, text, offset, length, maxWidth, maxHeight);
-            // SVG.PathEnd(svgId);
         }
         return w;
     }

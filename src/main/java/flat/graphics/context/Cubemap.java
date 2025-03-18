@@ -26,7 +26,7 @@ public final class Cubemap extends Texture {
     }
 
     @Override
-    int getInternalID() {
+    int getInternalId() {
         return cubemapId;
     }
 
@@ -37,7 +37,7 @@ public final class Cubemap extends Texture {
 
     private void boundCheck() {
         if (isDisposed()) {
-            throw new RuntimeException("The " + getClass().getSimpleName() + " is disposed.");
+            throw new FlatException("The " + getClass().getSimpleName() + " is disposed.");
         }
         getContext().bindTexture(this);
     }
@@ -116,7 +116,7 @@ public final class Cubemap extends Texture {
         GL.TextureSubDataB(face.getInternalEnum(), level, x, y, width, height, format.getInternalEnum(), data, offset);
     }
 
-    public void setLevels(int levels) {
+    public void setLevels(CubeFace face, int levels) {
         parameterLevelsCheck(levels);
         boundCheck();
 
@@ -183,7 +183,7 @@ public final class Cubemap extends Texture {
         int height = getHeight(level);
         int required = width * height * format.getPixelBytes();
         if (arrayLen * bytes < required) {
-            throw new RuntimeException("The array is too short. Provided : " + arrayLen + ". Required : " + ((required - 1) / bytes + 1));
+            throw new FlatException("The array is too short. Provided : " + arrayLen + ". Required : " + ((required - 1) / bytes + 1));
         }
     }
 
@@ -196,7 +196,7 @@ public final class Cubemap extends Texture {
 
         int required = w * h * format.getPixelBytes();
         if (arrayLen * bytes < required) {
-            throw new RuntimeException("The array is too short. Provided : " + arrayLen + ". Required : " + ((required - 1) / bytes + 1));
+            throw new FlatException("The array is too short. Provided : " + arrayLen + ". Required : " + ((required - 1) / bytes + 1));
         }
     }
 }
