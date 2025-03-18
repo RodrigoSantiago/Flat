@@ -15,9 +15,11 @@ import flat.graphics.context.Font;
 import flat.graphics.context.ShaderProgram;
 import flat.graphics.context.enums.ImageFileFormat;
 import flat.graphics.context.enums.PixelFormat;
+import flat.graphics.context.fonts.FontDetail;
 import flat.graphics.image.DrawableReader;
 import flat.graphics.image.LineMap;
 import flat.graphics.image.PixelMap;
+import flat.graphics.text.FontStyle;
 import flat.math.Affine;
 import flat.math.Vector4;
 import flat.math.shapes.Circle;
@@ -206,10 +208,13 @@ public class MainController extends Controller {
 
     ShaderProgram shader;
     PixelMap pix;
+    Font arial;
 
     @Override
     public void onShow() {
-        // Font.listSystemFonts();
+        Font.installSystemFontFamily("Times New Roman");
+        arial = Font.findFont("Times New Roman");
+        System.out.println(arial);
 
         var pm = (PixelMap) DrawableReader.parse(new ResourceStream("/default/image_transp_test.png"));
         var pm2 = (PixelMap) DrawableReader.parse(new ResourceStream("/default/image.png"));
@@ -293,6 +298,15 @@ public class MainController extends Controller {
             av = (av * 0.8f + Application.getLoopTime() * 0.2f);
         }
         graphics.drawText(10, getActivity().getHeight() - 16, "FPS : " + (int)(1f / av));
+
+        graphics.setTextFont(arial);
+        graphics.setTextSize(64);
+        graphics.setTextBlur(1);
+        graphics.setColor(Color.black);
+        graphics.drawText(100, 100, "Ola mundo Arial");
+        graphics.setTextBlur(0);
+        graphics.setColor(Color.black);
+        graphics.drawText(100, 100, "Ola mundo Arial");
 
         /*graphics.setTransform2D(null);
 

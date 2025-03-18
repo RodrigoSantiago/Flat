@@ -1,7 +1,7 @@
 package flat.graphics.text;
 
 public enum FontPosture {
-    REGULAR, ITALIC;
+    REGULAR, ITALIC; // OBLIQUE
 
     public static FontPosture parse(String value) {
         try {

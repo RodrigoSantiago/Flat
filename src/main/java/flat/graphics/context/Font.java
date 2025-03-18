@@ -3,6 +3,8 @@ package flat.graphics.context;
 import flat.backend.SVG;
 import flat.exception.FlatException;
 import flat.graphics.context.enums.PixelFormat;
+import flat.graphics.context.fonts.FontDetail;
+import flat.graphics.context.fonts.WindowsSystemFonts;
 import flat.graphics.image.PixelMap;
 import flat.graphics.text.FontPosture;
 import flat.graphics.text.FontStyle;
@@ -10,16 +12,19 @@ import flat.graphics.text.FontWeight;
 import flat.math.shapes.Path;
 import flat.window.Application;
 
-import java.io.File;
+import java.io.IOException;
 import java.lang.ref.Cleaner;
 import java.nio.Buffer;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.nio.file.Files;
+import java.util.*;
 
 public class Font {
     protected final static Cleaner cleaner = Cleaner.create();
 
     private static final ArrayList<Font> fonts = new ArrayList<>();
+    private static final ArrayList<Font> defaultFonts = new ArrayList<>();
+    private static final HashMap<String, ArrayList<Font>> fontFamilies = new HashMap<>();
+
     private static Font DefaultFont;
     private static final float[] readGlyph = new float[5];
 
@@ -75,7 +80,7 @@ public class Font {
     }
 
     public static Font findFont(String family) {
-        return findFont(family, null);
+        return findFont(family, null, null, null);
     }
 
     public static Font findFont(FontWeight weight) {
@@ -101,54 +106,132 @@ public class Font {
     public static Font findFont(String family, FontWeight weight, FontPosture posture, FontStyle style) {
         readDefaultFonts();
 
-        Font closer = null;
-        int minDiff = 0;
-        for (Font font : fonts) {
-            int diff = font.getFontDifference(family, weight, posture, style);
-            if (closer == null || diff < minDiff) {
-                closer = font;
-                minDiff = diff;
-            } else if (diff == minDiff) {
-                // Style
-                if (font.style.ordinal() < closer.style.ordinal()) {
-                    closer = font;
-                } else if (font.style.ordinal() == closer.style.ordinal()) {
-                    // Posture
-                    if (font.posture.ordinal() < closer.posture.ordinal()) {
-                        closer = font;
-                    } else if (font.posture.ordinal() == closer.posture.ordinal()) {
-                        // Weight
-                        if (font.weight.ordinal() < closer.weight.ordinal()) {
-                            closer = font;
-                        } else if (font.weight.ordinal() == closer.weight.ordinal()) {
-                            // Internal random fixed value
-                            if (font.fontId < closer.fontId) {
-                                closer = font;
-                            }
-                        }
-                    }
-                }
+        ArrayList<Font> fontFamily;
+        if (family == null) {
+            fontFamily = defaultFonts;
+        } else {
+            fontFamily = fontFamilies.get(family);
+            if (fontFamily == null) {
+                fontFamily = defaultFonts;
             }
+        }
+        if (weight == null) weight = FontWeight.NORMAL;
+        if (posture == null) posture = FontPosture.REGULAR;
+        if (style == null) style = FontStyle.SANS;
+
+        Font closer = fontFamily.get(0);
+        for (Font font : fontFamily) {
+            if (getFontDifference(weight, posture, style,
+                    closer.getWeight(), closer.getPosture(), closer.getStyle(),
+                    font.getWeight(), font.getPosture(), font.getStyle()) == 2) {
+                closer = font;
+            }
+
         }
         return closer;
     }
 
-    private int getFontDifference(String family, FontWeight weight, FontPosture posture, FontStyle style) {
-        int f = family == null ? 1 : this.family.equalsIgnoreCase(family) ? 0 : 1;
-        int s = style == null ? 1 : this.style == style ? 0 : 1;
-        int p = posture == null ? 1 : this.posture == posture ? 0 : 1;
-        int w = weight == null ? 400 : Math.abs(this.weight.getWeight() - weight.getWeight());
+    private static int getFontDifference(
+            FontWeight weightT, FontPosture postureT, FontStyle styleT,
+            FontWeight weightA, FontPosture postureA, FontStyle styleA,
+            FontWeight weightB, FontPosture postureB, FontStyle styleB) {
 
-        return f * 8000 + s * 4000 + p * 2000 + w;
+        if (styleA != styleB) {
+            if (styleA == styleT) return 1;
+            if (styleB == styleT) return 2;
+            if (styleA.ordinal() < styleB.ordinal()) return 1;
+            return 2;
+        }
+
+        if (postureA != postureB) {
+            if (postureA == postureT) return 1;
+            if (postureB == postureT) return 2;
+            if (postureA.ordinal() < postureB.ordinal()) return 1;
+            return 2;
+        }
+
+        if (weightA != weightB) {
+            if (weightA == weightT) return 1;
+            if (weightB == weightT) return 2;
+            int wA = Math.abs(weightA.getWeight() - weightT.getWeight());
+            int wB = Math.abs(weightA.getWeight() - weightT.getWeight());
+            if (wA != wB) return wA < wB ? 1 : 2;
+            if (weightA.ordinal() < weightB.ordinal()) return 1;
+            return 2;
+        }
+
+        return 1;
     }
 
     public static void install(Font font) {
         font.checkDisposed();
+
+        if (fonts.contains(font)) return;
+
         fonts.add(font);
+
+        var family = fontFamilies.get(font.family);
+        if (family == null) {
+            family = new ArrayList<>();
+            fontFamilies.put(font.family, family);
+        }
+        family.add(font);
+    }
+
+    public static void installSystemFontFamily(String fontFamily) {
+        readDefaultFonts();
+
+        ArrayList<FontDetail> list = WindowsSystemFonts.listSystemFontFamilies().get(fontFamily);
+        if (list == null) {
+            return;
+        }
+
+        for (var detail : list) {
+            ArrayList<Font> fontList = fontFamilies.get(fontFamily);
+            if (fontList == null) {
+                fontList = new ArrayList<>();
+                fontFamilies.put(fontFamily, fontList);
+            } else {
+                Font instFont = findFont(fontFamily, detail.getWeight(), detail.getPosture(), detail.getStyle());
+                if (instFont.getFamily().equals(fontFamily) &&
+                        instFont.getWeight() == detail.getWeight() &&
+                        instFont.getPosture() == detail.getPosture() &&
+                        instFont.getStyle() == detail.getStyle()) {
+                    continue;
+                }
+            }
+
+            Font font = createSystemFont(detail);
+            if (font != null) {
+                install(font);
+            }
+        }
+    }
+
+    public static ArrayList<FontDetail> listSystemFonts() {
+        readDefaultFonts();
+
+        ArrayList<FontDetail> list = new ArrayList<>();
+        for (var entry : WindowsSystemFonts.listSystemFontFamilies().values()) {
+            list.addAll(entry);
+        }
+        return list;
+    }
+
+    public static Font createSystemFont(FontDetail fontDetail) {
+        readDefaultFonts();
+
+        try {
+            byte[] data = Files.readAllBytes(fontDetail.getFile().toPath());
+            return new Font(fontDetail.getFamily(), fontDetail.getWeight(), fontDetail.getPosture(), fontDetail.getStyle(), data);
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     public static Font getDefault() {
         readDefaultFonts();
+
         return DefaultFont;
     }
 
@@ -184,6 +267,7 @@ public class Font {
         install(emoji);
 
         DefaultFont = sans;
+        defaultFonts.addAll(List.of(sans, bold, italic, bolditalic, serif, mono, cursive));
     }
 
     public String getFamily() {
@@ -338,7 +422,7 @@ public class Font {
         } else {
             Texture2D tex = new Texture2D(context, imageId, w, h, 0, PixelFormat.RED);
             tex.getData(0, imageData, 0);
-            context.bindTexture(null); // TODO - force release
+            context.bindTexture(null);
             return new PixelMap(imageData, w, h, PixelFormat.RED);
         }
     }
@@ -354,8 +438,8 @@ public class Font {
     }
 
     public void dispose() {
-        if (this == DefaultFont) {
-            throw new FlatException("Default font cannot be disposed");
+        if (defaultFonts.contains(this)) {
+            throw new FlatException("A default font cannot be disposed");
         }
 
         if (!diposed) {
@@ -388,21 +472,6 @@ public class Font {
             return paintId;
         }
         return render.paintId;
-    }
-
-    public static void listSystemFonts() {
-        String path = System.getenv("WINDIR");
-        File file = new File(path, "Fonts");
-        if (file.exists()) {
-            File[] child = file.listFiles();
-            if (child != null) {
-                for (int i = 0; i < child.length; i++) {
-                    if (child[i].getName().endsWith(".ttf")) {
-                        System.out.println(child[i].getName()); // arialb arialbd ariali arialk
-                    }
-                }
-            }
-        }
     }
 
     @Override
