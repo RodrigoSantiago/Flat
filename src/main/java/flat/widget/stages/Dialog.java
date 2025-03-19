@@ -313,6 +313,19 @@ public class Dialog extends Stage {
         }
     }
 
+    public void move(float x, float y) {
+        Activity act = getActivity();
+        if (act != null) {
+            onMeasure();
+            float mW = Math.min(Math.min(getMeasureWidth(), getLayoutMaxWidth()), act.getWidth());
+            float mH = Math.min(Math.min(getMeasureHeight(), getLayoutMaxHeight()), act.getHeight());
+            onLayout(mW, mH);
+
+            targetX = x - getWidth() / 2f - getMarginLeft();
+            targetY = y - getHeight() / 2f - getMarginTop();
+        }
+    }
+
     private void onShow(Activity act, float x, float y) {
         refreshStyle();
         onMeasure();

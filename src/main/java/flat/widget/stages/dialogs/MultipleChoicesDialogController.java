@@ -4,36 +4,38 @@ import flat.Flat;
 import flat.events.ActionEvent;
 import flat.uxml.Controller;
 import flat.uxml.UXListener;
-import flat.widget.Widget;
 import flat.widget.enums.Visibility;
 import flat.widget.layout.LinearBox;
-import flat.widget.selection.RadioButton;
-import flat.widget.selection.RadioGroup;
+import flat.widget.selection.Checkbox;
 import flat.widget.stages.Dialog;
 import flat.widget.text.Button;
 import flat.widget.text.Label;
 
-class ChooseDialogController extends Controller {
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+class MultipleChoicesDialogController extends Controller {
 
     private final Dialog dialog;
     private final String title;
     private final String message;
     private final boolean cancelable;
     private final String[] options;
-    private final int initialOption;
+    private final String[] initialOptions;
     private final UXListener<Dialog> onShowListener;
     private final UXListener<Dialog> onHideListener;
-    private final UXWidgetValueListener<Dialog, Integer> onChooseListener;
+    private final UXWidgetValueListener<Dialog, List<String>> onChooseListener;
 
-    private RadioButton[] radioButtons;
+    private Checkbox[] checkboxes;
 
-    ChooseDialogController(Dialog dialog, ChooseDialogBuilder builder) {
+    MultipleChoicesDialogController(Dialog dialog, MultipleChoicesDialogBuilder builder) {
         this.dialog = dialog;
         this.title = builder.title;
         this.message = builder.message;
         this.cancelable = builder.cancelable;
         this.options = builder.options == null ? new String[0] : builder.options;
-        this.initialOption = builder.initialOption;
+        this.initialOptions = builder.initialOptions == null ? new String[0] : builder.initialOptions;
         this.onShowListener = builder.onShowListener;
         this.onHideListener = builder.onHideListener;
         this.onChooseListener = builder.onChooseListener;
@@ -49,9 +51,6 @@ class ChooseDialogController extends Controller {
     public Button cancelButton;
 
     @Flat
-    public RadioGroup optionsGroup;
-
-    @Flat
     public LinearBox optionsArea;
 
     @Flat
@@ -61,8 +60,14 @@ class ChooseDialogController extends Controller {
 
     @Flat
     public void onChoose(ActionEvent event) {
-        if (optionsGroup != null) {
-            UXWidgetValueListener.safeHandle(onChooseListener, dialog, optionsGroup.getSelected());
+        if (checkboxes != null) {
+            ArrayList<String> choices = new ArrayList<>();
+            for (int i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i].isActivated()) {
+                    choices.add(options[i]);
+                }
+            }
+            UXWidgetValueListener.safeHandle(onChooseListener, dialog, choices);
         }
         dialog.smoothHide();
     }
@@ -84,24 +89,23 @@ class ChooseDialogController extends Controller {
             cancelButton.setVisibility(Visibility.GONE);
         }
 
-        if (optionsGroup != null && optionsArea != null && radioButtons == null) {
-            radioButtons = new RadioButton[options.length];
+        if (optionsArea != null && checkboxes == null) {
+            checkboxes = new Checkbox[options.length];
             for (int i = 0; i < options.length; i++) {
                 var str = options[i];
-                RadioButton radio = new RadioButton();
-                radio.addStyle("dialog-choose-option-button");
-                optionsGroup.add(radio);
-                radioButtons[i] = radio;
+                Checkbox checkbox = new Checkbox();
+                checkbox.addStyle("dialog-choose-option-checkbox");
+                checkboxes[i] = checkbox;
 
                 Label label = new Label();
                 label.setText(str);
                 label.addStyle("dialog-choose-option-label");
-                label.setPointerListener(radio::firePointer);
-                label.setHoverListener(radio::fireHover);
+                label.setPointerListener(checkbox::firePointer);
+                label.setHoverListener(checkbox::fireHover);
 
                 LinearBox box = new LinearBox();
                 box.addStyle("dialog-choose-option-box");
-                box.add(radio, label);
+                box.add(checkbox, label);
 
                 optionsArea.add(box);
             }
@@ -109,10 +113,18 @@ class ChooseDialogController extends Controller {
                 dialog.move(getActivity().getWidth() / 2, getActivity().getHeight() / 2);
             }
         }
-        if (optionsGroup != null) {
-            optionsGroup.select(initialOption);
+        if (checkboxes != null) {
+            for (int i = 0; i < options.length; i++) {
+                boolean checked = false;
+                for (String initialOption : initialOptions) {
+                    if (Objects.equals(options[i], initialOption)) {
+                        checked = true;
+                        break;
+                    }
+                }
+                checkboxes[i].setActivated(checked);
+            }
         }
-
         UXListener.safeHandle(onShowListener, dialog);
     }
 

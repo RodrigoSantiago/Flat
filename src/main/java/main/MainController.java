@@ -41,6 +41,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MainController extends Controller {
@@ -280,6 +281,36 @@ public class MainController extends Controller {
                 .onChooseListener((dg, val) -> System.out.println("Choose : " + val))
                 .options("Option A", "Option B", "Option C", "Option D")
                 .initialOption(0)
+                .block(true)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onMultipleChoicesDialog() {
+        var alert = new MultipleChoicesDialogBuilder("/default/dialogs/dialog_multiplechoices.uxml")
+                .title("This is THE Title")
+                .message("This is THE Message")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onChooseListener((dg, val) -> System.out.println("Choices : " + Arrays.toString(val.toArray())))
+                .options("Option A", "Option B", "Option C", "Option D", "Option E", "Option F", "Option G", "Option H")
+                .initialOptions("Option A", "Option C")
+                .block(false)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onBlockMultipleChoicesDialog() {
+        var alert = new MultipleChoicesDialogBuilder("/default/dialogs/dialog_multiplechoices.uxml")
+                .title("This is THE Title")
+                .message("This is THE Message")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onChooseListener((dg, val) -> System.out.println("Choices : " + Arrays.toString(val.toArray())))
+                .options("Option A", "Option B", "Option C", "Option D", "Option E")
+                .initialOptions()
                 .block(true)
                 .build();
         alert.show(getActivity());

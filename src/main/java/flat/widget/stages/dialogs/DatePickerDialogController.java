@@ -204,6 +204,9 @@ class DatePickerDialogController extends Controller {
                     if (calendarGrid != null) calendarGrid.add(btnDay, i, j + 1);
                 }
             }
+            if (getActivity() != null) {
+                dialog.move(getActivity().getWidth() / 2, getActivity().getHeight() / 2);
+            }
         }
 
         if (monthsMenu == null) {
@@ -296,6 +299,7 @@ class DatePickerDialogController extends Controller {
             } else {
                 if (dayIn) {
                     setDate(firstDate.plusDays(index));
+                    setDateOut(firstDate.plusDays(index));
                 } else {
                     setDateOut(firstDate.plusDays(index));
                 }

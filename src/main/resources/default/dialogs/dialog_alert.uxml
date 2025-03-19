@@ -1,4 +1,5 @@
 <LinearBox direction="vertical" style="dialog-alert">
+    <LinearBox style="dialog-header"/>
     <LinearBox direction="vertical" vertical-alig="right" style="dialog-message-area">
         <Label style="dialog-title" id="titleLabel"/>
         <Label style="dialog-message" id="messageLabel"/>

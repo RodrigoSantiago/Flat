@@ -25,6 +25,19 @@ dialog-confirm {
 dialog-process {
     width : 420dp;
 }
+dialog-choose {
+    width : 420dp;
+}
+dialog-multiple-choices {
+    width : 420dp;
+}
+dialog-header {
+    height : 32dp;
+    width : MATCH_PARENT;
+    background-color : $primary-color;
+    radius-top : 4dp;
+    radius-right : 4dp;
+}
 dialog-title {
     text-font : font("Roboto", BOLD);
     text-size : 20sp;
@@ -78,6 +91,10 @@ dialog-choose-option-box {
     direction : horizontal;
     vertical-align : middle;
     horizontal-align : left;
+}
+dialog-choose-option-button {
+}
+dialog-choose-option-checkbox {
 }
 dialog-choose-option-label {
     cursor : hand;
