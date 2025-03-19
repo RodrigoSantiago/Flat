@@ -59,7 +59,7 @@ public class UXValue {
     }
 
     public float[] asSizeList(UXTheme theme, float dpi) {
-        return null;
+        return new float[0];
     }
 
     public UXValue[] getValues(UXTheme theme) {

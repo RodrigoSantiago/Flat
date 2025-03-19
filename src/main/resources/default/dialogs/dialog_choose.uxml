@@ -1,0 +1,17 @@
+<LinearBox direction="vertical" style="dialog-confirm">
+    <LinearBox direction="vertical" vertical-alig="right" style="dialog-message-area">
+        <Label style="dialog-title" id="titleLabel"/>
+        <Label style="dialog-message" id="messageLabel"/>
+    </LinearBox>
+    <Divider/>
+    <RadioGroup id="optionsGroup"/>
+    <ScrollBox style="dialog-choose-scroll-box">
+        <LinearBox id="optionsArea" direction="vertical" vertical-alig="right" style="dialog-choose-options-area">
+        </LinearBox>
+    </ScrollBox>
+    <Divider/>
+    <LinearBox direction="horizontal" style="dialog-action-area">
+        <Button id="cancelButton" text="Cancel" style="text-primary dialog-cancel-button" on-action="onCancel"/>
+        <Button text="OK" style="text-primary dialog-ok-button" on-action="onChoose"/>
+    </LinearBox>
+</LinearBox>

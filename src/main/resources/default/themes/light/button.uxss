@@ -12,12 +12,13 @@ button : button.default {
     padding-right : 16dp;
     padding-top : 8dp;
     padding-bottom : 8dp;
-    horizontal-align : left;
+    horizontal-align : center;
     vertical-align : middle;
     cursor : hand;
     focusable : true;
     transition-duration : 0.2;
     text-all-caps : true;
+    min-width : 64dp;
 
     enabled {
         elevation : 1dp;
@@ -49,6 +50,7 @@ button.icon {
     radius-bottom : 36dp;
     icon-width : 18dp;
     icon-height : 18dp;
+    min-width : 0dp;
 }
 
 button.icon-dense {
@@ -62,6 +64,7 @@ button.icon-dense {
     radius-bottom : 36dp;
     icon-width : 18dp;
     icon-height : 18dp;
+    min-width : 0dp;
 }
 
 button.icon-left {
@@ -70,6 +73,7 @@ button.icon-left {
     icon-spacing : 8dp;
     icon-width : 18dp;
     icon-height : 18dp;
+    min-width : 0dp;
 }
 
 button.icon-right {
@@ -78,6 +82,7 @@ button.icon-right {
     icon-spacing : 8dp;
     icon-width : 18dp;
     icon-height : 18dp;
+    min-width : 0dp;
 }
 
 button.default {
@@ -92,6 +97,9 @@ button.default {
     }
     focused {
         background-color : $card-color-hover;
+    }
+    activated {
+        background-color : $card-color-active;
     }
     disabled {
         text-color : $on-disabled-color;
@@ -113,6 +121,9 @@ button.primary {
     focused {
         background-color : $primary-color-hover;
     }
+    activated {
+        background-color : $primary-color-active;
+    }
     disabled {
         text-color : $on-disabled-color;
         icon-color : $on-disabled-color;
@@ -133,12 +144,16 @@ button.outlined-primary {
         background-color : alpha($primary-color-fade, 0.15);
     }
     focused {
+        background-color : alpha($primary-color-fade, 0.20);
+    }
+    activated {
         background-color : alpha($primary-color-fade, 0.25);
     }
     disabled {
         text-color : $on-disabled-color;
         icon-color : $on-disabled-color;
         border-color : $on-disabled-color;
+        background-color : transparent;
     }
 }
 
@@ -153,10 +168,14 @@ button.text-primary {
         background-color : alpha($primary-color-fade, 0.15);
     }
     focused {
+        background-color : alpha($primary-color-fade, 0.20);
+    }
+    activated {
         background-color : alpha($primary-color-fade, 0.25);
     }
     disabled {
         text-color : $on-disabled-color;
         icon-color : $on-disabled-color;
+        background-color : transparent;
     }
 }

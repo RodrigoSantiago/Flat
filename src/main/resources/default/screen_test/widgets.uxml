@@ -20,6 +20,7 @@
                 <MenuItem text="Scrolls" on-action="setTabScrolls" style="navigation"/>
                 <MenuItem text="Images" on-action="setTabImages" style="navigation"/>
                 <MenuItem text="Menus" on-action="setTabMenus" style="navigation"/>
+                <MenuItem text="Dialogs" on-action="setTabDialogs" style="navigation"/>
             </LinearBox>
             <LinearBox back-content="true" direction="vertical" width="MATCH_PARENT" height="MATCH_PARENT">
                 <TabView width="MATCH_PARENT" height="MATCH_PARENT" id="mainTab" hidden-tabs="true">
@@ -71,6 +72,11 @@
                     <Tab text="Menus" id="tabMenus">
                         <Frame width="MATCH_PARENT" height="MATCH_PARENT">
                             <Include src="menus.uxml"/>
+                        </Frame>
+                    </Tab>
+                    <Tab text="Dialogs" id="tabDialogs">
+                        <Frame width="MATCH_PARENT" height="MATCH_PARENT">
+                            <Include src="dialogs.uxml"/>
                         </Frame>
                     </Tab>
                 </TabView>

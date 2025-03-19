@@ -2,10 +2,7 @@ package flat.widget.stages.dialogs;
 
 import flat.events.ActionEvent;
 import flat.resources.ResourceStream;
-import flat.uxml.UXBuilder;
-import flat.uxml.UXListener;
-import flat.uxml.UXNode;
-import flat.uxml.UXTheme;
+import flat.uxml.*;
 import flat.widget.Scene;
 import flat.widget.Widget;
 import flat.widget.stages.Dialog;
@@ -32,8 +29,6 @@ public class AlertDialogBuilderTest {
         Widget root = mock(Widget.class);
         Label title = mock(Label.class);
         Label message = mock(Label.class);
-        when(root.findById("title")).thenReturn(title);
-        when(root.findById("message")).thenReturn(message);
 
         ResourceStream stream = mock(ResourceStream.class);
         UXNode node = mock(UXNode.class);
@@ -42,8 +37,17 @@ public class AlertDialogBuilderTest {
         UXTheme theme = mock(UXTheme.class);
         mockStatic(UXNode.class);
         when(UXNode.parse(stream)).thenReturn(node);
-        when(node.instance(any())).thenReturn(builder);
-        when(builder.build(theme)).thenReturn(root);
+
+        Controller[] controller = new Controller[1];
+        when(node.instance(any())).thenAnswer((a) -> {
+            controller[0] = a.getArgument(0, Controller.class);
+            return builder;
+        });
+        when(builder.build(theme)).thenAnswer((a) -> {
+            controller[0].assign("titleLabel", title);
+            controller[0].assign("messageLabel", message);
+            return root;
+        });
 
         UXListener<Dialog> showListener = mock(UXListener.class);
         UXListener<Dialog> hideListener = mock(UXListener.class);
@@ -54,20 +58,24 @@ public class AlertDialogBuilderTest {
                 .theme(theme)
                 .onShowListener(showListener)
                 .onHideListener(hideListener)
+                .block(true)
                 .build();
 
         assertEquals(theme, dialog.getTheme());
         assertEquals(1, dialog.getChildrenIterable().size());
         assertEquals(root, dialog.getChildrenIterable().get(0));
 
-        verify(title, times(1)).setText("Title");
-        verify(message, times(1)).setText("Message");
+        assertNotNull(dialog.getController().getListenerMethod("hide", ActionEvent.class));
 
-        var hide = dialog.getController().getListenerMethod("hide", ActionEvent.class);
-        assertNotNull(hide);
+        var onOk = dialog.getController().getListenerMethod("onOk", ActionEvent.class);
+        assertNotNull(onOk);
 
         dialog.getController().onShow();
         verify(showListener, times(1)).handle(dialog);
+
+        verify(title, times(1)).setText("Title");
+        verify(message, times(1)).setText("Message");
+        assertTrue(dialog.isBlockEvents());
 
         dialog.getController().onHide();
         verify(hideListener, times(1)).handle(dialog);
@@ -80,7 +88,7 @@ public class AlertDialogBuilderTest {
         dialog.show(activity);
         assertTrue(dialog.isShown());
         verify(showListener, times(2)).handle(dialog);
-        hide.handle(mock(ActionEvent.class));
+        onOk.handle(mock(ActionEvent.class));
         verify(hideListener, times(2)).handle(dialog);
         assertFalse(dialog.isShown());
     }

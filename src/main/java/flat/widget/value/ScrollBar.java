@@ -375,15 +375,18 @@ public class ScrollBar extends Widget {
         }
 
         if (event.getType() == PointerEvent.PRESSED) {
+            event.consume();
             grabOffset = Math.max(0, Math.min(1, (pos + ((float) 0) - hStart) / hSize));
             float target = ((pos - start) / size - handleSize * grabOffset) * totalDimension;
             slideTo(target);
 
         } else if (event.getType() == PointerEvent.DRAGGED) {
+            event.consume();
             float target = ((pos - start) / size - handleSize * grabOffset) * totalDimension;
             slideTo(target);
 
         } else if (event.getType() == PointerEvent.RELEASED) {
+            event.consume();
             grabOffset = 0;
         }
     }

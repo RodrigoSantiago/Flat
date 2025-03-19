@@ -10,22 +10,16 @@ import flat.events.PointerEvent;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
 import flat.graphics.Surface;
-import flat.graphics.context.Context;
 import flat.graphics.context.Font;
 import flat.graphics.context.ShaderProgram;
 import flat.graphics.context.enums.ImageFileFormat;
 import flat.graphics.context.enums.PixelFormat;
-import flat.graphics.context.fonts.FontDetail;
 import flat.graphics.image.DrawableReader;
 import flat.graphics.image.LineMap;
 import flat.graphics.image.PixelMap;
-import flat.graphics.text.FontStyle;
-import flat.math.Affine;
-import flat.math.Vector4;
 import flat.math.shapes.Circle;
 import flat.math.shapes.Ellipse;
 import flat.math.shapes.Path;
-import flat.math.shapes.Rectangle;
 import flat.math.stroke.BasicStroke;
 import flat.resources.ResourceStream;
 import flat.uxml.Controller;
@@ -34,8 +28,8 @@ import flat.widget.Widget;
 import flat.widget.image.ImageView;
 import flat.widget.layout.Drawer;
 import flat.widget.layout.LinearBox;
+import flat.widget.stages.dialogs.*;
 import flat.widget.structure.*;
-import flat.widget.stages.dialogs.ConfirmDialogBuilder;
 import flat.widget.text.Button;
 import flat.widget.text.Chip;
 import flat.widget.text.Label;
@@ -79,6 +73,7 @@ public class MainController extends Controller {
     @Flat public Tab tabScrolls;
     @Flat public Tab tabImages;
     @Flat public Tab tabMenus;
+    @Flat public Tab tabDialogs;
 
     private ObservableList<String> items = new ObservableList<>();
 
@@ -150,6 +145,12 @@ public class MainController extends Controller {
     }
 
     @Flat
+    public void setTabDialogs() {
+        mainTab.selectTab(tabDialogs);
+        mainDrawer.hide();
+    }
+
+    @Flat
     public void setThemeLight() {
         t = 1;
         getActivity().setTheme("/default/themes/light");
@@ -168,6 +169,192 @@ public class MainController extends Controller {
         getActivity().getWindow().setIcon((PixelMap) iconButton.getIcon());
     }
 
+    @Flat
+    public void onAlertDialog() {
+        var alert = new AlertDialogBuilder("/default/dialogs/dialog_alert.uxml")
+                .title("This is THE Title")
+                .message("This is THE Message")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .block(false)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onConfirmDialog() {
+        var alert = new ConfirmDialogBuilder("/default/dialogs/dialog_confirm.uxml")
+                .title("This is THE Title")
+                .message("This is THE Message")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onYesListener((dg) -> System.out.println("Yes"))
+                .onNoListener((dg) -> System.out.println("No"))
+                .block(false)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onProcessDialog() {
+        var alert = new ProcessDialogBuilder("/default/dialogs/dialog_process.uxml")
+                .title("This is THE Title")
+                .message("This is THE Message")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onRequestCancelListener((dg) -> {
+                    System.out.println("Cancel");
+                    dg.smoothHide();
+                })
+                .cancelable(true)
+                .block(false)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onBlockAlertDialog() {
+        var alert = new AlertDialogBuilder("/default/dialogs/dialog_alert.uxml")
+                .title("This is THE Title")
+                .message("This is THE Message")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .block(true)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onBlockConfirmDialog() {
+        var alert = new ConfirmDialogBuilder("/default/dialogs/dialog_confirm.uxml")
+                .title("This is THE Title")
+                .message("This is THE Message")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onYesListener((dg) -> System.out.println("Yes"))
+                .onNoListener((dg) -> System.out.println("No"))
+                .block(true)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onBlockProcessDialog() {
+        var alert = new ProcessDialogBuilder("/default/dialogs/dialog_process.uxml")
+                .title("This is THE Title")
+                .message("This is THE Message")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onRequestCancelListener((dg) -> {
+                    System.out.println("Cancel");
+                    dg.smoothHide();
+                })
+                .cancelable(true)
+                .block(true)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onChooseDialog() {
+        var alert = new ChooseDialogBuilder("/default/dialogs/dialog_choose.uxml")
+                .title("This is THE Title")
+                .message("This is THE Message")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onChooseListener((dg, val) -> System.out.println("Choose : " + val))
+                .options("Option A", "Option B", "Option C", "Option D", "Option E", "Option F", "Option G", "Option H")
+                .initialOption(0)
+                .block(false)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onBlockChooseDialog() {
+        var alert = new ChooseDialogBuilder("/default/dialogs/dialog_choose.uxml")
+                .title("This is THE Title")
+                .message("This is THE Message")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onChooseListener((dg, val) -> System.out.println("Choose : " + val))
+                .options("Option A", "Option B", "Option C", "Option D")
+                .initialOption(0)
+                .block(true)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onDatePickerDialog() {
+        var alert = new DatePickerDialogBuilder("/default/dialogs/dialog_datepicker.uxml")
+                .title("Select a date")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onDatePickListener((dg, value) -> System.out.println(value))
+                .block(false)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onBlockDatePickerDialog() {
+        var alert = new DatePickerDialogBuilder("/default/dialogs/dialog_datepicker.uxml")
+                .title("Select a date")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onDatePickListener((dg, valueStart, valueEnd) -> System.out.println(valueStart + " - " + valueEnd))
+                .block(true)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onBlockRangedDatePickerDialog() {
+        var alert = new DatePickerDialogBuilder("/default/dialogs/dialog_datepicker.uxml")
+                .title("Select a date")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onDatePickListener((dg, value) -> System.out.println(value))
+                .ranged(true)
+                .block(true)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onRangedDatePickerDialog() {
+        var alert = new DatePickerDialogBuilder("/default/dialogs/dialog_datepicker.uxml")
+                .title("Select a date")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onDatePickListener((dg, valueStart, valueEnd) -> System.out.println(valueStart + " - " + valueEnd))
+                .ranged(true)
+                .block(false)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onFileSaveDialog() {
+
+    }
+
+    @Flat
+    public void onFileOpenDialog() {
+
+    }
+
+    @Flat
+    public void onFileOpenMultipleDialog() {
+
+    }
+
+    @Flat
+    public void onFileOpenDirDialog() {
+
+    }
+
     private void search(Widget widget) {
         if (widget instanceof Parent parent) {
             for (var child : parent.getChildrenIterable()) {
@@ -182,7 +369,7 @@ public class MainController extends Controller {
 
     @Flat
     public void onDialogClick(ActionEvent actionEvent) {
-        var alert = new ConfirmDialogBuilder("/default/screen_test/dialog_confirm.uxml")
+        var alert = new ConfirmDialogBuilder("/default/dialogs/dialog_confirm.uxml")
                 .title("This is THE Title")
                 .message("This is THE Message")
                 .onShowListener((dg) -> System.out.println("Show"))
@@ -298,15 +485,6 @@ public class MainController extends Controller {
             av = (av * 0.8f + Application.getLoopTime() * 0.2f);
         }
         graphics.drawText(10, getActivity().getHeight() - 16, "FPS : " + (int)(1f / av));
-
-        graphics.setTextFont(arial);
-        graphics.setTextSize(64);
-        graphics.setTextBlur(1);
-        graphics.setColor(Color.black);
-        graphics.drawText(100, 100, "Ola mundo Arial");
-        graphics.setTextBlur(0);
-        graphics.setColor(Color.black);
-        graphics.drawText(100, 100, "Ola mundo Arial");
 
         /*graphics.setTransform2D(null);
 

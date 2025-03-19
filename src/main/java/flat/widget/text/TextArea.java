@@ -277,8 +277,8 @@ public class TextArea extends Scrollable {
     public void scroll(ScrollEvent event) {
         super.scroll(event);
         if (!event.isConsumed() && isVerticalDimensionScroll()) {
-            slideVertical(- event.getDeltaY() * 10);
             event.consume();
+            slideVertical(- event.getDeltaY() * 10);
         }
     }
 
@@ -320,6 +320,7 @@ public class TextArea extends Scrollable {
         float ypos = isVerticalDimensionScroll() ? y : yOff(y, y + height, getTextHeight());
 
         if (event.getType() == PointerEvent.PRESSED) {
+            event.consume();
             long now = System.currentTimeMillis();
             if (now - lastPressedTime < 200) {
                 clickCont++;
@@ -340,9 +341,12 @@ public class TextArea extends Scrollable {
             setCaretVisible();
             lastPressedTime = now;
         } else if (event.getType() == PointerEvent.DRAGGED) {
+            event.consume();
             textRender.getCaret(point.x, point.y, xpos, ypos, horizontalAlign, endCaret);
             setCaretVisible();
             slideToCaret(Application.getLoopTime() * 10f);
+        } else if (event.getType() == PointerEvent.RELEASED) {
+            event.consume();
         }
         invalidate(false);
     }
@@ -365,7 +369,7 @@ public class TextArea extends Scrollable {
         if (event.getKeycode() != KeyCode.KEY_UNKNOWN &&
                 (event.getType() == KeyEvent.PRESSED || event.getType() == KeyEvent.REPEATED)) {
 
-            if (event.getKeycode() == KeyCode.KEY_ENTER) {
+            if (event.getKeycode() == KeyCode.KEY_ENTER || event.getKeycode() == KeyCode.KEY_KP_ENTER) {
                 editText(first, second, "\n");
             } else if (event.getKeycode() == KeyCode.KEY_TAB) {
                 editText(first, second, "\t");

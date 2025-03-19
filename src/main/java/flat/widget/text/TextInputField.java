@@ -35,7 +35,7 @@ public class TextInputField extends TextField {
     private float actionIconHeight;
 
     private float x1, y1, x2, y2;
-
+    private boolean pressOnAction;
 
     @Override
     public void applyAttributes(Controller controller) {
@@ -255,11 +255,24 @@ public class TextInputField extends TextField {
 
     @Override
     public void pointer(PointerEvent event) {
-        super.pointer(event);
-        if (!event.isConsumed() && event.getPointerID() == 1 && event.getType() == PointerEvent.RELEASED) {
+        UXListener.safeHandle(getPointerListener(), event);
+        if (!event.isConsumed() && event.getPointerID() == 1 && event.getType() == PointerEvent.PRESSED) {
             if (isOverActionButton(screenToLocal(event.getX(), event.getY()))) {
-                action();
+                pressOnAction = true;
             }
+        }
+        if (pressOnAction) {
+            event.consume();
+        }
+        if (pressOnAction && event.getPointerID() == 1 && event.getType() == PointerEvent.RELEASED) {
+            pressOnAction = false;
+            action();
+        }
+        if (!pressOnAction) {
+            Vector2 point = screenToLocal(event.getX(), event.getY());
+            point.x += getViewOffsetX();
+            point.y += getViewOffsetY();
+            textPointer(event, point);
         }
     }
 

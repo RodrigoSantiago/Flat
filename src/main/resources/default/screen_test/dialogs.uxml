@@ -1,0 +1,25 @@
+<Scene width="MATCH_PARENT" height="MATCH_PARENT" background-color="$surface-color">
+    <LinearBox direction="HORIZONTAL" width="MATCH_PARENT" height="MATCH_PARENT" vertical-align="top">
+        <LinearBox direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
+                   padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
+            <Label text="Default" style="subtitle" margin-left="4dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Button text="Alert Dialog" style="" on-action="onAlertDialog"/>
+                <Button margin-left="16dp" text="Confirm Dialog" style="" on-action="onConfirmDialog"/>
+                <Button margin-left="16dp" text="Process Dialog" style="" on-action="onProcessDialog"/>
+                <Button margin-left="16dp" text="Choose Dialog" style="" on-action="onChooseDialog"/>
+                <Button margin-left="16dp" text="Date Picker Dialog" style="" on-action="onDatePickerDialog"/>
+                <Button margin-left="16dp" text="Ranged Date Picker Dialog" style="" on-action="onRangedDatePickerDialog"/>
+            </LinearBox>
+            <Label text="Blocking" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Button text="Alert Dialog" style="" on-action="onBlockAlertDialog"/>
+                <Button margin-left="16dp" text="Confirm Dialog" style="" on-action="onBlockConfirmDialog"/>
+                <Button margin-left="16dp" text="Process Dialog" style="" on-action="onBlockProcessDialog"/>
+                <Button margin-left="16dp" text="Choose Dialog" style="" on-action="onBlockChooseDialog"/>
+                <Button margin-left="16dp" text="Date Picker Dialog" style="" on-action="onBlockDatePickerDialog"/>
+                <Button margin-left="16dp" text="Ranged Date Picker Dialog" style="" on-action="onBlockRangedDatePickerDialog"/>
+            </LinearBox>
+        </LinearBox>
+    </LinearBox>
+</Scene>

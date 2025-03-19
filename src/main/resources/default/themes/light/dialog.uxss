@@ -1,0 +1,238 @@
+dialog {
+    shadow-enabled : true;
+    elevation : 24dp;
+    radius-top : 4dp;
+    radius-left : 4dp;
+    radius-right : 4dp;
+    radius-bottom : 4dp;
+    margin-top : 8dp;
+    margin-left : 8dp;
+    margin-right : 8dp;
+    margin-bottom : 16dp;
+    show-transition-duration : 0.25;
+    hide-transition-duration : 0.15;
+
+    background-color : $card-color;
+    block-color : #00000080;
+}
+
+dialog-alert {
+    width : 420dp;
+}
+dialog-confirm {
+    width : 420dp;
+}
+dialog-process {
+    width : 420dp;
+}
+dialog-title {
+    text-font : font("Roboto", BOLD);
+    text-size : 20sp;
+}
+dialog-message {
+    text-font : font("Roboto");
+    text-size : 16sp;
+    padding-top : 8dp;
+}
+dialog-message-area {
+    min-width : 420dp;
+    vertical-align : top;
+    horizontal-align : left;
+    padding-top : 24dp;
+    padding-left : 24dp;
+    padding-right : 24dp;
+    padding-bottom : 24dp;
+}
+dialog-action-area {
+    min-width : 420dp;
+    vertical-align : bottom;
+    horizontal-align : right;
+    padding-top : 8dp;
+    padding-left : 8dp;
+    padding-right : 8dp;
+    padding-bottom : 8dp;
+}
+dialog-ok-button {
+    margin-left : 8dp;
+}
+dialog-yes-button {
+    margin-left : 8dp;
+}
+dialog-no-button {
+    margin-left : 8dp;
+}
+dialog-cancel-button {
+
+}
+dialog-progress-bar {
+    width : MATCH_PARENT;
+}
+dialog-choose-options-area {
+    width : MATCH_PARENT;
+    margin-left : 24dp;
+    margin-right : 24dp;
+    margin-top : 8dp;
+    margin-bottom : 8dp;
+}
+dialog-choose-option-box {
+    direction : horizontal;
+    vertical-align : middle;
+    horizontal-align : left;
+}
+dialog-choose-option-label {
+    cursor : hand;
+}
+dialog-choose-scroll-box {
+    width : MATCH_PARENT;
+    max-height : 256dp;
+    min-height : 32dp;
+}
+dialog-datepicker {
+    width : 320dp;
+    background-color : $primary-color;
+    radius-top : 4dp;
+    radius-left : 4dp;
+    radius-right : 4dp;
+    radius-bottom : 4dp;
+}
+dialog-datepicker-background {
+    width : MATCH_PARENT;
+    horizontal-align : center;
+    background-color : $card-color;
+    radius-left : 4dp;
+    radius-bottom : 4dp;
+}
+dialog-datepicker-title {
+    text-font : font("Roboto");
+    text-size : 16sp;
+    text-color : $on-primary-color;
+}
+dialog-datepicker-date {
+    text-font : font("Roboto", BOLD);
+    text-size : 28sp;
+    text-color : $on-primary-color;
+    height : MATCH_PARENT;
+    vertical-align : bottom;
+    background-color : transparent;
+    text-divider-size : 0dp;
+    padding-top : 0dp;
+    padding-left : 0dp;
+    padding-right : 0dp;
+    padding-bottom : 0dp;
+    width : 120dp;
+}
+dialog-datepicker-date-label {
+    horizontal-align : center;
+    vertical-align : bottom;
+    height : MATCH_PARENT;
+    width : MATCH_PARENT;
+    text-font : font("Roboto", BOLD);
+    text-size : 28sp;
+    text-color : $on-primary-color;
+}
+dialog-datepicker-title-area {
+    width : MATCH_PARENT;
+    height : 120dp;
+    vertical-align : top;
+    horizontal-align : left;
+    padding-top : 24dp;
+    padding-left : 24dp;
+    padding-right : 24dp;
+    padding-bottom : 24dp;
+}
+dialog-datepicker-day {
+    width : 40dp;
+    height : 40dp;
+    max-width : 40dp;
+    max-height : 40dp;
+    min-width : 0dp;
+    vertical-align : middle;
+    horizontal-align : center;
+    padding-top : 0dp;
+    padding-left : 0dp;
+    padding-right : 0dp;
+    padding-bottom : 0dp;
+    margin-top : 0dp;
+    margin-left : 0dp;
+    margin-right : 0dp;
+    margin-bottom : 0dp;
+    radius-top : 100;
+    radius-left : 100;
+    radius-right : 100;
+    radius-bottom : 100;
+
+    text-color : $primary-color;
+    disabled {
+        text-color : alpha($on-card-color, 0.25);
+    }
+}
+dialog-datepicker-day-in-between {
+    radius-top : 0;
+    radius-left : 0;
+    radius-right : 0;
+    radius-bottom : 0;
+    background-color : alpha($primary-color, 0.1);
+    disabled {
+        background-color : alpha($disabled-color, 0.1);
+    }
+}
+dialog-datepicker-day-selected {
+    background-color : transparent;
+    hovered {
+        background-color : alpha($primary-color-fade, 0.15);
+    }
+    focused {
+        background-color : alpha($primary-color-fade, 0.20);
+    }
+    activated {
+        background-color : alpha($primary-color-fade, 0.25);
+    }
+    disabled {
+        background-color : alpha($disabled-color, 0.1);
+    }
+}
+dialog-datepicker-day-in : dialog-datepicker-day-selected {
+    radius-right : 0;
+    radius-bottom : 0;
+}
+dialog-datepicker-day-out : dialog-datepicker-day-selected {
+    radius-top : 0;
+    radius-left : 0;
+}
+
+dialog-datepicker-week-day {
+    width : 40dp;
+    height : 40dp;
+    vertical-align : middle;
+    horizontal-align : center;
+    text-color : $on-card-color;
+}
+dialog-datepicker-month-area {
+    width : MATCH_PARENT;
+    padding-left : 24dp;
+    padding-right : 24dp;
+    padding-top : 16dp;
+    padding-bottom : 16dp;
+}
+dialog-datepicker-month-down {
+    icon : '/default/icons/menu-down.svg';
+    width : MATCH_PARENT;
+    radius-top : 32dp;
+    radius-left : 32dp;
+    radius-right : 32dp;
+    radius-bottom : 32dp;
+}
+dialog-datepicker-month-left {
+    icon : '/default/icons/chevron-left.svg';
+}
+dialog-datepicker-month-right : dialog-datepicker-month-left {
+    icon : '/default/icons/chevron-right.svg';
+}
+data-picker-calendar {
+    width : MATCH_PARENT;
+    horizontal-align : center;
+}
+data-picker-grid {
+    horizontal-align : center;
+    margin-bottom : 8dp;
+}

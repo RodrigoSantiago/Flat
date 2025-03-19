@@ -5,6 +5,7 @@ import flat.animations.NormalizedAnimation;
 import flat.animations.StateInfo;
 import flat.events.DragEvent;
 import flat.events.PointerEvent;
+import flat.graphics.Color;
 import flat.graphics.Graphics;
 import flat.resources.ResourceStream;
 import flat.uxml.*;
@@ -23,6 +24,7 @@ public class Dialog extends Stage {
     private float showTransitionDuration = 0;
     private float hideTransitionDuration = 0;
     private boolean blockEvents;
+    private int blockColor = Color.transparent;
 
     private float targetX, targetY;
     private float dragX, dragY;
@@ -79,6 +81,7 @@ public class Dialog extends Stage {
         setVerticalAlign(attrs.getConstant("vertical-align", info, getVerticalAlign()));
         setShowTransitionDuration(attrs.getNumber("show-transition-duration", info, getShowTransitionDuration()));
         setHideTransitionDuration(attrs.getNumber("hide-transition-duration", info, getHideTransitionDuration()));
+        setBlockColor(attrs.getColor("block-color", info, getBlockColor()));
     }
 
     @Override
@@ -98,6 +101,23 @@ public class Dialog extends Stage {
     public void onDraw(Graphics graphics) {
         if (discardDraw(graphics)) return;
 
+        if (getParent() != null && isBlockEvents() && Color.getAlpha(getBlockColor()) > 0) {
+            float a;
+            if (showupAnimation.isPlaying()) {
+                a = showupAnimation.getInterpolatedPosition();
+            } else if (hideAnimation.isPlaying()) {
+                a = 1 - hideAnimation.getInterpolatedPosition();
+            } else {
+                a = 1;
+            }
+            if (a > 0) {
+                graphics.setTransform2D(getParent().getTransform());
+                graphics.setColor(Color.multiplyColorAlpha(getBlockColor(), a));
+                graphics.drawRect(getParent().getInX(), getParent().getInY(),
+                        getParent().getInWidth(), getParent().getInHeight(), true);
+            }
+        }
+
         drawBackground(graphics);
         drawRipple(graphics);
         drawChildren(graphics);
@@ -116,13 +136,19 @@ public class Dialog extends Stage {
         super.pointer(event);
         if (event.getType() == PointerEvent.PRESSED) {
             bringToFront();
+            pressed = !event.isConsumed();
+        }
+        if (event.getType() == PointerEvent.RELEASED) {
+            pressed = false;
         }
     }
+
+    boolean pressed = false;
 
     @Override
     public void drag(DragEvent event) {
         super.drag(event);
-        if (!event.isConsumed() && event.getSource() == this) {
+        if (pressed && !event.isConsumed()) {
             if (contains(event.getX(), event.getY()) && event.getType() == DragEvent.STARTED) {
                 if (!event.isCanceled()) {
                     event.accept(this);
@@ -162,10 +188,10 @@ public class Dialog extends Stage {
         } else {
             float avW = getParent().getWidth();
             float avH = getParent().getHeight();
-            targetX = Math.max(-getLayoutWidth() + getMarginRight() + getPaddingRight()
-                    , Math.min(avW - getMarginLeft() - getPaddingLeft(), targetX));
-            targetY = Math.max(-getLayoutHeight() + getMarginBottom() + getPaddingBottom()
-                    , Math.min(avH - getMarginTop() - getPaddingTop(), targetY));
+            targetX = Math.max(-getLayoutWidth() / 2f + getMarginRight() + getPaddingRight()
+                    , Math.min(avW - getMarginLeft() - getPaddingLeft() - getLayoutWidth() / 2f, targetX));
+            targetY = Math.max(-getLayoutHeight() / 2f + getMarginBottom() + getPaddingBottom()
+                    , Math.min(avH - getMarginTop() - getPaddingTop() - getLayoutHeight() / 2f, targetY));
         }
     }
 
@@ -221,6 +247,17 @@ public class Dialog extends Stage {
 
     public void setBlockEvents(boolean blockEvents) {
         this.blockEvents = blockEvents;
+    }
+
+    public int getBlockColor() {
+        return blockColor;
+    }
+
+    public void setBlockColor(int blockColor) {
+        if (this.blockColor != blockColor) {
+            this.blockColor = blockColor;
+            invalidate(false);
+        }
     }
 
     @Override

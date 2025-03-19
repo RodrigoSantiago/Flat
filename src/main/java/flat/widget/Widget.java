@@ -772,6 +772,12 @@ public class Widget {
         }
     }
 
+    public void removeStyle(String style) {
+        if (attrs.removeStyleName(style)) {
+            applyStyle();
+        }
+    }
+
     public void addStyles(List<String> styles) {
         if (styles == null || styles.isEmpty()) {
             return;
@@ -1016,11 +1022,11 @@ public class Widget {
         return bg.contains(px, py);
     }
 
-    protected float getInX() {
+    public float getInX() {
         return inx;
     }
 
-    protected float getInY() {
+    public float getInY() {
         return iny;
     }
 
@@ -1040,11 +1046,11 @@ public class Widget {
         return inh;
     }
 
-    protected float getOutX() {
+    public float getOutX() {
         return bg.x;
     }
 
-    protected float getOutY() {
+    public float getOutY() {
         return bg.y;
     }
 

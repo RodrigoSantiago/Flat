@@ -214,7 +214,7 @@ public class Activity {
     }
 
     void layout(float width, float height) {
-        if (this.width != width || this.height != height) {
+        if (width != 0 && height != 0 && (this.width != width || this.height != height)) {
             this.width = width;
             this.height = height;
             onResizeFilter();

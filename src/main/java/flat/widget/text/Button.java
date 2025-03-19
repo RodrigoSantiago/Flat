@@ -161,7 +161,11 @@ public class Button extends Label {
     @Override
     public void pointer(PointerEvent event) {
         super.pointer(event);
+        if (!event.isConsumed() && event.getPointerID() == 1 && event.getType() == PointerEvent.PRESSED) {
+            event.consume();
+        }
         if (!event.isConsumed() && event.getPointerID() == 1 && event.getType() == PointerEvent.RELEASED) {
+            event.consume();
             action();
         }
     }
