@@ -1,9 +1,7 @@
 package flat.widget.stages.dialogs;
 
 import flat.resources.ResourceStream;
-import flat.uxml.UXListener;
-import flat.uxml.UXSheet;
-import flat.uxml.UXTheme;
+import flat.uxml.*;
 import flat.widget.stages.Dialog;
 
 import java.time.LocalDate;

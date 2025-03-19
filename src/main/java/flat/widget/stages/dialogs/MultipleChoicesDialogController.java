@@ -4,6 +4,7 @@ import flat.Flat;
 import flat.events.ActionEvent;
 import flat.uxml.Controller;
 import flat.uxml.UXListener;
+import flat.uxml.UXWidgetValueListener;
 import flat.widget.enums.Visibility;
 import flat.widget.layout.LinearBox;
 import flat.widget.selection.Checkbox;

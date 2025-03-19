@@ -1,4 +1,4 @@
-package flat.widget.stages.dialogs;
+package flat.uxml;
 
 import flat.window.Application;
 

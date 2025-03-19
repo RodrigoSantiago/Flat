@@ -8,8 +8,6 @@ import flat.uxml.*;
 import flat.widget.Scene;
 import flat.widget.Widget;
 import flat.widget.enums.Visibility;
-import flat.widget.layout.LinearBox;
-import flat.widget.selection.RadioGroup;
 import flat.widget.stages.Dialog;
 import flat.widget.text.Button;
 import flat.widget.text.Label;

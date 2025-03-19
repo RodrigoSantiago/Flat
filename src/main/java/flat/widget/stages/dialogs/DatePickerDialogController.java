@@ -5,6 +5,7 @@ import flat.events.*;
 import flat.math.Vector2;
 import flat.uxml.Controller;
 import flat.uxml.UXListener;
+import flat.uxml.UXWidgetRangeValueListener;
 import flat.widget.enums.DropdownAlign;
 import flat.widget.enums.Visibility;
 import flat.widget.layout.Grid;

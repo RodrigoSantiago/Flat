@@ -4,6 +4,7 @@ import flat.resources.ResourceStream;
 import flat.uxml.UXListener;
 import flat.uxml.UXSheet;
 import flat.uxml.UXTheme;
+import flat.uxml.UXWidgetValueListener;
 import flat.widget.stages.Dialog;
 
 import java.util.List;

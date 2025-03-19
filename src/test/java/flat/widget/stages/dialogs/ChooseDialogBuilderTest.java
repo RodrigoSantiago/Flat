@@ -2,8 +2,6 @@ package flat.widget.stages.dialogs;
 
 import flat.events.ActionEvent;
 import flat.graphics.context.Font;
-import flat.graphics.image.Drawable;
-import flat.graphics.image.DrawableReader;
 import flat.resources.ResourceStream;
 import flat.uxml.*;
 import flat.widget.Scene;
