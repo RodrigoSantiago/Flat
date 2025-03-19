@@ -13,7 +13,7 @@ import flat.widget.stages.Dialog;
 import flat.widget.text.Button;
 import flat.widget.text.Label;
 
-class ChooseDialogController extends Controller {
+class ChoiceDialogController extends Controller {
 
     private final Dialog dialog;
     private final String title;
@@ -27,7 +27,7 @@ class ChooseDialogController extends Controller {
 
     private RadioButton[] radioButtons;
 
-    ChooseDialogController(Dialog dialog, ChooseDialogBuilder builder) {
+    ChoiceDialogController(Dialog dialog, ChoiceDialogBuilder builder) {
         this.dialog = dialog;
         this.title = builder.title;
         this.message = builder.message;
@@ -89,18 +89,18 @@ class ChooseDialogController extends Controller {
             for (int i = 0; i < options.length; i++) {
                 var str = options[i];
                 RadioButton radio = new RadioButton();
-                radio.addStyle("dialog-choose-option-button");
+                radio.addStyle("dialog-choice-option-button");
                 optionsGroup.add(radio);
                 radioButtons[i] = radio;
 
                 Label label = new Label();
                 label.setText(str);
-                label.addStyle("dialog-choose-option-label");
+                label.addStyle("dialog-choice-option-label");
                 label.setPointerListener(radio::firePointer);
                 label.setHoverListener(radio::fireHover);
 
                 LinearBox box = new LinearBox();
-                box.addStyle("dialog-choose-option-box");
+                box.addStyle("dialog-choice-option-box");
                 box.add(radio, label);
 
                 optionsArea.add(box);

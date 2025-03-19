@@ -4,36 +4,35 @@
                    padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
             <Label text="Standard" style="subtitle" margin-left="4dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button text="Alert Dialog" style="" on-action="onAlertDialog"/>
-                <Button margin-left="16dp" text="Confirm Dialog" style="" on-action="onConfirmDialog"/>
-                <Button margin-left="16dp" text="Process Dialog" style="" on-action="onProcessDialog"/>
+                <Button text="Alert Dialog" style="icon-left" on-action="onAlertDialog" icon="/default/icons/alert-circle.svg"/>
+                <Button margin-left="16dp" text="Confirm Dialog" style="icon-left" on-action="onConfirmDialog" icon="/default/icons/help-circle.svg"/>
+                <Button margin-left="16dp" text="Process Dialog" style="icon-left" on-action="onProcessDialog" icon="/default/icons/restore.svg"/>
             </LinearBox>
             <Label text="Options" style="subtitle" margin-left="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button text="Choose Dialog" style="" on-action="onChooseDialog"/>
-                <Button margin-left="16dp" text="Multiple Choices Dialog" style="" on-action="onMultipleChoicesDialog"/>
+                <Button text="Choice Dialog" style="icon-left" on-action="onChoiceDialog" icon="/default/icons/list-box.svg"/>
+                <Button margin-left="16dp" text="Multiple Choices Dialog" style="icon-left" on-action="onMultipleChoicesDialog" icon="/default/icons/invoice-list.svg"/>
             </LinearBox>
             <Label text="Date" style="subtitle" margin-left="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button text="Date Picker Dialog" style="" on-action="onDatePickerDialog"/>
-                <Button margin-left="16dp" text="Ranged Date Picker Dialog" style="" on-action="onRangedDatePickerDialog"/>
+                <Button text="Date Picker Dialog" style="icon-left" on-action="onDatePickerDialog" icon="/default/icons/calendar.svg"/>
+                <Button margin-left="16dp" text="Ranged Date Picker Dialog" style="icon-left" on-action="onRangedDatePickerDialog" icon="/default/icons/calendar.svg"/>
             </LinearBox>
             <Label text="Blocking" style="subtitle" margin-left="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button text="Alert Dialog" style="" on-action="onBlockAlertDialog"/>
-                <Button margin-left="16dp" text="Confirm Dialog" style="" on-action="onBlockConfirmDialog"/>
-                <Button margin-left="16dp" text="Process Dialog" style="" on-action="onBlockProcessDialog"/>
-                <Button margin-left="16dp" text="Choose Dialog" style="" on-action="onBlockChooseDialog"/>
+                <Button text="Alert Dialog" style="icon-left" on-action="onBlockAlertDialog" icon="/default/icons/alert-circle.svg"/>
+                <Button margin-left="16dp" text="Confirm Dialog" style="icon-left" on-action="onBlockConfirmDialog" icon="/default/icons/help-circle.svg"/>
+                <Button margin-left="16dp" text="Process Dialog" style="icon-left" on-action="onBlockProcessDialog" icon="/default/icons/restore.svg"/>
             </LinearBox>
             <Label text="Blocking Options" style="subtitle" margin-left="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button text="Choose Dialog" style="" on-action="onBlockChooseDialog"/>
-                <Button margin-left="16dp" text="Multiple Choices Dialog" style="" on-action="onBlockMultipleChoicesDialog"/>
+                <Button text="Choice Dialog" style="icon-left" on-action="onBlockChoiceDialog" icon="/default/icons/list-box.svg"/>
+                <Button margin-left="16dp" text="Multiple Choices Dialog" style="icon-left" on-action="onBlockMultipleChoicesDialog" icon="/default/icons/invoice-list.svg"/>
             </LinearBox>
             <Label text="Blocking Date" style="subtitle" margin-left="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button text="Date Picker Dialog" style="" on-action="onBlockDatePickerDialog"/>
-                <Button margin-left="16dp" text="Ranged Date Picker Dialog" style="" on-action="onBlockRangedDatePickerDialog"/>
+                <Button text="Date Picker Dialog" style="icon-left" on-action="onBlockDatePickerDialog" icon="/default/icons/calendar.svg"/>
+                <Button margin-left="16dp" text="Ranged Date Picker Dialog" style="icon-left" on-action="onBlockRangedDatePickerDialog" icon="/default/icons/calendar.svg"/>
             </LinearBox>
         </LinearBox>
     </LinearBox>

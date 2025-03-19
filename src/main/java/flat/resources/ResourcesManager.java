@@ -284,7 +284,9 @@ public class ResourcesManager {
      */
     public boolean exists(String pathName) {
         try {
-            return getInput(pathName) != null;
+            try (var input = getInput(pathName)) {
+                return true;
+            }
         } catch (Exception e) {
             return false;
         }

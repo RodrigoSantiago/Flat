@@ -24,6 +24,15 @@ public class MultipleChoicesDialogBuilder {
     UXListener<Dialog> onHideListener;
     UXWidgetValueListener<Dialog, List<String>> onChooseListener;
 
+    public MultipleChoicesDialogBuilder() {
+        var stream = new ResourceStream("/default/dialogs/dialog_multiplechoices.uxml");
+        if (stream.exists()) {
+            layoutStream = stream;
+        } else {
+            layoutStream = null;
+        }
+    }
+
     public MultipleChoicesDialogBuilder(String layout) {
         this.layoutStream = new ResourceStream(layout);
     }

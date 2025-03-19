@@ -20,6 +20,15 @@ public class ConfirmDialogBuilder {
     UXListener<Dialog> onYesListener;
     UXListener<Dialog> onNoListener;
 
+    public ConfirmDialogBuilder() {
+        var stream = new ResourceStream("/default/dialogs/dialog_confirm.uxml");
+        if (stream.exists()) {
+            layoutStream = stream;
+        } else {
+            layoutStream = null;
+        }
+    }
+
     public ConfirmDialogBuilder(String layout) {
         this.layoutStream = new ResourceStream(layout);
     }

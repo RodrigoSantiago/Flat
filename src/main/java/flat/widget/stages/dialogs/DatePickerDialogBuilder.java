@@ -20,6 +20,15 @@ public class DatePickerDialogBuilder {
     UXListener<Dialog> onHideListener;
     UXWidgetRangeValueListener<Dialog, LocalDate> onDatePickListener;
 
+    public DatePickerDialogBuilder() {
+        var stream = new ResourceStream("/default/dialogs/dialog_datepicker.uxml");
+        if (stream.exists()) {
+            layoutStream = stream;
+        } else {
+            layoutStream = null;
+        }
+    }
+
     public DatePickerDialogBuilder(String layout) {
         this.layoutStream = new ResourceStream(layout);
     }

@@ -17,6 +17,15 @@ public class AlertDialogBuilder {
     UXListener<Dialog> onShowListener;
     UXListener<Dialog> onHideListener;
 
+    public AlertDialogBuilder() {
+        var stream = new ResourceStream("/default/dialogs/dialog_alert.uxml");
+        if (stream.exists()) {
+            layoutStream = stream;
+        } else {
+            layoutStream = null;
+        }
+    }
+
     public AlertDialogBuilder(String layout) {
         this.layoutStream = new ResourceStream(layout);
     }

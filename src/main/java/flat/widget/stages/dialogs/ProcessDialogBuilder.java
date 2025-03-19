@@ -19,6 +19,15 @@ public class ProcessDialogBuilder {
     UXListener<Dialog> onHideListener;
     UXListener<Dialog> onRequestCancelListener;
 
+    public ProcessDialogBuilder() {
+        var stream = new ResourceStream("/default/dialogs/dialog_process.uxml");
+        if (stream.exists()) {
+            layoutStream = stream;
+        } else {
+            layoutStream = null;
+        }
+    }
+
     public ProcessDialogBuilder(String layout) {
         this.layoutStream = new ResourceStream(layout);
     }

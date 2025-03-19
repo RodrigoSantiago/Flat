@@ -95,17 +95,17 @@ class MultipleChoicesDialogController extends Controller {
             for (int i = 0; i < options.length; i++) {
                 var str = options[i];
                 Checkbox checkbox = new Checkbox();
-                checkbox.addStyle("dialog-choose-option-checkbox");
+                checkbox.addStyle("dialog-choice-option-checkbox");
                 checkboxes[i] = checkbox;
 
                 Label label = new Label();
                 label.setText(str);
-                label.addStyle("dialog-choose-option-label");
+                label.addStyle("dialog-choice-option-label");
                 label.setPointerListener(checkbox::firePointer);
                 label.setHoverListener(checkbox::fireHover);
 
                 LinearBox box = new LinearBox();
-                box.addStyle("dialog-choose-option-box");
+                box.addStyle("dialog-choice-option-box");
                 box.add(checkbox, label);
 
                 optionsArea.add(box);

@@ -29,7 +29,7 @@ import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({UXNode.class, Font.class})
-public class ChooseDialogBuilderTest {
+public class ChoiceDialogBuilderTest {
 
     Font defaultFont;
 
@@ -85,7 +85,7 @@ public class ChooseDialogBuilderTest {
         UXListener<Dialog> hideListener = mock(UXListener.class);
         UXWidgetValueListener<Dialog, Integer> chooseListener = mock(UXWidgetValueListener.class);
 
-        Dialog dialog = new ChooseDialogBuilder(stream)
+        Dialog dialog = new ChoiceDialogBuilder(stream)
                 .title("Title")
                 .message("Message")
                 .theme(theme)

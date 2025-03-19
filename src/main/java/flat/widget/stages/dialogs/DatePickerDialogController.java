@@ -135,6 +135,8 @@ class DatePickerDialogController extends Controller {
                 month = change;
             }
 
+            if (year < 1) year = 1;
+
             if (month < 1) month = 1;
             if (month > 12) month = 12;
 

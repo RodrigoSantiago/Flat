@@ -25,7 +25,7 @@ dialog-confirm {
 dialog-process {
     width : 420dp;
 }
-dialog-choose {
+dialog-choice {
     width : 420dp;
 }
 dialog-multiple-choices {
@@ -80,26 +80,26 @@ dialog-cancel-button {
 dialog-progress-bar {
     width : MATCH_PARENT;
 }
-dialog-choose-options-area {
+dialog-choice-options-area {
     width : MATCH_PARENT;
     margin-left : 24dp;
     margin-right : 24dp;
     margin-top : 8dp;
     margin-bottom : 8dp;
 }
-dialog-choose-option-box {
+dialog-choice-option-box {
     direction : horizontal;
     vertical-align : middle;
     horizontal-align : left;
 }
-dialog-choose-option-button {
+dialog-choice-option-button {
 }
-dialog-choose-option-checkbox {
+dialog-choice-option-checkbox {
 }
-dialog-choose-option-label {
+dialog-choice-option-label {
     cursor : hand;
 }
-dialog-choose-scroll-box {
+dialog-choice-scroll-box {
     width : MATCH_PARENT;
     max-height : 256dp;
     min-height : 32dp;

@@ -5,8 +5,8 @@
         <Label style="dialog-message" id="messageLabel"/>
     </LinearBox>
     <Divider/>
-    <ScrollBox style="dialog-choose-scroll-box">
-        <LinearBox id="optionsArea" direction="vertical" vertical-alig="right" style="dialog-choose-options-area">
+    <ScrollBox style="dialog-choice-scroll-box">
+        <LinearBox id="optionsArea" direction="vertical" vertical-alig="right" style="dialog-choice-options-area">
         </LinearBox>
     </ScrollBox>
     <Divider/>

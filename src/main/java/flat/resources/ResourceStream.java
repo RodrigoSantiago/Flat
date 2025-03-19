@@ -67,6 +67,10 @@ public class ResourceStream {
         return resourceName;
     }
 
+    public boolean exists() {
+        return file != null ? file.exists() : Application.getResourcesManager().exists(resourceName);
+    }
+
     public byte[] readData() {
         if (isFolder()) {
             return null;

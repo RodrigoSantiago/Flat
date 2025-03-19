@@ -172,42 +172,11 @@ public class MainController extends Controller {
 
     @Flat
     public void onAlertDialog() {
-        var alert = new AlertDialogBuilder("/default/dialogs/dialog_alert.uxml")
-                .title("This is THE Title")
-                .message("This is THE Message")
+        var alert = new AlertDialogBuilder()
+                .title("Alert Dialog")
+                .message("This is an alert message")
                 .onShowListener((dg) -> System.out.println("Show"))
                 .onHideListener((dg) -> System.out.println("Hide"))
-                .block(false)
-                .build();
-        alert.show(getActivity());
-    }
-
-    @Flat
-    public void onConfirmDialog() {
-        var alert = new ConfirmDialogBuilder("/default/dialogs/dialog_confirm.uxml")
-                .title("This is THE Title")
-                .message("This is THE Message")
-                .onShowListener((dg) -> System.out.println("Show"))
-                .onHideListener((dg) -> System.out.println("Hide"))
-                .onYesListener((dg) -> System.out.println("Yes"))
-                .onNoListener((dg) -> System.out.println("No"))
-                .block(false)
-                .build();
-        alert.show(getActivity());
-    }
-
-    @Flat
-    public void onProcessDialog() {
-        var alert = new ProcessDialogBuilder("/default/dialogs/dialog_process.uxml")
-                .title("This is THE Title")
-                .message("This is THE Message")
-                .onShowListener((dg) -> System.out.println("Show"))
-                .onHideListener((dg) -> System.out.println("Hide"))
-                .onRequestCancelListener((dg) -> {
-                    System.out.println("Cancel");
-                    dg.smoothHide();
-                })
-                .cancelable(true)
                 .block(false)
                 .build();
         alert.show(getActivity());
@@ -215,9 +184,9 @@ public class MainController extends Controller {
 
     @Flat
     public void onBlockAlertDialog() {
-        var alert = new AlertDialogBuilder("/default/dialogs/dialog_alert.uxml")
-                .title("This is THE Title")
-                .message("This is THE Message")
+        var alert = new AlertDialogBuilder()
+                .title("Alert Dialog")
+                .message("This is an alert message")
                 .onShowListener((dg) -> System.out.println("Show"))
                 .onHideListener((dg) -> System.out.println("Hide"))
                 .block(true)
@@ -226,10 +195,24 @@ public class MainController extends Controller {
     }
 
     @Flat
+    public void onConfirmDialog() {
+        var alert = new ConfirmDialogBuilder()
+                .title("This is a confirm Dialog")
+                .message("Is this a question?")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onYesListener((dg) -> System.out.println("Yes"))
+                .onNoListener((dg) -> System.out.println("No"))
+                .block(false)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
     public void onBlockConfirmDialog() {
-        var alert = new ConfirmDialogBuilder("/default/dialogs/dialog_confirm.uxml")
-                .title("This is THE Title")
-                .message("This is THE Message")
+        var alert = new ConfirmDialogBuilder()
+                .title("This is a confirm Dialog")
+                .message("Is this a question?")
                 .onShowListener((dg) -> System.out.println("Show"))
                 .onHideListener((dg) -> System.out.println("Hide"))
                 .onYesListener((dg) -> System.out.println("Yes"))
@@ -240,10 +223,27 @@ public class MainController extends Controller {
     }
 
     @Flat
+    public void onProcessDialog() {
+        var alert = new ProcessDialogBuilder()
+                .title("This is process Dialog")
+                .message("Please cancel this process")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onRequestCancelListener((dg) -> {
+                    System.out.println("Cancel");
+                    dg.smoothHide();
+                })
+                .cancelable(true)
+                .block(false)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
     public void onBlockProcessDialog() {
-        var alert = new ProcessDialogBuilder("/default/dialogs/dialog_process.uxml")
-                .title("This is THE Title")
-                .message("This is THE Message")
+        var alert = new ProcessDialogBuilder()
+                .title("This is process Dialog")
+                .message("Please cancel this process")
                 .onShowListener((dg) -> System.out.println("Show"))
                 .onHideListener((dg) -> System.out.println("Hide"))
                 .onRequestCancelListener((dg) -> {
@@ -257,13 +257,13 @@ public class MainController extends Controller {
     }
 
     @Flat
-    public void onChooseDialog() {
-        var alert = new ChooseDialogBuilder("/default/dialogs/dialog_choose.uxml")
-                .title("This is THE Title")
-                .message("This is THE Message")
+    public void onChoiceDialog() {
+        var alert = new ChoiceDialogBuilder()
+                .title("This is a Choice Dialog")
+                .message("You can pick a single choice")
                 .onShowListener((dg) -> System.out.println("Show"))
                 .onHideListener((dg) -> System.out.println("Hide"))
-                .onChooseListener((dg, val) -> System.out.println("Choose : " + val))
+                .onChooseListener((dg, val) -> System.out.println("Choice : " + val))
                 .options("Option A", "Option B", "Option C", "Option D", "Option E", "Option F", "Option G", "Option H")
                 .initialOption(0)
                 .block(false)
@@ -272,13 +272,13 @@ public class MainController extends Controller {
     }
 
     @Flat
-    public void onBlockChooseDialog() {
-        var alert = new ChooseDialogBuilder("/default/dialogs/dialog_choose.uxml")
-                .title("This is THE Title")
-                .message("This is THE Message")
+    public void onBlockChoiceDialog() {
+        var alert = new ChoiceDialogBuilder()
+                .title("This is a Choice Dialog")
+                .message("You can pick a single choice")
                 .onShowListener((dg) -> System.out.println("Show"))
                 .onHideListener((dg) -> System.out.println("Hide"))
-                .onChooseListener((dg, val) -> System.out.println("Choose : " + val))
+                .onChooseListener((dg, val) -> System.out.println("Choice : " + val))
                 .options("Option A", "Option B", "Option C", "Option D")
                 .initialOption(0)
                 .block(true)
@@ -288,9 +288,9 @@ public class MainController extends Controller {
 
     @Flat
     public void onMultipleChoicesDialog() {
-        var alert = new MultipleChoicesDialogBuilder("/default/dialogs/dialog_multiplechoices.uxml")
-                .title("This is THE Title")
-                .message("This is THE Message")
+        var alert = new MultipleChoicesDialogBuilder()
+                .title("This is a Multiple Choice Dialog")
+                .message("You can pick multiple choices")
                 .onShowListener((dg) -> System.out.println("Show"))
                 .onHideListener((dg) -> System.out.println("Hide"))
                 .onChooseListener((dg, val) -> System.out.println("Choices : " + Arrays.toString(val.toArray())))
@@ -303,9 +303,9 @@ public class MainController extends Controller {
 
     @Flat
     public void onBlockMultipleChoicesDialog() {
-        var alert = new MultipleChoicesDialogBuilder("/default/dialogs/dialog_multiplechoices.uxml")
-                .title("This is THE Title")
-                .message("This is THE Message")
+        var alert = new MultipleChoicesDialogBuilder()
+                .title("This is a Multiple Choice Dialog")
+                .message("You can pick multiple choices")
                 .onShowListener((dg) -> System.out.println("Show"))
                 .onHideListener((dg) -> System.out.println("Hide"))
                 .onChooseListener((dg, val) -> System.out.println("Choices : " + Arrays.toString(val.toArray())))
@@ -318,7 +318,7 @@ public class MainController extends Controller {
 
     @Flat
     public void onDatePickerDialog() {
-        var alert = new DatePickerDialogBuilder("/default/dialogs/dialog_datepicker.uxml")
+        var alert = new DatePickerDialogBuilder()
                 .title("Select a date")
                 .onShowListener((dg) -> System.out.println("Show"))
                 .onHideListener((dg) -> System.out.println("Hide"))
@@ -330,7 +330,7 @@ public class MainController extends Controller {
 
     @Flat
     public void onBlockDatePickerDialog() {
-        var alert = new DatePickerDialogBuilder("/default/dialogs/dialog_datepicker.uxml")
+        var alert = new DatePickerDialogBuilder()
                 .title("Select a date")
                 .onShowListener((dg) -> System.out.println("Show"))
                 .onHideListener((dg) -> System.out.println("Hide"))
@@ -342,8 +342,8 @@ public class MainController extends Controller {
 
     @Flat
     public void onBlockRangedDatePickerDialog() {
-        var alert = new DatePickerDialogBuilder("/default/dialogs/dialog_datepicker.uxml")
-                .title("Select a date")
+        var alert = new DatePickerDialogBuilder()
+                .title("Select a date range")
                 .onShowListener((dg) -> System.out.println("Show"))
                 .onHideListener((dg) -> System.out.println("Hide"))
                 .onDatePickListener((dg, value) -> System.out.println(value))
@@ -355,8 +355,8 @@ public class MainController extends Controller {
 
     @Flat
     public void onRangedDatePickerDialog() {
-        var alert = new DatePickerDialogBuilder("/default/dialogs/dialog_datepicker.uxml")
-                .title("Select a date")
+        var alert = new DatePickerDialogBuilder()
+                .title("Select a date range")
                 .onShowListener((dg) -> System.out.println("Show"))
                 .onHideListener((dg) -> System.out.println("Hide"))
                 .onDatePickListener((dg, valueStart, valueEnd) -> System.out.println(valueStart + " - " + valueEnd))
