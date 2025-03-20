@@ -811,6 +811,7 @@ public class Widget {
         } else {
             attrs.unfollow(name);
         }
+        applyStyle();
     }
 
     public boolean isFollowStyleProperty(String name) {

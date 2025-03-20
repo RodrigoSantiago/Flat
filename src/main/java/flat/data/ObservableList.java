@@ -7,6 +7,7 @@ public class ObservableList<T> implements List<T> {
     private ArrayList<T> data;
     private List<T> unmodifiableData;
     private ListChangeListener<T> changeListener;
+    private int lastInvalidatedIndex;
 
     public ObservableList() {
         this.data = new ArrayList<>();
@@ -22,9 +23,14 @@ public class ObservableList<T> implements List<T> {
     }
 
     private void handle(int index, int length, ListChangeListener.Operation operation) {
+        lastInvalidatedIndex = index;
         if (changeListener != null) {
             changeListener.handle(index, length, operation);
         }
+    }
+
+    public int getLastInvalidatedIndex() {
+        return lastInvalidatedIndex;
     }
 
     @Override
@@ -116,6 +122,12 @@ public class ObservableList<T> implements List<T> {
             return true;
         }
         return false;
+    }
+
+    public boolean removeRange(int start, int length) {
+        data.subList(start, start + length).clear();
+        this.handle(start, length, ListChangeListener.Operation.RANGE);
+        return true;
     }
 
     @Override

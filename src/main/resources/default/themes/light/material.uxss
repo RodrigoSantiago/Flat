@@ -35,26 +35,3 @@ $selection-on-card-color : #64B5F680;
 widget {
 
 }
-
-list-view {
-    background-color : #FF8080;
-    item-height : 32;
-}
-
-list-item {
-    background-color : #E0E0E0;
-    min-width : 128;
-    width : match_parent;
-    margin-bottom : 1;
-    icon : '/default/icons/checkbox-marked.svg';
-    icon-width : 24;
-    icon-height : 24;
-    icon-color : red;
-    state-icon-open : '/default/icons/checkbox-marked.svg';
-    state-icon-closed : '/default/icons/checkbox-blank-outline.svg';
-    state-icon-color : blue;
-    state-icon-width : 12;
-    state-icon-height : 12;
-    layer-width : 12;
-    state-icon-cursor : hand;
-}

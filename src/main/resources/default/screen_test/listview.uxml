@@ -1,0 +1,20 @@
+<Scene width="MATCH_PARENT" height="MATCH_PARENT" background-color="$surface-color">
+    <LinearBox direction="HORIZONTAL" width="MATCH_PARENT" height="MATCH_PARENT" vertical-align="top">
+        <LinearBox direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
+                   padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
+            <Label text="Default" style="subtitle" margin-left="4dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <ListView id="listView1" width="MATCH_PARENT" height="MATCH_PARENT"/>
+                <ListView margin-left="8dp" id="treeView1" width="MATCH_PARENT" height="MATCH_PARENT"/>
+            </LinearBox>
+        </LinearBox>
+        <LinearBox enabled="false" direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
+                   padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
+            <Label text="Default" style="subtitle" margin-left="4dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <ListView id="listView2" width="MATCH_PARENT" height="MATCH_PARENT"/>
+                <ListView margin-left="8dp" id="treeView2" width="MATCH_PARENT" height="MATCH_PARENT"/>
+            </LinearBox>
+        </LinearBox>
+    </LinearBox>
+</Scene>

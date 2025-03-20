@@ -28,7 +28,9 @@ public class UXSheet {
     private static UXSheet parseInclude(ResourceStream stream, ArrayList<String> includes) {
         Object cache = stream.getCache();
         if (cache != null) {
-            if (cache instanceof UXSheet) {
+            if (cache instanceof Exception) {
+                return null;
+            } else if (cache instanceof UXSheet) {
                 return (UXSheet) cache;
             } else {
                 stream.clearCache();
@@ -40,7 +42,8 @@ public class UXSheet {
                 stream.putCache(sheet);
             }
             return sheet;
-        } catch (IOException e) {
+        } catch (Exception e) {
+            stream.putCache(e);
             throw new FlatException(e);
         }
     }

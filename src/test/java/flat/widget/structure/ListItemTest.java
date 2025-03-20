@@ -106,7 +106,7 @@ public class ListItemTest {
         assertEquals(0, listItem.getStateIconSpacing(), 0.1f);
         assertEquals(ImageFilter.LINEAR, listItem.getStateIconImageFilter());
         assertNull(listItem.getStateIconOpen());
-        assertNull(listItem.getStateIconClosed());
+        assertNull(listItem.getStateIcon());
         assertEquals(0xFFFFFFFF, listItem.getStateIconColor());
         assertNull(listItem.getActionListener());
         assertNull(listItem.getChangeStateListener());
@@ -131,7 +131,7 @@ public class ListItemTest {
         assertEquals(0, listItem.getIconSpacing(), 0.1f);
         assertEquals(ImageFilter.LINEAR, listItem.getStateIconImageFilter());
         assertNull(listItem.getStateIconOpen());
-        assertNull(listItem.getStateIconClosed());
+        assertNull(listItem.getStateIcon());
         assertEquals(0xFFFFFFFF, listItem.getStateIconColor());
         assertEquals(action, listItem.getActionListener());
         assertEquals(changeStateAction, listItem.getChangeStateListener());
@@ -155,7 +155,7 @@ public class ListItemTest {
         assertEquals(16, listItem.getStateIconSpacing(), 0.1f);
         assertEquals(ImageFilter.NEAREST, listItem.getStateIconImageFilter());
         assertEquals(stateIconOpen, listItem.getStateIconOpen());
-        assertEquals(stateIconClosed, listItem.getStateIconClosed());
+        assertEquals(stateIconClosed, listItem.getStateIcon());
         assertEquals(0xFF0000FF, listItem.getStateIconColor());
         assertEquals(action, listItem.getActionListener());
         assertEquals(changeStateAction, listItem.getChangeStateListener());

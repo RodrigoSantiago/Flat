@@ -18,7 +18,9 @@ public class PixelMap implements Drawable, ImageTexture {
     public static PixelMap parse(ResourceStream stream) {
         Object cache = stream.getCache();
         if (cache != null) {
-            if (cache instanceof PixelMap) {
+            if (cache instanceof Exception) {
+                return null;
+            } else if (cache instanceof PixelMap) {
                 return (PixelMap) cache;
             } else {
                 stream.clearCache();
@@ -28,7 +30,8 @@ public class PixelMap implements Drawable, ImageTexture {
             PixelMap pixelMap = loadPixelMap(stream);
             stream.putCache(pixelMap);
             return pixelMap;
-        } catch (IOException e) {
+        } catch (Exception e) {
+            stream.putCache(e);
             throw new FlatException(e);
         }
     }

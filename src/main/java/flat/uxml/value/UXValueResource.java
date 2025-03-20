@@ -6,7 +6,7 @@ import flat.window.Application;
 
 import java.util.Objects;
 
-public class UXValueResource extends UXValue {
+public class UXValueResource extends UXValue { // TODO - DEPRECIATED
     private final String url;
 
     public UXValueResource(String url) {

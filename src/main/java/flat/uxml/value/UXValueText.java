@@ -56,7 +56,7 @@ public class UXValueText extends UXValue {
 
     @Override
     public ResourceStream asResource(UXTheme theme) {
-        return Application.getResourcesManager().getResource(text);
+        return text.isEmpty() ? null : Application.getResourcesManager().getResource(text);
     }
 
     @Override

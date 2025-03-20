@@ -14,6 +14,7 @@ import flat.graphics.context.Font;
 import flat.graphics.context.ShaderProgram;
 import flat.graphics.context.enums.ImageFileFormat;
 import flat.graphics.context.enums.PixelFormat;
+import flat.graphics.image.Drawable;
 import flat.graphics.image.DrawableReader;
 import flat.graphics.image.LineMap;
 import flat.graphics.image.PixelMap;
@@ -73,8 +74,14 @@ public class MainController extends Controller {
     @Flat public Tab tabToolbars;
     @Flat public Tab tabScrolls;
     @Flat public Tab tabImages;
+    @Flat public Tab tabLists;
     @Flat public Tab tabMenus;
     @Flat public Tab tabDialogs;
+
+    @Flat public ListView listView1;
+    @Flat public ListView listView2;
+    @Flat public ListView treeView1;
+    @Flat public ListView treeView2;
 
     private ObservableList<String> items = new ObservableList<>();
 
@@ -148,6 +155,12 @@ public class MainController extends Controller {
     @Flat
     public void setTabDialogs() {
         mainTab.selectTab(tabDialogs);
+        mainDrawer.hide();
+    }
+
+    @Flat
+    public void setTabLists() {
+        mainTab.selectTab(tabLists);
         mainDrawer.hide();
     }
 
@@ -399,20 +412,6 @@ public class MainController extends Controller {
     }
 
     @Flat
-    public void onDialogClick(ActionEvent actionEvent) {
-        var alert = new ConfirmDialogBuilder("/default/dialogs/dialog_confirm.uxml")
-                .title("This is THE Title")
-                .message("This is THE Message")
-                .onShowListener((dg) -> System.out.println("Show"))
-                .onHideListener((dg) -> System.out.println("Hide"))
-                .onYesListener((dg) -> System.out.println("Yes"))
-                .onNoListener((dg) -> System.out.println("No"))
-                .block(true)
-                .build();
-        alert.show(getActivity());
-    }
-
-    @Flat
     public void onWindowClick(ActionEvent event) {
         Application.createWindow(new WindowSettings.Builder()
                 .layout("/default/screen_test/screen_test.uxml")
@@ -428,8 +427,60 @@ public class MainController extends Controller {
     PixelMap pix;
     Font arial;
 
+    private void setupListView() {
+        ObservableList<String> list1 = new ObservableList<>();
+        ObservableList<String> list2 = new ObservableList<>();
+        for (int i = 0; i < 50; i++) {
+            list1.add("List Item " + (i + 1));
+            list2.add("List Item " + (i + 1));
+        }
+        listView1.setAdapter(new ListViewDefaultAdapter<>(list1));
+        listView2.setAdapter(new ListViewDefaultAdapter<>(list2));
+        ObservableList<TreeCell> list3 = new ObservableList<>();
+        ObservableList<TreeCell> list4 = new ObservableList<>();
+
+        Drawable icon = DrawableReader.parse(new ResourceStream("/default/icons/file-outline.svg"));
+
+        TreeCell rootA = new TreeCell(list3, "Tree Item Root", true, icon);
+        TreeCell rootB = new TreeCell(list4, "Tree Item Root", true, icon);
+        list3.add(rootA);
+        list4.add(rootB);
+
+        int aIndex = 1;
+        TreeCell child = new TreeCell(list3, "Child", true, icon);
+        rootA.add(child);
+        for (int i = 0; i < 5; i++) {
+            TreeCell child2 = new TreeCell(list3, "Child " + (aIndex++), false, icon);
+            child.add(child2);
+        }
+        TreeCell child3 = new TreeCell(list3, "Child " + (aIndex++), true, icon);
+        child.add(child3);
+        for (int i = 0; i < 3; i++) {
+            TreeCell child2 = new TreeCell(list3, "Other Child With very long Name " + (aIndex++), false, icon);
+            child3.add(child2);
+        }
+        for (int i = 0; i < 3; i++) {
+            TreeCell child2 = new TreeCell(list3, "Siblings " + (aIndex++), false, icon);
+            rootA.add(child2);
+        }
+        for (int i = 0; i < 3; i++) {
+            TreeCell child2 = new TreeCell(list3, "Root Siblings " + (aIndex++), false, icon);
+            list3.add(child2);
+        }
+        TreeCell child4 = new TreeCell(list3, "Child " + (aIndex++), true, icon);
+        list3.add(child4);
+        for (int i = 0; i < 3; i++) {
+            TreeCell child2 = new TreeCell(list3, "Other Child " + (aIndex++), false, icon);
+            child4.add(child2);
+        }
+        treeView1.setAdapter(new TreeViewAdapter(list3));
+        treeView2.setAdapter(new TreeViewAdapter(list4));
+    }
+
     @Override
     public void onShow() {
+        setupListView();
+
         Font.installSystemFontFamily("Times New Roman");
         arial = Font.findFont("Times New Roman");
         System.out.println(arial);

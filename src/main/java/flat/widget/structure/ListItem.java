@@ -6,7 +6,6 @@ import flat.events.HoverEvent;
 import flat.events.PointerEvent;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
-import flat.graphics.cursor.Cursor;
 import flat.graphics.image.Drawable;
 import flat.math.Mathf;
 import flat.math.Vector2;
@@ -22,8 +21,7 @@ public class ListItem extends Button {
     private UXListener<ActionEvent> changeStateListener;
 
     private boolean open;
-    private Drawable stateIconOpen;
-    private Drawable stateIconClosed;
+    private Drawable stateIcon;
     private int stateIconColor = Color.white;
     private ImageFilter stateIconImageFilter = ImageFilter.LINEAR;
     private float stateIconSpacing;
@@ -35,16 +33,21 @@ public class ListItem extends Button {
     private int layerLineColor = Color.black;
     private float layerLineWidth = 1f;
 
-    private boolean isHoveringState;
-    private Cursor stateIconCursor = Cursor.UNSET;
-
     private int index = -1;
 
     private float x1, y1, x2, y2;
 
     @Override
     public float getLayoutMinWidth() {
-        return super.getLayoutMinWidth() + (getLayers() * getLayerWidth());
+        float extraWidth = getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
+        float iW = getLayoutIconWidth();
+        float iH = getLayoutIconHeight();
+        float siW = getLayoutStateIconWidth();
+        float siH = getLayoutStateIconHeight();
+        float layerWidth = (getLayers() * getLayerWidth());
+        return Math.max(getTextWidth() + extraWidth
+                + (iW > 0 ? iW + getIconSpacing() : 0)
+                + (siW > 0 ? siW + getStateIconSpacing() : 0) + layerWidth, super.getLayoutMinWidth());
     }
 
     @Override
@@ -67,14 +70,12 @@ public class ListItem extends Button {
         setLayerLineWidth(attrs.getSize("layer-line-width", info, getLayerLineWidth()));
         setLayerWidth(attrs.getSize("layer-width", info, getLayerWidth()));
 
-        setStateIconOpen(attrs.getResourceAsDrawable("state-icon-open", info, getStateIconOpen(), false));
-        setStateIconClosed(attrs.getResourceAsDrawable("state-icon-closed", info, getStateIconClosed(), false));
+        setStateIcon(attrs.getResourceAsDrawable("state-icon", info, getStateIcon(), false));
         setStateIconColor(attrs.getColor("state-icon-color", info, getStateIconColor()));
         setStateIconWidth(attrs.getSize("state-icon-width", info, getStateIconWidth()));
         setStateIconHeight(attrs.getSize("state-icon-height", info, getStateIconHeight()));
         setStateIconSpacing(attrs.getSize("state-icon-spacing", info, getStateIconSpacing()));
         setStateIconImageFilter(attrs.getConstant("state-icon-image-filter", info, getStateIconImageFilter()));
-        setStateIconCursor(attrs.getConstant("state-icon-cursor", info, getStateIconCursor()));
     }
 
     @Override
@@ -115,6 +116,35 @@ public class ListItem extends Button {
         updateStatePosition();
     }
 
+    private void updateStatePosition() {
+        float x = getInX();
+        float y = getInY();
+        float width = getInWidth();
+        float height = getInHeight();
+
+        float iaw = Math.min(width, getLayoutStateIconWidth());
+        float iah = Math.min(height, getLayoutStateIconHeight());
+
+        x1 = x + getLayers() * getLayerWidth();
+        x2 = x + getLayers() * getLayerWidth() + iaw;
+        y1 = yOff(y, y + height, iah);
+        y2 = yOff(y, y + height, iah) + iah;
+    }
+
+    @Override
+    public void fireRipple(float x, float y) {
+        if (isOverActionButton(screenToLocal(x, y))) {
+            if (isRippleEnabled()) {
+                float sp = getStateIconSpacing();
+                var ripple = getRipple();
+                ripple.setSize(Math.max(Math.abs(x1 - x2) + sp, Math.abs(y1 - y2) + sp) * 0.5f);
+                ripple.fire((x1 + x2) / 2f, (y1 + y2) / 2f);
+            }
+        } else {
+            super.fireRipple(x, y);
+        }
+    }
+
     @Override
     public void onDraw(Graphics graphics) {
         if (discardDraw(graphics)) return;
@@ -149,7 +179,7 @@ public class ListItem extends Button {
         float siW = getLayoutStateIconWidth();
         float siH = getLayoutStateIconHeight();
 
-        Drawable stateIcon = isOpen() ? getStateIconOpen() : getStateIconClosed();
+        Drawable stateIcon = getStateIcon();
 
         float space = Math.max(0, width - (inX - x));
         float spaceForStateIcon = siW > 0 ? siW + getStateIconSpacing() : 0;
@@ -258,24 +288,13 @@ public class ListItem extends Button {
         }
     }
 
-    public Drawable getStateIconOpen() {
-        return stateIconOpen;
+    public Drawable getStateIcon() {
+        return stateIcon;
     }
 
-    public void setStateIconOpen(Drawable stateIconOpen) {
-        if (this.stateIconOpen != stateIconOpen) {
-            this.stateIconOpen = stateIconOpen;
-            invalidate(isWrapContent());
-        }
-    }
-
-    public Drawable getStateIconClosed() {
-        return stateIconClosed;
-    }
-
-    public void setStateIconClosed(Drawable stateIconClosed) {
-        if (this.stateIconClosed != stateIconClosed) {
-            this.stateIconClosed = stateIconClosed;
+    public void setStateIcon(Drawable stateIcon) {
+        if (this.stateIcon != stateIcon) {
+            this.stateIcon = stateIcon;
             invalidate(isWrapContent());
         }
     }
@@ -327,10 +346,7 @@ public class ListItem extends Button {
     }
 
     private float getLayoutStateIconWidth() {
-        if (stateIconOpen == null && stateIconClosed == null) {
-            return 0;
-        }
-        return stateIconWidth == 0 || stateIconWidth == MATCH_PARENT ? getTextHeight() : stateIconWidth;
+        return stateIcon == null ? 0 : stateIconWidth == 0 || stateIconWidth == MATCH_PARENT ? getTextHeight() : stateIconWidth;
     }
 
     public float getStateIconHeight() {
@@ -345,19 +361,7 @@ public class ListItem extends Button {
     }
 
     private float getLayoutStateIconHeight() {
-        if (stateIconOpen == null && stateIconClosed == null) {
-            return 0;
-        }
-        return stateIconHeight == 0 || stateIconHeight == MATCH_PARENT ? getTextHeight() : stateIconHeight;
-    }
-
-    public Cursor getStateIconCursor() {
-        return stateIconCursor;
-    }
-
-    public void setStateIconCursor(Cursor stateIconCursor) {
-        if (stateIconCursor == null) stateIconCursor = Cursor.UNSET;
-        this.stateIconCursor = stateIconCursor;
+        return stateIcon == null ? 0 : stateIconHeight == 0 || stateIconHeight == MATCH_PARENT ? getTextHeight() : stateIconHeight;
     }
 
     public UXListener<ActionEvent> getChangeStateListener() {
@@ -378,10 +382,26 @@ public class ListItem extends Button {
         }
     }
 
+
+    @Override
+    public void hover(HoverEvent event) {
+        super.hover(event);
+        if (!event.isConsumed() && event.getType() == HoverEvent.MOVED) {
+            setUndefined(isOverActionButton(screenToLocal(event.getX(), event.getY())));
+        }
+        if (!event.isConsumed() && event.getType() == HoverEvent.EXITED) {
+            setUndefined(false);
+        }
+    }
+
     @Override
     public void pointer(PointerEvent event) {
-        super.pointer(event);
+        UXListener.safeHandle(getPointerListener(), event);
+        if (!event.isConsumed() && event.getPointerID() == 1 && event.getType() == PointerEvent.PRESSED) {
+            event.consume();
+        }
         if (!event.isConsumed() && event.getPointerID() == 1 && event.getType() == PointerEvent.RELEASED) {
+            event.consume();
             if (isOverActionButton(screenToLocal(event.getX(), event.getY()))) {
                 changeStateAction();
             } else {
@@ -390,36 +410,8 @@ public class ListItem extends Button {
         }
     }
 
-    @Override
-    public void hover(HoverEvent event) {
-        super.hover(event);
-        if (!event.isConsumed() && event.getType() == HoverEvent.MOVED) {
-            isHoveringState = isOverActionButton(screenToLocal(event.getX(), event.getY()));
-        }
-    }
-
-    @Override
-    public Cursor getCurrentCursor() {
-        return isHoveringState && stateIconCursor != Cursor.UNSET ? stateIconCursor : super.getCursor();
-    }
-
     private boolean isOverActionButton(Vector2 local) {
         return !(local.x < x1 || local.x > x2 || local.y < y1 || local.y > y2);
-    }
-
-    private void updateStatePosition() {
-        float x = getInX();
-        float y = getInY();
-        float width = getInWidth();
-        float height = getInHeight();
-
-        float iaw = Math.min(width, getLayoutStateIconWidth());
-        float iah = Math.min(height, getLayoutStateIconHeight());
-
-        x1 = x + getLayers() * getLayerWidth();
-        x2 = x + getLayers() * getLayerWidth() + iaw;
-        y1 = yOff(y, y + height, iah);
-        y2 = yOff(y, y + height, iah) + iah;
     }
 
     protected float yOff(float start, float end, float size) {

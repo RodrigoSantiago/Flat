@@ -143,7 +143,8 @@ public class ListView extends Scrollable {
             end = endIndex;
         }
 
-        if (updateDimensions()) {
+        updateDimensions();
+        if (items.size() != totalIndex) {
             updateContent();
             start = startIndex;
             end = endIndex;
@@ -246,8 +247,8 @@ public class ListView extends Scrollable {
     @Override
     public void onLayout(float width, float height) {
         setLayout(width, height);
-
-        if (updateDimensions() && getActivity() != null) {
+        updateDimensions();
+        if (getActivity() != null && totalIndex != items.size()) {
             getActivity().runLater(() -> refreshItems());
         }
 
@@ -269,7 +270,6 @@ public class ListView extends Scrollable {
         for (int i = 0; i < items.size(); i++) {
             items.get(i).onDraw(graphics);
         }
-        graphics.popClip();
 
         if (getHorizontalBar() != null && isHorizontalVisible()) {
             getHorizontalBar().onDraw(graphics);
@@ -278,6 +278,7 @@ public class ListView extends Scrollable {
         if (getVerticalBar() != null && isVerticalVisible()) {
             getVerticalBar().onDraw(graphics);
         }
+        graphics.popClip();
     }
 
     @Override

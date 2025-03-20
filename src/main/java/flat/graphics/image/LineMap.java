@@ -26,7 +26,9 @@ public class LineMap implements Drawable {
     public static Drawable parse(ResourceStream stream) {
         Object cache = stream.getCache();
         if (cache != null) {
-            if (cache instanceof Drawable) {
+            if (cache instanceof Exception) {
+                return null;
+            } else if (cache instanceof Drawable) {
                 return (LineMap) cache;
             } else {
                 stream.clearCache();
@@ -36,7 +38,8 @@ public class LineMap implements Drawable {
             LineMap lineMap = loadLineMap(stream);
             stream.putCache(lineMap);
             return lineMap;
-        } catch (IOException e) {
+        } catch (Exception e) {
+            stream.putCache(e);
             throw new FlatException(e);
         }
     }
@@ -125,6 +128,7 @@ public class LineMap implements Drawable {
     @Override
     public void draw(Graphics graphics, float x, float y, float width, float height, int color, ImageFilter filter) {
         if (graphics.discardDraw(x, y, width, height)) return;
+        if (root.getAllShapes().isEmpty()) return;
 
         if (optimize && pixelMap == null) {
             bake(graphics);

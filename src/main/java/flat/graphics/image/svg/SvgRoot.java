@@ -36,6 +36,9 @@ public class SvgRoot extends SvgNode {
                 boundingBox.add(bb);
             }
         }
+        if (boundingBox == null) {
+            boundingBox = viewBox == null ? new Rectangle(0, 0, 0, 0) : new Rectangle(viewBox);
+        }
     }
 
     public Rectangle bounds(PathIterator it) {
