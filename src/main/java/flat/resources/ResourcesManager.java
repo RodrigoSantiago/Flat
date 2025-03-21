@@ -2,12 +2,15 @@ package flat.resources;
 
 import flat.Flat;
 import flat.exception.FlatException;
+import flat.window.Application;
+import flat.window.SystemType;
 
 import java.io.*;
 import java.lang.ref.SoftReference;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.jar.JarEntry;
@@ -58,12 +61,18 @@ public class ResourcesManager {
 
     public File getFlatLibraryFile() {
         try {
-            InputStream in = Flat.class.getResourceAsStream("/flat.dll");
+            String libName = "/flat." + switch(Application.getSystemType()) {
+                case WINDOWS  -> "dll";
+                case MAC -> "dylib";
+                default -> "so";
+            };
+
+            InputStream in = Flat.class.getResourceAsStream(libName);
             if (in == null) {
                 return null;
             }
 
-            File temp = new File("flat.dll");
+            File temp = new File(Paths.get("").toAbsolutePath().toFile(), libName);
             if (temp.exists()) {
                 if (!temp.delete()) {
                     return null;

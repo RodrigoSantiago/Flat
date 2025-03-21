@@ -10,6 +10,7 @@ import flat.graphics.image.PixelMap;
 import flat.window.event.EventData;
 import flat.window.event.EventDataPointer;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -22,6 +23,11 @@ public class Window {
     private final long svgId;
     private boolean disposed;
     private boolean closed;
+
+    private boolean shift;
+    private boolean ctrl;
+    private boolean alt;
+    private boolean spr;
 
     // Application
     private Activity activity;
@@ -326,7 +332,7 @@ public class Window {
     public void setResizable(boolean resizable) {
         checkDisposed();
 
-        WL.SetResizable(resizable);
+        WL.SetResizable(windowId, resizable);
     }
 
     public boolean isResizable() {
@@ -338,7 +344,7 @@ public class Window {
     public void setDecorated(boolean decorated) {
         checkDisposed();
 
-        WL.SetDecorated(decorated);
+        WL.SetDecorated(windowId, decorated);
     }
 
     public boolean isDecorated() {
@@ -356,7 +362,7 @@ public class Window {
     public void setTitle(String title) {
         checkDisposed();
 
-        WL.SetTitle(this.title = title);
+        WL.SetTitle(windowId, this.title = title);
     }
 
     public void setIcon(PixelMap icon) {
@@ -401,7 +407,7 @@ public class Window {
 
         if (pointersData == null) {
             pointersData = new ArrayList<>();
-            pointersData.add(new EventDataPointer(-1));
+            pointersData.add(new EventDataPointer(this, -1));
         }
         return pointersData.get(0);
     }
@@ -575,4 +581,86 @@ public class Window {
         activity.close();
         closed = true;
     }
+
+    public void setMods(boolean shift, boolean ctrl, boolean alt, boolean spr) {
+        this.shift = shift;
+        this.ctrl = ctrl;
+        this.alt = alt;
+        this.spr = spr;
+    }
+
+    public boolean isShiftDown() {
+        return shift;
+    }
+
+    public boolean isCtrlDown() {
+        return ctrl;
+    }
+
+    public boolean isAltDown() {
+        return alt;
+    }
+
+    public boolean isSprDown() {
+        return spr;
+    }
+
+    private String createFilters(String[] filters) {
+        StringBuilder filter = null;
+        for (var str : filters) {
+            if (str.matches("[a-zA-Z0-9_ \\-]+(,[a-zA-Z0-9_ \\-]+)*")) {
+                if (filter == null) {
+                    filter = new StringBuilder(str);
+                } else {
+                    filter.append(";").append(str);
+                }
+            }
+        }
+        return filter == null ? "" : filter.toString();
+    }
+
+    public String showOpenFileDialog(File initialFolder, String... filters) {
+        String folder;
+        if (initialFolder == null || !initialFolder.exists() || !initialFolder.isDirectory()) {
+            folder = "";
+        } else {
+            folder = initialFolder.getAbsolutePath();
+        }
+        return WL.ShowOpenFile(windowId, createFilters(filters), folder);
+    }
+
+    public String showSaveFileDialog(File initialFolder, String... filters) {
+        String folder;
+        if (initialFolder == null || !initialFolder.exists() || !initialFolder.isDirectory()) {
+            folder = "";
+        } else {
+            folder = initialFolder.getAbsolutePath();
+        }
+        return WL.ShowSaveFile(windowId, createFilters(filters), folder);
+    }
+
+    public String showOpenFolderDialog(File initialFolder) {
+        String folder;
+        if (initialFolder == null || !initialFolder.exists() || !initialFolder.isDirectory()) {
+            folder = "";
+        } else {
+            folder = initialFolder.getAbsolutePath();
+        }
+        return WL.ShowOpenFolder(windowId, folder);
+    }
+
+    public String[] showOpenMultipleFilesDialog(File initialFolder, String... filters) {
+        String folder;
+        if (initialFolder == null || !initialFolder.exists() || !initialFolder.isDirectory()) {
+            folder = "";
+        } else {
+            folder = initialFolder.getAbsolutePath();
+        }
+        String result = WL.ShowOpenMultipleFiles(windowId, createFilters(filters), folder);
+        if (result != null) {
+            return result.split(",");
+        }
+        return null;
+    }
+
 }

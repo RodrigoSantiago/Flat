@@ -4,6 +4,7 @@ import flat.Flat;
 import flat.animations.Interpolation;
 import flat.backend.GL;
 import flat.backend.SVG;
+import flat.backend.WL;
 import flat.data.ObservableList;
 import flat.events.ActionEvent;
 import flat.events.PointerEvent;
@@ -381,22 +382,26 @@ public class MainController extends Controller {
 
     @Flat
     public void onFileSaveDialog() {
-
+        System.out.println(getActivity().getWindow()
+                .showSaveFileDialog(null, "png","jpg,jpeg"));
     }
 
     @Flat
     public void onFileOpenDialog() {
-
+        System.out.println(getActivity().getWindow()
+                .showOpenFileDialog(null, "png","jpg,jpeg"));
     }
 
     @Flat
     public void onFileOpenMultipleDialog() {
-
+        System.out.println(Arrays.toString(getActivity().getWindow()
+                .showOpenMultipleFilesDialog(null, "png","jpg,jpeg")));
     }
 
     @Flat
     public void onFileOpenDirDialog() {
-
+        System.out.println(getActivity().getWindow()
+                .showOpenFolderDialog(null));
     }
 
     private void search(Widget widget) {

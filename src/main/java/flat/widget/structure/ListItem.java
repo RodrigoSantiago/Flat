@@ -27,6 +27,7 @@ public class ListItem extends Button {
     private float stateIconSpacing;
     private float stateIconWidth;
     private float stateIconHeight;
+    private boolean stateActionEnabled = true;
 
     private int layers;
     private float layerWidth = 8f;
@@ -41,9 +42,7 @@ public class ListItem extends Button {
     public float getLayoutMinWidth() {
         float extraWidth = getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
         float iW = getLayoutIconWidth();
-        float iH = getLayoutIconHeight();
         float siW = getLayoutStateIconWidth();
-        float siH = getLayoutStateIconHeight();
         float layerWidth = (getLayers() * getLayerWidth());
         return Math.max(getTextWidth() + extraWidth
                 + (iW > 0 ? iW + getIconSpacing() : 0)
@@ -76,6 +75,7 @@ public class ListItem extends Button {
         setStateIconHeight(attrs.getSize("state-icon-height", info, getStateIconHeight()));
         setStateIconSpacing(attrs.getSize("state-icon-spacing", info, getStateIconSpacing()));
         setStateIconImageFilter(attrs.getConstant("state-icon-image-filter", info, getStateIconImageFilter()));
+        setStateActionEnabled(attrs.getBool("state-action-enabled", info, isStateActionEnabled()));
     }
 
     @Override
@@ -133,6 +133,10 @@ public class ListItem extends Button {
 
     @Override
     public void fireRipple(float x, float y) {
+        if (!isStateActionEnabled()) {
+            super.fireRipple(x, y);
+            return;
+        }
         if (isOverActionButton(screenToLocal(x, y))) {
             if (isRippleEnabled()) {
                 float sp = getStateIconSpacing();
@@ -312,6 +316,14 @@ public class ListItem extends Button {
         }
     }
 
+    public void setStateActionEnabled(boolean stateActionEnabled) {
+        this.stateActionEnabled = stateActionEnabled;
+    }
+
+    public boolean isStateActionEnabled() {
+        return stateActionEnabled;
+    }
+
     public int getStateIconColor() {
         return stateIconColor;
     }
@@ -387,7 +399,11 @@ public class ListItem extends Button {
     public void hover(HoverEvent event) {
         super.hover(event);
         if (!event.isConsumed() && event.getType() == HoverEvent.MOVED) {
-            setUndefined(isOverActionButton(screenToLocal(event.getX(), event.getY())));
+            if (isStateActionEnabled()) {
+                setUndefined(isOverActionButton(screenToLocal(event.getX(), event.getY())));
+            } else {
+                setUndefined(false);
+            }
         }
         if (!event.isConsumed() && event.getType() == HoverEvent.EXITED) {
             setUndefined(false);

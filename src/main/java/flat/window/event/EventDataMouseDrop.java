@@ -37,7 +37,7 @@ public class EventDataMouseDrop extends EventData {
         try {
             Activity activity = window.getActivity();
             Widget widget = activity.findByPosition(window.getPointerX(), window.getPointerY(), false);
-            widget.fireDrag(new DragEvent(widget, DragEvent.DROPPED, paths, window.getPointerX(), window.getPointerY(), widget, null));
+            widget.fireDrag(new DragEvent(widget, window, DragEvent.DROPPED, paths, window.getPointerX(), window.getPointerY(), widget, null));
         } finally {
             release();
         }

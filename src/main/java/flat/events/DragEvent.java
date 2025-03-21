@@ -1,6 +1,7 @@
 package flat.events;
 
 import flat.widget.Widget;
+import flat.window.Window;
 
 public class DragEvent extends Event {
     public static final Type STARTED = new Type("STARTED");
@@ -10,21 +11,24 @@ public class DragEvent extends Event {
     public static final Type EXITED  = new Type("EXITED");
     public static final Type OVER    = new Type("OVER");
 
+    private final Window window;
     private Object data;
     private final float x, y;
     private Widget dragHandler;
     private Widget dragAccepted;
     private boolean canceled;
 
-    public DragEvent(Widget source, Type type, Object data, float x, float y) {
+    public DragEvent(Widget source, Window window, Type type, Object data, float x, float y) {
         super(source, type);
+        this.window = window;
         this.data = data;
         this.x = x;
         this.y = y;
     }
 
-    public DragEvent(Widget source, Type type, Object data, float x, float y, Widget dragHandler, Widget dragAccepted) {
+    public DragEvent(Widget source, Window window, Type type, Object data, float x, float y, Widget dragHandler, Widget dragAccepted) {
         super(source, type);
+        this.window = window;
         this.data = data;
         this.x = x;
         this.y = y;
@@ -84,12 +88,32 @@ public class DragEvent extends Event {
         return canceled;
     }
 
+    public Window getWindow() {
+        return window;
+    }
+
+    public boolean isShiftDown() {
+        return window.isShiftDown();
+    }
+
+    public boolean isCtrlDown() {
+        return window.isCtrlDown();
+    }
+
+    public boolean isAltDown() {
+        return window.isAltDown();
+    }
+
+    public boolean isSprDown() {
+        return window.isSprDown();
+    }
+
     @Override
     public String toString() {
         return "(" + getSource() + ") DragEvent " + getType() + ", [" + x + ", " + y + "]";
     }
 
-    private static class Type extends EventType {
+    public static class Type extends EventType {
         Type(String name) {
             super(name);
         }

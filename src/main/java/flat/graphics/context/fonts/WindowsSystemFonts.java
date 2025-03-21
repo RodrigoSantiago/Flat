@@ -7,16 +7,16 @@ import flat.graphics.text.FontWeight;
 import java.io.File;
 import java.util.*;
 
-public class WindowsSystemFonts {
+class WindowsSystemFonts {
 
     private static String fontNameRegex =
             "[a-zA-Z0-9_ ]+-(bold|bolditalic|extralight|extralightitalic|italic|light|lightitalic|medium|mediumitalic|regular|semibold|semibolditalic|thin|thinitalic|black|blackitalic)";
 
-    static int count;
-    static long lastTime;
-    static HashMap<String, ArrayList<FontDetail>> cacheFonts;
+    private static int count;
+    private static long lastTime;
+    private static HashMap<String, ArrayList<FontDetail>> cacheFonts;
 
-    public static HashMap<String, ArrayList<FontDetail>> listSystemFontFamilies() {
+    static HashMap<String, ArrayList<FontDetail>> listSystemFontFamilies() {
         String path = System.getenv("WINDIR");
 
         File fontsDir = new File(path, "Fonts");

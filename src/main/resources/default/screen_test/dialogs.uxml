@@ -35,5 +35,15 @@
                 <Button margin-left="16dp" text="Ranged Date Picker Dialog" style="icon-left" on-action="onBlockRangedDatePickerDialog" icon="/default/icons/calendar.svg"/>
             </LinearBox>
         </LinearBox>
+        <LinearBox direction="VERTICAL"
+                   padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
+            <Label text="System" style="subtitle" margin-left="4dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Button text="Open File" style="primary" on-action="onFileOpenDialog"/>
+                <Button margin-left="16dp" text="Open Multiple File" style="primary" on-action="onFileOpenMultipleDialog"/>
+                <Button margin-left="16dp" text="Open Directory" style="primary" on-action="onFileOpenDirDialog"/>
+                <Button margin-left="16dp" text="Save File" style="primary" on-action="onFileSaveDialog"/>
+            </LinearBox>
+        </LinearBox>
     </LinearBox>
 </Scene>

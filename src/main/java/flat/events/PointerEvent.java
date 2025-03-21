@@ -1,6 +1,7 @@
 package flat.events;
 
 import flat.widget.Widget;
+import flat.window.Window;
 
 public class PointerEvent extends Event {
     public static final Type PRESSED = new Type("PRESSED");
@@ -8,11 +9,13 @@ public class PointerEvent extends Event {
     public static final Type DRAGGED = new Type("DRAGGED");
     public static final Type FILTER = new Type("FILTER");
 
+    private final Window window;
     private final float x, y;
     private final int buttonID;
 
-    public PointerEvent(Widget source, Type type, int buttonID, float x, float y) {
+    public PointerEvent(Widget source, Window window, Type type, int buttonID, float x, float y) {
         super(source, type);
+        this.window = window;
         this.buttonID = buttonID;
         this.x = x;
         this.y = y;
@@ -28,6 +31,26 @@ public class PointerEvent extends Event {
 
     public float getY() {
         return y;
+    }
+
+    public Window getWindow() {
+        return window;
+    }
+
+    public boolean isShiftDown() {
+        return window.isShiftDown();
+    }
+
+    public boolean isCtrlDown() {
+        return window.isCtrlDown();
+    }
+
+    public boolean isAltDown() {
+        return window.isAltDown();
+    }
+
+    public boolean isSprDown() {
+        return window.isSprDown();
     }
 
     @Override

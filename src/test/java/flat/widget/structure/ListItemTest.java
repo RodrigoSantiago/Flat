@@ -36,8 +36,6 @@ public class ListItemTest {
     Drawable icon;
     ResourceStream resStateIconOpen;
     Drawable stateIconOpen;
-    ResourceStream resStateIconClosed;
-    Drawable stateIconClosed;
 
     @Before
     public void before() {
@@ -65,13 +63,6 @@ public class ListItemTest {
 
         resStateIconOpen = mock(ResourceStream.class);
         when(DrawableReader.parse(resStateIconOpen)).thenReturn(stateIconOpen);
-
-        stateIconClosed = mock(Drawable.class);
-        when(stateIconClosed.getWidth()).thenReturn(20f);
-        when(stateIconClosed.getHeight()).thenReturn(18f);
-
-        resStateIconClosed = mock(ResourceStream.class);
-        when(DrawableReader.parse(resStateIconClosed)).thenReturn(stateIconClosed);
 
         when(defaultFont.getWidth(any(), anyInt(), anyInt(), anyFloat(), anyFloat())).thenReturn(165f);
         when(defaultFont.getHeight(anyFloat())).thenReturn(32f);
@@ -105,7 +96,6 @@ public class ListItemTest {
         assertEquals(0, listItem.getStateIconHeight(), 0.001f);
         assertEquals(0, listItem.getStateIconSpacing(), 0.1f);
         assertEquals(ImageFilter.LINEAR, listItem.getStateIconImageFilter());
-        assertNull(listItem.getStateIconOpen());
         assertNull(listItem.getStateIcon());
         assertEquals(0xFFFFFFFF, listItem.getStateIconColor());
         assertNull(listItem.getActionListener());
@@ -130,7 +120,6 @@ public class ListItemTest {
         assertEquals(0, listItem.getStateIconHeight(), 0.001f);
         assertEquals(0, listItem.getIconSpacing(), 0.1f);
         assertEquals(ImageFilter.LINEAR, listItem.getStateIconImageFilter());
-        assertNull(listItem.getStateIconOpen());
         assertNull(listItem.getStateIcon());
         assertEquals(0xFFFFFFFF, listItem.getStateIconColor());
         assertEquals(action, listItem.getActionListener());
@@ -154,8 +143,7 @@ public class ListItemTest {
         assertEquals(22, listItem.getStateIconHeight(), 0.001f);
         assertEquals(16, listItem.getStateIconSpacing(), 0.1f);
         assertEquals(ImageFilter.NEAREST, listItem.getStateIconImageFilter());
-        assertEquals(stateIconOpen, listItem.getStateIconOpen());
-        assertEquals(stateIconClosed, listItem.getStateIcon());
+        assertEquals(stateIconOpen, listItem.getStateIcon());
         assertEquals(0xFF0000FF, listItem.getStateIconColor());
         assertEquals(action, listItem.getActionListener());
         assertEquals(changeStateAction, listItem.getChangeStateListener());
@@ -178,7 +166,7 @@ public class ListItemTest {
 
         assertEquals(165 + 32, listItem.getMeasureWidth(), 0.1f);
         assertEquals(32, listItem.getMeasureHeight(), 0.1f);
-        assertEquals(0, listItem.getLayoutMinWidth(), 0.1f);
+        assertEquals(165 + 32, listItem.getLayoutMinWidth(), 0.1f); // List Item have special min width
         assertEquals(0, listItem.getLayoutMinHeight(), 0.1f);
 
         listItem.setLayerWidth(16);
@@ -187,7 +175,7 @@ public class ListItemTest {
 
         assertEquals(165 + 32 + (2 * 16), listItem.getMeasureWidth(), 0.1f);
         assertEquals(32, listItem.getMeasureHeight(), 0.1f);
-        assertEquals(2 * 16, listItem.getLayoutMinWidth(), 0.1f);
+        assertEquals(165 + 32 + 2 * 16, listItem.getLayoutMinWidth(), 0.1f);
         assertEquals(0, listItem.getLayoutMinHeight(), 0.1f);
 
         listItem.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
@@ -195,7 +183,7 @@ public class ListItemTest {
 
         assertEquals(Widget.MATCH_PARENT, listItem.getMeasureWidth(), 0.1f);
         assertEquals(Widget.MATCH_PARENT, listItem.getMeasureHeight(), 0.1f);
-        assertEquals(2 * 16, listItem.getLayoutMinWidth(), 0.1f);
+        assertEquals(165 + 32 + 2 * 16, listItem.getLayoutMinWidth(), 0.1f);
         assertEquals(0, listItem.getLayoutMinHeight(), 0.1f);
     }
 
@@ -236,7 +224,7 @@ public class ListItemTest {
         listItem.setPrefSize(100, 200);
         listItem.onMeasure();
 
-        assertEquals(106, listItem.getMeasureWidth(), 0.1f);
+        assertEquals(165 + 32 + 13, listItem.getMeasureWidth(), 0.1f); // Special Min Width affects prefer Width
         assertEquals(204, listItem.getMeasureHeight(), 0.1f);
 
         listItem.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
@@ -254,7 +242,7 @@ public class ListItemTest {
 
         ListItem listItem = new ListItem();
         listItem.setText("Hello World");
-        listItem.setStateIconOpen(drawable);
+        listItem.setStateIcon(drawable);
         listItem.setStateIconWidth(Widget.WRAP_CONTENT);
         listItem.setStateIconHeight(Widget.WRAP_CONTENT);
 
@@ -283,7 +271,7 @@ public class ListItemTest {
         listItem.setPrefSize(100, 200);
         listItem.onMeasure();
 
-        assertEquals(106, listItem.getMeasureWidth(), 0.1f);
+        assertEquals(165 + 32 + 13, listItem.getMeasureWidth(), 0.1f); // Special Min Width affects prefer Width
         assertEquals(204, listItem.getMeasureHeight(), 0.1f);
 
         listItem.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
@@ -329,7 +317,7 @@ public class ListItemTest {
         listItem.setPrefSize(100, 200);
         listItem.onMeasure();
 
-        assertEquals(106, listItem.getMeasureWidth(), 0.1f);
+        assertEquals(165 + 24 + 13 + 8, listItem.getMeasureWidth(), 0.1f); // Special Min Width affects prefer Width
         assertEquals(204, listItem.getMeasureHeight(), 0.1f);
 
         listItem.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
@@ -347,7 +335,7 @@ public class ListItemTest {
 
         ListItem listItem = new ListItem();
         listItem.setText("Hello World");
-        listItem.setStateIconOpen(null);
+        listItem.setStateIcon(null);
         listItem.setStateIconSpacing(8f);
         listItem.setStateIconWidth(24);
         listItem.setStateIconHeight(16);
@@ -358,7 +346,7 @@ public class ListItemTest {
         assertEquals(165, listItem.getMeasureWidth(), 0.1f);
         assertEquals(32, listItem.getMeasureHeight(), 0.1f);
 
-        listItem.setStateIconOpen(drawable);
+        listItem.setStateIcon(drawable);
         listItem.setPrefSize(Widget.WRAP_CONTENT, Widget.WRAP_CONTENT);
         listItem.onMeasure();
 
@@ -375,7 +363,7 @@ public class ListItemTest {
         listItem.setPrefSize(100, 200);
         listItem.onMeasure();
 
-        assertEquals(106, listItem.getMeasureWidth(), 0.1f);
+        assertEquals(165 + 24 + 13 + 8, listItem.getMeasureWidth(), 0.1f); // Special Min Width affects prefer Width
         assertEquals(204, listItem.getMeasureHeight(), 0.1f);
 
         listItem.setPrefSize(Widget.MATCH_PARENT, Widget.MATCH_PARENT);
@@ -396,9 +384,6 @@ public class ListItemTest {
         UXValue uxOpenIcon = mock(UXValue.class);
         when(uxOpenIcon.asResource(any())).thenReturn(resStateIconOpen);
 
-        UXValue uxClosedIcon = mock(UXValue.class);
-        when(uxClosedIcon.asResource(any())).thenReturn(resStateIconClosed);
-
         hash.put(UXHash.getHash("icon"), uxIcon);
         hash.put(UXHash.getHash("icon-color"), new UXValueColor(0xFFFF00FF));
         hash.put(UXHash.getHash("icon-width"), new UXValueSizeSp(16));
@@ -406,8 +391,7 @@ public class ListItemTest {
         hash.put(UXHash.getHash("icon-spacing"), new UXValueSizeSp(24));
         hash.put(UXHash.getHash("icon-image-filter"), new UXValueText(ImageFilter.NEAREST.toString()));
 
-        hash.put(UXHash.getHash("state-icon-open"), uxOpenIcon);
-        hash.put(UXHash.getHash("state-icon-closed"), uxClosedIcon);
+        hash.put(UXHash.getHash("state-icon"), uxOpenIcon);
         hash.put(UXHash.getHash("state-icon-color"), new UXValueColor(0xFF0000FF));
         hash.put(UXHash.getHash("state-icon-width"), new UXValueSizeSp(20));
         hash.put(UXHash.getHash("state-icon-height"), new UXValueSizeSp(22));

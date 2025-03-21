@@ -33,6 +33,7 @@ public class Application {
     private static final long autoFrameFPS = 1_000_000_000L / 120L;
 
     private static boolean finalized;
+    private static SystemType systemType;
 
     public static void init() {
         init(new ResourcesManager());
@@ -45,6 +46,7 @@ public class Application {
         try {
             FlatLibrary.load(resources.getFlatLibraryFile());
         } catch (Throwable e) {
+            e.printStackTrace();
             throw new FlatException("Failed to load Flat Library");
         }
 
@@ -335,6 +337,22 @@ public class Application {
 
     public static void handleException(Exception e) {
         e.printStackTrace();
+    }
+
+    public static SystemType getSystemType() {
+        if (systemType == null) {
+            String os = System.getProperty("os.name").toLowerCase();
+            if (os.contains("win")) {
+                systemType = SystemType.WINDOWS;
+            } else if (os.contains("nix") || os.contains("nux")) {
+                systemType = SystemType.UNIX;
+            } else if (os.contains("mac")) {
+                systemType = SystemType.MAC;
+            } else {
+                systemType = SystemType.OTHER;
+            }
+        }
+        return systemType;
     }
 
 }

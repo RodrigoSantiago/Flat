@@ -28,7 +28,7 @@ public class EventDataMouseScrollTest {
         Window window = mock(Window.class);
         Widget widget = mock(Widget.class);
 
-        EventDataPointer pointer = new EventDataPointer(-1);
+        EventDataPointer pointer = new EventDataPointer(window, -1);
         pointer.setPosition(5, 15);
         when(window.getPointer()).thenReturn(pointer);
 

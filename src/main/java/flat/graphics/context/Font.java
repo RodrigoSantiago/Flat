@@ -4,7 +4,7 @@ import flat.backend.SVG;
 import flat.exception.FlatException;
 import flat.graphics.context.enums.PixelFormat;
 import flat.graphics.context.fonts.FontDetail;
-import flat.graphics.context.fonts.WindowsSystemFonts;
+import flat.graphics.context.fonts.SystemFonts;
 import flat.graphics.image.PixelMap;
 import flat.graphics.text.FontPosture;
 import flat.graphics.text.FontStyle;
@@ -181,7 +181,7 @@ public class Font {
     public static void installSystemFontFamily(String fontFamily) {
         readDefaultFonts();
 
-        ArrayList<FontDetail> list = WindowsSystemFonts.listSystemFontFamilies().get(fontFamily);
+        ArrayList<FontDetail> list = SystemFonts.listSystemFontFamilies().get(fontFamily);
         if (list == null) {
             return;
         }
@@ -212,7 +212,7 @@ public class Font {
         readDefaultFonts();
 
         ArrayList<FontDetail> list = new ArrayList<>();
-        for (var entry : WindowsSystemFonts.listSystemFontFamilies().values()) {
+        for (var entry : SystemFonts.listSystemFontFamilies().values()) {
             list.addAll(entry);
         }
         return list;

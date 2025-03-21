@@ -58,14 +58,17 @@ tree-item : list-item {
     state-icon-width : 16dp;
     state-icon-height : 16dp;
     state-icon : '/default/icons/empty.svg';
+    state-action-enabled : false;
 }
 
 tree-item-folder {
     icon : '/default/icons/folder.svg';
     state-icon : '/default/icons/chevron-right.svg';
+    state-action-enabled : true;
 }
 
 tree-item-folder-open {
     icon : '/default/icons/folder-open.svg';
     state-icon : '/default/icons/chevron-down.svg';
+    state-action-enabled : true;
 }

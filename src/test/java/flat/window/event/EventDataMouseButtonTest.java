@@ -27,7 +27,7 @@ public class EventDataMouseButtonTest {
         Activity activity = mock(Activity.class);
         Window window = mock(Window.class);
         Widget widget = mock(Widget.class);
-        EventDataPointer pointer = new EventDataPointer(-1);
+        EventDataPointer pointer = new EventDataPointer(window, -1);
         pointer.setPosition(10, 20);
 
         when(window.getActivity()).thenReturn(activity);
@@ -56,7 +56,7 @@ public class EventDataMouseButtonTest {
         Activity activity = mock(Activity.class);
         Window window = mock(Window.class);
         Widget widget = mock(Widget.class);
-        EventDataPointer pointer = new EventDataPointer(-1);
+        EventDataPointer pointer = new EventDataPointer(window, -1);
         pointer.setPosition(10, 20);
 
         when(window.getActivity()).thenReturn(activity);
@@ -86,7 +86,7 @@ public class EventDataMouseButtonTest {
         Window window = mock(Window.class);
         Widget widget = mock(Widget.class);
         Widget widget2 = mock(Widget.class);
-        EventDataPointer pointer = new EventDataPointer(-1);
+        EventDataPointer pointer = new EventDataPointer(window, -1);
         pointer.setPosition(10, 20);
 
         when(window.getActivity()).thenReturn(activity);
@@ -120,7 +120,7 @@ public class EventDataMouseButtonTest {
         Window window = mock(Window.class);
         Widget widget = mock(Widget.class);
         Widget widget2 = mock(Widget.class);
-        EventDataPointer pointer = new EventDataPointer(-1);
+        EventDataPointer pointer = new EventDataPointer(window, -1);
         pointer.setPosition(10, 20);
 
         when(window.getActivity()).thenReturn(activity);
@@ -155,7 +155,7 @@ public class EventDataMouseButtonTest {
         Window window = mock(Window.class);
         Widget widget = mock(Widget.class);
         Widget widget2 = mock(Widget.class);
-        EventDataPointer pointer = new EventDataPointer(-1);
+        EventDataPointer pointer = new EventDataPointer(window, -1);
         pointer.setPosition(10, 20);
 
         when(window.getActivity()).thenReturn(activity);

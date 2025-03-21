@@ -24,12 +24,12 @@ public class WL {
     //---------------------------
     public static native void SetFullscreen(long window, boolean fullscreen);
     public static native boolean IsFullscreen(long window);
-    public static native void SetResizable(boolean resizable);
+    public static native void SetResizable(long window, boolean resizable);
     public static native boolean IsResizable(long window);
-    public static native void SetDecorated(boolean decorated);
+    public static native void SetDecorated(long window, boolean decorated);
     public static native boolean IsDecorated(long window);
     public static native boolean IsTransparent(long window);
-    public static native void SetTitle(String title);
+    public static native void SetTitle(long window, String title);
     public static native void SetIcon(long window, byte[] image, int width, int height);
     public static native void SetPosition(long window, int x, int y);
     public static native int GetX(long window);
@@ -66,7 +66,7 @@ public class WL {
     public static native void SetClipboardString(long window, String clipboard);
     public static native String GetClipboardString(long window);
 
-    public static native String GetKeyName(long window, int key, int scancode);
+    public static native String GetKeyName(int key, int scancode);
     public static native int GetKey(long window, int key);
     public static native int GetMouseButton(long window, int button);
 
@@ -108,4 +108,12 @@ public class WL {
 
     public static native void SetJoystickCallback(WLEnums.JoyCallback callback);
     public static native void SetErrorCallback(WLEnums.ErrorCallback callback);
+
+    //---------------------------
+    //       Dialogs
+    //---------------------------
+    public static native String ShowOpenFile(long window, String fileFilters, String initialFolder);
+    public static native String ShowOpenMultipleFiles(long window, String fileFilters, String initialFolder);
+    public static native String ShowSaveFile(long window, String fileFilters, String initialFolder);
+    public static native String ShowOpenFolder(long window, String initialFolder);
 }
