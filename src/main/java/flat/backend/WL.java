@@ -112,8 +112,8 @@ public class WL {
     //---------------------------
     //       Dialogs
     //---------------------------
-    public static native String ShowOpenFile(long window, String fileFilters, String initialFolder);
-    public static native String ShowOpenMultipleFiles(long window, String fileFilters, String initialFolder);
-    public static native String ShowSaveFile(long window, String fileFilters, String initialFolder);
-    public static native String ShowOpenFolder(long window, String initialFolder);
+    public static native void ShowOpenFile(long window, String fileFilters, String initialFolder, WLEnums.DialogCallback callback);
+    public static native void ShowOpenMultipleFiles(long window, String fileFilters, String initialFolder, WLEnums.DialogCallback callback);
+    public static native void ShowSaveFile(long window, String fileFilters, String initialFolder, WLEnums.DialogCallback callback);
+    public static native void ShowOpenFolder(long window, String initialFolder, WLEnums.DialogCallback callback);
 }

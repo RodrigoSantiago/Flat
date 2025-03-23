@@ -48,9 +48,6 @@ import java.util.List;
 
 public class MainController extends Controller {
 
-    public MainController(Activity activity) {
-    }
-
     @Flat
     public Button button;
     @Flat
@@ -382,26 +379,30 @@ public class MainController extends Controller {
 
     @Flat
     public void onFileSaveDialog() {
-        System.out.println(getActivity().getWindow()
-                .showSaveFileDialog(null, "png","jpg,jpeg"));
+        getActivity().getWindow().showSaveFileDialog((file) -> {
+            System.out.println(file);
+        }, null, "png","jpg,jpeg");
     }
 
     @Flat
     public void onFileOpenDialog() {
-        System.out.println(getActivity().getWindow()
-                .showOpenFileDialog(null, "png","jpg,jpeg"));
+        getActivity().getWindow().showOpenFileDialog((file) -> {
+            System.out.println(file);
+        }, null, "png","jpg,jpeg");
     }
 
     @Flat
     public void onFileOpenMultipleDialog() {
-        System.out.println(Arrays.toString(getActivity().getWindow()
-                .showOpenMultipleFilesDialog(null, "png","jpg,jpeg")));
+        getActivity().getWindow().showOpenMultipleFilesDialog((file) -> {
+            System.out.println(file == null ? "null" : Arrays.toString(file));
+        }, null, "png","jpg,jpeg");
     }
 
     @Flat
     public void onFileOpenDirDialog() {
-        System.out.println(getActivity().getWindow()
-                .showOpenFolderDialog(null));
+        getActivity().getWindow().showOpenFolderDialog((file) -> {
+            System.out.println(file);
+        }, null);
     }
 
     private void search(Widget widget) {
@@ -417,11 +418,11 @@ public class MainController extends Controller {
     }
 
     @Flat
-    public void onWindowClick(ActionEvent event) {
+    public void onCreateWindow(ActionEvent event) {
         Application.createWindow(new WindowSettings.Builder()
-                .layout("/default/screen_test/screen_test.uxml")
+                .layout("/default/screen_test/buttons.uxml")
                 .theme("/default/themes")
-                .controller(MainController::new)
+                .controller(LazyController::new)
                 .size(1000, 800)
                 .multiSamples(8)
                 .transparent(false)
@@ -498,6 +499,7 @@ public class MainController extends Controller {
 
         shader = graphics.createImageRenderShader(
                 """
+                #version 330 core
                 uniform vec2 view;
                 uniform float col[4];
                 uniform sampler2D texture1;

@@ -44,6 +44,10 @@
                 <Button margin-left="16dp" text="Open Directory" style="primary" on-action="onFileOpenDirDialog"/>
                 <Button margin-left="16dp" text="Save File" style="primary" on-action="onFileSaveDialog"/>
             </LinearBox>
+            <Label text="A Window" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Button text="Createa a new WINDOW" style="primary" on-action="onCreateWindow"/>
+            </LinearBox>
         </LinearBox>
     </LinearBox>
 </Scene>

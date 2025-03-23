@@ -7,9 +7,11 @@ import flat.graphics.context.Context;
 import flat.resources.ResourcesManager;
 import flat.window.event.EventData;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Application {
 
@@ -147,6 +149,12 @@ public class Application {
     public static Window createWindow(WindowSettings settings) {
         Window window = Window.create(settings);
         windowsAdd.add(window);
+        if (assignedWindow != null) {
+            WL.WindowAssign(assignedWindow.getWindowId());
+        } else {
+            window.setAssigned(true);
+            assignedWindow = window;
+        }
 
         return window;
     }
@@ -206,13 +214,14 @@ public class Application {
         lastLoopTime = now;
 
         for (Window window : windows) {
-            assignWindow(window);
-
-            try {
-                window.loop(loopTime);
-            } catch (Exception e) {
-                Application.handleException(e);
-                window.close();
+            if (!window.isBlockedByModal()) {
+                assignWindow(window);
+                try {
+                    window.loop(loopTime);
+                } catch (Exception e) {
+                    Application.handleException(e);
+                    window.close();
+                }
             }
         }
     }
@@ -354,5 +363,4 @@ public class Application {
         }
         return systemType;
     }
-
 }

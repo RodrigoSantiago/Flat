@@ -67,7 +67,7 @@ public class Activity {
 
     void initialize() {
         if (initialSettings.getController() != null) {
-            controller = initialSettings.getController().build(this);
+            controller = initialSettings.getController().build();
         }
 
         if (initialSettings.getThemeStream() != null) {

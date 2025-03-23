@@ -7,6 +7,7 @@ import flat.exception.FlatException;
 import flat.graphics.context.Context;
 import flat.graphics.cursor.Cursor;
 import flat.graphics.image.PixelMap;
+import flat.uxml.UXListener;
 import flat.window.event.EventData;
 import flat.window.event.EventDataPointer;
 
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Window {
 
@@ -605,7 +607,9 @@ public class Window {
         return spr;
     }
 
-    private String createFilters(String[] filters) {
+    private boolean modal;
+
+    private static String createFilter(String[] filters) {
         StringBuilder filter = null;
         for (var str : filters) {
             if (str.matches("[a-zA-Z0-9_ \\-]+(,[a-zA-Z0-9_ \\-]+)*")) {
@@ -619,48 +623,73 @@ public class Window {
         return filter == null ? "" : filter.toString();
     }
 
-    public String showOpenFileDialog(File initialFolder, String... filters) {
+    private static String createFolder(File file) {
         String folder;
-        if (initialFolder == null || !initialFolder.exists() || !initialFolder.isDirectory()) {
-            folder = "";
+        if (file == null || !file.exists() || !file.isDirectory()) {
+            return "";
         } else {
-            folder = initialFolder.getAbsolutePath();
+            return file.getAbsolutePath();
         }
-        return WL.ShowOpenFile(windowId, createFilters(filters), folder);
     }
 
-    public String showSaveFileDialog(File initialFolder, String... filters) {
-        String folder;
-        if (initialFolder == null || !initialFolder.exists() || !initialFolder.isDirectory()) {
-            folder = "";
-        } else {
-            folder = initialFolder.getAbsolutePath();
-        }
-        return WL.ShowSaveFile(windowId, createFilters(filters), folder);
+    public boolean isBlockedByModal() {
+        return modal;
     }
 
-    public String showOpenFolderDialog(File initialFolder) {
-        String folder;
-        if (initialFolder == null || !initialFolder.exists() || !initialFolder.isDirectory()) {
-            folder = "";
-        } else {
-            folder = initialFolder.getAbsolutePath();
-        }
-        return WL.ShowOpenFolder(windowId, folder);
+    public void showOpenFileDialog(UXListener<String> listener, File initialFolder, String... filters) {
+        if (modal) return;
+        modal = true;
+
+        String filter = createFilter(filters);
+        String folder = createFolder(initialFolder);
+        WL.ShowOpenFile(windowId, filter, folder, (window, path) -> {
+            modal = false;
+            if (!disposed) {
+                runSync(() -> UXListener.safeHandle(listener, path));
+            }
+        });
     }
 
-    public String[] showOpenMultipleFilesDialog(File initialFolder, String... filters) {
-        String folder;
-        if (initialFolder == null || !initialFolder.exists() || !initialFolder.isDirectory()) {
-            folder = "";
-        } else {
-            folder = initialFolder.getAbsolutePath();
-        }
-        String result = WL.ShowOpenMultipleFiles(windowId, createFilters(filters), folder);
-        if (result != null) {
-            return result.split(",");
-        }
-        return null;
+    public void showOpenMultipleFilesDialog(UXListener<String[]> listener, File initialFolder, String... filters) {
+        if (modal) return;
+        modal = true;
+
+        String filter = createFilter(filters);
+        String folder = createFolder(initialFolder);
+        WL.ShowOpenMultipleFiles(windowId, filter, folder, (window, path) -> {
+            modal = false;
+            if (!disposed) {
+                String[] split = path == null ? null : path.split(",");
+                runSync(() -> UXListener.safeHandle(listener, split));
+            }
+        });
+    }
+
+    public void showSaveFileDialog(UXListener<String> listener, File initialFolder, String... filters) {
+        if (modal) return;
+        modal = true;
+
+        String filter = createFilter(filters);
+        String folder = createFolder(initialFolder);
+        WL.ShowSaveFile(windowId, filter, folder, (window, path) -> {
+            modal = false;
+            if (!disposed) {
+                runSync(() -> UXListener.safeHandle(listener, path));
+            }
+        });
+    }
+
+    public void showOpenFolderDialog(UXListener<String> listener, File initialFolder) {
+        if (modal) return;
+        modal = true;
+
+        String folder = createFolder(initialFolder);
+        WL.ShowOpenFolder(windowId, folder, (window, path) -> {
+            modal = false;
+            if (!disposed) {
+                runSync(() -> UXListener.safeHandle(listener, path));
+            }
+        });
     }
 
 }

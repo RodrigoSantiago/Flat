@@ -370,7 +370,7 @@ public class ActivityTest {
     public void hide() {
         Controller controller = mock(Controller.class);
         ControllerFactory factory = mock(ControllerFactory.class);
-        when(factory.build(any())).thenReturn(controller);
+        when(factory.build()).thenReturn(controller);
 
         UXTheme theme = mock(UXTheme.class);
         Scene scene = mock(Scene.class);
