@@ -47,6 +47,13 @@ public class TextField extends TextArea {
     }
 
     @Override
+    public void applyLocalization() {
+        super.applyLocalization();
+        UXAttrs attrs = getAttrs();
+        setText(attrs.getAttributeLocale("title", getTitle()));
+    }
+
+    @Override
     public void applyStyle() {
         super.applyStyle();
 

@@ -61,6 +61,8 @@ public class ActivityTest {
     public void setTheme() {
         UXTheme theme1 = mock(UXTheme.class);
         UXTheme theme2 = mock(UXTheme.class);
+        when(theme1.createInstance(anyFloat(), any(), any())).thenReturn(theme1);
+        when(theme2.createInstance(anyFloat(), any(), any())).thenReturn(theme2);
 
         WindowSettings settings = new WindowSettings.Builder().size(200, 100).build();
         Activity activity = Activity.create(window, settings);
@@ -91,15 +93,19 @@ public class ActivityTest {
     public void setThemeResource() {
         UXTheme theme1 = mock(UXTheme.class);
         UXTheme theme2 = mock(UXTheme.class);
+        when(theme1.createInstance(anyFloat(), any(), any())).thenReturn(theme1);
+        when(theme2.createInstance(anyFloat(), any(), any())).thenReturn(theme2);
         ResourceStream stream1 = mock(ResourceStream.class);
         ResourceStream stream2 = mock(ResourceStream.class);
 
         UXSheet sheet1 = mock(UXSheet.class);
         when(sheet1.instance()).thenReturn(theme1);
+        when(sheet1.instance(anyFloat(), any(), any())).thenReturn(theme1);
         when(stream1.getCache()).thenReturn(sheet1);
 
         UXSheet sheet2 = mock(UXSheet.class);
         when(sheet2.instance()).thenReturn(theme2);
+        when(sheet2.instance(anyFloat(), any(), any())).thenReturn(theme2);
         when(stream2.getCache()).thenReturn(sheet2);
 
         WindowSettings settings = new WindowSettings.Builder().size(200, 100).theme(stream1).build();

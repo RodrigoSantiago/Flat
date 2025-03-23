@@ -51,6 +51,14 @@ public class MenuItem extends Button {
         setShortcutText(attrs.getAttributeString("shortcut-text", getShortcutText()));
     }
 
+    @Override
+    public void applyLocalization() {
+        super.applyLocalization();
+
+        UXAttrs attrs = getAttrs();
+        setShortcutText(attrs.getAttributeLocale("shortcut-text", getShortcutText()));
+    }
+
 
     @Override
     public void applyStyle() {

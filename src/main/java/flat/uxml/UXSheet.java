@@ -142,8 +142,12 @@ public class UXSheet {
         }
     }
 
+    public UXTheme instance(float fontScale, UXStringBundle stringBundle, HashMap<String, UXValue> variables) {
+        return new UXTheme(this, fontScale, stringBundle, variables);
+    }
+
     public UXTheme instance() {
-        return new UXTheme(this, 1f, null);
+        return new UXTheme(this, 1f, null, null);
     }
 
     public UXStyle getStyle(String name) {

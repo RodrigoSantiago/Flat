@@ -1,24 +1,32 @@
 package flat.uxml;
 
-import flat.resources.StringBundle;
 import flat.uxml.value.UXValue;
 
 import java.util.HashMap;
 
 public class UXTheme {
-    private UXSheet sheet;
-    private StringBundle stringBundle;
-    private float fontScale;
-    private HashMap<String, UXValue> variables = new HashMap<>();
+    private final UXSheet sheet;
+    private final UXStringBundle stringBundle;
+    private final float fontScale;
+    private final HashMap<String, UXValue> variables;
 
     public UXTheme(UXSheet sheet) {
-        this(sheet, 1f, null);
+        this(sheet, 1f, null, null);
     }
 
-    public UXTheme(UXSheet sheet, float fontScale, StringBundle stringBundle) {
+    public UXTheme(UXSheet sheet, float fontScale, UXStringBundle stringBundle, HashMap<String, UXValue> variables) {
         this.sheet = sheet;
         this.fontScale = fontScale;
         this.stringBundle = stringBundle;
+        if (variables != null) {
+            this.variables = new HashMap<>(variables);
+        } else {
+            this.variables = null;
+        }
+    }
+
+    public UXTheme createInstance(float fontScale, UXStringBundle stringBundle, HashMap<String, UXValue> variables) {
+        return new UXTheme(sheet, fontScale, stringBundle, variables);
     }
 
     public UXStyle getStyle(String name) {
@@ -33,28 +41,16 @@ public class UXTheme {
         return sheet;
     }
 
-    public void setSheet(UXSheet sheet) {
-        this.sheet = sheet;
-    }
-
     public float getFontScale() {
         return fontScale;
     }
 
-    public void setFontScale(float fontScale) {
-        this.fontScale = fontScale;
-    }
-
-    public StringBundle getStringBundle() {
+    public UXStringBundle getStringBundle() {
         return stringBundle;
     }
 
-    public void setStringBundle(StringBundle stringBundle) {
-        this.stringBundle = stringBundle;
-    }
-
     public UXValue getVariable(String name) {
-        UXValue value = variables.get(name);
+        UXValue value = variables == null ? null : variables.get(name);
         if (value == null) {
             value = sheet.getVariableInitialValue(name);
             if (value == null) {
@@ -63,9 +59,5 @@ public class UXTheme {
         }
 
         return value;
-    }
-
-    public void setVariable(String name, UXValue value) {
-        variables.put(name, value);
     }
 }

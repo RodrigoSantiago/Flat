@@ -141,35 +141,14 @@ public class Widget {
         setPrevFocusId(attrs.getAttributeString("prev-focus-id", getPrevFocusId()));
     }
 
+    public void applyLocalization() {
+
+    }
+
     public void applyStyle() {
         UXAttrs attrs = getAttrs();
 
         setTransitionDuration(attrs.getNumber("transition-duration", null, getTransitionDuration()));
-
-        // Disabled State Overlay
-        /*if (parent != null) {
-            if (parent.isDisabled()) {
-                if (stateAnimation == null) {
-                    stateAnimation = new StateAnimation(this);
-                    stateAnimation.set(states);
-                }
-                if (((Widget)parent).stateAnimation != null) {
-                    stateAnimation.setDisabledOverlay(((Widget)parent).stateAnimation.getDisabled());
-                } else {
-                    stateAnimation.setDisabledOverlay(1);
-                }
-            } else {
-                if (stateAnimation != null) {
-                    stateAnimation.unsetDisabledOverlay();
-                }
-            }
-        }
-
-        if (isDisabled()) {
-            for (Widget child : getChildrenIterable()) {
-                child.applyStyle();
-            }
-        }*/
 
         StateInfo info = getStateInfo();
 
@@ -597,6 +576,7 @@ public class Widget {
             attrs.setTheme(getCurrentTheme());
             if (getActivity() != null) {
                 applyStyle();
+                applyLocalization();
             }
 
             if (contextMenu != null) {

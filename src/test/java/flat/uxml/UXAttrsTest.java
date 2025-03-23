@@ -73,7 +73,6 @@ public class UXAttrsTest {
         when(nameStyle.get(UXHash.getHash("property-angle"))).thenReturn(buildStates(new UXValueAngle(180)));
         when(nameStyle.get(UXHash.getHash("property-color"))).thenReturn(buildStates(new UXValueColor(0xFF00FFFF)));
         when(nameStyle.get(UXHash.getHash("property-font"))).thenReturn(buildStates(new UXValueFont(null, null, null, null)));
-        when(nameStyle.get(UXHash.getHash("property-resource"))).thenReturn(buildStates(new UXValueResource("default-url")));
 
         when(nameStyle.get(UXHash.getHash("property-mix"))).thenReturn(
                 new UXValue[]{new UXValueSizeDp(24), new UXValueSizeDp(48), null, null, null, null, null, null});

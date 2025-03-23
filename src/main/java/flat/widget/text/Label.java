@@ -44,6 +44,14 @@ public class Label extends Widget {
     }
 
     @Override
+    public void applyLocalization() {
+        super.applyLocalization();
+        UXAttrs attrs = getAttrs();
+
+        setText(attrs.getAttributeLocale("text", getText()));
+    }
+
+    @Override
     public void applyStyle() {
         super.applyStyle();
 

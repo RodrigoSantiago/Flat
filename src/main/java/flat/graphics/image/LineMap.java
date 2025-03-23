@@ -23,7 +23,7 @@ import java.nio.charset.StandardCharsets;
 
 public class LineMap implements Drawable {
 
-    public static Drawable parse(ResourceStream stream) {
+    public static LineMap parse(ResourceStream stream) {
         Object cache = stream.getCache();
         if (cache != null) {
             if (cache instanceof Exception) {

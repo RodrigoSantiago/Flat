@@ -37,6 +37,16 @@ public class ToolItem extends Widget {
     }
 
     @Override
+    public void applyLocalization() {
+        super.applyLocalization();
+
+        UXAttrs attrs = getAttrs();
+
+        setMenuText(attrs.getAttributeLocale("menu-text", getMenuText()));
+        setMenuShortcutText(attrs.getAttributeLocale("menu-shortcut-text", getMenuShortcutText()));
+    }
+
+    @Override
     public void applyStyle() {
         super.applyStyle();
 

@@ -7,6 +7,7 @@ import flat.graphics.image.Drawable;
 import flat.graphics.image.DrawableReader;
 import flat.resources.ResourceStream;
 import flat.uxml.value.UXValue;
+import flat.uxml.value.UXValueLocale;
 import flat.widget.State;
 import flat.widget.Widget;
 import flat.window.Activity;
@@ -193,6 +194,14 @@ public class UXAttrs {
     public String getAttributeString(String name, String def) {
         UXValue value = getAttribute(name);
         return value != null ? value.asString(theme) : def;
+    }
+
+    public String getAttributeLocale(String name, String def) {
+        UXValue value = getAttribute(name);
+        if (value != null && value.getSource(theme) instanceof UXValueLocale locale) {
+            return locale.asString(theme);
+        }
+        return def;
     }
 
     public boolean getAttributeBool(String name, boolean def) {

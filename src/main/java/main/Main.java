@@ -9,6 +9,7 @@ public class Main {
         Application.launch(new WindowSettings.Builder()
                 .layout("/default/screen_test/widgets.uxml")
                 .theme("/default/themes/light")
+                .stringBundle("/default/locale/english.uxml")
                 .controller(MainController::new)
                 .size(1280, 900)
                 .multiSamples(8)

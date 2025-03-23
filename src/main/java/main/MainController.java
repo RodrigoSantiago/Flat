@@ -7,6 +7,7 @@ import flat.backend.SVG;
 import flat.backend.WL;
 import flat.data.ObservableList;
 import flat.events.ActionEvent;
+import flat.events.KeyEvent;
 import flat.events.PointerEvent;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
@@ -19,6 +20,7 @@ import flat.graphics.image.Drawable;
 import flat.graphics.image.DrawableReader;
 import flat.graphics.image.LineMap;
 import flat.graphics.image.PixelMap;
+import flat.math.Affine;
 import flat.math.shapes.Circle;
 import flat.math.shapes.Ellipse;
 import flat.math.shapes.Path;
@@ -27,6 +29,7 @@ import flat.resources.ResourceStream;
 import flat.uxml.Controller;
 import flat.widget.Parent;
 import flat.widget.Widget;
+import flat.widget.enums.ImageFilter;
 import flat.widget.image.ImageView;
 import flat.widget.layout.Drawer;
 import flat.widget.layout.LinearBox;
@@ -429,6 +432,14 @@ public class MainController extends Controller {
                 .build());
     }
 
+    @Flat
+    public void onKeypress(KeyEvent event) {
+        if (event.getType() == KeyEvent.PRESSED) {
+            event.getSource().invalidate(true);
+            System.out.println("Rquest refresh");
+        }
+    }
+
     ShaderProgram shader;
     PixelMap pix;
     Font arial;
@@ -483,11 +494,34 @@ public class MainController extends Controller {
         treeView2.setAdapter(new TreeViewAdapter(list4));
     }
 
+    @Flat
+    public void optimize(PointerEvent pointer) {
+        if (pointer.getPointerID() == 1 && pointer.getType() == PointerEvent.PRESSED) {
+            if (pointer.getSource() instanceof ImageView view) {
+                LineMap lineMap = (LineMap) view.getImage();
+                lineMap.optimize();
+            }
+        }
+    }
+
+
+    boolean debug = false;
+    @Flat
+    public void toggleDebugMode() {
+        debug = !debug;
+        GL.SetDebug(debug);
+        SVG.SetDebug(debug);
+    }
+
+    float t = 1;
+    float av = 0;
+    LineMap star;
+
     @Override
     public void onShow() {
         setupListView();
 
-        Font.installSystemFontFamily("Times New Roman");
+        /*Font.installSystemFontFamily("Times New Roman");
         arial = Font.findFont("Times New Roman");
         System.out.println(arial);
 
@@ -530,41 +564,34 @@ public class MainController extends Controller {
 
         pix = surface.createPixelMap();
 
-        System.out.println("Render to PixelMap " + GL.GetError());
+        System.out.println("Render to PixelMap " + GL.GetError());*/
 
 
         if (tabChips != null) {
             search(tabChips.getFrame());
         }
+        star = LineMap.parse(new ResourceStream("/default/icons/star.svg"));
     }
 
     @Flat
-    public void optimize(PointerEvent pointer) {
-        if (pointer.getPointerID() == 1 && pointer.getType() == PointerEvent.PRESSED) {
-            if (pointer.getSource() instanceof ImageView view) {
-                LineMap lineMap = (LineMap) view.getImage();
-                lineMap.optimize();
-            }
-        }
+    public void onChangeLocale() {
+        getActivity().setStringBundle("/default/locale/portuguese.uxml");
     }
 
-
-    boolean debug = false;
-    @Flat
-    public void toggleDebugMode() {
-        debug = !debug;
-        GL.SetDebug(debug);
-        SVG.SetDebug(debug);
+    @Override
+    public void onKeyFilter(KeyEvent keyEvent) {
+        System.out.println("Refresh");
+        getActivity().invalidate();
+        t++;
     }
-
-    float t = 0;
-    float av = 0;
 
     @Override
     public void onDraw(Graphics graphics) {
         super.onDraw(graphics);
-
         graphics.setTransform2D(null);
+        graphics.setColor(Color.red);
+        graphics.drawRoundRect(100, 100, t, t, t*0.25f,t*0.25f,t*0.25f,t*0.25f,true);
+        /*graphics.setTransform2D(null);
         graphics.setColor(Color.white);
         graphics.drawRect(0, getActivity().getHeight() - 16, 52, 16, true);
         graphics.setColor(Color.red);
@@ -575,24 +602,7 @@ public class MainController extends Controller {
         }
         graphics.drawText(10, getActivity().getHeight() - 16, "FPS : " + (int)(1f / av));
 
-        /*graphics.setTransform2D(null);
-
-        var clips = graphics.getClipState();
-        graphics.pushClip(new Ellipse(100, 100, 200, 200));
-        var box1 = clips.clipBox.get(clips.clipBox.size() - 1);
-        graphics.pushClip(new Ellipse(150, 150, 200, 200));
-        var box2 = clips.clipBox.get(clips.clipBox.size() - 1);
-        graphics.clearClip();
-
-        graphics.setStroke(new BasicStroke(2));
-        graphics.setColor(Color.blue);
-        graphics.drawShape(new Ellipse(100, 100, 200, 200), false);
-        graphics.drawShape(new Ellipse(150, 150, 200, 200), false);
-        graphics.setStroke(new BasicStroke(1));
-        graphics.setColor(Color.red);
-        graphics.drawRect(box1, false);
-        graphics.drawRect(box2, false);
-        graphics.drawImage(pix, 100, 100, 640, 640);*/
+        graphics.setTransform2D(null);
 
         if (t > 0) {
             if (t == 1) {
@@ -623,7 +633,7 @@ public class MainController extends Controller {
             PixelMap pixelMap = font.createImageFromAtlas(graphics.getContext());
             saveImage(pixelMap, "C:\\Nova\\image-3.png");
             System.out.println("SAVED");
-        }
+        }*/
     }
 
     public static void saveImage(PixelMap pixelMap, String filePath) {

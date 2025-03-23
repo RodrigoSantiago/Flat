@@ -1,6 +1,7 @@
 package flat.window;
 
 import flat.backend.FlatLibrary;
+import flat.backend.GL;
 import flat.backend.WL;
 import flat.exception.FlatException;
 import flat.graphics.context.Context;

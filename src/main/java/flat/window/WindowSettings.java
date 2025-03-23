@@ -1,6 +1,7 @@
 package flat.window;
 
 import flat.resources.ResourceStream;
+import flat.uxml.UXStringBundle;
 import flat.uxml.UXTheme;
 import flat.widget.Scene;
 
@@ -11,6 +12,8 @@ public class WindowSettings {
     private ResourceStream themeStream;
     private Scene layout;
     private ResourceStream layoutStream;
+    private UXStringBundle stringBundle;
+    private ResourceStream stringBundleStream;
     private int width;
     private int height;
     private int multiSamples;
@@ -18,12 +21,15 @@ public class WindowSettings {
 
     public WindowSettings(ControllerFactory controller
             , UXTheme theme, ResourceStream themeStream, Scene layout, ResourceStream layoutStream
+            , UXStringBundle stringBundle, ResourceStream stringBundleStream
             , int width, int height, int multiSamples, boolean transparent) {
         this.controller = controller;
         this.theme = theme;
         this.themeStream = themeStream;
         this.layout = layout;
         this.layoutStream = layoutStream;
+        this.stringBundle = stringBundle;
+        this.stringBundleStream = stringBundleStream;
         this.width = width;
         this.height = height;
         this.multiSamples = multiSamples;
@@ -50,6 +56,14 @@ public class WindowSettings {
         return layoutStream;
     }
 
+    public UXStringBundle getStringBundle() {
+        return stringBundle;
+    }
+
+    public ResourceStream getStringBundleStream() {
+        return stringBundleStream;
+    }
+
     public int getWidth() {
         return width;
     }
@@ -73,14 +87,17 @@ public class WindowSettings {
         private ResourceStream themeStream;
         private Scene layout;
         private ResourceStream layoutStream;
+        private UXStringBundle stringBundle;
+        private ResourceStream stringBundleStream;
         private int width = 800;
         private int height = 600;
         private int multiSamples = 8;
         private boolean transparent;
 
         public WindowSettings build() {
-            return new WindowSettings(controller, theme, themeStream, layout, layoutStream, width, height,
-                    multiSamples, transparent);
+            return new WindowSettings(controller,
+                    theme, themeStream, layout, layoutStream, stringBundle, stringBundleStream,
+                    width, height, multiSamples, transparent);
         }
 
         public Builder layout(String stream) {
@@ -116,6 +133,24 @@ public class WindowSettings {
         public Builder theme(UXTheme theme) {
             this.theme = theme;
             this.themeStream = null;
+            return this;
+        }
+
+        public Builder stringBundle(String stream) {
+            this.stringBundle = null;
+            this.stringBundleStream = new ResourceStream(stream);
+            return this;
+        }
+
+        public Builder stringBundle(ResourceStream stream) {
+            this.stringBundle = null;
+            this.stringBundleStream = stream;
+            return this;
+        }
+
+        public Builder stringBundle(UXStringBundle stringBundle) {
+            this.stringBundle = stringBundle;
+            this.stringBundleStream = null;
             return this;
         }
 

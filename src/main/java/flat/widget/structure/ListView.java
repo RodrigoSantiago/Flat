@@ -1,6 +1,5 @@
 package flat.widget.structure;
 
-import flat.animations.NormalizedAnimation;
 import flat.animations.StateInfo;
 import flat.events.ScrollEvent;
 import flat.events.SlideEvent;
@@ -11,7 +10,6 @@ import flat.widget.Widget;
 import flat.widget.layout.Scrollable;
 import flat.widget.value.HorizontalScrollBar;
 import flat.widget.value.VerticalScrollBar;
-import flat.window.Activity;
 
 import java.util.ArrayList;
 

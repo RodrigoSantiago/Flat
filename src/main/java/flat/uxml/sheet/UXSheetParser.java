@@ -447,7 +447,7 @@ public class UXSheetParser {
             nextText = readString();
             nextType = STRING;
 
-        } else if (current == '@') {
+        } else if (current == '@' && isCharacter(next)) {
             nextText = readName();
             nextType = LOCALE;
 
@@ -463,7 +463,7 @@ public class UXSheetParser {
             nextText = readNumber();
             nextType = NUMBER;
 
-        } else if (isCharacter(current)) {
+        } else if (isCharacter(current) || (current == '@' && next == '@')) {
             nextText = readName();
             nextType = TEXT;
 
@@ -503,8 +503,12 @@ public class UXSheetParser {
     }
 
     private String readName() {
-        // [a-zA-Z_\-]+
+        // Locale @@Scape
+        if (current == '@' && next == '@') {
+            readNextChar();
+        }
 
+        // [a-zA-Z_\-]+
         builder.appendCodePoint(current);
         while (isCharacter(next) || next == '.') {
             readNextChar();

@@ -8,7 +8,7 @@ public class UXValueLocale extends UXValue {
     private final String text;
 
     public UXValueLocale(String text) {
-        this.text = text;
+        this.text = !text.isEmpty() ? text.substring(1) : text;
     }
 
     @Override

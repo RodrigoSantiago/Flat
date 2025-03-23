@@ -1,6 +1,7 @@
 package flat.uxml;
 
 import flat.Flat;
+import flat.events.KeyEvent;
 import flat.graphics.Graphics;
 import flat.window.Activity;
 import flat.window.Application;
@@ -113,6 +114,10 @@ public class Controller {
     }
 
     public void onHide() {
+
+    }
+
+    public void onKeyFilter(KeyEvent keyEvent) {
 
     }
 

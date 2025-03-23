@@ -4,7 +4,7 @@
                    padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
             <Label text="Default" style="subtitle" margin-left="4dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button text="Contained" style=""/>
+                <Button text="@contained" style="" on-key="onKeypress" on-action="onChangeLocale"/>
                 <Button margin-left="16dp" text="Contained" style="primary"/>
                 <Button margin-left="16dp" text="Outlined" style="outlined-primary"/>
                 <Button margin-left="16dp" text="Text" style="text-primary"/>

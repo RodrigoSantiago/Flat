@@ -134,9 +134,6 @@ public class ApplicationTest {
         assertUsualInit(fileLibrary);
 
         verifyStatic(WL.class);
-        WL.WindowAssign(anyLong());
-
-        verifyStatic(WL.class);
         WL.HandleEvents(anyDouble());
 
         verifyStatic(WL.class);
@@ -211,9 +208,6 @@ public class ApplicationTest {
         assertUsualInit(fileLibrary);
 
         verifyStatic(WL.class);
-        WL.WindowAssign(anyLong());
-
-        verifyStatic(WL.class);
         WL.HandleEvents(anyDouble());
 
         verifyStatic(WL.class);
@@ -255,9 +249,6 @@ public class ApplicationTest {
 
         // Assertion
         assertUsualInit(fileLibrary);
-
-        verifyStatic(WL.class);
-        WL.WindowAssign(anyLong());
 
         verifyStatic(WL.class);
         WL.Finish();
@@ -306,9 +297,6 @@ public class ApplicationTest {
 
         assertUsualInit(fileLibrary);
 
-        verifyStatic(WL.class);
-        WL.WindowAssign(anyLong());
-
         verifyStatic(WL.class, times(2));
         WL.SwapBuffers(anyLong());
 
@@ -349,9 +337,6 @@ public class ApplicationTest {
         assertUsualInit(fileLibrary);
 
         verifyStatic(WL.class);
-        WL.WindowAssign(anyLong());
-
-        verifyStatic(WL.class);
         WL.HandleEvents(anyDouble());
 
         verifyStatic(WL.class);
@@ -389,9 +374,6 @@ public class ApplicationTest {
         verify(task).run();
 
         assertUsualInit(fileLibrary);
-
-        verifyStatic(WL.class);
-        WL.WindowAssign(anyLong());
 
         verifyStatic(WL.class);
         WL.HandleEvents(anyDouble());

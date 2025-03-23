@@ -10,12 +10,14 @@ import flat.graphics.Graphics;
 import flat.graphics.context.Context;
 import flat.resources.ResourceStream;
 import flat.uxml.*;
+import flat.uxml.value.UXValue;
 import flat.widget.Group;
 import flat.widget.Parent;
 import flat.widget.Scene;
 import flat.widget.Widget;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
@@ -43,15 +45,19 @@ public class Activity {
     private WindowSettings initialSettings;
 
     private UXTheme theme;
+    private float fontScale = 1f;
+    private final HashMap<String, UXValue> themeVariables = new HashMap<>();
 
-    private boolean invalided, invalidScene, invalidDensity;
+    private UXStringBundle stringBundle;
+
+    private boolean invalided, invalidScene, invalidThemeStyle;
     private Widget invalidWidget;
 
     private float lastDpi;
 
     public static Activity create(Window window, WindowSettings settings) {
         if (window.getActivity() != null) {
-            throw new FlatException("The Window already have a activity");
+            throw new FlatException("The Window already have an activity");
         } else {
             return new Activity(window, settings);
         }
@@ -70,8 +76,15 @@ public class Activity {
             controller = initialSettings.getController().build();
         }
 
+        if (initialSettings.getStringBundleStream() != null) {
+            stringBundle = UXStringBundle.parse(initialSettings.getStringBundleStream());
+
+        } else if (initialSettings.getStringBundle() != null) {
+            stringBundle = initialSettings.getStringBundle();
+        }
+
         if (initialSettings.getThemeStream() != null) {
-            theme = UXSheet.parse(initialSettings.getThemeStream()).instance();
+            theme = UXSheet.parse(initialSettings.getThemeStream()).instance(fontScale, stringBundle, themeVariables);
 
         } else if (initialSettings.getTheme() != null) {
             theme = initialSettings.getTheme();
@@ -93,7 +106,7 @@ public class Activity {
 
         scene.getActivityScene().setActivity(this);
         invalidateWidget(scene);
-        invalidateDensity();
+        invalidateThemeStyle();
     }
 
     public Context getContext() {
@@ -146,7 +159,37 @@ public class Activity {
 
     public void setTheme(UXTheme theme) {
         this.theme = theme;
-        invalidateDensity();
+        invalidateThemeStyle();
+    }
+
+    public void setStringBundle(String pathName) {
+        setStringBundle(new ResourceStream(pathName));
+    }
+
+    public void setStringBundle(ResourceStream resourceStream) {
+        setStringBundle(UXStringBundle.parse(resourceStream));
+    }
+
+    public void setStringBundle(UXStringBundle stringBundle) {
+        this.stringBundle = stringBundle;
+        invalidateThemeStyle();
+    }
+
+    public void setThemeVariable(String name, UXValue value) {
+        themeVariables.put(name, value);
+        invalidateThemeStyle();
+    }
+
+    public UXValue getThemeVariable(String name) {
+        return themeVariables.get(name);
+    }
+
+    public float getFontScale() {
+        return fontScale;
+    }
+
+    public void setFontScale(float fontScale) {
+        this.fontScale = fontScale;
     }
 
     public void addAnimation(Animation animation) {
@@ -175,7 +218,7 @@ public class Activity {
         float dpi = getWindow() == null ? 160f : getWindow().getDpi();
         if (lastDpi != dpi) {
             lastDpi = dpi;
-            invalidateDensity();
+            invalidateThemeStyle();
         }
     }
 
@@ -196,7 +239,7 @@ public class Activity {
             }
             scene.getActivityScene().setActivity(this);
             invalidateWidget(scene);
-            invalidateDensity();
+            invalidateThemeStyle();
         }
     }
 
@@ -204,8 +247,9 @@ public class Activity {
         updateDensity();
         buildScene();
 
-        if (invalidDensity) {
-            invalidDensity = false;
+        if (invalidThemeStyle) {
+            invalidThemeStyle = false;
+            theme = theme != null ? theme.createInstance(fontScale, stringBundle, themeVariables) : null;
             scene.setTheme(theme);
             scene.refreshStyle();
         }
@@ -357,6 +401,14 @@ public class Activity {
     }
 
     public void onKeyFilter(KeyEvent event) {
+        if (controller != null && controller.isListening()) {
+            try {
+                controller.onKeyFilter(event);
+            } catch (Exception e) {
+                Application.handleException(e);
+            }
+        }
+
         filtersTemp.addAll(keyFilters);
         for (int i = filtersTemp.size() - 1; i >= 0; i--) {
             var widget = filtersTemp.get(i);
@@ -504,8 +556,8 @@ public class Activity {
         }
     }
 
-    private void invalidateDensity() {
-        invalidDensity = true;
+    private void invalidateThemeStyle() {
+        invalidThemeStyle = true;
         invalidate();
     }
 
