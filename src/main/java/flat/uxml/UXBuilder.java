@@ -37,6 +37,7 @@ public class UXBuilder {
         UXBuilder.install("LinearBox", LinearBox::new);
         UXBuilder.install("StackBox", StackBox::new);
         UXBuilder.install("Label", Label::new);
+        UXBuilder.install("Text", Text::new);
         UXBuilder.install("Button", Button::new);
         UXBuilder.install("Checkbox", Checkbox::new);
         UXBuilder.install("RadioButton", RadioButton::new);

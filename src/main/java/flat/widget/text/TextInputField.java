@@ -95,7 +95,7 @@ public class TextInputField extends TextField {
         }
 
         if (wrapWidth) {
-            mWidth = Math.max(getTextWidth() + iw + iaw + extraWidth, getLayoutMinWidth());
+            mWidth = Math.max(getNaturalTextWidth() + iw + iaw + extraWidth, getLayoutMinWidth());
         } else {
             mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
         }
@@ -121,6 +121,21 @@ public class TextInputField extends TextField {
         Vector2 fromBase = super.onLayoutViewDimension(width, height);
         fromBase.x -= exWidth;
         return fromBase;
+    }
+
+    @Override
+    public Vector2 onLayoutTotalDimension(float width, float height) {
+        if (isTextEmpty()) return super.onLayoutTotalDimension(width, height);
+
+        if (isLineWrapReallyEnabled()) {
+            float iw = getLayoutIconWidth();
+            float aiw = getLayoutActionIconWidth();
+            float exWidth = (iw > 0 ? iw + getIconSpacing(): 0)
+                    + (aiw <= 0 ? 0 : aiw + getActionIconSpacing());
+            return new Vector2(getInWidth() - exWidth, getTextHeight());
+        } else {
+            return new Vector2(getTextWidth(), getTextHeight());
+        }
     }
 
     @Override

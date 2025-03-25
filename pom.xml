@@ -24,6 +24,7 @@
                         --add-opens java.base/java.io=ALL-UNNAMED
                         --add-opens java.base/java.util=ALL-UNNAMED
                         --add-opens java.base/java.time=ALL-UNNAMED
+                        --add-opens java.base/java.nio=ALL-UNNAMED
                     </argLine>
                 </configuration>
             </plugin>

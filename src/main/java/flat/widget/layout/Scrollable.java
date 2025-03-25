@@ -113,6 +113,10 @@ public abstract class Scrollable extends Parent {
         setLayout(width, height);
         Vector2 localDimension = onLayoutTotalDimension(width, height);
         Vector2 viewDimension = onLayoutViewDimension(width, height);
+        localDimension.x = Math.max(0, localDimension.x);
+        localDimension.y = Math.max(0, localDimension.y);
+        viewDimension.x = Math.max(0, viewDimension.x);
+        viewDimension.y = Math.max(0, viewDimension.y);
 
         viewDimensionX = viewDimension.x;
         viewDimensionY = viewDimension.y;

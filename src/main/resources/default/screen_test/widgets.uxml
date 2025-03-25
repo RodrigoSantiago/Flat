@@ -9,12 +9,13 @@
             <ToolItem icon="/default/icons/night.svg" style="dense primary" menu-text="Dark" on-action="setThemeDark"/>
         </ToolBar>
         <Drawer id="mainDrawer" width="MATCH_PARENT" height="MATCH_PARENT" block-events="true" auto-close="true" overlay-mode="FLOATING">
-            <LinearBox front-content="true" direction="vertical" width="250dp" height="MATCH_PARENT" style="drawer-menu">
+            <LinearBox front-content="true" direction="vertical" style="layout-drawer-menu">
                 <MenuItem text="Buttons" on-action="setTabButtons" style="navigation"/>
                 <MenuItem text="Chips" on-action="setTabChips" style="navigation"/>
                 <MenuItem text="Forms" on-action="setTabForms" style="navigation"/>
                 <MenuItem text="Progress" on-action="setTabProgress" style="navigation"/>
                 <MenuItem text="Text" on-action="setTabText" style="navigation"/>
+                <MenuItem text="TextFields" on-action="setTabTextFields" style="navigation"/>
                 <MenuItem text="Tabs" on-action="setTabTabs" style="navigation"/>
                 <MenuItem text="Toolbars" on-action="setTabToolbars" style="navigation"/>
                 <MenuItem text="Scrolls" on-action="setTabScrolls" style="navigation"/>
@@ -23,7 +24,7 @@
                 <MenuItem text="Menus" on-action="setTabMenus" style="navigation"/>
                 <MenuItem text="Dialogs" on-action="setTabDialogs" style="navigation"/>
             </LinearBox>
-            <LinearBox back-content="true" direction="vertical" width="MATCH_PARENT" height="MATCH_PARENT">
+            <LinearBox back-content="true" direction="vertical" style="layout-drawer-content">
                 <TabView width="MATCH_PARENT" height="MATCH_PARENT" id="mainTab" hidden-tabs="true">
                     <Tab text="Buttons" id="tabButtons">
                         <Frame width="MATCH_PARENT" height="MATCH_PARENT">
@@ -48,6 +49,11 @@
                     <Tab text="Text" id="tabText">
                         <Frame width="MATCH_PARENT" height="MATCH_PARENT">
                             <Include src="text.uxml"/>
+                        </Frame>
+                    </Tab>
+                    <Tab text="TextFields" id="tabTextFields">
+                        <Frame width="MATCH_PARENT" height="MATCH_PARENT">
+                            <Include src="textfields.uxml"/>
                         </Frame>
                     </Tab>
                     <Tab text="Tabs" id="tabTabs">

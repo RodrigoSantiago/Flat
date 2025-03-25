@@ -20,18 +20,43 @@ public class TextRender {
     private int lineCount = 1;
     private int totalCharacters;
     private int maxCharacters;
-    private float width;
+
+    private boolean lineWrapped;
+    private float width = -1;
+    private float layoutWidth;
+    private float naturalWidth;
+    private int naturalLines;
 
     public void setFont(Font font) {
         this.font = font;
+        width = -1;
+        if (lineWrapped) {
+            recreateLines(false);
+        }
     }
 
     public void setTextSize(float textSize) {
         this.textSize = textSize;
+        width = -1;
+        if (lineWrapped) {
+            recreateLines(false);
+        }
     }
 
     public void setMaxCharacters(int maxCharacters) {
         this.maxCharacters = maxCharacters;
+    }
+
+    public int getTotalCharacters() {
+        return totalCharacters;
+    }
+
+    public int getTotalBytes() {
+        return byteSize;
+    }
+
+    public int getTotalLines() {
+        return lineCount;
     }
 
     private void ensureCapacity(int requiredCapacity) {
@@ -44,9 +69,19 @@ public class TextRender {
         }
     }
 
+    public String getText() {
+        return new String(textBytes, 0, byteSize, StandardCharsets.UTF_8);
+    }
+
+    public String getText(Caret caretStart, Caret caretEnd) {
+        byte[] bytes = new byte[caretEnd.offset - caretStart.offset];
+        System.arraycopy(textBytes, caretStart.offset, bytes, 0, bytes.length);
+        return new String(bytes);
+    }
+
     public boolean setText(String text) {
         boolean complete = true;
-        if (text == null || text.length() == 0) {
+        if (text == null || text.isEmpty()) {
             byteSize = 0;
             totalCharacters = 0;
         } else {
@@ -64,42 +99,18 @@ public class TextRender {
             byteSize = len;
         }
 
-        updateLines();
+        recreateLines(true);
         return complete;
-    }
-
-    public String getText() {
-        return new String(textBytes, 0, byteSize, StandardCharsets.UTF_8);
-    }
-
-    public String getText(Caret caretStart, Caret caretEnd) {
-        byte[] bytes = new byte[caretEnd.offset - caretStart.offset];
-        for (int i = 0; i < bytes.length; i++) {
-            bytes[i] = textBytes[caretStart.offset + i];
-        }
-        return new String(bytes);
     }
 
     public boolean trim(int length) {
         if (totalCharacters > length) {
             byteSize = findLength(textBytes, 0, byteSize, length);
             totalCharacters = length;
-            updateLines();
+            recreateLines(true);
             return true;
         }
         return false;
-    }
-
-    public int getTotalCharacters() {
-        return totalCharacters;
-    }
-
-    public int getTotalBytes() {
-        return byteSize;
-    }
-
-    public int getTotalLines() {
-        return lineCount;
     }
 
     public boolean editText(Caret caretStart, Caret caretEnd, String replace, Caret newCaret) {
@@ -141,7 +152,7 @@ public class TextRender {
         System.arraycopy(replaceBytes, 0, textBytes, start, replaceBytes.length);
         byteSize = newSize;
         totalCharacters = totalCharacters - oldCharacters + newCharacters;
-        updateLines();
+        recreateLines(true);
 
         int offset = start + replaceBytes.length;
         updateCaret(newCaret, offset);
@@ -149,17 +160,26 @@ public class TextRender {
         return true;
     }
 
-    private void updateLines() {
+    private void recreateLines(boolean updateBuffer) {
         lineCount = 1;
+        naturalWidth = 0;
+        naturalLines = 1;
+        lineWrapped = false;
+        layoutWidth = 0;
+        width = -1;
+
         if (byteSize == 0) {
             return;
         }
 
-        if (buffer == null || buffer.capacity() < textBytes.length) {
-            buffer = ByteBuffer.allocateDirect(textBytes.length);
+        if (updateBuffer) {
+            if (buffer == null || buffer.capacity() < textBytes.length) {
+                buffer = ByteBuffer.allocateDirect(textBytes.length);
+            }
+
+            buffer.position(0);
+            buffer.put(textBytes, 0, byteSize);
         }
-        buffer.position(0);
-        buffer.put(textBytes, 0, byteSize);
 
         int prev = 0;
         for (int i = 0; i < byteSize; i++) {
@@ -187,17 +207,110 @@ public class TextRender {
                 lines.get(lineCount - 1).reset(prev, byteSize - prev);
             }
         }
+
+        naturalWidth = getTextWidth();
+        naturalLines = lineCount;
     }
 
-    public float getTextWidth() {
+    public boolean isLineWrapped() {
+        return lineWrapped;
+    }
+
+    public boolean isBreakLines(float maxWidth) {
         if (byteSize == 0 || font == null) {
-            width = 0;
+            return false;
+        }
+
+        maxWidth = Math.max(textSize, maxWidth);
+
+        if (width != -1 && maxWidth == layoutWidth) {
+            return false;
+        }
+
+        if (naturalWidth <= maxWidth + 0.01f) {
+            return lineWrapped;
+        }
+
+        if (lineCount == 1) {
+            return true;
+        }
+
+        return font.getLineWrap(buffer, 0, byteSize, textSize, 1, maxWidth) != lineCount;
+    }
+
+    public void breakLines(float maxWidth) {
+        if (byteSize == 0 || font == null) {
+            return;
+        }
+
+        if (width != -1 && maxWidth == layoutWidth) {
+            return;
+        }
+
+        if (lineWrapped) {
+            recreateLines(false);
+        }
+
+        maxWidth = Math.max(textSize, maxWidth);
+
+        if (naturalWidth <= maxWidth + 0.01f) {
+            return;
+        }
+
+        if (lineCount == 1) {
+            if (lines == null) {
+                lines = new ArrayList<>();
+            }
+            if (lines.isEmpty()) {
+                Line line = new Line(0, byteSize);
+                line.width = naturalWidth;
+                lines.add(line);
+            } else {
+                Line line = lines.get(0);
+                line.reset(0, byteSize);
+                line.width = naturalWidth;
+            }
+        }
+
+        layoutWidth = maxWidth;
+        width = -1;
+
+        for (int i = 0; i < lineCount; i++) {
+            var line = lines.get(i);
+            if (line.width > maxWidth + 0.01f) {
+                var caret = font.getCaretOffsetSpace(buffer, line.start, line.length, textSize, 1, maxWidth);
+                if (caret.index == 0 && line.length > 1) {
+                    caret = new Font.CaretData(1, font.getWidth(buffer, line.start, 1, textSize, 1));
+                }
+                if (caret.index > 0 && caret.index < line.length) {
+                    Line split;
+                    if (lines.size() > lineCount) {
+                        split = lines.remove(lines.size() - 1);
+                    } else {
+                        split = new Line(0, 0);
+                    }
+                    split.reset(line.start + caret.index, line.length - caret.index);
+                    split.width = line.width - caret.width;
+                    lines.add(i + 1, split);
+                    lineCount++;
+
+                    line.length = caret.index;
+                    line.width = caret.width;
+                    lineWrapped = true;
+                }
+            }
+        }
+    }
+
+    private float calculateTextWidth() {
+        if (byteSize == 0 || font == null) {
+            return 0;
 
         } else if (lineCount == 1) {
-            width = font.getWidth(buffer, 0, byteSize, textSize, 1);
+            return font.getWidth(buffer, 0, byteSize, textSize, 1);
 
         } else {
-            width = 0;
+            float mWidth = 0;
             for (int i = 0; i < lineCount; i++) {
                 var line = lines.get(i);
                 if (line.length == 0) {
@@ -205,8 +318,19 @@ public class TextRender {
                 } else {
                     line.width = font.getWidth(buffer, line.start, line.length, textSize, 1);
                 }
-                width = Math.max(width, line.width);
+                mWidth = Math.max(mWidth, line.width);
             }
+            return mWidth;
+        }
+    }
+
+    public float getNaturalWidth() {
+        return naturalWidth;
+    }
+
+    public float getTextWidth() {
+        if (width == -1) {
+            width = calculateTextWidth();
         }
         return width;
     }
@@ -229,10 +353,14 @@ public class TextRender {
         if (byteSize == 0 || font == null) {
             return;
         }
+
+        float localWidth = getTextWidth();
+
         if (lineCount == 1) {
             context.drawTextSlice(x, y, width, height, buffer, 0, byteSize);
             return;
         }
+
         float lineHeight = font.getHeight(textSize);
         for (int i = startLine; i < lineCount && i < endLine; i++) {
             var line = lines.get(i);
@@ -245,11 +373,11 @@ public class TextRender {
             float wd = width;
             float hg = height - (i * lineHeight);
             if (align == HorizontalAlign.RIGHT) {
-                float off = Math.max(0, this.width - line.width);
+                float off = Math.max(0, localWidth - line.width);
                 xpos = x + off;
                 wd -= off;
             } else if (align == HorizontalAlign.CENTER) {
-                float off = Math.max(0, this.width - line.width) * 0.5f;
+                float off = Math.max(0, localWidth - line.width) * 0.5f;
                 xpos = x + off;
                 wd -= off;
             }
@@ -257,6 +385,11 @@ public class TextRender {
                 context.drawTextSlice(xpos, ypos, wd, hg, buffer, line.start, line.length);
             }
         }
+    }
+
+    public void getCaret(Caret caretPos) {
+        caretPos.line = 0;
+        updateCaret(caretPos, caretPos.offset);
     }
 
     public void getCaret(float px, float py, float x, float y, HorizontalAlign align, Caret caretPos) {
@@ -267,6 +400,8 @@ public class TextRender {
             caretPos.width = 0;
             return;
         }
+
+        float localWidth = getTextWidth();
 
         if (lineCount == 1) {
             var caret = font.getCaretOffset(buffer, 0, byteSize, textSize, 1, px - x, true);
@@ -283,10 +418,10 @@ public class TextRender {
 
         float xpos = x;
         if (align == HorizontalAlign.RIGHT) {
-            float off = Math.max(0, this.width - line.width);
+            float off = Math.max(0, localWidth - line.width);
             xpos = x + off;
         } else if (align == HorizontalAlign.CENTER) {
-            float off = Math.max(0, this.width - line.width) * 0.5f;
+            float off = Math.max(0, localWidth - line.width) * 0.5f;
             xpos = x + off;
         }
 
@@ -302,13 +437,15 @@ public class TextRender {
             return 0;
         }
 
-        float w = lineCount == 1 ? width : lines.get(caret.line).width;
+        float localWidth = getTextWidth();
+
+        float w = lineCount == 1 ? localWidth : lines.get(caret.line).width;
 
         float xpos = 0;
         if (align == HorizontalAlign.RIGHT) {
-            xpos = Math.max(0, width - w);
+            xpos = Math.max(0, localWidth - w);
         } else if (align == HorizontalAlign.CENTER) {
-            xpos = Math.max(0, width - w) * 0.5f;
+            xpos = Math.max(0, localWidth - w) * 0.5f;
         }
 
         return caret.width + xpos;
@@ -322,6 +459,8 @@ public class TextRender {
             caret.width = 0;
             return;
         }
+
+        float localWidth = getTextWidth();
 
         if (lineCount == 1) {
             var newCaret = font.getCaretOffset(buffer, 0, offset, textSize, 1, 9999, true);

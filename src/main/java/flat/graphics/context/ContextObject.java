@@ -29,7 +29,7 @@ abstract class ContextObject {
     public void dispose() {
         if (!disposed) {
             disposed = true;
-            disposeTask.run();
+            if (disposeTask != null) disposeTask.run();
         }
     }
 }

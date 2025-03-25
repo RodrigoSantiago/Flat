@@ -330,6 +330,46 @@ public class Font {
         }
     }
 
+    public CaretData getCaretOffsetSpace(String text, float size, float spacing, float x) {
+        checkDisposed();
+        if (size < 0) {
+            return new CaretData(0, 0);
+        } else {
+            float[] data = new float[2];
+            SVG.FontGetOffsetSpace(fontId, text, size / this.size, spacing, x, data);
+            return new CaretData((int) data[0], data[1]);
+        }
+    }
+
+    public CaretData getCaretOffsetSpace(Buffer text, int offset, int length, float size, float spacing, float x) {
+        checkDisposed();
+        if (size < 0) {
+            return new CaretData(x > 0 ? length : 0, 0);
+        } else {
+            float[] data = new float[2];
+            SVG.FontGetOffsetSpaceBuffer(fontId, text, offset, length, size / this.size, spacing, x, data);
+            return new CaretData((int) data[0], data[1]);
+        }
+    }
+
+    public int getLineWrap(String text, float size, float spacing, float x) {
+        checkDisposed();
+        if (size < 0) {
+            return 1;
+        } else {
+            return SVG.FontGetLineWrap(fontId, text, size / this.size, spacing, x);
+        }
+    }
+
+    public int getLineWrap(Buffer text, int offset, int length, float size, float spacing, float x) {
+        checkDisposed();
+        if (size < 0) {
+            return 1;
+        } else {
+            return SVG.FontGetLineWrapBuffer(fontId, text, offset, length, size / this.size, spacing, x);
+        }
+    }
+
     public float getSize() {
         return size;
     }

@@ -50,7 +50,7 @@ public class TextField extends TextArea {
     public void applyLocalization() {
         super.applyLocalization();
         UXAttrs attrs = getAttrs();
-        setText(attrs.getAttributeLocale("title", getTitle()));
+        setTitle(attrs.getAttributeLocale("title", getTitle()));
     }
 
     @Override
@@ -92,7 +92,7 @@ public class TextField extends TextArea {
         boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
 
         if (wrapWidth) {
-            mWidth = Math.max(getTextWidth() + extraWidth, getLayoutMinWidth());
+            mWidth = Math.max(getNaturalTextWidth() + extraWidth, getLayoutMinWidth());
         } else {
             mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
         }

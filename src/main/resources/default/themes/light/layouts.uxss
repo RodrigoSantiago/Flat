@@ -1,0 +1,31 @@
+
+layout-card {
+    shadow-enabled : true;
+    elevation : 8dp;
+    radius-top : 8dp;
+    radius-left : 8dp;
+    radius-right : 8dp;
+    radius-bottom : 8dp;
+    background-color : $card-color;
+}
+
+layout-surface {
+    width : match_parent;
+    height : match_parent;
+    background-color : $surface-color;
+}
+
+layout-drawer-content {
+    width : match_parent;
+    height : match_parent;
+}
+
+layout-drawer-menu {
+    width : 250dp;
+    height : match_parent;
+    padding-top : 16dp;
+    padding-left : 8dp;
+    padding-right : 8dp;
+    padding-bottom : 16dp;
+    background-color : $card-color;
+}

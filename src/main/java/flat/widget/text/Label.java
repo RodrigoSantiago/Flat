@@ -26,9 +26,8 @@ public class Label extends Widget {
     private HorizontalAlign horizontalAlign = HorizontalAlign.LEFT;
 
     private String showText;
-    private boolean invalidTextSize;
-    private float textWidth;
-    private final TextRender textRender = new TextRender();
+    protected float textWidth;
+    protected final TextRender textRender = new TextRender();
 
     public Label() {
         textRender.setFont(textFont);
@@ -134,7 +133,6 @@ public class Label extends Widget {
             showText = text == null ? null : textAllCaps ? text.toUpperCase() : text;
             textRender.setText(showText);
             invalidate(isWrapContent());
-            invalidateTextSize();
         }
     }
 
@@ -148,7 +146,6 @@ public class Label extends Widget {
             showText = text == null ? null : textAllCaps ? text.toUpperCase() : text;
             textRender.setText(showText);
             invalidate(isWrapContent());
-            invalidateTextSize();
         }
     }
 
@@ -161,7 +158,6 @@ public class Label extends Widget {
             this.textFont = textFont;
             textRender.setFont(textFont);
             invalidate(isWrapContent());
-            invalidateTextSize();
         }
     }
 
@@ -174,7 +170,6 @@ public class Label extends Widget {
             this.textSize = textSize;
             textRender.setTextSize(textSize);
             invalidate(isWrapContent());
-            invalidateTextSize();
         }
     }
 
@@ -187,10 +182,6 @@ public class Label extends Widget {
             this.textColor = textColor;
             invalidate(false);
         }
-    }
-
-    private void invalidateTextSize() {
-        invalidTextSize = true;
     }
 
     public VerticalAlign getVerticalAlign() {
@@ -220,11 +211,7 @@ public class Label extends Widget {
     }
 
     protected float getTextWidth() {
-        if (invalidTextSize) {
-            invalidTextSize = false;
-            textWidth = textRender.getTextWidth();
-        }
-        return textWidth;
+        return textRender.getTextWidth();
     }
 
     protected float getTextHeight() {

@@ -337,7 +337,7 @@ public class Widget {
      * @param layoutWidth
      * @param layoutHeight
      */
-    public final void setLayout(float layoutWidth, float layoutHeight) {
+    public void setLayout(float layoutWidth, float layoutHeight) {
         if (this.layoutWidth != layoutWidth || this.layoutHeight != layoutHeight) {
             this.layoutWidth = layoutWidth;
             this.layoutHeight = layoutHeight;

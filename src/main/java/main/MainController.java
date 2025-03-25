@@ -14,6 +14,7 @@ import flat.graphics.Graphics;
 import flat.graphics.Surface;
 import flat.graphics.context.Font;
 import flat.graphics.context.ShaderProgram;
+import flat.graphics.context.Texture2D;
 import flat.graphics.context.enums.ImageFileFormat;
 import flat.graphics.context.enums.PixelFormat;
 import flat.graphics.image.Drawable;
@@ -71,6 +72,7 @@ public class MainController extends Controller {
     @Flat public Tab tabForms;
     @Flat public Tab tabProgress;
     @Flat public Tab tabText;
+    @Flat public Tab tabTextFields;
     @Flat public Tab tabTabs;
     @Flat public Tab tabToolbars;
     @Flat public Tab tabScrolls;
@@ -114,6 +116,12 @@ public class MainController extends Controller {
     @Flat
     public void setTabProgress() {
         mainTab.selectTab(tabProgress);
+        mainDrawer.hide();
+    }
+
+    @Flat
+    public void setTabTextFields() {
+        mainTab.selectTab(tabTextFields);
         mainDrawer.hide();
     }
 
@@ -504,8 +512,8 @@ public class MainController extends Controller {
         }
     }
 
-
     boolean debug = false;
+
     @Flat
     public void toggleDebugMode() {
         debug = !debug;
@@ -580,29 +588,14 @@ public class MainController extends Controller {
 
     @Override
     public void onKeyFilter(KeyEvent keyEvent) {
-        System.out.println("Refresh");
-        getActivity().invalidate();
-        t++;
+
     }
 
+
+    PixelMap screen;
     @Override
     public void onDraw(Graphics graphics) {
         super.onDraw(graphics);
-        graphics.setTransform2D(null);
-        graphics.setColor(Color.red);
-        graphics.drawRoundRect(100, 100, t, t, t*0.25f,t*0.25f,t*0.25f,t*0.25f,true);
-        /*graphics.setTransform2D(null);
-        graphics.setColor(Color.white);
-        graphics.drawRect(0, getActivity().getHeight() - 16, 52, 16, true);
-        graphics.setColor(Color.red);
-        if (av == 0) {
-            av = Application.getLoopTime();
-        } else {
-            av = (av * 0.8f + Application.getLoopTime() * 0.2f);
-        }
-        graphics.drawText(10, getActivity().getHeight() - 16, "FPS : " + (int)(1f / av));
-
-        graphics.setTransform2D(null);
 
         if (t > 0) {
             if (t == 1) {
@@ -626,14 +619,16 @@ public class MainController extends Controller {
             t -= Application.getLoopTime();
             getActivity().invalidateWidget(getActivity().getScene());
         }
-        if (save) {
-            save = false;
-            Font font = Font.getDefault();
-            var ctx = graphics.getContext();
-            PixelMap pixelMap = font.createImageFromAtlas(graphics.getContext());
-            saveImage(pixelMap, "C:\\Nova\\image-3.png");
-            System.out.println("SAVED");
-        }*/
+
+        Font font = Font.getDefault();
+        graphics.setTransform2D(null);
+
+        int[] data = new int[4];
+        int imageId = (int) SVG.FontPaintGetAtlas(font.getInternalPaintID(graphics.getContext()), data);
+        int w = data[0];
+        int h = data[1];
+        Texture2D tex = new Texture2D(graphics.getContext(), imageId, w, h, 0, PixelFormat.RED);
+        graphics.drawImage(tex, 200, 200, w / 2f, h / 2f);
     }
 
     public static void saveImage(PixelMap pixelMap, String filePath) {
@@ -644,16 +639,16 @@ public class MainController extends Controller {
         }
     }
 
-    boolean save = false;
     @Flat
     public void export(ActionEvent event) {
-        save = true;
+        Font font = Font.getDefault();
+        PixelMap pixelMap = font.createImageFromAtlas(getActivity().getContext());
+        saveImage(pixelMap, "C:\\Nova\\image-3.png");
+        System.out.println("SAVED");
     }
 
     @Flat
     public void toggleDrawer2(ActionEvent event) {
         drawer2.toggle();
     }
-
-    PixelMap screen;
 }
