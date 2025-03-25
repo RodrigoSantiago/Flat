@@ -24,7 +24,7 @@ public final class FrameBuffer extends ContextObject {
         assignDispose(() -> GL.FrameBufferDestroy(frameBufferId));
     }
 
-    int getInternalID() {
+    int getInternalId() {
         return frameBufferId;
     }
 
@@ -167,7 +167,7 @@ public final class FrameBuffer extends ContextObject {
             // Set
             if (type == LayerType.RENDER) {
                 GL.FrameBufferRenderBuffer(GLEnums.FB_FRAMEBUFFER, target.getInternalEnum(),
-                        render.getInternalID());
+                        render.getInternalId());
             }
             if (type == LayerType.TEXTURE) {
                 GL.FrameBufferTexture2D(GLEnums.FB_FRAMEBUFFER, target.getInternalEnum(),

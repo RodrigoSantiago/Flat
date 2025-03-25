@@ -4,14 +4,11 @@ import flat.Flat;
 import flat.animations.Interpolation;
 import flat.backend.GL;
 import flat.backend.SVG;
-import flat.backend.WL;
 import flat.data.ObservableList;
 import flat.events.ActionEvent;
 import flat.events.KeyEvent;
 import flat.events.PointerEvent;
-import flat.graphics.Color;
 import flat.graphics.Graphics;
-import flat.graphics.Surface;
 import flat.graphics.context.Font;
 import flat.graphics.context.ShaderProgram;
 import flat.graphics.context.Texture2D;
@@ -21,16 +18,12 @@ import flat.graphics.image.Drawable;
 import flat.graphics.image.DrawableReader;
 import flat.graphics.image.LineMap;
 import flat.graphics.image.PixelMap;
-import flat.math.Affine;
 import flat.math.shapes.Circle;
-import flat.math.shapes.Ellipse;
 import flat.math.shapes.Path;
-import flat.math.stroke.BasicStroke;
 import flat.resources.ResourceStream;
 import flat.uxml.Controller;
 import flat.widget.Parent;
 import flat.widget.Widget;
-import flat.widget.enums.ImageFilter;
 import flat.widget.image.ImageView;
 import flat.widget.layout.Drawer;
 import flat.widget.layout.LinearBox;
@@ -39,7 +32,6 @@ import flat.widget.structure.*;
 import flat.widget.text.Button;
 import flat.widget.text.Chip;
 import flat.widget.text.Label;
-import flat.window.Activity;
 import flat.window.Application;
 import flat.window.WindowSettings;
 
@@ -51,6 +43,9 @@ import java.util.Arrays;
 import java.util.List;
 
 public class MainController extends Controller {
+
+    public MainController() {
+    }
 
     @Flat
     public Button button;
@@ -521,14 +516,17 @@ public class MainController extends Controller {
         SVG.SetDebug(debug);
     }
 
-    float t = 1;
+    float t = 0;
     float av = 0;
     LineMap star;
+    Object obj;
 
     @Override
     public void onShow() {
         setupListView();
-
+        System.out.println("A");
+        obj = DrawableReader.parse(new ResourceStream("/default/image_transp_test.png"));
+        System.out.println("B");
         /*Font.installSystemFontFamily("Times New Roman");
         arial = Font.findFont("Times New Roman");
         System.out.println(arial);
@@ -588,7 +586,8 @@ public class MainController extends Controller {
 
     @Override
     public void onKeyFilter(KeyEvent keyEvent) {
-
+        System.out.println("GC");
+        System.gc();
     }
 
 
@@ -624,10 +623,10 @@ public class MainController extends Controller {
         graphics.setTransform2D(null);
 
         int[] data = new int[4];
-        int imageId = (int) SVG.FontPaintGetAtlas(font.getInternalPaintID(graphics.getContext()), data);
+        int imageId = (int) SVG.FontPaintGetAtlas(font.getInternalPaintID(), data);
         int w = data[0];
         int h = data[1];
-        Texture2D tex = new Texture2D(graphics.getContext(), imageId, w, h, 0, PixelFormat.RED);
+        Texture2D tex = new Texture2D(imageId, w, h, 0, PixelFormat.RED);
         graphics.drawImage(tex, 200, 200, w / 2f, h / 2f);
     }
 

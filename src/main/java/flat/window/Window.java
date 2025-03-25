@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Window {
 
@@ -370,7 +369,7 @@ public class Window {
     public void setIcon(PixelMap icon) {
         checkDisposed();
 
-        WL.SetIcon(windowId, icon.getData(), (int) icon.getWidth(), (int) icon.getHeight());
+        WL.SetIcon(windowId, icon.readData(), (int) icon.getWidth(), (int) icon.getHeight());
     }
 
     public void setCursor(Cursor cursor) {

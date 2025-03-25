@@ -21,16 +21,14 @@ public final class Texture2D extends Texture implements ImageTexture {
     private MagFilter magFilter;
     private WrapMode wrapModeX, wrapModeY;
 
-    public Texture2D(Context context, int width, int height, PixelFormat format) {
-        super(context);
+    public Texture2D(int width, int height, PixelFormat format) {
         final int textureId = GL.TextureCreate();
         this.textureId = textureId;
         assignDispose(() -> GL.TextureDestroy(textureId));
         setSize(width, height, format);
     }
 
-    Texture2D(Context context, int id, int width, int height, int levels, PixelFormat format) {
-        super(context);
+    public Texture2D(int id, int width, int height, int levels, PixelFormat format) {
         this.textureId = id;
         this.width = width;
         this.height = height;
@@ -46,13 +44,6 @@ public final class Texture2D extends Texture implements ImageTexture {
     @Override
     int getInternalType() {
         return GLEnums.TB_TEXTURE_2D;
-    }
-
-    private void boundCheck() {
-        if (isDisposed()) {
-            throw new FlatException("The Texture2D is disposed");
-        }
-        getContext().bindTexture(this);
     }
 
     public void setSize(int width, int height, PixelFormat format) {
@@ -209,7 +200,7 @@ public final class Texture2D extends Texture implements ImageTexture {
     }
 
     @Override
-    public Texture2D getTexture(Context context) {
-        return context == this.getContext() ? this : null;
+    public Texture2D getTexture() {
+        return this;
     }
 }

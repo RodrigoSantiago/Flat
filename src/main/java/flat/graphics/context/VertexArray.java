@@ -20,7 +20,7 @@ public final class VertexArray extends ContextObject {
         assignDispose(() -> GL.VertexArrayDestroy(vertexArrayId));
     }
 
-    int getInternalID() {
+    int getInternalId() {
         return vertexArrayId;
     }
 

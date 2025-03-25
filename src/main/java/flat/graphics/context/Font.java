@@ -33,14 +33,14 @@ public class Font {
     private final FontWeight weight;
     private final FontStyle style;
 
-    private final long fontId;
+    private final FontIdPair idPair;
+
     private final float size, height, ascent, descent, lineGap;
     private final int glyphCount;
     private final boolean sdf;
-    private boolean diposed;
+    private boolean disposed;
 
-    private HashMap<Context, FontRender> contextInternal;
-    private AutoCleaner autoCleaner;
+    private DisposeTask disposeTask;
     private int[] glyphs;
 
     public Font(String family, FontWeight weight, FontPosture posture, FontStyle style, byte[] data) {
@@ -59,24 +59,26 @@ public class Font {
         this.size = size;
         this.sdf = sdf;
 
-        final long fontID = SVG.FontLoad(data, size, sdf ? 1 : 0);
-        if (fontID == 0) {
+        final long fontId = SVG.FontLoad(data, size, sdf ? 1 : 0);
+        if (fontId == 0) {
             throw new FlatException("Invalid font data");
         }
-        this.fontId = fontID;
-        this.height = SVG.FontGetHeight(fontID);
-        this.ascent = SVG.FontGetAscent(fontID);
-        this.descent = SVG.FontGetDescent(fontID);
-        this.lineGap = SVG.FontGetLineGap(fontID);
-        this.glyphCount = SVG.FontGetGlyphCount(fontID);
-
-        final HashMap<Context, FontRender> fontRenderer = new HashMap<>();
-        this.contextInternal = fontRenderer;
-
-        this.autoCleaner = new AutoCleaner(fontRenderer, fontID);
+        final FontIdPair idPair = new FontIdPair();
+        this.idPair = idPair;
+        this.idPair.fontId = fontId;
+        this.height = SVG.FontGetHeight(fontId);
+        this.ascent = SVG.FontGetAscent(fontId);
+        this.descent = SVG.FontGetDescent(fontId);
+        this.lineGap = SVG.FontGetLineGap(fontId);
+        this.glyphCount = SVG.FontGetGlyphCount(fontId);
 
         // Auto Removal
-        cleaner.register(this, this.autoCleaner);
+        cleaner.register(this, disposeTask = new DisposeTask(() -> {
+            if (idPair.fontRenderId != 0) {
+                SVG.FontPaintDestroy(idPair.fontRenderId);
+            }
+            SVG.FontUnload(idPair.fontId);
+        }));
     }
 
     public static Font findFont(String family) {
@@ -300,12 +302,12 @@ public class Font {
 
     public float getWidth(String text, float size, float spacing) {
         checkDisposed();
-        return size <= 0 ? 0 : SVG.FontGetTextWidth(fontId, text, size / this.size, spacing);
+        return size <= 0 ? 0 : SVG.FontGetTextWidth(getInternalId(), text, size / this.size, spacing);
     }
 
     public float getWidth(Buffer text, int offset, int length, float size, float spacing) {
         checkDisposed();
-        return size <= 0 ? 0 : SVG.FontGetTextWidthBuffer(fontId, text, offset, length, size / this.size, spacing);
+        return size <= 0 ? 0 : SVG.FontGetTextWidthBuffer(getInternalId(), text, offset, length, size / this.size, spacing);
     }
 
     public CaretData getCaretOffset(String text, float size, float spacing, float x, boolean half) {
@@ -314,7 +316,7 @@ public class Font {
             return new CaretData(0, 0);
         } else {
             float[] data = new float[2];
-            SVG.FontGetOffset(fontId, text, size / this.size, spacing, x, half, data);
+            SVG.FontGetOffset(getInternalId(), text, size / this.size, spacing, x, half, data);
             return new CaretData((int) data[0], data[1]);
         }
     }
@@ -325,7 +327,7 @@ public class Font {
             return new CaretData(x > 0 ? length : 0, 0);
         } else {
             float[] data = new float[2];
-            SVG.FontGetOffsetBuffer(fontId, text, offset, length, size / this.size, spacing, x, half, data);
+            SVG.FontGetOffsetBuffer(getInternalId(), text, offset, length, size / this.size, spacing, x, half, data);
             return new CaretData((int) data[0], data[1]);
         }
     }
@@ -336,7 +338,7 @@ public class Font {
             return new CaretData(0, 0);
         } else {
             float[] data = new float[2];
-            SVG.FontGetOffsetSpace(fontId, text, size / this.size, spacing, x, data);
+            SVG.FontGetOffsetSpace(getInternalId(), text, size / this.size, spacing, x, data);
             return new CaretData((int) data[0], data[1]);
         }
     }
@@ -347,7 +349,7 @@ public class Font {
             return new CaretData(x > 0 ? length : 0, 0);
         } else {
             float[] data = new float[2];
-            SVG.FontGetOffsetSpaceBuffer(fontId, text, offset, length, size / this.size, spacing, x, data);
+            SVG.FontGetOffsetSpaceBuffer(getInternalId(), text, offset, length, size / this.size, spacing, x, data);
             return new CaretData((int) data[0], data[1]);
         }
     }
@@ -357,7 +359,7 @@ public class Font {
         if (size < 0) {
             return 1;
         } else {
-            return SVG.FontGetLineWrap(fontId, text, size / this.size, spacing, x);
+            return SVG.FontGetLineWrap(getInternalId(), text, size / this.size, spacing, x);
         }
     }
 
@@ -366,7 +368,7 @@ public class Font {
         if (size < 0) {
             return 1;
         } else {
-            return SVG.FontGetLineWrapBuffer(fontId, text, offset, length, size / this.size, spacing, x);
+            return SVG.FontGetLineWrapBuffer(getInternalId(), text, offset, length, size / this.size, spacing, x);
         }
     }
 
@@ -393,7 +395,7 @@ public class Font {
     private int[] getGlyphs() {
         if (glyphs == null) {
             glyphs = new int[glyphCount];
-            SVG.FontGetAllCodePoints(fontId, glyphs);
+            SVG.FontGetAllCodePoints(getInternalId(), glyphs);
         }
         return glyphs;
     }
@@ -416,7 +418,7 @@ public class Font {
 
     public Glyph getGlyphData(int codePoint) {
         checkDisposed();
-        SVG.FontGetGlyph(fontId, codePoint, readGlyph);
+        SVG.FontGetGlyph(getInternalId(), codePoint, readGlyph);
         return new Glyph(readGlyph[0], readGlyph[1], readGlyph[2], readGlyph[3], readGlyph[4]);
     }
 
@@ -426,7 +428,7 @@ public class Font {
 
     public Path getGlyphPath(int codePoint) {
         checkDisposed();
-        float[] polygon = SVG.FontGetGlyphShape(fontId, codePoint);
+        float[] polygon = SVG.FontGetGlyphShape(getInternalId(), codePoint);
         if (polygon != null) {
             Path path = new Path();
             float sx = 0, sy = 0;
@@ -453,14 +455,14 @@ public class Font {
 
     public PixelMap createImageFromAtlas(Context context) {
         int[] data = new int[4];
-        int imageId = (int) SVG.FontPaintGetAtlas(getInternalPaintID(context), data);
+        int imageId = (int) SVG.FontPaintGetAtlas(getInternalPaintID(), data);
         int w = data[0];
         int h = data[1];
         byte[] imageData = new byte[w * h];
         if (imageId == 0) {
             return new PixelMap(imageData, w, h, PixelFormat.RED);
         } else {
-            Texture2D tex = new Texture2D(context, imageId, w, h, 0, PixelFormat.RED);
+            Texture2D tex = new Texture2D(imageId, w, h, 0, PixelFormat.RED);
             tex.getData(0, imageData, 0);
             context.bindTexture(null);
             return new PixelMap(imageData, w, h, PixelFormat.RED);
@@ -468,13 +470,13 @@ public class Font {
     }
 
     private void checkDisposed() {
-        if (diposed) {
+        if (disposed) {
             throw new FlatException("The Font is disposed");
         }
     }
 
     public boolean isDisposed() {
-        return diposed;
+        return disposed;
     }
 
     public void dispose() {
@@ -482,36 +484,28 @@ public class Font {
             throw new FlatException("A default font cannot be disposed");
         }
 
-        if (!diposed) {
-            diposed = true;
+        if (!disposed) {
+            disposed = true;
+            var list = fontFamilies.get(family);
+            if (list != null) {
+                list.remove(this);
+            }
             fonts.remove(this);
-            autoCleaner.run();
+            disposeTask.run();
         }
     }
 
-    public long getInternalID() {
-        return fontId;
+    public long getInternalId() {
+        return idPair.fontId;
     }
 
-    public long getInternalPaintID(final Context context) {
-        if (context == null) return 0;
-
-        FontRender render = contextInternal.get(context);
-        if (render == null) {
-            final long paintId = SVG.FontPaintCreate(context.svgId, fontId);
-
-            FontRender fontRender = new FontRender();
-            fontRender.paintId = paintId;
-            fontRender.destroyTask = context.createSyncDestroyTask(() -> {
-                SVG.FontPaintDestroy(paintId);
-                contextInternal.remove(context);
-            });
-
-            contextInternal.put(context, fontRender);
-
-            return paintId;
+    public long getInternalPaintID() {
+        if (idPair.fontRenderId == 0) {
+            Context context = Application.getCurrentContext();
+            if (context == null) return 0;
+            idPair.fontRenderId = SVG.FontPaintCreate(context.svgId, idPair.fontId);
         }
-        return render.paintId;
+        return idPair.fontRenderId;
     }
 
     @Override
@@ -522,36 +516,9 @@ public class Font {
                 + (style == null ? "" : ", " + style);
     }
 
-    private static class FontRender {
-        long paintId;
-        Runnable destroyTask;
-    }
-
-    private static class AutoCleaner implements Runnable {
-        private final long fontID;
-        private HashMap<Context, FontRender> fontRenderer;
-        private boolean consumed;
-
-        public AutoCleaner(HashMap<Context, FontRender> fontRenderer, long fontID) {
-            this.fontRenderer = fontRenderer;
-            this.fontID = fontID;
-        }
-
-        @Override
-        public void run() {
-            if (!consumed) {
-                consumed = true;
-                Application.runOnContextSync(() -> {
-                    var values = new ArrayList<>(fontRenderer.values());
-                    for (var render : values) {
-                        render.destroyTask.run();
-                    }
-                    fontRenderer.clear();
-                    fontRenderer = null;
-                    SVG.FontUnload(fontID);
-                });
-            }
-        }
+    private static class FontIdPair {
+        private long fontId;
+        private long fontRenderId;
     }
 
     public static class CaretData {

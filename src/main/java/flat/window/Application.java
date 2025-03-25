@@ -49,7 +49,6 @@ public class Application {
         try {
             FlatLibrary.load(resources.getFlatLibraryFile());
         } catch (Throwable e) {
-            e.printStackTrace();
             throw new FlatException("Failed to load Flat Library");
         }
 
@@ -131,10 +130,17 @@ public class Application {
         }
     }
 
-    public static void launch(WindowSettings settings) {
+    public static void setup(WindowSettings settings) {
         try {
             createWindow(settings);
+        } catch (Exception e) {
+            finish();
+            throw e;
+        }
+    }
 
+    public static void launch() {
+        try {
             lastLoopTime = System.nanoTime();
 
             while (loopActive) {

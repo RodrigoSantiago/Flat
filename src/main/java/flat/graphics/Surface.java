@@ -67,7 +67,7 @@ public class Surface {
             if (frameBufferTransfer == null) {
                 frameBufferTransfer = new FrameBuffer(context);
                 if (texture == null) {
-                    texture = new Texture2D(context, width, height, format);
+                    texture = new Texture2D(width, height, format);
                 }
                 frameBufferTransfer.attach(LayerTarget.COLOR_0, texture, 0);
             }
@@ -128,10 +128,10 @@ public class Surface {
             frameBuffer = new FrameBuffer(context);
         }
         if (multiSamples > 0 && textureMultisamples == null) {
-            textureMultisamples = new TextureMultisample2D(context, width, height, multiSamples, format);
+            textureMultisamples = new TextureMultisample2D(width, height, multiSamples, format);
         }
         if (multiSamples <= 0 && texture == null) {
-            texture = new Texture2D(context, width, height, format);
+            texture = new Texture2D(width, height, format);
         }
         if (render == null) {
             render = new Render(context, width, height, multiSamples, PixelFormat.DEPTH24_STENCIL8);

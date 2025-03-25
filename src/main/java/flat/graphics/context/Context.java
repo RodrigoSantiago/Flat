@@ -6,7 +6,6 @@ import flat.graphics.Graphics;
 import flat.graphics.context.enums.*;
 import flat.graphics.context.paints.ColorPaint;
 import flat.math.Affine;
-import flat.math.Mathf;
 import flat.math.shapes.Path;
 import flat.math.shapes.PathIterator;
 import flat.math.shapes.Shape;
@@ -898,7 +897,7 @@ public class Context {
             if (frameBuffer == null) {
                 GL.FrameBufferBind(GLEnums.FB_FRAMEBUFFER, 0);
             } else {
-                GL.FrameBufferBind(GLEnums.FB_FRAMEBUFFER, frameBuffer.getInternalID());
+                GL.FrameBufferBind(GLEnums.FB_FRAMEBUFFER, frameBuffer.getInternalId());
             }
             this.frameBuffer = frameBuffer;
             if (this.frameBuffer != null) {
@@ -943,14 +942,14 @@ public class Context {
         }
 
         try {
-            GL.FrameBufferBind(GLEnums.FB_DRAW_FRAMEBUFFER, target.getInternalID());
-            GL.FrameBufferBind(GLEnums.FB_READ_FRAMEBUFFER, source.getInternalID());
+            GL.FrameBufferBind(GLEnums.FB_DRAW_FRAMEBUFFER, target.getInternalId());
+            GL.FrameBufferBind(GLEnums.FB_READ_FRAMEBUFFER, source.getInternalId());
             GL.FrameBufferBlit(srcX, srcY, srcW, srcH, dstX, dstY, dstW, dstH, blitMask.getInternalEnum(), filter.getInternalEnum());
         } finally {
             if (current != getFrameBuffer()) {
                 setFrameBuffer(current);
             } else {
-                GL.FrameBufferBind(GLEnums.FB_FRAMEBUFFER, frameBuffer == null ? 0 : frameBuffer.getInternalID());
+                GL.FrameBufferBind(GLEnums.FB_FRAMEBUFFER, frameBuffer == null ? 0 : frameBuffer.getInternalId());
             }
             invalidFrameBufferSwap = true;
         }
@@ -1020,7 +1019,7 @@ public class Context {
             if (render == null) {
                 GL.RenderBufferBind(0);
             } else {
-                GL.RenderBufferBind(render.getInternalID());
+                GL.RenderBufferBind(render.getInternalId());
             }
             this.render = render;
         }
@@ -1036,7 +1035,7 @@ public class Context {
             if (buffer == null) {
                 GL.BufferBind(type.getInternalEnum(), 0);
             } else {
-                GL.BufferBind(type.getInternalEnum(), buffer.getInternalID());
+                GL.BufferBind(type.getInternalEnum(), buffer.getInternalId());
             }
             buffers[index] = buffer;
         }
@@ -1053,7 +1052,7 @@ public class Context {
                 buffers[BufferType.Element.ordinal()] = null;
                 GL.BufferBind(BufferType.Element.getInternalEnum(), 0);
             } else {
-                GL.VertexArrayBind(array.getInternalID());
+                GL.VertexArrayBind(array.getInternalId());
             }
             vertexArray = array;
         }
@@ -1071,7 +1070,7 @@ public class Context {
             if (shaderProgram == null) {
                 GL.ProgramUse(0);
             } else {
-                GL.ProgramUse(shaderProgram.getInternalID());
+                GL.ProgramUse(shaderProgram.getInternalId());
             }
             this.shaderProgram = shaderProgram;
             if (this.shaderProgram != null) {
@@ -1112,7 +1111,7 @@ public class Context {
             if (svgTextFont.isDisposed()) {
                 svgTextFont = Font.getDefault();
             }
-            SVG.SetFont(svgId, svgTextFont.getInternalPaintID(this));
+            SVG.SetFont(svgId, svgTextFont.getInternalPaintID());
             SVG.SetFontScale(svgId, svgTextScale);
             SVG.SetFontSpacing(svgId, svgTextSpacing);
             SVG.SetFontBlur(svgId, svgTextBlur);
@@ -1561,7 +1560,7 @@ public class Context {
                 if (svgTextFont.isDisposed()) {
                     svgTextFont = Font.getDefault();
                 }
-                SVG.SetFont(svgId, svgTextFont.getInternalPaintID(this));
+                SVG.SetFont(svgId, svgTextFont.getInternalPaintID());
             }
         }
     }
@@ -1623,7 +1622,7 @@ public class Context {
             svgBegin();
             if (svgTextFont.isDisposed()) {
                 svgTextFont = Font.getDefault();
-                SVG.SetFont(svgId, svgTextFont.getInternalPaintID(this));
+                SVG.SetFont(svgId, svgTextFont.getInternalPaintID());
             }
             w = SVG.DrawText(svgId, x, y, text, maxWidth, maxHeight);
         }
@@ -1638,7 +1637,7 @@ public class Context {
             svgBegin();
             if (svgTextFont.isDisposed()) {
                 svgTextFont = Font.getDefault();
-                SVG.SetFont(svgId, svgTextFont.getInternalPaintID(this));
+                SVG.SetFont(svgId, svgTextFont.getInternalPaintID());
             }
             w = SVG.DrawTextBuffer(svgId, x, y, text, offset, length, maxWidth, maxHeight);
         }

@@ -19,7 +19,7 @@ public final class Render extends ContextObject {
         setSize(width, height, samples, format);
     }
 
-    int getInternalID() {
+    int getInternalId() {
         return renderBufferId;
     }
 

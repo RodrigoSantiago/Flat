@@ -12,8 +12,7 @@ public final class TextureMultisample2D extends Texture {
     private PixelFormat format;
     private int width, height, samples;
 
-    public TextureMultisample2D(Context context, int width, int height, int samples, PixelFormat format) {
-        super(context);
+    public TextureMultisample2D(int width, int height, int samples, PixelFormat format) {
         final int textureId = GL.TextureCreate();
         this.textureId = textureId;
         assignDispose(() -> GL.TextureDestroy(textureId));
@@ -28,13 +27,6 @@ public final class TextureMultisample2D extends Texture {
     @Override
     int getInternalType() {
         return GLEnums.TB_TEXTURE_2D_MULTISAMPLE;
-    }
-
-    private void boundCheck() {
-        if (isDisposed()) {
-            throw new FlatException("The TextureMultisample2D is disposed");
-        }
-        getContext().bindTexture(this);
     }
 
     public void setSize(int width, int height, int samples, PixelFormat format) {

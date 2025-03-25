@@ -22,6 +22,7 @@ public class ImagePattern extends Paint {
     private final int color;
     private final Affine transform;
     private final float[] data;
+    private final boolean linear;
     private CycleMethod cycleMethod;
 
     ImagePattern(Builder builder) {
@@ -36,6 +37,7 @@ public class ImagePattern extends Paint {
         dstx2 = builder.dstx2;
         dsty2 = builder.dsty2;
         cycleMethod = builder.cycleMethod == null ? CycleMethod.CLAMP : builder.cycleMethod;
+        linear = builder.linear;
         final float sw = srcx2 - srcx1;
         final float sh = srcy2 - srcy1;
         final float dw = dstx2 - dstx1;
@@ -55,7 +57,7 @@ public class ImagePattern extends Paint {
         };
     }
 
-    public ImagePattern(ImagePattern other, int color) {
+    ImagePattern(ImagePattern other, int color) {
         this.cycleMethod = other.cycleMethod;
         this.data = other.data;
         this.transform = other.transform;
@@ -69,6 +71,7 @@ public class ImagePattern extends Paint {
         this.srcx2 = other.srcx2;
         this.srcy1 = other.srcy1;
         this.srcx1 = other.srcx1;
+        this.linear = other.linear;
     }
 
     @Override
@@ -142,6 +145,7 @@ public class ImagePattern extends Paint {
         private int color = Color.white;
         private Affine transform;
         private CycleMethod cycleMethod;
+        private boolean linear;
         private boolean readOnly;
 
         public Builder(Texture2D texture) {
@@ -197,6 +201,12 @@ public class ImagePattern extends Paint {
         public Builder cycleMethod(CycleMethod cycleMethod) {
             checkReadOnly();
             this.cycleMethod = cycleMethod;
+            return this;
+        }
+
+        public Builder linear(boolean linear) {
+            checkReadOnly();
+            this.linear = linear;
             return this;
         }
 

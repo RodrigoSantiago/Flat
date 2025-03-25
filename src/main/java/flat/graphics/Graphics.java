@@ -587,28 +587,28 @@ public class Graphics {
     }
 
     public void drawImage(ImageTexture image, float x, float y) {
-        Texture2D tex = image.getTexture(context);
+        Texture2D tex = image.getTexture();
         drawImage(tex,
                 0, 0, tex.getWidth(), tex.getHeight(),
                 x, y, x + tex.getWidth(), y + tex.getHeight(), 0xFFFFFFFF, null);
     }
 
     public void drawImage(ImageTexture image, float x, float y, float width, float height) {
-        Texture2D tex = image.getTexture(context);
+        Texture2D tex = image.getTexture();
         drawImage(tex,
                 0, 0, tex.getWidth(), tex.getHeight(),
                 x, y, x + width, y + height, 0xFFFFFFFF, null);
     }
 
     public void drawImage(ImageTexture image, float x, float y, float width, float height, int color) {
-        Texture2D tex = image.getTexture(context);
+        Texture2D tex = image.getTexture();
         drawImage(tex,
                 0, 0, tex.getWidth(), tex.getHeight(),
                 x, y, x + width, y + height, color, null);
     }
 
     public void drawImage(ImageTexture image, float x, float y, float width, float height, int color, Affine transform) {
-        Texture2D tex = image.getTexture(context);
+        Texture2D tex = image.getTexture();
         drawImage(tex,
                 0, 0, tex.getWidth(), tex.getHeight(),
                 x, y, x + width, y + height, color, transform);
@@ -618,7 +618,7 @@ public class Graphics {
                           float srcX1, float srcY1, float srcX2, float srcY2,
                           float dstX1, float dstY1, float dstX2, float dstY2,
                           int color) {
-        Texture2D tex = image.getTexture(context);
+        Texture2D tex = image.getTexture();
         drawImage(tex,
                 srcX1, srcY1, srcX2, srcY2,
                 dstX1, dstY1, dstX2, dstY2, color, null);
@@ -628,7 +628,7 @@ public class Graphics {
                           float srcX1, float srcY1, float srcX2, float srcY2,
                           float dstX1, float dstY1, float dstX2, float dstY2,
                           int color, Affine transform) {
-        Texture2D tex = image.getTexture(context);
+        Texture2D tex = image.getTexture();
         drawImage(tex,
                 srcX1, srcY1, srcX2, srcY2,
                 dstX1, dstY1, dstX2, dstY2, color, transform);

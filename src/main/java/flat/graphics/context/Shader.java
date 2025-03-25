@@ -27,7 +27,7 @@ public final class Shader extends ContextObject {
         assignDispose(() -> GL.ShaderDestroy(shaderId));
     }
 
-    int getInternalID() {
+    int getInternalId() {
         return shaderId;
     }
 

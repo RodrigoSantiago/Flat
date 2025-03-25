@@ -17,8 +17,7 @@ public final class Cubemap extends Texture {
     private MagFilter magFilter;
     private WrapMode wrapModeX, wrapModeY;
 
-    public Cubemap(Context context, int width, int height, PixelFormat format) {
-        super(context);
+    public Cubemap(int width, int height, PixelFormat format) {
         final int cubemapId = GL.TextureCreate();
         this.cubemapId = cubemapId;
         assignDispose(() -> GL.TextureDestroy(cubemapId));
@@ -33,13 +32,6 @@ public final class Cubemap extends Texture {
     @Override
     int getInternalType() {
         return GLEnums.TB_TEXTURE_CUBE_MAP;
-    }
-
-    private void boundCheck() {
-        if (isDisposed()) {
-            throw new FlatException("The Cubemap is disposed");
-        }
-        getContext().bindTexture(this);
     }
 
     public void setSize(int width, int height, PixelFormat format) {

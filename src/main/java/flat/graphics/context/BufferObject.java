@@ -4,7 +4,6 @@ import flat.backend.GL;
 import flat.exception.FlatException;
 import flat.graphics.context.enums.BufferType;
 import flat.graphics.context.enums.UsageType;
-import flat.window.Application;
 
 import java.nio.Buffer;
 
@@ -28,7 +27,7 @@ public final class BufferObject extends ContextObject {
         setSize(size, usageType);
     }
 
-    int getInternalID() {
+    int getInternalId() {
         return bufferId;
     }
 

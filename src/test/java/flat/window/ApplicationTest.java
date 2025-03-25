@@ -94,7 +94,8 @@ public class ApplicationTest {
         // Execution/Assertion
         try {
             Application.init(resources);
-            Application.launch(settings);
+            Application.setup(settings);
+            Application.launch();
 
             fail("Exception expected");
         } catch (Exception e) {
@@ -126,7 +127,8 @@ public class ApplicationTest {
 
         // Execution
         Application.init(resources);
-        Application.launch(settings);
+        Application.setup(settings);
+        Application.launch();
 
         // Assertion
         verify(window).loop(anyFloat());
@@ -202,7 +204,8 @@ public class ApplicationTest {
 
         // Execution
         Application.init(resources);
-        Application.launch(settings);
+        Application.setup(settings);
+        Application.launch();
 
         // Assertion
         assertUsualInit(fileLibrary);
@@ -245,7 +248,8 @@ public class ApplicationTest {
 
         // Execution
         Application.init(resources);
-        Application.launch(settings);
+        Application.setup(settings);
+        Application.launch();
 
         // Assertion
         assertUsualInit(fileLibrary);
@@ -287,7 +291,8 @@ public class ApplicationTest {
         // Execution
         Application.init(resources);
         Application.setVsync(1);
-        Application.launch(settings);
+        Application.setup(settings);
+        Application.launch();
 
         // Assertion
         verify(window, times(2)).loop(anyFloat());
@@ -328,7 +333,8 @@ public class ApplicationTest {
 
         // Execution
         Application.init(resources);
-        Application.launch(settings);
+        Application.setup(settings);
+        Application.launch();
 
         // Assertion
         verify(window).loop(anyFloat());
@@ -367,7 +373,8 @@ public class ApplicationTest {
 
         // Execution
         Application.init(resources);
-        Application.launch(settings);
+        Application.setup(settings);
+        Application.launch();
 
         // Assertion
         verify(window).loop(anyFloat());

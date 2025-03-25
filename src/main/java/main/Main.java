@@ -6,7 +6,7 @@ import flat.window.WindowSettings;
 public class Main {
     public static void main(String[] args) {
         Application.init();
-        Application.launch(new WindowSettings.Builder()
+        Application.setup(new WindowSettings.Builder()
                 .layout("/default/screen_test/widgets.uxml")
                 .theme("/default/themes/light")
                 .stringBundle("/default/locale/english.uxml")
@@ -16,5 +16,6 @@ public class Main {
                 .transparent(false)
                 .build()
         );
+        Application.launch();
     }
 }

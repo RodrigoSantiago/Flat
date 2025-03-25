@@ -39,7 +39,7 @@ public final class ShaderProgram extends ContextObject {
         }
     }
 
-    int getInternalID() {
+    int getInternalId() {
         return programId;
     }
 
@@ -54,7 +54,7 @@ public final class ShaderProgram extends ContextObject {
 
         if (!shaders.contains(shader)) {
             shaders.add(shader);
-            GL.ProgramAttachShader(programId, shader.getInternalID());
+            GL.ProgramAttachShader(programId, shader.getInternalId());
         }
         return this;
     }
@@ -64,7 +64,7 @@ public final class ShaderProgram extends ContextObject {
 
         if (shaders.contains(shader)) {
             shaders.remove(shader);
-            GL.ProgramDetachShader(programId, shader.getInternalID());
+            GL.ProgramDetachShader(programId, shader.getInternalId());
         }
         return this;
     }

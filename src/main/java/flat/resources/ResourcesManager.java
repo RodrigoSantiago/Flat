@@ -7,6 +7,7 @@ import flat.window.SystemType;
 
 import java.io.*;
 import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -23,10 +24,10 @@ import java.util.zip.ZipOutputStream;
 public class ResourcesManager {
 
     private static class CacheObj {
-        SoftReference<Object> obj;
+        WeakReference<Object> obj;
         long modifyTime;
         public CacheObj(Object obj, long modifyTime) {
-            this.obj = new SoftReference<>(obj);
+            this.obj = new WeakReference<>(obj);
             this.modifyTime = modifyTime;
         }
     }

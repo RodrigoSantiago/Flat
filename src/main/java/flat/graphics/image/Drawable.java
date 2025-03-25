@@ -5,8 +5,6 @@ import flat.widget.enums.ImageFilter;
 
 public interface Drawable {
 
-    boolean isDynamic();
-
     float getWidth();
 
     float getHeight();

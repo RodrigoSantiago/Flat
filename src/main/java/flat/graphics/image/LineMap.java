@@ -111,11 +111,6 @@ public class LineMap implements Drawable {
     }
 
     @Override
-    public boolean isDynamic() {
-        return false;
-    }
-
-    @Override
     public float getWidth() {
         return view.width;
     }

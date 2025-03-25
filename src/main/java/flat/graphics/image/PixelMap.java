@@ -4,14 +4,12 @@ import flat.backend.SVG;
 import flat.exception.FlatException;
 import flat.graphics.Graphics;
 import flat.graphics.ImageTexture;
-import flat.graphics.context.Context;
 import flat.graphics.context.Texture2D;
 import flat.graphics.context.enums.*;
 import flat.resources.ResourceStream;
 import flat.widget.enums.ImageFilter;
 
-import java.io.IOException;
-import java.util.HashMap;
+import java.lang.ref.WeakReference;
 
 public class PixelMap implements Drawable, ImageTexture {
 
@@ -36,7 +34,7 @@ public class PixelMap implements Drawable, ImageTexture {
         }
     }
 
-    private static PixelMap loadPixelMap(ResourceStream stream) throws IOException {
+    private static PixelMap loadPixelMap(ResourceStream stream) {
         byte[] data = stream.readData();
         if (data == null) {
             throw new FlatException("Invalid image " + stream.getResourceName());
@@ -50,21 +48,28 @@ public class PixelMap implements Drawable, ImageTexture {
         return new PixelMap(readImage, imageData[0], imageData[1], PixelFormat.RGBA);
     }
 
-    private final HashMap<Context, Texture2D> textures = new HashMap<>();
+    private final Texture2D texture;
     private final PixelFormat format;
     private final int width, height;
-    private final byte[] data;
+    private WeakReference<byte[]> localData;
 
     public PixelMap(byte[] data, int width, int height, PixelFormat format) {
-        this.width = width;
-        this.height = height;
-        this.data = data;
-        this.format = format;
-
         int required = width * height * format.getPixelBytes();
         if (data.length < required) {
             throw new FlatException("The image data is too short. Provided : " + data.length + ", Required : " + required);
         }
+
+        this.width = width;
+        this.height = height;
+        this.format = format;
+        this.localData = new WeakReference<>(data);
+
+        texture = new Texture2D(width, height, format);
+        texture.setData(0, data, 0, 0, 0, width, height);
+        texture.setLevels(0);
+        texture.generateMipmapLevels();
+        texture.setScaleFilters(MagFilter.NEAREST, MinFilter.NEAREST);
+        texture.setWrapModes(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
     }
 
     public byte[] export(ImageFileFormat imageFileFormat) {
@@ -73,51 +78,29 @@ public class PixelMap implements Drawable, ImageTexture {
 
     public byte[] export(ImageFileFormat imageFileFormat, int quality) {
         quality = Math.max(100, Math.max(0, quality));
-        return SVG.WriteImage(data, width, height, format.getPixelBytes(), imageFileFormat.ordinal(), quality);
+        return SVG.WriteImage(getData(), width, height, format.getPixelBytes(), imageFileFormat.ordinal(), quality);
     }
 
-    public byte[] getData() {
+    public byte[] readData() {
+        return getData().clone();
+    }
+
+    private byte[] getData() {
+        byte[] data = localData.get();
+        if (data == null) {
+            data = new byte[width * height * format.getPixelBytes()];
+            localData = new WeakReference<>(data);
+            texture.getData(0, data, 0);
+        }
         return data;
     }
 
-    public Texture2D getTexture(Context context) {
-        return getTexture(context, null);
-    }
-
-    public Texture2D getTexture(Context context, ImageFilter filter) {
-        var texture = textures.get(context);
-        if (texture == null) {
-            texture = new Texture2D(context, width, height, format);
-            texture.setData(0, data, 0, 0, 0, width, height);
-            texture.setLevels(0);
-            texture.generateMipmapLevels();
-            texture.setScaleFilters(MagFilter.NEAREST, MinFilter.NEAREST);
-            texture.setWrapModes(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
-            textures.put(context, texture);
-        }
-        for (var ctx : textures.keySet()) {
-            if (ctx.isDisposed()) {
-                textures.remove(ctx);
-                break;
-            }
-        }
-        if (filter != null) {
-            if ((texture.getMagFilter() == MagFilter.NEAREST) != (filter == ImageFilter.NEAREST)) {
-                texture.setScaleFilters(
-                        filter == ImageFilter.LINEAR ? MagFilter.LINEAR : MagFilter.NEAREST,
-                        filter == ImageFilter.LINEAR ? MinFilter.LINEAR : MinFilter.NEAREST);
-            }
-        }
+    public Texture2D getTexture() {
         return texture;
     }
 
     public PixelFormat getFormat() {
         return format;
-    }
-
-    @Override
-    public boolean isDynamic() {
-        return false;
     }
 
     @Override
@@ -134,7 +117,6 @@ public class PixelMap implements Drawable, ImageTexture {
     public void draw(Graphics graphics, float x, float y, float width, float height, int color, ImageFilter filter) {
         if (graphics.discardDraw(x, y, width, height)) return;
 
-        var texture = getTexture(graphics.getContext(), filter);
         graphics.drawImage(this, x, y, width, height, color);
     }
 
