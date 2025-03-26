@@ -1,6 +1,5 @@
 package flat.graphics.context;
 
-import flat.backend.GL;
 import flat.window.Application;
 
 class DisposeTask implements Runnable {

@@ -26,7 +26,7 @@ public class Menu extends Stage {
     private UXValueListener<Float> viewOffsetListener;
     private HorizontalAlign horizontalAlign = HorizontalAlign.CENTER;
     private float showTransitionDuration = 0;
-    private float scrollSensibility = 10f;
+    private float scrollSensibility = 20f;
     private boolean blockEvents;
 
     private VerticalScrollBar verticalBar;

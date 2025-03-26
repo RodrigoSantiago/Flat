@@ -1111,7 +1111,7 @@ public class Context {
             if (svgTextFont.isDisposed()) {
                 svgTextFont = Font.getDefault();
             }
-            SVG.SetFont(svgId, svgTextFont.getInternalPaintID());
+            SVG.SetFont(svgId, svgTextFont.getInternalPaintId());
             SVG.SetFontScale(svgId, svgTextScale);
             SVG.SetFontSpacing(svgId, svgTextSpacing);
             SVG.SetFontBlur(svgId, svgTextBlur);
@@ -1560,7 +1560,7 @@ public class Context {
                 if (svgTextFont.isDisposed()) {
                     svgTextFont = Font.getDefault();
                 }
-                SVG.SetFont(svgId, svgTextFont.getInternalPaintID());
+                SVG.SetFont(svgId, svgTextFont.getInternalPaintId());
             }
         }
     }
@@ -1622,7 +1622,7 @@ public class Context {
             svgBegin();
             if (svgTextFont.isDisposed()) {
                 svgTextFont = Font.getDefault();
-                SVG.SetFont(svgId, svgTextFont.getInternalPaintID());
+                SVG.SetFont(svgId, svgTextFont.getInternalPaintId());
             }
             w = SVG.DrawText(svgId, x, y, text, maxWidth, maxHeight);
         }
@@ -1637,7 +1637,7 @@ public class Context {
             svgBegin();
             if (svgTextFont.isDisposed()) {
                 svgTextFont = Font.getDefault();
-                SVG.SetFont(svgId, svgTextFont.getInternalPaintID());
+                SVG.SetFont(svgId, svgTextFont.getInternalPaintId());
             }
             w = SVG.DrawTextBuffer(svgId, x, y, text, offset, length, maxWidth, maxHeight);
         }

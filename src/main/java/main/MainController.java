@@ -9,11 +9,10 @@ import flat.events.ActionEvent;
 import flat.events.KeyEvent;
 import flat.events.PointerEvent;
 import flat.graphics.Graphics;
+import flat.graphics.context.EmojiManager;
 import flat.graphics.context.Font;
 import flat.graphics.context.ShaderProgram;
-import flat.graphics.context.Texture2D;
 import flat.graphics.context.enums.ImageFileFormat;
-import flat.graphics.context.enums.PixelFormat;
 import flat.graphics.image.Drawable;
 import flat.graphics.image.DrawableReader;
 import flat.graphics.image.LineMap;
@@ -37,6 +36,8 @@ import flat.window.WindowSettings;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,6 +69,7 @@ public class MainController extends Controller {
     @Flat public Tab tabProgress;
     @Flat public Tab tabText;
     @Flat public Tab tabTextFields;
+    @Flat public Tab tabEmojis;
     @Flat public Tab tabTabs;
     @Flat public Tab tabToolbars;
     @Flat public Tab tabScrolls;
@@ -117,6 +119,12 @@ public class MainController extends Controller {
     @Flat
     public void setTabTextFields() {
         mainTab.selectTab(tabTextFields);
+        mainDrawer.hide();
+    }
+
+    @Flat
+    public void setTabEmojis() {
+        mainTab.selectTab(tabEmojis);
         mainDrawer.hide();
     }
 
@@ -518,15 +526,10 @@ public class MainController extends Controller {
 
     float t = 0;
     float av = 0;
-    LineMap star;
-    Object obj;
 
     @Override
     public void onShow() {
         setupListView();
-        System.out.println("A");
-        obj = DrawableReader.parse(new ResourceStream("/default/image_transp_test.png"));
-        System.out.println("B");
         /*Font.installSystemFontFamily("Times New Roman");
         arial = Font.findFont("Times New Roman");
         System.out.println(arial);
@@ -572,11 +575,9 @@ public class MainController extends Controller {
 
         System.out.println("Render to PixelMap " + GL.GetError());*/
 
-
         if (tabChips != null) {
             search(tabChips.getFrame());
         }
-        star = LineMap.parse(new ResourceStream("/default/icons/star.svg"));
     }
 
     @Flat
@@ -586,8 +587,7 @@ public class MainController extends Controller {
 
     @Override
     public void onKeyFilter(KeyEvent keyEvent) {
-        System.out.println("GC");
-        System.gc();
+
     }
 
 
@@ -619,15 +619,15 @@ public class MainController extends Controller {
             getActivity().invalidateWidget(getActivity().getScene());
         }
 
-        Font font = Font.getDefault();
+        /*Font font = Font.getDefault();
         graphics.setTransform2D(null);
 
         int[] data = new int[4];
-        int imageId = (int) SVG.FontPaintGetAtlas(font.getInternalPaintID(), data);
+        int imageId = (int) SVG.FontPaintGetAtlas(font.getInternalPaintId(), data);
         int w = data[0];
         int h = data[1];
         Texture2D tex = new Texture2D(imageId, w, h, 0, PixelFormat.RED);
-        graphics.drawImage(tex, 200, 200, w / 2f, h / 2f);
+        graphics.drawImage(tex, 200, 200, w / 2f, h / 2f);*/
     }
 
     public static void saveImage(PixelMap pixelMap, String filePath) {
@@ -638,12 +638,62 @@ public class MainController extends Controller {
         }
     }
 
+    public static void saveEmojis(ArrayList<int[]> emojis, String filePath) {
+        try {
+            try (PrintWriter pw = new PrintWriter(filePath)) {
+                for (int[] emoji : emojis) {
+                    for (int i : emoji) {
+                        pw.println(i);
+                    }
+                }
+                pw.flush();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Flat
-    public void export(ActionEvent event) {
-        Font font = Font.getDefault();
+    public void onEmojiLoad(ActionEvent event) {
+        ResourceStream unicodes = new ResourceStream("/default/emojis/emojis.txt");
+        String[] lines = new String(unicodes.readData(), StandardCharsets.UTF_8).split("\n");
+        int[] emojis = new int[lines.length];
+        for (int i = 0; i < lines.length; i++) {
+            emojis[i] = Integer.parseInt(lines[i].trim());
+        }
+        for (int i = 0; i < emojis.length; i++) {
+            if (emojis[i] != 0) {
+                if (i % 6 != 0 && !(emojis[i] >= 0x1F1E6 && emojis[i] <= 0x1F1FF)) {
+                    System.out.print("&#x200D;");
+                }
+                if (i % 6 == 0 && emojis[i] >= 0x1F1E6 && emojis[i] <= 0x1F1FF) {
+                    System.out.print(" ");
+                }
+                System.out.print("&#x" + Integer.toHexString(emojis[i]) + ";");
+            }
+        }
+        System.out.println();
+    }
+
+    @Flat
+    public void onEmojiExport(ActionEvent event) {
+        /*Font font = Font.getDefault();
         PixelMap pixelMap = font.createImageFromAtlas(getActivity().getContext());
         saveImage(pixelMap, "C:\\Nova\\image-3.png");
-        System.out.println("SAVED");
+        System.out.println("SAVED");*/
+//        getActivity().getWindow().showOpenFolderDialog((file) -> {
+//            try {
+//                EmojiManager.renameFlags(file);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }, null);
+        getActivity().getWindow().showOpenFolderDialog((file) -> {
+            ArrayList<int[]> emojis = new ArrayList<>();
+            PixelMap map = EmojiConverter.createFromNotoEmoji(file, emojis);
+            saveImage(map, "C:\\Nova\\emojis.png");
+            saveEmojis(emojis, "C:\\Nova\\emojis.txt");
+        }, null);
     }
 
     @Flat

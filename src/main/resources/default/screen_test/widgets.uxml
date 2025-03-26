@@ -16,6 +16,7 @@
                 <MenuItem text="Progress" on-action="setTabProgress" style="navigation"/>
                 <MenuItem text="Text" on-action="setTabText" style="navigation"/>
                 <MenuItem text="TextFields" on-action="setTabTextFields" style="navigation"/>
+                <MenuItem text="Emojis" on-action="setTabEmojis" style="navigation"/>
                 <MenuItem text="Tabs" on-action="setTabTabs" style="navigation"/>
                 <MenuItem text="Toolbars" on-action="setTabToolbars" style="navigation"/>
                 <MenuItem text="Scrolls" on-action="setTabScrolls" style="navigation"/>
@@ -54,6 +55,11 @@
                     <Tab text="TextFields" id="tabTextFields">
                         <Frame width="MATCH_PARENT" height="MATCH_PARENT">
                             <Include src="textfields.uxml"/>
+                        </Frame>
+                    </Tab>
+                    <Tab text="Emojis" id="tabEmojis">
+                        <Frame width="MATCH_PARENT" height="MATCH_PARENT">
+                            <Include src="emojis.uxml"/>
                         </Frame>
                     </Tab>
                     <Tab text="Tabs" id="tabTabs">

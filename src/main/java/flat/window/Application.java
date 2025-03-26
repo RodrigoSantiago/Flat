@@ -5,6 +5,8 @@ import flat.backend.GL;
 import flat.backend.WL;
 import flat.exception.FlatException;
 import flat.graphics.context.Context;
+import flat.graphics.context.EmojiManager;
+import flat.resources.ResourceStream;
 import flat.resources.ResourcesManager;
 import flat.window.event.EventData;
 
@@ -133,6 +135,10 @@ public class Application {
     public static void setup(WindowSettings settings) {
         try {
             createWindow(settings);
+
+            EmojiManager.load(
+                    new ResourceStream("/default/emojis/emojis.png"),
+                    new ResourceStream("/default/emojis/emojis.txt"));
         } catch (Exception e) {
             finish();
             throw e;

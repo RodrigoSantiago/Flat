@@ -61,7 +61,7 @@ public class ScrollBoxTest {
         assertEquals(Policy.AS_NEEDED, scrollBox.getVerticalBarPolicy());
         assertEquals(HorizontalBarPosition.BOTTOM, scrollBox.getHorizontalBarPosition());
         assertEquals(VerticalBarPosition.RIGHT, scrollBox.getVerticalBarPosition());
-        assertEquals(10f, scrollBox.getScrollSensibility(), 0.0001f);
+        assertEquals(20f, scrollBox.getScrollSensibility(), 0.0001f);
         assertFalse(scrollBox.isFloatingBars());
         assertNull(scrollBox.getSlideHorizontalFilter());
         assertNull(scrollBox.getSlideVerticalFilter());
@@ -77,7 +77,7 @@ public class ScrollBoxTest {
         assertEquals(Policy.AS_NEEDED, scrollBox.getVerticalBarPolicy());
         assertEquals(HorizontalBarPosition.BOTTOM, scrollBox.getHorizontalBarPosition());
         assertEquals(VerticalBarPosition.RIGHT, scrollBox.getVerticalBarPosition());
-        assertEquals(10f, scrollBox.getScrollSensibility(), 0.0001f);
+        assertEquals(20f, scrollBox.getScrollSensibility(), 0.0001f);
         assertFalse(scrollBox.isFloatingBars());
         assertEquals(filterHorizontal, scrollBox.getSlideHorizontalFilter());
         assertEquals(filterVertical, scrollBox.getSlideVerticalFilter());

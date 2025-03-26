@@ -337,8 +337,8 @@ class WindowsSystemFonts {
         styles.put("Segoe Script Bold", FontStyle.CURSIVE);
         styles.put("Segoe UI", FontStyle.SANS);
         styles.put("Segoe UI Historic", FontStyle.CURSIVE);
-        styles.put("Segoe UI Emoji", FontStyle.EMOJI);
-        styles.put("Segoe UI Symbol", FontStyle.EMOJI);
+        styles.put("Segoe UI Emoji", FontStyle.FANTASY);
+        styles.put("Segoe UI Symbol", FontStyle.FANTASY);
         styles.put("SimSun", FontStyle.SERIF);
         styles.put("Sitka", FontStyle.SERIF);
         styles.put("Sylfaen", FontStyle.SERIF);

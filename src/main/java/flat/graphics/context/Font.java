@@ -264,7 +264,7 @@ public class Font {
         var cursive = new Font("DancingScript", FontWeight.NORMAL, FontPosture.REGULAR, FontStyle.CURSIVE
                 , res.getData("default/fonts/DancingScript-Regular.ttf"));
         install(cursive);
-        var emoji = new Font("NotoEmoji", FontWeight.NORMAL, FontPosture.REGULAR, FontStyle.EMOJI
+        var emoji = new Font("NotoEmoji", FontWeight.NORMAL, FontPosture.REGULAR, FontStyle.FANTASY
                 , res.getData("default/fonts/NotoEmoji-Regular.ttf"));
         install(emoji);
 
@@ -455,7 +455,7 @@ public class Font {
 
     public PixelMap createImageFromAtlas(Context context) {
         int[] data = new int[4];
-        int imageId = (int) SVG.FontPaintGetAtlas(getInternalPaintID(), data);
+        int imageId = (int) SVG.FontPaintGetAtlas(getInternalPaintId(), data);
         int w = data[0];
         int h = data[1];
         byte[] imageData = new byte[w * h];
@@ -495,11 +495,11 @@ public class Font {
         }
     }
 
-    public long getInternalId() {
+    long getInternalId() {
         return idPair.fontId;
     }
 
-    public long getInternalPaintID() {
+    public long getInternalPaintId() {
         if (idPair.fontRenderId == 0) {
             Context context = Application.getCurrentContext();
             if (context == null) return 0;

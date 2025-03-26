@@ -30,7 +30,7 @@ public abstract class Scrollable extends Parent {
     private Policy verticalBarPolicy = Policy.AS_NEEDED;
     private VerticalBarPosition verticalBarPosition = VerticalBarPosition.RIGHT;
     private HorizontalBarPosition horizontalBarPosition = HorizontalBarPosition.BOTTOM;
-    private float scrollSensibility = 10f;
+    private float scrollSensibility = 20f;
     private boolean floatingBars;
 
     private boolean horizontalVisible;

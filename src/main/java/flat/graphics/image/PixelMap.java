@@ -68,7 +68,7 @@ public class PixelMap implements Drawable, ImageTexture {
         texture.setData(0, data, 0, 0, 0, width, height);
         texture.setLevels(0);
         texture.generateMipmapLevels();
-        texture.setScaleFilters(MagFilter.NEAREST, MinFilter.NEAREST);
+        texture.setScaleFilters(MagFilter.LINEAR, MinFilter.LINEAR);
         texture.setWrapModes(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
     }
 

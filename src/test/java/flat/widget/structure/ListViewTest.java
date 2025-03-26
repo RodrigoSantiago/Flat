@@ -99,7 +99,7 @@ public class ListViewTest {
         ListView listView = new ListView();
 
         assertEquals(8, listView.getItemHeight(), 0.001f);
-        assertEquals(10, listView.getScrollSensibility(), 0.001f);
+        assertEquals(20, listView.getScrollSensibility(), 0.001f);
         assertNull(listView.getSlideHorizontalFilter());
         assertNull(listView.getSlideVerticalFilter());
         assertNull(listView.getSlideHorizontalListener());
@@ -111,7 +111,7 @@ public class ListViewTest {
         listView.applyAttributes(controller);
 
         assertEquals(8, listView.getItemHeight(), 0.001f);
-        assertEquals(10, listView.getScrollSensibility(), 0.001f);
+        assertEquals(20, listView.getScrollSensibility(), 0.001f);
         assertEquals(filterHorizontal, listView.getSlideHorizontalFilter());
         assertEquals(filterVertical, listView.getSlideVerticalFilter());
         assertEquals(slideHorizontal, listView.getSlideHorizontalListener());

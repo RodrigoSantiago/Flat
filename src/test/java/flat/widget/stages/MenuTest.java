@@ -65,7 +65,7 @@ public class MenuTest {
         assertEquals(Policy.AS_NEEDED, menu.getVerticalBarPolicy());
         assertEquals(VerticalBarPosition.RIGHT, menu.getVerticalBarPosition());
         assertEquals(0, menu.getShowTransitionDuration(), 0.001f);
-        assertEquals(10, menu.getScrollSensibility(), 0.001f);
+        assertEquals(20, menu.getScrollSensibility(), 0.001f);
         assertNull(menu.getSlideListener());
         assertNull(menu.getViewOffsetListener());
 
@@ -76,7 +76,7 @@ public class MenuTest {
         assertEquals(Policy.AS_NEEDED, menu.getVerticalBarPolicy());
         assertEquals(VerticalBarPosition.RIGHT, menu.getVerticalBarPosition());
         assertEquals(0, menu.getShowTransitionDuration(), 0.001f);
-        assertEquals(10, menu.getScrollSensibility(), 0.001f);
+        assertEquals(20, menu.getScrollSensibility(), 0.001f);
         assertEquals(action, menu.getSlideListener());
         assertEquals(listener, menu.getViewOffsetListener());
 

@@ -29,18 +29,12 @@ public class TextRender {
 
     public void setFont(Font font) {
         this.font = font;
-        width = -1;
-        if (lineWrapped) {
-            recreateLines(false);
-        }
+        recreateLines(false);
     }
 
     public void setTextSize(float textSize) {
         this.textSize = textSize;
-        width = -1;
-        if (lineWrapped) {
-            recreateLines(false);
-        }
+        recreateLines(false);
     }
 
     public void setMaxCharacters(int maxCharacters) {
@@ -574,18 +568,12 @@ public class TextRender {
     }
 
     private int countChars(byte[] arr, int off, int end) {
+        temp[0] = 0;
+        temp[1] = off;
         int count = 0;
-        int nextIndex = off;
-        while (nextIndex < end) {
+        while (temp[1] < end) {
             count++;
-            int byteValue = arr[nextIndex] & 0xFF;
-
-            if (byteValue <= 0x7F) {
-                nextIndex++;
-            } else if ((byteValue & 0xC0) == 0xC0) {
-                int byteCount = getUtf8ByteCount(byteValue);
-                nextIndex += byteCount;
-            }
+            readNextUnicode(end, arr, temp);
         }
         return count;
     }
@@ -594,22 +582,10 @@ public class TextRender {
         if (currentIndex < 0 || currentIndex >= byteSize) {
             throw new IndexOutOfBoundsException("Invalid currentIndex");
         }
-
-        int nextIndex = currentIndex;
-
-        while (nextIndex < textBytes.length) {
-            int byteValue = textBytes[nextIndex] & 0xFF;
-
-            if (byteValue <= 0x7F) {
-                nextIndex++;
-                break;
-            } else if ((byteValue & 0xC0) == 0xC0) {
-                int byteCount = getUtf8ByteCount(byteValue);
-                nextIndex += byteCount;
-                break;
-            }
-        }
-        return nextIndex;
+        temp[0] = 0;
+        temp[1] = currentIndex;
+        readNextUnicode(byteSize, textBytes, temp);
+        return temp[1];
     }
 
     private int getPrevCharIndex(int currentIndex) {
@@ -617,6 +593,35 @@ public class TextRender {
             throw new IndexOutOfBoundsException("Invalid currentIndex");
         }
 
+        int pos = currentIndex;
+        for (int i = 0; i < 7; i++) {
+            pos = readPrevChar(pos);
+        }
+
+        int err = 10;
+        temp[0] = 0;
+        temp[1] = pos;
+        while (temp[1] < currentIndex && err-- > 0) {
+            pos = temp[1];
+            readNextUnicode(byteSize, textBytes, temp);
+        }
+        return pos;
+    }
+
+    private int getUtf8ByteCount(int byteValue) {
+        if ((byteValue & 0xE0) == 0xC0) {
+            return 2;
+        } else if ((byteValue & 0xF0) == 0xE0) {
+            return 3;
+        } else if ((byteValue & 0xF8) == 0xF0) {
+            return 4;
+        }
+        return 1;
+    }
+
+    int[] temp = new int[2];
+
+    private int readPrevChar(int currentIndex) {
         int prevIndex = currentIndex - 1;
 
         while (prevIndex > 0) {
@@ -629,18 +634,79 @@ public class TextRender {
             prevIndex--;
         }
 
-        return prevIndex;
+        return 0;
     }
 
-    private int getUtf8ByteCount(int byteValue) {
-        if ((byteValue & 0xE0) == 0xC0) {
-            return 2;
-        } else if ((byteValue & 0xF0) == 0xE0) {
-            return 3;
-        } else if ((byteValue & 0xF8) == 0xF0) {
-            return 4;
+    private void readNextUnicode(int length, byte[] array, int[] outPut) {
+        // Usual Char
+        readNextChar(length, array, outPut);
+        int pc = outPut[0];
+        int pi = outPut[1];
+
+        if (!((pc >= 0x1F000 && pc <= 0x1FAFF) || (pc >= 0x200D && pc <= 0x3300))) {
+            return;
         }
-        return 1;
+
+        // Emoji
+
+        boolean waitNext = false;
+        int pos = 1;
+        while (readNextChar(length, array, outPut)) {
+            int chr = outPut[0];
+            if (chr == 0x200D) {
+                waitNext = true;
+            } else if (waitNext || chr == 0x1F3FB || chr == 0x1F3FC || chr == 0x1F3FD || chr == 0x1F3FE || chr == 0x1F3FF) {
+                waitNext = false;
+                pos++;
+                if (pos == 6) {
+                    break;
+                }
+            } else if (pos == 1 && (pc >= 0x1f1e6 && pc <= 0x1f1ff) && (chr >= 0x1f1e6 && chr <= 0x1f1ff)) {
+                break;
+            } else if (chr != 0xFE0E && chr != 0xFE0F) {
+                outPut[0] = pc;
+                outPut[1] = pi;
+                break;
+            }
+            pc = outPut[0];
+            pi = outPut[1];
+        }
+    }
+
+    private boolean readNextChar(int length, byte[] array, int[] outPut) {
+        int position = outPut[1];
+        int nextPosition = position;
+        if (position < 0 || position >= length) return false;
+
+        int firstByte = array[position] & 0xFF;
+        int codePoint;
+
+        if ((firstByte & 0x80) == 0) {
+            codePoint = firstByte;
+            nextPosition += 1;
+        } else if ((firstByte & 0xE0) == 0xC0 && position + 1 < length) {
+            int secondByte = array[position + 1] & 0xFF;
+            codePoint = ((firstByte & 0x1F) << 6) | (secondByte & 0x3F);
+            nextPosition += 2;
+        } else if ((firstByte & 0xF0) == 0xE0 && position + 2 < length) {
+            int secondByte = array[position + 1] & 0xFF;
+            int thirdByte = array[position + 2] & 0xFF;
+            codePoint = ((firstByte & 0x0F) << 12) | ((secondByte & 0x3F) << 6) | (thirdByte & 0x3F);
+            nextPosition += 3;
+        } else if ((firstByte & 0xF8) == 0xF0 && position + 3 < length) {
+            int secondByte = array[position + 1] & 0xFF;
+            int thirdByte = array[position + 2] & 0xFF;
+            int fourthByte = array[position + 3] & 0xFF;
+            codePoint = ((firstByte & 0x07) << 18) | ((secondByte & 0x3F) << 12) |
+                    ((thirdByte & 0x3F) << 6) | (fourthByte & 0x3F);
+            nextPosition += 4;
+        } else {
+            codePoint = 0xFFFD;
+            nextPosition += 1;
+        }
+        outPut[0] = codePoint;
+        outPut[1] = nextPosition;
+        return nextPosition < length;
     }
 
 }

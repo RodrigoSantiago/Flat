@@ -483,14 +483,14 @@ public class Graphics {
     public void drawTextSlice(float x, float y, float maxWidth, float maxHeight, String text) {
         if (discardDraw(x, y,
                 maxWidth == 0 ? text.length() * textSize * 10 : maxWidth,
-                maxHeight == 0 ? textSize * 2 : maxHeight)) return;
+                Math.min(textSize * 2, maxHeight))) return;
         context.svgDrawText(x, y, text, maxWidth, maxHeight);
     }
 
     public void drawTextSlice(float x, float y, float maxWidth, float maxHeight, Buffer text, int offset, int length) {
         if (discardDraw(x, y,
                 maxWidth == 0 ? length * textSize * 10 : maxWidth,
-                maxHeight == 0 ? textSize * 2 : maxHeight)) return;
+                Math.min(textSize * 2, maxHeight))) return;
         context.svgDrawText(x, y, text, offset, length, maxWidth, maxHeight);
     }
 
