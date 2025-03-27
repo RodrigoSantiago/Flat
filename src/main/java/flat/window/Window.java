@@ -244,6 +244,7 @@ public class Window {
         for (FutureTask<?> run : runSyncCp) {
             try {
                 run.run();
+                run.get();
             } catch (Exception e) {
                 Application.handleException(e);
             }

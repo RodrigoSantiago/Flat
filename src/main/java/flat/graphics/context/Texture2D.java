@@ -23,6 +23,10 @@ public final class Texture2D extends Texture implements ImageTexture {
 
     public Texture2D(int width, int height, PixelFormat format) {
         final int textureId = GL.TextureCreate();
+        if (textureId == 0) {
+            throw new FlatException("Unable to create a new OpenGL Texture");
+        }
+
         this.textureId = textureId;
         assignDispose(() -> GL.TextureDestroy(textureId));
         setSize(width, height, format);
@@ -37,7 +41,7 @@ public final class Texture2D extends Texture implements ImageTexture {
     }
 
     @Override
-    int getInternalId() {
+    public int getInternalId() {
         return textureId;
     }
 
@@ -66,11 +70,11 @@ public final class Texture2D extends Texture implements ImageTexture {
     }
 
     public int getWidth(int level) {
-        return (int) Math.max(1, Math.floor(width / Math.pow(2,level)));
+        return Math.max(1, width >> level);
     }
 
     public int getHeight(int level) {
-        return (int) Math.max(1, Math.floor(height / Math.pow(2,level)));
+        return Math.max(1, height >> level);
     }
 
     public void getData(int level, Buffer buffer, int offset) {
@@ -123,6 +127,11 @@ public final class Texture2D extends Texture implements ImageTexture {
         GL.TextureSetLevels(GLEnums.TT_TEXTURE_2D, levels);
     }
 
+    public int getMaxLevel() {
+        int maxDimension = Math.max(width, height);
+        return (int) (Math.log(maxDimension) / Math.log(2));
+    }
+
     public int getLevels() {
         return levels;
     }
@@ -169,11 +178,17 @@ public final class Texture2D extends Texture implements ImageTexture {
         if (levels < 0) {
             throw new FlatException("Negative values are not allowed (" + levels + ")");
         }
+        if (levels > getMaxLevel()) {
+            throw new FlatException("The levels values are overflowing the limit (" + getMaxLevel() + ")");
+        }
     }
 
     private void parameterBoundsCheck(int width, int height) {
         if (width <= 0 || height <= 0) {
             throw new FlatException("Zero or negative values are not allowed (" + width + ", " + height + ")");
+        }
+        if (width > Context.getMaxTextureSize() || height > Context.getMaxTextureSize()) {
+            throw new FlatException("The texture size is bigger than the max allowed (" + Context.getMaxTextureSize() + ")");
         }
     }
 

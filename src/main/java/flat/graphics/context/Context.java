@@ -19,11 +19,15 @@ import java.util.Arrays;
 
 public class Context {
 
+    private static int maxTextureSize;
+    private static int maxElementsVertices;
+    private static int maxElementsIndices;
+    private static int maxUniformBlockSize;
+
     public final long svgId;
 
     private Window window;
     private Graphics graphics;
-    private Thread thread;
     private boolean disposed;
 
     // ---- Core ---- //
@@ -100,7 +104,6 @@ public class Context {
     private Context(Window window, long svgId) {
         this.window = window;
         this.svgId = svgId;
-        this.thread = Thread.currentThread();
         init();
     }
 
@@ -231,6 +234,28 @@ public class Context {
         svgTextBlur = 0f;
 
         svgTransform = new Affine();
+
+        // ---- Limits ---- //
+        maxTextureSize = GL.GetMaxTextureSize();
+        maxElementsVertices = GL.GetMaxElementsVertices();
+        maxElementsIndices = GL.GetMaxElementsIndices();
+        maxUniformBlockSize = GL.GetMaxUniformBlockSize();
+    }
+
+    static int getMaxTextureSize() {
+        return maxTextureSize;
+    }
+
+    static int getMaxElementsIndices() {
+        return maxElementsIndices;
+    }
+
+    static int getMaxElementsVertices() {
+        return maxElementsVertices;
+    }
+
+    static int getMaxUniformBlockSize() {
+        return maxUniformBlockSize;
     }
 
     public void dispose() {

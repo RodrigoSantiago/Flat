@@ -148,6 +148,11 @@ public class ResourceStream {
     }
 
     @Override
+    public String toString() {
+        return file != null ? "File: " + resourceName : "Internal: " + resourceName;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof ResourceStream stream)) return false;

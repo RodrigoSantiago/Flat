@@ -28,8 +28,8 @@ text-area.default {
     }
     disabled {
         background-color : $disabled-color;
-        text-color : $on-disabled-color;
-        text-selected-color : alpha($on-disabled-color, 0.5);
+        text-color : alpha($on-disabled-color, 0.75);
+        text-selected-color : alpha($on-disabled-color, 0.15);
     }
 }
 
@@ -59,6 +59,7 @@ text-field : text-field.primary {
 
 text-field.primary {
     text-color : $on-card-color;
+    text-hint-color : alpha($on-card-color, 0.5);
     title-color : alpha($on-card-color, 0.75);
     caret-color : $on-card-color;
     text-selected-color : $selection-on-card-color;
@@ -75,9 +76,10 @@ text-field.primary {
     }
     disabled {
         caret-color : transparent;
-        text-color : $on-disabled-color;
+        text-color : alpha($on-disabled-color, 0.75);
+        text-hint-color : alpha($on-disabled-color, 0.25);
         title-color :  alpha($on-disabled-color, 0.5);
-        text-selected-color : alpha($on-disabled-color, 0.5);
+        text-selected-color : alpha($on-disabled-color, 0.15);
         text-divider-color : $disabled-color;
         background-color : $disabled-color;
     }
@@ -119,6 +121,7 @@ text-input-field.primary {
     action-icon-color : alpha($on-card-color, 0.25);
 
     text-color : $on-card-color;
+    text-hint-color : alpha($on-card-color, 0.5);
     title-color : alpha($on-card-color, 0.75);
     caret-color : $on-card-color;
     text-selected-color : $selection-on-card-color;
@@ -139,11 +142,12 @@ text-input-field.primary {
     }
     disabled {
         caret-color : transparent;
-        text-color : $on-disabled-color;
+        text-color : alpha($on-disabled-color, 0.75);
+        text-hint-color : alpha($on-disabled-color, 0.25);
         title-color :  alpha($on-disabled-color, 0.5);
         icon-color : alpha($on-disabled-color, 0.5);
         action-icon-color : alpha($on-disabled-color, 0.5);
-        text-selected-color : alpha($on-disabled-color, 0.5);
+        text-selected-color : alpha($on-disabled-color, 0.15);
         text-divider-color : $disabled-color;
         background-color : $disabled-color;
     }
@@ -186,6 +190,7 @@ text-drop-down.primary {
     action-icon-color : alpha($on-card-color, 0.25);
 
     text-color : $on-card-color;
+    text-hint-color : alpha($on-card-color, 0.5);
     title-color : alpha($on-card-color, 0.75);
     caret-color : $on-card-color;
     text-selected-color : $selection-on-card-color;
@@ -208,11 +213,12 @@ text-drop-down.primary {
     }
     disabled {
         caret-color : transparent;
-        text-color : $on-disabled-color;
+        text-color : alpha($on-disabled-color, 0.75);
+        text-hint-color : alpha($on-disabled-color, 0.25);
         title-color :  alpha($on-disabled-color, 0.5);
         icon-color : alpha($on-disabled-color, 0.5);
         action-icon-color : alpha($on-disabled-color, 0.5);
-        text-selected-color : alpha($on-disabled-color, 0.5);
+        text-selected-color : alpha($on-disabled-color, 0.15);
         text-divider-color : $disabled-color;
         background-color : $disabled-color;
     }

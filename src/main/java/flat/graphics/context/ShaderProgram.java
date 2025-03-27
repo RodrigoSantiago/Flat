@@ -31,6 +31,10 @@ public final class ShaderProgram extends ContextObject {
     public ShaderProgram(Context context, Shader... shaders) {
         super(context);
         final int programId = GL.ProgramCreate();
+        if (programId == 0) {
+            throw new FlatException("Unable to create a new OpenGL ShaderProgram");
+        }
+
         this.programId = programId;
         assignDispose(() -> GL.ProgramDestroy(programId));
 

@@ -351,4 +351,12 @@ public class GL {
     //---------------------------
     public static native void TransformFeedbackBegin(int polygonTypeFP);
     public static native void TransformFeedbackEnd();
+
+    //---------------------------
+    //           Limits
+    //---------------------------
+    public static native int GetMaxTextureSize();
+    public static native int GetMaxElementsVertices();
+    public static native int GetMaxElementsIndices();
+    public static native int GetMaxUniformBlockSize();
 }

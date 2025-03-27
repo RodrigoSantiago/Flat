@@ -5,7 +5,7 @@ scroll-box {
 horizontal-scroll-bar : horizontal-scroll-bar.default {
     min-width : 12dp;
     min-height : 12dp;
-    min-range : 0.15;
+    min-range : 48dp;
     transition-duration : 0.1;
     width : match_parent;
     cursor : hand;
@@ -72,7 +72,7 @@ horizontal-scroll-bar.discrete : horizontal-scroll-bar {
 vertical-scroll-bar : vertical-scroll-bar.default {
     min-width : 12dp;
     min-height : 12dp;
-    min-range : 0.15;
+    min-range : 48dp;
     transition-duration : 0.1;
     height : match_parent;
     cursor : hand;

@@ -5,16 +5,14 @@ import flat.backend.GL;
 import flat.backend.WL;
 import flat.exception.FlatException;
 import flat.graphics.context.Context;
-import flat.graphics.context.EmojiManager;
+import flat.graphics.emojis.EmojiManager;
 import flat.resources.ResourceStream;
 import flat.resources.ResourcesManager;
 import flat.window.event.EventData;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Application {
 
@@ -28,6 +26,8 @@ public class Application {
 
     private static int vsync;
     private static int currentVsync;
+    private static int systemQuality = 3;
+    private static int textureOptimalMaxSize = 4096;
 
     private static ResourcesManager resources;
     private static boolean loopActive;
@@ -136,9 +136,26 @@ public class Application {
         try {
             createWindow(settings);
 
-            EmojiManager.load(
-                    new ResourceStream("/default/emojis/emojis.png"),
-                    new ResourceStream("/default/emojis/emojis.txt"));
+            int textureSize = GL.GetMaxTextureSize();
+            int elementsVertices = GL.GetMaxElementsVertices();
+            int elementsIndices = GL.GetMaxElementsIndices();
+            int uniformBlockSize = GL.GetMaxUniformBlockSize();
+            if (textureSize <= 1024 || elementsVertices <= 10000 ||
+                    elementsIndices <= 10000 || uniformBlockSize <= 16384) {
+                systemQuality = 1;
+            } else if (textureSize <= 2048 || elementsVertices <= 50000 ||
+                    elementsIndices <= 50000 || uniformBlockSize <= 65536) {
+                systemQuality = 2;
+            } else {
+                systemQuality = 4;
+            }
+            textureOptimalMaxSize = Math.min(systemQuality * 1024, textureSize);
+
+            if (textureOptimalMaxSize >= 1024) {
+                EmojiManager.load(
+                        new ResourceStream("/default/emojis/emojis-" + textureOptimalMaxSize + ".png"),
+                        new ResourceStream("/default/emojis/emojis.txt"));
+            }
         } catch (Exception e) {
             finish();
             throw e;
@@ -359,6 +376,14 @@ public class Application {
 
     public static void handleException(Exception e) {
         e.printStackTrace();
+    }
+
+    public static int getTextureOptimalMaxSize() {
+        return textureOptimalMaxSize;
+    }
+
+    public static int getSystemQuality() {
+        return systemQuality;
     }
 
     public static SystemType getSystemType() {

@@ -17,6 +17,7 @@ import flat.resources.ResourceStream;
 import flat.uxml.node.UXNodeElement;
 import flat.uxml.node.UXNodeParser;
 import flat.widget.enums.ImageFilter;
+import flat.window.Application;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -85,13 +86,14 @@ public class LineMap implements Drawable {
     }
 
     private void bake(Graphics graphics) {
+        int optimal = Application.getTextureOptimalMaxSize();
         float d = getWidth() / getHeight();
         int w, h;
         if (d > 1) {
-            w = view.width > 4096 ? 4096 : (int) view.width;
+            w = view.width > optimal ? optimal : (int) view.width;
             h = (int) (w / d);
         } else {
-            h = view.height > 4096 ? 4096 : (int) view.height;
+            h = view.height > optimal ? optimal : (int) view.height;
             w = (int) (h * d);
         }
 

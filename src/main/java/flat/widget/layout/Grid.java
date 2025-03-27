@@ -2,7 +2,9 @@ package flat.widget.layout;
 
 import flat.animations.StateInfo;
 import flat.exception.FlatException;
+import flat.graphics.Color;
 import flat.graphics.Graphics;
+import flat.math.stroke.BasicStroke;
 import flat.uxml.Controller;
 import flat.uxml.TaskList;
 import flat.uxml.UXAttrs;
@@ -27,7 +29,7 @@ public class Grid extends Parent {
     private int columnCount;
 
     private final ArrayList<Cell> orderedCells = new ArrayList<>();
-    private final HashMap<Widget, Integer> cells = new HashMap<>();
+    private final HashMap<Widget, Cell> cells = new HashMap<>();
 
     private float[] columnsMeasureSize;
     private float[] rowsMeasureSize;
@@ -221,18 +223,15 @@ public class Grid extends Parent {
 
         TaskList tasks = new TaskList();
         if (attachAndAddChild(widget, tasks)) {
-            orderedCells.add(new Cell(widget, x, y, w, h));
-            cells.put(widget, orderedCells.size() - 1);
+            var cell = new Cell(widget, x, y, w, h);
+            orderedCells.add(cell);
+            cells.put(widget, cell);
             tasks.run();
         }
     }
 
     public Cell getCell(Widget child) {
-        Integer index = cells.get(child);
-        if (index != null) {
-            return orderedCells.get(index);
-        }
-        return null;
+        return cells.get(child);
     }
 
     public int getColumnCount() {
@@ -287,9 +286,9 @@ public class Grid extends Parent {
 
     @Override
     protected boolean detachChild(Widget child) {
-        Integer index = cells.remove(child);
-        if (index != null) {
-            orderedCells.remove((int) index);
+        Cell cell = cells.remove(child);
+        if (cell != null) {
+            orderedCells.remove(cell);
         }
         return super.detachChild(child);
     }
@@ -323,7 +322,7 @@ public class Grid extends Parent {
             }
 
             float spacingX = getHorizontalSpacing() * Math.max(0, columnCount - 1);
-            mWidth = definedWidth + spacingX;
+            mWidth = Math.max(definedWidth + spacingX + extraWidth, getLayoutMinWidth());
         } else {
             mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
         }
@@ -341,7 +340,7 @@ public class Grid extends Parent {
                 definedHeight += rows[i] == 0 ? h : rows[i];
             }
             float spacingY = getVerticalSpacing() * Math.max(0, rowCount - 1);
-            mHeight = definedHeight + spacingY;
+            mHeight = Math.max(definedHeight + spacingY + extraHeight, getLayoutMinHeight());
         } else {
             mHeight = Math.max(getLayoutPrefHeight(), getLayoutMinHeight());
         }

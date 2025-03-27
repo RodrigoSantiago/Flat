@@ -209,6 +209,7 @@ public abstract class Scrollable extends Parent {
             verticalBar.setSlideListener(null);
             verticalBar.setViewDimension(viewDimensionY);
             verticalBar.setTotalDimension(totalDimensionY);
+            verticalBar.setViewOffset(viewOffsetY);
             verticalBar.setSlideFilter(slideY);
         }
 

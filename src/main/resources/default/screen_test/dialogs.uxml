@@ -35,7 +35,7 @@
                 <Button margin-left="16dp" text="Ranged Date Picker Dialog" style="icon-left" on-action="onBlockRangedDatePickerDialog" icon="/default/icons/calendar.svg"/>
             </LinearBox>
         </LinearBox>
-        <LinearBox direction="VERTICAL"
+        <LinearBox direction="VERTICAL" width="MATCH_PARENT"
                    padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
             <Label text="System" style="subtitle" margin-left="4dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">

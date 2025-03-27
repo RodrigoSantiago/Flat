@@ -14,6 +14,10 @@ public final class TextureMultisample2D extends Texture {
 
     public TextureMultisample2D(int width, int height, int samples, PixelFormat format) {
         final int textureId = GL.TextureCreate();
+        if (textureId == 0) {
+            throw new FlatException("Unable to create a new OpenGL Texture");
+        }
+
         this.textureId = textureId;
         assignDispose(() -> GL.TextureDestroy(textureId));
         setSize(width, height, samples, format);
@@ -59,6 +63,9 @@ public final class TextureMultisample2D extends Texture {
     private void dataBoundsCheck(int width, int height, int samples) {
         if (width <= 0 || height <= 0 || samples < 0) {
             throw new FlatException("Zero or negative values are not allowed (" + width + ", " + height + ", " + samples + ")");
+        }
+        if (width > Context.getMaxTextureSize() || height > Context.getMaxTextureSize()) {
+            throw new FlatException("The texture size is bigger than the max allowed (" + Context.getMaxTextureSize() + ")");
         }
     }
 }

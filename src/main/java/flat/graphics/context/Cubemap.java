@@ -19,6 +19,10 @@ public final class Cubemap extends Texture {
 
     public Cubemap(int width, int height, PixelFormat format) {
         final int cubemapId = GL.TextureCreate();
+        if (cubemapId == 0) {
+            throw new FlatException("Unable to create a new OpenGL Texture");
+        }
+
         this.cubemapId = cubemapId;
         assignDispose(() -> GL.TextureDestroy(cubemapId));
         setSize(width, height, format);
@@ -167,6 +171,9 @@ public final class Cubemap extends Texture {
     private void parameterBoundsCheck(int width, int height) {
         if (width <= 0 || height <= 0) {
             throw new FlatException("Zero or negative values are not allowed (" + width + ", " + height + ")");
+        }
+        if (width > Context.getMaxTextureSize() || height > Context.getMaxTextureSize()) {
+            throw new FlatException("The texture size is bigger than the max allowed (" + Context.getMaxTextureSize() + ")");
         }
     }
 

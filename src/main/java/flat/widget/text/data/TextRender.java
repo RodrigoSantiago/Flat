@@ -2,6 +2,7 @@ package flat.widget.text.data;
 
 import flat.graphics.Graphics;
 import flat.graphics.context.Font;
+import flat.graphics.emojis.EmojiManager;
 import flat.widget.enums.HorizontalAlign;
 
 import java.nio.ByteBuffer;
@@ -637,13 +638,18 @@ public class TextRender {
         return 0;
     }
 
+    private boolean isEmoji(int chr) {
+        return EmojiManager.isEnabled() && ((chr >= 0x1F000 && chr <= 0x1FAFF) || (chr >= 0x200D && chr <= 0x3300) || chr == 0xFE0E || chr == 0xFE0F);
+
+    }
+
     private void readNextUnicode(int length, byte[] array, int[] outPut) {
         // Usual Char
         readNextChar(length, array, outPut);
         int pc = outPut[0];
         int pi = outPut[1];
 
-        if (!((pc >= 0x1F000 && pc <= 0x1FAFF) || (pc >= 0x200D && pc <= 0x3300))) {
+        if (!isEmoji(pc)) {
             return;
         }
 

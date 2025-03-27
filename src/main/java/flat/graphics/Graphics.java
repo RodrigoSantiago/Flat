@@ -590,28 +590,35 @@ public class Graphics {
         Texture2D tex = image.getTexture();
         drawImage(tex,
                 0, 0, tex.getWidth(), tex.getHeight(),
-                x, y, x + tex.getWidth(), y + tex.getHeight(), 0xFFFFFFFF, null);
+                x, y, x + tex.getWidth(), y + tex.getHeight(), 0xFFFFFFFF, false, null);
     }
 
     public void drawImage(ImageTexture image, float x, float y, float width, float height) {
         Texture2D tex = image.getTexture();
         drawImage(tex,
                 0, 0, tex.getWidth(), tex.getHeight(),
-                x, y, x + width, y + height, 0xFFFFFFFF, null);
+                x, y, x + width, y + height, 0xFFFFFFFF, false, null);
     }
 
     public void drawImage(ImageTexture image, float x, float y, float width, float height, int color) {
         Texture2D tex = image.getTexture();
         drawImage(tex,
                 0, 0, tex.getWidth(), tex.getHeight(),
-                x, y, x + width, y + height, color, null);
+                x, y, x + width, y + height, color, false, null);
     }
 
-    public void drawImage(ImageTexture image, float x, float y, float width, float height, int color, Affine transform) {
+    public void drawImage(ImageTexture image, float x, float y, float width, float height, int color, boolean pixelated) {
         Texture2D tex = image.getTexture();
         drawImage(tex,
                 0, 0, tex.getWidth(), tex.getHeight(),
-                x, y, x + width, y + height, color, transform);
+                x, y, x + width, y + height, color, pixelated, null);
+    }
+
+    public void drawImage(ImageTexture image, float x, float y, float width, float height, int color, boolean pixelated, Affine transform) {
+        Texture2D tex = image.getTexture();
+        drawImage(tex,
+                0, 0, tex.getWidth(), tex.getHeight(),
+                x, y, x + width, y + height, color, pixelated, transform);
     }
 
     public void drawImage(ImageTexture image,
@@ -621,23 +628,33 @@ public class Graphics {
         Texture2D tex = image.getTexture();
         drawImage(tex,
                 srcX1, srcY1, srcX2, srcY2,
-                dstX1, dstY1, dstX2, dstY2, color, null);
+                dstX1, dstY1, dstX2, dstY2, color, false, null);
     }
 
     public void drawImage(ImageTexture image,
                           float srcX1, float srcY1, float srcX2, float srcY2,
                           float dstX1, float dstY1, float dstX2, float dstY2,
-                          int color, Affine transform) {
+                          int color, boolean pixelated) {
         Texture2D tex = image.getTexture();
         drawImage(tex,
                 srcX1, srcY1, srcX2, srcY2,
-                dstX1, dstY1, dstX2, dstY2, color, transform);
+                dstX1, dstY1, dstX2, dstY2, color, pixelated, null);
+    }
+
+    public void drawImage(ImageTexture image,
+                          float srcX1, float srcY1, float srcX2, float srcY2,
+                          float dstX1, float dstY1, float dstX2, float dstY2,
+                          int color, boolean pixelated, Affine transform) {
+        Texture2D tex = image.getTexture();
+        drawImage(tex,
+                srcX1, srcY1, srcX2, srcY2,
+                dstX1, dstY1, dstX2, dstY2, color, pixelated, transform);
     }
 
     public void drawImage(Texture2D texture,
                           float srcX1, float srcY1, float srcX2, float srcY2,
                           float dstX1, float dstY1, float dstX2, float dstY2,
-                          int color, Affine transform) {
+                          int color, boolean pixelated, Affine transform) {
         if (dstX1 > dstX2) {
             float v = dstX1;
             dstX1 = dstX2;
@@ -663,6 +680,7 @@ public class Graphics {
                 .source(srcX1, srcY1, srcX2, srcY2)
                 .destin(dstX1, dstY1, dstX2, dstY2)
                 .color(color)
+                .nearest(pixelated)
                 .transform(transform)
                 .build());
         drawRect(dstX1, dstY1, dstX2 - dstX1, dstY2 - dstY1, true);

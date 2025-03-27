@@ -19,6 +19,9 @@ public final class BufferObject extends ContextObject {
         super(context);
 
         final int bufferId = GL.BufferCreate();
+        if (bufferId == 0) {
+            throw new FlatException("Unable to create a new OpenGL Buffer");
+        }
 
         this.bufferId = bufferId;
         assignDispose(() -> GL.BufferDestroy(bufferId));

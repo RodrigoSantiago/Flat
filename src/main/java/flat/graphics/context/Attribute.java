@@ -16,7 +16,6 @@ public class Attribute {
         this.arraySize = arraySize;
     }
 
-
     public int getLocation() {
         return location;
     }

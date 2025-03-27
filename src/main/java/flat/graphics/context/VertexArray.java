@@ -16,6 +16,10 @@ public final class VertexArray extends ContextObject {
     public VertexArray(Context context) {
         super(context);
         final int vertexArrayId = GL.VertexArrayCreate();
+        if (vertexArrayId == 0) {
+            throw new FlatException("Unable to create a new OpenGL VertexArray");
+        }
+
         this.vertexArrayId = vertexArrayId;
         assignDispose(() -> GL.VertexArrayDestroy(vertexArrayId));
     }

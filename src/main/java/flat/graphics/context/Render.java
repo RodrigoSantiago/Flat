@@ -14,6 +14,10 @@ public final class Render extends ContextObject {
     public Render(Context context, int width, int height, int samples, PixelFormat format) {
         super(context);
         final int renderBufferId = GL.RenderBufferCreate();
+        if (renderBufferId == 0) {
+            throw new FlatException("Unable to create a new OpenGL RenderBuffer");
+        }
+
         this.renderBufferId = renderBufferId;
         assignDispose(() -> GL.RenderBufferDestroy(renderBufferId));
         setSize(width, height, samples, format);

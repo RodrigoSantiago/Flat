@@ -27,7 +27,7 @@ public class SVG {
     public static native void SetPaintLinearGradient(long context, float x1, float y1, float x2, float y2, int count, float[] data, int cycleMethod);
     public static native void SetPaintRadialGradient(long context, float x1, float y1, float fx, float fy, float rIn, float rOut, int count, float[] data, int cycleMethod);
     public static native void SetPaintBoxGradient(long context, float x, float y, float w, float h, float corners, float blur, float alpha, int color, float[] data);
-    public static native void SetPaintImage(long context, int textureID, int color, float[] data, int cycleMethod);
+    public static native void SetPaintImage(long context, int textureID, int color, float[] data, int cycleMethod, boolean nearest);
 
     //---------------------------
     //         Transforms
@@ -63,6 +63,7 @@ public class SVG {
     //---------------------------
     public static native long FontLoad(byte[] data, float size, int sdf);
     public static native void FontUnload(long font);
+    public static native void FontSetEmojiEnabled(boolean enabled);
     public static native void FontCreateEmoji(long textureId, int[] sequence);
     public static native void FontDestroyEmoji();
 
@@ -73,6 +74,10 @@ public class SVG {
     public static native void FontGetAllCodePoints(long font, int[] codePoints);
     public static native void FontGetGlyph(long font, int codePoint, float[] data);
     public static native float[] FontGetGlyphShape(long font, int codePoints);
+    public static native String FontGetName(long font);
+    public static native boolean FontIsBold(long font);
+    public static native boolean FontIsItalic(long font);
+    public static native int FontGetWeight(long font);
     public static native float FontGetHeight(long font);
     public static native float FontGetAscent(long font);
     public static native float FontGetDescent(long font);

@@ -253,3 +253,120 @@ data-picker-grid {
     horizontal-align : center;
     margin-bottom : 8dp;
 }
+
+// ----- Emojis ---- //
+dialog-emojis {
+    width : 392dp;
+    background-color : $card-color;
+    radius-top : 4dp;
+    radius-left : 4dp;
+    radius-right : 4dp;
+    radius-bottom : 4dp;
+}
+dialog-emoji-grid {
+    horizontal-align : center;
+    margin-bottom : 8dp;
+}
+dialog-emoji-grid-area {
+    width : MATCH_PARENT;
+    horizontal-align : center;
+}
+dialog-emoji-scroll {
+    width : MATCH_PARENT;
+    height : 300dp;
+    floating-bars : true;
+    scroll-sensibility : 40;
+}
+dialog-emoji-group-title {
+    height : 40dp;
+    vertical-align : middle;
+    text-font : font("Roboto");
+    text-size : 18dp;
+    text-color : alpha($on-card-color, 0.5);
+}
+dialog-emojis-group-icon {
+    width : 40dp;
+    height : 40dp;
+    radius-top : 4dp;
+    radius-left : 4dp;
+    radius-right : 4dp;
+    radius-bottom : 4dp;
+    padding-top : 0dp;
+    padding-left : 0dp;
+    padding-right : 0dp;
+    padding-bottom : 0dp;
+    icon-width : 32dp;
+    icon-height : 32dp;
+
+    text-color : alpha($on-card-color, 0.5);
+    icon-color : alpha($on-card-color, 0.5);
+    background-color : transparent;
+    ripple-color : alpha($on-card-color, 0.5);
+
+    hovered {
+        background-color : alpha($on-card-color, 0.10);
+    }
+    focused {
+        background-color : alpha($on-card-color, 0.10);
+    }
+    activated {
+        text-color : alpha($on-card-color, 0.75);
+        icon-color : alpha($on-card-color, 0.75);
+        background-color : alpha($on-card-color, 0.10);
+    }
+    disabled {
+        text-color : alpha($on-disabled-color, 0.25);
+        icon-color : alpha($on-disabled-color, 0.25);
+        background-color : $disabled-color;
+    }
+}
+dialog-emojis-groups-area {
+    padding-left : 16dp;
+    padding-right : 16dp;
+    padding-top : 16dp;
+    padding-bottom : 16dp;
+}
+dialog-emojis-character {
+    width : 40dp;
+    height : 40dp;
+    vertical-align : middle;
+    horizontal-align : center;
+    text-color : $on-card-color;
+    padding-top : 4dp;
+    padding-right : 4dp;
+    padding-left : 4dp;
+    padding-bottom : 4dp;
+    margin-top : 0dp;
+    margin-left : 0dp;
+    margin-right : 0dp;
+    margin-bottom : 0dp;
+    text-size : 28dp;
+
+    shadow-enabled : false;
+    text-color : $on-card-color;
+    background-color : $card-color;
+    ripple-color : $card-color-press;
+
+    hovered {
+        background-color : $card-color-hover;
+    }
+    pressed {
+        background-color : $card-color-hover;
+    }
+    disabled {
+        text-color : alpha($on-card-color, 0.25);
+    }
+}
+dialog-emojis-search-bar {
+    width : MATCH_PARENT;
+    margin-top : 16dp;
+    margin-bottom : 16dp;
+    margin-left : 16dp;
+    margin-right : 16dp;
+    radius-top : 4dp;
+    radius-left : 4dp;
+    radius-right : 4dp;
+    radius-bottom : 4dp;
+    text-divider-size : 0;
+    title-appearance : LINE;
+}

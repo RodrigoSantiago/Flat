@@ -117,7 +117,7 @@ public class PixelMap implements Drawable, ImageTexture {
     public void draw(Graphics graphics, float x, float y, float width, float height, int color, ImageFilter filter) {
         if (graphics.discardDraw(x, y, width, height)) return;
 
-        graphics.drawImage(this, x, y, width, height, color);
+        graphics.drawImage(this, x, y, width, height, color, filter != ImageFilter.LINEAR);
     }
 
     @Override

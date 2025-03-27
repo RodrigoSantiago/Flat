@@ -28,6 +28,7 @@ public class Font {
     private static Font DefaultFont;
     private static final float[] readGlyph = new float[5];
 
+    private final String name;
     private final String family;
     private final FontPosture posture;
     private final FontWeight weight;
@@ -38,13 +39,15 @@ public class Font {
     private final float size, height, ascent, descent, lineGap;
     private final int glyphCount;
     private final boolean sdf;
-    private boolean disposed;
 
-    private DisposeTask disposeTask;
+    private final DisposeTask disposeTask;
+    private boolean disposed;
     private int[] glyphs;
 
     public Font(String family, FontWeight weight, FontPosture posture, FontStyle style, byte[] data) {
-        this(family, weight, posture, style, data, 48, true);
+        this(family, weight, posture, style, data,
+                Application.getSystemQuality() == 1 ? 24 :
+                Application.getSystemQuality() == 2 ? 32 : 48, true);
     }
 
     public Font(String family, FontWeight weight, FontPosture posture, FontStyle style, byte[] data, float size, boolean sdf) {
@@ -52,25 +55,29 @@ public class Font {
             throw new FlatException("Invalid font data");
         }
 
-        this.family = family;
-        this.weight = weight;
-        this.posture = posture;
-        this.style = style;
-        this.size = size;
-        this.sdf = sdf;
-
         final long fontId = SVG.FontLoad(data, size, sdf ? 1 : 0);
         if (fontId == 0) {
             throw new FlatException("Invalid font data");
         }
+
         final FontIdPair idPair = new FontIdPair();
         this.idPair = idPair;
         this.idPair.fontId = fontId;
+
+        this.size = size;
+        this.sdf = sdf;
+
+        this.name = SVG.FontGetName(fontId);
         this.height = SVG.FontGetHeight(fontId);
         this.ascent = SVG.FontGetAscent(fontId);
         this.descent = SVG.FontGetDescent(fontId);
         this.lineGap = SVG.FontGetLineGap(fontId);
         this.glyphCount = SVG.FontGetGlyphCount(fontId);
+
+        this.family = family;
+        this.weight = weight != null ? weight : FontWeight.parse(SVG.FontGetWeight(fontId));
+        this.posture = posture != null ? posture : SVG.FontIsItalic(fontId) ? FontPosture.ITALIC : FontPosture.REGULAR;
+        this.style = style != null ? style : SystemFonts.guessStyle(name);
 
         // Auto Removal
         cleaner.register(this, disposeTask = new DisposeTask(() -> {
@@ -264,12 +271,16 @@ public class Font {
         var cursive = new Font("DancingScript", FontWeight.NORMAL, FontPosture.REGULAR, FontStyle.CURSIVE
                 , res.getData("default/fonts/DancingScript-Regular.ttf"));
         install(cursive);
-        var emoji = new Font("NotoEmoji", FontWeight.NORMAL, FontPosture.REGULAR, FontStyle.FANTASY
-                , res.getData("default/fonts/NotoEmoji-Regular.ttf"));
-        install(emoji);
+        var fantasy = new Font("MaterialIcons", FontWeight.NORMAL, FontPosture.REGULAR, FontStyle.FANTASY
+                , res.getData("default/fonts/MaterialIcons-Regular.ttf"));
+        install(fantasy);
 
         DefaultFont = sans;
         defaultFonts.addAll(List.of(sans, bold, italic, bolditalic, serif, mono, cursive));
+    }
+
+    public String getName() {
+        return name;
     }
 
     public String getFamily() {

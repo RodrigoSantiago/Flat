@@ -9,7 +9,6 @@ import flat.events.ActionEvent;
 import flat.events.KeyEvent;
 import flat.events.PointerEvent;
 import flat.graphics.Graphics;
-import flat.graphics.context.EmojiManager;
 import flat.graphics.context.Font;
 import flat.graphics.context.ShaderProgram;
 import flat.graphics.context.enums.ImageFileFormat;
@@ -26,6 +25,7 @@ import flat.widget.Widget;
 import flat.widget.image.ImageView;
 import flat.widget.layout.Drawer;
 import flat.widget.layout.LinearBox;
+import flat.widget.stages.Dialog;
 import flat.widget.stages.dialogs.*;
 import flat.widget.structure.*;
 import flat.widget.text.Button;
@@ -688,12 +688,30 @@ public class MainController extends Controller {
 //                e.printStackTrace();
 //            }
 //        }, null);
-        getActivity().getWindow().showOpenFolderDialog((file) -> {
-            ArrayList<int[]> emojis = new ArrayList<>();
-            PixelMap map = EmojiConverter.createFromNotoEmoji(file, emojis);
-            saveImage(map, "C:\\Nova\\emojis.png");
-            saveEmojis(emojis, "C:\\Nova\\emojis.txt");
-        }, null);
+        // getActivity().getWindow().showOpenFileDialog((file) -> {
+        //     EmojiConverter.convertNotoMetaToDic(file);
+        // }, null, "json");
+//        getActivity().getWindow().showOpenFolderDialog((file) -> {
+//            ArrayList<int[]> emojis = new ArrayList<>();
+//            PixelMap map = EmojiConverter.createFromNotoEmoji(file, emojis, 4096);
+//            saveImage(map, "C:\\Nova\\emojis.png");
+//            saveEmojis(emojis, "C:\\Nova\\emojis.txt");
+//        }, null);
+
+        var alert = new EmojiDialogBuilder()
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onEmojiPick((dg, val) -> {
+                    for (int i = 0; i < val.length(); i++) {
+                        var cp = val.codePointAt(i);
+                        System.out.print(Integer.toHexString(cp) + " ");
+                        i += Character.charCount(cp) - 1;
+                    }
+                    System.out.println();
+                })
+                .block(true)
+                .build();
+        alert.show(getActivity());
     }
 
     @Flat
