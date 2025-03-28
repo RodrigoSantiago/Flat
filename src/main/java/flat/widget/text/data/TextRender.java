@@ -712,7 +712,7 @@ public class TextRender {
         }
         outPut[0] = codePoint;
         outPut[1] = nextPosition;
-        return nextPosition < length;
+        return true;
     }
 
 }
