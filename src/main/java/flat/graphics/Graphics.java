@@ -1,5 +1,7 @@
 package flat.graphics;
 
+import flat.backend.GL;
+import flat.backend.GLEnums;
 import flat.exception.FlatException;
 import flat.graphics.context.*;
 import flat.graphics.context.enums.*;
@@ -9,11 +11,11 @@ import flat.graphics.context.paints.ImagePattern;
 import flat.graphics.image.PixelMap;
 import flat.math.Affine;
 import flat.math.Vector2;
+import flat.math.Vector4;
 import flat.math.shapes.*;
 import flat.math.stroke.BasicStroke;
 
 import java.nio.Buffer;
-import java.util.ArrayList;
 
 public class Graphics {
 
@@ -22,14 +24,16 @@ public class Graphics {
 
     private final Affine transform2D = new Affine();
     private final ClipState clipState = new ClipState();
-    private final ClipState surfaceClipState = new ClipState();
     private Stroke stroke;
     private float textSize;
-    private final Rectangle noClip = new Rectangle();
 
     // Custom Draw
     private Shader vertex;
     private Shader fragment;
+    private Shader bakeFragment;
+    private Shader bakeMsFragment;
+    private ShaderProgram bakeMsProgram;
+    private ShaderProgram bakeProgram;
     private VertexArray ver;
     private BufferObject vbo;
     private BufferObject ebo;
@@ -38,15 +42,14 @@ public class Graphics {
         this.context = context;
 
         context.setBlendEnabled(true);
-        context.setBlendFunction(BlendFunction.SRC_ALPHA, BlendFunction.ONE_MINUS_SRC_ALPHA, BlendFunction.SRC_ALPHA, BlendFunction.ONE_MINUS_SRC_ALPHA);
+        context.setBlendFunction(
+                BlendFunction.ONE, BlendFunction.ONE_MINUS_SRC_ALPHA,
+                BlendFunction.ONE, BlendFunction.ONE_MINUS_SRC_ALPHA);
 
         stroke = new BasicStroke(1);
         textSize = 24;
         context.svgTextScale(textSize);
         context.svgStroke(stroke);
-
-        clipState.box = noClip;
-        surfaceClipState.box = noClip;
 
         vertex = new Shader(context, ShaderType.Vertex);
         vertex.setSource(
@@ -55,18 +58,19 @@ public class Graphics {
                 layout (location = 0) in vec2 iPos;
                 layout (location = 1) in vec2 iTex;
                 uniform vec2 view;
+                uniform vec4 area;
                 out vec2 oPos;
                 out vec2 oTex;
                 void main() {
-                    oPos = vec2(iPos.x * 2.0 / view.x - 1.0, 1.0 - iPos.y * 2.0 / view.y);
+                    vec2 real = vec2(area.x + iPos.x * area.z, area.y + iPos.y * area.w);
+                    oPos = real;
                     oTex = iTex;
-                	gl_Position = vec4(iPos.x, iPos.y, 0, 1);
+                	gl_Position = vec4(real.x / view.x * 2 - 1, - (real.y / view.y * 2 - 1), 0, 1);
                 }
                 """
         );
-        vertex.compile();
         if (!vertex.compile()) {
-            throw new FlatException("The default image vertex shader fail to compile : " + vertex.getLog());
+            throw new FlatException("The default image Vertex Shader fail to compile : " + vertex.getLog());
         }
 
         fragment = new Shader(context, ShaderType.Fragment);
@@ -80,13 +84,90 @@ public class Graphics {
                 vec4 fragment(vec2 pos, vec2 uv);
                 
                 void main() {
-                    FragColor = fragment(oPos, oTex);
+                    vec4 col = fragment(oPos, oTex);
+                    FragColor = vec4(col.rgb * col.a, col.a);
                 }
                 """
         );
-        fragment.compile();
         if (!fragment.compile()) {
-            throw new FlatException("The default image fragment shader fail to compile : " + fragment.getLog());
+            throw new FlatException("The default image Fragment Shader fail to compile : " + fragment.getLog());
+        }
+
+        bakeFragment = new Shader(context, ShaderType.Fragment);
+        bakeFragment.setSource(
+                """
+                #version 330 core
+                out vec4 FragColor;
+                in vec2 oTex;
+                
+                uniform sampler2D mainTexture;
+                
+                void main() {
+                    vec4 col = texture(mainTexture, oTex);
+                    if (col.a > 0) {
+                        col.rgb /= col.a;
+                    } else {
+                        vec2 size = textureSize(mainTexture, 0);
+                        vec4 c0 = texture(mainTexture, oTex + vec2(1 / size.x, 0.0));
+                        vec4 c1 = texture(mainTexture, oTex - vec2(1 / size.x, 0.0));
+                        vec4 c2 = texture(mainTexture, oTex + vec2(0.0, 1 / size.y));
+                        vec4 c3 = texture(mainTexture, oTex - vec2(0.0, 1 / size.y));
+                        col.rgb = (c0 * c0.a + c1 * c1.a + c2 * c2.a + c3 * c3.a).rgb / max(0.001, (c0.a + c1.a + c2.a + c3.a));
+                        col.a = 0;
+                    }
+                    FragColor = col;
+                }
+                """
+        );
+        if (!bakeFragment.compile()) {
+            throw new FlatException("The default image bake Fragment Shader fail to compile : " + bakeFragment.getLog());
+        }
+
+        bakeProgram = new ShaderProgram(context, vertex, bakeFragment);
+        if (!bakeProgram.link()) {
+            throw new FlatException("The default image bake Shader Program fail to link : " + bakeProgram.getLog());
+        }
+
+        bakeMsFragment = new Shader(context, ShaderType.Fragment);
+        bakeMsFragment.setSource(
+                """
+                #version 330 core
+                out vec4 FragColor;
+                in vec2 oTex;
+                
+                uniform int samples;
+                uniform sampler2DMS mainTexture;
+                
+                void main() {
+                    vec2 size = textureSize(mainTexture);
+                    ivec2 texCoord = ivec2(oTex * size);
+                    vec4 col = vec4(0.0);
+    
+                    for (int i = 0; i < samples; i++) {
+                        col += texelFetch(mainTexture, texCoord, i);
+                    }
+                    col /= float(samples);
+                    if (col.a > 0) {
+                        col.rgb /= col.a;
+                    } else {
+                        vec4 c0 = texelFetch(mainTexture, texCoord + ivec2(1, 0), 0);
+                        vec4 c1 = texelFetch(mainTexture, texCoord - ivec2(1, 0), 0);
+                        vec4 c2 = texelFetch(mainTexture, texCoord + ivec2(0, 1), 0);
+                        vec4 c3 = texelFetch(mainTexture, texCoord - ivec2(0, 1), 0);
+                        col.rgb = (c0 * c0.a + c1 * c1.a + c2 * c2.a + c3 * c3.a).rgb / max(0.001, (c0.a + c1.a + c2.a + c3.a));
+                        col.a = 0;
+                    }
+                    FragColor = col;
+                }
+                """
+        );
+        if (!bakeMsFragment.compile()) {
+            throw new FlatException("The default image bake Fragment Shader fail to compile : " + bakeMsFragment.getLog());
+        }
+
+        bakeMsProgram = new ShaderProgram(context, vertex, bakeMsFragment);
+        if (!bakeMsProgram.link()) {
+            throw new FlatException("The default image bake Shader Program fail to link : " + bakeMsProgram.getLog());
         }
     }
 
@@ -94,19 +175,15 @@ public class Graphics {
         return context;
     }
 
-    public void refreshState() {
-        clipState.clipShapes.clear();
-        clipState.clipBox.clear();
-        clipState.box = noClip;
-        surface = null;
-        context.setFrameBuffer(null);
-        refreshSurfaceState();
+    public void resetState() {
+        if (surface != null) {
+            setSurface(null);
+        } else {
+            resetStateConfig();
+        }
     }
 
-    private void refreshSurfaceState() {
-        surfaceClipState.clipShapes.clear();
-        surfaceClipState.clipBox.clear();
-        surfaceClipState.box = noClip;
+    public void resetStateConfig() {
         stroke = new BasicStroke(1);
         textSize = 24;
         context.svgTextScale(textSize);
@@ -119,8 +196,12 @@ public class Graphics {
     }
 
     public PixelMap createPixelMap() {
+        return createPixelMap(PixelFormat.RGBA);
+    }
+
+    public PixelMap createPixelMap(PixelFormat format) {
         if (surface != null) {
-            return surface.createPixelMap();
+            return surface.createPixelMap(this, format);
         } else {
             int w = getWidth();
             int h = getHeight();
@@ -149,7 +230,7 @@ public class Graphics {
     }
 
     public float getDensity() {
-        return context.getHeight();
+        return context.getDensity();
     }
 
     public void clear(int color) {
@@ -164,7 +245,12 @@ public class Graphics {
     }
 
     public void clear(int color, double depth, int stencil) {
-        clearClip();
+        getClipState().clear();
+        if (stencil != 0x00) {
+            getClipState().clipShapes.add(new Rectangle(0, 0, getWidth(), getHeight()));
+            getClipState().clipBox.add(null);
+            getClipState().box = null;
+        }
         context.setClearColor(color);
         context.setClearDepth(depth);
         context.setClearStencil(stencil);
@@ -175,12 +261,12 @@ public class Graphics {
         if (this.surface != surface) {
             this.surface = surface;
             if (this.surface != null) {
-                this.surface.begin(context);
-                context.setFrameBuffer(this.surface.frameBuffer);
+                this.surface.begin(this);
+                context.setFrameBuffer(this.surface.getFrameBuffer());
             } else {
                 context.setFrameBuffer(null);
             }
-            refreshSurfaceState();
+            resetStateConfig();
         }
     }
 
@@ -210,14 +296,12 @@ public class Graphics {
         return context.svgTransform();
     }
 
-    public ClipState getClipState() {
-        return surface == null ? clipState : surfaceClipState;
+    private ClipState getClipState() {
+        return surface == null ? clipState : surface.getClipState();
     }
 
     public void clearClip() {
-        getClipState().clipShapes.clear();
-        getClipState().clipBox.clear();
-        getClipState().box = noClip;
+        getClipState().clear();
 
         context.svgClearClip(false);
     }
@@ -267,7 +351,7 @@ public class Graphics {
             state.clipShapes.remove(state.clipShapes.size() - 1);
             state.clipBox.remove(state.clipBox.size() - 1);
             if (state.clipBox.isEmpty()) {
-                state.box = noClip;
+                state.box = ClipState.noClip;
             } else {
                 state.box = state.clipBox.get(state.clipBox.size() - 1);
             }
@@ -276,26 +360,26 @@ public class Graphics {
     }
 
     public void updateClip() {
-        if (getClipState().clipBox.isEmpty()) {
+        ClipState state = getClipState();
+        if (state.isClear()) {
             context.svgClearClip(false);
 
-        } else if (getClipState().clipBox.get(getClipState().clipBox.size() - 1) == null) {
+        } else if (state.isFullyClipped()) {
             context.svgClearClip(true);
 
         } else {
             context.svgClearClip(false);
             context.svgTransform(null);
-            for (int i = 0; i < getClipState().clipShapes.size(); i++) {
-                context.svgClip(getClipState().clipShapes.get(0));
+            for (Shape clip : state.clipShapes) {
+                context.svgClip(clip);
             }
             context.svgTransform(transform2D);
         }
     }
 
     public boolean discardDraw(float x, float y, float w, float h) {
-        Rectangle box = getClipState().box;
-        if (box == noClip) return false;
-        if (box == null) return true;
+        if (getClipState().isClear()) return false;
+        if (getClipState().isFullyClipped()) return true;
         if (!transform2D.isTranslationOnly()) return false;
         x += transform2D.m02;
         y += transform2D.m12;
@@ -303,6 +387,7 @@ public class Graphics {
         float fw = stroke.getLineWidth() + 1;
         float hw = fw * 0.5f;
 
+        Rectangle box = getClipState().box;
         float x1 = box.x - hw;
         float y1 = box.y - hw;
         float x2 = x1 + box.width + fw;
@@ -687,7 +772,22 @@ public class Graphics {
         context.svgPaint(paint);
     }
 
+    void bakeSurface(TextureMultisample2D texture) {
+        bakeMsProgram.set("samples", texture.getSamples());
+        bakeMsProgram.set("mainTexture", 0);
+        blitCustomShader(bakeMsProgram, 0, 0, getWidth(), getHeight(), texture);
+    }
+
+    void bakeSurface(Texture texture) {
+        bakeProgram.set("mainTexture", 0);
+        blitCustomShader(bakeProgram, 0, 0, getWidth(), getHeight(), texture);
+    }
+
     public void blitCustomShader(ShaderProgram program, Texture... textures) {
+        blitCustomShader(program, 0, 0, getWidth(), getHeight(),textures);
+    }
+
+    public void blitCustomShader(ShaderProgram program, float x, float y, float width, float height, Texture... textures) {
         if (ver == null) {
             ver = new VertexArray(context);
             ebo = new BufferObject(context, BufferType.Element, 6 * 4, UsageType.STATIC_DRAW);
@@ -695,10 +795,10 @@ public class Graphics {
 
             vbo = new BufferObject(context, BufferType.Array, 16 * 4, UsageType.STATIC_DRAW);
             vbo.setData(0, new float[]{
-                    -1, -1, 0, 0,
-                    1, -1,  1,  0,
-                    1,  1,  1,  1,
-                    -1, 1, 0,  1}, 0, 16);
+                     0,  0,  0,  0,
+                     1,  0,  1,  0,
+                     1,  1,  1,  1,
+                     0,  1,  0,  1}, 0, 16);
 
             ver.setAttributeEnabled(vbo, 0, 2, AttributeType.FLOAT, false, 4 * 4, 0);
             ver.setAttributeEnabled(vbo, 1, 2, AttributeType.FLOAT, false, 4 * 4, 2 * 4);
@@ -707,11 +807,12 @@ public class Graphics {
 
         ShaderProgram current = context.getShaderProgram();
         context.setShaderProgram(program);
+        program.set("area", new Vector4(x, y, width, height));
         program.set("view", new Vector2(getWidth(), getHeight()));
         context.setShaderTextures(textures);
         ver.drawElements(VertexMode.TRIANGLES, 0, 6, 1);
-        context.setShaderProgram(current);
         context.setShaderTextures();
+        context.setShaderProgram(current);
     }
 
     public ShaderProgram createImageRenderShader(String compatibleFragment) {
@@ -731,9 +832,8 @@ public class Graphics {
         return program;
     }
 
-    public static class ClipState {
-        public Rectangle box;
-        public final ArrayList<Shape> clipShapes = new ArrayList<>();
-        public final ArrayList<Rectangle> clipBox = new ArrayList<>();
+    public void setBlendMode(BlendFunction srcColor, BlendFunction dstColor, BlendFunction srcAlpha, BlendFunction dstAlpha) {
+        context.setBlendFunction(srcColor, dstColor, srcAlpha, dstAlpha);
     }
+
 }

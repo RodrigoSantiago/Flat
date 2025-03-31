@@ -2,11 +2,9 @@ package flat.widget.value;
 
 import flat.events.SlideEvent;
 import flat.uxml.*;
-import flat.uxml.value.UXValue;
-import flat.uxml.value.UXValueColor;
-import flat.uxml.value.UXValueNumber;
-import flat.uxml.value.UXValueText;
+import flat.uxml.value.*;
 import flat.widget.Widget;
+import flat.widget.enums.LineCap;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -46,7 +44,9 @@ public class VerticalScrollBarTest {
         assertEquals(0, scrollBar.getViewDimension(), 0.1f);
         assertEquals(0, scrollBar.getViewOffset(), 0.1f);
         assertEquals(0f, scrollBar.getMinRange(), 0.0001f);
-        assertEquals(0xFFFFFFFF, scrollBar.getColor());
+        assertEquals(0x000000FF, scrollBar.getLineColor());
+        assertEquals(LineCap.BUTT, scrollBar.getLineCap());
+        assertEquals(4f, scrollBar.getLineWidth(), 0.0001f);
         assertNull(scrollBar.getSlideListener());
         assertNull(scrollBar.getViewOffsetListener());
 
@@ -57,7 +57,9 @@ public class VerticalScrollBarTest {
         assertEquals(50, scrollBar.getViewDimension(), 0.1f);
         assertEquals(100, scrollBar.getViewOffset(), 0.1f);
         assertEquals(0f, scrollBar.getMinRange(), 0.0001f);
-        assertEquals(0xFFFFFFFF, scrollBar.getColor());
+        assertEquals(0x000000FF, scrollBar.getLineColor());
+        assertEquals(LineCap.BUTT, scrollBar.getLineCap());
+        assertEquals(4f, scrollBar.getLineWidth(), 0.0001f);
         assertEquals(action, scrollBar.getSlideListener());
         assertEquals(listener, scrollBar.getViewOffsetListener());
 
@@ -67,7 +69,9 @@ public class VerticalScrollBarTest {
         assertEquals(50, scrollBar.getViewDimension(), 0.1f);
         assertEquals(100, scrollBar.getViewOffset(), 0.1f);
         assertEquals(0.1f, scrollBar.getMinRange(), 0.0001f);
-        assertEquals(0xFF0000FF, scrollBar.getColor());
+        assertEquals(0x00FF00FF, scrollBar.getLineColor());
+        assertEquals(LineCap.SQUARE, scrollBar.getLineCap());
+        assertEquals(5f, scrollBar.getLineWidth(), 0.0001f);
         assertEquals(action, scrollBar.getSlideListener());
         assertEquals(listener, scrollBar.getViewOffsetListener());
     }
@@ -148,7 +152,9 @@ public class VerticalScrollBarTest {
         hash.put(UXHash.getHash("view-dimension"), new UXValueNumber(50));
         hash.put(UXHash.getHash("view-offset"), new UXValueNumber(100));
         hash.put(UXHash.getHash("min-range"), new UXValueNumber(0.1f));
-        hash.put(UXHash.getHash("color"), new UXValueColor(0xFF0000FF));
+        hash.put(UXHash.getHash("line-color"), new UXValueColor(0x00FF00FF));
+        hash.put(UXHash.getHash("line-width"), new UXValueSizeDp(5));
+        hash.put(UXHash.getHash("line-cap"), new UXValueText(LineCap.SQUARE.toString()));
         return hash;
     }
 }

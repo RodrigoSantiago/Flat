@@ -147,7 +147,7 @@ public class EmojiConverter {
         File[] children = file.listFiles();
 
         Graphics gr = Application.getCurrentContext().getGraphics();
-        Surface surface = new Surface(Application.getCurrentContext(), size, size);
+        Surface surface = new Surface(size, size);
         gr.setTransform2D(null);
         gr.setSurface(surface);
         gr.clear(0x0, 0x0, 0x0);

@@ -18,6 +18,10 @@
                 <Button text="Date Picker Dialog" style="icon-left" on-action="onDatePickerDialog" icon="/default/icons/calendar.svg"/>
                 <Button margin-left="16dp" text="Ranged Date Picker Dialog" style="icon-left" on-action="onRangedDatePickerDialog" icon="/default/icons/calendar.svg"/>
             </LinearBox>
+            <Label text="Emojis" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Button text="&#x1F602; Emoji Picker Dialog" style="icon-left" on-action="onEmojiPickerDialog"/>
+            </LinearBox>
             <Label text="Blocking" style="subtitle" margin-left="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
                 <Button text="Alert Dialog" style="icon-left" on-action="onBlockAlertDialog" icon="/default/icons/alert-circle.svg"/>

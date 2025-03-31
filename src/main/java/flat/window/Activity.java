@@ -54,6 +54,7 @@ public class Activity {
     private Widget invalidWidget;
 
     private float lastDpi;
+    private boolean continuousRendering;
 
     public static Activity create(Window window, WindowSettings settings) {
         if (window.getActivity() != null) {
@@ -285,7 +286,7 @@ public class Activity {
     }
 
     boolean draw(Graphics context) {
-        if (invalided) {
+        if (invalided || continuousRendering) {
             invalided = false;
             onDraw(context);
             return true;
@@ -580,5 +581,13 @@ public class Activity {
 
     public float getDensity() {
         return lastDpi;
+    }
+
+    public boolean isContinuousRendering() {
+        return continuousRendering;
+    }
+
+    public void setContinuousRendering(boolean continuousRendering) {
+        this.continuousRendering = continuousRendering;
     }
 }

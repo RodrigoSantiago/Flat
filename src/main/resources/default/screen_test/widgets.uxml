@@ -24,6 +24,7 @@
                 <MenuItem text="Lists" on-action="setTabLists" style="navigation"/>
                 <MenuItem text="Menus" on-action="setTabMenus" style="navigation"/>
                 <MenuItem text="Dialogs" on-action="setTabDialogs" style="navigation"/>
+                <MenuItem text="Effects" on-action="setTabEffects" style="navigation"/>
             </LinearBox>
             <LinearBox back-content="true" direction="vertical" style="layout-drawer-content">
                 <TabView width="MATCH_PARENT" height="MATCH_PARENT" id="mainTab" hidden-tabs="true">
@@ -95,6 +96,11 @@
                     <Tab text="Lists" id="tabLists">
                         <Frame width="MATCH_PARENT" height="MATCH_PARENT">
                             <Include src="listview.uxml"/>
+                        </Frame>
+                    </Tab>
+                    <Tab text="Effects" id="tabEffects">
+                        <Frame width="MATCH_PARENT" height="MATCH_PARENT">
+                            <Include src="effects.uxml"/>
                         </Frame>
                     </Tab>
                 </TabView>

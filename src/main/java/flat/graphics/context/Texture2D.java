@@ -69,6 +69,10 @@ public final class Texture2D extends Texture implements ImageTexture {
         return height;
     }
 
+    public PixelFormat getFormat() {
+        return format;
+    }
+
     public int getWidth(int level) {
         return Math.max(1, width >> level);
     }

@@ -23,11 +23,8 @@ public class ScrollBar extends Widget {
     private float totalDimension;
 
     private float minRange;
-    private int color = Color.white;
-    private float lineWidth;
-    private int lineColor;
-    private float lineFilledWidth;
-    private int lineFilledColor;
+    private float lineWidth = 4;
+    private int lineColor = Color.black;
     private LineCap lineCap = LineCap.BUTT;
 
     private float grabOffset;
@@ -55,11 +52,8 @@ public class ScrollBar extends Widget {
         UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
         setMinRange(attrs.getSize("min-range", info, getMinRange()));
-        setColor(attrs.getColor("color", info, getColor()));
         setLineColor(attrs.getColor("line-color", info, getLineColor()));
-        setLineFilledColor(attrs.getColor("line-filled-color", info, getLineFilledColor()));
         setLineWidth(attrs.getSize("line-width", info, getLineWidth()));
-        setLineFilledWidth(attrs.getSize("line-filled-width", info, getLineFilledWidth()));
         setLineCap(attrs.getConstant("line-cap", info, getLineCap()));
     }
 
@@ -79,7 +73,6 @@ public class ScrollBar extends Widget {
 
         if (width <= 0 || height <= 0) return;
 
-        float x1, y1, x2, y2;
         float hx1, hy1, hx2, hy2;
         float minR = Math.min(0.5f, minRange / (hor ? width : height));
         float handleSize = totalDimension == 0 ? 1 : Math.max(minR, Math.min(1, viewDimension / totalDimension));
@@ -87,17 +80,10 @@ public class ScrollBar extends Widget {
         float handleMove = totalDimension == 0 ? 0 : Math.max(0, Math.min(1, viewOffset / (totalDimension - viewDimension)));
 
         float lineW = Math.min(width, Math.min(height, getLineWidth()));
-        float lineFilledW = Math.min(width, Math.min(height, getLineFilledWidth()));
         float lineH = getLineCap() == LineCap.BUTT ? 0 : lineW * 0.5f;
-        float lineFilledH = getLineCap() == LineCap.BUTT ? 0 : lineFilledW * 0.5f;
         if (hor) {
-            x1 = x + lineH;
-            x2 = x + width - lineH;
-            y1 = y + height * 0.5f;
-            y2 = y + height * 0.5f;
-
-            hx1 = Mathf.lerp(x1, x2, handleMove * handleSpace) + lineFilledH;
-            hx2 = Mathf.lerp(x1, x2, handleMove * handleSpace + handleSize) - lineFilledH;
+            hx1 = Mathf.lerp(x, x + width, handleMove * handleSpace) + lineH;
+            hx2 = Mathf.lerp(x, x + width, handleMove * handleSpace + handleSize) - lineH;
             if (hx2 < hx1) {
                 hx1 = (hx2 + hx1) * 0.5f;
                 hx2 = hx1;
@@ -105,19 +91,10 @@ public class ScrollBar extends Widget {
             hy1 = y + height * 0.5f;
             hy2 = y + height * 0.5f;
         } else {
-            x1 = x + width * 0.5f;
-            x2 = x + width * 0.5f;
-            y1 = y + lineH;
-            y2 = y + height - lineH;
-            if (y2 < y1) {
-                y1 = (y2 + y1) * 0.5f;
-                y2 = y1;
-            }
-
             hx1 =  x + width * 0.5f;
             hx2 =  x + width * 0.5f;
-            hy1 = Mathf.lerp(y, y + height, handleMove * handleSpace) + lineFilledH;
-            hy2 = Mathf.lerp(y, y + height, handleMove * handleSpace + handleSize) - lineFilledH;
+            hy1 = Mathf.lerp(y, y + height, handleMove * handleSpace) + lineH;
+            hy2 = Mathf.lerp(y, y + height, handleMove * handleSpace + handleSize) - lineH;
             if (hy2 < hy1) {
                 hy1 = (hy2 + hy1) * 0.5f;
                 hy2 = hy1;
@@ -128,15 +105,8 @@ public class ScrollBar extends Widget {
         if (Color.getAlpha(getLineColor()) > 0) {
             graphics.setColor(getLineColor());
             graphics.setStroke(new BasicStroke(lineW, getLineCap().ordinal(), 0));
-            graphics.drawLine(x1, y1, x2, y2);
-        }
-
-        if (Color.getAlpha(getLineFilledColor()) > 0) {
-            graphics.setColor(getLineFilledColor());
-            graphics.setStroke(new BasicStroke(lineFilledW, getLineCap().ordinal(), 0));
             graphics.drawLine(hx1, hy1, hx2, hy2);
         }
-
     }
 
     @Override
@@ -211,17 +181,6 @@ public class ScrollBar extends Widget {
         }
     }
 
-    public int getColor() {
-        return color;
-    }
-
-    public void setColor(int color) {
-        if (this.color != color) {
-            this.color = color;
-            invalidate(false);
-        }
-    }
-
     public float getLineWidth() {
         return lineWidth;
     }
@@ -241,28 +200,6 @@ public class ScrollBar extends Widget {
         if (this.lineColor != lineColor) {
             this.lineColor = lineColor;
             invalidate(false);
-        }
-    }
-
-    public float getLineFilledWidth() {
-        return lineFilledWidth;
-    }
-
-    public void setLineFilledWidth(float lineFilledWidth) {
-        if (this.lineFilledWidth != lineFilledWidth) {
-            this.lineFilledWidth = lineFilledWidth;
-            invalidate(false);
-        }
-    }
-
-    public int getLineFilledColor() {
-        return lineFilledColor;
-    }
-
-    public void setLineFilledColor(int lineFilledColor) {
-        if (this.lineFilledColor != lineFilledColor) {
-            this.lineFilledColor = lineFilledColor;
-            invalidate(true);
         }
     }
 

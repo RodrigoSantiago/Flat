@@ -184,15 +184,17 @@ public class GLEnums {
     public static final int _TT_TEXTURE_2D_ARRAY = 0x8C1A;
 
     //----TEXTURE FORMAT
-    public static final int TF_RED = 0x1903;                    //form = r,    type = GL_UNSIGNED_BYTE
-    public static final int TF_RG = 0x8227;                     //form = rg,   type = GL_UNSIGNED_BYTE
-    public static final int TF_RGB = 0x1907;                    //form = rgb,  type = GL_UNSIGNED_BYTE
-    public static final int TF_RGBA = 0x1908;                   //form = rgba, type = GL_UNSIGNED_BYTE
-    public static final int TF_DEPTH_COMPONENT32F = 0x8CAC;     //form = dc,   type = GL_FLOAT
-    public static final int TF_DEPTH_COMPONENT24 = 0x81A6;      //form = dc,   type = GL_UNSIGNED_INT
-    public static final int TF_DEPTH_COMPONENT16 = 0x81A5;      //form = dc,   type = GL_UNSIGNED_SHORT
-    public static final int TF_DEPTH32F_STENCIL8 = 0x8CAD;      //form = ds,   type = GL_FLOAT_32_UNSIGNED_INT_24_8_REV
-    public static final int TF_DEPTH24_STENCIL8 = 0x88F0;       //form = ds    type = UNSIGNED_INT_24_8
+    public static final int TF_RED = 0x1903;                    //form = r,      type = GL_UNSIGNED_BYTE
+    public static final int TF_RG = 0x8227;                     //form = rg,     type = GL_UNSIGNED_BYTE
+    public static final int TF_RGB = 0x1907;                    //form = rgb,    type = GL_UNSIGNED_BYTE
+    public static final int TF_RGBA = 0x1908;                   //form = rgba,   type = GL_UNSIGNED_BYTE
+    public static final int TF_RGBA16F = 0x881A;                //form = rgba16, type = GL_HALF_FLOAT
+    public static final int TF_RGBA32F = 0x8814;                //form = rgba32, type = GL_FLOAT
+    public static final int TF_DEPTH_COMPONENT32F = 0x8CAC;     //form = dc,     type = GL_FLOAT
+    public static final int TF_DEPTH_COMPONENT24 = 0x81A6;      //form = dc,     type = GL_UNSIGNED_INT
+    public static final int TF_DEPTH_COMPONENT16 = 0x81A5;      //form = dc,     type = GL_UNSIGNED_SHORT
+    public static final int TF_DEPTH32F_STENCIL8 = 0x8CAD;      //form = ds,     type = GL_FLOAT_32_UNSIGNED_INT_24_8_REV
+    public static final int TF_DEPTH24_STENCIL8 = 0x88F0;       //form = ds      type = UNSIGNED_INT_24_8
 
     //----IMAGE FILTERS
     public static final int IF_NEAREST = 0x2600;
@@ -282,6 +284,9 @@ public class GLEnums {
     public static final int AT_SAMPLER_CUBE = 0x8B60;
     //public static final int AT_SAMPLER_1D_SHADOW = 0x8B61;
     //public static final int AT_SAMPLER_2D_SHADOW = 0x8B62;
+    public static final int AT_SAMPLER_2D_MULTISAMPLE = 0x9108;
+
+
 
     //----TRANSFORM FEEDBACK POLYGON TYPE
     public static final int FP_POINTS = 0x0000;

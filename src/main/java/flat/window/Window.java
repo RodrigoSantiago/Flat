@@ -107,7 +107,7 @@ public class Window {
     void loop(float loopTime) {
         this.loopTime = loopTime;
 
-        context.getGraphics().refreshState();
+        context.getGraphics().resetState();
 
         processStartup();
 

@@ -29,11 +29,7 @@
                 <ScrollBox margin-left="16dp" style="primary" width="200dp" height="160dp" vertical-bar-position="LEFT" horizontal-bar-position="TOP">
                     <VerticalScrollBar style="primary" vertical-bar="true"/>
                     <HorizontalScrollBar style="primary" horizontal-bar="true"/>
-                    <ScrollBox margin-left="16dp" style="primary" width="400dp" height="320dp" vertical-bar-position="LEFT" horizontal-bar-position="TOP">
-                        <VerticalScrollBar style="primary" vertical-bar="true"/>
-                        <HorizontalScrollBar style="primary" horizontal-bar="true"/>
-                        <ImageView image="/default/placeholder_img.jpg" width="600dp" height="460dp"/>
-                    </ScrollBox>
+                    <ImageView image="/default/placeholder_img.jpg" width="400dp" height="320dp"/>
                 </ScrollBox>
                 <ScrollBox margin-left="16dp" style="" width="200dp" height="160dp" vertical-bar-position="LEFT" horizontal-bar-position="TOP">
                     <VerticalScrollBar style="discrete" vertical-bar="true"/>
@@ -57,6 +53,12 @@
                     <ImageView image="/default/placeholder_img.jpg" width="400dp" height="320dp"/>
                 </ScrollBox>
             </LinearBox>
+            <Label text="Scroll Inside Scroll" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <ScrollBox style="" width="200dp" height="160dp" vertical-bar-position="LEFT" horizontal-bar-position="TOP">
+                <ScrollBox style="" width="300dp" height="120dp">
+                    <ImageView image="/default/placeholder_img.jpg" width="400dp" height="320dp"/>
+                </ScrollBox>
+            </ScrollBox>
         </LinearBox>
         <LinearBox enabled="false" direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
                    padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
@@ -68,7 +70,10 @@
                 <ScrollBox margin-left="16dp" style="primary" width="200dp" height="160dp">
                     <VerticalScrollBar style="primary" vertical-bar="true"/>
                     <HorizontalScrollBar style="primary" horizontal-bar="true"/>
-                    <ImageView image="/default/placeholder_img.jpg" width="400dp" height="320dp"/>
+                    <StackBox horizontal-align="right">
+                        <ImageView image="/default/placeholder_img.jpg" width="400dp" height="320dp"/>
+                        <Slider width="90dp" line-width="16dp" border-width="32dp" border-color="black"/>
+                    </StackBox>
                 </ScrollBox>
                 <ScrollBox margin-left="16dp" style="" width="200dp" height="160dp">
                     <VerticalScrollBar style="discrete" vertical-bar="true"/>
@@ -108,6 +113,12 @@
                     <ImageView image="/default/placeholder_img.jpg" width="400dp" height="320dp"/>
                 </ScrollBox>
             </LinearBox>
+            <Label text="Scroll Inside Scroll" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <ScrollBox style="" width="200dp" height="160dp" vertical-bar-position="LEFT" horizontal-bar-position="TOP">
+                <ScrollBox style="" width="300dp" height="120dp">
+                    <ImageView image="/default/placeholder_img.jpg" width="400dp" height="320dp"/>
+                </ScrollBox>
+            </ScrollBox>
         </LinearBox>
     </LinearBox>
 </Scene>

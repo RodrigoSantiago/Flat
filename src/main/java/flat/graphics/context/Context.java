@@ -184,8 +184,8 @@ public class Context {
         depthFunction = MathFunction.LESS;
 
         stencilEnabled = false;
-        stencilBackMask = 1;
-        stencilFrontMask = 1;
+        stencilBackMask = 0xFF;
+        stencilFrontMask = 0xFF;
         stencilBackFunction = MathFunction.ALWAYS;
         stencilFrontFunction = MathFunction.ALWAYS;
         stencilBackFunRef = 0;
@@ -320,13 +320,6 @@ public class Context {
         GL.Flush();
     }
 
-    public void finish() {
-        checkDisposed();
-
-        svgEnd();
-        GL.Finish();
-    }
-
     public void clear(boolean color, boolean depth, boolean stencil) {
         checkDisposed();
 
@@ -365,7 +358,7 @@ public class Context {
 
         if (clearStencil != stencil) {
             svgEnd();
-            GL.SetClearDepth(clearStencil = stencil);
+            GL.SetClearStencil(clearStencil = stencil);
         }
     }
 
@@ -1162,6 +1155,7 @@ public class Context {
     }
 
     private void svgRestore() {
+        GL.SetClearStencil(clearStencil);
         GL.EnableDepthTest(depthEnabled);
         GL.EnableStencilTest(stencilEnabled);
         GL.SetStencilMask(GLEnums.FC_FRONT, stencilFrontMask);

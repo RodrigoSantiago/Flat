@@ -8,16 +8,27 @@ import flat.data.ObservableList;
 import flat.events.ActionEvent;
 import flat.events.KeyEvent;
 import flat.events.PointerEvent;
+import flat.graphics.Color;
 import flat.graphics.Graphics;
+import flat.graphics.Surface;
 import flat.graphics.context.Font;
 import flat.graphics.context.ShaderProgram;
+import flat.graphics.context.Texture2D;
+import flat.graphics.context.enums.BlendFunction;
 import flat.graphics.context.enums.ImageFileFormat;
+import flat.graphics.context.enums.PixelFormat;
+import flat.graphics.context.paints.LinearGradient;
+import flat.graphics.context.paints.RadialGradient;
 import flat.graphics.image.Drawable;
 import flat.graphics.image.DrawableReader;
 import flat.graphics.image.LineMap;
 import flat.graphics.image.PixelMap;
+import flat.math.Vector4;
 import flat.math.shapes.Circle;
+import flat.math.shapes.Ellipse;
 import flat.math.shapes.Path;
+import flat.math.shapes.Rectangle;
+import flat.math.stroke.BasicStroke;
 import flat.resources.ResourceStream;
 import flat.uxml.Controller;
 import flat.widget.Parent;
@@ -77,6 +88,7 @@ public class MainController extends Controller {
     @Flat public Tab tabLists;
     @Flat public Tab tabMenus;
     @Flat public Tab tabDialogs;
+    @Flat public Tab tabEffects;
 
     @Flat public ListView listView1;
     @Flat public ListView listView2;
@@ -173,6 +185,12 @@ public class MainController extends Controller {
     @Flat
     public void setTabLists() {
         mainTab.selectTab(tabLists);
+        mainDrawer.hide();
+    }
+
+    @Flat
+    public void setTabEffects() {
+        mainTab.selectTab(tabEffects);
         mainDrawer.hide();
     }
 
@@ -444,6 +462,24 @@ public class MainController extends Controller {
     }
 
     @Flat
+    public void onEmojiPickerDialog(ActionEvent event) {
+        var alert = new EmojiDialogBuilder()
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onEmojiPick((dg, val) -> {
+                    for (int i = 0; i < val.length(); i++) {
+                        var cp = val.codePointAt(i);
+                        System.out.print(Integer.toHexString(cp) + " ");
+                        i += Character.charCount(cp) - 1;
+                    }
+                    System.out.println();
+                })
+                .block(true)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
     public void onKeypress(KeyEvent event) {
         if (event.getType() == KeyEvent.PRESSED) {
             event.getSource().invalidate(true);
@@ -520,64 +556,75 @@ public class MainController extends Controller {
     @Flat
     public void toggleDebugMode() {
         debug = !debug;
-        GL.SetDebug(debug);
+        //GL.SetDebug(debug);
         SVG.SetDebug(debug);
     }
 
     float t = 0;
     float av = 0;
+    Texture2D img1;
+    Texture2D img2;
 
     @Override
     public void onShow() {
         setupListView();
-        /*Font.installSystemFontFamily("Times New Roman");
-        arial = Font.findFont("Times New Roman");
-        System.out.println(arial);
+        getActivity().setContinuousRendering(true);
 
         var pm = (PixelMap) DrawableReader.parse(new ResourceStream("/default/image_transp_test.png"));
         var pm2 = (PixelMap) DrawableReader.parse(new ResourceStream("/default/image.png"));
         var graphics = getActivity().getContext().getGraphics();
-        var a = pm.getTexture(graphics.getContext());
-        var a2 = pm2.getTexture(graphics.getContext());
+        img1 = pm.getTexture();
+        img2 = pm2.getTexture();
 
         shader = graphics.createImageRenderShader(
                 """
                 #version 330 core
                 uniform vec2 view;
-                uniform float col[4];
+                uniform vec4 col;
                 uniform sampler2D texture1;
-                uniform sampler2D texture2;
                 vec4 fragment(vec2 pos, vec2 uv) {
-                    return texture(texture1, uv) * texture(texture2, uv) * vec4(col[0], col[1], col[2], col[3]);
+                    return texture(texture1, uv) * col;
                 }
                 """);
         System.out.println("Init Shader " + GL.GetError());
 
-        shader.set("col", new float[]{1, 1, 1, 1});
         shader.set("texture1", 0);
         shader.set("texture2", 1);
 
-        graphics.pushClip(new Ellipse(10, 10, 40, 40));
-        Surface surface = new Surface(graphics.getContext(), 64, 64, 8, PixelFormat.RGBA);
+        System.out.println("Error : " + GL.GetError());
+        Surface surface = new Surface(64, 64, 8);
         graphics.setSurface(surface);
-        //graphics.clear(0, 0, 0x00);
-        //graphics.clearClip();
-        graphics.blitCustomShader(shader, a, a2);
+        graphics.clear(0, 0, 0x01);
+        // graphics.clearClip();
+        shader.set("col", new Vector4(1f, 1f, 1f, 1f));
+        graphics.blitCustomShader(shader, 0, 0, 64, 64, img1);
+        graphics.setPaint(
+                new LinearGradient.Builder(5, 32, 32, 32)
+                        .stop(0, 0xFF000000)
+                        .stop(1, 0xFF0000FF).build());
         graphics.setColor(Color.red);
-        graphics.setTransform2D(null);
-        graphics.setAntialiasEnabled(false);
-        graphics.setStroke(new BasicStroke(1));
-        graphics.drawEllipse(0, 0, 64, 64, true);
+        graphics.drawRect(5, 5, 32, 32, true);
+        pix = graphics.createPixelMap();
         graphics.setSurface(null);
-        graphics.popClip();
+        System.out.println("Error : " + GL.GetError());
 
-        pix = surface.createPixelMap();
+        byte[] data = pix.readData();
+        System.out.print(String.format("%02x", data[0]).toUpperCase() + " ");
+        System.out.print(String.format("%02x", data[1]).toUpperCase() + " ");
+        System.out.print(String.format("%02x", data[2]).toUpperCase() + " ");
+        System.out.println(String.format("%02x", data[3]).toUpperCase() + " ");
+        System.out.print(String.format("%03d", data[0] & 0xFF).toUpperCase() + " ");
+        System.out.print(String.format("%03d", data[1] & 0xFF).toUpperCase() + " ");
+        System.out.print(String.format("%03d", data[2] & 0xFF).toUpperCase() + " ");
+        System.out.println(String.format("%03d", data[3] & 0xFF).toUpperCase() + " ");
 
-        System.out.println("Render to PixelMap " + GL.GetError());*/
+
+        System.out.println("Render to PixelMap " + GL.GetError());
 
         if (tabChips != null) {
             search(tabChips.getFrame());
         }
+        setTabEffects();
     }
 
     @Flat
@@ -618,9 +665,23 @@ public class MainController extends Controller {
             t -= Application.getLoopTime();
             getActivity().invalidateWidget(getActivity().getScene());
         }
+        /*graphics.setTransform2D(null);
+        graphics.setColor(0x000000FF);
+        graphics.setStroke(new BasicStroke(6));
+        graphics.drawLine(50, 150, 350, 150);
+        graphics.drawImage(pix, 100, 100, 256, 256, -1, true);
+        graphics.setColor(0xFF0000FF);
+        graphics.drawRect(357, 100, 256, 256, true);
+        graphics.setColor(0x00FF0080);
+        graphics.drawRect(357, 100, 256, 256, true);
+
+        graphics.setColor(0x55AA00BF);
+        graphics.drawRect(614, 100, 256, 256, true);
+        graphics.drawImage(img1, 100, 357, 256, 256);
+        // var p = getActivity().getWindow().getPointer();*/
+        // graphics.blitCustomShader(shader, p.getX(), p.getY(), 64, 64, img1, img2);
 
         /*Font font = Font.getDefault();
-        graphics.setTransform2D(null);
 
         int[] data = new int[4];
         int imageId = (int) SVG.FontPaintGetAtlas(font.getInternalPaintId(), data);
@@ -697,21 +758,6 @@ public class MainController extends Controller {
 //            saveImage(map, "C:\\Nova\\emojis.png");
 //            saveEmojis(emojis, "C:\\Nova\\emojis.txt");
 //        }, null);
-
-        var alert = new EmojiDialogBuilder()
-                .onShowListener((dg) -> System.out.println("Show"))
-                .onHideListener((dg) -> System.out.println("Hide"))
-                .onEmojiPick((dg, val) -> {
-                    for (int i = 0; i < val.length(); i++) {
-                        var cp = val.codePointAt(i);
-                        System.out.print(Integer.toHexString(cp) + " ");
-                        i += Character.charCount(cp) - 1;
-                    }
-                    System.out.println();
-                })
-                .block(true)
-                .build();
-        alert.show(getActivity());
     }
 
     @Flat

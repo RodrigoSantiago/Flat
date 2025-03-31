@@ -53,6 +53,15 @@ public class PixelMap implements Drawable, ImageTexture {
     private final int width, height;
     private WeakReference<byte[]> localData;
 
+    public PixelMap(Texture2D texture) {
+        this.texture = texture;
+        this.format = texture.getFormat();
+        this.width = texture.getWidth(0);
+        this.height = texture.getHeight(0);
+        texture.setScaleFilters(MagFilter.LINEAR, MinFilter.LINEAR);
+        texture.setWrapModes(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
+    }
+
     public PixelMap(byte[] data, int width, int height, PixelFormat format) {
         int required = width * height * format.getPixelBytes();
         if (data.length < required) {
@@ -86,7 +95,7 @@ public class PixelMap implements Drawable, ImageTexture {
     }
 
     private byte[] getData() {
-        byte[] data = localData.get();
+        byte[] data = localData == null ? null : localData.get();
         if (data == null) {
             data = new byte[width * height * format.getPixelBytes()];
             localData = new WeakReference<>(data);

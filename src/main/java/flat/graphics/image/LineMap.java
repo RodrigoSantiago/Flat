@@ -99,15 +99,14 @@ public class LineMap implements Drawable {
 
         var transform = graphics.getTransform2D();
 
-        Surface surface = new Surface(graphics.getContext(), w, h, 8, PixelFormat.RGBA);
+        Surface surface = new Surface(w, h, 8);
         graphics.setSurface(surface);
         graphics.clear(0, 0, 0x0);
         graphics.setTransform2D(null);
         graphics.setAntialiasEnabled(true);
         drawSvg(graphics, 0, 0, w, h, 0xFFFFFFFF, false);
+        pixelMap = graphics.createPixelMap();
         graphics.setSurface(null);
-
-        pixelMap = surface.createPixelMap();
 
         graphics.setTransform2D(transform);
     }
