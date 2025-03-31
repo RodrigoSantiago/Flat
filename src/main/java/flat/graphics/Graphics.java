@@ -1,7 +1,5 @@
 package flat.graphics;
 
-import flat.backend.GL;
-import flat.backend.GLEnums;
 import flat.exception.FlatException;
 import flat.graphics.context.*;
 import flat.graphics.context.enums.*;
@@ -45,6 +43,8 @@ public class Graphics {
         context.setBlendFunction(
                 BlendFunction.ONE, BlendFunction.ONE_MINUS_SRC_ALPHA,
                 BlendFunction.ONE, BlendFunction.ONE_MINUS_SRC_ALPHA);
+        context.setPixelPackAlignment(1);
+        context.setPixelUnpackAlignment(1);
 
         stroke = new BasicStroke(1);
         textSize = 24;
@@ -203,21 +203,13 @@ public class Graphics {
         if (surface != null) {
             return surface.createPixelMap(this, format);
         } else {
-            int w = getWidth();
-            int h = getHeight();
-            byte[] imageData = new byte[w * h * 4];
-            context.readPixels(0, 0, w, h, imageData, 0);
-            int pixelBytes = PixelFormat.RGBA.getPixelBytes();
-            int rowSize = w * pixelBytes;
-            byte[] tempRow = new byte[rowSize];
-            for (int y = 0; y < h / 2; y++) {
-                int topRowStart = y * rowSize;
-                int bottomRowStart = (h - y - 1) * rowSize;
-                System.arraycopy(imageData, topRowStart, tempRow, 0, rowSize);
-                System.arraycopy(imageData, bottomRowStart, imageData, topRowStart, rowSize);
-                System.arraycopy(tempRow, 0, imageData, bottomRowStart, rowSize);
-            }
-            return new PixelMap(imageData, w, h, PixelFormat.RGBA);
+            FrameBuffer fbo = new FrameBuffer(context);
+            Texture2D target = new Texture2D(getWidth(), getHeight(), format);
+            fbo.attach(LayerTarget.COLOR_0, target, 0);
+            context.blitFrames(null, fbo,
+                    0, 0, getWidth(), getHeight(),
+                    0, getHeight(), getWidth(), -getHeight(), BlitMask.Color, MagFilter.NEAREST);
+            return new PixelMap(target);
         }
     }
 

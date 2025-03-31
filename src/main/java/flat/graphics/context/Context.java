@@ -42,6 +42,7 @@ public class Context {
     private boolean rMask, gMask, bMask, aMask;
     private int pixelPackAlignment, pixelPackRowLength, pixelPackSkipPixels, pixelPackSkipRows, pixelPackImageHeight, pixelPackSkipImages;
     private int pixelUnpackAlignment, pixelUnpackRowLength, pixelUnpackSkipPixels, pixelUnpackSkipRows, pixelUnpackImageHeight, pixelUnpackSkipImages;
+    private ReadBuffer readBuffer;
 
     private boolean depthEnabled;
     private boolean depthMask;
@@ -176,6 +177,7 @@ public class Context {
         pixelUnpackSkipRows = 0;
         pixelUnpackImageHeight = 0;
         pixelUnpackSkipImages = 0;
+        readBuffer = ReadBuffer.FRONT;
 
         depthEnabled = false;
         depthMask = true;
@@ -450,81 +452,81 @@ public class Context {
         return aMask;
     }
 
-    public void setPixelPack(int alignment, int rowLength, int skipPixels, int skipRows) {
-        checkDisposed();
-
-        setPixelPack(alignment, rowLength, skipPixels, skipRows, pixelPackImageHeight, pixelPackSkipImages);
-    }
-
-    public void setPixelPack(int alignment, int rowLength, int skipPixels, int skipRows, int imageHeight, int skipImages) {
-        checkDisposed();
-
-        if (pixelPackAlignment != alignment || pixelPackRowLength != rowLength || pixelPackSkipPixels != skipPixels
-                || pixelPackSkipRows != skipRows || pixelPackImageHeight != imageHeight || pixelPackSkipImages != skipImages) {
-            svgEnd();
-            if (pixelPackAlignment != alignment)
-                GL.SetPixelStore(GLEnums.PS_PACK_ALIGNMENT, pixelPackAlignment = alignment);
-            if (pixelPackRowLength != rowLength)
-                GL.SetPixelStore(GLEnums.PS_PACK_ROW_LENGTH, pixelPackRowLength = rowLength);
-            if (pixelPackSkipPixels != skipPixels)
-                GL.SetPixelStore(GLEnums.PS_PACK_SKIP_PIXELS, pixelPackSkipPixels = skipPixels);
-            if (pixelPackSkipRows != skipRows)
-                GL.SetPixelStore(GLEnums.PS_PACK_SKIP_ROWS, pixelPackSkipRows = skipRows);
-            if (pixelPackImageHeight != imageHeight)
-                GL.SetPixelStore(GLEnums.PS_PACK_IMAGE_HEIGHT, pixelPackImageHeight = imageHeight);
-            if (pixelPackSkipImages != skipImages)
-                GL.SetPixelStore(GLEnums.PS_PACK_SKIP_IMAGES, pixelPackSkipImages = skipImages);
-        }
-    }
-
     public int getPixelPackAlignment() {
         return pixelPackAlignment;
+    }
+
+    public void setPixelPackAlignment(int alignment) {
+        checkDisposed();
+        
+        if (pixelPackAlignment != alignment) {
+            svgEnd();
+            GL.SetPixelStore(GLEnums.PS_PACK_ALIGNMENT, pixelPackAlignment = alignment);
+        }
     }
 
     public int getPixelPackRowLength() {
         return pixelPackRowLength;
     }
 
+    public void setPixelPackRowLength(int rowLength) {
+        checkDisposed();
+        
+        if (pixelPackRowLength != rowLength) {
+            svgEnd();
+            GL.SetPixelStore(GLEnums.PS_PACK_ROW_LENGTH, pixelPackRowLength = rowLength);
+        }
+    }
+
     public int getPixelPackSkipPixels() {
         return pixelPackSkipPixels;
+    }
+
+    public void setPixelPackSkipPixels(int skipPixels) {
+        checkDisposed();
+        
+        if (pixelPackSkipPixels != skipPixels) {
+            svgEnd();
+            GL.SetPixelStore(GLEnums.PS_PACK_SKIP_PIXELS, pixelPackSkipPixels = skipPixels);
+        }
     }
 
     public int getPixelPackSkipRows() {
         return pixelPackSkipRows;
     }
 
+    public void setPixelPackSkipRows(int skipRows) {
+        checkDisposed();
+        
+        if (pixelPackSkipRows != skipRows) {
+            svgEnd();
+            GL.SetPixelStore(GLEnums.PS_PACK_SKIP_ROWS, pixelPackSkipRows = skipRows);
+        }
+    }
+
     public int getPixelPackImageHeight() {
         return pixelPackImageHeight;
+    }
+
+    public void setPixelPackImageHeight(int imageHeight) {
+        checkDisposed();
+        
+        if (pixelPackImageHeight != imageHeight) {
+            svgEnd();
+            GL.SetPixelStore(GLEnums.PS_PACK_IMAGE_HEIGHT, pixelPackImageHeight = imageHeight);
+        }
     }
 
     public int getPixelPackSkipImages() {
         return pixelPackSkipImages;
     }
 
-    public void setPixelUnpack(int alignment, int rowLength, int skipPixels, int skipRows) {
+    public void setPixelPackSkipImages(int skipImages) {
         checkDisposed();
-
-        setPixelUnpack(alignment, rowLength, skipPixels, skipRows, pixelUnpackImageHeight, pixelUnpackSkipImages);
-    }
-
-    public void setPixelUnpack(int alignment, int rowLength, int skipPixels, int skipRows, int imageHeight, int skipImages) {
-        checkDisposed();
-
-        if (pixelUnpackAlignment != alignment || pixelUnpackRowLength != rowLength || pixelUnpackSkipPixels != skipPixels
-                || pixelUnpackSkipRows != skipRows || pixelUnpackImageHeight != imageHeight || pixelUnpackSkipImages != skipImages) {
+        
+        if (pixelPackSkipImages != skipImages) {
             svgEnd();
-            if (pixelUnpackAlignment != alignment)
-                GL.SetPixelStore(GLEnums.PS_UNPACK_ALIGNMENT, pixelUnpackAlignment = alignment);
-            if (pixelUnpackRowLength != rowLength)
-                GL.SetPixelStore(GLEnums.PS_UNPACK_ROW_LENGTH, pixelUnpackRowLength = rowLength);
-            if (pixelUnpackSkipPixels != skipPixels)
-                GL.SetPixelStore(GLEnums.PS_UNPACK_SKIP_PIXELS, pixelUnpackSkipPixels = skipPixels);
-            if (pixelUnpackSkipRows != skipRows)
-                GL.SetPixelStore(GLEnums.PS_UNPACK_SKIP_ROWS, pixelUnpackSkipRows = skipRows);
-            if (pixelUnpackImageHeight != imageHeight)
-                GL.SetPixelStore(GLEnums.PS_UNPACK_IMAGE_HEIGHT, pixelUnpackImageHeight = imageHeight);
-            if (pixelUnpackSkipImages != skipImages)
-                GL.SetPixelStore(GLEnums.PS_UNPACK_SKIP_IMAGES, pixelUnpackSkipImages = skipImages);
+            GL.SetPixelStore(GLEnums.PS_PACK_SKIP_IMAGES, pixelPackSkipImages = skipImages);
         }
     }
 
@@ -532,24 +534,78 @@ public class Context {
         return pixelUnpackAlignment;
     }
 
+    public void setPixelUnpackAlignment(int alignment) {
+        checkDisposed();
+
+        if (pixelUnpackAlignment != alignment) {
+            svgEnd();
+            GL.SetPixelStore(GLEnums.PS_UNPACK_ALIGNMENT, pixelUnpackAlignment = alignment);
+        }
+    }
+
     public int getPixelUnpackRowLength() {
         return pixelUnpackRowLength;
+    }
+
+    public void setPixelUnpackRowLength(int rowLength) {
+        checkDisposed();
+
+        if (pixelUnpackRowLength != rowLength) {
+            svgEnd();
+            GL.SetPixelStore(GLEnums.PS_UNPACK_ROW_LENGTH, pixelUnpackRowLength = rowLength);
+        }
     }
 
     public int getPixelUnpackSkipPixels() {
         return pixelUnpackSkipPixels;
     }
 
+    public void setPixelUnpackSkipPixels(int skipPixels) {
+        checkDisposed();
+
+        if (pixelUnpackSkipPixels != skipPixels) {
+            svgEnd();
+            GL.SetPixelStore(GLEnums.PS_UNPACK_SKIP_PIXELS, pixelUnpackSkipPixels = skipPixels);
+        }
+    }
+
     public int getPixelUnpackSkipRows() {
         return pixelUnpackSkipRows;
+    }
+
+    public void setPixelUnpackSkipRows(int skipRows) {
+        checkDisposed();
+
+        if (pixelUnpackSkipRows != skipRows) {
+            svgEnd();
+            GL.SetPixelStore(GLEnums.PS_UNPACK_SKIP_ROWS, pixelUnpackSkipRows = skipRows);
+        }
     }
 
     public int getPixelUnpackImageHeight() {
         return pixelUnpackImageHeight;
     }
 
+    public void setPixelUnpackImageHeight(int imageHeight) {
+        checkDisposed();
+
+        if (pixelUnpackImageHeight != imageHeight) {
+            svgEnd();
+            GL.SetPixelStore(GLEnums.PS_UNPACK_IMAGE_HEIGHT, pixelUnpackImageHeight = imageHeight);
+        }
+    }
+
     public int getPixelUnpackSkipImages() {
         return pixelUnpackSkipImages;
+    }
+
+    public void setPixelUnpackSkipImages(int skipImages) {
+        checkDisposed();
+
+        if (pixelUnpackSkipImages != skipImages) {
+            svgEnd();
+            GL.SetPixelStore(GLEnums.PS_UNPACK_SKIP_IMAGES, pixelUnpackSkipImages = skipImages);
+        }
     }
 
     public void setDepthEnabled(boolean enable) {
@@ -873,6 +929,14 @@ public class Context {
         return lineWidth;
     }
 
+    public void setReadBuffer(ReadBuffer readBuffer) {
+        softFlush();
+        if (this.readBuffer != readBuffer) {
+            this.readBuffer = readBuffer;
+            GL.SetReadBuffer(readBuffer.getInternalEnum());
+        }
+    }
+
     public void readPixels(int x, int y, int width, int height, int offset) {
         softFlush();
         GL.ReadPixels(x, y, width, height, GLEnums.DT_INT, offset);
@@ -939,29 +1003,26 @@ public class Context {
                            int dstX, int dstY, int dstW, int dstH, BlitMask blitMask, MagFilter filter) {
         checkDisposed();
 
-        if (source == null) {
-            throw new FlatException("Invalid argument : source");
+        if (target == source) {
+            throw new FlatException("The FrameBuffers must be different");
         }
-        if (target == null || target == source) {
-            throw new FlatException("Invalid argument : target");
-        }
-        if (source.isDisposed()) {
+        if (source != null && source.isDisposed()) {
             throw new FlatException("The FrameBuffer is disposed");
         }
-        if (target.isDisposed()) {
+        if (target != null && target.isDisposed()) {
             throw new FlatException("The FrameBuffer is disposed");
         }
         FrameBuffer current = getFrameBuffer();
-        if (source.isInvalid()) {
+        if (source != null && source.isInvalid()) {
             setFrameBuffer(source);
         }
-        if (target.isInvalid()) {
+        if (target != null && target.isInvalid()) {
             setFrameBuffer(target);
         }
 
         try {
-            GL.FrameBufferBind(GLEnums.FB_DRAW_FRAMEBUFFER, target.getInternalId());
-            GL.FrameBufferBind(GLEnums.FB_READ_FRAMEBUFFER, source.getInternalId());
+            GL.FrameBufferBind(GLEnums.FB_DRAW_FRAMEBUFFER, target == null ? 0 : target.getInternalId());
+            GL.FrameBufferBind(GLEnums.FB_READ_FRAMEBUFFER, source == null ? 0 : source.getInternalId());
             GL.FrameBufferBlit(srcX, srcY, srcW, srcH, dstX, dstY, dstW, dstH, blitMask.getInternalEnum(), filter.getInternalEnum());
         } finally {
             if (current != getFrameBuffer()) {

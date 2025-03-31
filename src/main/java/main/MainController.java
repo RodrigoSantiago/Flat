@@ -23,6 +23,7 @@ import flat.graphics.image.Drawable;
 import flat.graphics.image.DrawableReader;
 import flat.graphics.image.LineMap;
 import flat.graphics.image.PixelMap;
+import flat.math.Mathf;
 import flat.math.Vector4;
 import flat.math.shapes.Circle;
 import flat.math.shapes.Ellipse;
@@ -94,6 +95,8 @@ public class MainController extends Controller {
     @Flat public ListView listView2;
     @Flat public ListView treeView1;
     @Flat public ListView treeView2;
+
+    @Flat public Label statusLabel;
 
     private ObservableList<String> items = new ObservableList<>();
 
@@ -556,7 +559,7 @@ public class MainController extends Controller {
     @Flat
     public void toggleDebugMode() {
         debug = !debug;
-        //GL.SetDebug(debug);
+        GL.SetDebug(debug);
         SVG.SetDebug(debug);
     }
 
@@ -594,16 +597,16 @@ public class MainController extends Controller {
         System.out.println("Error : " + GL.GetError());
         Surface surface = new Surface(64, 64, 8);
         graphics.setSurface(surface);
-        graphics.clear(0, 0, 0x01);
+        graphics.clear(0, 0, 0x00);
         // graphics.clearClip();
         shader.set("col", new Vector4(1f, 1f, 1f, 1f));
         graphics.blitCustomShader(shader, 0, 0, 64, 64, img1);
         graphics.setPaint(
-                new LinearGradient.Builder(5, 32, 32, 32)
+                new LinearGradient.Builder(-2, 32, 32, 32)
                         .stop(0, 0xFF000000)
                         .stop(1, 0xFF0000FF).build());
         graphics.setColor(Color.red);
-        graphics.drawRect(5, 5, 32, 32, true);
+        graphics.drawRect(0, 0, 32, 32, true);
         pix = graphics.createPixelMap();
         graphics.setSurface(null);
         System.out.println("Error : " + GL.GetError());
@@ -639,13 +642,24 @@ public class MainController extends Controller {
 
 
     PixelMap screen;
+    ArrayList<Integer> fpss = new ArrayList<>();
     @Override
     public void onDraw(Graphics graphics) {
         super.onDraw(graphics);
+        fpss.add(Mathf.round(1f / Application.getLoopTime()));
+        int total = 0;
+        for (var i : fpss) {
+            total += i;
+        }
+        statusLabel.setText("FPS : " + Mathf.round(total / (float) fpss.size()));
+        if (fpss.size() > 120) {
+            fpss.subList(0, fpss.size() - 10).clear();
+        }
 
         if (t > 0) {
             if (t == 1) {
                 screen = getActivity().getContext().getGraphics().createPixelMap();
+                System.out.println("Print : " + GL.GetError());
             }
             int w = (int) getActivity().getWidth();
             int h = (int) getActivity().getHeight();
@@ -665,7 +679,7 @@ public class MainController extends Controller {
             t -= Application.getLoopTime();
             getActivity().invalidateWidget(getActivity().getScene());
         }
-        /*graphics.setTransform2D(null);
+        graphics.setTransform2D(null);
         graphics.setColor(0x000000FF);
         graphics.setStroke(new BasicStroke(6));
         graphics.drawLine(50, 150, 350, 150);
@@ -678,7 +692,7 @@ public class MainController extends Controller {
         graphics.setColor(0x55AA00BF);
         graphics.drawRect(614, 100, 256, 256, true);
         graphics.drawImage(img1, 100, 357, 256, 256);
-        // var p = getActivity().getWindow().getPointer();*/
+        // var p = getActivity().getWindow().getPointer();
         // graphics.blitCustomShader(shader, p.getX(), p.getY(), 64, 64, img1, img2);
 
         /*Font font = Font.getDefault();

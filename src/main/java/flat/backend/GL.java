@@ -17,6 +17,7 @@ public class GL {
     public static native int GetClearDepth();
     public static native int GetClearStencil();
 
+    public static native void SetReadBuffer(int faceFG);
     public static native void ReadPixels(int x, int y, int width, int height, int typeDT, long offset);
     public static native void ReadPixelsB(int x, int y, int width, int height, byte[] data, int offset);
     public static native void ReadPixelsS(int x, int y, int width, int height, short[] data, int offset);

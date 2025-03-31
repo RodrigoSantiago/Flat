@@ -106,5 +106,8 @@
                 </TabView>
             </LinearBox>
         </Drawer>
+        <LinearBox width="MATCH_PARENT" height="16dp" background-color="$primary-color">
+            <Label id="statusLabel" text="FPS" text-color="$on-primary-color" text-size="14sp"/>
+        </LinearBox>
     </LinearBox>
 </Scene>
