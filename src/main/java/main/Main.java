@@ -13,7 +13,7 @@ public class Main {
                 .controller(MainController::new)
                 .size(1100, 900)
                 .multiSamples(8)
-                .transparent(false)
+                .transparent(true)
                 .build()
         );
         Application.launch();

@@ -60,9 +60,13 @@ public class Surface {
         frameBuffer.detach(LayerTarget.DEPTH_STENCIL);
         if (multiSamples > 0) {
             graphics.bakeSurface(textureMultisamples);
+            frameBuffer.attach(LayerTarget.COLOR_0, textureMultisamples, 0);
         } else {
             graphics.bakeSurface(texture);
+            frameBuffer.attach(LayerTarget.COLOR_0, texture, 0);
         }
+        frameBuffer.attach(LayerTarget.DEPTH_STENCIL, render);
+
         return new PixelMap(textureTransfer);
     }
 

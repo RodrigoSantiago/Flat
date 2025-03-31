@@ -1,5 +1,7 @@
 package flat.graphics;
 
+import flat.math.Vector4;
+
 public final class Color {
     public static final int black = 0x000000FF;
     public static final int silver = 0xC0C0C0FF;
@@ -80,6 +82,15 @@ public final class Color {
         int aInt = Math.round(alpha * 255);
 
         return rgbaToColor(rInt, gInt, bInt, aInt);
+    }
+
+    public static Vector4 toFloat(int rgba) {
+        float red = ((rgba >> 24) & 0xFF) / 255.0f;
+        float green = ((rgba >> 16) & 0xFF) / 255.0f;
+        float blue = ((rgba >> 8) & 0xFF) / 255.0f;
+        float alpha = (rgba & 0xFF) / 255f;
+
+        return new Vector4(red, green, blue, alpha);
     }
 
     public static float getHue(int rgba) {

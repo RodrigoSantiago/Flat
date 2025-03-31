@@ -192,6 +192,7 @@ public class Graphics {
         context.svgTextBlur(0);
         context.svgPaint(new ColorPaint(0xFFFFFFFF));
         context.svgAntialias(true);
+        setAlphaComposite(AlphaComposite.SRC_OVER);
         setView(0, 0, getWidth(), getHeight());
     }
 
@@ -824,8 +825,69 @@ public class Graphics {
         return program;
     }
 
-    public void setBlendMode(BlendFunction srcColor, BlendFunction dstColor, BlendFunction srcAlpha, BlendFunction dstAlpha) {
-        context.setBlendFunction(srcColor, dstColor, srcAlpha, dstAlpha);
+    public void setAlphaComposite(AlphaComposite mode) {
+        switch (mode) {
+            case SRC_OVER:
+                context.setBlendFunction(
+                        BlendFunction.ONE, BlendFunction.ONE_MINUS_SRC_ALPHA,
+                        BlendFunction.ONE, BlendFunction.ONE_MINUS_SRC_ALPHA);
+                break;
+            case DST_OVER:
+                context.setBlendFunction(
+                        BlendFunction.ONE_MINUS_DST_ALPHA, BlendFunction.ONE,
+                        BlendFunction.ONE_MINUS_DST_ALPHA, BlendFunction.ONE);
+                break;
+            case SRC_IN:
+                context.setBlendFunction(
+                        BlendFunction.DST_ALPHA, BlendFunction.ZERO,
+                        BlendFunction.DST_ALPHA, BlendFunction.ZERO);
+                break;
+            case DST_IN:
+                context.setBlendFunction(
+                        BlendFunction.ZERO, BlendFunction.SRC_ALPHA,
+                        BlendFunction.ZERO, BlendFunction.SRC_ALPHA);
+                break;
+            case SRC_OUT:
+                context.setBlendFunction(
+                        BlendFunction.ONE_MINUS_DST_ALPHA, BlendFunction.ZERO,
+                        BlendFunction.ONE_MINUS_DST_ALPHA, BlendFunction.ZERO);
+                break;
+            case DST_OUT:
+                context.setBlendFunction(
+                        BlendFunction.ZERO, BlendFunction.ONE_MINUS_SRC_ALPHA,
+                        BlendFunction.ZERO, BlendFunction.ONE_MINUS_SRC_ALPHA);
+                break;
+            case SRC_ATOP:
+                context.setBlendFunction(
+                        BlendFunction.DST_ALPHA, BlendFunction.ONE_MINUS_SRC_ALPHA,
+                        BlendFunction.DST_ALPHA, BlendFunction.ONE_MINUS_SRC_ALPHA);
+                break;
+            case DST_ATOP:
+                context.setBlendFunction(
+                        BlendFunction.ONE_MINUS_DST_ALPHA, BlendFunction.SRC_ALPHA,
+                        BlendFunction.ONE_MINUS_DST_ALPHA, BlendFunction.SRC_ALPHA);
+                break;
+            case XOR:
+                context.setBlendFunction(
+                        BlendFunction.ONE_MINUS_DST_ALPHA, BlendFunction.ONE_MINUS_SRC_ALPHA,
+                        BlendFunction.ONE_MINUS_DST_ALPHA, BlendFunction.ONE_MINUS_SRC_ALPHA);
+                break;
+            case CLEAR:
+                context.setBlendFunction(
+                        BlendFunction.ZERO, BlendFunction.ZERO,
+                        BlendFunction.ZERO, BlendFunction.ZERO);
+                break;
+            case SRC:
+                context.setBlendFunction(
+                        BlendFunction.ONE, BlendFunction.ZERO,
+                        BlendFunction.ONE, BlendFunction.ZERO);
+                break;
+            case DST:
+                context.setBlendFunction(
+                        BlendFunction.ZERO, BlendFunction.ONE,
+                        BlendFunction.ZERO, BlendFunction.ONE);
+                break;
+        }
     }
 
 }

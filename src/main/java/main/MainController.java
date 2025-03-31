@@ -13,22 +13,15 @@ import flat.graphics.Graphics;
 import flat.graphics.Surface;
 import flat.graphics.context.Font;
 import flat.graphics.context.ShaderProgram;
-import flat.graphics.context.Texture2D;
-import flat.graphics.context.enums.BlendFunction;
+import flat.graphics.context.enums.AlphaComposite;
 import flat.graphics.context.enums.ImageFileFormat;
-import flat.graphics.context.enums.PixelFormat;
-import flat.graphics.context.paints.LinearGradient;
-import flat.graphics.context.paints.RadialGradient;
 import flat.graphics.image.Drawable;
 import flat.graphics.image.DrawableReader;
 import flat.graphics.image.LineMap;
 import flat.graphics.image.PixelMap;
 import flat.math.Mathf;
-import flat.math.Vector4;
 import flat.math.shapes.Circle;
-import flat.math.shapes.Ellipse;
 import flat.math.shapes.Path;
-import flat.math.shapes.Rectangle;
 import flat.math.stroke.BasicStroke;
 import flat.resources.ResourceStream;
 import flat.uxml.Controller;
@@ -37,7 +30,6 @@ import flat.widget.Widget;
 import flat.widget.image.ImageView;
 import flat.widget.layout.Drawer;
 import flat.widget.layout.LinearBox;
-import flat.widget.stages.Dialog;
 import flat.widget.stages.dialogs.*;
 import flat.widget.structure.*;
 import flat.widget.text.Button;
@@ -565,64 +557,47 @@ public class MainController extends Controller {
 
     float t = 0;
     float av = 0;
-    Texture2D img1;
-    Texture2D img2;
+
+    PixelMap[] maps;
+    @Flat public ImageView img0, img1, img2, img3, img4, img5, img6, img7, img8, img9, img10, img11;
+    private ImageView[] images;
 
     @Override
     public void onShow() {
+        images = new ImageView[]{img0, img1, img2, img3, img4, img5, img6, img7, img8, img9, img10, img11};
         setupListView();
         getActivity().setContinuousRendering(true);
-
-        var pm = (PixelMap) DrawableReader.parse(new ResourceStream("/default/image_transp_test.png"));
-        var pm2 = (PixelMap) DrawableReader.parse(new ResourceStream("/default/image.png"));
         var graphics = getActivity().getContext().getGraphics();
-        img1 = pm.getTexture();
-        img2 = pm2.getTexture();
 
         shader = graphics.createImageRenderShader(
                 """
                 #version 330 core
-                uniform vec2 view;
                 uniform vec4 col;
-                uniform sampler2D texture1;
                 vec4 fragment(vec2 pos, vec2 uv) {
-                    return texture(texture1, uv) * col;
+                    return pos.x > 8 && col.r > 0 ? vec4(col.rgb, clamp(col.a * (pos.x - 8) / 16, 0, 1))
+                    : pos.x > 40 && col.b > 0 ? vec4(col.rgb, 1 - clamp(col.a * (pos.x - 40) / 16, 0, 1))
+                    : col;
                 }
                 """);
-        System.out.println("Init Shader " + GL.GetError());
-
-        shader.set("texture1", 0);
-        shader.set("texture2", 1);
-
-        System.out.println("Error : " + GL.GetError());
         Surface surface = new Surface(64, 64, 8);
         graphics.setSurface(surface);
-        graphics.clear(0, 0, 0x00);
-        // graphics.clearClip();
-        shader.set("col", new Vector4(1f, 1f, 1f, 1f));
-        graphics.blitCustomShader(shader, 0, 0, 64, 64, img1);
-        graphics.setPaint(
-                new LinearGradient.Builder(-2, 32, 32, 32)
-                        .stop(0, 0xFF000000)
-                        .stop(1, 0xFF0000FF).build());
-        graphics.setColor(Color.red);
-        graphics.drawRect(0, 0, 32, 32, true);
-        pix = graphics.createPixelMap();
+
+        maps = new PixelMap[AlphaComposite.values().length];
+        for (int i = 0; i < maps.length; i++) {
+            graphics.setAlphaComposite(AlphaComposite.SRC_OVER);
+            shader.set("col", Color.toFloat(Color.blue));
+            graphics.blitCustomShader(shader, 0, 0, 56, 40);
+            graphics.setAlphaComposite(AlphaComposite.values()[i]);
+            shader.set("col", Color.toFloat(Color.red));
+            graphics.blitCustomShader(shader, 8, 24, 56, 40);
+            graphics.setAlphaComposite(AlphaComposite.SRC_OVER);
+            maps[i] = graphics.createPixelMap();
+            images[i].setImage(maps[i]);
+            graphics.clear(0, 0, 0);
+        }
+
         graphics.setSurface(null);
-        System.out.println("Error : " + GL.GetError());
 
-        byte[] data = pix.readData();
-        System.out.print(String.format("%02x", data[0]).toUpperCase() + " ");
-        System.out.print(String.format("%02x", data[1]).toUpperCase() + " ");
-        System.out.print(String.format("%02x", data[2]).toUpperCase() + " ");
-        System.out.println(String.format("%02x", data[3]).toUpperCase() + " ");
-        System.out.print(String.format("%03d", data[0] & 0xFF).toUpperCase() + " ");
-        System.out.print(String.format("%03d", data[1] & 0xFF).toUpperCase() + " ");
-        System.out.print(String.format("%03d", data[2] & 0xFF).toUpperCase() + " ");
-        System.out.println(String.format("%03d", data[3] & 0xFF).toUpperCase() + " ");
-
-
-        System.out.println("Render to PixelMap " + GL.GetError());
 
         if (tabChips != null) {
             search(tabChips.getFrame());
@@ -680,18 +655,12 @@ public class MainController extends Controller {
             getActivity().invalidateWidget(getActivity().getScene());
         }
         graphics.setTransform2D(null);
-        graphics.setColor(0x000000FF);
-        graphics.setStroke(new BasicStroke(6));
-        graphics.drawLine(50, 150, 350, 150);
-        graphics.drawImage(pix, 100, 100, 256, 256, -1, true);
-        graphics.setColor(0xFF0000FF);
-        graphics.drawRect(357, 100, 256, 256, true);
-        graphics.setColor(0x00FF0080);
-        graphics.drawRect(357, 100, 256, 256, true);
-
-        graphics.setColor(0x55AA00BF);
-        graphics.drawRect(614, 100, 256, 256, true);
-        graphics.drawImage(img1, 100, 357, 256, 256);
+        graphics.setColor(Color.red);
+        graphics.setStroke(new BasicStroke(1));
+        for (int i = 0; i < maps.length; i++) {
+            //graphics.drawImage(maps[i], 100 + i * 70, 100, 64, 64, -1, true);
+            //graphics.drawRect(100 + i * 70, 100, 64, 64, false);
+        }
         // var p = getActivity().getWindow().getPointer();
         // graphics.blitCustomShader(shader, p.getX(), p.getY(), 64, 64, img1, img2);
 
