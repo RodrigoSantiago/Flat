@@ -1,7 +1,7 @@
 package flat.widget.text.data;
 
 import flat.graphics.Graphics;
-import flat.graphics.context.Font;
+import flat.graphics.symbols.Font;
 import flat.graphics.emojis.EmojiManager;
 import flat.widget.enums.HorizontalAlign;
 

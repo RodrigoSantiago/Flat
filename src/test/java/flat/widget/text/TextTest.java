@@ -1,6 +1,6 @@
 package flat.widget.text;
 
-import flat.graphics.context.Font;
+import flat.graphics.symbols.Font;
 import flat.uxml.Controller;
 import flat.uxml.UXBuilder;
 import flat.uxml.UXHash;
@@ -17,7 +17,6 @@ import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 

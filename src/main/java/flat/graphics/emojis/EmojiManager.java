@@ -1,19 +1,24 @@
 package flat.graphics.emojis;
 
 import flat.backend.SVG;
+import flat.graphics.ImageTexture;
 import flat.graphics.context.Texture2D;
 import flat.graphics.context.enums.MagFilter;
 import flat.graphics.context.enums.MinFilter;
 import flat.graphics.context.enums.PixelFormat;
 import flat.graphics.context.enums.WrapMode;
+import flat.graphics.image.Drawable;
+import flat.graphics.image.SpriteMap;
 import flat.resources.ResourceStream;
 import flat.window.Application;
 
-import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 
 public class EmojiManager {
 
     private static Texture2D emojiTexture;
+    private static final HashMap<Integer, Drawable> drawables = new HashMap<>();
+    private static final ImageTexture imageTexture = () -> emojiTexture;
 
     private static boolean enabled;
 
@@ -21,16 +26,11 @@ public class EmojiManager {
         return enabled;
     }
 
-    public static void load(ResourceStream image, ResourceStream unicodes) {
+    public static void load(ResourceStream image) {
         SVG.FontSetEmojiEnabled(enabled = true);
         EmojiDictionary.getInstance();
         new Thread(() -> {
             try {
-                String[] lines = new String(unicodes.readData(), StandardCharsets.UTF_8).split("\n");
-                int[] emojis = new int[lines.length];
-                for (int i = 0; i < lines.length; i++) {
-                    emojis[i] = Integer.parseInt(lines[i].trim());
-                }
                 int[] imageData = new int[3];
                 byte[] data = SVG.ReadImage(image.readData(), imageData);
 
@@ -43,7 +43,7 @@ public class EmojiManager {
                     emojiTexture.setWrapModes(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
                     emojiTexture.setLevels(8);
                     emojiTexture.generateMipmapLevels();
-                    SVG.FontCreateEmoji(emojiTexture.getInternalId(), emojis);
+                    SVG.FontCreateEmoji(emojiTexture.getInternalId(), EmojiDictionary.getInstance().getUnicodes());
                     for (var window : Application.getAssignedWindows()) {
                         window.getActivity().invalidate();
                     }
@@ -61,5 +61,23 @@ public class EmojiManager {
             emojiTexture = null;
             SVG.FontDestroyEmoji();
         }
+    }
+
+    public static Drawable getIcon(String text) {
+        if (!isEnabled()) return null;
+
+        int index = EmojiDictionary.getInstance().findEmoji(text);
+        if (index != -1) {
+            Drawable drawable = drawables.get(index);
+            if (drawable == null) {
+                int s = (Application.getSystemQuality() * 1024) / 64;
+                int x = index % 64;
+                int y = index / 64;
+                drawable = new SpriteMap(imageTexture, x * s, y * s, s, s);
+                drawables.put(index, drawable);
+            }
+            return drawable;
+        }
+        return null;
     }
 }

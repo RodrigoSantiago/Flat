@@ -8,15 +8,17 @@ public class UXTheme {
     private final UXSheet sheet;
     private final UXStringBundle stringBundle;
     private final float fontScale;
+    private final float dpi;
     private final HashMap<String, UXValue> variables;
 
     public UXTheme(UXSheet sheet) {
-        this(sheet, 1f, null, null);
+        this(sheet, 1f, 160f, null, null);
     }
 
-    public UXTheme(UXSheet sheet, float fontScale, UXStringBundle stringBundle, HashMap<String, UXValue> variables) {
+    public UXTheme(UXSheet sheet, float fontScale, float dpi, UXStringBundle stringBundle, HashMap<String, UXValue> variables) {
         this.sheet = sheet;
         this.fontScale = fontScale;
+        this.dpi = dpi;
         this.stringBundle = stringBundle;
         if (variables != null) {
             this.variables = new HashMap<>(variables);
@@ -25,8 +27,8 @@ public class UXTheme {
         }
     }
 
-    public UXTheme createInstance(float fontScale, UXStringBundle stringBundle, HashMap<String, UXValue> variables) {
-        return new UXTheme(sheet, fontScale, stringBundle, variables);
+    public UXTheme createInstance(float fontScale, float dpi, UXStringBundle stringBundle, HashMap<String, UXValue> variables) {
+        return new UXTheme(sheet, fontScale, dpi, stringBundle, variables);
     }
 
     public UXStyle getStyle(String name) {
@@ -43,6 +45,10 @@ public class UXTheme {
 
     public float getFontScale() {
         return fontScale;
+    }
+
+    public float getDpi() {
+        return dpi;
     }
 
     public UXStringBundle getStringBundle() {

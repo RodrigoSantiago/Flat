@@ -6,11 +6,8 @@ import flat.events.HoverEvent;
 import flat.events.PointerEvent;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
-import flat.graphics.cursor.Cursor;
 import flat.graphics.image.Drawable;
 import flat.math.Vector2;
-import flat.math.shapes.Ellipse;
-import flat.math.stroke.BasicStroke;
 import flat.uxml.*;
 import flat.widget.enums.HorizontalPosition;
 import flat.widget.enums.ImageFilter;
@@ -43,7 +40,7 @@ public class Chip extends Button {
         UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
 
-        setCloseIcon(attrs.getResourceAsDrawable("close-icon", info, getCloseIcon(), false));
+        setCloseIcon(attrs.getDrawable("close-icon", info, getCloseIcon(), false));
         setCloseIconColor(attrs.getColor("close-icon-color", info, getCloseIconColor()));
         setCloseIconWidth(attrs.getSize("close-icon-width", info, getCloseIconWidth()));
         setCloseIconHeight(attrs.getSize("close-icon-height", info, getCloseIconHeight()));

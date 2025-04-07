@@ -1,6 +1,7 @@
 package flat.uxml.value;
 
-import flat.graphics.context.Font;
+import flat.graphics.image.Drawable;
+import flat.graphics.symbols.Font;
 import flat.resources.ResourceStream;
 import flat.uxml.Controller;
 import flat.uxml.UXListener;
@@ -64,13 +65,13 @@ public class UXValueXML extends  UXValue {
     }
 
     @Override
-    public float asSize(UXTheme theme, float dpi) {
-        return value.asSize(theme, dpi);
+    public float asSize(UXTheme theme) {
+        return value.asSize(theme);
     }
 
     @Override
-    public float[] asSizeList(UXTheme theme, float dpi) {
-        return value.asSizeList(theme, dpi);
+    public float[] asSizeList(UXTheme theme) {
+        return value.asSizeList(theme);
     }
 
     @Override
@@ -91,6 +92,11 @@ public class UXValueXML extends  UXValue {
     @Override
     public Font asFont(UXTheme theme) {
         return value.asFont(theme);
+    }
+
+    @Override
+    public Drawable asDrawable(UXTheme theme) {
+        return value.asDrawable(theme);
     }
 
     @Override

@@ -232,7 +232,7 @@ dialog-datepicker-month-area {
     padding-bottom : 16dp;
 }
 dialog-datepicker-month-down {
-    icon : '/default/icons/menu-down.svg';
+    icon : icon(fill, arrow_drop_down);
     width : MATCH_PARENT;
     radius-top : 32dp;
     radius-left : 32dp;
@@ -240,10 +240,10 @@ dialog-datepicker-month-down {
     radius-bottom : 32dp;
 }
 dialog-datepicker-month-left {
-    icon : '/default/icons/chevron-left.svg';
+    icon : icon(fill, chevron_left);
 }
 dialog-datepicker-month-right : dialog-datepicker-month-left {
-    icon : '/default/icons/chevron-right.svg';
+    icon : icon(fill, chevron_right);
 }
 data-picker-calendar {
     width : MATCH_PARENT;

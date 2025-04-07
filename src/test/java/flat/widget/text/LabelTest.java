@@ -1,6 +1,6 @@
 package flat.widget.text;
 
-import flat.graphics.context.Font;
+import flat.graphics.symbols.Font;
 import flat.uxml.Controller;
 import flat.uxml.UXBuilder;
 import flat.uxml.UXHash;

@@ -1,6 +1,6 @@
 package flat.widget.stages;
 
-import flat.graphics.context.Font;
+import flat.graphics.symbols.Font;
 import flat.graphics.image.Drawable;
 import flat.graphics.image.DrawableReader;
 import flat.resources.ResourceStream;

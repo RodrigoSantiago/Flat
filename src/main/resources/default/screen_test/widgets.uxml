@@ -4,12 +4,13 @@
                  title="Flat.UI Showcase" subtitle="Material" style="double-dense primary">
             <ToolItem navigation-item="true" style="navigation dense primary"/>
             <ToolItem overflow-item="true" style="overflow dense primary"/>
-            <ToolItem icon="/default/icons/bug.svg" style="dense primary" menu-text="Dark" on-action="toggleDebugMode"/>
-            <ToolItem icon="/default/icons/sun.svg" style="dense primary" menu-text="Light" on-action="setThemeLight"/>
-            <ToolItem icon="/default/icons/night.svg" style="dense primary" menu-text="Dark" on-action="setThemeDark"/>
+            <ToolItem icon="icon(fill, bug_report)" style="dense primary" menu-text="Dark" on-action="toggleDebugMode"/>
+            <ToolItem icon="icon(fill, light_mode)" style="dense primary" menu-text="Light" on-action="setThemeLight"/>
+            <ToolItem icon="icon(fill, moon_stars)" style="dense primary" menu-text="Dark" on-action="setThemeDark"/>
         </ToolBar>
         <Drawer id="mainDrawer" width="MATCH_PARENT" height="MATCH_PARENT" block-events="true" auto-close="true" overlay-mode="FLOATING">
             <LinearBox front-content="true" direction="vertical" style="layout-drawer-menu">
+                <MenuItem text="Default" on-action="setTabDefault" style="navigation"/>
                 <MenuItem text="Buttons" on-action="setTabButtons" style="navigation"/>
                 <MenuItem text="Chips" on-action="setTabChips" style="navigation"/>
                 <MenuItem text="Forms" on-action="setTabForms" style="navigation"/>
@@ -28,6 +29,11 @@
             </LinearBox>
             <LinearBox back-content="true" direction="vertical" style="layout-drawer-content">
                 <TabView width="MATCH_PARENT" height="MATCH_PARENT" id="mainTab" hidden-tabs="true">
+                    <Tab text="Default" id="tabDefault">
+                        <Frame width="MATCH_PARENT" height="MATCH_PARENT">
+                            <Include src="default.uxml"/>
+                        </Frame>
+                    </Tab>
                     <Tab text="Buttons" id="tabButtons">
                         <Frame width="MATCH_PARENT" height="MATCH_PARENT">
                             <Include src="buttons.uxml"/>

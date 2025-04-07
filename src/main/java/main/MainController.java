@@ -11,18 +11,18 @@ import flat.events.PointerEvent;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
 import flat.graphics.Surface;
-import flat.graphics.context.Font;
+import flat.graphics.symbols.Font;
 import flat.graphics.context.ShaderProgram;
 import flat.graphics.context.enums.AlphaComposite;
 import flat.graphics.context.enums.ImageFileFormat;
 import flat.graphics.image.Drawable;
 import flat.graphics.image.DrawableReader;
-import flat.graphics.image.LineMap;
 import flat.graphics.image.PixelMap;
-import flat.math.Mathf;
+import flat.graphics.symbols.FontManager;
+import flat.graphics.symbols.FontStyle;
+import flat.graphics.symbols.IconsManager;
 import flat.math.shapes.Circle;
 import flat.math.shapes.Path;
-import flat.math.stroke.BasicStroke;
 import flat.resources.ResourceStream;
 import flat.uxml.Controller;
 import flat.widget.Parent;
@@ -67,6 +67,7 @@ public class MainController extends Controller {
     @Flat
     public Drawer drawer2;
     @Flat public TabView mainTab;
+    @Flat public Tab tabDefault;
     @Flat public Tab tabButtons;
     @Flat public Tab tabChips;
     @Flat public Tab tabForms;
@@ -97,6 +98,12 @@ public class MainController extends Controller {
     @Flat
     public void toggleDrawer() {
         mainDrawer.toggle();
+    }
+
+    @Flat
+    public void setTabDefault() {
+        mainTab.selectTab(tabDefault);
+        mainDrawer.hide();
     }
 
     @Flat
@@ -498,7 +505,7 @@ public class MainController extends Controller {
         ObservableList<TreeCell> list3 = new ObservableList<>();
         ObservableList<TreeCell> list4 = new ObservableList<>();
 
-        Drawable icon = DrawableReader.parse(new ResourceStream("/default/icons/file-outline.svg"));
+        Drawable icon = IconsManager.getIcon("outline", "draft");
 
         TreeCell rootA = new TreeCell(list3, "Tree Item Root", true, icon);
         TreeCell rootB = new TreeCell(list4, "Tree Item Root", true, icon);
@@ -538,12 +545,12 @@ public class MainController extends Controller {
 
     @Flat
     public void optimize(PointerEvent pointer) {
-        if (pointer.getPointerID() == 1 && pointer.getType() == PointerEvent.PRESSED) {
+        /*if (pointer.getPointerID() == 1 && pointer.getType() == PointerEvent.PRESSED) {
             if (pointer.getSource() instanceof ImageView view) {
                 LineMap lineMap = (LineMap) view.getImage();
                 lineMap.optimize();
             }
-        }
+        }*/
     }
 
     boolean debug = false;
@@ -562,12 +569,18 @@ public class MainController extends Controller {
     @Flat public ImageView img0, img1, img2, img3, img4, img5, img6, img7, img8, img9, img10, img11;
     private ImageView[] images;
 
+    Font font;
     @Override
     public void onShow() {
+        getWindow().setIcon(PixelMap.parse(new ResourceStream("/default/icons/window-icon.png")));
+
         images = new ImageView[]{img0, img1, img2, img3, img4, img5, img6, img7, img8, img9, img10, img11};
         setupListView();
-        getActivity().setContinuousRendering(true);
-        var graphics = getActivity().getContext().getGraphics();
+        font = FontManager.findFont(FontStyle.FANTASY);
+        System.out.println(font.getGlyphCount());
+        System.out.println(font.getName());
+        // getActivity().setContinuousRendering(true);
+        var graphics = getGraphics();
 
         shader = graphics.createImageRenderShader(
                 """
@@ -602,7 +615,6 @@ public class MainController extends Controller {
         if (tabChips != null) {
             search(tabChips.getFrame());
         }
-        setTabEffects();
     }
 
     @Flat
@@ -617,18 +629,17 @@ public class MainController extends Controller {
 
 
     PixelMap screen;
-    ArrayList<Integer> fpss = new ArrayList<>();
+    int n;
+    long time;
     @Override
     public void onDraw(Graphics graphics) {
         super.onDraw(graphics);
-        fpss.add(Mathf.round(1f / Application.getLoopTime()));
-        int total = 0;
-        for (var i : fpss) {
-            total += i;
-        }
-        statusLabel.setText("FPS : " + Mathf.round(total / (float) fpss.size()));
-        if (fpss.size() > 120) {
-            fpss.subList(0, fpss.size() - 10).clear();
+        n++;
+        long now = System.currentTimeMillis();
+        if (now - time > 250) {
+            time = time == 0 ? now : now - (now - time - 250);
+            statusLabel.setText("FPS : " + (n * 4));
+            n = 0;
         }
 
         if (t > 0) {
@@ -654,24 +665,6 @@ public class MainController extends Controller {
             t -= Application.getLoopTime();
             getActivity().invalidateWidget(getActivity().getScene());
         }
-        graphics.setTransform2D(null);
-        graphics.setColor(Color.red);
-        graphics.setStroke(new BasicStroke(1));
-        for (int i = 0; i < maps.length; i++) {
-            //graphics.drawImage(maps[i], 100 + i * 70, 100, 64, 64, -1, true);
-            //graphics.drawRect(100 + i * 70, 100, 64, 64, false);
-        }
-        // var p = getActivity().getWindow().getPointer();
-        // graphics.blitCustomShader(shader, p.getX(), p.getY(), 64, 64, img1, img2);
-
-        /*Font font = Font.getDefault();
-
-        int[] data = new int[4];
-        int imageId = (int) SVG.FontPaintGetAtlas(font.getInternalPaintId(), data);
-        int w = data[0];
-        int h = data[1];
-        Texture2D tex = new Texture2D(imageId, w, h, 0, PixelFormat.RED);
-        graphics.drawImage(tex, 200, 200, w / 2f, h / 2f);*/
     }
 
     public static void saveImage(PixelMap pixelMap, String filePath) {
@@ -699,7 +692,7 @@ public class MainController extends Controller {
 
     @Flat
     public void onEmojiLoad(ActionEvent event) {
-        ResourceStream unicodes = new ResourceStream("/default/emojis/emojis.txt");
+        /*ResourceStream unicodes = new ResourceStream("/default/emojis/emojis.txt");
         String[] lines = new String(unicodes.readData(), StandardCharsets.UTF_8).split("\n");
         int[] emojis = new int[lines.length];
         for (int i = 0; i < lines.length; i++) {
@@ -716,7 +709,7 @@ public class MainController extends Controller {
                 System.out.print("&#x" + Integer.toHexString(emojis[i]) + ";");
             }
         }
-        System.out.println();
+        System.out.println();*/
     }
 
     @Flat

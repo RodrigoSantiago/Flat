@@ -2,11 +2,11 @@ package flat.graphics.context;
 
 import flat.window.Application;
 
-class DisposeTask implements Runnable {
+public class DisposeTask implements Runnable {
     private final Runnable task;
     private boolean done;
 
-    DisposeTask(Runnable task) {
+    public DisposeTask(Runnable task) {
         this.task = task;
     }
 

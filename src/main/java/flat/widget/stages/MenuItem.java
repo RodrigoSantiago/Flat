@@ -5,7 +5,7 @@ import flat.events.ActionEvent;
 import flat.events.HoverEvent;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
-import flat.graphics.context.Font;
+import flat.graphics.symbols.Font;
 import flat.graphics.image.Drawable;
 import flat.math.Vector2;
 import flat.uxml.Controller;
@@ -71,7 +71,7 @@ public class MenuItem extends Button {
         setShortcutTextColor(attrs.getColor("shortcut-text-color", info, getShortcutTextColor()));
         setShortcutTextSize(attrs.getSize("shortcut-text-size", info, getShortcutTextSize()));
         setShortcutTextFont(attrs.getFont("shortcut-text-font", info, getShortcutTextFont()));
-        setSubmenuIcon(attrs.getResourceAsDrawable("submenu-icon", info, getSubmenuIcon(), false));
+        setSubmenuIcon(attrs.getDrawable("submenu-icon", info, getSubmenuIcon(), false));
         setSubmenuColor(attrs.getColor("submenu-color", info, getSubmenuColor()));
         setSubmenuImageFilter(attrs.getConstant("submenu-image-filter", info, getSubmenuImageFilter()));
     }

@@ -7,6 +7,7 @@ import flat.graphics.context.paints.ColorPaint;
 import flat.graphics.context.paints.GaussianShadow;
 import flat.graphics.context.paints.ImagePattern;
 import flat.graphics.image.PixelMap;
+import flat.graphics.symbols.Font;
 import flat.math.Affine;
 import flat.math.Vector2;
 import flat.math.Vector4;

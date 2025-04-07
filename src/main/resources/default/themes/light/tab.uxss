@@ -65,10 +65,7 @@ tab.close-icon-right {
     close-icon-spacing : 8dp;
     close-icon-width : 18dp;
     close-icon-height : 18dp;
-    close-icon : "/default/icons/close.svg";
-    undefined {
-        close-icon : "/default/icons/close-thick.svg";
-    }
+    close-icon : icon(fill, close);
 }
 
 tab.close-icon-left {
@@ -76,10 +73,7 @@ tab.close-icon-left {
     close-icon-spacing : 8dp;
     close-icon-width : 18dp;
     close-icon-height : 18dp;
-    close-icon : "/default/icons/close.svg";
-    undefined {
-        close-icon : "/default/icons/close-thick.svg";
-    }
+    close-icon : icon(fill, close);
 }
 
 tab.complete-left {
@@ -90,10 +84,7 @@ tab.complete-left {
     icon-width : 18dp;
     icon-height : 18dp;
     close-icon-spacing : 8dp;
-    close-icon : "/default/icons/close.svg";
-    undefined {
-        close-icon : "/default/icons/close-thick.svg";
-    }
+    close-icon : icon(fill, close);
 }
 
 tab.complete-right {
@@ -104,10 +95,7 @@ tab.complete-right {
     icon-width : 18dp;
     icon-height : 18dp;
     close-icon-spacing : 8dp;
-    close-icon : "/default/icons/close.svg";
-    undefined {
-        close-icon : "/default/icons/close-thick.svg";
-    }
+    close-icon : icon(fill, close);
 }
 
 tab.default {

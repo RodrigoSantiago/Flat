@@ -5,6 +5,7 @@ import flat.events.KeyEvent;
 import flat.graphics.Graphics;
 import flat.window.Activity;
 import flat.window.Application;
+import flat.window.Window;
 
 import java.lang.reflect.*;
 
@@ -35,6 +36,14 @@ public class Controller {
 
     public Activity getActivity() {
         return activity;
+    }
+
+    public Window getWindow() {
+        return activity != null ? activity.getWindow() : null;
+    }
+
+    public Graphics getGraphics() {
+        return activity != null ? activity.getContext().getGraphics() : null;
     }
 
     private Method findMethod(String name, Class<?> argument) {

@@ -3,7 +3,7 @@ package flat.widget.text;
 import flat.animations.StateInfo;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
-import flat.graphics.context.Font;
+import flat.graphics.symbols.Font;
 import flat.uxml.Controller;
 import flat.uxml.UXAttrs;
 import flat.widget.Widget;

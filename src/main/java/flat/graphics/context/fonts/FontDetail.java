@@ -1,8 +1,8 @@
 package flat.graphics.context.fonts;
 
-import flat.graphics.text.FontPosture;
-import flat.graphics.text.FontStyle;
-import flat.graphics.text.FontWeight;
+import flat.graphics.symbols.FontPosture;
+import flat.graphics.symbols.FontStyle;
+import flat.graphics.symbols.FontWeight;
 
 import java.io.File;
 

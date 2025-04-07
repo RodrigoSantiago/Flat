@@ -53,7 +53,7 @@ public class Activity {
     private boolean invalided, invalidScene, invalidThemeStyle;
     private Widget invalidWidget;
 
-    private float lastDpi;
+    private float lastDpi = 160f;
     private boolean continuousRendering;
 
     public static Activity create(Window window, WindowSettings settings) {
@@ -85,7 +85,7 @@ public class Activity {
         }
 
         if (initialSettings.getThemeStream() != null) {
-            theme = UXSheet.parse(initialSettings.getThemeStream()).instance(fontScale, stringBundle, themeVariables);
+            theme = UXSheet.parse(initialSettings.getThemeStream()).instance(fontScale, lastDpi, stringBundle, themeVariables);
 
         } else if (initialSettings.getTheme() != null) {
             theme = initialSettings.getTheme();
@@ -250,7 +250,7 @@ public class Activity {
 
         if (invalidThemeStyle) {
             invalidThemeStyle = false;
-            theme = theme != null ? theme.createInstance(fontScale, stringBundle, themeVariables) : null;
+            theme = theme != null ? theme.createInstance(fontScale, lastDpi, stringBundle, themeVariables) : null;
             scene.setTheme(theme);
             scene.refreshStyle();
         }

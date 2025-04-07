@@ -2,7 +2,7 @@ package flat.widget.text;
 
 import flat.events.ActionEvent;
 import flat.events.TextEvent;
-import flat.graphics.context.Font;
+import flat.graphics.symbols.Font;
 import flat.graphics.image.Drawable;
 import flat.graphics.image.DrawableReader;
 import flat.resources.ResourceStream;

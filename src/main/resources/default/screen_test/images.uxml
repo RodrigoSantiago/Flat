@@ -4,46 +4,46 @@
                    padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
             <Label text="No Scale (Uses Align)" style="subtitle"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <ImageView image="/default/placeholder_img.jpg" width="86dp" height="64dp" image-scale="NONE" background-color="#FFFFFF"/>
-                <ImageView margin-left="16dp" image="/default/pacman.png" width="86dp" height="64dp" image-scale="NONE" background-color="#FFFFFF"/>
-                <ImageView margin-left="16dp" image="/default/placeholder_img.jpg" width="172dp" height="128dp" image-scale="NONE" background-color="#FFFFFF"/>
-                <ImageView margin-left="16dp" image="/default/pacman.png" width="172dp" height="128dp" image-scale="NONE" background-color="#FFFFFF"/>
-                <ImageView margin-left="16dp" image="/default/pacman.png" width="172dp" height="60dp" image-scale="NONE" background-color="#FFFFFF"/>
-                <ImageView margin-left="16dp" image="/default/pacman.png" width="80dp" height="128dp" image-scale="NONE" background-color="#FFFFFF"/>
+                <ImageView image="/default/images/placeholder_img.jpg" width="86dp" height="64dp" image-scale="NONE" background-color="#FFFFFF"/>
+                <ImageView margin-left="16dp" image="/default/images/pacman.png" width="86dp" height="64dp" image-scale="NONE" background-color="#FFFFFF"/>
+                <ImageView margin-left="16dp" image="/default/images/placeholder_img.jpg" width="172dp" height="128dp" image-scale="NONE" background-color="#FFFFFF"/>
+                <ImageView margin-left="16dp" image="/default/images/pacman.png" width="172dp" height="128dp" image-scale="NONE" background-color="#FFFFFF"/>
+                <ImageView margin-left="16dp" image="/default/images/pacman.png" width="172dp" height="60dp" image-scale="NONE" background-color="#FFFFFF"/>
+                <ImageView margin-left="16dp" image="/default/images/pacman.png" width="80dp" height="128dp" image-scale="NONE" background-color="#FFFFFF"/>
             </LinearBox>
             <Label text="Stretch" style="subtitle" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <ImageView image="/default/placeholder_img.jpg" width="86dp" height="64dp" image-scale="STRETCH" background-color="#FFFFFF"/>
-                <ImageView margin-left="16dp" image="/default/pacman.png" width="86dp" height="64dp" image-scale="STRETCH" background-color="#FFFFFF"/>
-                <ImageView margin-left="16dp" image="/default/placeholder_img.jpg" width="172dp" height="128dp" image-scale="STRETCH" background-color="#FFFFFF"/>
-                <ImageView margin-left="16dp" image="/default/pacman.png" width="172dp" height="128dp" image-scale="STRETCH" background-color="#FFFFFF"/>
-                <ImageView margin-left="16dp" image="/default/pacman.png" width="172dp" height="60dp" image-scale="STRETCH" background-color="#FFFFFF"/>
-                <ImageView margin-left="16dp" image="/default/pacman.png" width="80dp" height="128dp" image-scale="STRETCH" background-color="#FFFFFF"/>
+                <ImageView image="/default/images/placeholder_img.jpg" width="86dp" height="64dp" image-scale="STRETCH" background-color="#FFFFFF"/>
+                <ImageView margin-left="16dp" image="/default/images/pacman.png" width="86dp" height="64dp" image-scale="STRETCH" background-color="#FFFFFF"/>
+                <ImageView margin-left="16dp" image="/default/images/placeholder_img.jpg" width="172dp" height="128dp" image-scale="STRETCH" background-color="#FFFFFF"/>
+                <ImageView margin-left="16dp" image="/default/images/pacman.png" width="172dp" height="128dp" image-scale="STRETCH" background-color="#FFFFFF"/>
+                <ImageView margin-left="16dp" image="/default/images/pacman.png" width="172dp" height="60dp" image-scale="STRETCH" background-color="#FFFFFF"/>
+                <ImageView margin-left="16dp" image="/default/images/pacman.png" width="80dp" height="128dp" image-scale="STRETCH" background-color="#FFFFFF"/>
             </LinearBox>
             <Label text="Fit" style="subtitle" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <ImageView image="/default/placeholder_img.jpg" width="86dp" height="64dp" image-scale="FIT" background-color="#FFFFFF"/>
-                <ImageView margin-left="16dp" image="/default/pacman.png" width="86dp" height="64dp" image-scale="FIT" background-color="#FFFFFF"/>
-                <ImageView margin-left="16dp" image="/default/placeholder_img.jpg" width="172dp" height="128dp" image-scale="FIT" background-color="#FFFFFF"/>
-                <ImageView margin-left="16dp" image="/default/pacman.png" width="172dp" height="128dp" image-scale="FIT" background-color="#FFFFFF"/>
-                <ImageView margin-left="16dp" image="/default/pacman.png" width="172dp" height="60dp" image-scale="FIT" background-color="#FFFFFF"/>
-                <ImageView margin-left="16dp" image="/default/pacman.png" width="80dp" height="128dp" image-scale="FIT" background-color="#FFFFFF"/>
+                <ImageView image="/default/images/placeholder_img.jpg" width="86dp" height="64dp" image-scale="FIT" background-color="#FFFFFF"/>
+                <ImageView margin-left="16dp" image="/default/images/pacman.png" width="86dp" height="64dp" image-scale="FIT" background-color="#FFFFFF"/>
+                <ImageView margin-left="16dp" image="/default/images/placeholder_img.jpg" width="172dp" height="128dp" image-scale="FIT" background-color="#FFFFFF"/>
+                <ImageView margin-left="16dp" image="/default/images/pacman.png" width="172dp" height="128dp" image-scale="FIT" background-color="#FFFFFF"/>
+                <ImageView margin-left="16dp" image="/default/images/pacman.png" width="172dp" height="60dp" image-scale="FIT" background-color="#FFFFFF"/>
+                <ImageView margin-left="16dp" image="/default/images/pacman.png" width="80dp" height="128dp" image-scale="FIT" background-color="#FFFFFF"/>
             </LinearBox>
             <Label text="Crop" style="subtitle" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <ImageView image="/default/placeholder_img.jpg" width="86dp" height="64dp" image-scale="CROP" background-color="#FFFFFF"/>
-                <ImageView margin-left="16dp" image="/default/pacman.png" width="86dp" height="64dp" image-scale="CROP" background-color="#FFFFFF"/>
-                <ImageView margin-left="16dp" image="/default/placeholder_img.jpg" width="172dp" height="128dp" image-scale="CROP" background-color="#FFFFFF"/>
-                <ImageView margin-left="16dp" image="/default/pacman.png" width="172dp" height="128dp" image-scale="CROP" background-color="#FFFFFF"/>
-                <ImageView margin-left="16dp" image="/default/pacman.png" width="172dp" height="60dp" image-scale="CROP" background-color="#FFFFFF"/>
-                <ImageView margin-left="16dp" image="/default/pacman.png" width="80dp" height="128dp" image-scale="CROP" background-color="#FFFFFF"/>
+                <ImageView image="/default/images/placeholder_img.jpg" width="86dp" height="64dp" image-scale="CROP" background-color="#FFFFFF"/>
+                <ImageView margin-left="16dp" image="/default/images/pacman.png" width="86dp" height="64dp" image-scale="CROP" background-color="#FFFFFF"/>
+                <ImageView margin-left="16dp" image="/default/images/placeholder_img.jpg" width="172dp" height="128dp" image-scale="CROP" background-color="#FFFFFF"/>
+                <ImageView margin-left="16dp" image="/default/images/pacman.png" width="172dp" height="128dp" image-scale="CROP" background-color="#FFFFFF"/>
+                <ImageView margin-left="16dp" image="/default/images/pacman.png" width="172dp" height="60dp" image-scale="CROP" background-color="#FFFFFF"/>
+                <ImageView margin-left="16dp" image="/default/images/pacman.png" width="80dp" height="128dp" image-scale="CROP" background-color="#FFFFFF"/>
             </LinearBox>
             <Label text="Colored" style="subtitle" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <ImageView image="/default/placeholder_img.jpg" width="86dp" height="64dp" image-scale="STRETCH" color="#FF8080"/>
-                <ImageView margin-left="16dp" image="/default/placeholder_img.jpg" width="86dp" height="64dp" image-scale="STRETCH" color="#80FF80"/>
-                <ImageView margin-left="16dp" image="/default/placeholder_img.jpg" width="86dp" height="64dp" image-scale="STRETCH" color="#8080FF"/>
-                <ImageView margin-left="16dp" image="/default/placeholder_img.jpg" width="86dp" height="64dp" image-scale="STRETCH" color="#FFFFFF80"/>
+                <ImageView image="/default/images/placeholder_img.jpg" width="86dp" height="64dp" image-scale="STRETCH" color="#FF8080"/>
+                <ImageView margin-left="16dp" image="/default/images/placeholder_img.jpg" width="86dp" height="64dp" image-scale="STRETCH" color="#80FF80"/>
+                <ImageView margin-left="16dp" image="/default/images/placeholder_img.jpg" width="86dp" height="64dp" image-scale="STRETCH" color="#8080FF"/>
+                <ImageView margin-left="16dp" image="/default/images/placeholder_img.jpg" width="86dp" height="64dp" image-scale="STRETCH" color="#FFFFFF80"/>
             </LinearBox>
         </LinearBox>
 
@@ -51,12 +51,12 @@
                    padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
             <Label text="Image Filter" style="subtitle"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <ImageView image="/default/pacman.png" width="172dp" height="128dp" image-scale="STRETCH" image-filter="LINEAR"/>
-                <ImageView margin-left="16dp" image="/default/pacman.png" width="172dp" height="128dp" image-scale="STRETCH" image-filter="NEAREST"/>
+                <ImageView image="/default/images/pacman.png" width="172dp" height="128dp" image-scale="STRETCH" image-filter="LINEAR"/>
+                <ImageView margin-left="16dp" image="/default/images/pacman.png" width="172dp" height="128dp" image-scale="STRETCH" image-filter="NEAREST"/>
             </LinearBox>
             <Label text="Complex SVG" style="subtitle" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <ImageView image="/default/dragon.svg" width="300dp" height="600dp" image-scale="STRETCH" image-filter="LINEAR"
+                <ImageView image="/default/images/tiger.svg" width="400dp" height="400dp" image-scale="STRETCH" image-filter="LINEAR"
                            on-pointer="optimize"/>
             </LinearBox>
         </LinearBox>

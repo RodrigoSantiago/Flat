@@ -55,6 +55,11 @@ public class SvgBuilder {
         return svgNode;
     }
 
+    private String readId(UXNodeElement node) {
+        UXNodeAttribute fillNode = node.getAttributes().get("id");
+        return fillNode == null ? null : fillNode.getValue().asString(null);
+    }
+
     private Paint readFill(UXNodeElement node) {
         UXNodeAttribute fillNode = node.getAttributes().get("fill");
         int col = fillNode == null ? 0 : fillNode.getValue().asColor(null);
@@ -69,12 +74,12 @@ public class SvgBuilder {
 
     private float readSize(UXNodeElement node, String name) {
         UXNodeAttribute fillNode = node.getAttributes().get(name);
-        return fillNode == null ? 0 : fillNode.getValue().asSize(null, 160);
+        return fillNode == null ? 0 : fillNode.getValue().asSize(null);
     }
 
     private float readStrokeWidth(UXNodeElement node) {
         UXNodeAttribute fillNode = node.getAttributes().get("stroke-width");
-        return fillNode == null ? 0 : fillNode.getValue().asSize(null, 160);
+        return fillNode == null ? 0 : fillNode.getValue().asSize(null);
     }
 
     private float readStrokeMiter(UXNodeElement node) {
@@ -144,15 +149,15 @@ public class SvgBuilder {
         readStyle(node);
 
         if (parent == null && "svg".equals(node.getName())) {
-            return new SvgRoot(null, readSize(node, "width"), readSize(node, "height"), readViewBox(node));
+            return new SvgRoot(readId(node), readSize(node, "width"), readSize(node, "height"), readViewBox(node));
 
         } else if ("path".equals(node.getName())) {
-            return new SvgShape(parent, null, readTransform(node),
+            return new SvgShape(parent, readId(node), readTransform(node),
                     readPath(node), readFill(node), readStroke(node),
                     readStrokeWidth(node), readStrokeMiter(node), readStrokeCap(node), readStrokeJoin(node));
 
         } else if ("g".equals(node.getName())) {
-            return new SvgGroup(parent, null, readTransform(node),
+            return new SvgGroup(parent, readId(node), readTransform(node),
                     readFill(node), readStroke(node),
                     readStrokeWidth(node), readStrokeMiter(node), readStrokeCap(node), readStrokeJoin(node));
 
@@ -189,32 +194,32 @@ public class SvgBuilder {
             UXValue val = pathNode.getValue().getSource(null);
             if (val instanceof UXValueSizeList list) {
                 if ("translate".equalsIgnoreCase(list.getName())) {
-                    float[] numbers = list.asSizeList(null, 160);
+                    float[] numbers = list.asSizeList(null);
                     if (numbers.length == 2) {
                         return new Affine().translate(numbers[0], numbers[1]);
                     }
                 } else if ("scale".equalsIgnoreCase(list.getName())) {
-                    float[] numbers = list.asSizeList(null, 160);
+                    float[] numbers = list.asSizeList(null);
                     if (numbers.length == 2) {
                         return new Affine().scale(numbers[0], numbers[1]);
                     }
                 } else if ("rotate".equalsIgnoreCase(list.getName())) {
-                    float[] numbers = list.asSizeList(null, 160);
+                    float[] numbers = list.asSizeList(null);
                     if (numbers.length == 1) {
                         return new Affine().rotate(numbers[0]);
                     }
                 } else if ("skewX".equalsIgnoreCase(list.getName())) {
-                    float[] numbers = list.asSizeList(null, 160);
+                    float[] numbers = list.asSizeList(null);
                     if (numbers.length == 1) {
                         return new Affine().shear(numbers[0], 0);
                     }
                 } else if ("skewY".equalsIgnoreCase(list.getName())) {
-                    float[] numbers = list.asSizeList(null, 160);
+                    float[] numbers = list.asSizeList(null);
                     if (numbers.length == 1) {
                         return new Affine().shear(0, numbers[0]);
                     }
                 } else if ("matrix".equalsIgnoreCase(list.getName())) {
-                    float[] numbers = list.asSizeList(null, 160);
+                    float[] numbers = list.asSizeList(null);
                     if (numbers.length == 6) {
                         return new Affine(numbers[0], numbers[1], numbers[2], numbers[3], numbers[4], numbers[5]);
                     }

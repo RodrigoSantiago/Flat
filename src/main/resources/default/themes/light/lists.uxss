@@ -62,13 +62,13 @@ tree-item : list-item {
 }
 
 tree-item-folder {
-    icon : '/default/icons/folder.svg';
-    state-icon : '/default/icons/chevron-right.svg';
+    icon : icon(fill, folder);
+    state-icon : icon(fill, chevron_right);
     state-action-enabled : true;
 }
 
 tree-item-folder-open {
-    icon : '/default/icons/folder-open.svg';
-    state-icon : '/default/icons/chevron-down.svg';
+    icon : icon(fill, folder_open);
+    state-icon : icon(fill, keyboard_arrow_down);
     state-action-enabled : true;
 }

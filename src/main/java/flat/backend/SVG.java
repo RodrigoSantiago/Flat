@@ -66,10 +66,7 @@ public class SVG {
     public static native void FontSetEmojiEnabled(boolean enabled);
     public static native void FontCreateEmoji(long textureId, int[] sequence);
     public static native void FontDestroyEmoji();
-
-    public static native long FontPaintCreate(long context, long font);
-    public static native void FontPaintDestroy(long fontPaint);
-    public static native long FontPaintGetAtlas(long fontPaint, int[] size);
+    public static native long FontGetAtlas(long font, int[] size);
 
     public static native void FontGetAllCodePoints(long font, int[] codePoints);
     public static native void FontGetGlyph(long font, int codePoint, float[] data);

@@ -53,7 +53,7 @@ public class ToolItem extends Widget {
         UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
 
-        setIcon(attrs.getResourceAsDrawable("icon", info, getIcon(), false));
+        setIcon(attrs.getDrawable("icon", info, getIcon(), false));
         setIconColor(attrs.getColor("icon-color", info, getIconColor()));
         setIconImageFilter(attrs.getConstant("icon-image-filter", info, getIconImageFilter()));
         setIconWidth(attrs.getSize("icon-width", info, getIconWidth()));

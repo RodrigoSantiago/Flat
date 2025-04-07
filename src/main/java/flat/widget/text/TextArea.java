@@ -4,7 +4,7 @@ import flat.animations.Animation;
 import flat.animations.StateInfo;
 import flat.events.*;
 import flat.graphics.Graphics;
-import flat.graphics.context.Font;
+import flat.graphics.symbols.Font;
 import flat.math.Vector2;
 import flat.math.stroke.BasicStroke;
 import flat.uxml.*;

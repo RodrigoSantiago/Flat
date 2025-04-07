@@ -4,7 +4,7 @@ import flat.animations.Animation;
 import flat.animations.StateInfo;
 import flat.events.FocusEvent;
 import flat.graphics.Graphics;
-import flat.graphics.context.Font;
+import flat.graphics.symbols.Font;
 import flat.math.Vector2;
 import flat.math.shapes.RoundRectangle;
 import flat.math.stroke.BasicStroke;

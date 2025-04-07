@@ -111,10 +111,10 @@ tool-item.primary {
 }
 
 tool-item.navigation {
-    icon : '/default/icons/menu.svg';
+    icon : icon(fill, menu);
     margin-right : 32dp;
 }
 
 tool-item.overflow {
-    icon : '/default/icons/dots-vertical.svg';
+    icon : icon(fill, more_vert);
 }

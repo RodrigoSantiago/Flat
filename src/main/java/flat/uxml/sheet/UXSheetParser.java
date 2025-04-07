@@ -1,9 +1,9 @@
 package flat.uxml.sheet;
 
 import flat.graphics.Color;
-import flat.graphics.text.FontPosture;
-import flat.graphics.text.FontStyle;
-import flat.graphics.text.FontWeight;
+import flat.graphics.symbols.FontPosture;
+import flat.graphics.symbols.FontStyle;
+import flat.graphics.symbols.FontWeight;
 import flat.resources.Parser;
 import flat.uxml.value.UXValue;
 import flat.uxml.value.*;
@@ -726,6 +726,16 @@ public class UXSheetParser {
                 }
             }
             return new UXValueFont(family, weight, posture, style);
+        } else if (source.equalsIgnoreCase("icon")) {
+            if (values.size() == 1 && values.get(0) instanceof UXValueText || values.get(0) instanceof  UXValueVariable) {
+                return new UXValueIcon(null, values.get(0));
+            } else if (values.size() == 2 &&
+                    (values.get(0) instanceof UXValueText || values.get(0) instanceof UXValueVariable) &&
+                    (values.get(1) instanceof UXValueText || values.get(1) instanceof UXValueVariable)) {
+                return new UXValueIcon(values.get(0), values.get(1));
+            } else{
+                log(ErroLog.INVALID_ICON);
+            }
         } else if (lists.contains(source)) {
             return new UXValueSizeList(source, values.toArray(new UXValue[0]));
 
@@ -747,6 +757,7 @@ public class UXSheetParser {
         public static final String INVALID_NUMBER = "Invalid number";
         public static final String INVALID_FONT = "Invalid font";
         public static final String INVALID_COLOR = "Invalid color";
+        public static final String INVALID_ICON = "Invalid icon";
         public static final String INVALID_ALPHA = "Invalid alpha function";
         public static final String INVALID_FUNCTION = "Invalid function";
         public static final String NAME_EXPECTED = "Name expected";

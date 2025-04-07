@@ -23,23 +23,23 @@
             <Label text="Complete" style="subtitle" margin-left="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
                 <TabView height="70dp" style="primary" background-color="$card-color" width="MATCH_PARENT">
-                    <Tab text="Tab 1" style="complete-left primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 2" style="complete-left primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 3" style="complete-left primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 4" style="complete-right primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 5" style="complete-right primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 6" style="complete-right primary" icon="/default/icons/star.svg"/>
+                    <Tab text="Tab 1" style="complete-left primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 2" style="complete-left primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 3" style="complete-left primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 4" style="complete-right primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 5" style="complete-right primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 6" style="complete-right primary" icon="icon(fill, star)"/>
                 </TabView>
             </LinearBox>
             <Label text="Bottom" style="subtitle" margin-left="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
                 <TabView height="70dp" style="primary" background-color="$card-color" width="MATCH_PARENT" tabs-vertical-position="bottom">
-                    <Tab text="Tab 1" style="complete-left primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 2" style="complete-left primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 3" style="complete-left primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 4" style="complete-right primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 5" style="complete-right primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 6" style="complete-right primary" icon="/default/icons/star.svg"/>
+                    <Tab text="Tab 1" style="complete-left primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 2" style="complete-left primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 3" style="complete-left primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 4" style="complete-right primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 5" style="complete-right primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 6" style="complete-right primary" icon="icon(fill, star)"/>
                 </TabView>
             </LinearBox>
             <Label text="Dense" style="subtitle" margin-left="4dp" margin-top="16dp"/>
@@ -63,23 +63,23 @@
             <Label text="Complete" style="subtitle" margin-left="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
                 <TabView height="48dp" style="dense primary" background-color="$card-color" width="MATCH_PARENT">
-                    <Tab text="Tab 1" style="complete-left dense primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 2" style="complete-left dense primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 3" style="complete-left dense primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 4" style="complete-right dense primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 5" style="complete-right dense primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 6" style="complete-right dense primary" icon="/default/icons/star.svg"/>
+                    <Tab text="Tab 1" style="complete-left dense primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 2" style="complete-left dense primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 3" style="complete-left dense primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 4" style="complete-right dense primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 5" style="complete-right dense primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 6" style="complete-right dense primary" icon="icon(fill, star)"/>
                 </TabView>
             </LinearBox>
             <Label text="Bottom" style="subtitle" margin-left="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
                 <TabView height="48dp" style="dense primary" background-color="$card-color" width="MATCH_PARENT" tabs-vertical-position="bottom">
-                    <Tab text="Tab 1" style="complete-left dense primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 2" style="complete-left dense primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 3" style="complete-left dense primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 4" style="complete-right dense primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 5" style="complete-right dense primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 6" style="complete-right dense primary" icon="/default/icons/star.svg"/>
+                    <Tab text="Tab 1" style="complete-left dense primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 2" style="complete-left dense primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 3" style="complete-left dense primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 4" style="complete-right dense primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 5" style="complete-right dense primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 6" style="complete-right dense primary" icon="icon(fill, star)"/>
                 </TabView>
             </LinearBox>
         </LinearBox>
@@ -106,23 +106,23 @@
             <Label text="Complete" style="subtitle" margin-left="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
                 <TabView height="70dp" style="primary" background-color="$card-color" width="MATCH_PARENT">
-                    <Tab text="Tab 1" style="complete-left primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 2" style="complete-left primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 3" style="complete-left primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 4" style="complete-right primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 5" style="complete-right primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 6" style="complete-right primary" icon="/default/icons/star.svg"/>
+                    <Tab text="Tab 1" style="complete-left primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 2" style="complete-left primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 3" style="complete-left primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 4" style="complete-right primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 5" style="complete-right primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 6" style="complete-right primary" icon="icon(fill, star)"/>
                 </TabView>
             </LinearBox>
             <Label text="Bottom" style="subtitle" margin-left="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
                 <TabView height="70dp" style="primary" background-color="$card-color" width="MATCH_PARENT" tabs-vertical-position="bottom">
-                    <Tab text="Tab 1" style="complete-left primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 2" style="complete-left primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 3" style="complete-left primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 4" style="complete-right primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 5" style="complete-right primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 6" style="complete-right primary" icon="/default/icons/star.svg"/>
+                    <Tab text="Tab 1" style="complete-left primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 2" style="complete-left primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 3" style="complete-left primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 4" style="complete-right primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 5" style="complete-right primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 6" style="complete-right primary" icon="icon(fill, star)"/>
                 </TabView>
             </LinearBox>
             <Label text="Dense" style="subtitle" margin-left="4dp" margin-top="16dp"/>
@@ -146,23 +146,23 @@
             <Label text="Complete" style="subtitle" margin-left="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
                 <TabView height="48dp" style="dense primary" background-color="$card-color" width="MATCH_PARENT">
-                    <Tab text="Tab 1" style="complete-left dense primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 2" style="complete-left dense primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 3" style="complete-left dense primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 4" style="complete-right dense primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 5" style="complete-right dense primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 6" style="complete-right dense primary" icon="/default/icons/star.svg"/>
+                    <Tab text="Tab 1" style="complete-left dense primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 2" style="complete-left dense primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 3" style="complete-left dense primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 4" style="complete-right dense primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 5" style="complete-right dense primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 6" style="complete-right dense primary" icon="icon(fill, star)"/>
                 </TabView>
             </LinearBox>
             <Label text="Bottom" style="subtitle" margin-left="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
                 <TabView height="48dp" style="dense primary" background-color="$card-color" width="MATCH_PARENT" tabs-vertical-position="bottom">
-                    <Tab text="Tab 1" style="complete-left dense primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 2" style="complete-left dense primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 3" style="complete-left dense primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 4" style="complete-right dense primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 5" style="complete-right dense primary" icon="/default/icons/star.svg"/>
-                    <Tab text="Tab 6" style="complete-right dense primary" icon="/default/icons/star.svg"/>
+                    <Tab text="Tab 1" style="complete-left dense primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 2" style="complete-left dense primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 3" style="complete-left dense primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 4" style="complete-right dense primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 5" style="complete-right dense primary" icon="icon(fill, star)"/>
+                    <Tab text="Tab 6" style="complete-right dense primary" icon="icon(fill, star)"/>
                 </TabView>
             </LinearBox>
         </LinearBox>

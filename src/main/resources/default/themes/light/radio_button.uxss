@@ -17,7 +17,7 @@ radio-button : radio-button.primary {
 }
 
 radio-button.primary {
-    icon : '/default/icons/radiobox-blank.svg';
+    icon : icon(outline, radio_button_unchecked);
     icon-color : $primary-color;
     background-color : transparent;
     ripple-color : alpha($primary-color-fade, 0.5);
@@ -28,7 +28,7 @@ radio-button.primary {
         background-color : alpha($primary-color-fade, 0.2);
     }
     activated {
-        icon : '/default/icons/radiobox-marked.svg';
+        icon : icon(outline, radio_button_checked);
     }
     disabled {
         icon-color : $disabled-color;

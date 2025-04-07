@@ -1,14 +1,14 @@
 <LinearBox direction="vertical" style="dialog-emojis">
     <LinearBox direction="horizontal" style="dialog-emojis-groups-area">
-        <Button id="btnGroup0" style="icon dialog-emojis-group-icon" icon="/default/icons/emoticon-happy-outline.svg" on-action="onGroup0Click"/>
-        <Button id="btnGroup1" style="icon dialog-emojis-group-icon" icon="/default/icons/account-outline.svg" on-action="onGroup1Click"/>
-        <Button id="btnGroup2" style="icon dialog-emojis-group-icon" icon="/default/icons/flower-tulip-outline.svg" on-action="onGroup2Click"/>
-        <Button id="btnGroup3" style="icon dialog-emojis-group-icon" icon="/default/icons/food-apple-outline.svg" on-action="onGroup3Click"/>
-        <Button id="btnGroup4" style="icon dialog-emojis-group-icon" icon="/default/icons/car.svg" on-action="onGroup4Click"/>
-        <Button id="btnGroup5" style="icon dialog-emojis-group-icon" icon="/default/icons/soccer.svg" on-action="onGroup5Click"/>
-        <Button id="btnGroup6" style="icon dialog-emojis-group-icon" icon="/default/icons/watch.svg" on-action="onGroup6Click"/>
-        <Button id="btnGroup7" style="icon dialog-emojis-group-icon" icon="/default/icons/heart-outline.svg" on-action="onGroup7Click"/>
-        <Button id="btnGroup8" style="icon dialog-emojis-group-icon" icon="/default/icons/flag-outline.svg" on-action="onGroup8Click"/>
+        <Button id="btnGroup0" style="icon dialog-emojis-group-icon" icon="icon(fill, mood)" on-action="onGroup0Click"/>
+        <Button id="btnGroup1" style="icon dialog-emojis-group-icon" icon="icon(fill, account_circle)" on-action="onGroup1Click"/>
+        <Button id="btnGroup2" style="icon dialog-emojis-group-icon" icon="icon(fill, filter_vintage)" on-action="onGroup2Click"/>
+        <Button id="btnGroup3" style="icon dialog-emojis-group-icon" icon="icon(fill, nutrition)" on-action="onGroup3Click"/>
+        <Button id="btnGroup4" style="icon dialog-emojis-group-icon" icon="icon(fill, directions_car)" on-action="onGroup4Click"/>
+        <Button id="btnGroup5" style="icon dialog-emojis-group-icon" icon="icon(fill, sports_soccer)" on-action="onGroup5Click"/>
+        <Button id="btnGroup6" style="icon dialog-emojis-group-icon" icon="icon(fill, watch)" on-action="onGroup6Click"/>
+        <Button id="btnGroup7" style="icon dialog-emojis-group-icon" icon="icon(fill, favorite)" on-action="onGroup7Click"/>
+        <Button id="btnGroup8" style="icon dialog-emojis-group-icon" icon="icon(fill, flag)" on-action="onGroup8Click"/>
     </LinearBox>
     <Divider/>
     <TextInputField id="searchBar" style="dialog-emojis-search-bar" text-hint="Search Emoji" on-text-change="onTextSearch"/>

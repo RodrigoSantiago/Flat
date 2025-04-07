@@ -36,7 +36,7 @@ menu-item : menu-item.default {
     width : match_parent;
     cursor : hand;
 
-    submenu-icon : '/default/icons/menu-right.svg';
+    submenu-icon : icon(fill, arrow_right);
 }
 
 menu-item.icon-left {

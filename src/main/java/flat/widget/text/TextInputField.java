@@ -6,11 +6,9 @@ import flat.events.HoverEvent;
 import flat.events.PointerEvent;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
-import flat.graphics.cursor.Cursor;
 import flat.graphics.image.Drawable;
 import flat.math.Vector2;
 import flat.math.shapes.RoundRectangle;
-import flat.math.stroke.BasicStroke;
 import flat.uxml.Controller;
 import flat.uxml.UXAttrs;
 import flat.uxml.UXListener;
@@ -52,14 +50,14 @@ public class TextInputField extends TextField {
         UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
 
-        setIcon(attrs.getResourceAsDrawable("icon", info, getIcon(), false));
+        setIcon(attrs.getDrawable("icon", info, getIcon(), false));
         setIconColor(attrs.getColor("icon-color", info, getIconColor()));
         setIconWidth(attrs.getSize("icon-width", info, getIconWidth()));
         setIconHeight(attrs.getSize("icon-height", info, getIconHeight()));
         setIconSpacing(attrs.getSize("icon-spacing", info, getIconSpacing()));
         setIconImageFilter(attrs.getConstant("icon-image-filter", info, getIconImageFilter()));
 
-        setActionIcon(attrs.getResourceAsDrawable("action-icon", info, getActionIcon(), false));
+        setActionIcon(attrs.getDrawable("action-icon", info, getActionIcon(), false));
         setActionIconColor(attrs.getColor("action-icon-color", info, getActionIconColor()));
         setActionIconWidth(attrs.getSize("action-icon-width", info, getActionIconWidth()));
         setActionIconHeight(attrs.getSize("action-icon-height", info, getActionIconHeight()));

@@ -179,7 +179,7 @@ text-drop-down : text-drop-down.primary {
     action-icon-spacing : 8dp;
 
     cursor : ibeam;
-    action-icon : "/default/icons/menu-down.svg";
+    action-icon : icon(fill, arrow_drop_down);
     undefined {
         cursor : hand;
     }

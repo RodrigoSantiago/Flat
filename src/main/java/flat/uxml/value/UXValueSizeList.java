@@ -50,10 +50,10 @@ public class UXValueSizeList extends UXValue {
     }
 
     @Override
-    public float[] asSizeList(UXTheme theme, float dpi) {
+    public float[] asSizeList(UXTheme theme) {
         float[] val = new float[values.length];
         for (int i = 0; i < values.length; i++) {
-            val[i] = values[i].asSize(theme, dpi);
+            val[i] = values[i].asSize(theme);
         }
         return val;
     }

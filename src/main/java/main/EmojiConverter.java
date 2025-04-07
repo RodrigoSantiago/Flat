@@ -19,7 +19,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+//import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class EmojiConverter {
 
@@ -104,11 +104,11 @@ public class EmojiConverter {
             allEmojis.add(convert(arr));
         }
 
-        ObjectMapper objectMapper = new ObjectMapper();
+        //ObjectMapper objectMapper = new ObjectMapper();
 
         try {
-           // EmojiGroup[] emojiDictionary = EmojiDictionary.getInstance().getGroups().toArray(new EmojiGroup[0]);
-            EmojiGroup[] emojiDictionary = objectMapper.readValue(new File(path), EmojiGroup[].class);
+            EmojiGroup[] emojiDictionary = EmojiDictionary.getInstance().getGroups().toArray(new EmojiGroup[0]);
+            //EmojiGroup[] emojiDictionary = objectMapper.readValue(new File(path), EmojiGroup[].class);
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < emojiDictionary.length; i++) {
                 var group = emojiDictionary[i];

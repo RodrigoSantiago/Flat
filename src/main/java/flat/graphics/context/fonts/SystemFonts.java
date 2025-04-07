@@ -1,6 +1,6 @@
 package flat.graphics.context.fonts;
 
-import flat.graphics.text.FontStyle;
+import flat.graphics.symbols.FontStyle;
 import flat.window.Application;
 import flat.window.SystemType;
 

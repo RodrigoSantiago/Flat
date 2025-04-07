@@ -95,9 +95,8 @@ public class Window {
     void dispose() {
         if (!disposed) {
             context.dispose();
-            WL.Close(windowId);
-
             SVG.Destroy(svgId);
+            WL.Close(windowId);
             WL.WindowDestroy(windowId);
 
             disposed = true;

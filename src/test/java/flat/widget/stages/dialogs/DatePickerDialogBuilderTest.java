@@ -2,7 +2,7 @@ package flat.widget.stages.dialogs;
 
 import flat.events.ActionEvent;
 import flat.events.FocusEvent;
-import flat.graphics.context.Font;
+import flat.graphics.symbols.Font;
 import flat.resources.ResourceStream;
 import flat.uxml.*;
 import flat.widget.Scene;

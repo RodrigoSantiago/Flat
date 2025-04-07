@@ -24,7 +24,7 @@ switch-toggle : switch-toggle.primary {
 }
 
 switch-toggle.primary {
-    icon : '/default/icons/circle.svg';
+    icon : icon(fill, circle);
     icon-color : $card-color;
     line-color : $disabled-color;
     icon-bg-color : transparent;

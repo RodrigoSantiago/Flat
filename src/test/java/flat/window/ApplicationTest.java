@@ -417,7 +417,7 @@ public class ApplicationTest {
 
         when(GL.GetMaxTextureSize()).thenReturn(1024);
         doAnswer((a) -> null).when(EmojiManager.class);
-        EmojiManager.load(any(), any());
+        EmojiManager.load(any());
 
         // Execution
         Application.init(resources);
@@ -428,7 +428,7 @@ public class ApplicationTest {
         verify(window).loop(anyFloat());
 
         verifyStatic(EmojiManager.class);
-        EmojiManager.load(new ResourceStream("/default/emojis/emojis-1024.png"), new ResourceStream("/default/emojis/emojis.txt"));
+        EmojiManager.load(new ResourceStream("/default/emojis/emojis-1024.png"));
 
         assertUsualInit(fileLibrary);
         assertQualityInit();
@@ -458,7 +458,7 @@ public class ApplicationTest {
 
         when(GL.GetMaxTextureSize()).thenReturn(512);
         doAnswer((a) -> null).when(EmojiManager.class);
-        EmojiManager.load(any(), any());
+        EmojiManager.load(any());
 
         // Execution
         Application.init(resources);
@@ -469,7 +469,7 @@ public class ApplicationTest {
         verify(window).loop(anyFloat());
 
         verifyStatic(EmojiManager.class, times(0));
-        EmojiManager.load(any(), any());
+        EmojiManager.load(any());
 
         assertUsualInit(fileLibrary);
         assertQualityInit();

@@ -4,53 +4,53 @@
                    padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
             <Label text="Standard" style="subtitle" margin-left="4dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button text="Alert Dialog" style="icon-left" on-action="onAlertDialog" icon="/default/icons/alert-circle.svg"/>
-                <Button margin-left="16dp" text="Confirm Dialog" style="icon-left" on-action="onConfirmDialog" icon="/default/icons/help-circle.svg"/>
-                <Button margin-left="16dp" text="Process Dialog" style="icon-left" on-action="onProcessDialog" icon="/default/icons/restore.svg"/>
+                <Button text="Alert Dialog" style="icon-left" on-action="onAlertDialog" icon="icon(fill, error)"/>
+                <Button margin-left="16dp" text="Confirm Dialog" style="icon-left" on-action="onConfirmDialog" icon="icon(fill, help)"/>
+                <Button margin-left="16dp" text="Process Dialog" style="icon-left" on-action="onProcessDialog" icon="icon(fill, restore)"/>
             </LinearBox>
             <Label text="Options" style="subtitle" margin-left="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button text="Choice Dialog" style="icon-left" on-action="onChoiceDialog" icon="/default/icons/list-box.svg"/>
-                <Button margin-left="16dp" text="Multiple Choices Dialog" style="icon-left" on-action="onMultipleChoicesDialog" icon="/default/icons/invoice-list.svg"/>
+                <Button text="Choice Dialog" style="icon-left" on-action="onChoiceDialog" icon="icon(fill, list_alt)"/>
+                <Button margin-left="16dp" text="Multiple Choices Dialog" style="icon-left" on-action="onMultipleChoicesDialog" icon="icon(fill, fact_check)"/>
             </LinearBox>
             <Label text="Date" style="subtitle" margin-left="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button text="Date Picker Dialog" style="icon-left" on-action="onDatePickerDialog" icon="/default/icons/calendar.svg"/>
-                <Button margin-left="16dp" text="Ranged Date Picker Dialog" style="icon-left" on-action="onRangedDatePickerDialog" icon="/default/icons/calendar.svg"/>
+                <Button text="Date Picker Dialog" style="icon-left" on-action="onDatePickerDialog" icon="icon(fill, event)"/>
+                <Button margin-left="16dp" text="Ranged Date Picker Dialog" style="icon-left" on-action="onRangedDatePickerDialog" icon="icon(fill, event)"/>
             </LinearBox>
             <Label text="Emojis" style="subtitle" margin-left="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button text="&#x1F602; Emoji Picker Dialog" style="icon-left" on-action="onEmojiPickerDialog"/>
+                <Button text="Emoji Picker Dialog" style="icon-left" icon="icon(emoji, smile)" on-action="onEmojiPickerDialog" icon-color="white"/>
             </LinearBox>
             <Label text="Blocking" style="subtitle" margin-left="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button text="Alert Dialog" style="icon-left" on-action="onBlockAlertDialog" icon="/default/icons/alert-circle.svg"/>
-                <Button margin-left="16dp" text="Confirm Dialog" style="icon-left" on-action="onBlockConfirmDialog" icon="/default/icons/help-circle.svg"/>
-                <Button margin-left="16dp" text="Process Dialog" style="icon-left" on-action="onBlockProcessDialog" icon="/default/icons/restore.svg"/>
+                <Button text="Alert Dialog" style="icon-left" on-action="onBlockAlertDialog" icon="icon(fill, info)"/>
+                <Button margin-left="16dp" text="Confirm Dialog" style="icon-left" on-action="onBlockConfirmDialog" icon="icon(fill, help)"/>
+                <Button margin-left="16dp" text="Process Dialog" style="icon-left" on-action="onBlockProcessDialog" icon="icon(fill, restore)"/>
             </LinearBox>
             <Label text="Blocking Options" style="subtitle" margin-left="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button text="Choice Dialog" style="icon-left" on-action="onBlockChoiceDialog" icon="/default/icons/list-box.svg"/>
-                <Button margin-left="16dp" text="Multiple Choices Dialog" style="icon-left" on-action="onBlockMultipleChoicesDialog" icon="/default/icons/invoice-list.svg"/>
+                <Button text="Choice Dialog" style="icon-left" on-action="onBlockChoiceDialog" icon="icon(fill, list_alt)"/>
+                <Button margin-left="16dp" text="Multiple Choices Dialog" style="icon-left" on-action="onBlockMultipleChoicesDialog" icon="icon(fill, fact_check)"/>
             </LinearBox>
             <Label text="Blocking Date" style="subtitle" margin-left="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button text="Date Picker Dialog" style="icon-left" on-action="onBlockDatePickerDialog" icon="/default/icons/calendar.svg"/>
-                <Button margin-left="16dp" text="Ranged Date Picker Dialog" style="icon-left" on-action="onBlockRangedDatePickerDialog" icon="/default/icons/calendar.svg"/>
+                <Button text="Date Picker Dialog" style="icon-left" on-action="onBlockDatePickerDialog" icon="icon(fill, event)"/>
+                <Button margin-left="16dp" text="Ranged Date Picker Dialog" style="icon-left" on-action="onBlockRangedDatePickerDialog" icon="icon(fill, event)"/>
             </LinearBox>
         </LinearBox>
         <LinearBox direction="VERTICAL" width="MATCH_PARENT"
                    padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
             <Label text="System" style="subtitle" margin-left="4dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button text="Open File" style="primary" on-action="onFileOpenDialog"/>
-                <Button margin-left="16dp" text="Open Multiple File" style="primary" on-action="onFileOpenMultipleDialog"/>
-                <Button margin-left="16dp" text="Open Directory" style="primary" on-action="onFileOpenDirDialog"/>
-                <Button margin-left="16dp" text="Save File" style="primary" on-action="onFileSaveDialog"/>
+                <Button text="Open File" style="icon-left primary" on-action="onFileOpenDialog" icon="icon(fill, folder)"/>
+                <Button margin-left="16dp" text="Open Multiple File" style="icon-left primary" on-action="onFileOpenMultipleDialog" icon="icon(fill, folder_copy)"/>
+                <Button margin-left="16dp" text="Open Directory" style="icon-left primary" on-action="onFileOpenDirDialog" icon="icon(fill, folder_open)"/>
+                <Button margin-left="16dp" text="Save File" style="icon-left primary" on-action="onFileSaveDialog" icon="icon(fill, save)"/>
             </LinearBox>
             <Label text="A Window" style="subtitle" margin-left="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button text="Createa a new WINDOW" style="primary" on-action="onCreateWindow"/>
+                <Button text="Createa a new WINDOW" style="icon-left primary" on-action="onCreateWindow" icon="icon(fill, open_in_new)"/>
             </LinearBox>
         </LinearBox>
     </LinearBox>

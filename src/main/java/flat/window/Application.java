@@ -153,8 +153,7 @@ public class Application {
 
             if (textureOptimalMaxSize >= 1024) {
                 EmojiManager.load(
-                        new ResourceStream("/default/emojis/emojis-" + textureOptimalMaxSize + ".png"),
-                        new ResourceStream("/default/emojis/emojis.txt"));
+                        new ResourceStream("/default/emojis/emojis-" + textureOptimalMaxSize + ".png"));
             }
         } catch (Exception e) {
             finish();
@@ -164,12 +163,9 @@ public class Application {
 
     public static void launch() {
         try {
-            lastLoopTime = System.nanoTime();
-
             while (loopActive) {
                 refresh();
             }
-
         } finally {
             loopActive = false;
             finish();
@@ -240,7 +236,11 @@ public class Application {
         updateWindowList();
 
         long now = System.nanoTime();
-        loopTime = (now - lastLoopTime) / 1_000_000_000.0f;
+        if (lastLoopTime == 0) {
+            loopTime = 1 / 120.0f;
+        } else {
+            loopTime = (now - lastLoopTime) / 1_000_000_000.0f;
+        }
         lastLoopTime = now;
 
         for (Window window : windows) {
@@ -400,5 +400,9 @@ public class Application {
             }
         }
         return systemType;
+    }
+
+    public static boolean isSystemMobile() {
+        return false;
     }
 }

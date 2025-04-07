@@ -69,7 +69,7 @@ public class ListItem extends Button {
         setLayerLineWidth(attrs.getSize("layer-line-width", info, getLayerLineWidth()));
         setLayerWidth(attrs.getSize("layer-width", info, getLayerWidth()));
 
-        setStateIcon(attrs.getResourceAsDrawable("state-icon", info, getStateIcon(), false));
+        setStateIcon(attrs.getDrawable("state-icon", info, getStateIcon(), false));
         setStateIconColor(attrs.getColor("state-icon-color", info, getStateIconColor()));
         setStateIconWidth(attrs.getSize("state-icon-width", info, getStateIconWidth()));
         setStateIconHeight(attrs.getSize("state-icon-height", info, getStateIconHeight()));

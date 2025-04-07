@@ -2,7 +2,7 @@ package flat.uxml;
 
 import flat.animations.StateInfo;
 import flat.events.PointerEvent;
-import flat.graphics.context.Font;
+import flat.graphics.symbols.Font;
 import flat.resources.ResourceStream;
 import flat.resources.ResourcesManager;
 import flat.uxml.value.*;
