@@ -7,6 +7,7 @@
 Fuse.Flat is a library for material design UI development on Java. It also provides simple and indispensable set of tools for working with xml, themes, fonts, svg and images  
 
 The main purpose is to work similar to HTML/CSS, but with solid and clear standards for styles.  
+
 ![print.png](images/print.png)
 
 ## Features
