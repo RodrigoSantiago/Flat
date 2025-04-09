@@ -7,27 +7,31 @@
 Fuse.Flat is a library for material design UI development on Java. It also provides simple and indispensable set of tools for working with xml, themes, fonts, svg and images  
 
 The main purpose is to work similar to HTML/CSS, but with solid and clear standards for styles.  
+![print.png](images/print.png)
 
 ## Features
 
 ### Avaliable
- - Direct acess to OpenGL (Core)
- - Graphics Canvas (Easy to use)
- - Multiple Windows/OpenGL context support
+ - All useful Material Design features
+ - Fully customizable
+ - Easy responsiveness
+ - Direct access to OpenGL (Core)
+ - Graphics Canvas (Easy to render shapes, text, colors, gradients and more)
+ - Multiple Windows/OpenGL context support (Single Thread)
+ - Localization / StringBundles
  - XML UI Reader
  - SVG support (render, icons, boolean operations)
  - TTF Font support (SDF)
- - Animations
- - Free transforms
- - Material Design Effects
+ - Animations and Transforms
  - CSS-Like themes
- - Easy responsiveness
+ - Ready to Use Dialogs
+ - Emojis 😁
 
 ### Getting started
 
 The project starts when the first `Window` is created and launched.
 A `Window` always have an `Activity` which is a bridge between `Window` and `Widget`
-The Controller class is resposible to handle Activity events, and it should be extended. 
+The Controller class will handle Activity events, and it should be extended. 
 Controllers can also be used to control a `Dialog` and a `Frame`
 
 The UXBuilder can assign variables and methods based upon widget's id. The field must be assigned with the annotation `@Flat`. All the fields will be assigned after the onLoad event.
@@ -37,7 +41,7 @@ public class MainController extends Controller {
    private Button button;
 
    @Override
-   public void onLoad() {
+   public void onShow() {
        button.setFollowStyleProperty("background-color", false);
        button.setBackgroundColor(Color.blue);
    }
@@ -71,15 +75,17 @@ The launcher also must happen only once.
 ```java
 public static void main(String[] args) {
     Application.init();
-    Application.launch(new WindowSettings.Builder()
-       .layout("/default/layouts/main.uxml")
-       .theme("/default/themes/material")
-       .controller(MainController::new)
-       .size(1000, 800)
-       .multiSamples(8)
-       .transparent(false)
-       .build()
+    Application.setup(new WindowSettings.Builder()
+            .layout("/default/screen_test/widgets.uxml")
+            .theme("/default/themes/light")
+            .stringBundle("/default/locale/english.uxml")
+            .controller(MainController::new)
+            .size(1280, 940)
+            .multiSamples(8)
+            .transparent(true)
+            .build()
     );
+    Application.launch();
 }
 ```
 A new Window can be created later using `Application.createWindow`
@@ -119,9 +125,6 @@ The widgets also have `weight` Style-Property so multiple MATCH_PARENT widgets c
 
 Paddings and Margins properties will affect the final Layout/Out/In size independently
 ### Widgets
-![print-01.png](images/print-01.png)
-![print-02.png](images/print-02.png)
-![print-03.png](images/print-03.png)
 
 #### Layout
 - Scene
@@ -271,10 +274,14 @@ style : parent {
   - Posture : `REGULAR`, `ITALIC`
 - `Text` or `Constant` : simple write the plain text or use quots for spaces and special characters. Constants are case-insensitive
 - `Resource` : simple write the path as `'/path/to/image.svg'`
-- `Variable` : `@variable`. The variable name is case-sensitive. It does not need to follow the java rules for variables names. A variable can have any value. It must have a default value. The variable value can be set at runtime.
+- `Variable` : `$variable`. The variable name is case-sensitive. It does not need to follow the java rules for variables names. A variable can have any value. It must have a default value. The variable value can be set at runtime.
+- `Localization` : `@stringbundle`. It will search on StringBundles, and it will update if the language changes at runtime
+- `Icon` : `icon(bundle, icon_name)`. It will search a installed icon. There are 3 installed bundles by default : fill, outline, emoji
+- `Alpha` : `alpha(color, 0.5)`. Create a color with a multiplied alpha. It can use variables
 
 ````CSS
-@var-name : 10dp;
+$var-name : 10dp;
+$var-color : #FFFFFF;
 
 style {
    size : 10dp;
@@ -287,7 +294,10 @@ style {
    constant : MaTcH_PaReNt;
    image-resource-1 : "/default/path/to/icon.svg";
    image-resource-2 : '/simple/quots/also/works.png';
-   variable : @var-name;
+   variable : $var-name;
+   localized-text : @title.content;
+   image : icon(fill, star);
+   color-alpha : alpha($var-color, 0.5);
 }
 ````
 
@@ -301,8 +311,6 @@ UXSS themes can be a individual uxss file or a folder. An UXSS theme can include
 ### Todo - List
 - [ ] Wiki
 - [ ] Pickers
-   - [ ] Date Picker
-   - [ ] Time Picker
    - [ ] Color Picker
    - [ ] Font Picker
 - [ ] Add "paint" to all "color" css-like styles
