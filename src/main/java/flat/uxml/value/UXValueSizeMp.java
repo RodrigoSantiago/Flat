@@ -11,12 +11,12 @@ public class UXValueSizeMp extends UXValue {
     }
 
     @Override
-    public float asSize(UXTheme theme, float dpi) {
+    public float asSize(UXTheme theme) {
         return Widget.MATCH_PARENT;
     }
 
     @Override
-    public float[] asSizeList(UXTheme theme, float dpi) {
+    public float[] asSizeList(UXTheme theme) {
         return new float[] {Widget.MATCH_PARENT};
     }
 

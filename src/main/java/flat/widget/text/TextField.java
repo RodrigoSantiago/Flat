@@ -4,7 +4,7 @@ import flat.animations.Animation;
 import flat.animations.StateInfo;
 import flat.events.FocusEvent;
 import flat.graphics.Graphics;
-import flat.graphics.context.Font;
+import flat.graphics.symbols.Font;
 import flat.math.Vector2;
 import flat.math.shapes.RoundRectangle;
 import flat.math.stroke.BasicStroke;
@@ -29,13 +29,22 @@ public class TextField extends TextArea {
 
     private float titleWidth;
     private boolean invalidTitleSize;
+    
+    private String textHint;
+    private int textHintColor = 0x000000FF;
+    
+    private float textHintWidth;
+    private boolean invalidTextHintSize;
 
+    private final TextRender hintRender = new TextRender();
     private final TextRender titleRender = new TextRender();
     private final TitleToTitleAnimation titleToTitle = new TitleToTitleAnimation();
 
     public TextField() {
         titleRender.setFont(getTextFont());
         titleRender.setTextSize(getTitleSize());
+        hintRender.setFont(getTextFont());
+        hintRender.setTextSize(getTextSize());
     }
 
     @Override
@@ -44,6 +53,15 @@ public class TextField extends TextArea {
         UXAttrs attrs = getAttrs();
 
         setTitle(attrs.getAttributeString("title", getTitle()));
+        setTextHint(attrs.getAttributeString("text-hint", getTextHint()));
+    }
+
+    @Override
+    public void applyLocalization() {
+        super.applyLocalization();
+        UXAttrs attrs = getAttrs();
+        setTitle(attrs.getAttributeLocale("title", getTitle()));
+        setTextHint(attrs.getAttributeLocale("text-hint", getTextHint()));
     }
 
     @Override
@@ -58,6 +76,7 @@ public class TextField extends TextArea {
         setTitleSize(attrs.getSize("title-size", info, getTitleSize()));
         setTitleLocked(attrs.getBool("title-locked", info, isTitleLocked()));
         setTitleTransitionDuration(attrs.getNumber("title-transition-duration", info, getTitleTransitionDuration()));
+        setTextHintColor(attrs.getColor("text-hint-color", info, getTextHintColor()));
 
         setTextDividerColor(attrs.getColor("text-divider-color", info, getTextDividerColor()));
         setTextDividerSize(attrs.getSize("text-divider-size", info, getTextDividerSize()));
@@ -85,7 +104,7 @@ public class TextField extends TextArea {
         boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
 
         if (wrapWidth) {
-            mWidth = Math.max(getTextWidth() + extraWidth, getLayoutMinWidth());
+            mWidth = Math.max(getNaturalTextWidth() + extraWidth, getLayoutMinWidth());
         } else {
             mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
         }
@@ -114,6 +133,8 @@ public class TextField extends TextArea {
 
     @Override
     public void onDraw(Graphics graphics) {
+        if (discardDraw(graphics)) return;
+
         drawBackground(graphics);
         drawRipple(graphics);
 
@@ -154,7 +175,30 @@ public class TextField extends TextArea {
         }
     }
 
-    protected void onDrawTitle(Graphics context, float x, float y, float width, float height) {
+    protected void onDrawText(Graphics graphics, float x, float y, float width, float height) {
+        if (isTextEmpty() && getTextHint() != null && !getTextHint().isEmpty() && (!hasTitle() || isTitleFloating())) {
+            graphics.setTransform2D(getTransform());
+            x -= getViewOffsetX();
+            y -= getViewOffsetY();
+            float xpos = getTextWidth() < width ? xOff(x, x + width, getTextWidth()) : x;
+            float ypos = getTextHeight() < height ? yOff(y, y + height, getTextHeight()) : y;
+
+            graphics.setTransform2D(getTransform());
+            graphics.setColor(getTextColor());
+            graphics.setTextFont(getTextFont());
+            graphics.setTextSize(getTextSize());
+            graphics.setTextBlur(0);
+
+            float lineH = getLineHeight();
+            graphics.setColor(getTextHintColor());
+            int start = Math.max(0, (int) Math.floor((getViewOffsetY() - getInY()) / lineH) - 1);
+            int end = start + Math.max(0, (int) Math.ceil(getHeight() / lineH) + 2);
+            hintRender.drawText(graphics, xpos, ypos, width * 9999, height * 9999, getHorizontalAlign(), start, end);
+        }
+        super.onDrawText(graphics, x, y, width, height);
+    }
+
+    protected void onDrawTitle(Graphics graphics, float x, float y, float width, float height) {
         if (getTitle() != null && width > 0 && height > 0) {
             float anim = titleToTitle.isPlaying() ? titleToTitle.getPose() : isTitleFloating() ? 1 : 0;
 
@@ -170,22 +214,22 @@ public class TextField extends TextArea {
             float yoff = ypos1 * anim + ypos2 * (1 - anim);
             float scl = 1 * anim + scale * (1 - anim);
 
-            context.setTransform2D(getTransform().preTranslate(xoff, yoff).scale(scl, scl));
-            context.setColor(getTitleColor());
-            context.setTextFont(getTextFont());
-            context.setTextSize(getTitleSize());
-            context.setTextBlur(0);
-            titleRender.drawText(context, 0, 0, width / scl, Math.min(getTitleHeight() * scl, height) / scl,
+            graphics.setTransform2D(getTransform().preTranslate(xoff, yoff).scale(scl, scl));
+            graphics.setColor(getTitleColor());
+            graphics.setTextFont(getTextFont());
+            graphics.setTextSize(getTitleSize());
+            graphics.setTextBlur(0);
+            titleRender.drawText(graphics, 0, 0, width / scl, Math.min(getTitleHeight() * scl, height) / scl,
                     getHorizontalAlign(), 0, 1);
         }
     }
 
-    protected void onDrawTextDivider(Graphics context, float x, float y, float width, float height) {
+    protected void onDrawTextDivider(Graphics graphics, float x, float y, float width, float height) {
         if (width > 0 && height > 0) {
-            context.setTransform2D(getTransform());
-            context.setStroke(new BasicStroke(height));
-            context.setColor(getTextDividerColor());
-            context.drawLine(x, y, x + width, y);
+            graphics.setTransform2D(getTransform());
+            graphics.setStroke(new BasicStroke(height));
+            graphics.setColor(getTextDividerColor());
+            graphics.drawLine(x, y, x + width, y);
         }
     }
 
@@ -215,6 +259,30 @@ public class TextField extends TextArea {
     @Override
     protected float getVisibleTextWidth() {
         return getInWidth();
+    }
+
+    public String getTextHint() {
+        return textHint;
+    }
+
+    public void setTextHint(String textHint) {
+        if (!Objects.equals(this.textHint, textHint)) {
+            this.textHint = textHint;
+            hintRender.setText(textHint);
+            invalidateHintSize();
+            invalidate(false);
+        }
+    }
+
+    public int getTextHintColor() {
+        return textHintColor;
+    }
+
+    public void setTextHintColor(int textHintColor) {
+        if (this.textHintColor != textHintColor) {
+            this.textHintColor = textHintColor;
+            invalidate(false);
+        }
     }
 
     public String getTitle() {
@@ -256,9 +324,20 @@ public class TextField extends TextArea {
     @Override
     public void setTextFont(Font textFont) {
         if (this.getTextFont() != textFont) {
+            hintRender.setFont(textFont);
+            invalidateHintSize();
             titleRender.setFont(textFont);
             invalidateTitleSize();
             super.setTextFont(textFont);
+        }
+    }
+
+    @Override
+    public void setTextSize(float textSize) {
+        if (textSize != getTextSize()) {
+            hintRender.setTextSize(textSize);
+            invalidateHintSize();
+            super.setTextSize(textSize);
         }
     }
 
@@ -346,6 +425,19 @@ public class TextField extends TextArea {
             titleWidth = titleRender.getTextWidth();
         }
         return titleWidth;
+    }
+
+    private void invalidateHintSize() {
+        invalidTextHintSize = true;
+        invalidate(true);
+    }
+
+    protected float getTextHintWidth() {
+        if (invalidTextHintSize) {
+            invalidTextHintSize = false;
+            textHintWidth = hintRender.getTextWidth();
+        }
+        return textHintWidth;
     }
 
     protected boolean hasTitle() {

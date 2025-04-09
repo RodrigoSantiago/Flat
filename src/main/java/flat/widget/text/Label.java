@@ -3,7 +3,7 @@ package flat.widget.text;
 import flat.animations.StateInfo;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
-import flat.graphics.context.Font;
+import flat.graphics.symbols.Font;
 import flat.uxml.Controller;
 import flat.uxml.UXAttrs;
 import flat.widget.Widget;
@@ -26,9 +26,8 @@ public class Label extends Widget {
     private HorizontalAlign horizontalAlign = HorizontalAlign.LEFT;
 
     private String showText;
-    private boolean invalidTextSize;
-    private float textWidth;
-    private final TextRender textRender = new TextRender();
+    protected float textWidth;
+    protected final TextRender textRender = new TextRender();
 
     public Label() {
         textRender.setFont(textFont);
@@ -41,6 +40,14 @@ public class Label extends Widget {
         UXAttrs attrs = getAttrs();
 
         setText(attrs.getAttributeString("text", getText()));
+    }
+
+    @Override
+    public void applyLocalization() {
+        super.applyLocalization();
+        UXAttrs attrs = getAttrs();
+
+        setText(attrs.getAttributeLocale("text", getText()));
     }
 
     @Override
@@ -85,6 +92,8 @@ public class Label extends Widget {
 
     @Override
     public void onDraw(Graphics graphics) {
+        if (discardDraw(graphics)) return;
+
         drawBackground(graphics);
         drawRipple(graphics);
 
@@ -124,7 +133,6 @@ public class Label extends Widget {
             showText = text == null ? null : textAllCaps ? text.toUpperCase() : text;
             textRender.setText(showText);
             invalidate(isWrapContent());
-            invalidateTextSize();
         }
     }
 
@@ -138,7 +146,6 @@ public class Label extends Widget {
             showText = text == null ? null : textAllCaps ? text.toUpperCase() : text;
             textRender.setText(showText);
             invalidate(isWrapContent());
-            invalidateTextSize();
         }
     }
 
@@ -151,7 +158,6 @@ public class Label extends Widget {
             this.textFont = textFont;
             textRender.setFont(textFont);
             invalidate(isWrapContent());
-            invalidateTextSize();
         }
     }
 
@@ -164,7 +170,6 @@ public class Label extends Widget {
             this.textSize = textSize;
             textRender.setTextSize(textSize);
             invalidate(isWrapContent());
-            invalidateTextSize();
         }
     }
 
@@ -177,10 +182,6 @@ public class Label extends Widget {
             this.textColor = textColor;
             invalidate(false);
         }
-    }
-
-    private void invalidateTextSize() {
-        invalidTextSize = true;
     }
 
     public VerticalAlign getVerticalAlign() {
@@ -210,11 +211,7 @@ public class Label extends Widget {
     }
 
     protected float getTextWidth() {
-        if (invalidTextSize) {
-            invalidTextSize = false;
-            textWidth = textRender.getTextWidth();
-        }
-        return textWidth;
+        return textRender.getTextWidth();
     }
 
     protected float getTextHeight() {

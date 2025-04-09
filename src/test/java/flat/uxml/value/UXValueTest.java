@@ -1,6 +1,6 @@
 package flat.uxml.value;
 
-import flat.graphics.context.Font;
+import flat.graphics.symbols.Font;
 import flat.uxml.Controller;
 import flat.uxml.UXTheme;
 import flat.widget.enums.HorizontalAlign;
@@ -31,7 +31,7 @@ public class UXValueTest {
         assertEquals("", value.asString(theme));
         assertFalse(value.asBool(theme));
         assertEquals(0, value.asNumber(theme), 0);
-        assertEquals(0, value.asSize(theme, 160), 0);
+        assertEquals(0, value.asSize(theme), 0);
         assertEquals(0, value.asAngle(theme), 0);
         assertEquals(0, value.asColor(theme));
         assertEquals(Font.getDefault(), value.asFont(theme));

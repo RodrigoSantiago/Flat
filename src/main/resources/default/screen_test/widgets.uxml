@@ -2,27 +2,38 @@
     <LinearBox direction="VERTICAL" width="MATCH_PARENT" height="MATCH_PARENT">
         <ToolBar width="MATCH_PARENT" on-navigation="toggleDrawer"
                  title="Flat.UI Showcase" subtitle="Material" style="double-dense primary">
-            <ToolItem navigation-item="true" style="navigation dense primary"/>
+            <ToolItem navigation-item="true" style="navigation dense primary" id="nav"/>
             <ToolItem overflow-item="true" style="overflow dense primary"/>
-            <ToolItem icon="/default/icons/bug.svg" style="dense primary" menu-text="Dark" on-action="toggleDebugMode"/>
-            <ToolItem icon="/default/icons/sun.svg" style="dense primary" menu-text="Light" on-action="setThemeLight"/>
-            <ToolItem icon="/default/icons/night.svg" style="dense primary" menu-text="Dark" on-action="setThemeDark"/>
+            <ToolItem icon="icon(fill, bug_report)" style="dense primary" menu-text="Dark" on-action="toggleDebugMode"/>
+            <ToolItem icon="icon(fill, light_mode)" style="dense primary" menu-text="Light" on-action="setThemeLight"/>
+            <ToolItem icon="icon(fill, moon_stars)" style="dense primary" menu-text="Dark" on-action="setThemeDark"/>
         </ToolBar>
         <Drawer id="mainDrawer" width="MATCH_PARENT" height="MATCH_PARENT" block-events="true" auto-close="true" overlay-mode="FLOATING">
-            <LinearBox front-content="true" direction="vertical" width="250dp" height="MATCH_PARENT" style="drawer-menu">
-                <MenuItem text="Buttons" on-action="setTabButtons" style="navigation"/>
-                <MenuItem text="Chips" on-action="setTabChips" style="navigation"/>
-                <MenuItem text="Forms" on-action="setTabForms" style="navigation"/>
-                <MenuItem text="Progress" on-action="setTabProgress" style="navigation"/>
-                <MenuItem text="Text" on-action="setTabText" style="navigation"/>
-                <MenuItem text="Tabs" on-action="setTabTabs" style="navigation"/>
-                <MenuItem text="Toolbars" on-action="setTabToolbars" style="navigation"/>
-                <MenuItem text="Scrolls" on-action="setTabScrolls" style="navigation"/>
-                <MenuItem text="Images" on-action="setTabImages" style="navigation"/>
-                <MenuItem text="Menus" on-action="setTabMenus" style="navigation"/>
+            <LinearBox front-content="true" direction="vertical" style="layout-drawer-menu">
+                <MenuItem text="Default" on-action="setTabDefault" style="navigation" id="menuItem1"/>
+                <MenuItem text="Buttons" on-action="setTabButtons" style="navigation" id="menuItem2"/>
+                <MenuItem text="Chips" on-action="setTabChips" style="navigation" id="menuItem3"/>
+                <MenuItem text="Forms" on-action="setTabForms" style="navigation" id="menuItem4"/>
+                <MenuItem text="Progress" on-action="setTabProgress" style="navigation" id="menuItem5"/>
+                <MenuItem text="Text" on-action="setTabText" style="navigation" id="menuItem6"/>
+                <MenuItem text="TextFields" on-action="setTabTextFields" style="navigation" id="menuItem7"/>
+                <MenuItem text="Emojis" on-action="setTabEmojis" style="navigation" id="menuItem8"/>
+                <MenuItem text="Tabs" on-action="setTabTabs" style="navigation" id="menuItem9"/>
+                <MenuItem text="Toolbars" on-action="setTabToolbars" style="navigation" id="menuItem10"/>
+                <MenuItem text="Scrolls" on-action="setTabScrolls" style="navigation" id="menuItem11"/>
+                <MenuItem text="Images" on-action="setTabImages" style="navigation" id="menuItem12"/>
+                <MenuItem text="Lists" on-action="setTabLists" style="navigation" id="menuItem13"/>
+                <MenuItem text="Menus" on-action="setTabMenus" style="navigation" id="menuItem14"/>
+                <MenuItem text="Dialogs" on-action="setTabDialogs" style="navigation" id="menuItem15"/>
+                <MenuItem text="Effects" on-action="setTabEffects" style="navigation" id="menuItem16"/>
             </LinearBox>
-            <LinearBox back-content="true" direction="vertical" width="MATCH_PARENT" height="MATCH_PARENT">
+            <LinearBox back-content="true" direction="vertical" style="layout-drawer-content">
                 <TabView width="MATCH_PARENT" height="MATCH_PARENT" id="mainTab" hidden-tabs="true">
+                    <Tab text="Default" id="tabDefault">
+                        <Frame width="MATCH_PARENT" height="MATCH_PARENT">
+                            <Include src="default.uxml"/>
+                        </Frame>
+                    </Tab>
                     <Tab text="Buttons" id="tabButtons">
                         <Frame width="MATCH_PARENT" height="MATCH_PARENT">
                             <Include src="buttons.uxml"/>
@@ -46,6 +57,16 @@
                     <Tab text="Text" id="tabText">
                         <Frame width="MATCH_PARENT" height="MATCH_PARENT">
                             <Include src="text.uxml"/>
+                        </Frame>
+                    </Tab>
+                    <Tab text="TextFields" id="tabTextFields">
+                        <Frame width="MATCH_PARENT" height="MATCH_PARENT">
+                            <Include src="textfields.uxml"/>
+                        </Frame>
+                    </Tab>
+                    <Tab text="Emojis" id="tabEmojis">
+                        <Frame width="MATCH_PARENT" height="MATCH_PARENT">
+                            <Include src="emojis.uxml"/>
                         </Frame>
                     </Tab>
                     <Tab text="Tabs" id="tabTabs">
@@ -73,8 +94,26 @@
                             <Include src="menus.uxml"/>
                         </Frame>
                     </Tab>
+                    <Tab text="Dialogs" id="tabDialogs">
+                        <Frame width="MATCH_PARENT" height="MATCH_PARENT">
+                            <Include src="dialogs.uxml"/>
+                        </Frame>
+                    </Tab>
+                    <Tab text="Lists" id="tabLists">
+                        <Frame width="MATCH_PARENT" height="MATCH_PARENT">
+                            <Include src="listview.uxml"/>
+                        </Frame>
+                    </Tab>
+                    <Tab text="Effects" id="tabEffects">
+                        <Frame width="MATCH_PARENT" height="MATCH_PARENT">
+                            <Include src="effects.uxml"/>
+                        </Frame>
+                    </Tab>
                 </TabView>
             </LinearBox>
         </Drawer>
+        <LinearBox width="MATCH_PARENT" height="16dp" background-color="$primary-color">
+            <Label id="statusLabel" text="FPS" text-color="$on-primary-color" text-size="14sp"/>
+        </LinearBox>
     </LinearBox>
 </Scene>

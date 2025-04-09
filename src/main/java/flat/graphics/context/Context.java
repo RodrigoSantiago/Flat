@@ -5,8 +5,8 @@ import flat.exception.FlatException;
 import flat.graphics.Graphics;
 import flat.graphics.context.enums.*;
 import flat.graphics.context.paints.ColorPaint;
+import flat.graphics.symbols.Font;
 import flat.math.Affine;
-import flat.math.Mathf;
 import flat.math.shapes.Path;
 import flat.math.shapes.PathIterator;
 import flat.math.shapes.Shape;
@@ -20,11 +20,15 @@ import java.util.Arrays;
 
 public class Context {
 
+    private static int maxTextureSize;
+    private static int maxElementsVertices;
+    private static int maxElementsIndices;
+    private static int maxUniformBlockSize;
+
     public final long svgId;
 
     private Window window;
     private Graphics graphics;
-    private Thread thread;
     private boolean disposed;
 
     // ---- Core ---- //
@@ -39,6 +43,7 @@ public class Context {
     private boolean rMask, gMask, bMask, aMask;
     private int pixelPackAlignment, pixelPackRowLength, pixelPackSkipPixels, pixelPackSkipRows, pixelPackImageHeight, pixelPackSkipImages;
     private int pixelUnpackAlignment, pixelUnpackRowLength, pixelUnpackSkipPixels, pixelUnpackSkipRows, pixelUnpackImageHeight, pixelUnpackSkipImages;
+    private ReadBuffer readBuffer;
 
     private boolean depthEnabled;
     private boolean depthMask;
@@ -92,7 +97,7 @@ public class Context {
 
     public static Context create(Window window, long svgId) {
         if (window.getContext() != null) {
-            throw new RuntimeException("The Window already have a context");
+            throw new FlatException("The Window already have a context");
         } else {
             return new Context(window, svgId);
         }
@@ -101,7 +106,6 @@ public class Context {
     private Context(Window window, long svgId) {
         this.window = window;
         this.svgId = svgId;
-        this.thread = Thread.currentThread();
         init();
     }
 
@@ -115,10 +119,10 @@ public class Context {
 
     void checkDisposed() {
         if (disposed) {
-            throw new FlatException("Context is disposed.");
+            throw new FlatException("The Context is disposed");
         }
         if (!window.isAssigned()) {
-            throw new FlatException("The Context is not curretly assigned");
+            throw new FlatException("The Context is not currently assigned");
         }
     }
 
@@ -174,6 +178,7 @@ public class Context {
         pixelUnpackSkipRows = 0;
         pixelUnpackImageHeight = 0;
         pixelUnpackSkipImages = 0;
+        readBuffer = ReadBuffer.FRONT;
 
         depthEnabled = false;
         depthMask = true;
@@ -182,8 +187,8 @@ public class Context {
         depthFunction = MathFunction.LESS;
 
         stencilEnabled = false;
-        stencilBackMask = 1;
-        stencilFrontMask = 1;
+        stencilBackMask = 0xFF;
+        stencilFrontMask = 0xFF;
         stencilBackFunction = MathFunction.ALWAYS;
         stencilFrontFunction = MathFunction.ALWAYS;
         stencilBackFunRef = 0;
@@ -232,6 +237,28 @@ public class Context {
         svgTextBlur = 0f;
 
         svgTransform = new Affine();
+
+        // ---- Limits ---- //
+        maxTextureSize = GL.GetMaxTextureSize();
+        maxElementsVertices = GL.GetMaxElementsVertices();
+        maxElementsIndices = GL.GetMaxElementsIndices();
+        maxUniformBlockSize = GL.GetMaxUniformBlockSize();
+    }
+
+    static int getMaxTextureSize() {
+        return maxTextureSize;
+    }
+
+    static int getMaxElementsIndices() {
+        return maxElementsIndices;
+    }
+
+    static int getMaxElementsVertices() {
+        return maxElementsVertices;
+    }
+
+    static int getMaxUniformBlockSize() {
+        return maxUniformBlockSize;
     }
 
     public void dispose() {
@@ -296,13 +323,6 @@ public class Context {
         GL.Flush();
     }
 
-    public void finish() {
-        checkDisposed();
-
-        svgEnd();
-        GL.Finish();
-    }
-
     public void clear(boolean color, boolean depth, boolean stencil) {
         checkDisposed();
 
@@ -341,7 +361,7 @@ public class Context {
 
         if (clearStencil != stencil) {
             svgEnd();
-            GL.SetClearDepth(clearStencil = stencil);
+            GL.SetClearStencil(clearStencil = stencil);
         }
     }
 
@@ -433,81 +453,81 @@ public class Context {
         return aMask;
     }
 
-    public void setPixelPack(int alignment, int rowLength, int skipPixels, int skipRows) {
-        checkDisposed();
-
-        setPixelPack(alignment, rowLength, skipPixels, skipRows, pixelPackImageHeight, pixelPackSkipImages);
-    }
-
-    public void setPixelPack(int alignment, int rowLength, int skipPixels, int skipRows, int imageHeight, int skipImages) {
-        checkDisposed();
-
-        if (pixelPackAlignment != alignment || pixelPackRowLength != rowLength || pixelPackSkipPixels != skipPixels
-                || pixelPackSkipRows != skipRows || pixelPackImageHeight != imageHeight || pixelPackSkipImages != skipImages) {
-            svgEnd();
-            if (pixelPackAlignment != alignment)
-                GL.SetPixelStore(GLEnums.PS_PACK_ALIGNMENT, pixelPackAlignment = alignment);
-            if (pixelPackRowLength != rowLength)
-                GL.SetPixelStore(GLEnums.PS_PACK_ROW_LENGTH, pixelPackRowLength = rowLength);
-            if (pixelPackSkipPixels != skipPixels)
-                GL.SetPixelStore(GLEnums.PS_PACK_SKIP_PIXELS, pixelPackSkipPixels = skipPixels);
-            if (pixelPackSkipRows != skipRows)
-                GL.SetPixelStore(GLEnums.PS_PACK_SKIP_ROWS, pixelPackSkipRows = skipRows);
-            if (pixelPackImageHeight != imageHeight)
-                GL.SetPixelStore(GLEnums.PS_PACK_IMAGE_HEIGHT, pixelPackImageHeight = imageHeight);
-            if (pixelPackSkipImages != skipImages)
-                GL.SetPixelStore(GLEnums.PS_PACK_SKIP_IMAGES, pixelPackSkipImages = skipImages);
-        }
-    }
-
     public int getPixelPackAlignment() {
         return pixelPackAlignment;
+    }
+
+    public void setPixelPackAlignment(int alignment) {
+        checkDisposed();
+        
+        if (pixelPackAlignment != alignment) {
+            svgEnd();
+            GL.SetPixelStore(GLEnums.PS_PACK_ALIGNMENT, pixelPackAlignment = alignment);
+        }
     }
 
     public int getPixelPackRowLength() {
         return pixelPackRowLength;
     }
 
+    public void setPixelPackRowLength(int rowLength) {
+        checkDisposed();
+        
+        if (pixelPackRowLength != rowLength) {
+            svgEnd();
+            GL.SetPixelStore(GLEnums.PS_PACK_ROW_LENGTH, pixelPackRowLength = rowLength);
+        }
+    }
+
     public int getPixelPackSkipPixels() {
         return pixelPackSkipPixels;
+    }
+
+    public void setPixelPackSkipPixels(int skipPixels) {
+        checkDisposed();
+        
+        if (pixelPackSkipPixels != skipPixels) {
+            svgEnd();
+            GL.SetPixelStore(GLEnums.PS_PACK_SKIP_PIXELS, pixelPackSkipPixels = skipPixels);
+        }
     }
 
     public int getPixelPackSkipRows() {
         return pixelPackSkipRows;
     }
 
+    public void setPixelPackSkipRows(int skipRows) {
+        checkDisposed();
+        
+        if (pixelPackSkipRows != skipRows) {
+            svgEnd();
+            GL.SetPixelStore(GLEnums.PS_PACK_SKIP_ROWS, pixelPackSkipRows = skipRows);
+        }
+    }
+
     public int getPixelPackImageHeight() {
         return pixelPackImageHeight;
+    }
+
+    public void setPixelPackImageHeight(int imageHeight) {
+        checkDisposed();
+        
+        if (pixelPackImageHeight != imageHeight) {
+            svgEnd();
+            GL.SetPixelStore(GLEnums.PS_PACK_IMAGE_HEIGHT, pixelPackImageHeight = imageHeight);
+        }
     }
 
     public int getPixelPackSkipImages() {
         return pixelPackSkipImages;
     }
 
-    public void setPixelUnpack(int alignment, int rowLength, int skipPixels, int skipRows) {
+    public void setPixelPackSkipImages(int skipImages) {
         checkDisposed();
-
-        setPixelUnpack(alignment, rowLength, skipPixels, skipRows, pixelUnpackImageHeight, pixelUnpackSkipImages);
-    }
-
-    public void setPixelUnpack(int alignment, int rowLength, int skipPixels, int skipRows, int imageHeight, int skipImages) {
-        checkDisposed();
-
-        if (pixelUnpackAlignment != alignment || pixelUnpackRowLength != rowLength || pixelUnpackSkipPixels != skipPixels
-                || pixelUnpackSkipRows != skipRows || pixelUnpackImageHeight != imageHeight || pixelUnpackSkipImages != skipImages) {
+        
+        if (pixelPackSkipImages != skipImages) {
             svgEnd();
-            if (pixelUnpackAlignment != alignment)
-                GL.SetPixelStore(GLEnums.PS_UNPACK_ALIGNMENT, pixelUnpackAlignment = alignment);
-            if (pixelUnpackRowLength != rowLength)
-                GL.SetPixelStore(GLEnums.PS_UNPACK_ROW_LENGTH, pixelUnpackRowLength = rowLength);
-            if (pixelUnpackSkipPixels != skipPixels)
-                GL.SetPixelStore(GLEnums.PS_UNPACK_SKIP_PIXELS, pixelUnpackSkipPixels = skipPixels);
-            if (pixelUnpackSkipRows != skipRows)
-                GL.SetPixelStore(GLEnums.PS_UNPACK_SKIP_ROWS, pixelUnpackSkipRows = skipRows);
-            if (pixelUnpackImageHeight != imageHeight)
-                GL.SetPixelStore(GLEnums.PS_UNPACK_IMAGE_HEIGHT, pixelUnpackImageHeight = imageHeight);
-            if (pixelUnpackSkipImages != skipImages)
-                GL.SetPixelStore(GLEnums.PS_UNPACK_SKIP_IMAGES, pixelUnpackSkipImages = skipImages);
+            GL.SetPixelStore(GLEnums.PS_PACK_SKIP_IMAGES, pixelPackSkipImages = skipImages);
         }
     }
 
@@ -515,24 +535,78 @@ public class Context {
         return pixelUnpackAlignment;
     }
 
+    public void setPixelUnpackAlignment(int alignment) {
+        checkDisposed();
+
+        if (pixelUnpackAlignment != alignment) {
+            svgEnd();
+            GL.SetPixelStore(GLEnums.PS_UNPACK_ALIGNMENT, pixelUnpackAlignment = alignment);
+        }
+    }
+
     public int getPixelUnpackRowLength() {
         return pixelUnpackRowLength;
+    }
+
+    public void setPixelUnpackRowLength(int rowLength) {
+        checkDisposed();
+
+        if (pixelUnpackRowLength != rowLength) {
+            svgEnd();
+            GL.SetPixelStore(GLEnums.PS_UNPACK_ROW_LENGTH, pixelUnpackRowLength = rowLength);
+        }
     }
 
     public int getPixelUnpackSkipPixels() {
         return pixelUnpackSkipPixels;
     }
 
+    public void setPixelUnpackSkipPixels(int skipPixels) {
+        checkDisposed();
+
+        if (pixelUnpackSkipPixels != skipPixels) {
+            svgEnd();
+            GL.SetPixelStore(GLEnums.PS_UNPACK_SKIP_PIXELS, pixelUnpackSkipPixels = skipPixels);
+        }
+    }
+
     public int getPixelUnpackSkipRows() {
         return pixelUnpackSkipRows;
+    }
+
+    public void setPixelUnpackSkipRows(int skipRows) {
+        checkDisposed();
+
+        if (pixelUnpackSkipRows != skipRows) {
+            svgEnd();
+            GL.SetPixelStore(GLEnums.PS_UNPACK_SKIP_ROWS, pixelUnpackSkipRows = skipRows);
+        }
     }
 
     public int getPixelUnpackImageHeight() {
         return pixelUnpackImageHeight;
     }
 
+    public void setPixelUnpackImageHeight(int imageHeight) {
+        checkDisposed();
+
+        if (pixelUnpackImageHeight != imageHeight) {
+            svgEnd();
+            GL.SetPixelStore(GLEnums.PS_UNPACK_IMAGE_HEIGHT, pixelUnpackImageHeight = imageHeight);
+        }
+    }
+
     public int getPixelUnpackSkipImages() {
         return pixelUnpackSkipImages;
+    }
+
+    public void setPixelUnpackSkipImages(int skipImages) {
+        checkDisposed();
+
+        if (pixelUnpackSkipImages != skipImages) {
+            svgEnd();
+            GL.SetPixelStore(GLEnums.PS_UNPACK_SKIP_IMAGES, pixelUnpackSkipImages = skipImages);
+        }
     }
 
     public void setDepthEnabled(boolean enable) {
@@ -856,6 +930,14 @@ public class Context {
         return lineWidth;
     }
 
+    public void setReadBuffer(ReadBuffer readBuffer) {
+        softFlush();
+        if (this.readBuffer != readBuffer) {
+            this.readBuffer = readBuffer;
+            GL.SetReadBuffer(readBuffer.getInternalEnum());
+        }
+    }
+
     public void readPixels(int x, int y, int width, int height, int offset) {
         softFlush();
         GL.ReadPixels(x, y, width, height, GLEnums.DT_INT, offset);
@@ -888,6 +970,9 @@ public class Context {
 
     public void setFrameBuffer(FrameBuffer frameBuffer) {
         checkDisposed();
+        if (frameBuffer != null && frameBuffer.isDisposed()) {
+            throw new FlatException("The FrameBuffer is disposed");
+        }
 
         if (this.frameBuffer != frameBuffer) {
             svgEnd();
@@ -895,7 +980,7 @@ public class Context {
             if (frameBuffer == null) {
                 GL.FrameBufferBind(GLEnums.FB_FRAMEBUFFER, 0);
             } else {
-                GL.FrameBufferBind(GLEnums.FB_FRAMEBUFFER, frameBuffer.getInternalID());
+                GL.FrameBufferBind(GLEnums.FB_FRAMEBUFFER, frameBuffer.getInternalId());
             }
             this.frameBuffer = frameBuffer;
             if (this.frameBuffer != null) {
@@ -906,7 +991,7 @@ public class Context {
         }
     }
 
-    public boolean isCurrentFrameValid() {
+    public boolean isCurrentFrameBufferValid() {
         return GL.FrameBufferGetStatus(GLEnums.FB_FRAMEBUFFER) == GLEnums.FS_FRAMEBUFFER_COMPLETE;
     }
 
@@ -919,35 +1004,38 @@ public class Context {
                            int dstX, int dstY, int dstW, int dstH, BlitMask blitMask, MagFilter filter) {
         checkDisposed();
 
-        if (source == null) {
-            throw new FlatException("Invalid argument : source");
+        if (target == source) {
+            throw new FlatException("The FrameBuffers must be different");
         }
-        if (target == null || target == source) {
-            throw new FlatException("Invalid argument : target");
+        if (source != null && source.isDisposed()) {
+            throw new FlatException("The FrameBuffer is disposed");
+        }
+        if (target != null && target.isDisposed()) {
+            throw new FlatException("The FrameBuffer is disposed");
         }
         FrameBuffer current = getFrameBuffer();
-        if (source.isInvalid()) {
+        if (source != null && source.isInvalid()) {
             setFrameBuffer(source);
         }
-        if (target.isInvalid()) {
+        if (target != null && target.isInvalid()) {
             setFrameBuffer(target);
         }
 
         try {
-            GL.FrameBufferBind(GLEnums.FB_DRAW_FRAMEBUFFER, target.getInternalID());
-            GL.FrameBufferBind(GLEnums.FB_READ_FRAMEBUFFER, source.getInternalID());
+            GL.FrameBufferBind(GLEnums.FB_DRAW_FRAMEBUFFER, target == null ? 0 : target.getInternalId());
+            GL.FrameBufferBind(GLEnums.FB_READ_FRAMEBUFFER, source == null ? 0 : source.getInternalId());
             GL.FrameBufferBlit(srcX, srcY, srcW, srcH, dstX, dstY, dstW, dstH, blitMask.getInternalEnum(), filter.getInternalEnum());
         } finally {
             if (current != getFrameBuffer()) {
                 setFrameBuffer(current);
             } else {
-                GL.FrameBufferBind(GLEnums.FB_FRAMEBUFFER, frameBuffer == null ? 0 : frameBuffer.getInternalID());
+                GL.FrameBufferBind(GLEnums.FB_FRAMEBUFFER, frameBuffer == null ? 0 : frameBuffer.getInternalId());
             }
             invalidFrameBufferSwap = true;
         }
     }
 
-    public void setActiveTexture(int index) {
+    void setActiveTexture(int index) {
         checkDisposed();
 
         if (activeTexture != index) {
@@ -956,27 +1044,16 @@ public class Context {
         }
     }
 
-    public int getActiveTexture() {
-        return activeTexture;
-    }
-
-    int indexOfTextureBound(Texture texture) {
-        for (int i = 0; i < textures.length; i++) {
-            if (textures[i] == texture) return i;
-        }
-        return -1;
-    }
-
-    void bindTextures(Texture... textures) {
+    public void setShaderTextures(Texture... textures) {
         checkDisposed();
 
         for (int i = 0; i < this.textures.length; i++) {
             if (this.textures[i] != null) {
                 svgEnd();
 
-                this.textures[i] = null;
                 setActiveTexture(i);
-                GL.TextureBind(textures[i].getInternalType(), 0);
+                GL.TextureBind(this.textures[i].getInternalType(), 0);
+                this.textures[i] = null;
             }
         }
         for (int i = 0; i < textures.length; i++) {
@@ -984,20 +1061,20 @@ public class Context {
 
             this.textures[i] = textures[i];
             setActiveTexture(i);
-            GL.TextureBind(textures[i].getInternalType(), textures[i].getInternalID());
+            GL.TextureBind(textures[i].getInternalType(), textures[i].getInternalId());
         }
     }
 
     void bindTexture(Texture texture) {
         checkDisposed();
 
-        for (int i = 1; i < this.textures.length; i++) {
-            if (this.textures[i] != null) {
+        for (int i = 1; i < textures.length; i++) {
+            if (textures[i] != null) {
                 svgEnd();
 
-                this.textures[i] = null;
                 setActiveTexture(i);
                 GL.TextureBind(textures[i].getInternalType(), 0);
+                textures[i] = null;
             }
         }
 
@@ -1007,7 +1084,7 @@ public class Context {
             if (texture == null) {
                 GL.TextureBind(textures[0].getInternalType(), 0);
             } else {
-                GL.TextureBind(texture.getInternalType(), texture.getInternalID());
+                GL.TextureBind(texture.getInternalType(), texture.getInternalId());
             }
             textures[0] = texture;
         }
@@ -1022,7 +1099,7 @@ public class Context {
             if (render == null) {
                 GL.RenderBufferBind(0);
             } else {
-                GL.RenderBufferBind(render.getInternalID());
+                GL.RenderBufferBind(render.getInternalId());
             }
             this.render = render;
         }
@@ -1038,7 +1115,7 @@ public class Context {
             if (buffer == null) {
                 GL.BufferBind(type.getInternalEnum(), 0);
             } else {
-                GL.BufferBind(type.getInternalEnum(), buffer.getInternalID());
+                GL.BufferBind(type.getInternalEnum(), buffer.getInternalId());
             }
             buffers[index] = buffer;
         }
@@ -1055,7 +1132,7 @@ public class Context {
                 buffers[BufferType.Element.ordinal()] = null;
                 GL.BufferBind(BufferType.Element.getInternalEnum(), 0);
             } else {
-                GL.VertexArrayBind(array.getInternalID());
+                GL.VertexArrayBind(array.getInternalId());
             }
             vertexArray = array;
         }
@@ -1063,6 +1140,9 @@ public class Context {
 
     public void setShaderProgram(ShaderProgram shaderProgram) {
         checkDisposed();
+        if (shaderProgram != null && shaderProgram.isDisposed()) {
+            throw new FlatException("The ShaderProgram is disposed");
+        }
 
         if (this.shaderProgram != shaderProgram) {
             svgEnd();
@@ -1070,7 +1150,7 @@ public class Context {
             if (shaderProgram == null) {
                 GL.ProgramUse(0);
             } else {
-                GL.ProgramUse(shaderProgram.getInternalID());
+                GL.ProgramUse(shaderProgram.getInternalId());
             }
             this.shaderProgram = shaderProgram;
             if (this.shaderProgram != null) {
@@ -1111,7 +1191,7 @@ public class Context {
             if (svgTextFont.isDisposed()) {
                 svgTextFont = Font.getDefault();
             }
-            SVG.SetFont(svgId, svgTextFont.getInternalPaintID(this));
+            SVG.SetFont(svgId, svgTextFont.getInternalId());
             SVG.SetFontScale(svgId, svgTextScale);
             SVG.SetFontSpacing(svgId, svgTextSpacing);
             SVG.SetFontBlur(svgId, svgTextBlur);
@@ -1137,6 +1217,7 @@ public class Context {
     }
 
     private void svgRestore() {
+        GL.SetClearStencil(clearStencil);
         GL.EnableDepthTest(depthEnabled);
         GL.EnableStencilTest(stencilEnabled);
         GL.SetStencilMask(GLEnums.FC_FRONT, stencilFrontMask);
@@ -1396,6 +1477,38 @@ public class Context {
         SVG.PathEnd(svgId);
     }
 
+    public void svgUnclip(Shape shape) {
+        checkDisposed();
+
+        if (shape.isEmpty()) return;
+
+        PathIterator pi = shape.pathIterator(null);
+
+        svgBegin();
+        SVG.PathBegin(svgId, SVGEnums.SVG_CLIP, pi.windingRule());
+        while (!pi.isDone()) {
+            switch (pi.currentSegment(data)) {
+                case PathIterator.SEG_MOVETO:
+                    SVG.MoveTo(svgId, data[0], data[1]);
+                    break;
+                case PathIterator.SEG_LINETO:
+                    SVG.LineTo(svgId, data[0], data[1]);
+                    break;
+                case PathIterator.SEG_QUADTO:
+                    SVG.QuadTo(svgId, data[0], data[1], data[2], data[3]);
+                    break;
+                case PathIterator.SEG_CUBICTO:
+                    SVG.CubicTo(svgId, data[0], data[1], data[2], data[3], data[4], data[5]);
+                    break;
+                case PathIterator.SEG_CLOSE:
+                    SVG.Close(svgId);
+                    break;
+            }
+            pi.next();
+        }
+        SVG.PathEnd(svgId);
+    }
+
     public void svgDrawShape(Shape shape, boolean fill) {
         checkDisposed();
 
@@ -1463,20 +1576,8 @@ public class Context {
         if (width <= 0 || height <= 0) return;
 
         svgBegin();
-        if (fill) {
-            SVG.Rect(svgId, x, y, width, height);
-        } else {
-            SVG.PathBegin(svgId, SVGEnums.SVG_STROKE, 0);
-            SVG.MoveTo(svgId, x, y);
-            SVG.LineTo(svgId, x, y + height);
-            SVG.LineTo(svgId, x + width, y + height);
-            SVG.LineTo(svgId, x + width, y);
-            SVG.Close(svgId);
-            SVG.PathEnd(svgId);
-        }
+        SVG.Rect(svgId, x, y, width, height, fill);
     }
-
-    private static final float _el90 = 0.5522847493f;
 
     public void svgDrawEllipse(float x, float y, float width, float height, boolean fill) {
         checkDisposed();
@@ -1484,62 +1585,15 @@ public class Context {
         if (width <= 0 || height <= 0) return;
 
         svgBegin();
-        if (fill) {
-            SVG.Ellipse(svgId, x, y, width, height);
-        } else {
-            float cx = x + width / 2f;
-            float cy = y + height / 2f;
-            float rx = width / 2f;
-            float ry = height / 2f;
-            SVG.PathBegin(svgId, SVGEnums.SVG_STROKE, 0);
-            SVG.MoveTo(svgId, cx - rx, cy);
-            SVG.CubicTo(svgId, cx - rx, cy + ry * _el90, cx - rx * _el90, cy + ry, cx, cy + ry);
-            SVG.CubicTo(svgId, cx + rx * _el90, cy + ry, cx + rx, cy + ry * _el90, cx + rx, cy);
-            SVG.CubicTo(svgId, cx + rx, cy - ry * _el90, cx + rx * _el90, cy - ry, cx, cy - ry);
-            SVG.CubicTo(svgId, cx - rx * _el90, cy - ry, cx - rx, cy - ry * _el90, cx - rx, cy);
-            SVG.Close(svgId);
-            SVG.PathEnd(svgId);
-        }
+        SVG.Ellipse(svgId, x, y, width, height, fill);
     }
 
     public void svgDrawRoundRect(float x, float y, float width, float height, float cTop, float cRight, float cBottom, float cLeft, boolean fill) {
         checkDisposed();
         if (width <= 0 || height <= 0) return;
 
-        float max = Math.min(width, height) / 2f;
-        cTop = Math.max(0, Math.min(max, cTop));
-        cRight = Math.max(0, Math.min(max, cRight));
-        cBottom = Math.max(0, Math.min(max, cBottom));
-        cLeft = Math.max(0, Math.min(max, cLeft));
-
-        if (Mathf.epsilonEquals(cTop, cRight) && Mathf.epsilonEquals(cRight, cBottom)
-                && Mathf.epsilonEquals(cBottom, cLeft) && Mathf.epsilonEquals(cLeft, 0)) {
-            svgDrawRect(x, y, width, height, fill);
-            return;
-        }
-
         svgBegin();
-        if (fill) {
-            SVG.RoundRect(svgId, x, y, width, height, cTop, cRight, cBottom, cLeft);
-        } else {
-            float halfw = Math.abs(width) * 0.5f;
-            float halfh = Math.abs(height) * 0.5f;
-            float rxBL = Math.min(cLeft, halfw) * Math.signum(width), ryBL = Math.min(cLeft, halfh) * Math.signum(height);
-            float rxBR = Math.min(cBottom, halfw) * Math.signum(width), ryBR = Math.min(cBottom, halfh) * Math.signum(height);
-            float rxTR = Math.min(cRight, halfw) * Math.signum(width), ryTR = Math.min(cRight, halfh) * Math.signum(height);
-            float rxTL = Math.min(cTop, halfw) * Math.signum(width), ryTL = Math.min(cTop, halfh) * Math.signum(height);
-            SVG.PathBegin(svgId, SVGEnums.SVG_STROKE, 0);
-            SVG.MoveTo(svgId, x, y + ryTL);
-            SVG.CubicTo(svgId, x, y + ryTL * (1 - _el90), x + rxTL * (1 - _el90), y, x + rxTL, y);
-            SVG.LineTo(svgId, x + width - rxTR, y);
-            SVG.CubicTo(svgId, x + width - rxTR * (1 - _el90), y, x + width, y + ryTR * (1 - _el90), x + width, y + ryTR);
-            SVG.LineTo(svgId, x + width, y + height - ryBR);
-            SVG.CubicTo(svgId, x + width, y + height - ryBR * (1 - _el90), x + width - rxBR * (1 - _el90), y + height, x + width - rxBR, y + height);
-            SVG.LineTo(svgId, x + rxBL, y + height);
-            SVG.CubicTo(svgId, x + rxBL * (1 - _el90), y + height, x, y + height - ryBL * (1 - _el90), x, y + height - ryBL);
-            SVG.Close(svgId);
-            SVG.PathEnd(svgId);
-        }
+        SVG.RoundRect(svgId, x, y, width, height, cTop, cRight, cBottom, cLeft, fill);
     }
 
     public void svgDrawLine(float x1, float y1, float x2, float y2) {
@@ -1587,7 +1641,7 @@ public class Context {
                 if (svgTextFont.isDisposed()) {
                     svgTextFont = Font.getDefault();
                 }
-                SVG.SetFont(svgId, svgTextFont.getInternalPaintID(this));
+                SVG.SetFont(svgId, svgTextFont.getInternalId());
             }
         }
     }
@@ -1649,12 +1703,9 @@ public class Context {
             svgBegin();
             if (svgTextFont.isDisposed()) {
                 svgTextFont = Font.getDefault();
-                SVG.SetFont(svgId, svgTextFont.getInternalPaintID(this));
+                SVG.SetFont(svgId, svgTextFont.getInternalId());
             }
-
-            // SVG.PathBegin(svgId, SVG_TEXT, 0);
             w = SVG.DrawText(svgId, x, y, text, maxWidth, maxHeight);
-            // SVG.PathEnd(svgId);
         }
         return w;
     }
@@ -1667,12 +1718,9 @@ public class Context {
             svgBegin();
             if (svgTextFont.isDisposed()) {
                 svgTextFont = Font.getDefault();
-                SVG.SetFont(svgId, svgTextFont.getInternalPaintID(this));
+                SVG.SetFont(svgId, svgTextFont.getInternalId());
             }
-
-            // SVG.PathBegin(svgId, SVG_TEXT, 0);
             w = SVG.DrawTextBuffer(svgId, x, y, text, offset, length, maxWidth, maxHeight);
-            // SVG.PathEnd(svgId);
         }
         return w;
     }

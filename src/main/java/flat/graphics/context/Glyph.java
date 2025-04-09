@@ -30,4 +30,15 @@ public class Glyph {
     public float getHeight() {
         return height;
     }
+
+    @Override
+    public String toString() {
+        return "Glyph{" +
+                "advance=" + advance +
+                ", x=" + x +
+                ", y=" + y +
+                ", width=" + width +
+                ", height=" + height +
+                '}';
+    }
 }

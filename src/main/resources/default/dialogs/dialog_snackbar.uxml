@@ -1,0 +1,4 @@
+<LinearBox direction="horizontal" style="dialog-snackbar">
+    <Label style="dialog-snackbar-message" id="messageLabel"/>
+    <Button text="DISMISS" style="text-primary dialog-snackbar-button" on-action="onOk"/>
+</LinearBox>

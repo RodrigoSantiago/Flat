@@ -4,10 +4,9 @@ import flat.animations.StateInfo;
 import flat.events.ActionEvent;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
-import flat.graphics.context.Font;
+import flat.graphics.symbols.Font;
 import flat.math.Vector2;
 import flat.uxml.*;
-import flat.widget.Group;
 import flat.widget.Parent;
 import flat.widget.Widget;
 import flat.widget.enums.DropdownAlign;
@@ -388,6 +387,8 @@ public class ToolBar extends Parent {
 
     @Override
     public void onDraw(Graphics graphics) {
+        if (discardDraw(graphics)) return;
+
         drawBackground(graphics);
         drawRipple(graphics);
 

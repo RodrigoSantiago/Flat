@@ -7,10 +7,10 @@
                 <ToolBar style="" width="MATCH_PARENT" title="Toolbar Main Title" subtitle="Subtitle">
                     <ToolItem navigation-item="true" style="navigation"/>
                     <ToolItem overflow-item="true" style="overflow"/>
-                    <ToolItem menu-text="Icon 1" style="" icon="/default/icons/star.svg" enabled="false"/>
-                    <ToolItem menu-text="Icon 2" style="" icon="/default/icons/star.svg"/>
-                    <ToolItem menu-text="Icon 3" style="" icon="/default/icons/star.svg"/>
-                    <ToolItem menu-text="Icon 4" style="" icon="/default/icons/star.svg"/>
+                    <ToolItem menu-text="Icon 1" style="" icon="icon(fill, star)" enabled="false"/>
+                    <ToolItem menu-text="Icon 2" style="" icon="icon(fill, star)"/>
+                    <ToolItem menu-text="Icon 3" style="" icon="icon(fill, star)"/>
+                    <ToolItem menu-text="Icon 4" style="" icon="icon(fill, star)"/>
                 </ToolBar>
             </LinearBox>
             <Label text="Color" style="subtitle" margin-left="4dp" margin-top="16dp"/>
@@ -18,10 +18,10 @@
                 <ToolBar style="primary" width="MATCH_PARENT" title="Toolbar Main Title">
                     <ToolItem navigation-item="true" style="navigation primary"/>
                     <ToolItem overflow-item="true" style="overflow primary"/>
-                    <ToolItem menu-text="Icon 1" style="primary" icon="/default/icons/star.svg" enabled="false"/>
-                    <ToolItem menu-text="Icon 2" style="primary" icon="/default/icons/star.svg"/>
-                    <ToolItem menu-text="Icon 3" style="primary" icon="/default/icons/star.svg"/>
-                    <ToolItem menu-text="Icon 4" style="primary" icon="/default/icons/star.svg"/>
+                    <ToolItem menu-text="Icon 1" style="primary" icon="icon(fill, star)" enabled="false"/>
+                    <ToolItem menu-text="Icon 2" style="primary" icon="icon(fill, star)"/>
+                    <ToolItem menu-text="Icon 3" style="primary" icon="icon(fill, star)"/>
+                    <ToolItem menu-text="Icon 4" style="primary" icon="icon(fill, star)"/>
                 </ToolBar>
             </LinearBox>
             <Label text="Color Subtitle" style="subtitle" margin-left="4dp" margin-top="16dp"/>
@@ -29,10 +29,10 @@
                 <ToolBar style="primary" width="MATCH_PARENT" title="Toolbar Main Title" subtitle="Subtitle">
                     <ToolItem navigation-item="true" style="navigation primary"/>
                     <ToolItem overflow-item="true" style="overflow primary"/>
-                    <ToolItem menu-text="Icon 1" style="primary" icon="/default/icons/star.svg" enabled="false"/>
-                    <ToolItem menu-text="Icon 2" style="primary" icon="/default/icons/star.svg"/>
-                    <ToolItem menu-text="Icon 3" style="primary" icon="/default/icons/star.svg"/>
-                    <ToolItem menu-text="Icon 4" style="primary" icon="/default/icons/star.svg"/>
+                    <ToolItem menu-text="Icon 1" style="primary" icon="icon(fill, star)" enabled="false"/>
+                    <ToolItem menu-text="Icon 2" style="primary" icon="icon(fill, star)"/>
+                    <ToolItem menu-text="Icon 3" style="primary" icon="icon(fill, star)"/>
+                    <ToolItem menu-text="Icon 4" style="primary" icon="icon(fill, star)"/>
                 </ToolBar>
             </LinearBox>
             <Label text="Double" style="subtitle" margin-left="4dp" margin-top="16dp"/>
@@ -40,10 +40,10 @@
                 <ToolBar style="double primary" width="MATCH_PARENT" title="Toolbar Main Title" subtitle="Subtitle">
                     <ToolItem navigation-item="true" style="navigation primary"/>
                     <ToolItem overflow-item="true" style="overflow primary"/>
-                    <ToolItem menu-text="Icon 1" style="primary" icon="/default/icons/star.svg" enabled="false"/>
-                    <ToolItem menu-text="Icon 2" style="primary" icon="/default/icons/star.svg"/>
-                    <ToolItem menu-text="Icon 3" style="primary" icon="/default/icons/star.svg"/>
-                    <ToolItem menu-text="Icon 4" style="primary" icon="/default/icons/star.svg"/>
+                    <ToolItem menu-text="Icon 1" style="primary" icon="icon(fill, star)" enabled="false"/>
+                    <ToolItem menu-text="Icon 2" style="primary" icon="icon(fill, star)"/>
+                    <ToolItem menu-text="Icon 3" style="primary" icon="icon(fill, star)"/>
+                    <ToolItem menu-text="Icon 4" style="primary" icon="icon(fill, star)"/>
                 </ToolBar>
             </LinearBox>
             <Label text="Dense" style="subtitle" margin-left="4dp" margin-top="16dp"/>
@@ -51,10 +51,10 @@
                 <ToolBar style="dense primary" width="MATCH_PARENT" title="Toolbar Main Title">
                     <ToolItem navigation-item="true" style="dense navigation primary"/>
                     <ToolItem overflow-item="true" style="dense overflow primary"/>
-                    <ToolItem menu-text="Icon 1" style="dense primary" icon="/default/icons/star.svg" enabled="false"/>
-                    <ToolItem menu-text="Icon 2" style="dense primary" icon="/default/icons/star.svg"/>
-                    <ToolItem menu-text="Icon 3" style="dense primary" icon="/default/icons/star.svg"/>
-                    <ToolItem menu-text="Icon 4" style="dense primary" icon="/default/icons/star.svg"/>
+                    <ToolItem menu-text="Icon 1" style="dense primary" icon="icon(fill, star)" enabled="false"/>
+                    <ToolItem menu-text="Icon 2" style="dense primary" icon="icon(fill, star)"/>
+                    <ToolItem menu-text="Icon 3" style="dense primary" icon="icon(fill, star)"/>
+                    <ToolItem menu-text="Icon 4" style="dense primary" icon="icon(fill, star)"/>
                 </ToolBar>
             </LinearBox>
             <Label text="Dense Subtitle" style="subtitle" margin-left="4dp" margin-top="16dp"/>
@@ -62,10 +62,10 @@
                 <ToolBar style="dense primary" width="MATCH_PARENT" title="Toolbar Main Title" subtitle="Subtitle">
                     <ToolItem navigation-item="true" style="dense navigation primary"/>
                     <ToolItem overflow-item="true" style="dense overflow primary"/>
-                    <ToolItem menu-text="Icon 1" style="dense primary" icon="/default/icons/star.svg" enabled="false"/>
-                    <ToolItem menu-text="Icon 2" style="dense primary" icon="/default/icons/star.svg"/>
-                    <ToolItem menu-text="Icon 3" style="dense primary" icon="/default/icons/star.svg"/>
-                    <ToolItem menu-text="Icon 4" style="dense primary" icon="/default/icons/star.svg"/>
+                    <ToolItem menu-text="Icon 1" style="dense primary" icon="icon(fill, star)" enabled="false"/>
+                    <ToolItem menu-text="Icon 2" style="dense primary" icon="icon(fill, star)"/>
+                    <ToolItem menu-text="Icon 3" style="dense primary" icon="icon(fill, star)"/>
+                    <ToolItem menu-text="Icon 4" style="dense primary" icon="icon(fill, star)"/>
                 </ToolBar>
             </LinearBox>
             <Label text="Double Dense" style="subtitle" margin-left="4dp" margin-top="16dp"/>
@@ -73,10 +73,10 @@
                 <ToolBar style="double-dense primary" width="MATCH_PARENT" title="Toolbar Main Title" subtitle="Subtitle">
                     <ToolItem navigation-item="true" style="dense navigation primary"/>
                     <ToolItem overflow-item="true" style="dense overflow primary"/>
-                    <ToolItem menu-text="Icon 1" style="dense primary" icon="/default/icons/star.svg" enabled="false"/>
-                    <ToolItem menu-text="Icon 2" style="dense primary" icon="/default/icons/star.svg"/>
-                    <ToolItem menu-text="Icon 3" style="dense primary" icon="/default/icons/star.svg"/>
-                    <ToolItem menu-text="Icon 4" style="dense primary" icon="/default/icons/star.svg"/>
+                    <ToolItem menu-text="Icon 1" style="dense primary" icon="icon(fill, star)" enabled="false"/>
+                    <ToolItem menu-text="Icon 2" style="dense primary" icon="icon(fill, star)"/>
+                    <ToolItem menu-text="Icon 3" style="dense primary" icon="icon(fill, star)"/>
+                    <ToolItem menu-text="Icon 4" style="dense primary" icon="icon(fill, star)"/>
                 </ToolBar>
             </LinearBox>
         </LinearBox>
@@ -87,10 +87,10 @@
                 <ToolBar style="" width="MATCH_PARENT" title="Toolbar Main Title" subtitle="Subtitle">
                     <ToolItem navigation-item="true" style="navigation"/>
                     <ToolItem overflow-item="true" style="overflow"/>
-                    <ToolItem menu-text="Icon 1" style="" icon="/default/icons/star.svg"/>
-                    <ToolItem menu-text="Icon 2" style="" icon="/default/icons/star.svg"/>
-                    <ToolItem menu-text="Icon 3" style="" icon="/default/icons/star.svg" enabled="false"/>
-                    <ToolItem menu-text="Icon 4" style="" icon="/default/icons/star.svg"/>
+                    <ToolItem menu-text="Icon 1" style="" icon="icon(fill, star)"/>
+                    <ToolItem menu-text="Icon 2" style="" icon="icon(fill, star)"/>
+                    <ToolItem menu-text="Icon 3" style="" icon="icon(fill, star)" enabled="false"/>
+                    <ToolItem menu-text="Icon 4" style="" icon="icon(fill, star)"/>
                 </ToolBar>
             </LinearBox>
             <Label text="Color" style="subtitle" margin-left="4dp" margin-top="16dp"/>
@@ -98,10 +98,10 @@
                 <ToolBar style="primary" width="MATCH_PARENT" title="Toolbar Main Title">
                     <ToolItem navigation-item="true" style="navigation primary"/>
                     <ToolItem overflow-item="true" style="overflow primary"/>
-                    <ToolItem menu-text="Icon 1" style="primary" icon="/default/icons/star.svg"/>
-                    <ToolItem menu-text="Icon 2" style="primary" icon="/default/icons/star.svg"/>
-                    <ToolItem menu-text="Icon 3" style="primary" icon="/default/icons/star.svg" enabled="false"/>
-                    <ToolItem menu-text="Icon 4" style="primary" icon="/default/icons/star.svg"/>
+                    <ToolItem menu-text="Icon 1" style="primary" icon="icon(fill, star)"/>
+                    <ToolItem menu-text="Icon 2" style="primary" icon="icon(fill, star)"/>
+                    <ToolItem menu-text="Icon 3" style="primary" icon="icon(fill, star)" enabled="false"/>
+                    <ToolItem menu-text="Icon 4" style="primary" icon="icon(fill, star)"/>
                 </ToolBar>
             </LinearBox>
             <Label text="Color Subtitle" style="subtitle" margin-left="4dp" margin-top="16dp"/>
@@ -109,10 +109,10 @@
                 <ToolBar style="primary" width="MATCH_PARENT" title="Toolbar Main Title" subtitle="Subtitle">
                     <ToolItem navigation-item="true" style="navigation primary"/>
                     <ToolItem overflow-item="true" style="overflow primary"/>
-                    <ToolItem menu-text="Icon 1" style="primary" icon="/default/icons/star.svg"/>
-                    <ToolItem menu-text="Icon 2" style="primary" icon="/default/icons/star.svg"/>
-                    <ToolItem menu-text="Icon 3" style="primary" icon="/default/icons/star.svg" enabled="false"/>
-                    <ToolItem menu-text="Icon 4" style="primary" icon="/default/icons/star.svg"/>
+                    <ToolItem menu-text="Icon 1" style="primary" icon="icon(fill, star)"/>
+                    <ToolItem menu-text="Icon 2" style="primary" icon="icon(fill, star)"/>
+                    <ToolItem menu-text="Icon 3" style="primary" icon="icon(fill, star)" enabled="false"/>
+                    <ToolItem menu-text="Icon 4" style="primary" icon="icon(fill, star)"/>
                 </ToolBar>
             </LinearBox>
             <Label text="Double" style="subtitle" margin-left="4dp" margin-top="16dp"/>
@@ -120,10 +120,10 @@
                 <ToolBar style="double primary" width="MATCH_PARENT" title="Toolbar Main Title" subtitle="Subtitle">
                     <ToolItem navigation-item="true" style="navigation primary"/>
                     <ToolItem overflow-item="true" style="overflow primary"/>
-                    <ToolItem menu-text="Icon 1" style="primary" icon="/default/icons/star.svg"/>
-                    <ToolItem menu-text="Icon 2" style="primary" icon="/default/icons/star.svg"/>
-                    <ToolItem menu-text="Icon 3" style="primary" icon="/default/icons/star.svg" enabled="false"/>
-                    <ToolItem menu-text="Icon 4" style="primary" icon="/default/icons/star.svg"/>
+                    <ToolItem menu-text="Icon 1" style="primary" icon="icon(fill, star)"/>
+                    <ToolItem menu-text="Icon 2" style="primary" icon="icon(fill, star)"/>
+                    <ToolItem menu-text="Icon 3" style="primary" icon="icon(fill, star)" enabled="false"/>
+                    <ToolItem menu-text="Icon 4" style="primary" icon="icon(fill, star)"/>
                 </ToolBar>
             </LinearBox>
             <Label text="Dense" style="subtitle" margin-left="4dp" margin-top="16dp"/>
@@ -131,10 +131,10 @@
                 <ToolBar style="dense primary" width="MATCH_PARENT" title="Toolbar Main Title">
                     <ToolItem navigation-item="true" style="dense navigation primary"/>
                     <ToolItem overflow-item="true" style="dense overflow primary"/>
-                    <ToolItem menu-text="Icon 1" style="dense primary" icon="/default/icons/star.svg"/>
-                    <ToolItem menu-text="Icon 2" style="dense primary" icon="/default/icons/star.svg"/>
-                    <ToolItem menu-text="Icon 3" style="dense primary" icon="/default/icons/star.svg" enabled="false"/>
-                    <ToolItem menu-text="Icon 4" style="dense primary" icon="/default/icons/star.svg"/>
+                    <ToolItem menu-text="Icon 1" style="dense primary" icon="icon(fill, star)"/>
+                    <ToolItem menu-text="Icon 2" style="dense primary" icon="icon(fill, star)"/>
+                    <ToolItem menu-text="Icon 3" style="dense primary" icon="icon(fill, star)" enabled="false"/>
+                    <ToolItem menu-text="Icon 4" style="dense primary" icon="icon(fill, star)"/>
                 </ToolBar>
             </LinearBox>
             <Label text="Dense Subtitle" style="subtitle" margin-left="4dp" margin-top="16dp"/>
@@ -142,10 +142,10 @@
                 <ToolBar style="dense primary" width="MATCH_PARENT" title="Toolbar Main Title" subtitle="Subtitle">
                     <ToolItem navigation-item="true" style="dense navigation primary"/>
                     <ToolItem overflow-item="true" style="dense overflow primary"/>
-                    <ToolItem menu-text="Icon 1" style="dense primary" icon="/default/icons/star.svg"/>
-                    <ToolItem menu-text="Icon 2" style="dense primary" icon="/default/icons/star.svg"/>
-                    <ToolItem menu-text="Icon 3" style="dense primary" icon="/default/icons/star.svg" enabled="false"/>
-                    <ToolItem menu-text="Icon 4" style="dense primary" icon="/default/icons/star.svg"/>
+                    <ToolItem menu-text="Icon 1" style="dense primary" icon="icon(fill, star)"/>
+                    <ToolItem menu-text="Icon 2" style="dense primary" icon="icon(fill, star)"/>
+                    <ToolItem menu-text="Icon 3" style="dense primary" icon="icon(fill, star)" enabled="false"/>
+                    <ToolItem menu-text="Icon 4" style="dense primary" icon="icon(fill, star)"/>
                 </ToolBar>
             </LinearBox>
             <Label text="Double Dense" style="subtitle" margin-left="4dp" margin-top="16dp"/>
@@ -153,10 +153,10 @@
                 <ToolBar style="double-dense primary" width="MATCH_PARENT" title="Toolbar Main Title" subtitle="Subtitle">
                     <ToolItem navigation-item="true" style="dense navigation primary"/>
                     <ToolItem overflow-item="true" style="dense overflow primary"/>
-                    <ToolItem menu-text="Icon 1" style="dense primary" icon="/default/icons/star.svg"/>
-                    <ToolItem menu-text="Icon 2" style="dense primary" icon="/default/icons/star.svg"/>
-                    <ToolItem menu-text="Icon 3" style="dense primary" icon="/default/icons/star.svg" enabled="false"/>
-                    <ToolItem menu-text="Icon 4" style="dense primary" icon="/default/icons/star.svg"/>
+                    <ToolItem menu-text="Icon 1" style="dense primary" icon="icon(fill, star)"/>
+                    <ToolItem menu-text="Icon 2" style="dense primary" icon="icon(fill, star)"/>
+                    <ToolItem menu-text="Icon 3" style="dense primary" icon="icon(fill, star)" enabled="false"/>
+                    <ToolItem menu-text="Icon 4" style="dense primary" icon="icon(fill, star)"/>
                 </ToolBar>
             </LinearBox>
         </LinearBox>

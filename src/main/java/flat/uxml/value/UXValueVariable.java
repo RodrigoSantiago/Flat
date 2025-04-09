@@ -1,7 +1,8 @@
 package flat.uxml.value;
 
 import flat.graphics.Color;
-import flat.graphics.context.Font;
+import flat.graphics.image.Drawable;
+import flat.graphics.symbols.Font;
 import flat.resources.ResourceStream;
 import flat.uxml.Controller;
 import flat.uxml.UXListener;
@@ -114,22 +115,22 @@ public class UXValueVariable extends UXValue {
     }
 
     @Override
-    public float asSize(UXTheme theme, float dpi) {
+    public float asSize(UXTheme theme) {
         UXValue variable = getVariable(theme);
         if (variable != null) {
-            return variable.asSize(theme, dpi);
+            return variable.asSize(theme);
         } else {
-            return super.asSize(theme, dpi);
+            return super.asSize(theme);
         }
     }
 
     @Override
-    public float[] asSizeList(UXTheme theme, float dpi) {
+    public float[] asSizeList(UXTheme theme) {
         UXValue variable = getVariable(theme);
         if (variable != null) {
-            return variable.asSizeList(theme, dpi);
+            return variable.asSizeList(theme);
         } else {
-            return super.asSizeList(theme, dpi);
+            return super.asSizeList(theme);
         }
     }
 
@@ -170,6 +171,16 @@ public class UXValueVariable extends UXValue {
             return variable.asFont(theme);
         } else {
             return super.asFont(theme);
+        }
+    }
+
+    @Override
+    public Drawable asDrawable(UXTheme theme) {
+        UXValue variable = getVariable(theme);
+        if (variable != null) {
+            return variable.asDrawable(theme);
+        } else {
+            return super.asDrawable(theme);
         }
     }
 

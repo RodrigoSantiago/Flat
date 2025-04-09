@@ -1,0 +1,233 @@
+text-area : text-area.default {
+    text-font : font("Roboto");
+    text-size : 18sp;
+    vertical-align : middle;
+    horizontal-align : left;
+    cursor : ibeam;
+    focusable : true;
+    focus-width : 2dp;
+    floating-bars : true;
+
+    padding-top : 8dp;
+    padding-bottom : 8dp;
+    padding-left : 8dp;
+    padding-right : 8dp;
+    transition-duration : 0.2;
+}
+
+text-area.default {
+    text-color : $on-card-color;
+    caret-color : $on-card-color;
+    text-selected-color : $selection-on-card-color;
+    background-color : $card-color-fade;
+    focus-color : $primary-color;
+
+    hovered {
+        background-color : $card-color-hover;
+    }
+    focused {
+        background-color : $card-color-hover;
+    }
+    disabled {
+        background-color : $disabled-color;
+        text-color : alpha($on-disabled-color, 0.75);
+        text-selected-color : alpha($on-disabled-color, 0.15);
+    }
+}
+
+text-field : text-field.primary {
+    text-font : font("Roboto");
+    text-size : 18sp;
+    vertical-align : middle;
+    horizontal-align : left;
+    cursor : ibeam;
+    focusable : true;
+    focus-width : 2dp;
+    floating-bars : true;
+
+    padding-top : 8dp;
+    padding-bottom : 8dp;
+    padding-left : 16dp;
+    padding-right : 16dp;
+    transition-duration : 0.2;
+
+    radius-top : 4dp;
+    radius-right : 4dp;
+    title-size : 12dp;
+    title-transition-duration : 0.2;
+    title-spacing : 2dp;
+
+    text-divider-size : 1dp;
+}
+
+text-field.primary {
+    text-color : $on-card-color;
+    text-hint-color : alpha($on-card-color, 0.5);
+    title-color : alpha($on-card-color, 0.75);
+    caret-color : $on-card-color;
+    text-selected-color : $selection-on-card-color;
+    text-divider-color : $disabled-color;
+    background-color : $card-color-fade;
+    focus-color : $primary-color;
+
+    hovered {
+        background-color : $card-color-hover;
+    }
+    focused {
+        text-divider-color : $primary-color;
+        title-color : $primary-color;
+        background-color : $card-color-hover;
+    }
+    disabled {
+        caret-color : transparent;
+        text-color : alpha($on-disabled-color, 0.75);
+        text-hint-color : alpha($on-disabled-color, 0.25);
+        title-color :  alpha($on-disabled-color, 0.5);
+        text-selected-color : alpha($on-disabled-color, 0.15);
+        text-divider-color : $disabled-color;
+        background-color : $disabled-color;
+    }
+}
+
+text-input-field : text-input-field.primary {
+    text-font : font("Roboto");
+    text-size : 18sp;
+    vertical-align : middle;
+    horizontal-align : left;
+    focusable : true;
+    focus-width : 2dp;
+    floating-bars : true;
+
+    padding-top : 8dp;
+    padding-bottom : 8dp;
+    padding-left : 16dp;
+    padding-right : 16dp;
+    transition-duration : 0.2;
+
+    radius-top : 4dp;
+    radius-right : 4dp;
+    title-size : 12dp;
+    title-transition-duration : 0.2;
+    title-spacing : 2dp;
+
+    text-divider-size : 1dp;
+
+    icon-spacing : 8dp;
+    action-icon-spacing : 8dp;
+
+    cursor : ibeam;
+    undefined {
+        cursor : hand;
+    }
+}
+
+text-input-field.primary {
+    icon-color : alpha($on-card-color, 0.25);
+    action-icon-color : alpha($on-card-color, 0.25);
+
+    text-color : $on-card-color;
+    text-hint-color : alpha($on-card-color, 0.5);
+    title-color : alpha($on-card-color, 0.75);
+    caret-color : $on-card-color;
+    text-selected-color : $selection-on-card-color;
+    text-divider-color : $disabled-color;
+    background-color : $card-color-fade;
+    focus-color : $primary-color;
+
+    hovered {
+        background-color : $card-color-hover;
+    }
+    focused {
+        text-divider-color : $primary-color;
+        title-color : $primary-color;
+        background-color : $card-color-hover;
+    }
+    undefined {
+        action-icon-color : $on-card-color;
+        background-color : $card-color-hover;
+    }
+    disabled {
+        caret-color : transparent;
+        text-color : alpha($on-disabled-color, 0.75);
+        text-hint-color : alpha($on-disabled-color, 0.25);
+        title-color :  alpha($on-disabled-color, 0.5);
+        icon-color : alpha($on-disabled-color, 0.5);
+        action-icon-color : alpha($on-disabled-color, 0.5);
+        text-selected-color : alpha($on-disabled-color, 0.15);
+        text-divider-color : $disabled-color;
+        background-color : $disabled-color;
+    }
+}
+
+text-drop-down : text-drop-down.primary {
+    text-font : font("Roboto");
+    text-size : 18sp;
+    vertical-align : middle;
+    horizontal-align : left;
+    focusable : true;
+    focus-width : 2dp;
+    floating-bars : true;
+
+    padding-top : 8dp;
+    padding-bottom : 8dp;
+    padding-left : 16dp;
+    padding-right : 16dp;
+    transition-duration : 0.2;
+
+    radius-top : 4dp;
+    radius-right : 4dp;
+    title-size : 12dp;
+    title-transition-duration : 0.2;
+    title-spacing : 2dp;
+
+    text-divider-size : 1dp;
+
+    icon-spacing : 8dp;
+    action-icon-spacing : 8dp;
+
+    cursor : ibeam;
+    action-icon : icon(fill, arrow_drop_down);
+    undefined {
+        cursor : hand;
+    }
+}
+
+text-drop-down.primary {
+    icon-color : alpha($on-card-color, 0.25);
+    action-icon-color : alpha($on-card-color, 0.25);
+
+    text-color : $on-card-color;
+    text-hint-color : alpha($on-card-color, 0.5);
+    title-color : alpha($on-card-color, 0.75);
+    caret-color : $on-card-color;
+    text-selected-color : $selection-on-card-color;
+    text-divider-color : $disabled-color;
+    background-color : $card-color-fade;
+    focus-color : $primary-color;
+
+    cursor : ibeam;
+    hovered {
+        background-color : $card-color-hover;
+    }
+    focused {
+        text-divider-color : $primary-color;
+        title-color : $primary-color;
+        background-color : $card-color-hover;
+    }
+    undefined {
+        action-icon-color : $on-card-color;
+        cursor : hand;
+        background-color : $card-color-hover;
+    }
+    disabled {
+        caret-color : transparent;
+        text-color : alpha($on-disabled-color, 0.75);
+        text-hint-color : alpha($on-disabled-color, 0.25);
+        title-color :  alpha($on-disabled-color, 0.5);
+        icon-color : alpha($on-disabled-color, 0.5);
+        action-icon-color : alpha($on-disabled-color, 0.5);
+        text-selected-color : alpha($on-disabled-color, 0.15);
+        text-divider-color : $disabled-color;
+        background-color : $disabled-color;
+    }
+}

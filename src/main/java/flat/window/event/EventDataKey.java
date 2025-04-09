@@ -52,6 +52,8 @@ public class EventDataKey extends EventData {
                 boolean alt = (mods & (WLEnums.MOD_ALT)) != 0;
                 boolean spr = (mods & (WLEnums.MOD_SUPER)) != 0;
 
+                window.setMods(shift, ctrl, alt, spr);
+
                 if (eventType == KeyEvent.PRESSED || eventType == KeyEvent.REPEATED) {
                     KeyEvent event = new KeyEvent(widget, KeyEvent.FILTER, shift, ctrl, alt, spr, "", key);
                     activity.onKeyFilter(event);
@@ -62,6 +64,7 @@ public class EventDataKey extends EventData {
 
                 KeyEvent keyEvent = new KeyEvent(widget, eventType, shift, ctrl, alt, spr, "", key);
                 widget.fireKey(keyEvent);
+                activity.onKey(keyEvent);
             }
         } finally {
             release();

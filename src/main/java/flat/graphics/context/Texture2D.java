@@ -21,16 +21,18 @@ public final class Texture2D extends Texture implements ImageTexture {
     private MagFilter magFilter;
     private WrapMode wrapModeX, wrapModeY;
 
-    public Texture2D(Context context, int width, int height, PixelFormat format) {
-        super(context);
+    public Texture2D(int width, int height, PixelFormat format) {
         final int textureId = GL.TextureCreate();
+        if (textureId == 0) {
+            throw new FlatException("Unable to create a new OpenGL Texture");
+        }
+
         this.textureId = textureId;
         assignDispose(() -> GL.TextureDestroy(textureId));
         setSize(width, height, format);
     }
 
-    Texture2D(Context context, int id, int width, int height, int levels, PixelFormat format) {
-        super(context);
+    public Texture2D(int id, int width, int height, int levels, PixelFormat format) {
         this.textureId = id;
         this.width = width;
         this.height = height;
@@ -39,20 +41,13 @@ public final class Texture2D extends Texture implements ImageTexture {
     }
 
     @Override
-    int getInternalID() {
+    public int getInternalId() {
         return textureId;
     }
 
     @Override
     int getInternalType() {
         return GLEnums.TB_TEXTURE_2D;
-    }
-
-    private void boundCheck() {
-        if (isDisposed()) {
-            throw new RuntimeException("The " + getClass().getSimpleName() + " is disposed.");
-        }
-        getContext().bindTexture(this);
     }
 
     public void setSize(int width, int height, PixelFormat format) {
@@ -74,12 +69,16 @@ public final class Texture2D extends Texture implements ImageTexture {
         return height;
     }
 
+    public PixelFormat getFormat() {
+        return format;
+    }
+
     public int getWidth(int level) {
-        return (int) Math.max(1, Math.floor(width / Math.pow(2,level)));
+        return Math.max(1, width >> level);
     }
 
     public int getHeight(int level) {
-        return (int) Math.max(1, Math.floor(height / Math.pow(2,level)));
+        return Math.max(1, height >> level);
     }
 
     public void getData(int level, Buffer buffer, int offset) {
@@ -132,6 +131,11 @@ public final class Texture2D extends Texture implements ImageTexture {
         GL.TextureSetLevels(GLEnums.TT_TEXTURE_2D, levels);
     }
 
+    public int getMaxLevel() {
+        int maxDimension = Math.max(width, height);
+        return (int) (Math.log(maxDimension) / Math.log(2));
+    }
+
     public int getLevels() {
         return levels;
     }
@@ -178,11 +182,17 @@ public final class Texture2D extends Texture implements ImageTexture {
         if (levels < 0) {
             throw new FlatException("Negative values are not allowed (" + levels + ")");
         }
+        if (levels > getMaxLevel()) {
+            throw new FlatException("The levels values are overflowing the limit (" + getMaxLevel() + ")");
+        }
     }
 
     private void parameterBoundsCheck(int width, int height) {
         if (width <= 0 || height <= 0) {
             throw new FlatException("Zero or negative values are not allowed (" + width + ", " + height + ")");
+        }
+        if (width > Context.getMaxTextureSize() || height > Context.getMaxTextureSize()) {
+            throw new FlatException("The texture size is bigger than the max allowed (" + Context.getMaxTextureSize() + ")");
         }
     }
 
@@ -191,7 +201,7 @@ public final class Texture2D extends Texture implements ImageTexture {
         int height = getHeight(level);
         int required = width * height * format.getPixelBytes();
         if (arrayLen * bytes < required) {
-            throw new RuntimeException("The array is too short. Provided : " + arrayLen + ". Required : " + ((required - 1) / bytes + 1));
+            throw new FlatException("The array is too short. Provided : " + arrayLen + ". Required : " + ((required - 1) / bytes + 1));
         }
     }
 
@@ -204,12 +214,12 @@ public final class Texture2D extends Texture implements ImageTexture {
 
         int required = w * h * format.getPixelBytes();
         if (arrayLen * bytes < required) {
-            throw new RuntimeException("The array is too short. Provided : " + arrayLen + ". Required : " + ((required - 1) / bytes + 1));
+            throw new FlatException("The array is too short. Provided : " + arrayLen + ". Required : " + ((required - 1) / bytes + 1));
         }
     }
 
     @Override
-    public Texture2D getTexture(Context context) {
-        return context == this.getContext() ? this : null;
+    public Texture2D getTexture() {
+        return this;
     }
 }

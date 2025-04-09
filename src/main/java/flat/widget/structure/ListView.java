@@ -1,6 +1,5 @@
 package flat.widget.structure;
 
-import flat.animations.NormalizedAnimation;
 import flat.animations.StateInfo;
 import flat.events.ScrollEvent;
 import flat.events.SlideEvent;
@@ -11,7 +10,6 @@ import flat.widget.Widget;
 import flat.widget.layout.Scrollable;
 import flat.widget.value.HorizontalScrollBar;
 import flat.widget.value.VerticalScrollBar;
-import flat.window.Activity;
 
 import java.util.ArrayList;
 
@@ -143,7 +141,8 @@ public class ListView extends Scrollable {
             end = endIndex;
         }
 
-        if (updateDimensions()) {
+        updateDimensions();
+        if (items.size() != totalIndex) {
             updateContent();
             start = startIndex;
             end = endIndex;
@@ -246,8 +245,8 @@ public class ListView extends Scrollable {
     @Override
     public void onLayout(float width, float height) {
         setLayout(width, height);
-
-        if (updateDimensions() && getActivity() != null) {
+        updateDimensions();
+        if (getActivity() != null && totalIndex != items.size()) {
             getActivity().runLater(() -> refreshItems());
         }
 
@@ -256,6 +255,8 @@ public class ListView extends Scrollable {
 
     @Override
     public void onDraw(Graphics graphics) {
+        if (discardDraw(graphics)) return;
+
         drawBackground(graphics);
         drawRipple(graphics);
 
@@ -267,7 +268,6 @@ public class ListView extends Scrollable {
         for (int i = 0; i < items.size(); i++) {
             items.get(i).onDraw(graphics);
         }
-        graphics.popClip();
 
         if (getHorizontalBar() != null && isHorizontalVisible()) {
             getHorizontalBar().onDraw(graphics);
@@ -276,6 +276,7 @@ public class ListView extends Scrollable {
         if (getVerticalBar() != null && isVerticalVisible()) {
             getVerticalBar().onDraw(graphics);
         }
+        graphics.popClip();
     }
 
     @Override

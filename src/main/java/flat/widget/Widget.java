@@ -103,6 +103,8 @@ public class Widget {
     private int borderColor;
     private float borderWidth;
     private float opacity = 1;
+    private int focusColor;
+    private float focusWidth;
 
     private RippleEffect ripple;
     private int rippleColor;
@@ -141,35 +143,14 @@ public class Widget {
         setPrevFocusId(attrs.getAttributeString("prev-focus-id", getPrevFocusId()));
     }
 
+    public void applyLocalization() {
+
+    }
+
     public void applyStyle() {
         UXAttrs attrs = getAttrs();
 
         setTransitionDuration(attrs.getNumber("transition-duration", null, getTransitionDuration()));
-
-        // Disabled State Overlay
-        /*if (parent != null) {
-            if (parent.isDisabled()) {
-                if (stateAnimation == null) {
-                    stateAnimation = new StateAnimation(this);
-                    stateAnimation.set(states);
-                }
-                if (((Widget)parent).stateAnimation != null) {
-                    stateAnimation.setDisabledOverlay(((Widget)parent).stateAnimation.getDisabled());
-                } else {
-                    stateAnimation.setDisabledOverlay(1);
-                }
-            } else {
-                if (stateAnimation != null) {
-                    stateAnimation.unsetDisabledOverlay();
-                }
-            }
-        }
-
-        if (isDisabled()) {
-            for (Widget child : getChildrenIterable()) {
-                child.applyStyle();
-            }
-        }*/
 
         StateInfo info = getStateInfo();
 
@@ -177,6 +158,9 @@ public class Widget {
         setCursor(attrs.getConstant("cursor", info, getCursor()));
 
         setFocusable(attrs.getBool("focusable", info, isFocusable()));
+        setFocusColor(attrs.getColor("focus-color", info, getFocusColor()));
+        setFocusWidth(attrs.getNumber("focus-width", info, getFocusWidth()));
+
         setHandleEventsEnabled(attrs.getBool("handle-events-enabled", info, isHandleEventsEnabled()));
 
         setPrefWidth(attrs.getSize("width", info, getPrefWidth()));
@@ -232,16 +216,21 @@ public class Widget {
     }
 
     public void onDraw(Graphics graphics) {
+        if (discardDraw(graphics)) return;
+
         drawBackground(graphics);
         drawRipple(graphics);
         drawChildren(graphics);
     }
 
-    protected void drawBackground(Graphics graphics) {
-        if (bg.width <= 0 || bg.height <= 0) {
-            return;
-        }
+    protected boolean discardDraw(Graphics graphics) {
+        if (bg.width <= 0 || bg.height <= 0) return true;
+        graphics.setTransform2D(getTransform());
+        return graphics.discardDraw(bg.x - borderWidth, bg.y - borderWidth,
+                bg.width + borderWidth * 2, bg.height + borderWidth * 2);
+    }
 
+    protected void drawBackground(Graphics graphics) {
         float bgOpacity = Color.getOpacity(backgroundColor);
         float borderOpacity = Color.getOpacity(borderColor);
 
@@ -255,17 +244,17 @@ public class Widget {
                     bg.x - b, bg.y - b, bg.width + b * 2, bg.height + b * 2,
                     bg.arcTop + b, bg.arcRight + b, bg.arcBottom + b, bg.arcLeft + b,
                     elevation, 0.55f * bgOpacity);
+            graphics.setTransform2D(getTransform());
         }
+
         // Draw Background
         if (bgOpacity > 0) {
-            graphics.setTransform2D(getTransform());
             graphics.setColor(backgroundColor);
             graphics.drawRoundRect(bg, true);
         }
 
         // Draw Border
         if (borderOpacity > 0 && borderWidth > 0) {
-            graphics.setTransform2D(getTransform());
             graphics.setColor(borderColor);
             graphics.setStroke(new BasicStroke(borderWidth));
             graphics.drawRoundRect(
@@ -353,7 +342,7 @@ public class Widget {
      * @param layoutWidth
      * @param layoutHeight
      */
-    public final void setLayout(float layoutWidth, float layoutHeight) {
+    public void setLayout(float layoutWidth, float layoutHeight) {
         if (this.layoutWidth != layoutWidth || this.layoutHeight != layoutHeight) {
             this.layoutWidth = layoutWidth;
             this.layoutHeight = layoutHeight;
@@ -569,6 +558,9 @@ public class Widget {
     protected void onActivityChange(Activity prev, Activity current, TaskList tasks) {
         refreshFocus();
 
+        updateFocusOnActivity(prev);
+        updateFocusOnActivity(current);
+
         if (contextMenu != null && contextMenu.isShown() && contextMenu.getActivity() != null) {
             Menu menu = this.contextMenu;
             tasks.add(() -> menu.hide());
@@ -592,6 +584,7 @@ public class Widget {
             attrs.setTheme(getCurrentTheme());
             if (getActivity() != null) {
                 applyStyle();
+                applyLocalization();
             }
 
             if (contextMenu != null) {
@@ -767,6 +760,12 @@ public class Widget {
         }
     }
 
+    public void removeStyle(String style) {
+        if (attrs.removeStyleName(style)) {
+            applyStyle();
+        }
+    }
+
     public void addStyles(List<String> styles) {
         if (styles == null || styles.isEmpty()) {
             return;
@@ -800,6 +799,7 @@ public class Widget {
         } else {
             attrs.unfollow(name);
         }
+        applyStyle();
     }
 
     public boolean isFollowStyleProperty(String name) {
@@ -946,6 +946,20 @@ public class Widget {
         }
     }
 
+    private void updateFocusOnActivity(Activity activity) {
+        if (activity != null) {
+            if (activity == getActivity()) {
+                if (focusable) {
+                    activity.addFocusableWidget(this);
+                } else {
+                    activity.removeFocusableWidget(this);
+                }
+            } else {
+                activity.removeFocusableWidget(this);
+            }
+        }
+    }
+
     public boolean isFocusable() {
         return focusable;
     }
@@ -953,6 +967,7 @@ public class Widget {
     public void setFocusable(boolean focusable) {
         if (this.focusable != focusable) {
             this.focusable = focusable;
+            updateFocusOnActivity(getActivity());
 
             if (!focusable) {
                 setFocused(false);
@@ -1011,11 +1026,11 @@ public class Widget {
         return bg.contains(px, py);
     }
 
-    protected float getInX() {
+    public float getInX() {
         return inx;
     }
 
-    protected float getInY() {
+    public float getInY() {
         return iny;
     }
 
@@ -1035,11 +1050,11 @@ public class Widget {
         return inh;
     }
 
-    protected float getOutX() {
+    public float getOutX() {
         return bg.x;
     }
 
-    protected float getOutY() {
+    public float getOutY() {
         return bg.y;
     }
 
@@ -1618,6 +1633,32 @@ public class Widget {
 
     public RoundRectangle getBackgroundShape() {
         return new RoundRectangle(bg);
+    }
+
+    public int getFocusColor() {
+        return focusColor;
+    }
+
+    public void setFocusColor(int focusColor) {
+        if (this.focusColor != focusColor) {
+            this.focusColor = focusColor;
+            if (isFocused()) {
+                invalidate(false);
+            }
+        }
+    }
+
+    public float getFocusWidth() {
+        return focusWidth;
+    }
+
+    public void setFocusWidth(float focusWidth) {
+        if (this.focusWidth != focusWidth) {
+            this.focusWidth = focusWidth;
+            if (isFocused()) {
+                invalidate(false);
+            }
+        }
     }
 
     public boolean isShadowEnabled() {

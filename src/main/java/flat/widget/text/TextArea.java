@@ -4,7 +4,7 @@ import flat.animations.Animation;
 import flat.animations.StateInfo;
 import flat.events.*;
 import flat.graphics.Graphics;
-import flat.graphics.context.Font;
+import flat.graphics.symbols.Font;
 import flat.math.Vector2;
 import flat.math.stroke.BasicStroke;
 import flat.uxml.*;
@@ -36,6 +36,7 @@ public class TextArea extends Scrollable {
     private float caretBlinkDuration = 0.5f;
     private boolean editable = true;
     private boolean multiLineEnabled = true;
+    private boolean lineWrapEnabled = true;
 
     private VerticalAlign verticalAlign = VerticalAlign.TOP;
     private HorizontalAlign horizontalAlign = HorizontalAlign.LEFT;
@@ -91,6 +92,7 @@ public class TextArea extends Scrollable {
 
         setMaxCharacters((int) attrs.getAttributeNumber("max-characters", getMaxCharacters()));
         setMultiLineEnabled(attrs.getAttributeBool("multiline-enabled", isMultiLineEnabled()));
+        setLineWrapEnabled(attrs.getAttributeBool("line-wrap-enabled", isLineWrapEnabled()));
         setText(attrs.getAttributeString("text", getText()));
         setEditable(attrs.getAttributeBool("editable", isEditable()));
         setTextChangeListener(attrs.getAttributeValueListener("on-text-change", String.class, controller));
@@ -134,7 +136,7 @@ public class TextArea extends Scrollable {
         boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
 
         if (wrapWidth) {
-            mWidth = Math.max(getTextWidth() + extraWidth, getLayoutMinWidth());
+            mWidth = Math.max(getNaturalTextWidth() + extraWidth, getLayoutMinWidth());
         } else {
             mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
         }
@@ -147,9 +149,17 @@ public class TextArea extends Scrollable {
         setMeasure(mWidth, mHeight);
     }
 
+    protected float getNaturalTextWidth() {
+        return textRender.getNaturalWidth();
+    }
+
     @Override
     public Vector2 onLayoutTotalDimension(float width, float height) {
-        return new Vector2(getTextWidth(), getTextHeight());
+        if (isLineWrapReallyEnabled()) {
+            return new Vector2(getInWidth(), getTextHeight());
+        } else {
+            return new Vector2(getTextWidth(), getTextHeight());
+        }
     }
 
     @Override
@@ -157,9 +167,41 @@ public class TextArea extends Scrollable {
 
     }
 
+    private void breakLines() {
+        if (isLineWrapReallyEnabled()) {
+            int linesBefore = textRender.getTotalLines();
+            textRender.breakLines(getViewDimensionX());
+            if (linesBefore != textRender.getTotalLines()) {
+                textRender.getCaret(startCaret);
+                textRender.getCaret(endCaret);
+            }
+        } else if (textRender.isLineWrapped()) {
+            textRender.breakLines(textRender.getNaturalWidth() + 1);
+            textRender.getCaret(startCaret);
+            textRender.getCaret(endCaret);
+        }
+    }
+
     @Override
     public void onLayout(float width, float height) {
         super.onLayout(width, height);
+    }
+
+    @Override
+    public void setLayout(float layoutWidth, float layoutHeight) {
+        super.setLayout(layoutWidth, layoutHeight);
+        if (getActivity() != null && isLineWrapReallyEnabled() && textRender.isBreakLines(getViewDimensionX())) {
+            getActivity().runLater(() -> {
+                textRender.breakLines(getViewDimensionX());
+                textRender.getCaret(startCaret);
+                textRender.getCaret(endCaret);
+                invalidate(true);
+            });
+        }
+    }
+
+    protected boolean isLineWrapReallyEnabled() {
+        return isLineWrapEnabled() && isMultiLineEnabled();
     }
 
     protected Caret getStartCaret() {
@@ -180,6 +222,8 @@ public class TextArea extends Scrollable {
 
     @Override
     public void onDraw(Graphics graphics) {
+        if (discardDraw(graphics)) return;
+
         drawBackground(graphics);
         drawRipple(graphics);
 
@@ -275,8 +319,8 @@ public class TextArea extends Scrollable {
     public void scroll(ScrollEvent event) {
         super.scroll(event);
         if (!event.isConsumed() && isVerticalDimensionScroll()) {
-            slideVertical(- event.getDeltaY() * 10);
             event.consume();
+            slideVertical(- event.getDeltaY() * 10);
         }
     }
 
@@ -318,6 +362,7 @@ public class TextArea extends Scrollable {
         float ypos = isVerticalDimensionScroll() ? y : yOff(y, y + height, getTextHeight());
 
         if (event.getType() == PointerEvent.PRESSED) {
+            event.consume();
             long now = System.currentTimeMillis();
             if (now - lastPressedTime < 200) {
                 clickCont++;
@@ -338,9 +383,12 @@ public class TextArea extends Scrollable {
             setCaretVisible();
             lastPressedTime = now;
         } else if (event.getType() == PointerEvent.DRAGGED) {
+            event.consume();
             textRender.getCaret(point.x, point.y, xpos, ypos, horizontalAlign, endCaret);
             setCaretVisible();
             slideToCaret(Application.getLoopTime() * 10f);
+        } else if (event.getType() == PointerEvent.RELEASED) {
+            event.consume();
         }
         invalidate(false);
     }
@@ -351,22 +399,26 @@ public class TextArea extends Scrollable {
         if (event.isConsumed()) {
             return;
         }
-        event.consume();
 
         var first = getFirstCaret();
         var second = getSecondCaret();
 
         if (event.getType() == KeyEvent.TYPED) {
             editText(first, second, new String(Character.toChars(event.getKeycode())));
+            event.consume();
         }
 
         if (event.getKeycode() != KeyCode.KEY_UNKNOWN &&
                 (event.getType() == KeyEvent.PRESSED || event.getType() == KeyEvent.REPEATED)) {
 
-            if (event.getKeycode() == KeyCode.KEY_ENTER) {
+            if (event.getKeycode() == KeyCode.KEY_ENTER || event.getKeycode() == KeyCode.KEY_KP_ENTER) {
                 editText(first, second, "\n");
             } else if (event.getKeycode() == KeyCode.KEY_TAB) {
-                editText(first, second, "\t");
+                if (caretBlink.isPlaying()) {
+                    editText(first, second, "\t");
+                } else {
+                    return;
+                }
             } else if (event.getKeycode() == keyBackspace) {
                 actionDeleteBackwards(first, second);
             } else if (event.getKeycode() == keyDelete) {
@@ -414,6 +466,7 @@ public class TextArea extends Scrollable {
                 setCaretVisible();
                 slideToCaret(1);
             }
+            event.consume();
         }
     }
 
@@ -629,6 +682,7 @@ public class TextArea extends Scrollable {
 
             textRender.moveCaretBegin(startCaret);
             endCaret.set(startCaret);
+            breakLines();
 
             invalidateTextSize();
 
@@ -647,6 +701,7 @@ public class TextArea extends Scrollable {
 
             textRender.moveCaretBegin(startCaret);
             endCaret.set(startCaret);
+            breakLines();
 
             invalidateTextSize();
         }
@@ -707,6 +762,7 @@ public class TextArea extends Scrollable {
 
             startCaret.set(caret);
             endCaret.set(caret);
+            breakLines();
 
             invalidateTextSize();
             setCaretVisible();
@@ -720,6 +776,7 @@ public class TextArea extends Scrollable {
 
             startCaret.set(caret);
             endCaret.set(caret);
+            breakLines();
 
             invalidateTextString();
             invalidateTextSize();
@@ -835,6 +892,17 @@ public class TextArea extends Scrollable {
         }
     }
 
+    public boolean isLineWrapEnabled() {
+        return lineWrapEnabled;
+    }
+
+    public void setLineWrapEnabled(boolean lineWrapEnabled) {
+        if (this.lineWrapEnabled != lineWrapEnabled) {
+            this.lineWrapEnabled = lineWrapEnabled;
+            invalidate(true);
+        }
+    }
+
     public float getCaretBlinkDuration() {
         return caretBlinkDuration;
     }
@@ -855,7 +923,7 @@ public class TextArea extends Scrollable {
     }
 
     protected void invalidateTextSize() {
-        invalidate(isWrapContent());
+        invalidate(true);
         invalidTextSize = true;
     }
 

@@ -1,6 +1,8 @@
 package flat.resources;
 
 import flat.graphics.context.Context;
+import flat.window.Application;
+import flat.window.Window;
 
 public class Dimension {
 
@@ -31,8 +33,15 @@ public class Dimension {
      * xxhdpi (x-extra-high)      480 dpi
      * xxxhdpi (x-x-extra-high)   640 dpi
      */
-    public enum Density {
-        any(-1), ldpi(120), mdpi(160), hdpi(240), xhdpi(320), xxhdpi(480), xxxhdpi(640);
+    public static class Density {
+        public static Density any = new Density(-1);
+        public static Density ldpi = new Density(120);
+        public static Density mdpi = new Density(160);
+        public static Density hdpi = new Density(240);
+        public static Density xhdpi = new Density(320);
+        public static Density xxhdpi = new Density(480);
+        public static Density xxxhdpi = new Density(640);
+
         public final int dpi;
         Density(int dpi) {
             this.dpi = dpi;
@@ -104,12 +113,12 @@ public class Dimension {
     }
 
     public static Density getDensity(float dpi) {
-        return dpi <= 120 /*(120 <> 160)*/ ? Density.ldpi
-                : dpi <= 213 /*(160 <> 240)*/ ? Density.mdpi
-                : dpi <= 240 /*(240 <> 320)*/ ? Density.hdpi
-                : dpi <= 320 /*(320 <> 480)*/ ? Density.xhdpi
-                : dpi <= 480 /*(480 <> 640)*/ ? Density.xxhdpi
-                : Density.xxxhdpi;
+        return Application.isSystemMobile() && dpi <= 120 ? Density.ldpi     // 120
+                : dpi <= 160 ? Density.mdpi   // 160
+                : dpi <= 240 ? Density.hdpi   // 240
+                : dpi <= 320 ? Density.xhdpi  // 320
+                : dpi <= 480 ? Density.xxhdpi // 480
+                : Density.xxxhdpi;            // 640
     }
 
 
@@ -138,15 +147,11 @@ public class Dimension {
         return super.toString()+"["+size + ":" + density + ":" + orientation+"]";
     }
 
-    public static float dpPx(Context context, float dp) {
-        return (float) Math.ceil(dp * (getDensity(context.getWindow().getDpi()).dpi / 160f));
+    public static float dpPx(float dpi, float dp) {
+        return (float) Math.ceil(dp * (getDensity(dpi).dpi / 160f));
     }
 
-    public static float pxDp(Context context, float px) {
-        return (float) Math.ceil(px / (getDensity(context.getWindow().getDpi()).dpi / 160f));
-    }
-
-    public static float ptPx(Context context, int pt) {
-        return (float) Math.ceil(pt * (context.getWindow().getDpi() / 160) * 2f);
+    public static float pxDp(float dpi, float px) {
+        return (float) Math.ceil(px / (getDensity(dpi).dpi / 160f));
     }
 }

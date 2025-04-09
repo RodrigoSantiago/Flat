@@ -13,14 +13,17 @@ checkbox : checkbox.primary {
     icon-height : 20dp;
     cursor : hand;
     focusable : true;
+    focus-width : 2dp;
     transition-duration : 0.2;
 }
 
 checkbox.primary {
-    icon : '/default/icons/checkbox-blank-outline.svg';
+    icon : icon(fill, check_box_outline_blank);
     icon-color : $primary-color;
     background-color : transparent;
     ripple-color : alpha($primary-color-fade, 0.5);
+    focus-color : $primary-color;
+
     hovered {
         background-color : alpha($primary-color-fade, 0.15);
     }
@@ -28,10 +31,10 @@ checkbox.primary {
         background-color : alpha($primary-color-fade, 0.2);
     }
     activated {
-        icon : '/default/icons/checkbox-marked.svg';
+        icon : icon(fill, check_box);
     }
     undefined {
-        icon : '/default/icons/minus-box.svg';
+        icon : icon(fill, indeterminate_check_box);
     }
     disabled {
         icon-color : $disabled-color;

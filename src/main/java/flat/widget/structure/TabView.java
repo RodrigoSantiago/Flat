@@ -30,7 +30,7 @@ public class TabView extends Parent {
     private VerticalAlign tabsVerticalAlign = VerticalAlign.TOP;
     private HorizontalAlign tabsHorizontalAlign = HorizontalAlign.LEFT;
     private VerticalPosition tabsVerticalPosition = VerticalPosition.TOP;
-    private float scrollSensibility = 10;
+    private float scrollSensibility = 20;
 
     private Widget content;
     private Tab selectedTab;
@@ -251,6 +251,8 @@ public class TabView extends Parent {
 
     @Override
     public void onDraw(Graphics graphics) {
+        if (discardDraw(graphics)) return;
+
         drawBackground(graphics);
         drawRipple(graphics);
 

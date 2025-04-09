@@ -14,8 +14,6 @@ import flat.widget.Widget;
 import flat.widget.enums.*;
 import flat.window.Activity;
 
-import java.util.List;
-
 public class Drawer extends Parent {
 
     private VerticalAlign verticalAlign = VerticalAlign.TOP;
@@ -375,6 +373,8 @@ public class Drawer extends Parent {
 
     @Override
     public void onDraw(Graphics graphics) {
+        if (discardDraw(graphics)) return;
+
         drawBackground(graphics);
         drawRipple(graphics);
 

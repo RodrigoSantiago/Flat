@@ -35,6 +35,8 @@ tab : tab.default {
     transition-duration : 0.2;
     cursor : hand;
     horizontal-align : center;
+    focusable : true;
+    focus-width : 2dp;
 }
 
 tab.dense {
@@ -65,10 +67,7 @@ tab.close-icon-right {
     close-icon-spacing : 8dp;
     close-icon-width : 18dp;
     close-icon-height : 18dp;
-    close-icon : "/default/icons/close.svg";
-    undefined {
-        close-icon : "/default/icons/close-thick.svg";
-    }
+    close-icon : icon(fill, close);
 }
 
 tab.close-icon-left {
@@ -76,10 +75,7 @@ tab.close-icon-left {
     close-icon-spacing : 8dp;
     close-icon-width : 18dp;
     close-icon-height : 18dp;
-    close-icon : "/default/icons/close.svg";
-    undefined {
-        close-icon : "/default/icons/close-thick.svg";
-    }
+    close-icon : icon(fill, close);
 }
 
 tab.complete-left {
@@ -90,10 +86,7 @@ tab.complete-left {
     icon-width : 18dp;
     icon-height : 18dp;
     close-icon-spacing : 8dp;
-    close-icon : "/default/icons/close.svg";
-    undefined {
-        close-icon : "/default/icons/close-thick.svg";
-    }
+    close-icon : icon(fill, close);
 }
 
 tab.complete-right {
@@ -104,10 +97,7 @@ tab.complete-right {
     icon-width : 18dp;
     icon-height : 18dp;
     close-icon-spacing : 8dp;
-    close-icon : "/default/icons/close.svg";
-    undefined {
-        close-icon : "/default/icons/close-thick.svg";
-    }
+    close-icon : icon(fill, close);
 }
 
 tab.default {
@@ -116,6 +106,7 @@ tab.default {
     close-icon-color : alpha($primary-color, 0.5);
     background-color : $card-color;
     ripple-color : $card-color-press;
+    focus-color : $primary-color;
 
     hovered {
         background-color : $card-color-hover;
@@ -143,6 +134,7 @@ tab.primary {
     close-icon-color : alpha($on-primary-color, 0.5);
     background-color : $primary-color;
     ripple-color : $primary-color-press;
+    focus-color : $on-card-color;
 
     hovered {
         background-color : $primary-color-hover;

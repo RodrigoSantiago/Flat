@@ -6,11 +6,9 @@ import flat.events.HoverEvent;
 import flat.events.PointerEvent;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
-import flat.graphics.cursor.Cursor;
 import flat.graphics.image.Drawable;
 import flat.math.Vector2;
 import flat.math.shapes.RoundRectangle;
-import flat.math.stroke.BasicStroke;
 import flat.uxml.Controller;
 import flat.uxml.UXAttrs;
 import flat.uxml.UXListener;
@@ -35,7 +33,7 @@ public class TextInputField extends TextField {
     private float actionIconHeight;
 
     private float x1, y1, x2, y2;
-
+    private boolean pressOnAction;
 
     @Override
     public void applyAttributes(Controller controller) {
@@ -52,14 +50,14 @@ public class TextInputField extends TextField {
         UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
 
-        setIcon(attrs.getResourceAsDrawable("icon", info, getIcon(), false));
+        setIcon(attrs.getDrawable("icon", info, getIcon(), false));
         setIconColor(attrs.getColor("icon-color", info, getIconColor()));
         setIconWidth(attrs.getSize("icon-width", info, getIconWidth()));
         setIconHeight(attrs.getSize("icon-height", info, getIconHeight()));
         setIconSpacing(attrs.getSize("icon-spacing", info, getIconSpacing()));
         setIconImageFilter(attrs.getConstant("icon-image-filter", info, getIconImageFilter()));
 
-        setActionIcon(attrs.getResourceAsDrawable("action-icon", info, getActionIcon(), false));
+        setActionIcon(attrs.getDrawable("action-icon", info, getActionIcon(), false));
         setActionIconColor(attrs.getColor("action-icon-color", info, getActionIconColor()));
         setActionIconWidth(attrs.getSize("action-icon-width", info, getActionIconWidth()));
         setActionIconHeight(attrs.getSize("action-icon-height", info, getActionIconHeight()));
@@ -95,7 +93,7 @@ public class TextInputField extends TextField {
         }
 
         if (wrapWidth) {
-            mWidth = Math.max(getTextWidth() + iw + iaw + extraWidth, getLayoutMinWidth());
+            mWidth = Math.max(getNaturalTextWidth() + iw + iaw + extraWidth, getLayoutMinWidth());
         } else {
             mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
         }
@@ -124,6 +122,21 @@ public class TextInputField extends TextField {
     }
 
     @Override
+    public Vector2 onLayoutTotalDimension(float width, float height) {
+        if (isTextEmpty()) return super.onLayoutTotalDimension(width, height);
+
+        if (isLineWrapReallyEnabled()) {
+            float iw = getLayoutIconWidth();
+            float aiw = getLayoutActionIconWidth();
+            float exWidth = (iw > 0 ? iw + getIconSpacing(): 0)
+                    + (aiw <= 0 ? 0 : aiw + getActionIconSpacing());
+            return new Vector2(getInWidth() - exWidth, getTextHeight());
+        } else {
+            return new Vector2(getTextWidth(), getTextHeight());
+        }
+    }
+
+    @Override
     public void onLayout(float width, float height) {
         super.onLayout(width, height);
         updateActionPosition();
@@ -133,6 +146,8 @@ public class TextInputField extends TextField {
 
     @Override
     public void onDraw(Graphics graphics) {
+        if (discardDraw(graphics)) return;
+
         drawBackground(graphics);
         drawRipple(graphics);
 
@@ -253,11 +268,24 @@ public class TextInputField extends TextField {
 
     @Override
     public void pointer(PointerEvent event) {
-        super.pointer(event);
-        if (!event.isConsumed() && event.getPointerID() == 1 && event.getType() == PointerEvent.RELEASED) {
+        UXListener.safeHandle(getPointerListener(), event);
+        if (!event.isConsumed() && event.getPointerID() == 1 && event.getType() == PointerEvent.PRESSED) {
             if (isOverActionButton(screenToLocal(event.getX(), event.getY()))) {
-                action();
+                pressOnAction = true;
             }
+        }
+        if (pressOnAction) {
+            event.consume();
+        }
+        if (pressOnAction && event.getPointerID() == 1 && event.getType() == PointerEvent.RELEASED) {
+            pressOnAction = false;
+            action();
+        }
+        if (!pressOnAction) {
+            Vector2 point = screenToLocal(event.getX(), event.getY());
+            point.x += getViewOffsetX();
+            point.y += getViewOffsetY();
+            textPointer(event, point);
         }
     }
 

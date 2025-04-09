@@ -1,12 +1,18 @@
 package flat.resources;
 
 import flat.Flat;
+import flat.exception.FlatException;
+import flat.window.Application;
+import flat.window.SystemType;
 
 import java.io.*;
 import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -17,11 +23,20 @@ import java.util.zip.ZipOutputStream;
 
 public class ResourcesManager {
 
+    private static class CacheObj {
+        WeakReference<Object> obj;
+        long modifyTime;
+        public CacheObj(Object obj, long modifyTime) {
+            this.obj = new WeakReference<>(obj);
+            this.modifyTime = modifyTime;
+        }
+    }
+
     private static boolean libraryLoaded;
 
     private final ZipFile zip;
     private final File dir;
-    private final HashMap<String, SoftReference<Object>> resources = new HashMap<>();
+    private final HashMap<String, CacheObj> resources = new HashMap<>();
 
     public ResourcesManager() {
         this.dir = null;
@@ -37,7 +52,7 @@ public class ResourcesManager {
                 this.dir = null;
                 this.zip = new ZipFile(file);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new FlatException(e);
             }
         } else {
             this.dir = file;
@@ -47,12 +62,18 @@ public class ResourcesManager {
 
     public File getFlatLibraryFile() {
         try {
-            InputStream in = Flat.class.getResourceAsStream("/flat.dll");
+            String libName = "/flat." + switch(Application.getSystemType()) {
+                case WINDOWS  -> "dll";
+                case MAC -> "dylib";
+                default -> "so";
+            };
+
+            InputStream in = Flat.class.getResourceAsStream(libName);
             if (in == null) {
                 return null;
             }
 
-            File temp = new File("flat.dll");
+            File temp = new File(Paths.get("").toAbsolutePath().toFile(), libName);
             if (temp.exists()) {
                 if (!temp.delete()) {
                     return null;
@@ -94,15 +115,15 @@ public class ResourcesManager {
         resources.remove(pathName);
     }
 
-    public void putResourceCache(String pathName, Object cache) {
-        resources.put(pathName, new SoftReference<>(cache));
+    public void putResourceCache(String pathName, Object cache, long modifyTime) {
+        resources.put(pathName, new CacheObj(cache, modifyTime));
     }
 
-    public Object getResourceCache(String pathName) {
-        SoftReference<Object> reference = resources.get(pathName);
-        if (reference != null) {
-            Object obj = reference.get();
-            if (obj == null) {
+    public Object getResourceCache(String pathName, long modifyTime) {
+        CacheObj cache = resources.get(pathName);
+        if (cache != null) {
+            Object obj = cache.obj.get();
+            if (obj == null || modifyTime != cache.modifyTime) {
                 resources.remove(pathName);
             } else {
                 return obj;
@@ -191,7 +212,7 @@ public class ResourcesManager {
             buffer.flush();
             return buffer.toByteArray();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new FlatException(e);
         }
     }
 
@@ -273,7 +294,9 @@ public class ResourcesManager {
      */
     public boolean exists(String pathName) {
         try {
-            return getInput(pathName) != null;
+            try (var input = getInput(pathName)) {
+                return true;
+            }
         } catch (Exception e) {
             return false;
         }

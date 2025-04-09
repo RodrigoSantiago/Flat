@@ -1,9 +1,12 @@
 package flat.window;
 
 import flat.backend.FlatLibrary;
+import flat.backend.GL;
 import flat.backend.WL;
 import flat.exception.FlatException;
 import flat.graphics.context.Context;
+import flat.graphics.emojis.EmojiManager;
+import flat.resources.ResourceStream;
 import flat.resources.ResourcesManager;
 import flat.window.event.EventData;
 
@@ -23,6 +26,8 @@ public class Application {
 
     private static int vsync;
     private static int currentVsync;
+    private static int systemQuality = 3;
+    private static int textureOptimalMaxSize = 4096;
 
     private static ResourcesManager resources;
     private static boolean loopActive;
@@ -33,6 +38,7 @@ public class Application {
     private static final long autoFrameFPS = 1_000_000_000L / 120L;
 
     private static boolean finalized;
+    private static SystemType systemType;
 
     public static void init() {
         init(new ResourcesManager());
@@ -126,16 +132,40 @@ public class Application {
         }
     }
 
-    public static void launch(WindowSettings settings) {
+    public static void setup(WindowSettings settings) {
         try {
             createWindow(settings);
 
-            lastLoopTime = System.nanoTime();
+            int textureSize = GL.GetMaxTextureSize();
+            int elementsVertices = GL.GetMaxElementsVertices();
+            int elementsIndices = GL.GetMaxElementsIndices();
+            int uniformBlockSize = GL.GetMaxUniformBlockSize();
+            if (textureSize <= 1024 || elementsVertices <= 10000 ||
+                    elementsIndices <= 10000 || uniformBlockSize <= 16384) {
+                systemQuality = 1;
+            } else if (textureSize <= 2048 || elementsVertices <= 50000 ||
+                    elementsIndices <= 50000 || uniformBlockSize <= 65536) {
+                systemQuality = 2;
+            } else {
+                systemQuality = 4;
+            }
+            textureOptimalMaxSize = Math.min(systemQuality * 1024, textureSize);
 
+            if (textureOptimalMaxSize >= 1024) {
+                EmojiManager.load(
+                        new ResourceStream("/default/emojis/emojis-" + textureOptimalMaxSize + ".png"));
+            }
+        } catch (Exception e) {
+            finish();
+            throw e;
+        }
+    }
+
+    public static void launch() {
+        try {
             while (loopActive) {
                 refresh();
             }
-
         } finally {
             loopActive = false;
             finish();
@@ -145,6 +175,12 @@ public class Application {
     public static Window createWindow(WindowSettings settings) {
         Window window = Window.create(settings);
         windowsAdd.add(window);
+        if (assignedWindow != null) {
+            WL.WindowAssign(assignedWindow.getWindowId());
+        } else {
+            window.setAssigned(true);
+            assignedWindow = window;
+        }
 
         return window;
     }
@@ -200,17 +236,22 @@ public class Application {
         updateWindowList();
 
         long now = System.nanoTime();
-        loopTime = (now - lastLoopTime) / 1_000_000_000.0f;
+        if (lastLoopTime == 0) {
+            loopTime = 1 / 120.0f;
+        } else {
+            loopTime = (now - lastLoopTime) / 1_000_000_000.0f;
+        }
         lastLoopTime = now;
 
         for (Window window : windows) {
-            assignWindow(window);
-
-            try {
-                window.loop(loopTime);
-            } catch (Exception e) {
-                Application.handleException(e);
-                window.close();
+            if (!window.isBlockedByModal()) {
+                assignWindow(window);
+                try {
+                    window.loop(loopTime);
+                } catch (Exception e) {
+                    Application.handleException(e);
+                    window.close();
+                }
             }
         }
     }
@@ -337,4 +378,31 @@ public class Application {
         e.printStackTrace();
     }
 
+    public static int getTextureOptimalMaxSize() {
+        return textureOptimalMaxSize;
+    }
+
+    public static int getSystemQuality() {
+        return systemQuality;
+    }
+
+    public static SystemType getSystemType() {
+        if (systemType == null) {
+            String os = System.getProperty("os.name").toLowerCase();
+            if (os.contains("win")) {
+                systemType = SystemType.WINDOWS;
+            } else if (os.contains("nix") || os.contains("nux")) {
+                systemType = SystemType.UNIX;
+            } else if (os.contains("mac")) {
+                systemType = SystemType.MAC;
+            } else {
+                systemType = SystemType.OTHER;
+            }
+        }
+        return systemType;
+    }
+
+    public static boolean isSystemMobile() {
+        return false;
+    }
 }

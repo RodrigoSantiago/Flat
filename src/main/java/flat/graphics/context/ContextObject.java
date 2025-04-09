@@ -1,5 +1,7 @@
 package flat.graphics.context;
 
+import flat.window.Application;
+
 import java.lang.ref.Cleaner;
 
 abstract class ContextObject {
@@ -7,10 +9,18 @@ abstract class ContextObject {
 
     private final Context context;
     private boolean disposed;
+    private Runnable disposeTask;
 
-    public ContextObject(Context context) {
+    ContextObject(Context context) {
         this.context = context;
         this.context.checkDisposed();
+    }
+
+    ContextObject() {
+        this.context = null;
+        if (Application.getCurrentContext() == null) {
+
+        }
     }
 
     public Context getContext() {
@@ -18,18 +28,21 @@ abstract class ContextObject {
     }
 
     protected final void assignDispose(Runnable task) {
-        cleaner.register(this, context.createSyncDestroyTask(task));
-    }
-
-    protected boolean isBound() {
-        return true;
+        if (context != null) {
+            cleaner.register(this, disposeTask = context.createSyncDestroyTask(task));
+        } else {
+            cleaner.register(this, disposeTask = new DisposeTask(task));
+        }
     }
 
     public boolean isDisposed() {
-        return disposed;
+        return disposed || (context != null && context.isDisposed());
     }
 
-    void dispose() {
-        this.disposed = true;
+    public void dispose() {
+        if (!disposed) {
+            disposed = true;
+            if (!context.isDisposed() && disposeTask != null) disposeTask.run();
+        }
     }
 }

@@ -23,11 +23,8 @@ public class ScrollBar extends Widget {
     private float totalDimension;
 
     private float minRange;
-    private int color = Color.white;
-    private float lineWidth;
-    private int lineColor;
-    private float lineFilledWidth;
-    private int lineFilledColor;
+    private float lineWidth = 4;
+    private int lineColor = Color.black;
     private LineCap lineCap = LineCap.BUTT;
 
     private float grabOffset;
@@ -55,16 +52,15 @@ public class ScrollBar extends Widget {
         UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
         setMinRange(attrs.getSize("min-range", info, getMinRange()));
-        setColor(attrs.getColor("color", info, getColor()));
         setLineColor(attrs.getColor("line-color", info, getLineColor()));
-        setLineFilledColor(attrs.getColor("line-filled-color", info, getLineFilledColor()));
         setLineWidth(attrs.getSize("line-width", info, getLineWidth()));
-        setLineFilledWidth(attrs.getSize("line-filled-width", info, getLineFilledWidth()));
         setLineCap(attrs.getConstant("line-cap", info, getLineCap()));
     }
 
     @Override
     public void onDraw(Graphics graphics) {
+        if (discardDraw(graphics)) return;
+
         drawBackground(graphics);
         drawRipple(graphics);
 
@@ -77,71 +73,93 @@ public class ScrollBar extends Widget {
 
         if (width <= 0 || height <= 0) return;
 
-        float x1, y1, x2, y2;
         float hx1, hy1, hx2, hy2;
-        float handleSize = totalDimension == 0 ? 1 : Math.max(minRange, Math.min(1, viewDimension / totalDimension));
-        float moveOffset = totalDimension == 0 ? 0 : Math.max(0, Math.min(1 - handleSize, viewOffset / totalDimension));
+        float minR = Math.min(0.5f, minRange / (hor ? width : height));
+        float handleSize = totalDimension == 0 ? 1 : Math.max(minR, Math.min(1, viewDimension / totalDimension));
+        float handleSpace = 1 - handleSize;
+        float handleMove = totalDimension == 0 ? 0 : Math.max(0, Math.min(1, viewOffset / (totalDimension - viewDimension)));
 
         float lineW = Math.min(width, Math.min(height, getLineWidth()));
-        float lineFilledW = Math.min(width, Math.min(height, getLineFilledWidth()));
         float lineH = getLineCap() == LineCap.BUTT ? 0 : lineW * 0.5f;
-        boolean empty;
-        boolean emptyH;
         if (hor) {
-            x1 = x + lineH;
-            x2 = x + width - lineH;
-            y1 = y + height * 0.5f;
-            y2 = y + height * 0.5f;
-            empty = Math.abs(x1 - x2) < 0.001f;
-
-            hx1 = Mathf.lerp(x1, x2, moveOffset);
-            hx2 = Mathf.lerp(x1, x2, moveOffset + handleSize);
+            hx1 = Mathf.lerp(x, x + width, handleMove * handleSpace) + lineH;
+            hx2 = Mathf.lerp(x, x + width, handleMove * handleSpace + handleSize) - lineH;
+            if (hx2 < hx1) {
+                hx1 = (hx2 + hx1) * 0.5f;
+                hx2 = hx1;
+            }
             hy1 = y + height * 0.5f;
             hy2 = y + height * 0.5f;
-            emptyH = Math.abs(hx1 - hx2) < 0.001f;
         } else {
-            x1 = x + width * 0.5f;
-            x2 = x + width * 0.5f;
-            y1 = y + lineH;
-            y2 = y + height - lineH;
-            empty = Math.abs(y1 - y2) < 0.001f;
-
             hx1 =  x + width * 0.5f;
             hx2 =  x + width * 0.5f;
-            hy1 = Mathf.lerp(y1, y2, moveOffset);
-            hy2 = Mathf.lerp(y1, y2, moveOffset + handleSize);
-            emptyH = Math.abs(hy1 - hy2) < 0.001f;
+            hy1 = Mathf.lerp(y, y + height, handleMove * handleSpace) + lineH;
+            hy2 = Mathf.lerp(y, y + height, handleMove * handleSpace + handleSize) - lineH;
+            if (hy2 < hy1) {
+                hy1 = (hy2 + hy1) * 0.5f;
+                hy2 = hy1;
+            }
         }
 
         graphics.setTransform2D(getTransform());
         if (Color.getAlpha(getLineColor()) > 0) {
             graphics.setColor(getLineColor());
             graphics.setStroke(new BasicStroke(lineW, getLineCap().ordinal(), 0));
-            if (empty) {
-                if (getLineCap() == LineCap.ROUND) {
-                    graphics.drawEllipse(x1 - lineW * 0.5f, y1 - lineW * 0.5f, lineW, lineW, true);
-                } else if (getLineCap() == LineCap.SQUARE) {
-                    graphics.drawRect(x1 - lineW * 0.5f, y1 - lineW * 0.5f, lineW, lineW, true);
-                }
-            } else {
-                graphics.drawLine(x1, y1, x2, y2);
-            }
+            graphics.drawLine(hx1, hy1, hx2, hy2);
+        }
+    }
+
+    @Override
+    public void pointer(PointerEvent event) {
+        super.pointer(event);
+        if (event.isConsumed() || event.getPointerID() != 1) {
+            return;
         }
 
-        if (Color.getAlpha(getLineFilledColor()) > 0) {
-            graphics.setColor(getLineFilledColor());
-            graphics.setStroke(new BasicStroke(lineFilledW, getLineCap().ordinal(), 0));
-            if (emptyH) {
-                if (getLineCap() == LineCap.ROUND) {
-                    graphics.drawEllipse(hx1 - lineFilledW * 0.5f, hy1 - lineFilledW * 0.5f, lineFilledW, lineFilledW, true);
-                } else if (getLineCap() == LineCap.SQUARE) {
-                    graphics.drawRect(hx1 - lineFilledW * 0.5f, hy1 - lineFilledW * 0.5f, lineFilledW, lineFilledW, true);
-                }
-            } else {
-                graphics.drawLine(hx1, hy1, hx2, hy2);
-            }
+        Vector2 point = new Vector2(event.getX(), event.getY());
+        screenToLocal(point);
+
+        boolean hor = getDirection() == Direction.HORIZONTAL;
+
+        final float x = getInX();
+        final float y = getInY();
+        final float width = getInWidth();
+        final float height = getInHeight();
+
+        float hStart, hSize, pos, start, size;
+        if (hor) {
+            pos = point.x;
+            start = x;
+            size = width;
+        } else {
+            pos = point.y;
+            start = y;
+            size = height;
         }
 
+        float minR = Math.min(0.5f, minRange / size);
+
+        float handleSize = totalDimension == 0 ? 1 : Math.max(minR, Math.min(1, viewDimension / totalDimension));
+        float moveOffset = totalDimension == 0 ? 0 : Math.max(0, 1 - handleSize);
+        float handleMove = totalDimension == 0 ? 0 : Math.max(0, Math.min(1, viewOffset / (totalDimension - viewDimension)));
+        float handleSpace = 1 - handleSize;
+
+        if (event.getType() == PointerEvent.PRESSED) {
+            event.consume();
+            grabOffset = Math.max(0, Math.min(1, (((pos - start) / size) - handleMove * handleSpace) / handleSize));
+
+            float py2 = (((pos - start) / size - handleSize * grabOffset) / moveOffset) * (totalDimension - viewDimension);
+            slideTo(py2);
+
+        } else if (event.getType() == PointerEvent.DRAGGED) {
+            event.consume();
+            float py2 = (((pos - start) / size - handleSize * grabOffset) / moveOffset) * (totalDimension - viewDimension);
+            slideTo(py2);
+
+        } else if (event.getType() == PointerEvent.RELEASED) {
+            event.consume();
+            grabOffset = 0;
+        }
     }
 
     public Direction getDirection() {
@@ -160,17 +178,6 @@ public class ScrollBar extends Widget {
             this.viewOffset = viewOffset;
             invalidate(false);
             fireViewOffsetListener(old);
-        }
-    }
-
-    public int getColor() {
-        return color;
-    }
-
-    public void setColor(int color) {
-        if (this.color != color) {
-            this.color = color;
-            invalidate(false);
         }
     }
 
@@ -193,28 +200,6 @@ public class ScrollBar extends Widget {
         if (this.lineColor != lineColor) {
             this.lineColor = lineColor;
             invalidate(false);
-        }
-    }
-
-    public float getLineFilledWidth() {
-        return lineFilledWidth;
-    }
-
-    public void setLineFilledWidth(float lineFilledWidth) {
-        if (this.lineFilledWidth != lineFilledWidth) {
-            this.lineFilledWidth = lineFilledWidth;
-            invalidate(false);
-        }
-    }
-
-    public int getLineFilledColor() {
-        return lineFilledColor;
-    }
-
-    public void setLineFilledColor(int lineFilledColor) {
-        if (this.lineFilledColor != lineFilledColor) {
-            this.lineFilledColor = lineFilledColor;
-            invalidate(true);
         }
     }
 
@@ -251,9 +236,6 @@ public class ScrollBar extends Widget {
     }
 
     public void setMinRange(float minRange) {
-        if (minRange < 0) minRange = 0;
-        if (minRange > 1) minRange = 1;
-
         if (this.minRange != minRange) {
             this.minRange = minRange;
             invalidate(false);
@@ -331,58 +313,6 @@ public class ScrollBar extends Widget {
     private void fireViewOffsetListener(float old) {
         if (viewOffsetListener != null && old != viewOffset) {
             UXValueListener.safeHandle(viewOffsetListener, new ValueChange<>(this, old, viewOffset));
-        }
-    }
-
-    @Override
-    public void pointer(PointerEvent event) {
-        super.pointer(event);
-        if (event.isConsumed() || event.getPointerID() != 1) {
-            return;
-        }
-
-        Vector2 point = new Vector2(event.getX(), event.getY());
-        screenToLocal(point);
-
-        boolean hor = getDirection() == Direction.HORIZONTAL;
-
-        final float x = getInX();
-        final float y = getInY();
-        final float width = getInWidth();
-        final float height = getInHeight();
-
-        float hStart, hSize, pos, start, size;
-
-        float handleSize = totalDimension == 0 ? 1 :
-                Math.max(minRange, Math.min(1, viewDimension / totalDimension));
-        float moveOffset = totalDimension == 0 ? 0 :
-                Math.max(0, Math.min(1 - handleSize, viewOffset / totalDimension));
-
-        if (hor) {
-            pos = point.x;
-            start = x;
-            size = width;
-            hStart = x + width * moveOffset;
-            hSize = width * handleSize;
-        } else {
-            pos = point.y;
-            start = y;
-            size = height;
-            hStart = y + height * moveOffset;
-            hSize = height * handleSize;
-        }
-
-        if (event.getType() == PointerEvent.PRESSED) {
-            grabOffset = Math.max(0, Math.min(1, (pos + ((float) 0) - hStart) / hSize));
-            float target = ((pos - start) / size - handleSize * grabOffset) * totalDimension;
-            slideTo(target);
-
-        } else if (event.getType() == PointerEvent.DRAGGED) {
-            float target = ((pos - start) / size - handleSize * grabOffset) * totalDimension;
-            slideTo(target);
-
-        } else if (event.getType() == PointerEvent.RELEASED) {
-            grabOffset = 0;
         }
     }
 }

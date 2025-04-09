@@ -2,9 +2,10 @@ package flat.widget.text;
 
 import flat.events.ActionEvent;
 import flat.events.TextEvent;
-import flat.graphics.context.Font;
+import flat.graphics.symbols.Font;
 import flat.graphics.image.Drawable;
 import flat.graphics.image.DrawableReader;
+import flat.graphics.symbols.FontManager;
 import flat.resources.ResourceStream;
 import flat.uxml.*;
 import flat.uxml.value.UXValue;
@@ -31,7 +32,7 @@ import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({UXNode.class, Font.class, DrawableReader.class})
+@PrepareForTest({UXNode.class, Font.class, FontManager.class, DrawableReader.class})
 public class TextDropDownTest {
 
     Controller controller;
@@ -44,6 +45,7 @@ public class TextDropDownTest {
     @Before
     public void before() {
         mockStatic(Font.class);
+        mockStatic(FontManager.class);
 
         defaultFont = mock(Font.class);
         PowerMockito.when(Font.getDefault()).thenReturn(defaultFont);
@@ -58,7 +60,7 @@ public class TextDropDownTest {
 
         resIcon = mock(ResourceStream.class);
         PowerMockito.when(DrawableReader.parse(resIcon)).thenReturn(icon);
-        when(Font.findFont(any(), any(), any(), any())).thenReturn(defaultFont);
+        when(FontManager.findFont(any(), any(), any(), any())).thenReturn(defaultFont);
     }
 
     @Test

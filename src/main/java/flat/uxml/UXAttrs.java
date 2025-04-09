@@ -2,20 +2,19 @@ package flat.uxml;
 
 import flat.animations.StateInfo;
 import flat.exception.FlatException;
-import flat.graphics.context.Font;
+import flat.graphics.symbols.Font;
 import flat.graphics.image.Drawable;
 import flat.graphics.image.DrawableReader;
 import flat.resources.ResourceStream;
 import flat.uxml.value.UXValue;
+import flat.uxml.value.UXValueLocale;
 import flat.widget.State;
 import flat.widget.Widget;
 import flat.window.Activity;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 
 public class UXAttrs {
 
@@ -195,6 +194,14 @@ public class UXAttrs {
         return value != null ? value.asString(theme) : def;
     }
 
+    public String getAttributeLocale(String name, String def) {
+        UXValue value = getAttribute(name);
+        if (value != null && value.getSource(theme) instanceof UXValueLocale locale) {
+            return locale.asString(theme);
+        }
+        return def;
+    }
+
     public boolean getAttributeBool(String name, boolean def) {
         UXValue value = getAttribute(name);
         return value != null ? value.asBool(theme) : def;
@@ -207,7 +214,7 @@ public class UXAttrs {
 
     public float getAttributeSize(String name, float def) {
         UXValue value = getAttribute(name);
-        return value != null ? value.asSize(theme, activity == null ? 160 : activity.getDensity()) : def;
+        return value != null ? value.asSize(theme) : def;
     }
 
     public float getAttributeAngle(String name, float def) {
@@ -230,18 +237,26 @@ public class UXAttrs {
         return value != null ? value.asResource(theme) : def;
     }
 
-    public Drawable getAttributeResourceAsDrawable(String name, Drawable def, boolean handleException) {
-        ResourceStream resource = getAttributeResource(name, null);
-        if (resource != null && !resource.isFolder()) {
-            try {
-                return DrawableReader.parse(resource);
-            } catch (Exception exception) {
-                if (handleException) throw new FlatException("Failed to load image", exception);
-                return null;
+    public Drawable getAttributeDrawable(String name, Drawable def, boolean handleException) {
+        UXValue value = getAttribute(name);
+        if (value != null) {
+            Drawable drawable = value.asDrawable(theme);
+            if (drawable != null) {
+                return drawable;
             }
-        } else {
-            return def;
+
+            ResourceStream resource = value.asResource(theme);
+            if (resource != null && !resource.isFolder()) {
+                try {
+                    return DrawableReader.parse(resource);
+                } catch (Exception exception) {
+                    if (handleException) throw new FlatException("Failed to load image", exception);
+                    return null;
+                }
+            }
         }
+
+        return def;
     }
 
     public <T extends Enum<T>>T getAttributeConstant(String name, T def) {
@@ -267,7 +282,7 @@ public class UXAttrs {
 
     public float[] getAttributeSizeList(String name, float[] def) {
         UXValue value = getAttribute(name);
-        return value != null ? value.asSizeList(theme, activity == null ? 160 : activity.getDensity()) : def;
+        return value != null ? value.asSizeList(theme) : def;
     }
 
     public String getString(String name) {
@@ -306,7 +321,7 @@ public class UXAttrs {
 
     public float getSize(String name, StateInfo state, float def) {
         UXValue value = getValue(UXHash.getHash(name), state);
-        return value != null ? value.asSize(theme, activity == null ? 160 : activity.getDensity()) : def;
+        return value != null ? value.asSize(theme) : def;
     }
 
     public float getAngle(String name) {
@@ -351,18 +366,26 @@ public class UXAttrs {
         return def;
     }
 
-    public Drawable getResourceAsDrawable(String name, StateInfo state, Drawable def, boolean handleException) {
-        ResourceStream resource = getResource(name, state, null);
-        if (resource != null && !resource.isFolder()) {
-            try {
-                return DrawableReader.parse(resource);
-            } catch (Exception exception) {
-                if (handleException) throw new FlatException("Failed to load image", exception);
-                return null;
+    public Drawable getDrawable(String name, StateInfo state, Drawable def, boolean handleException) {
+        UXValue value = getValue(UXHash.getHash(name), state);
+        if (value != null) {
+            Drawable drawable = value.asDrawable(theme);
+            if (drawable != null) {
+                return drawable;
             }
-        } else {
-            return def;
+
+            ResourceStream resource = value.asResource(theme);
+            if (resource != null && !resource.isFolder()) {
+                try {
+                    return DrawableReader.parse(resource);
+                } catch (Exception exception) {
+                    if (handleException) throw new FlatException("Failed to load image", exception);
+                    return null;
+                }
+            }
         }
+
+        return def;
     }
 
     public <T extends Enum<T>> T getConstant(String name, T def) {
@@ -390,7 +413,7 @@ public class UXAttrs {
 
     public float[] getSizeList(String name, StateInfo state, float[] def) {
         UXValue value = getValue(UXHash.getHash(name), state);
-        return value != null ? value.asSizeList(theme, activity == null ? 160 : activity.getDensity()) : def;
+        return value != null ? value.asSizeList(theme) : def;
     }
 
     private UXValue getValue(Integer hash, StateInfo state) {
@@ -414,7 +437,7 @@ public class UXAttrs {
         if (currentValues == null) {
             return null;
         } else {
-            float dpi = activity == null ? 160 : activity.getDensity();
+            float dpi = theme == null ? 160 : theme.getDpi();
             return mixStyle(state, currentValues, dpi);
         }
     }

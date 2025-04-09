@@ -29,7 +29,7 @@ public class EventDataPointerTest {
         Widget widgetB = mock(Widget.class);
 
         // Execute
-        EventDataPointer pointer = new EventDataPointer(-1);
+        EventDataPointer pointer = new EventDataPointer(window, -1);
         pointer.setPosition(10, 20);
 
         // Assert
@@ -58,7 +58,7 @@ public class EventDataPointerTest {
         ArgumentCaptor<PointerEvent> capPointer = ArgumentCaptor.forClass(PointerEvent.class);
 
         // Execute
-        EventDataPointer pointer = new EventDataPointer(-1);
+        EventDataPointer pointer = new EventDataPointer(window, -1);
         pointer.setPosition(10, 20);
 
         pointer.setHover(widgetA);

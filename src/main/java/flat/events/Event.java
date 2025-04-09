@@ -14,8 +14,8 @@ public abstract class Event {
         this.type = type;
     }
 
-    public Widget getSource() {
-        return source;
+    public <T extends Widget> T getSource() {
+        return (T) source;
     }
 
     public EventType getType() {

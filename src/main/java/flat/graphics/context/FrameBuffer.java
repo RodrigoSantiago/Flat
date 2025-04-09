@@ -2,6 +2,7 @@ package flat.graphics.context;
 
 import flat.backend.GL;
 import flat.backend.GLEnums;
+import flat.exception.FlatException;
 import flat.graphics.context.enums.CubeFace;
 import flat.graphics.context.enums.LayerTarget;
 
@@ -15,16 +16,20 @@ public final class FrameBuffer extends ContextObject {
 
     public FrameBuffer(Context context) {
         super(context);
+        final int frameBufferId = GL.FrameBufferCreate();
+        if (frameBufferId == 0) {
+            throw new FlatException("Unable to create a new OpenGL FrameBuffer");
+        }
+
+        this.frameBufferId = frameBufferId;
+        assignDispose(() -> GL.FrameBufferDestroy(frameBufferId));
 
         for (int i = 0; i < 11; i++) {
             layers[i] = new Layer(LayerTarget.values()[i]);
         }
-        final int frameBufferId = GL.FrameBufferCreate();
-        this.frameBufferId = frameBufferId;
-        assignDispose(() -> GL.FrameBufferDestroy(frameBufferId));
     }
 
-    int getInternalID() {
+    int getInternalId() {
         return frameBufferId;
     }
 
@@ -167,19 +172,19 @@ public final class FrameBuffer extends ContextObject {
             // Set
             if (type == LayerType.RENDER) {
                 GL.FrameBufferRenderBuffer(GLEnums.FB_FRAMEBUFFER, target.getInternalEnum(),
-                        render.getInternalID());
+                        render.getInternalId());
             }
             if (type == LayerType.TEXTURE) {
                 GL.FrameBufferTexture2D(GLEnums.FB_FRAMEBUFFER, target.getInternalEnum(),
-                        texture.getInternalType(), texture.getInternalID(), level);
+                        texture.getInternalType(), texture.getInternalId(), level);
             }
             if (type == LayerType.CUBEMAP) {
                 GL.FrameBufferTexture2D(GLEnums.FB_FRAMEBUFFER, target.getInternalEnum(),
-                        face.getInternalEnum(), cubemap.getInternalID(), level);
+                        face.getInternalEnum(), cubemap.getInternalId(), level);
             }
             if (type == LayerType.TEXTUREMULTISAMPLE) {
                 GL.FrameBufferTextureMultisample(GLEnums.FB_FRAMEBUFFER, target.getInternalEnum(),
-                        textureMultisample.getInternalID());
+                        textureMultisample.getInternalId());
             }
             prevFace = face;
             prevType = type;

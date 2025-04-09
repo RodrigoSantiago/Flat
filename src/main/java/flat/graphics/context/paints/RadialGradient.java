@@ -2,6 +2,7 @@ package flat.graphics.context.paints;
 
 import flat.backend.SVG;
 import flat.exception.FlatException;
+import flat.graphics.Color;
 import flat.graphics.context.enums.CycleMethod;
 import flat.graphics.context.Paint;
 import flat.math.Affine;
@@ -33,6 +34,18 @@ public class RadialGradient extends Paint {
         data = builder.data;
     }
 
+    RadialGradient(RadialGradient other, float[] data) {
+        this.x = other.x;
+        this.y = other.y;
+        this.fx = other.fx;
+        this.fy = other.fy;
+        this.radiusIn = other.radiusIn;
+        this.radiusOut = other.radiusOut;
+        this.stopCount = other.stopCount;
+        this.data = data;
+        this.cycleMethod = other.cycleMethod;
+    }
+
     @Override
     protected void setInternal(long svgId)  {
         SVG.SetPaintRadialGradient(svgId, x, y, fx, fy, radiusIn, radiusOut, stopCount, data, cycleMethod.ordinal());
@@ -40,7 +53,14 @@ public class RadialGradient extends Paint {
 
     @Override
     public Paint multiply(int color) {
-        return this; // todo - implement
+        if (color == 0XFFFFFFFF) return this;
+
+        float[] newColor = data.clone();
+        for (int i = 0; i < stopCount; i++) {
+            newColor[6 + 16 + i] = Float.intBitsToFloat(Color.multiply(Float.floatToRawIntBits(data[6 + 16 + i]), color));
+        }
+
+        return new RadialGradient(this, newColor);
     }
 
     public float getX() {
@@ -151,7 +171,7 @@ public class RadialGradient extends Paint {
         public Builder stop(float stop, int color) {
             checkReadOnly();
             if (stop < 0 || stop > 1) {
-                throw new FlatException("Stop must be between 0 and 1.");
+                throw new FlatException("Stop must be between 0 and 1");
             }
 
             if (stopCount == 0) {

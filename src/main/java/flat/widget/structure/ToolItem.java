@@ -37,13 +37,23 @@ public class ToolItem extends Widget {
     }
 
     @Override
+    public void applyLocalization() {
+        super.applyLocalization();
+
+        UXAttrs attrs = getAttrs();
+
+        setMenuText(attrs.getAttributeLocale("menu-text", getMenuText()));
+        setMenuShortcutText(attrs.getAttributeLocale("menu-shortcut-text", getMenuShortcutText()));
+    }
+
+    @Override
     public void applyStyle() {
         super.applyStyle();
 
         UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
 
-        setIcon(attrs.getResourceAsDrawable("icon", info, getIcon(), false));
+        setIcon(attrs.getDrawable("icon", info, getIcon(), false));
         setIconColor(attrs.getColor("icon-color", info, getIconColor()));
         setIconImageFilter(attrs.getConstant("icon-image-filter", info, getIconImageFilter()));
         setIconWidth(attrs.getSize("icon-width", info, getIconWidth()));
@@ -79,6 +89,8 @@ public class ToolItem extends Widget {
 
     @Override
     public void onDraw(Graphics graphics) {
+        if (discardDraw(graphics)) return;
+
         drawBackground(graphics);
         drawRipple(graphics);
 

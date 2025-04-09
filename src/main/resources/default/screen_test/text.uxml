@@ -2,114 +2,48 @@
     <LinearBox direction="HORIZONTAL" width="MATCH_PARENT" height="MATCH_PARENT" vertical-align="top">
         <LinearBox direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
                    padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
-            <Label text="Text Area" style="subtitle" margin-left="4dp"/>
-            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="bottom">
-                <TextArea width="200dp" style="text-area-primary" text="Simplest possible"/>
-                <TextArea width="200dp"  margin-left="8dp" style="text-area-primary" text="Multline&#10;Text"/>
+            <Label text="Small Line" style="subtitle" margin-left="4dp"/>
+            <LinearBox margin-left="4dp" direction="HORIZONTAL" horizontal-align="LEFT" border-width="1dp" border-color="$on-card-color">
+                <Text text="Lorem ipsum dolor sit amet. Quo dolor debitis aut culpa pariatur 33 amet suscipit!"/>
             </LinearBox>
-            <Label text="Text Field" style="subtitle" margin-left="4dp" margin-top="16dp"/>
-            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="bottom">
-                <TextField width="200dp" style="" text="Simple Text" editable="true"/>
-                <TextField margin-left="8dp" style="" title="Title" width="200dp" text="" editable="true"/>
-                <TextField margin-left="8dp" style="" title="Title" width="200dp" text="With Text" editable="true"/>
+            <Label text="Left" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox margin-left="4dp" direction="HORIZONTAL" horizontal-align="LEFT" border-width="1dp" border-color="$on-card-color">
+                <Text text="Lorem ipsum dolor sit amet. Quo dolor debitis aut culpa pariatur 33 amet suscipit sed doloremque repudiandae qui sapiente illo! Ut quia labore ea fuga laudantium quo exercitationem voluptas aut ratione quos eos adipisci galisum et illum corrupti! Eum galisum quaerat et illum enim est laborum harum ut soluta voluptatibus."/>
             </LinearBox>
-            <Label text="Text Input Field Icon" style="subtitle" margin-left="4dp" margin-top="16dp"/>
-            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="bottom">
-                <TextInputField width="200dp" style="" text="Simple Text" icon="/default/icons/calendar.svg"/>
-                <TextInputField margin-left="8dp" style="" title="Title" width="200dp" text="" icon="/default/icons/calendar.svg"/>
-                <TextInputField margin-left="8dp" style="" title="Title" width="200dp" text="With Text" icon="/default/icons/calendar.svg"/>
+            <Label text="Center" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox margin-left="4dp" direction="HORIZONTAL" horizontal-align="LEFT" border-width="1dp" border-color="$on-card-color">
+                <Text horizontal-align="center" text="Lorem ipsum dolor sit amet. Quo dolor debitis aut culpa pariatur 33 amet suscipit sed doloremque repudiandae qui sapiente illo! Ut quia labore ea fuga laudantium quo exercitationem voluptas aut ratione quos eos adipisci galisum et illum corrupti! Eum galisum quaerat et illum enim est laborum harum ut soluta voluptatibus."/>
             </LinearBox>
-            <Label text="Text Input Field Action" style="subtitle" margin-left="4dp" margin-top="16dp"/>
-            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="bottom">
-                <TextInputField width="200dp" style="" text="Simple Text" action-icon="/default/icons/close.svg"/>
-                <TextInputField margin-left="8dp" style="" title="Title" width="200dp" text="" action-icon="/default/icons/close.svg"/>
-                <TextInputField margin-left="8dp" style="" title="Title" width="200dp" text="With Text" action-icon="/default/icons/close.svg"/>
+            <Label text="Right" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox margin-left="4dp" direction="HORIZONTAL" horizontal-align="LEFT" border-width="1dp" border-color="$on-card-color">
+                <Text horizontal-align="right" text="Lorem ipsum dolor sit amet. Quo dolor debitis aut culpa pariatur 33 amet suscipit sed doloremque repudiandae qui sapiente illo! Ut quia labore ea fuga laudantium quo exercitationem voluptas aut ratione quos eos adipisci galisum et illum corrupti! Eum galisum quaerat et illum enim est laborum harum ut soluta voluptatibus."/>
             </LinearBox>
-            <Label text="Text Input Field Icon + Action" style="subtitle" margin-left="4dp" margin-top="16dp"/>
-            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="bottom">
-                <TextInputField width="200dp" style="" text="Simple Text"
-                                icon="/default/icons/calendar.svg" action-icon="/default/icons/close.svg"/>
-                <TextInputField margin-left="8dp" style="" title="Title" width="200dp" text=""
-                                icon="/default/icons/calendar.svg" action-icon="/default/icons/close.svg"/>
-                <TextInputField margin-left="8dp" style="" title="Title" width="200dp" text="With Text"
-                                icon="/default/icons/calendar.svg" action-icon="/default/icons/close.svg"/>
-            </LinearBox>
-            <Label text="Text Drop Down" style="subtitle" margin-left="4dp" margin-top="16dp"/>
-            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="bottom">
-                <TextDropDown width="200dp" style="" text="Simple Text">
-                    Item number 1
-                    Item number 2
-                    Item number 3
-                    Item number 4
-                </TextDropDown>
-                <TextDropDown margin-left="8dp" style="" title="Title" width="200dp" text="">
-                    Item number 1
-                    Item number 2
-                    Item number 3
-                    Item number 4
-                </TextDropDown>
-                <TextDropDown margin-left="8dp" style="" title="Title" width="200dp" text="With Text">
-                    Item number 1
-                    Item number 2
-                    Item number 3
-                    Item number 4
-                </TextDropDown>
+            <Label text="Break Lines" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox margin-left="4dp" direction="HORIZONTAL" horizontal-align="LEFT" border-width="1dp" border-color="$on-card-color">
+                <Text text="Lorem ipsum dolor sit amet.&#10;Quo dolor debitis aut culpa pariatur 33 amet suscipit sed doloremque repudiandae qui sapiente illo!&#10;Ut quia labore ea fuga laudantium quo exercitationem voluptas aut ratione quos eos adipisci galisum et illum corrupti! Eum galisum quaerat et illum enim est laborum harum ut soluta voluptatibus."/>
             </LinearBox>
         </LinearBox>
         <LinearBox enabled="false" direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
                    padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
-            <Label text="Text Area" style="subtitle" margin-left="4dp"/>
-            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="bottom">
-                <TextArea width="200dp" style="text-area-primary" text="Simplest possible"/>
-                <TextArea width="200dp"  margin-left="8dp" style="text-area-primary" text="Multline&#10;Text"/>
+            <Label text="Small Line" style="subtitle" margin-left="4dp"/>
+            <LinearBox margin-left="4dp" direction="HORIZONTAL" horizontal-align="LEFT" border-width="1dp" border-color="$on-card-color">
+                <Text text="Lorem ipsum dolor sit amet. Quo dolor debitis aut culpa pariatur 33 amet suscipit!"/>
             </LinearBox>
-            <Label text="Text Field" style="subtitle" margin-left="4dp" margin-top="16dp"/>
-            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="bottom">
-                <TextField width="200dp" style="" text="Simple Text" editable="true"/>
-                <TextField margin-left="8dp" style="" title="Title" width="200dp" text="" editable="true"/>
-                <TextField margin-left="8dp" style="" title="Title" width="200dp" text="With Text" editable="true"/>
+            <Label text="Left" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox margin-left="4dp" direction="HORIZONTAL" horizontal-align="LEFT" border-width="1dp" border-color="$on-card-color">
+                <Text text="Lorem ipsum dolor sit amet. Quo dolor debitis aut culpa pariatur 33 amet suscipit sed doloremque repudiandae qui sapiente illo! Ut quia labore ea fuga laudantium quo exercitationem voluptas aut ratione quos eos adipisci galisum et illum corrupti! Eum galisum quaerat et illum enim est laborum harum ut soluta voluptatibus."/>
             </LinearBox>
-            <Label text="Text Input Field Icon" style="subtitle" margin-left="4dp" margin-top="16dp"/>
-            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="bottom">
-                <TextInputField width="200dp" style="" text="Simple Text" icon="/default/icons/calendar.svg"/>
-                <TextInputField margin-left="8dp" style="" title="Title" width="200dp" text="" icon="/default/icons/calendar.svg"/>
-                <TextInputField margin-left="8dp" style="" title="Title" width="200dp" text="With Text" icon="/default/icons/calendar.svg"/>
+            <Label text="Center" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox margin-left="4dp" direction="HORIZONTAL" horizontal-align="LEFT" border-width="1dp" border-color="$on-card-color">
+                <Text horizontal-align="center" text="Lorem ipsum dolor sit amet. Quo dolor debitis aut culpa pariatur 33 amet suscipit sed doloremque repudiandae qui sapiente illo! Ut quia labore ea fuga laudantium quo exercitationem voluptas aut ratione quos eos adipisci galisum et illum corrupti! Eum galisum quaerat et illum enim est laborum harum ut soluta voluptatibus."/>
             </LinearBox>
-            <Label text="Text Input Field Action" style="subtitle" margin-left="4dp" margin-top="16dp"/>
-            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="bottom">
-                <TextInputField width="200dp" style="" text="Simple Text" action-icon="/default/icons/close.svg"/>
-                <TextInputField margin-left="8dp" style="" title="Title" width="200dp" text="" action-icon="/default/icons/close.svg"/>
-                <TextInputField margin-left="8dp" style="" title="Title" width="200dp" text="With Text" action-icon="/default/icons/close.svg"/>
+            <Label text="Right" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox margin-left="4dp" direction="HORIZONTAL" horizontal-align="LEFT" border-width="1dp" border-color="$on-card-color">
+                <Text horizontal-align="right" text="Lorem ipsum dolor sit amet. Quo dolor debitis aut culpa pariatur 33 amet suscipit sed doloremque repudiandae qui sapiente illo! Ut quia labore ea fuga laudantium quo exercitationem voluptas aut ratione quos eos adipisci galisum et illum corrupti! Eum galisum quaerat et illum enim est laborum harum ut soluta voluptatibus."/>
             </LinearBox>
-            <Label text="Text Input Field Icon + Action" style="subtitle" margin-left="4dp" margin-top="16dp"/>
-            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="bottom">
-                <TextInputField width="200dp" style="" text="Simple Text"
-                                icon="/default/icons/calendar.svg" action-icon="/default/icons/close.svg"/>
-                <TextInputField margin-left="8dp" style="" title="Title" width="200dp" text=""
-                                icon="/default/icons/calendar.svg" action-icon="/default/icons/close.svg"/>
-                <TextInputField margin-left="8dp" style="" title="Title" width="200dp" text="With Text"
-                                icon="/default/icons/calendar.svg" action-icon="/default/icons/close.svg"/>
-            </LinearBox>
-            <Label text="Text Drop Down" style="subtitle" margin-left="4dp" margin-top="16dp"/>
-            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="bottom">
-                <TextDropDown width="200dp" style="" text="Simple Text">
-                    Item number 1
-                    Item number 2
-                    Item number 3
-                    Item number 4
-                </TextDropDown>
-                <TextDropDown margin-left="8dp" style="" title="Title" width="200dp" text="">
-                    Item number 1
-                    Item number 2
-                    Item number 3
-                    Item number 4
-                </TextDropDown>
-                <TextDropDown margin-left="8dp" style="" title="Title" width="200dp" text="With Text">
-                    Item number 1
-                    Item number 2
-                    Item number 3
-                    Item number 4
-                </TextDropDown>
+            <Label text="Break Lines" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox margin-left="4dp" direction="HORIZONTAL" horizontal-align="LEFT" border-width="1dp" border-color="$on-card-color">
+                <Text text="Lorem ipsum dolor sit amet.&#10;Quo dolor debitis aut culpa pariatur 33 amet suscipit sed doloremque repudiandae qui sapiente illo!&#10;Ut quia labore ea fuga laudantium quo exercitationem voluptas aut ratione quos eos adipisci galisum et illum corrupti! Eum galisum quaerat et illum enim est laborum harum ut soluta voluptatibus."/>
             </LinearBox>
         </LinearBox>
     </LinearBox>

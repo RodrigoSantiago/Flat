@@ -12,12 +12,14 @@ button : button.default {
     padding-right : 16dp;
     padding-top : 8dp;
     padding-bottom : 8dp;
-    horizontal-align : left;
+    horizontal-align : center;
     vertical-align : middle;
     cursor : hand;
     focusable : true;
+    focus-width : 2dp;
     transition-duration : 0.2;
     text-all-caps : true;
+    min-width : 64dp;
 
     enabled {
         elevation : 1dp;
@@ -49,6 +51,7 @@ button.icon {
     radius-bottom : 36dp;
     icon-width : 18dp;
     icon-height : 18dp;
+    min-width : 0dp;
 }
 
 button.icon-dense {
@@ -62,6 +65,7 @@ button.icon-dense {
     radius-bottom : 36dp;
     icon-width : 18dp;
     icon-height : 18dp;
+    min-width : 0dp;
 }
 
 button.icon-left {
@@ -70,6 +74,7 @@ button.icon-left {
     icon-spacing : 8dp;
     icon-width : 18dp;
     icon-height : 18dp;
+    min-width : 0dp;
 }
 
 button.icon-right {
@@ -78,6 +83,7 @@ button.icon-right {
     icon-spacing : 8dp;
     icon-width : 18dp;
     icon-height : 18dp;
+    min-width : 0dp;
 }
 
 button.default {
@@ -86,12 +92,16 @@ button.default {
     icon-color : $on-card-color;
     background-color : $card-color;
     ripple-color : $card-color-press;
+    focus-color : $primary-color;
 
     hovered {
         background-color : $card-color-hover;
     }
     focused {
         background-color : $card-color-hover;
+    }
+    activated {
+        background-color : $card-color-active;
     }
     disabled {
         text-color : $on-disabled-color;
@@ -106,12 +116,16 @@ button.primary {
     icon-color : $on-primary-color;
     background-color : $primary-color;
     ripple-color : $primary-color-press;
+    focus-color : $on-card-color;
 
     hovered {
         background-color : $primary-color-hover;
     }
     focused {
         background-color : $primary-color-hover;
+    }
+    activated {
+        background-color : $primary-color-active;
     }
     disabled {
         text-color : $on-disabled-color;
@@ -128,17 +142,22 @@ button.outlined-primary {
     ripple-color : alpha($primary-color-fade, 0.25);
     border-color : $primary-color;
     border-width : 1dp;
+    focus-color : $primary-color;
 
     hovered {
         background-color : alpha($primary-color-fade, 0.15);
     }
     focused {
+        background-color : alpha($primary-color-fade, 0.20);
+    }
+    activated {
         background-color : alpha($primary-color-fade, 0.25);
     }
     disabled {
         text-color : $on-disabled-color;
         icon-color : $on-disabled-color;
         border-color : $on-disabled-color;
+        background-color : transparent;
     }
 }
 
@@ -148,15 +167,20 @@ button.text-primary {
     icon-color : $primary-color;
     background-color : transparent;
     ripple-color : alpha($primary-color-fade, 0.25);
+    focus-color : $primary-color;
 
     hovered {
         background-color : alpha($primary-color-fade, 0.15);
     }
     focused {
+        background-color : alpha($primary-color-fade, 0.20);
+    }
+    activated {
         background-color : alpha($primary-color-fade, 0.25);
     }
     disabled {
         text-color : $on-disabled-color;
         icon-color : $on-disabled-color;
+        background-color : transparent;
     }
 }

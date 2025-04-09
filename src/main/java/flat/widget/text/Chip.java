@@ -6,11 +6,8 @@ import flat.events.HoverEvent;
 import flat.events.PointerEvent;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
-import flat.graphics.cursor.Cursor;
 import flat.graphics.image.Drawable;
 import flat.math.Vector2;
-import flat.math.shapes.Ellipse;
-import flat.math.stroke.BasicStroke;
 import flat.uxml.*;
 import flat.widget.enums.HorizontalPosition;
 import flat.widget.enums.ImageFilter;
@@ -43,7 +40,7 @@ public class Chip extends Button {
         UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
 
-        setCloseIcon(attrs.getResourceAsDrawable("close-icon", info, getCloseIcon(), false));
+        setCloseIcon(attrs.getDrawable("close-icon", info, getCloseIcon(), false));
         setCloseIconColor(attrs.getColor("close-icon-color", info, getCloseIconColor()));
         setCloseIconWidth(attrs.getSize("close-icon-width", info, getCloseIconWidth()));
         setCloseIconHeight(attrs.getSize("close-icon-height", info, getCloseIconHeight()));
@@ -52,7 +49,66 @@ public class Chip extends Button {
     }
 
     @Override
+    public void onMeasure() {
+        float extraWidth = getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
+        float extraHeight = getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
+
+        float mWidth;
+        float mHeight;
+        boolean wrapWidth = getLayoutPrefWidth() == WRAP_CONTENT;
+        boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
+
+        float iW = getLayoutIconWidth();
+        float iH = getLayoutIconHeight();
+        float ciW = getLayoutCloseIconWidth();
+        float ciH = getLayoutCloseIconHeight();
+
+        if (wrapWidth) {
+            mWidth = Math.max(getTextWidth() + extraWidth
+                    + (iW > 0 ? iW + getIconSpacing() : 0)
+                    + (ciW > 0 ? ciW + getCloseIconSpacing() : 0), getLayoutMinWidth());
+        } else {
+            mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
+        }
+        if (wrapHeight) {
+            mHeight = Math.max(Math.max(getTextHeight(), Math.max(iH, ciH)) + extraHeight, getLayoutMinHeight());
+        } else {
+            mHeight = Math.max(getLayoutPrefHeight(), getLayoutMinHeight());
+        }
+
+        setMeasure(mWidth, mHeight);
+    }
+
+    @Override
+    public void onLayout(float width, float height) {
+        super.onLayout(width, height);
+        updateClosePosition();
+    }
+
+    private void updateClosePosition() {
+        float x = getInX();
+        float y = getInY();
+        float width = getInWidth();
+        float height = getInHeight();
+
+        float iaw = Math.min(width, getLayoutCloseIconWidth());
+        float iah = Math.min(height, getLayoutCloseIconHeight());
+
+        if (getIconPosition() == HorizontalPosition.LEFT) {
+            x1 = x + width - iaw;
+            x2 = x + width;
+        } else {
+            x1 = x;
+            x2 = x + iaw;
+        }
+        y1 = yOff(y, y + height, iah);
+        y2 = yOff(y, y + height, iah) + iah;
+    }
+
+    @Override
     public void onDraw(Graphics graphics) {
+        if (discardDraw(graphics)) return;
+
         drawBackground(graphics);
         drawRipple(graphics);
 
@@ -117,63 +173,6 @@ public class Chip extends Button {
     }
 
     @Override
-    public void onMeasure() {
-        float extraWidth = getPaddingLeft() + getPaddingRight() + getMarginLeft() + getMarginRight();
-        float extraHeight = getPaddingTop() + getPaddingBottom() + getMarginTop() + getMarginBottom();
-
-        float mWidth;
-        float mHeight;
-        boolean wrapWidth = getLayoutPrefWidth() == WRAP_CONTENT;
-        boolean wrapHeight = getLayoutPrefHeight() == WRAP_CONTENT;
-
-        float iW = getLayoutIconWidth();
-        float iH = getLayoutIconHeight();
-        float ciW = getLayoutCloseIconWidth();
-        float ciH = getLayoutCloseIconHeight();
-
-        if (wrapWidth) {
-            mWidth = Math.max(getTextWidth() + extraWidth
-                    + (iW > 0 ? iW + getIconSpacing() : 0)
-                    + (ciW > 0 ? ciW + getCloseIconSpacing() : 0), getLayoutMinWidth());
-        } else {
-            mWidth = Math.max(getLayoutPrefWidth(), getLayoutMinWidth());
-        }
-        if (wrapHeight) {
-            mHeight = Math.max(Math.max(getTextHeight(), Math.max(iH, ciH)) + extraHeight, getLayoutMinHeight());
-        } else {
-            mHeight = Math.max(getLayoutPrefHeight(), getLayoutMinHeight());
-        }
-
-        setMeasure(mWidth, mHeight);
-    }
-
-    @Override
-    public void onLayout(float width, float height) {
-        super.onLayout(width, height);
-        updateClosePosition();
-    }
-
-    private void updateClosePosition() {
-        float x = getInX();
-        float y = getInY();
-        float width = getInWidth();
-        float height = getInHeight();
-
-        float iaw = Math.min(width, getLayoutCloseIconWidth());
-        float iah = Math.min(height, getLayoutCloseIconHeight());
-
-        if (getIconPosition() == HorizontalPosition.LEFT) {
-            x1 = x + width - iaw;
-            x2 = x + width;
-        } else {
-            x1 = x;
-            x2 = x + iaw;
-        }
-        y1 = yOff(y, y + height, iah);
-        y2 = yOff(y, y + height, iah) + iah;
-    }
-
-    @Override
     public void fireRipple(float x, float y) {
         if (isOverActionButton(screenToLocal(x, y))) {
             if (isRippleEnabled()) {
@@ -219,7 +218,11 @@ public class Chip extends Button {
     @Override
     public void pointer(PointerEvent event) {
         UXListener.safeHandle(getPointerListener(), event);
+        if (!event.isConsumed() && event.getPointerID() == 1 && event.getType() == PointerEvent.PRESSED) {
+            event.consume();
+        }
         if (!event.isConsumed() && event.getPointerID() == 1 && event.getType() == PointerEvent.RELEASED) {
+            event.consume();
             if (isOverActionButton(screenToLocal(event.getX(), event.getY()))) {
                 requestClose();
             } else {

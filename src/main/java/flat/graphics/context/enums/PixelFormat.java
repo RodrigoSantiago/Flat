@@ -7,6 +7,7 @@ public enum PixelFormat {
     RG(GLEnums.TF_RG, 2),
     RGB(GLEnums.TF_RGB, 3),
     RGBA(GLEnums.TF_RGBA, 4),
+    RGBA16F(GLEnums.TF_RGBA16F, 8),
     DEPTH16(GLEnums.TF_DEPTH_COMPONENT16, 2),
     DEPTH24(GLEnums.TF_DEPTH_COMPONENT24, 3),
     DEPTH32(GLEnums.TF_DEPTH_COMPONENT32F, 4),

@@ -1,6 +1,7 @@
 package flat.graphics.context;
 
 import flat.backend.GL;
+import flat.exception.FlatException;
 import flat.graphics.context.enums.ShaderType;
 
 public final class Shader extends ContextObject {
@@ -22,17 +23,21 @@ public final class Shader extends ContextObject {
         this.source = source;
 
         final int shaderId = GL.ShaderCreate(type.getInternalEnum());
+        if (shaderId == 0) {
+            throw new FlatException("Unable to create a new OpenGL Shader");
+        }
+
         this.shaderId = shaderId;
         assignDispose(() -> GL.ShaderDestroy(shaderId));
     }
 
-    int getInternalID() {
+    int getInternalId() {
         return shaderId;
     }
 
     public void setSource(String source) {
         if (compiled) {
-            throw new RuntimeException("A compiled shader is immutable");
+            throw new FlatException("A compiled shader is immutable");
         }
         this.source = source;
     }

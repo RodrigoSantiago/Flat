@@ -17,6 +17,7 @@ public class GL {
     public static native int GetClearDepth();
     public static native int GetClearStencil();
 
+    public static native void SetReadBuffer(int faceFG);
     public static native void ReadPixels(int x, int y, int width, int height, int typeDT, long offset);
     public static native void ReadPixelsB(int x, int y, int width, int height, byte[] data, int offset);
     public static native void ReadPixelsS(int x, int y, int width, int height, short[] data, int offset);
@@ -351,4 +352,12 @@ public class GL {
     //---------------------------
     public static native void TransformFeedbackBegin(int polygonTypeFP);
     public static native void TransformFeedbackEnd();
+
+    //---------------------------
+    //           Limits
+    //---------------------------
+    public static native int GetMaxTextureSize();
+    public static native int GetMaxElementsVertices();
+    public static native int GetMaxElementsIndices();
+    public static native int GetMaxUniformBlockSize();
 }

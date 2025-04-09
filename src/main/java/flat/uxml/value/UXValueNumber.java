@@ -15,8 +15,8 @@ public class UXValueNumber extends UXValue {
     @Override
     UXValue internalMix(UXValue uxValue, float t, UXTheme theme, float dpi) {
         if (uxValue.isSize(theme)) {
-            float v1 = asSize(theme, dpi);
-            float v2 = uxValue.asSize(theme, dpi);
+            float v1 = asSize(theme);
+            float v2 = uxValue.asSize(theme);
             if (Math.abs(v1 - v2) > 0.01f) {
                 return new UXValueNumber(Interpolation.mix(v1, v2, t));
             }
@@ -37,13 +37,13 @@ public class UXValueNumber extends UXValue {
     }
 
     @Override
-    public float asSize(UXTheme theme, float dpi) {
+    public float asSize(UXTheme theme) {
         return value;
     }
 
     @Override
-    public float[] asSizeList(UXTheme theme, float dpi) {
-        return new float[] {asSize(theme, dpi)};
+    public float[] asSizeList(UXTheme theme) {
+        return new float[] {asSize(theme)};
     }
 
     @Override

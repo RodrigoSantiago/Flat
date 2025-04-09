@@ -1,0 +1,12 @@
+<LinearBox direction="vertical" style="dialog-confirm">
+    <LinearBox style="dialog-header"/>
+    <LinearBox direction="vertical" vertical-alig="right" style="dialog-message-area">
+        <Label style="dialog-title" id="titleLabel"/>
+        <Label style="dialog-message" id="messageLabel"/>
+    </LinearBox>
+    <LinearBox direction="horizontal" style="dialog-action-area">
+        <Button id="cancelButton" text="Cancel" style="text-primary dialog-cancel-button" on-action="onCancel"/>
+        <Button text="No" style="text-primary dialog-no-button" on-action="onNo"/>
+        <Button text="Yes" style="text-primary dialog-yes-button" on-action="onYes"/>
+    </LinearBox>
+</LinearBox>

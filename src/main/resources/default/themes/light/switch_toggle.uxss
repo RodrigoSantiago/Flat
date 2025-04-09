@@ -20,17 +20,20 @@ switch-toggle : switch-toggle.primary {
     slide-transition-duration : 0.2;
 
     focusable : true;
+    focus-width : 2dp;
     cursor : hand;
 }
 
 switch-toggle.primary {
-    icon : '/default/icons/circle.svg';
+    icon : icon(fill, circle);
     icon-color : $card-color;
     line-color : $disabled-color;
     icon-bg-color : transparent;
     line-width : 12dp;
     line-cap : ROUND;
     ripple-color : alpha($primary-color-fade, 0.5);
+    focus-color : $primary-color;
+
     hovered {
         icon-color : $card-color;
         icon-bg-color : alpha($primary-color-fade, 0.15);

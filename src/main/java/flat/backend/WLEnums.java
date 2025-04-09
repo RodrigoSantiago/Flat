@@ -276,4 +276,7 @@ public class WLEnums {
     public interface ErrorCallback {
         void handle(String error);
     }
+    public interface DialogCallback {
+        void handle(long window, String path);
+    }
 }

@@ -32,7 +32,7 @@ public class ImageView extends Widget {
         UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
 
-        setImage(attrs.getResourceAsDrawable("image", info, getImage(), false));
+        setImage(attrs.getDrawable("image", info, getImage(), false));
         setColor(attrs.getColor("color", info, getColor()));
         setImageFilter(attrs.getConstant("image-filter", info, getImageFilter()));
         setImageScale(attrs.getConstant("image-scale", info, getImageScale()));
@@ -66,6 +66,8 @@ public class ImageView extends Widget {
 
     @Override
     public void onDraw(Graphics graphics) {
+        if (discardDraw(graphics)) return;
+
         drawBackground(graphics);
         drawRipple(graphics);
 

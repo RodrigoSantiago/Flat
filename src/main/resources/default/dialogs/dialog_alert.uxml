@@ -1,0 +1,10 @@
+<LinearBox direction="vertical" style="dialog-alert">
+    <LinearBox style="dialog-header"/>
+    <LinearBox direction="vertical" vertical-alig="right" style="dialog-message-area">
+        <Label style="dialog-title" id="titleLabel"/>
+        <Label style="dialog-message" id="messageLabel"/>
+    </LinearBox>
+    <LinearBox direction="horizontal" style="dialog-action-area">
+        <Button text="OK" style="text-primary dialog-ok-button" on-action="onOk"/>
+    </LinearBox>
+</LinearBox>

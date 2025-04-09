@@ -28,7 +28,9 @@ public class UXSheet {
     private static UXSheet parseInclude(ResourceStream stream, ArrayList<String> includes) {
         Object cache = stream.getCache();
         if (cache != null) {
-            if (cache instanceof UXSheet) {
+            if (cache instanceof Exception) {
+                return null;
+            } else if (cache instanceof UXSheet) {
                 return (UXSheet) cache;
             } else {
                 stream.clearCache();
@@ -40,7 +42,8 @@ public class UXSheet {
                 stream.putCache(sheet);
             }
             return sheet;
-        } catch (IOException e) {
+        } catch (Exception e) {
+            stream.putCache(e);
             throw new FlatException(e);
         }
     }
@@ -73,11 +76,13 @@ public class UXSheet {
                 readRecursive(sheet, st, includes);
             }
         } else {
-            if (stream.getStream() == null) {
-                throw new FlatException("File not found at: " + stream.getResourceName());
+            byte[] data = stream.readData();
+            if (data == null) {
+                throw new FlatException("Invalid file " + stream.getResourceName());
             }
-            String data = new String(stream.getStream().readAllBytes(), StandardCharsets.UTF_8);
-            UXSheetParser reader = new UXSheetParser(data);
+
+            String uxss = new String(stream.readData(), StandardCharsets.UTF_8);
+            UXSheetParser reader = new UXSheetParser(uxss);
             reader.parse();
 
             // Logs
@@ -137,8 +142,12 @@ public class UXSheet {
         }
     }
 
+    public UXTheme instance(float fontScale, float dpi, UXStringBundle stringBundle, HashMap<String, UXValue> variables) {
+        return new UXTheme(this, fontScale, dpi, stringBundle, variables);
+    }
+
     public UXTheme instance() {
-        return new UXTheme(this, 1f, null);
+        return new UXTheme(this, 1f, 160f, null, null);
     }
 
     public UXStyle getStyle(String name) {

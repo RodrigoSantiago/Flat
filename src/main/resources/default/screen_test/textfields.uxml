@@ -1,0 +1,120 @@
+<Scene width="MATCH_PARENT" height="MATCH_PARENT" background-color="$surface-color">
+    <LinearBox direction="HORIZONTAL" width="MATCH_PARENT" height="MATCH_PARENT" vertical-align="top">
+        <LinearBox direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
+                   padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
+            <Label text="Text Area" style="subtitle" margin-left="4dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="bottom">
+                <TextArea width="200dp" style="text-area-primary" text="Simplest Text"/>
+                <TextArea width="200dp"  margin-left="8dp" style="text-area-primary" text="Multline&#10;Text"/>
+                <TextArea width="200dp"  margin-left="8dp" style="text-area-primary" id="emoji"
+                          text="Emojis &#x1F602; &#x2764; &#x1F60D; &#x1F923; &#x1F60A; &#x1F97A; &#x1F64F; &#x1F495; &#x1F62D; &#x1F618;"/>
+            </LinearBox>
+            <Label text="Text Field" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="bottom">
+                <TextField width="200dp" style="" text="" text-hint="Text Hint" editable="true"/>
+                <TextField margin-left="8dp" style="" title="Title" width="200dp" text="" editable="true"/>
+                <TextField margin-left="8dp" style="" title="Title" width="200dp" text="With Text" editable="true"/>
+            </LinearBox>
+            <Label text="Text Input Field Icon" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="bottom">
+                <TextInputField width="200dp" style="" text="" text-hint="Text Hint" icon="icon(fill, event)"/>
+                <TextInputField margin-left="8dp" style="" title="Title" width="200dp" text="" icon="icon(fill, event)"/>
+                <TextInputField margin-left="8dp" style="" title="Title" width="200dp" text="With Text" icon="icon(fill, event)"/>
+            </LinearBox>
+            <Label text="Text Input Field Action" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="bottom">
+                <TextInputField width="200dp" style="" text="" text-hint="Text Hint" action-icon="icon(fill, close)"/>
+                <TextInputField margin-left="8dp" style="" title="Title" width="200dp" text="" action-icon="icon(fill, close)"/>
+                <TextInputField margin-left="8dp" style="" title="Title" width="200dp" text="With Text" action-icon="icon(fill, close)"/>
+            </LinearBox>
+            <Label text="Text Input Field Icon + Action" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="bottom">
+                <TextInputField width="200dp" style="" text="" text-hint="Text Hint"
+                                icon="icon(fill, event)" action-icon="icon(fill, close)"/>
+                <TextInputField margin-left="8dp" style="" title="Title" width="200dp" text=""
+                                icon="icon(fill, event)" action-icon="icon(fill, close)"/>
+                <TextInputField margin-left="8dp" style="" title="Title" width="200dp" text="With Text"
+                                icon="icon(fill, event)" action-icon="icon(fill, close)"/>
+            </LinearBox>
+            <Label text="Text Drop Down" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="bottom">
+                <TextDropDown width="200dp" style="" text="" text-hint="Text Hint" >
+                    Item number 1
+                    Item number 2
+                    Item number 3
+                    Item number 4
+                </TextDropDown>
+                <TextDropDown margin-left="8dp" style="" title="Title" width="200dp" text="">
+                    Item number 1
+                    Item number 2
+                    Item number 3
+                    Item number 4
+                </TextDropDown>
+                <TextDropDown margin-left="8dp" style="" title="Title" width="200dp" text="With Text">
+                    Item number 1
+                    Item number 2
+                    Item number 3
+                    Item number 4
+                </TextDropDown>
+            </LinearBox>
+        </LinearBox>
+        <LinearBox enabled="false" direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
+                   padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
+            <Label text="Text Area" style="subtitle" margin-left="4dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="bottom">
+                <TextArea width="200dp" style="text-area-primary" text="Simplest Text"/>
+                <TextArea width="200dp"  margin-left="8dp" style="text-area-primary" text="Multline&#10;Text"/>
+                <TextArea width="200dp"  margin-left="8dp" style="text-area-primary" id="emoji"
+                          text="Emojis &#x1F602; &#x2764; &#x1F60D; &#x1F923; &#x1F60A; &#x1F97A; &#x1F64F; &#x1F495; &#x1F62D; &#x1F618;"/>
+            </LinearBox>
+            <Label text="Text Field" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="bottom">
+                <TextField width="200dp" style="" text="" text-hint="Text Hint" editable="true"/>
+                <TextField margin-left="8dp" style="" title="Title" width="200dp" text="" editable="true"/>
+                <TextField margin-left="8dp" style="" title="Title" width="200dp" text="With Text" editable="true"/>
+            </LinearBox>
+            <Label text="Text Input Field Icon" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="bottom">
+                <TextInputField width="200dp" style="" text="" text-hint="Text Hint" icon="icon(fill, event)"/>
+                <TextInputField margin-left="8dp" style="" title="Title" width="200dp" text="" icon="icon(fill, event)"/>
+                <TextInputField margin-left="8dp" style="" title="Title" width="200dp" text="With Text" icon="icon(fill, event)"/>
+            </LinearBox>
+            <Label text="Text Input Field Action" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="bottom">
+                <TextInputField width="200dp" style="" text="" text-hint="Text Hint" action-icon="icon(fill, close)"/>
+                <TextInputField margin-left="8dp" style="" title="Title" width="200dp" text="" action-icon="icon(fill, close)"/>
+                <TextInputField margin-left="8dp" style="" title="Title" width="200dp" text="With Text" action-icon="icon(fill, close)"/>
+            </LinearBox>
+            <Label text="Text Input Field Icon + Action" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="bottom">
+                <TextInputField width="200dp" style="" text="" text-hint="Text Hint"
+                                icon="icon(fill, event)" action-icon="icon(fill, close)"/>
+                <TextInputField margin-left="8dp" style="" title="Title" width="200dp" text=""
+                                icon="icon(fill, event)" action-icon="icon(fill, close)"/>
+                <TextInputField margin-left="8dp" style="" title="Title" width="200dp" text="With Text"
+                                icon="icon(fill, event)" action-icon="icon(fill, close)"/>
+            </LinearBox>
+            <Label text="Text Drop Down" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="bottom">
+                <TextDropDown width="200dp" style="" text="" text-hint="Text Hint" >
+                    Item number 1
+                    Item number 2
+                    Item number 3
+                    Item number 4
+                </TextDropDown>
+                <TextDropDown margin-left="8dp" style="" title="Title" width="200dp" text="">
+                    Item number 1
+                    Item number 2
+                    Item number 3
+                    Item number 4
+                </TextDropDown>
+                <TextDropDown margin-left="8dp" style="" title="Title" width="200dp" text="With Text">
+                    Item number 1
+                    Item number 2
+                    Item number 3
+                    Item number 4
+                </TextDropDown>
+            </LinearBox>
+        </LinearBox>
+    </LinearBox>
+</Scene>

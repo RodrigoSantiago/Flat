@@ -1,8 +1,8 @@
 package flat.uxml.sheet;
 
-import flat.graphics.text.FontPosture;
-import flat.graphics.text.FontStyle;
-import flat.graphics.text.FontWeight;
+import flat.graphics.symbols.FontPosture;
+import flat.graphics.symbols.FontStyle;
+import flat.graphics.symbols.FontWeight;
 import flat.uxml.value.UXValue;
 import flat.uxml.value.*;
 import org.junit.Test;

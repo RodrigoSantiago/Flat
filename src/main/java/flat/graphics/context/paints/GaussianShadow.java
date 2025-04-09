@@ -39,7 +39,7 @@ public class GaussianShadow extends Paint {
         }
     }
 
-    public GaussianShadow(GaussianShadow other, int color) {
+    GaussianShadow(GaussianShadow other, int color) {
         this.x = other.x;
         this.y = other.y;
         this.width = other.width;

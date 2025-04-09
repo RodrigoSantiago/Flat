@@ -2,8 +2,6 @@ package flat.resources;
 
 import flat.math.shapes.Path;
 
-import java.util.PrimitiveIterator;
-
 public final class Parser {
 
     private static final double[] pow10 = new double[128];
@@ -84,7 +82,11 @@ public final class Parser {
     }
 
     public static Path svg(String str, int offset) {
-        return new SVGParser().svg(str, offset);
+        try {
+            return new SVGParser().svg(str, offset);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public static int color(String color) {
@@ -124,6 +126,7 @@ public final class Parser {
             float subPathStartX = 0, subPathStartY = 0;
 
             char prevCmd = 0;
+            char prevCmd2 = 0;
 
             while (pos < n) {
                 char cmd = s.charAt(pos);
@@ -285,8 +288,14 @@ public final class Parser {
                             y2 += lastY;
                             y += lastY;
                         }
-                        float x1 = 2 * lastX - lastX1;
-                        float y1 = 2 * lastY - lastY1;
+                        float x1, y1;
+                        if (prevCmd2 == 'C' || prevCmd2 == 'c' || prevCmd2 == 'S' || prevCmd2 == 's') {
+                            x1 = 2 * lastX - lastX1;
+                            y1 = 2 * lastY - lastY1;
+                        } else {
+                            x1 = lastX;
+                            y1 = lastY;
+                        }
                         p.curveTo(x1, y1, x2, y2, x, y);
                         lastX1 = x2;
                         lastY1 = y2;
@@ -315,6 +324,8 @@ public final class Parser {
                     default:
                         advance();
                 }
+
+                prevCmd2 = cmd;
                 skipWhitespace();
             }
             s = null;

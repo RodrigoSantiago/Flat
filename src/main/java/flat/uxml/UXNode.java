@@ -54,10 +54,12 @@ public class UXNode {
     }
 
     private static UXNode parseInclude(ResourceStream stream, ArrayList<String> includes) {
-        Object obj = stream.getCache();
-        if (obj != null) {
-            if (obj instanceof UXNode) {
-                return (UXNode) obj;
+        Object cache = stream.getCache();
+        if (cache != null) {
+            if (cache instanceof Exception) {
+                return null;
+            } else if (cache instanceof UXNode) {
+                return (UXNode) cache;
             } else {
                 throw new FlatException("Invalid UXNode at:" + stream.getResourceName());
             }
@@ -70,18 +72,20 @@ public class UXNode {
                 stream.putCache(node);
             }
             return node;
-        } catch (IOException e) {
+        } catch (Exception e) {
+            stream.putCache(e);
             throw new FlatException(e);
         }
     }
 
     private static UXNode read(ResourceStream stream, ArrayList<String> includes) throws IOException {
-        if (stream.getStream() == null) {
+        byte[] data = stream.readData();
+        if (data == null) {
             throw new FlatException("File not found at: " + stream.getResourceName());
         }
-        String data = new String(stream.getStream().readAllBytes(), StandardCharsets.UTF_8);
 
-        UXNodeParser reader = new UXNodeParser(data);
+        String xml = new String(data, StandardCharsets.UTF_8);
+        UXNodeParser reader = new UXNodeParser(xml);
         reader.parse();
 
         UXNodeElement root = reader.getRootElement();

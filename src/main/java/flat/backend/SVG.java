@@ -27,7 +27,7 @@ public class SVG {
     public static native void SetPaintLinearGradient(long context, float x1, float y1, float x2, float y2, int count, float[] data, int cycleMethod);
     public static native void SetPaintRadialGradient(long context, float x1, float y1, float fx, float fy, float rIn, float rOut, int count, float[] data, int cycleMethod);
     public static native void SetPaintBoxGradient(long context, float x, float y, float w, float h, float corners, float blur, float alpha, int color, float[] data);
-    public static native void SetPaintImage(long context, int textureID, int color, float[] data, int cycleMethod);
+    public static native void SetPaintImage(long context, int textureID, int color, float[] data, int cycleMethod, boolean nearest);
 
     //---------------------------
     //         Transforms
@@ -54,23 +54,27 @@ public class SVG {
     //---------------------------
     //     Economics Shapes
     //---------------------------
-    public static native void Rect(long context, float x, float y, float width, float height);
-    public static native void Ellipse(long context, float x, float y, float width, float height);
-    public static native void RoundRect(long context, float x, float y, float width, float height, float c1, float c2, float c3, float c4);
+    public static native void Rect(long context, float x, float y, float width, float height, boolean fill);
+    public static native void Ellipse(long context, float x, float y, float width, float height, boolean fill);
+    public static native void RoundRect(long context, float x, float y, float width, float height, float c1, float c2, float c3, float c4, boolean fill);
 
     //---------------------------
     //           Text
     //---------------------------
     public static native long FontLoad(byte[] data, float size, int sdf);
     public static native void FontUnload(long font);
-
-    public static native long FontPaintCreate(long context, long font);
-    public static native void FontPaintDestroy(long fontPaint);
-    public static native long FontPaintGetAtlas(long fontPaint, int[] size);
+    public static native void FontSetEmojiEnabled(boolean enabled);
+    public static native void FontCreateEmoji(long textureId, int[] sequence);
+    public static native void FontDestroyEmoji();
+    public static native long FontGetAtlas(long font, int[] size);
 
     public static native void FontGetAllCodePoints(long font, int[] codePoints);
     public static native void FontGetGlyph(long font, int codePoint, float[] data);
     public static native float[] FontGetGlyphShape(long font, int codePoints);
+    public static native String FontGetName(long font);
+    public static native boolean FontIsBold(long font);
+    public static native boolean FontIsItalic(long font);
+    public static native int FontGetWeight(long font);
     public static native float FontGetHeight(long font);
     public static native float FontGetAscent(long font);
     public static native float FontGetDescent(long font);
@@ -80,6 +84,10 @@ public class SVG {
     public static native float FontGetTextWidthBuffer(long font, Buffer string, int offset, int length, float size, float spacing);
     public static native void FontGetOffset(long font, String string, float size, float spacing, float x, boolean half, float[] cursor);
     public static native void FontGetOffsetBuffer(long font, Buffer string, int offset, int length, float size, float spacing, float x, boolean half, float[] cursor);
+    public static native void FontGetOffsetSpace(long font, String string, float size, float spacing, float x, float[] cursor);
+    public static native void FontGetOffsetSpaceBuffer(long font, Buffer string, int offset, int length, float size, float spacing, float x, float[] cursor);
+    public static native int FontGetLineWrap(long font, String string, float size, float spacing, float x);
+    public static native int FontGetLineWrapBuffer(long font, Buffer string, int offset, int length, float size, float spacing, float x);
 
     public static native void SetFont(long context, long fontPaint);
     public static native void SetFontScale(long context, float size);

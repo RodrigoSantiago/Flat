@@ -1,9 +1,10 @@
 package flat.widget.structure;
 
 import flat.events.SlideEvent;
-import flat.graphics.context.Font;
+import flat.graphics.symbols.Font;
 import flat.graphics.image.Drawable;
 import flat.graphics.image.DrawableReader;
+import flat.graphics.symbols.FontManager;
 import flat.resources.ResourceStream;
 import flat.uxml.*;
 import flat.uxml.value.*;
@@ -28,7 +29,7 @@ import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({UXNode.class, Font.class, DrawableReader.class})
+@PrepareForTest({UXNode.class, Font.class, FontManager.class, DrawableReader.class})
 public class ListViewTest {
 
     Font defaultFont;
@@ -43,11 +44,12 @@ public class ListViewTest {
     @Before
     public void before() {
         mockStatic(Font.class);
+        mockStatic(FontManager.class);
 
         defaultFont = mock(Font.class);
         when(Font.getDefault()).thenReturn(defaultFont);
 
-        when(Font.findFont(any(), any(), any(), any())).thenReturn(defaultFont);
+        when(FontManager.findFont(any(), any(), any(), any())).thenReturn(defaultFont);
         when(defaultFont.getHeight(anyFloat())).thenReturn(16f);
         when(defaultFont.getWidth(any(), anyFloat(), anyFloat())).thenReturn(64f);
 
@@ -99,7 +101,7 @@ public class ListViewTest {
         ListView listView = new ListView();
 
         assertEquals(8, listView.getItemHeight(), 0.001f);
-        assertEquals(10, listView.getScrollSensibility(), 0.001f);
+        assertEquals(20, listView.getScrollSensibility(), 0.001f);
         assertNull(listView.getSlideHorizontalFilter());
         assertNull(listView.getSlideVerticalFilter());
         assertNull(listView.getSlideHorizontalListener());
@@ -111,7 +113,7 @@ public class ListViewTest {
         listView.applyAttributes(controller);
 
         assertEquals(8, listView.getItemHeight(), 0.001f);
-        assertEquals(10, listView.getScrollSensibility(), 0.001f);
+        assertEquals(20, listView.getScrollSensibility(), 0.001f);
         assertEquals(filterHorizontal, listView.getSlideHorizontalFilter());
         assertEquals(filterVertical, listView.getSlideVerticalFilter());
         assertEquals(slideHorizontal, listView.getSlideHorizontalListener());
@@ -156,19 +158,19 @@ public class ListViewTest {
         listView.setAdapter(adapter);
         listView.refreshItems();
 
-        verify(adapter, times(4)).createListItem();               // 4 + 1
-        verify(adapter, times(12)).buildListItem(anyInt(), any()); // 4 + 4 + 4
+        verify(adapter, times(5)).createListItem();               // 4 + 1
+        verify(adapter, times(13)).buildListItem(anyInt(), any()); // 4 + 4 + 4 + 1
 
         when(adapter.size()).thenReturn(6);
         listView.refreshItems();
 
         verify(adapter, times(6)).createListItem();
-        verify(adapter, times(18)).buildListItem(anyInt(), any()); // 4 + 4 + 5 + 6
+        verify(adapter, times(19)).buildListItem(anyInt(), any()); // 4 + 4 + 5 + 6
 
         listView.setAdapter(adapter2);
 
         verify(adapter, times(6)).createListItem();
-        verify(adapter, times(18)).buildListItem(anyInt(), any());
+        verify(adapter, times(19)).buildListItem(anyInt(), any());
         verify(adapter2, times(8)).createListItem();
         verify(adapter2, times(8)).buildListItem(anyInt(), any());
     }

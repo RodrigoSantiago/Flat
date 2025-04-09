@@ -1,6 +1,6 @@
 package flat.widget.structure;
 
-import flat.graphics.context.Font;
+import flat.graphics.symbols.Font;
 import flat.uxml.Controller;
 import flat.uxml.UXHash;
 import flat.uxml.UXNode;
@@ -50,7 +50,7 @@ public class TabViewTest {
         assertEquals(VerticalAlign.TOP, tab.getTabsVerticalAlign());
         assertEquals(VerticalPosition.TOP, tab.getTabsVerticalPosition());
         assertEquals(0, tab.getTabsPrefHeight(), 0.1f);
-        assertEquals(10, tab.getScrollSensibility(), 0.1f);
+        assertEquals(20, tab.getScrollSensibility(), 0.1f);
         assertEquals(0x00000000, tab.getTabsBgColor());
         assertEquals(0, tab.getTabsElevation(), 0.1f);
         assertEquals(0, tab.getLineWidth(), 0.1f);
@@ -68,7 +68,7 @@ public class TabViewTest {
         assertEquals(VerticalAlign.TOP, tab.getTabsVerticalAlign());
         assertEquals(VerticalPosition.TOP, tab.getTabsVerticalPosition());
         assertEquals(0, tab.getTabsPrefHeight(), 0.1f);
-        assertEquals(10, tab.getScrollSensibility(), 0.1f);
+        assertEquals(20, tab.getScrollSensibility(), 0.1f);
         assertEquals(0x00000000, tab.getTabsBgColor());
         assertEquals(0, tab.getTabsElevation(), 0.1f);
         assertEquals(0, tab.getLineWidth(), 0.1f);

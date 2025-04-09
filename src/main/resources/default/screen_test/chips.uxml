@@ -11,16 +11,16 @@
             </LinearBox>
             <Label text="Trailing Icons" style="subtitle" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Chip text="Default" style="icon-left" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Default" style="icon-right" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Color" style="icon-left primary" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Color" style="icon-right primary" icon="/default/icons/account.svg"/>
+                <Chip text="Default" style="icon-left" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Default" style="icon-right" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Color" style="icon-left primary" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Color" style="icon-right primary" icon="icon(fill, account_circle)"/>
             </LinearBox>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="8dp">
-                <Chip text="Outline" style="icon-left outlined" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Outline" style="icon-right outlined" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Outline Color" style="icon-left outlined-primary" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Outline Color" style="icon-right outlined-primary" icon="/default/icons/account.svg"/>
+                <Chip text="Outline" style="icon-left outlined" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Outline" style="icon-right outlined" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Outline Color" style="icon-left outlined-primary" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Outline Color" style="icon-right outlined-primary" icon="icon(fill, account_circle)"/>
             </LinearBox>
             <Label text="Close Action" style="subtitle" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
@@ -37,16 +37,16 @@
             </LinearBox>
             <Label text="Complete" style="subtitle" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Chip text="Default" style="complete-left" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Default" style="complete-right" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Color" style="complete-left primary" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Color" style="complete-right primary" icon="/default/icons/account.svg"/>
+                <Chip text="Default" style="complete-left" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Default" style="complete-right" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Color" style="complete-left primary" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Color" style="complete-right primary" icon="icon(fill, account_circle)"/>
             </LinearBox>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="8dp">
-                <Chip text="Outline" style="complete-left outlined" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Outline" style="complete-right outlined" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Outline Color" style="complete-left outlined-primary" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Outline Color" style="complete-right outlined-primary" icon="/default/icons/account.svg"/>
+                <Chip text="Outline" style="complete-left outlined" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Outline" style="complete-right outlined" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Outline Color" style="complete-left outlined-primary" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Outline Color" style="complete-right outlined-primary" icon="icon(fill, account_circle)"/>
             </LinearBox>
             <Label text="Dense" style="subtitle" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
@@ -56,16 +56,16 @@
             </LinearBox>
             <Label text="Dense Trailing Icons" style="subtitle" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Chip text="Default" style="icon-left dense" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Default" style="icon-right dense" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Color" style="icon-left primary dense" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Color" style="icon-right primary dense" icon="/default/icons/account.svg"/>
+                <Chip text="Default" style="icon-left dense" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Default" style="icon-right dense" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Color" style="icon-left primary dense" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Color" style="icon-right primary dense" icon="icon(fill, account_circle)"/>
             </LinearBox>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="8dp">
-                <Chip text="Outline" style="icon-left outlined dense" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Outline" style="icon-right outlined dense" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Outline Color" style="icon-left outlined-primary dense" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Outline Color" style="icon-right outlined-primary dense" icon="/default/icons/account.svg"/>
+                <Chip text="Outline" style="icon-left outlined dense" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Outline" style="icon-right outlined dense" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Outline Color" style="icon-left outlined-primary dense" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Outline Color" style="icon-right outlined-primary dense" icon="icon(fill, account_circle)"/>
             </LinearBox>
             <Label text="Dense Close Action" style="subtitle" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
@@ -82,16 +82,16 @@
             </LinearBox>
             <Label text="Dense Complete" style="subtitle" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Chip text="Default" style="complete-left dense" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Default" style="complete-right dense" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Color" style="complete-left primary dense" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Color" style="complete-right primary dense" icon="/default/icons/account.svg"/>
+                <Chip text="Default" style="complete-left dense" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Default" style="complete-right dense" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Color" style="complete-left primary dense" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Color" style="complete-right primary dense" icon="icon(fill, account_circle)"/>
             </LinearBox>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="8dp">
-                <Chip text="Outline" style="complete-left outlined dense" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Outline" style="complete-right outlined dense" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Outline Color" style="complete-left outlined-primary dense" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Outline Color" style="complete-right outlined-primary dense" icon="/default/icons/account.svg"/>
+                <Chip text="Outline" style="complete-left outlined dense" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Outline" style="complete-right outlined dense" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Outline Color" style="complete-left outlined-primary dense" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Outline Color" style="complete-right outlined-primary dense" icon="icon(fill, account_circle)"/>
             </LinearBox>
         </LinearBox>
         <LinearBox enabled="false" direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
@@ -105,16 +105,16 @@
             </LinearBox>
             <Label text="Trailing Icons" style="subtitle" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Chip text="Default" style="icon-left" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Default" style="icon-right" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Color" style="icon-left primary" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Color" style="icon-right primary" icon="/default/icons/account.svg"/>
+                <Chip text="Default" style="icon-left" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Default" style="icon-right" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Color" style="icon-left primary" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Color" style="icon-right primary" icon="icon(fill, account_circle)"/>
             </LinearBox>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="8dp">
-                <Chip text="Outline" style="icon-left outlined" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Outline" style="icon-right outlined" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Outline Color" style="icon-left outlined-primary" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Outline Color" style="icon-right outlined-primary" icon="/default/icons/account.svg"/>
+                <Chip text="Outline" style="icon-left outlined" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Outline" style="icon-right outlined" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Outline Color" style="icon-left outlined-primary" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Outline Color" style="icon-right outlined-primary" icon="icon(fill, account_circle)"/>
             </LinearBox>
             <Label text="Close Action" style="subtitle" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
@@ -131,16 +131,16 @@
             </LinearBox>
             <Label text="Complete" style="subtitle" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Chip text="Default" style="complete-left" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Default" style="complete-right" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Color" style="complete-left primary" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Color" style="complete-right primary" icon="/default/icons/account.svg"/>
+                <Chip text="Default" style="complete-left" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Default" style="complete-right" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Color" style="complete-left primary" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Color" style="complete-right primary" icon="icon(fill, account_circle)"/>
             </LinearBox>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="8dp">
-                <Chip text="Outline" style="complete-left outlined" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Outline" style="complete-right outlined" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Outline Color" style="complete-left outlined-primary" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Outline Color" style="complete-right outlined-primary" icon="/default/icons/account.svg"/>
+                <Chip text="Outline" style="complete-left outlined" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Outline" style="complete-right outlined" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Outline Color" style="complete-left outlined-primary" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Outline Color" style="complete-right outlined-primary" icon="icon(fill, account_circle)"/>
             </LinearBox>
             <Label text="Dense" style="subtitle" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
@@ -150,16 +150,16 @@
             </LinearBox>
             <Label text="Dense Trailing Icons" style="subtitle" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Chip text="Default" style="icon-left dense" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Default" style="icon-right dense" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Color" style="icon-left primary dense" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Color" style="icon-right primary dense" icon="/default/icons/account.svg"/>
+                <Chip text="Default" style="icon-left dense" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Default" style="icon-right dense" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Color" style="icon-left primary dense" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Color" style="icon-right primary dense" icon="icon(fill, account_circle)"/>
             </LinearBox>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="8dp">
-                <Chip text="Outline" style="icon-left outlined dense" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Outline" style="icon-right outlined dense" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Outline Color" style="icon-left outlined-primary dense" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Outline Color" style="icon-right outlined-primary dense" icon="/default/icons/account.svg"/>
+                <Chip text="Outline" style="icon-left outlined dense" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Outline" style="icon-right outlined dense" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Outline Color" style="icon-left outlined-primary dense" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Outline Color" style="icon-right outlined-primary dense" icon="icon(fill, account_circle)"/>
             </LinearBox>
             <Label text="Dense Close Action" style="subtitle" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
@@ -176,16 +176,16 @@
             </LinearBox>
             <Label text="Dense Complete" style="subtitle" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Chip text="Default" style="complete-left dense" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Default" style="complete-right dense" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Color" style="complete-left primary dense" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Color" style="complete-right primary dense" icon="/default/icons/account.svg"/>
+                <Chip text="Default" style="complete-left dense" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Default" style="complete-right dense" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Color" style="complete-left primary dense" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Color" style="complete-right primary dense" icon="icon(fill, account_circle)"/>
             </LinearBox>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="8dp">
-                <Chip text="Outline" style="complete-left outlined dense" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Outline" style="complete-right outlined dense" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Outline Color" style="complete-left outlined-primary dense" icon="/default/icons/account.svg"/>
-                <Chip margin-left="8dp" text="Outline Color" style="complete-right outlined-primary dense" icon="/default/icons/account.svg"/>
+                <Chip text="Outline" style="complete-left outlined dense" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Outline" style="complete-right outlined dense" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Outline Color" style="complete-left outlined-primary dense" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Outline Color" style="complete-right outlined-primary dense" icon="icon(fill, account_circle)"/>
             </LinearBox>
         </LinearBox>
     </LinearBox>

@@ -22,11 +22,12 @@ slider : slider.primary {
     slide-transition-duration : 0.2;
 
     focusable : true;
+    focus-width : 2dp;
     cursor : hand;
 }
 
 slider.primary {
-    icon : '/default/icons/circle.svg';
+    icon : icon(fill, circle);
     icon-color : $primary-color;
     line-color : $disabled-color;
     line-filled-color : $primary-color-active;
@@ -34,6 +35,8 @@ slider.primary {
     line-width : 6dp;
     line-cap : ROUND;
     ripple-color : alpha($primary-color-fade, 0.5);
+    focus-color : $primary-color;
+
     hovered {
         icon-bg-color : alpha($primary-color-fade, 0.15);
     }

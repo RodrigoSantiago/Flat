@@ -36,18 +36,45 @@ label.title {
     height : 24sp;
 }
 
-label.text {
-    text-font : font("Roboto");
-    text-size : 18sp;
-}
-
 label.subtitle {
-    text-font : font("Roboto");
+    text-font : font("Roboto", BOLD);
     text-size : 16sp;
     height : 20sp;
+}
+
+label.content {
+    text-font : font("Roboto");
+    text-size : 18sp;
 }
 
 label.hint {
     text-font : font("Roboto");
     text-size : 12sp;
+}
+
+text : label {
+}
+
+text.default : label.default {
+}
+
+text.on-primary : label.on-primary {
+}
+
+text.headline-1 : label.headline-1 {
+}
+
+text.headline-2 : label.headline-2 {
+}
+
+text.content : label.content {
+}
+
+text.title : label.title {
+}
+
+text.subtitle : label.subtitle {
+}
+
+text.hint : label.hint {
 }

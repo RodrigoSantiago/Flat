@@ -45,7 +45,7 @@ public class Checkbox extends Widget {
 
         setIconColor(attrs.getColor("icon-color", info, getIconColor()));
         setIconImageFilter(attrs.getConstant("icon-image-filter", info, getIconImageFilter()));
-        setIcon(attrs.getResourceAsDrawable("icon", info, getIcon(), false));
+        setIcon(attrs.getDrawable("icon", info, getIcon(), false));
         setIconWidth(attrs.getSize("icon-width", info, getIconWidth()));
         setIconHeight(attrs.getSize("icon-height", info, getIconHeight()));
     }
@@ -76,6 +76,8 @@ public class Checkbox extends Widget {
 
     @Override
     public void onDraw(Graphics graphics) {
+        if (discardDraw(graphics)) return;
+
         drawBackground(graphics);
         drawRipple(graphics);
 

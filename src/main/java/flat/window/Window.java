@@ -7,9 +7,11 @@ import flat.exception.FlatException;
 import flat.graphics.context.Context;
 import flat.graphics.cursor.Cursor;
 import flat.graphics.image.PixelMap;
+import flat.uxml.UXListener;
 import flat.window.event.EventData;
 import flat.window.event.EventDataPointer;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -22,6 +24,11 @@ public class Window {
     private final long svgId;
     private boolean disposed;
     private boolean closed;
+
+    private boolean shift;
+    private boolean ctrl;
+    private boolean alt;
+    private boolean spr;
 
     // Application
     private Activity activity;
@@ -81,16 +88,15 @@ public class Window {
 
     private void checkDisposed() {
         if (disposed) {
-            throw new RuntimeException("Window is disposed.");
+            throw new FlatException("The Window is disposed");
         }
     }
 
     void dispose() {
         if (!disposed) {
             context.dispose();
-            WL.Close(windowId);
-
             SVG.Destroy(svgId);
+            WL.Close(windowId);
             WL.WindowDestroy(windowId);
 
             disposed = true;
@@ -100,7 +106,7 @@ public class Window {
     void loop(float loopTime) {
         this.loopTime = loopTime;
 
-        context.getGraphics().refreshState();
+        context.getGraphics().resetState();
 
         processStartup();
 
@@ -179,6 +185,7 @@ public class Window {
 
     void processStartup() {
         if (!started) {
+            setPosition((getMonitorWidth() - getWidth()) / 2, (getMonitorHeight() - getHeight()) / 2);
             show();
             started = true;
             activity.initialize();
@@ -237,6 +244,7 @@ public class Window {
         for (FutureTask<?> run : runSyncCp) {
             try {
                 run.run();
+                run.get();
             } catch (Exception e) {
                 Application.handleException(e);
             }
@@ -326,7 +334,7 @@ public class Window {
     public void setResizable(boolean resizable) {
         checkDisposed();
 
-        WL.SetResizable(resizable);
+        WL.SetResizable(windowId, resizable);
     }
 
     public boolean isResizable() {
@@ -338,7 +346,7 @@ public class Window {
     public void setDecorated(boolean decorated) {
         checkDisposed();
 
-        WL.SetDecorated(decorated);
+        WL.SetDecorated(windowId, decorated);
     }
 
     public boolean isDecorated() {
@@ -356,13 +364,13 @@ public class Window {
     public void setTitle(String title) {
         checkDisposed();
 
-        WL.SetTitle(this.title = title);
+        WL.SetTitle(windowId, this.title = title);
     }
 
     public void setIcon(PixelMap icon) {
         checkDisposed();
 
-        WL.SetIcon(windowId, icon.getData(), (int) icon.getWidth(), (int) icon.getHeight());
+        WL.SetIcon(windowId, icon.readData(), (int) icon.getWidth(), (int) icon.getHeight());
     }
 
     public void setCursor(Cursor cursor) {
@@ -401,7 +409,7 @@ public class Window {
 
         if (pointersData == null) {
             pointersData = new ArrayList<>();
-            pointersData.add(new EventDataPointer(-1));
+            pointersData.add(new EventDataPointer(this, -1));
         }
         return pointersData.get(0);
     }
@@ -434,6 +442,18 @@ public class Window {
         checkDisposed();
 
         return WL.GetClientHeight(windowId);
+    }
+
+    public int getMonitorWidth() {
+        checkDisposed();
+
+        return WL.GetMonitorWidth(windowId);
+    }
+
+    public int getMonitorHeight() {
+        checkDisposed();
+
+        return WL.GetMonitorHeight(windowId);
     }
 
     public float getPhysicalWidth() {
@@ -575,4 +595,113 @@ public class Window {
         activity.close();
         closed = true;
     }
+
+    public void setMods(boolean shift, boolean ctrl, boolean alt, boolean spr) {
+        this.shift = shift;
+        this.ctrl = ctrl;
+        this.alt = alt;
+        this.spr = spr;
+    }
+
+    public boolean isShiftDown() {
+        return shift;
+    }
+
+    public boolean isCtrlDown() {
+        return ctrl;
+    }
+
+    public boolean isAltDown() {
+        return alt;
+    }
+
+    public boolean isSprDown() {
+        return spr;
+    }
+
+    private boolean modal;
+
+    private static String createFilter(String[] filters) {
+        StringBuilder filter = null;
+        for (var str : filters) {
+            if (str.matches("[a-zA-Z0-9_ \\-]+(,[a-zA-Z0-9_ \\-]+)*")) {
+                if (filter == null) {
+                    filter = new StringBuilder(str);
+                } else {
+                    filter.append(";").append(str);
+                }
+            }
+        }
+        return filter == null ? "" : filter.toString();
+    }
+
+    private static String createFolder(File file) {
+        String folder;
+        if (file == null || !file.exists() || !file.isDirectory()) {
+            return "";
+        } else {
+            return file.getAbsolutePath();
+        }
+    }
+
+    public boolean isBlockedByModal() {
+        return modal;
+    }
+
+    public void showOpenFileDialog(UXListener<String> listener, File initialFolder, String... filters) {
+        if (modal) return;
+        modal = true;
+
+        String filter = createFilter(filters);
+        String folder = createFolder(initialFolder);
+        WL.ShowOpenFile(windowId, filter, folder, (window, path) -> {
+            modal = false;
+            if (!disposed) {
+                runSync(() -> UXListener.safeHandle(listener, path));
+            }
+        });
+    }
+
+    public void showOpenMultipleFilesDialog(UXListener<String[]> listener, File initialFolder, String... filters) {
+        if (modal) return;
+        modal = true;
+
+        String filter = createFilter(filters);
+        String folder = createFolder(initialFolder);
+        WL.ShowOpenMultipleFiles(windowId, filter, folder, (window, path) -> {
+            modal = false;
+            if (!disposed) {
+                String[] split = path == null ? null : path.split(",");
+                runSync(() -> UXListener.safeHandle(listener, split));
+            }
+        });
+    }
+
+    public void showSaveFileDialog(UXListener<String> listener, File initialFolder, String... filters) {
+        if (modal) return;
+        modal = true;
+
+        String filter = createFilter(filters);
+        String folder = createFolder(initialFolder);
+        WL.ShowSaveFile(windowId, filter, folder, (window, path) -> {
+            modal = false;
+            if (!disposed) {
+                runSync(() -> UXListener.safeHandle(listener, path));
+            }
+        });
+    }
+
+    public void showOpenFolderDialog(UXListener<String> listener, File initialFolder) {
+        if (modal) return;
+        modal = true;
+
+        String folder = createFolder(initialFolder);
+        WL.ShowOpenFolder(windowId, folder, (window, path) -> {
+            modal = false;
+            if (!disposed) {
+                runSync(() -> UXListener.safeHandle(listener, path));
+            }
+        });
+    }
+
 }

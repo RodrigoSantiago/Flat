@@ -4,7 +4,6 @@ import flat.backend.GL;
 import flat.exception.FlatException;
 import flat.graphics.context.enums.BufferType;
 import flat.graphics.context.enums.UsageType;
-import flat.window.Application;
 
 import java.nio.Buffer;
 
@@ -20,6 +19,9 @@ public final class BufferObject extends ContextObject {
         super(context);
 
         final int bufferId = GL.BufferCreate();
+        if (bufferId == 0) {
+            throw new FlatException("Unable to create a new OpenGL Buffer");
+        }
 
         this.bufferId = bufferId;
         assignDispose(() -> GL.BufferDestroy(bufferId));
@@ -28,13 +30,13 @@ public final class BufferObject extends ContextObject {
         setSize(size, usageType);
     }
 
-    int getInternalID() {
+    int getInternalId() {
         return bufferId;
     }
 
     private void boundCheck() {
         if (isDisposed()) {
-            throw new RuntimeException("The " + getClass().getSimpleName() + " is disposed.");
+            throw new FlatException("The Buffer is disposed");
         }
         getContext().bindBuffer(this, type);
     }
@@ -129,7 +131,7 @@ public final class BufferObject extends ContextObject {
 
         int required = length * bytes;
         if (arrayLen * bytes < required) {
-            throw new RuntimeException("The array is too short. Provided : " + arrayLen + ". Required : " + ((required - 1) / bytes + 1));
+            throw new FlatException("The array is too short. Provided : " + arrayLen + ". Required : " + ((required - 1) / bytes + 1));
         }
     }
 }

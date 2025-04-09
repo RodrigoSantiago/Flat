@@ -1,0 +1,33 @@
+<LinearBox direction="vertical" style="dialog-datepicker">
+    <LinearBox direction="vertical" vertical-alig="right" style="dialog-datepicker-title-area">
+        <Label style="dialog-datepicker-title" id="titleLabel"/>
+        <LinearBox direction="horizontal">
+            <TextInputField id="textDateIn" style="dialog-datepicker-date" text="01/01/2024" max-characters="10"
+                            on-text-change-filter="onTextFilter" on-text-input-filter="onTextInputFilter" on-focus="onTextInputFocus" on-key="onTextKey"/>
+            <Label id="labelLine" style="dialog-datepicker-date-label" text="-"/>
+            <TextInputField id="textDateOut" style="dialog-datepicker-date" text="01/01/2024" max-characters="10"
+                            on-text-change-filter="onTextFilter" on-text-input-filter="onTextInputFilter" on-focus="onTextInputFocus" on-key="onTextKey"/>
+        </LinearBox>
+    </LinearBox>
+    <LinearBox direction="vertical" style="dialog-datepicker-background">
+        <LinearBox direction="horizontal" style="dialog-datepicker-month-area">
+            <Button id="monthButton" text="Janeiro" style="icon-right text-primary dialog-datepicker-month-down" on-pointer="onMonthsClick"/>
+            <Button style="icon text-primary dialog-datepicker-month-left" on-action="onPrevMonth"/>
+            <Button style="icon text-primary dialog-datepicker-month-right" on-action="onNextMonth"/>
+        </LinearBox>
+        <Grid id="calendarGrid" columns="list(40dp 40dp 40dp 40dp 40dp 40dp 40dp)" rows="list(40dp 40dp 40dp 40dp 40dp 40dp 40dp)" style="data-picker-grid">
+            <Label cell-x="0" cell-y="0" text="S" style="dialog-datepicker-week-day"/>
+            <Label cell-x="1" cell-y="0" text="M" style="dialog-datepicker-week-day"/>
+            <Label cell-x="2" cell-y="0" text="T" style="dialog-datepicker-week-day"/>
+            <Label cell-x="3" cell-y="0" text="W" style="dialog-datepicker-week-day"/>
+            <Label cell-x="4" cell-y="0" text="T" style="dialog-datepicker-week-day"/>
+            <Label cell-x="5" cell-y="0" text="F" style="dialog-datepicker-week-day"/>
+            <Label cell-x="6" cell-y="0" text="S" style="dialog-datepicker-week-day"/>
+        </Grid>
+        <Divider/>
+        <LinearBox direction="horizontal" style="dialog-action-area">
+            <Button id="cancelButton" text="Cancel" style="text-primary dialog-cancel-button" on-action="onCancel"/>
+            <Button text="OK" style="text-primary dialog-ok-button" on-action="onOk"/>
+        </LinearBox>
+    </LinearBox>
+</LinearBox>

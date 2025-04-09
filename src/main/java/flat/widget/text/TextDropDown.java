@@ -6,6 +6,7 @@ import flat.math.Vector2;
 import flat.uxml.Controller;
 import flat.uxml.UXAttrs;
 import flat.uxml.UXListener;
+import flat.uxml.UXTheme;
 import flat.widget.enums.DropdownAlign;
 import flat.widget.stages.Menu;
 import flat.widget.stages.MenuItem;
@@ -25,6 +26,7 @@ public class TextDropDown extends TextInputField {
     private List<String> options = new ArrayList<>();
     private List<String> unmodifiableOptions;
     private List<MenuItem> menuItems = new ArrayList<>();
+    private List<String> attOpts = new ArrayList<>();
 
     private float x1, y1, x2, y2;
 
@@ -39,23 +41,43 @@ public class TextDropDown extends TextInputField {
         UXAttrs attrs = getAttrs();
         String content = attrs.getAttributeString("content", null);
         if (content != null) {
-            List<String> opts = new ArrayList<>();
+            attOpts.clear();
             for (var option : content.trim().split("\n")) {
                 option = option.trim();
                 if (!option.isEmpty()) {
-                    opts.add(option);
+                    attOpts.add(option);
                 }
             }
-            setOptions(opts);
+            setOptions(attOpts.stream().map(this::localizeOption).toList());
         }
 
         setOptionSelectedListener(attrs.getAttributeListener("on-option-selected", TextEvent.class, controller));
+    }
+
+    @Override
+    public void applyLocalization() {
+        super.applyLocalization();
+        UXAttrs attrs = getAttrs();
+        setOptions(attOpts.stream().map(this::localizeOption).toList());
     }
     
     @Override
     public void applyStyle() {
         super.applyStyle();
 
+    }
+
+    private String localizeOption(String option) {
+        if (option.startsWith("@@")) {
+            return option.substring(1);
+
+        } else if (option.startsWith("@")) {
+            UXTheme theme = getCurrentTheme();
+            if (theme != null) {
+                return theme.getText(option);
+            }
+        }
+        return option;
     }
 
     public List<String> getUnmodifiableOptions() {

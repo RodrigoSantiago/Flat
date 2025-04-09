@@ -44,7 +44,7 @@ public class Button extends Label {
         UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
 
-        setIcon(attrs.getResourceAsDrawable("icon", info, getIcon(), false));
+        setIcon(attrs.getDrawable("icon", info, getIcon(), false));
         setIconColor(attrs.getColor("icon-color", info, getIconColor()));
         setIconWidth(attrs.getSize("icon-width", info, getIconWidth()));
         setIconHeight(attrs.getSize("icon-height", info, getIconHeight()));
@@ -56,6 +56,8 @@ public class Button extends Label {
 
     @Override
     public void onDraw(Graphics graphics) {
+        if (discardDraw(graphics)) return;
+
         drawBackground(graphics);
         drawRipple(graphics);
 
@@ -111,7 +113,7 @@ public class Button extends Label {
         if (!isIconClipCircle()) {
             getIcon().draw(graphics, x, y, width, height, getIconColor(), getIconImageFilter());
         } else if (getIcon() instanceof PixelMap pixelMap) {
-            var tex = pixelMap.getTexture(graphics.getContext(), getIconImageFilter());
+            var tex = pixelMap.getTexture();
             ImagePattern paint = new ImagePattern.Builder(tex, x, y, width, height)
                     .color(getIconColor())
                     .build();
@@ -159,7 +161,11 @@ public class Button extends Label {
     @Override
     public void pointer(PointerEvent event) {
         super.pointer(event);
+        if (!event.isConsumed() && event.getPointerID() == 1 && event.getType() == PointerEvent.PRESSED) {
+            event.consume();
+        }
         if (!event.isConsumed() && event.getPointerID() == 1 && event.getType() == PointerEvent.RELEASED) {
+            event.consume();
             action();
         }
     }

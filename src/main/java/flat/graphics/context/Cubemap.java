@@ -17,29 +17,25 @@ public final class Cubemap extends Texture {
     private MagFilter magFilter;
     private WrapMode wrapModeX, wrapModeY;
 
-    public Cubemap(Context context, int width, int height, PixelFormat format) {
-        super(context);
+    public Cubemap(int width, int height, PixelFormat format) {
         final int cubemapId = GL.TextureCreate();
+        if (cubemapId == 0) {
+            throw new FlatException("Unable to create a new OpenGL Texture");
+        }
+
         this.cubemapId = cubemapId;
         assignDispose(() -> GL.TextureDestroy(cubemapId));
         setSize(width, height, format);
     }
 
     @Override
-    int getInternalID() {
+    int getInternalId() {
         return cubemapId;
     }
 
     @Override
     int getInternalType() {
         return GLEnums.TB_TEXTURE_CUBE_MAP;
-    }
-
-    private void boundCheck() {
-        if (isDisposed()) {
-            throw new RuntimeException("The " + getClass().getSimpleName() + " is disposed.");
-        }
-        getContext().bindTexture(this);
     }
 
     public void setSize(int width, int height, PixelFormat format) {
@@ -116,7 +112,7 @@ public final class Cubemap extends Texture {
         GL.TextureSubDataB(face.getInternalEnum(), level, x, y, width, height, format.getInternalEnum(), data, offset);
     }
 
-    public void setLevels(int levels) {
+    public void setLevels(CubeFace face, int levels) {
         parameterLevelsCheck(levels);
         boundCheck();
 
@@ -176,6 +172,9 @@ public final class Cubemap extends Texture {
         if (width <= 0 || height <= 0) {
             throw new FlatException("Zero or negative values are not allowed (" + width + ", " + height + ")");
         }
+        if (width > Context.getMaxTextureSize() || height > Context.getMaxTextureSize()) {
+            throw new FlatException("The texture size is bigger than the max allowed (" + Context.getMaxTextureSize() + ")");
+        }
     }
 
     private void dataBoundsCheckSize(int level, int arrayLen, int bytes) {
@@ -183,7 +182,7 @@ public final class Cubemap extends Texture {
         int height = getHeight(level);
         int required = width * height * format.getPixelBytes();
         if (arrayLen * bytes < required) {
-            throw new RuntimeException("The array is too short. Provided : " + arrayLen + ". Required : " + ((required - 1) / bytes + 1));
+            throw new FlatException("The array is too short. Provided : " + arrayLen + ". Required : " + ((required - 1) / bytes + 1));
         }
     }
 
@@ -196,7 +195,7 @@ public final class Cubemap extends Texture {
 
         int required = w * h * format.getPixelBytes();
         if (arrayLen * bytes < required) {
-            throw new RuntimeException("The array is too short. Provided : " + arrayLen + ". Required : " + ((required - 1) / bytes + 1));
+            throw new FlatException("The array is too short. Provided : " + arrayLen + ". Required : " + ((required - 1) / bytes + 1));
         }
     }
 }

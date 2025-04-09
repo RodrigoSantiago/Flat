@@ -1,40 +1,32 @@
 package flat.graphics;
 
+import flat.exception.FlatException;
 import flat.graphics.context.*;
-import flat.graphics.context.enums.BlitMask;
-import flat.graphics.context.enums.LayerTarget;
-import flat.graphics.context.enums.MagFilter;
-import flat.graphics.context.enums.PixelFormat;
+import flat.graphics.context.enums.*;
 import flat.graphics.image.PixelMap;
 
 public class Surface {
     private final int width;
     private final int height;
     private final int multiSamples;
-    private final PixelFormat format;
-    private Context context;
 
-    FrameBuffer frameBuffer;
-    FrameBuffer frameBufferTransfer;
-    Render render;
-    TextureMultisample2D textureMultisamples;
-    Texture2D texture;
-    boolean disposed;
+    private FrameBuffer frameBuffer;
+    private FrameBuffer frameBufferTransfer;
+    private Render render;
+    private TextureMultisample2D textureMultisamples;
+    private Texture2D texture;
+    private boolean disposed;
 
-    public Surface(Context context, int width, int height) {
-        this(context, width, height, 8);
+    private ClipState clipState = new ClipState();
+
+    public Surface(int width, int height) {
+        this(width, height, 8);
     }
 
-    public Surface(Context context, int width, int height, int multiSamples) {
-        this(context, width, height, multiSamples, PixelFormat.RGBA);
-    }
-
-    public Surface(Context context, int width, int height, int multiSamples, PixelFormat format) {
-        this.context = context;
+    public Surface(int width, int height, int multiSamples) {
         this.width = width;
         this.height = height;
-        this.multiSamples = multiSamples;
-        this.format = format;
+        this.multiSamples = Math.max(0, Math.min(8, multiSamples));
     }
 
     public int getWidth() {
@@ -49,43 +41,85 @@ public class Surface {
         return multiSamples;
     }
 
-    public PixelFormat getFormat() {
-        return format;
+    FrameBuffer getFrameBuffer() {
+        return frameBuffer;
     }
 
-    public PixelMap createPixelMap() {
+    ClipState getClipState() {
+        return clipState;
+    }
+
+    PixelMap createPixelMap(Graphics graphics, PixelFormat format) {
+        checkDisposed();
+
         if (frameBuffer == null) {
             return null;
         }
-
-        byte[] imageData = new byte[width * height * format.getPixelBytes()];
-
+        Texture2D textureTransfer = new Texture2D(width, height, format);
+        frameBuffer.attach(LayerTarget.COLOR_0, textureTransfer, 0);
+        frameBuffer.detach(LayerTarget.DEPTH_STENCIL);
         if (multiSamples > 0) {
-            if (frameBufferTransfer == null) {
-                frameBufferTransfer = new FrameBuffer(context);
-                if (texture == null) {
-                    texture = new Texture2D(context, width, height, format);
-                }
-                frameBufferTransfer.attach(LayerTarget.COLOR_0, texture, 0);
-            }
-            context.blitFrames(frameBuffer, frameBufferTransfer,
-                    0, 0, width, height,
-                    0, 0, width, height, BlitMask.Color, MagFilter.LINEAR);
+            graphics.bakeSurface(textureMultisamples);
+            frameBuffer.attach(LayerTarget.COLOR_0, textureMultisamples, 0);
+        } else {
+            graphics.bakeSurface(texture);
+            frameBuffer.attach(LayerTarget.COLOR_0, texture, 0);
         }
+        frameBuffer.attach(LayerTarget.DEPTH_STENCIL, render);
 
-        texture.getData(0, imageData, 0);
-        return new PixelMap(imageData, width, height, PixelFormat.RGBA);
+        return new PixelMap(textureTransfer);
     }
 
-    void begin(Context context) {
+    protected void checkDisposed() {
+        if (isDisposed()) {
+            throw new FlatException("The Surface is disposed");
+        }
+    }
+
+    public void dispose() {
+        if (!disposed) {
+            disposed = true;
+            if (textureMultisamples != null) {
+                textureMultisamples.dispose();
+            }
+            if (texture != null) {
+                texture.dispose();
+            }
+            if (render != null) {
+                render.dispose();
+            }
+            if (frameBuffer != null) {
+                frameBuffer.dispose();
+            }
+            if (frameBufferTransfer != null) {
+                frameBufferTransfer.dispose();
+            }
+        }
+    }
+
+    public boolean isDisposed() {
+        return disposed;
+    }
+
+    void begin(Graphics graphics) {
+        checkDisposed();
+
+        Context context = graphics.getContext();
+
+        if (frameBuffer != null && frameBuffer.getContext() != context) {
+            throw new FlatException("A surface cannot be reused in different contexts");
+        }
+
         if (frameBuffer == null) {
             frameBuffer = new FrameBuffer(context);
         }
         if (multiSamples > 0 && textureMultisamples == null) {
-            textureMultisamples = new TextureMultisample2D(context, width, height, multiSamples, format);
+            textureMultisamples = new TextureMultisample2D(width, height, multiSamples, PixelFormat.RGBA16F);
+            textureMultisamples.setWrapModes(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
         }
         if (multiSamples <= 0 && texture == null) {
-            texture = new Texture2D(context, width, height, format);
+            texture = new Texture2D(width, height, PixelFormat.RGBA16F);
+            texture.setWrapModes(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
         }
         if (render == null) {
             render = new Render(context, width, height, multiSamples, PixelFormat.DEPTH24_STENCIL8);

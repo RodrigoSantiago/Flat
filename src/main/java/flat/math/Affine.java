@@ -81,6 +81,16 @@ public final class Affine {
                m10 == other.m10 && m11 == other.m11 &&
                m02 == other.m02 && m12 == other.m12;
     }
+
+    /**
+     * Check if this is a translation only transform. Scale = 1. Shear = 0.
+     *
+     * @return True if translation is a translation only
+     * */
+    public boolean isTranslationOnly() {
+        return m00 == 1.0f && m11 == 1.0f && m01 == 0.0f && m10 == 0.0f;
+    }
+
     /**
      * Sets the affine transform values with the supplied scale, rotation and translation.
      * @param scaleX The scale in the x-axis.

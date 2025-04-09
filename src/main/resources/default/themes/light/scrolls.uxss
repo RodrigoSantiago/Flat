@@ -5,45 +5,48 @@ scroll-box {
 horizontal-scroll-bar : horizontal-scroll-bar.default {
     min-width : 12dp;
     min-height : 12dp;
-    min-range : 0.15;
+    min-range : 48dp;
     transition-duration : 0.1;
     width : match_parent;
     cursor : hand;
 
-    line-width : 12dp;
-    line-filled-width : 6dp;
+    padding-left : 3dp;
+    padding-right : 3dp;
+    padding-bottom : 3dp;
+    padding-top : 3dp;
+    line-width : 6dp;
     line-cap : ROUND;
 }
 
 horizontal-scroll-bar.default {
-    line-color : alpha($card-color, 0.5);
-    line-filled-color : alpha($on-card-color, 0.25);
+    background-color : alpha($card-color, 0.5);
+    line-color : alpha($on-card-color, 0.25);
 
     hovered {
-        line-filled-color : alpha($on-card-color, 0.5);
+        line-color : alpha($on-card-color, 0.5);
     }
     pressed {
-        line-filled-color : alpha($on-card-color, 0.75);
+        line-color : alpha($on-card-color, 0.75);
     }
     disabled {
-        line-filled-color : alpha($on-disabled-color, 0.15);
-        line-color : alpha($disabled-color, 0.15);
+        line-color : alpha($on-disabled-color, 0.15);
+        background-color : alpha($disabled-color, 0.15);
     }
 }
 
 horizontal-scroll-bar.primary {
-    line-color : alpha($card-color, 0.5);
-    line-filled-color : alpha($primary-color, 0.5);
+    background-color : alpha($card-color, 0.5);
+    line-color : alpha($primary-color, 0.5);
 
     hovered {
-        line-filled-color : alpha($primary-color, 0.75);
+        line-color : alpha($primary-color, 0.75);
     }
     pressed {
-        line-filled-color : alpha($primary-color, 1.00);
+        line-color : alpha($primary-color, 1.00);
     }
     disabled {
-        line-filled-color : alpha($on-disabled-color, 0.15);
-        line-color : alpha($disabled-color, 0.15);
+        line-color : alpha($on-disabled-color, 0.15);
+        background-color : alpha($disabled-color, 0.15);
     }
 }
 
@@ -51,66 +54,72 @@ horizontal-scroll-bar.discrete : horizontal-scroll-bar {
     min-width : 6dp;
     min-height : 6dp;
     line-width : 6dp;
-    line-filled-width : 6dp;
     line-cap : BUTT;
+    padding-left : 0dp;
+    padding-right : 0dp;
+    padding-bottom : 0dp;
+    padding-top : 0dp;
 
-    line-color : alpha($card-color, 0.25);
-    line-filled-color : alpha($on-card-color, 0.15);
+    background-color : alpha($card-color, 0.25);
+    line-color : alpha($on-card-color, 0.15);
 
     hovered {
-        line-filled-color : alpha($on-card-color, 0.25);
+        line-color : alpha($on-card-color, 0.25);
     }
     pressed {
-        line-filled-color : alpha($on-card-color, 0.5);
+        line-color : alpha($on-card-color, 0.5);
     }
     disabled {
-        line-filled-color : alpha($on-disabled-color, 0.15);
-        line-color : alpha($disabled-color, 0.15);
+        line-color : alpha($on-disabled-color, 0.15);
+        background-color : alpha($disabled-color, 0.15);
     }
 }
 
 vertical-scroll-bar : vertical-scroll-bar.default {
     min-width : 12dp;
     min-height : 12dp;
-    min-range : 0.15;
+    min-range : 48dp;
     transition-duration : 0.1;
     height : match_parent;
     cursor : hand;
 
-    line-width : 12dp;
-    line-filled-width : 6dp;
+    padding-left : 3dp;
+    padding-right : 3dp;
+    padding-bottom : 3dp;
+    padding-top : 3dp;
+    line-width : 6dp;
     line-cap : ROUND;
 }
 
 vertical-scroll-bar.default {
-    line-color : alpha($card-color, 0.5);
-    line-filled-color : alpha($on-card-color, 0.25);
+    background-color : alpha($card-color, 0.5);
+    line-color : alpha($on-card-color, 0.25);
 
     hovered {
-        line-filled-color : alpha($on-card-color, 0.5);
+        line-color : alpha($on-card-color, 0.5);
     }
     pressed {
-        line-filled-color : alpha($on-card-color, 0.75);
+        line-color : alpha($on-card-color, 0.75);
     }
     disabled {
-        line-filled-color : alpha($on-disabled-color, 0.15);
-        line-color : alpha($disabled-color, 0.15);
+        line-color : alpha($on-disabled-color, 0.15);
+        background-color : alpha($disabled-color, 0.15);
     }
 }
 
 vertical-scroll-bar.primary {
-    line-color : alpha($card-color, 0.5);
-    line-filled-color : alpha($primary-color, 0.5);
+    background-color : alpha($card-color, 0.5);
+    line-color : alpha($primary-color, 0.5);
 
     hovered {
-        line-filled-color : alpha($primary-color, 0.75);
+        line-color : alpha($primary-color, 0.75);
     }
     pressed {
-        line-filled-color : alpha($primary-color, 1.00);
+        line-color : alpha($primary-color, 1.00);
     }
     disabled {
-        line-filled-color : alpha($on-disabled-color, 0.15);
-        line-color : alpha($disabled-color, 0.15);
+        line-color : alpha($on-disabled-color, 0.15);
+        background-color : alpha($disabled-color, 0.15);
     }
 }
 
@@ -118,21 +127,24 @@ vertical-scroll-bar.discrete : vertical-scroll-bar {
     min-width : 6dp;
     min-height : 6dp;
     line-width : 6dp;
-    line-filled-width : 6dp;
     line-cap : BUTT;
+    padding-left : 0dp;
+    padding-right : 0dp;
+    padding-bottom : 0dp;
+    padding-top : 0dp;
 
-    line-color : alpha($card-color, 0.25);
-    line-filled-color : alpha($on-card-color, 0.15);
+    background-color : alpha($card-color, 0.25);
+    line-color : alpha($on-card-color, 0.15);
 
     hovered {
-        line-filled-color : alpha($on-card-color, 0.25);
+        line-color : alpha($on-card-color, 0.25);
     }
     pressed {
-        line-filled-color : alpha($on-card-color, 0.5);
+        line-color : alpha($on-card-color, 0.5);
     }
     disabled {
-        line-filled-color : alpha($on-disabled-color, 0.15);
-        line-color : alpha($disabled-color, 0.15);
+        line-color : alpha($on-disabled-color, 0.15);
+        background-color : alpha($disabled-color, 0.15);
     }
 }
 

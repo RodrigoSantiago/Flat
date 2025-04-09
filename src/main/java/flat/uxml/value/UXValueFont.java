@@ -1,9 +1,6 @@
 package flat.uxml.value;
 
-import flat.graphics.context.Font;
-import flat.graphics.text.FontPosture;
-import flat.graphics.text.FontStyle;
-import flat.graphics.text.FontWeight;
+import flat.graphics.symbols.*;
 import flat.uxml.UXTheme;
 
 import java.util.Objects;
@@ -23,7 +20,7 @@ public class UXValueFont extends UXValue {
 
     @Override
     public Font asFont(UXTheme theme) {
-        return Font.findFont(family, weight, posture, style);
+        return FontManager.findFont(family, weight, posture, style);
     }
 
     @Override

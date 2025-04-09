@@ -25,7 +25,8 @@ public enum AttributeType {
     FLOAT_MAT4x2(GLEnums.AT_FLOAT_MAT4x2, 8, true, 4, 2),
     FLOAT_MAT4x3(GLEnums.AT_FLOAT_MAT4x3, 12, true, 4, 3),
     SAMPLER_2D(GLEnums.AT_SAMPLER_2D, 1, false, 0, 0),
-    SAMPLER_CUBE(GLEnums.AT_SAMPLER_CUBE, 1, false, 0, 0);
+    SAMPLER_CUBE(GLEnums.AT_SAMPLER_CUBE, 1, false, 0, 0),
+    SAMPLER_2D_MULTISAMPLE(GLEnums.AT_SAMPLER_2D_MULTISAMPLE, 1, false, 0, 0);
 
     private final int glEnum, size, mw, mh;
     private final boolean floating;

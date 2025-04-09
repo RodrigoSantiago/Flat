@@ -6,44 +6,50 @@ import flat.backend.GL;
 import flat.backend.SVG;
 import flat.data.ObservableList;
 import flat.events.ActionEvent;
+import flat.events.KeyEvent;
 import flat.events.PointerEvent;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
 import flat.graphics.Surface;
-import flat.graphics.context.Context;
-import flat.graphics.context.Font;
+import flat.graphics.symbols.Font;
 import flat.graphics.context.ShaderProgram;
+import flat.graphics.context.enums.AlphaComposite;
 import flat.graphics.context.enums.ImageFileFormat;
-import flat.graphics.context.enums.PixelFormat;
-import flat.graphics.image.LineMap;
+import flat.graphics.image.Drawable;
+import flat.graphics.image.DrawableReader;
 import flat.graphics.image.PixelMap;
-import flat.math.Vector4;
+import flat.graphics.symbols.FontManager;
+import flat.graphics.symbols.FontStyle;
+import flat.graphics.symbols.IconsManager;
 import flat.math.shapes.Circle;
 import flat.math.shapes.Path;
+import flat.resources.ResourceStream;
 import flat.uxml.Controller;
 import flat.widget.Parent;
 import flat.widget.Widget;
 import flat.widget.image.ImageView;
 import flat.widget.layout.Drawer;
 import flat.widget.layout.LinearBox;
+import flat.widget.stages.dialogs.*;
 import flat.widget.structure.*;
-import flat.widget.stages.dialogs.ConfirmDialogBuilder;
 import flat.widget.text.Button;
 import flat.widget.text.Chip;
 import flat.widget.text.Label;
-import flat.window.Activity;
 import flat.window.Application;
 import flat.window.WindowSettings;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MainController extends Controller {
 
-    public MainController(Activity activity) {
+    public MainController() {
     }
 
     @Flat
@@ -61,16 +67,31 @@ public class MainController extends Controller {
     @Flat
     public Drawer drawer2;
     @Flat public TabView mainTab;
+    @Flat public Tab tabDefault;
     @Flat public Tab tabButtons;
     @Flat public Tab tabChips;
     @Flat public Tab tabForms;
     @Flat public Tab tabProgress;
     @Flat public Tab tabText;
+    @Flat public Tab tabTextFields;
+    @Flat public Tab tabEmojis;
     @Flat public Tab tabTabs;
     @Flat public Tab tabToolbars;
     @Flat public Tab tabScrolls;
     @Flat public Tab tabImages;
+    @Flat public Tab tabLists;
     @Flat public Tab tabMenus;
+    @Flat public Tab tabDialogs;
+    @Flat public Tab tabEffects;
+
+    @Flat public ListView listView1;
+    @Flat public ListView listView2;
+    @Flat public ListView listView3;
+    @Flat public ListView treeView1;
+    @Flat public ListView treeView2;
+    @Flat public ListView treeView3;
+
+    @Flat public Label statusLabel;
 
     private ObservableList<String> items = new ObservableList<>();
 
@@ -79,6 +100,13 @@ public class MainController extends Controller {
     @Flat
     public void toggleDrawer() {
         mainDrawer.toggle();
+    }
+
+    @Flat
+    public void setTabDefault() {
+        setupListView(listView3, treeView3);
+        mainTab.selectTab(tabDefault);
+        mainDrawer.hide();
     }
 
     @Flat
@@ -102,6 +130,18 @@ public class MainController extends Controller {
     @Flat
     public void setTabProgress() {
         mainTab.selectTab(tabProgress);
+        mainDrawer.hide();
+    }
+
+    @Flat
+    public void setTabTextFields() {
+        mainTab.selectTab(tabTextFields);
+        mainDrawer.hide();
+    }
+
+    @Flat
+    public void setTabEmojis() {
+        mainTab.selectTab(tabEmojis);
         mainDrawer.hide();
     }
 
@@ -142,22 +182,269 @@ public class MainController extends Controller {
     }
 
     @Flat
+    public void setTabDialogs() {
+        mainTab.selectTab(tabDialogs);
+        mainDrawer.hide();
+    }
+
+    @Flat
+    public void setTabLists() {
+        setupListView(listView1, treeView1);
+        mainTab.selectTab(tabLists);
+        mainDrawer.hide();
+    }
+
+    @Flat
+    public void setTabEffects() {
+        mainTab.selectTab(tabEffects);
+        mainDrawer.hide();
+    }
+
+    @Flat
     public void setThemeLight() {
-        savePrint();
+        t = 1;
         getActivity().setTheme("/default/themes/light");
     }
 
     @Flat
     public void setThemeDark() {
-        savePrint();
+        t = 1;
         getActivity().setTheme("/default/themes/dark");
     }
 
     @Flat
-    public void linearAction(ActionEvent actionEvent) {
-        List<Tab> list = new ArrayList<>();
-        new TabView().addTab(list);
-        getActivity().getWindow().setIcon((PixelMap) iconButton.getIcon());
+    public void onSnackDialog() {
+        var alert = new SnackbarDialogBuilder()
+                .message("This is an alert message")
+                .duration(5f)
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onAlertDialog() {
+        var alert = new AlertDialogBuilder()
+                .title("Alert Dialog")
+                .message("This is an alert message")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .block(false)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onBlockAlertDialog() {
+        var alert = new AlertDialogBuilder()
+                .title("Alert Dialog")
+                .message("This is an alert message")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .block(true)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onConfirmDialog() {
+        var alert = new ConfirmDialogBuilder()
+                .title("This is a confirm Dialog")
+                .message("Is this a question?")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onYesListener((dg) -> System.out.println("Yes"))
+                .onNoListener((dg) -> System.out.println("No"))
+                .block(false)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onBlockConfirmDialog() {
+        var alert = new ConfirmDialogBuilder()
+                .title("This is a confirm Dialog")
+                .message("Is this a question?")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onYesListener((dg) -> System.out.println("Yes"))
+                .onNoListener((dg) -> System.out.println("No"))
+                .block(true)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onProcessDialog() {
+        var alert = new ProcessDialogBuilder()
+                .title("This is process Dialog")
+                .message("Please cancel this process")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onRequestCancelListener((dg) -> {
+                    System.out.println("Cancel");
+                    dg.smoothHide();
+                })
+                .cancelable(true)
+                .block(false)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onBlockProcessDialog() {
+        var alert = new ProcessDialogBuilder()
+                .title("This is process Dialog")
+                .message("Please cancel this process")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onRequestCancelListener((dg) -> {
+                    System.out.println("Cancel");
+                    dg.smoothHide();
+                })
+                .cancelable(true)
+                .block(true)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onChoiceDialog() {
+        var alert = new ChoiceDialogBuilder()
+                .title("This is a Choice Dialog")
+                .message("You can pick a single choice")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onChooseListener((dg, val) -> System.out.println("Choice : " + val))
+                .options("Option A", "Option B", "Option C", "Option D", "Option E", "Option F", "Option G", "Option H")
+                .initialOption(0)
+                .block(false)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onBlockChoiceDialog() {
+        var alert = new ChoiceDialogBuilder()
+                .title("This is a Choice Dialog")
+                .message("You can pick a single choice")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onChooseListener((dg, val) -> System.out.println("Choice : " + val))
+                .options("Option A", "Option B", "Option C", "Option D")
+                .initialOption(0)
+                .block(true)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onMultipleChoicesDialog() {
+        var alert = new MultipleChoicesDialogBuilder()
+                .title("This is a Multiple Choice Dialog")
+                .message("You can pick multiple choices")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onChooseListener((dg, val) -> System.out.println("Choices : " + Arrays.toString(val.toArray())))
+                .options("Option A", "Option B", "Option C", "Option D", "Option E", "Option F", "Option G", "Option H")
+                .initialOptions("Option A", "Option C")
+                .block(false)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onBlockMultipleChoicesDialog() {
+        var alert = new MultipleChoicesDialogBuilder()
+                .title("This is a Multiple Choice Dialog")
+                .message("You can pick multiple choices")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onChooseListener((dg, val) -> System.out.println("Choices : " + Arrays.toString(val.toArray())))
+                .options("Option A", "Option B", "Option C", "Option D", "Option E")
+                .initialOptions()
+                .block(true)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onDatePickerDialog() {
+        var alert = new DatePickerDialogBuilder()
+                .title("Select a date")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onDatePickListener((dg, value) -> System.out.println(value))
+                .block(false)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onBlockDatePickerDialog() {
+        var alert = new DatePickerDialogBuilder()
+                .title("Select a date")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onDatePickListener((dg, valueStart, valueEnd) -> System.out.println(valueStart + " - " + valueEnd))
+                .block(true)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onBlockRangedDatePickerDialog() {
+        var alert = new DatePickerDialogBuilder()
+                .title("Select a date range")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onDatePickListener((dg, value) -> System.out.println(value))
+                .ranged(true)
+                .block(true)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onRangedDatePickerDialog() {
+        var alert = new DatePickerDialogBuilder()
+                .title("Select a date range")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onDatePickListener((dg, valueStart, valueEnd) -> System.out.println(valueStart + " - " + valueEnd))
+                .ranged(true)
+                .block(false)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onFileSaveDialog() {
+        getActivity().getWindow().showSaveFileDialog((file) -> {
+            System.out.println(file);
+        }, null, "png","jpg,jpeg");
+    }
+
+    @Flat
+    public void onFileOpenDialog() {
+        getActivity().getWindow().showOpenFileDialog((file) -> {
+            System.out.println(file);
+        }, null, "png","jpg,jpeg");
+    }
+
+    @Flat
+    public void onFileOpenMultipleDialog() {
+        getActivity().getWindow().showOpenMultipleFilesDialog((file) -> {
+            System.out.println(file == null ? "null" : Arrays.toString(file));
+        }, null, "png","jpg,jpeg");
+    }
+
+    @Flat
+    public void onFileOpenDirDialog() {
+        getActivity().getWindow().showOpenFolderDialog((file) -> {
+            System.out.println(file);
+        }, null);
     }
 
     private void search(Widget widget) {
@@ -173,79 +460,109 @@ public class MainController extends Controller {
     }
 
     @Flat
-    public void onDialogClick(ActionEvent actionEvent) {
-        var alert = new ConfirmDialogBuilder("/default/screen_test/dialog_confirm.uxml")
-                .title("This is THE Title")
-                .message("This is THE Message")
-                .onShowListener((dg) -> System.out.println("Show"))
-                .onHideListener((dg) -> System.out.println("Hide"))
-                .onYesListener((dg) -> System.out.println("Yes"))
-                .onNoListener((dg) -> System.out.println("No"))
-                .block(true)
-                .build();
-        alert.show(getActivity());
-    }
-
-    @Flat
-    public void onWindowClick(ActionEvent event) {
+    public void onCreateWindow(ActionEvent event) {
         Application.createWindow(new WindowSettings.Builder()
-                .layout("/default/screen_test/screen_test.uxml")
+                .layout("/default/screen_test/buttons.uxml")
                 .theme("/default/themes")
-                .controller(MainController::new)
+                .controller(LazyController::new)
                 .size(1000, 800)
                 .multiSamples(8)
                 .transparent(false)
                 .build());
     }
 
+    @Flat
+    public void onEmojiPickerDialog(ActionEvent event) {
+        var alert = new EmojiDialogBuilder()
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onEmojiPick((dg, val) -> {
+                    for (int i = 0; i < val.length(); i++) {
+                        var cp = val.codePointAt(i);
+                        System.out.print(Integer.toHexString(cp) + " ");
+                        i += Character.charCount(cp) - 1;
+                    }
+                    System.out.println();
+                })
+                .block(true)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onKeypress(KeyEvent event) {
+        if (event.getType() == KeyEvent.PRESSED) {
+            event.getSource().invalidate(true);
+            System.out.println("Rquest refresh");
+        }
+    }
+
     ShaderProgram shader;
     PixelMap pix;
+    Font arial;
 
-    @Override
-    public void onShow() {
-        var graphics = getActivity().getContext().getGraphics();
-        shader = graphics.createImageRenderShader(
-                """
-                uniform vec2 view;
-                uniform vec4 col;
-                vec4 fragment(vec2 pos, vec2 uv) {
-                    return pos.x < view.x / 2 ? col : vec4(1,1,1,1);
-                }
-                """);
-
-        shader.set("col", new Vector4(1, 1, 0, 1));
-
-        Surface surface = new Surface(graphics.getContext(), 64, 64, 8, PixelFormat.RGBA);
-        graphics.setSurface(surface);
-        graphics.clear(0, 0, 0x00);
-        graphics.clearClip();
-        graphics.drawImageCustomShader(shader);
-        graphics.setColor(Color.red);
-        graphics.setTransform2D(null);
-        graphics.drawRect(10, 10, 20, 20, true);
-        graphics.setSurface(null);
-
-        pix = surface.createPixelMap();
-
-        System.out.println("a- " + GL.GetError());
-
-        if (tabChips != null) {
-            search(tabChips.getFrame());
+    private void setupListView(ListView listView1, ListView treeView1) {
+        ObservableList<String> list1 = new ObservableList<>();
+        ObservableList<String> list2 = new ObservableList<>();
+        for (int i = 0; i < 50; i++) {
+            list1.add("List Item " + (i + 1));
+            list2.add("List Item " + (i + 1));
         }
+        listView1.setAdapter(new ListViewDefaultAdapter<>(list1));
+        listView2.setAdapter(new ListViewDefaultAdapter<>(list2));
+        ObservableList<TreeCell> list3 = new ObservableList<>();
+        ObservableList<TreeCell> list4 = new ObservableList<>();
+
+        Drawable icon = IconsManager.getIcon("outline", "draft");
+
+        TreeCell rootA = new TreeCell(list3, "Tree Item Root", true, icon);
+        TreeCell rootB = new TreeCell(list4, "Tree Item Root", true, icon);
+        list3.add(rootA);
+        list4.add(rootB);
+
+        int aIndex = 1;
+        TreeCell child = new TreeCell(list3, "Child", true, icon);
+        rootA.add(child);
+        for (int i = 0; i < 5; i++) {
+            TreeCell child2 = new TreeCell(list3, "Child " + (aIndex++), false, icon);
+            child.add(child2);
+        }
+        TreeCell child3 = new TreeCell(list3, "Child " + (aIndex++), true, icon);
+        child.add(child3);
+        for (int i = 0; i < 3; i++) {
+            TreeCell child2 = new TreeCell(list3, "Other Child With very long Name " + (aIndex++), false, icon);
+            child3.add(child2);
+        }
+        for (int i = 0; i < 3; i++) {
+            TreeCell child2 = new TreeCell(list3, "Siblings " + (aIndex++), false, icon);
+            rootA.add(child2);
+        }
+        for (int i = 0; i < 3; i++) {
+            TreeCell child2 = new TreeCell(list3, "Root Siblings " + (aIndex++), false, icon);
+            list3.add(child2);
+        }
+        TreeCell child4 = new TreeCell(list3, "Child " + (aIndex++), true, icon);
+        list3.add(child4);
+        for (int i = 0; i < 3; i++) {
+            TreeCell child2 = new TreeCell(list3, "Other Child " + (aIndex++), false, icon);
+            child4.add(child2);
+        }
+        treeView1.setAdapter(new TreeViewAdapter(list3));
+        treeView2.setAdapter(new TreeViewAdapter(list4));
     }
 
     @Flat
     public void optimize(PointerEvent pointer) {
-        if (pointer.getPointerID() == 1 && pointer.getType() == PointerEvent.PRESSED) {
+        /*if (pointer.getPointerID() == 1 && pointer.getType() == PointerEvent.PRESSED) {
             if (pointer.getSource() instanceof ImageView view) {
                 LineMap lineMap = (LineMap) view.getImage();
                 lineMap.optimize();
             }
-        }
+        }*/
     }
 
-
     boolean debug = false;
+
     @Flat
     public void toggleDebugMode() {
         debug = !debug;
@@ -256,10 +573,87 @@ public class MainController extends Controller {
     float t = 0;
     float av = 0;
 
+    PixelMap[] maps;
+    @Flat public ImageView img0, img1, img2, img3, img4, img5, img6, img7, img8, img9, img10, img11;
+    private ImageView[] images;
+
+    @Override
+    public void onShow() {
+        images = new ImageView[]{img0, img1, img2, img3, img4, img5, img6, img7, img8, img9, img10, img11};
+        getWindow().setIcon(PixelMap.parse(new ResourceStream("/default/icons/window-icon.png")));
+        setupListView(listView3, treeView3);
+
+        // getActivity().setContinuousRendering(true);
+        var graphics = getGraphics();
+
+        shader = graphics.createImageRenderShader(
+                """
+                #version 330 core
+                uniform vec4 col;
+                vec4 fragment(vec2 pos, vec2 uv) {
+                    return pos.x > 8 && col.r > 0 ? vec4(col.rgb, clamp(col.a * (pos.x - 8) / 16, 0, 1))
+                    : pos.x > 40 && col.b > 0 ? vec4(col.rgb, 1 - clamp(col.a * (pos.x - 40) / 16, 0, 1))
+                    : col;
+                }
+                """);
+        Surface surface = new Surface(64, 64, 8);
+        graphics.setSurface(surface);
+
+        maps = new PixelMap[AlphaComposite.values().length];
+        for (int i = 0; i < maps.length; i++) {
+            graphics.setAlphaComposite(AlphaComposite.SRC_OVER);
+            shader.set("col", Color.toFloat(Color.blue));
+            graphics.blitCustomShader(shader, 0, 0, 56, 40);
+            graphics.setAlphaComposite(AlphaComposite.values()[i]);
+            shader.set("col", Color.toFloat(Color.red));
+            graphics.blitCustomShader(shader, 8, 24, 56, 40);
+            graphics.setAlphaComposite(AlphaComposite.SRC_OVER);
+            maps[i] = graphics.createPixelMap();
+            images[i].setImage(maps[i]);
+            graphics.clear(0, 0, 0);
+        }
+
+        graphics.setSurface(null);
+
+        if (tabChips != null) {
+            search(tabChips.getFrame());
+        }
+
+        if (tabDefault != null) {
+            search(tabDefault.getFrame());
+        }
+    }
+
+    @Flat
+    public void onChangeLocale() {
+        getActivity().setStringBundle("/default/locale/portuguese.uxml");
+    }
+
+    @Override
+    public void onKeyFilter(KeyEvent keyEvent) {
+
+    }
+
+
+    PixelMap screen;
+    int n;
+    long time;
     @Override
     public void onDraw(Graphics graphics) {
         super.onDraw(graphics);
+        n++;
+        long now = System.currentTimeMillis();
+        if (now - time > 250) {
+            time = time == 0 ? now : now - (now - time - 250);
+            statusLabel.setText("FPS : " + (n * 4));
+            n = 0;
+        }
+
         if (t > 0) {
+            if (t == 1) {
+                screen = getActivity().getContext().getGraphics().createPixelMap();
+                System.out.println("Print : " + GL.GetError());
+            }
             int w = (int) getActivity().getWidth();
             int h = (int) getActivity().getHeight();
             graphics.setTransform2D(null);
@@ -273,33 +667,10 @@ public class MainController extends Controller {
             inverse.append(new Circle(w, 0, (float) Math.sqrt(w * w + h * h) * Interpolation.exp5.apply(1 - t)), false);
 
             graphics.pushClip(inverse);
-            graphics.drawImage(screen, 0, getActivity().getHeight(), getActivity().getWidth(), -getActivity().getHeight());
+            graphics.drawImage(screen, 0, 0, getActivity().getWidth(), getActivity().getHeight());
             graphics.popClip();
             t -= Application.getLoopTime();
             getActivity().invalidateWidget(getActivity().getScene());
-        }
-        graphics.setTransform2D(null);
-
-        graphics.setColor(Color.white);
-        graphics.drawRect(0, getActivity().getHeight() - 16, 52, 16, true);
-        graphics.setColor(Color.red);
-        if (av == 0) {
-            av = Application.getLoopTime();
-        } else {
-            av = (av * 0.8f + Application.getLoopTime() * 0.2f);
-        }
-        graphics.drawText(10, getActivity().getHeight() - 16, "FPS : " + (int)(1f / av));
-
-        graphics.setTransform2D(null);
-        graphics.drawImage(pix, 100, 100, 200, 200);
-
-        if (save) {
-            save = false;
-            Font font = Font.getDefault();
-            var ctx = graphics.getContext();
-            PixelMap pixelMap = font.createImageFromAtlas(graphics.getContext());
-            saveImage(pixelMap, "C:\\Nova\\image-3.png");
-            System.out.println("SAVED");
         }
     }
 
@@ -311,25 +682,69 @@ public class MainController extends Controller {
         }
     }
 
-    boolean save = false;
+    public static void saveEmojis(ArrayList<int[]> emojis, String filePath) {
+        try {
+            try (PrintWriter pw = new PrintWriter(filePath)) {
+                for (int[] emoji : emojis) {
+                    for (int i : emoji) {
+                        pw.println(i);
+                    }
+                }
+                pw.flush();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Flat
-    public void export(ActionEvent event) {
-        save = true;
+    public void onEmojiLoad(ActionEvent event) {
+        /*ResourceStream unicodes = new ResourceStream("/default/emojis/emojis.txt");
+        String[] lines = new String(unicodes.readData(), StandardCharsets.UTF_8).split("\n");
+        int[] emojis = new int[lines.length];
+        for (int i = 0; i < lines.length; i++) {
+            emojis[i] = Integer.parseInt(lines[i].trim());
+        }
+        for (int i = 0; i < emojis.length; i++) {
+            if (emojis[i] != 0) {
+                if (i % 6 != 0 && !(emojis[i] >= 0x1F1E6 && emojis[i] <= 0x1F1FF)) {
+                    System.out.print("&#x200D;");
+                }
+                if (i % 6 == 0 && emojis[i] >= 0x1F1E6 && emojis[i] <= 0x1F1FF) {
+                    System.out.print(" ");
+                }
+                System.out.print("&#x" + Integer.toHexString(emojis[i]) + ";");
+            }
+        }
+        System.out.println();*/
+    }
+
+    @Flat
+    public void onEmojiExport(ActionEvent event) {
+        /*Font font = Font.getDefault();
+        PixelMap pixelMap = font.createImageFromAtlas(getActivity().getContext());
+        saveImage(pixelMap, "C:\\Nova\\image-3.png");
+        System.out.println("SAVED");*/
+//        getActivity().getWindow().showOpenFolderDialog((file) -> {
+//            try {
+//                EmojiManager.renameFlags(file);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }, null);
+        // getActivity().getWindow().showOpenFileDialog((file) -> {
+        //     EmojiConverter.convertNotoMetaToDic(file);
+        // }, null, "json");
+//        getActivity().getWindow().showOpenFolderDialog((file) -> {
+//            ArrayList<int[]> emojis = new ArrayList<>();
+//            PixelMap map = EmojiConverter.createFromNotoEmoji(file, emojis, 4096);
+//            saveImage(map, "C:\\Nova\\emojis.png");
+//            saveEmojis(emojis, "C:\\Nova\\emojis.txt");
+//        }, null);
     }
 
     @Flat
     public void toggleDrawer2(ActionEvent event) {
         drawer2.toggle();
-    }
-
-    PixelMap screen;
-    public void savePrint() {
-        t = 1;
-        Context context = getActivity().getContext();
-        int w = (int) getActivity().getWidth();
-        int h = (int) getActivity().getHeight();
-        byte[] data = new byte[w * h * 4];
-        context.readPixels(0, 0, w, h, data, 0);
-        screen = new PixelMap(data, w, h, PixelFormat.RGBA);
     }
 }

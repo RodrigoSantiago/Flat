@@ -2,13 +2,12 @@ package flat.widget.stages.dialogs;
 
 import flat.events.ActionEvent;
 import flat.resources.ResourceStream;
-import flat.uxml.UXBuilder;
-import flat.uxml.UXListener;
-import flat.uxml.UXNode;
-import flat.uxml.UXTheme;
+import flat.uxml.*;
 import flat.widget.Scene;
 import flat.widget.Widget;
+import flat.widget.enums.Visibility;
 import flat.widget.stages.Dialog;
+import flat.widget.text.Button;
 import flat.widget.text.Label;
 import flat.window.Activity;
 import flat.window.ActivitySupport;
@@ -32,8 +31,7 @@ public class ConfirmDialogBuilderTest {
         Widget root = mock(Widget.class);
         Label title = mock(Label.class);
         Label message = mock(Label.class);
-        when(root.findById("title")).thenReturn(title);
-        when(root.findById("message")).thenReturn(message);
+        Button cancelButton = mock(Button.class);
 
         ResourceStream stream = mock(ResourceStream.class);
         UXNode node = mock(UXNode.class);
@@ -42,8 +40,18 @@ public class ConfirmDialogBuilderTest {
         UXTheme theme = mock(UXTheme.class);
         mockStatic(UXNode.class);
         when(UXNode.parse(stream)).thenReturn(node);
-        when(node.instance(any())).thenReturn(builder);
-        when(builder.build(theme)).thenReturn(root);
+
+        Controller[] controller = new Controller[1];
+        when(node.instance(any())).thenAnswer((a) -> {
+            controller[0] = a.getArgument(0, Controller.class);
+            return builder;
+        });
+        when(builder.build(theme)).thenAnswer((a) -> {
+            controller[0].assign("titleLabel", title);
+            controller[0].assign("messageLabel", message);
+            controller[0].assign("cancelButton", cancelButton);
+            return root;
+        });
 
         UXListener<Dialog> showListener = mock(UXListener.class);
         UXListener<Dialog> hideListener = mock(UXListener.class);
@@ -58,21 +66,28 @@ public class ConfirmDialogBuilderTest {
                 .onHideListener(hideListener)
                 .onYesListener(yesListener)
                 .onNoListener(noListener)
+                .block(true)
+                .cancelable(false)
                 .build();
 
         assertEquals(theme, dialog.getTheme());
         assertEquals(1, dialog.getChildrenIterable().size());
         assertEquals(root, dialog.getChildrenIterable().get(0));
-
-        verify(title, times(1)).setText("Title");
-        verify(message, times(1)).setText("Message");
+        assertTrue(dialog.isBlockEvents());
 
         var onYes = dialog.getController().getListenerMethod("onYes", ActionEvent.class);
         var onNo = dialog.getController().getListenerMethod("onNo", ActionEvent.class);
+        assertNotNull(dialog.getController().getListenerMethod("hide", ActionEvent.class));
+        assertNotNull(dialog.getController().getListenerMethod("onCancel", ActionEvent.class));
         assertNotNull(onYes);
         assertNotNull(onNo);
 
         dialog.getController().onShow();
+
+        verify(title, times(1)).setText("Title");
+        verify(message, times(1)).setText("Message");
+        verify(cancelButton, times(1)).setVisibility(Visibility.GONE);
+
         dialog.getController().onHide();
 
         verify(showListener, times(1)).handle(dialog);

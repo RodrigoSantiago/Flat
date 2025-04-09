@@ -61,6 +61,8 @@ public class ActivityTest {
     public void setTheme() {
         UXTheme theme1 = mock(UXTheme.class);
         UXTheme theme2 = mock(UXTheme.class);
+        when(theme1.createInstance(anyFloat(), anyFloat(), any(), any())).thenReturn(theme1);
+        when(theme2.createInstance(anyFloat(), anyFloat(), any(), any())).thenReturn(theme2);
 
         WindowSettings settings = new WindowSettings.Builder().size(200, 100).build();
         Activity activity = Activity.create(window, settings);
@@ -91,15 +93,19 @@ public class ActivityTest {
     public void setThemeResource() {
         UXTheme theme1 = mock(UXTheme.class);
         UXTheme theme2 = mock(UXTheme.class);
+        when(theme1.createInstance(anyFloat(), anyFloat(), any(), any())).thenReturn(theme1);
+        when(theme2.createInstance(anyFloat(), anyFloat(), any(), any())).thenReturn(theme2);
         ResourceStream stream1 = mock(ResourceStream.class);
         ResourceStream stream2 = mock(ResourceStream.class);
 
         UXSheet sheet1 = mock(UXSheet.class);
         when(sheet1.instance()).thenReturn(theme1);
+        when(sheet1.instance(anyFloat(), anyFloat(), any(), any())).thenReturn(theme1);
         when(stream1.getCache()).thenReturn(sheet1);
 
         UXSheet sheet2 = mock(UXSheet.class);
         when(sheet2.instance()).thenReturn(theme2);
+        when(sheet2.instance(anyFloat(), anyFloat(), any(), any())).thenReturn(theme2);
         when(stream2.getCache()).thenReturn(sheet2);
 
         WindowSettings settings = new WindowSettings.Builder().size(200, 100).theme(stream1).build();
@@ -258,23 +264,17 @@ public class ActivityTest {
         activity.show();
 
         activity.draw(graphics);
-        verify(graphics, times(1)).setView(0, 0, 200, 100);
         verify(graphics, times(1)).clear(0x0, 1, 0);
-        verify(graphics, times(1)).clearClip();
         verify(scene, times(1)).onDraw(graphics);
 
         activity.draw(graphics);
-        verify(graphics, times(1)).setView(0, 0, 200, 100);
         verify(graphics, times(1)).clear(0x0, 1, 0);
-        verify(graphics, times(1)).clearClip();
         verify(scene, times(1)).onDraw(graphics);
 
         activity.invalidate();
 
         activity.draw(graphics);
-        verify(graphics, times(2)).setView(0, 0, 200, 100);
         verify(graphics, times(2)).clear(0x0, 1, 0);
-        verify(graphics, times(2)).clearClip();
         verify(scene, times(2)).onDraw(graphics);
     }
 
@@ -376,7 +376,7 @@ public class ActivityTest {
     public void hide() {
         Controller controller = mock(Controller.class);
         ControllerFactory factory = mock(ControllerFactory.class);
-        when(factory.build(any())).thenReturn(controller);
+        when(factory.build()).thenReturn(controller);
 
         UXTheme theme = mock(UXTheme.class);
         Scene scene = mock(Scene.class);
