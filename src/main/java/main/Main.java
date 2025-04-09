@@ -11,7 +11,7 @@ public class Main {
                 .theme("/default/themes/light")
                 .stringBundle("/default/locale/english.uxml")
                 .controller(MainController::new)
-                .size(1100, 900)
+                .size(1280, 940)
                 .multiSamples(8)
                 .transparent(true)
                 .build()

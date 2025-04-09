@@ -3,6 +3,7 @@ package flat.uxml;
 import flat.animations.StateInfo;
 import flat.events.PointerEvent;
 import flat.graphics.symbols.Font;
+import flat.graphics.symbols.FontManager;
 import flat.resources.ResourceStream;
 import flat.resources.ResourcesManager;
 import flat.uxml.value.*;
@@ -28,7 +29,7 @@ import static org.powermock.api.mockito.PowerMockito.*;
 import static org.mockito.Mockito.verify;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({Font.class, Application.class})
+@PrepareForTest({Font.class, FontManager.class, Application.class})
 public class UXAttrsTest {
     private UXTheme theme;
     private UXStyle base;
@@ -59,6 +60,7 @@ public class UXAttrsTest {
         when(theme.getStyle("test")).thenReturn(base);
         when(theme.getStyle("name")).thenReturn(nameStyle);
         when(theme.getFontScale()).thenReturn(1f);
+        when(theme.getDpi()).thenReturn(160f);
 
         when(base.contains(hashPropertyBase)).thenReturn(true);
         when(nameStyle.contains(hashPropertyStyle)).thenReturn(true);
@@ -80,9 +82,10 @@ public class UXAttrsTest {
                 new UXValue[]{new UXValueSizeDp(24), new UXValueSizeIn(1), null, null, null, null, null, null});
 
         mockStatic(Font.class);
+        mockStatic(FontManager.class);
         Font defaultFont = mock(Font.class);
         when(Font.getDefault()).thenReturn(defaultFont);
-        when(Font.findFont(any(), any(), any(), any())).thenReturn(defaultFont);
+        when(FontManager.findFont(any(), any(), any(), any())).thenReturn(defaultFont);
 
         mockStatic(Application.class);
         ResourcesManager resourcesManager = mock(ResourcesManager.class);

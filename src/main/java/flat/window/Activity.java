@@ -6,18 +6,23 @@ import flat.events.KeyCode;
 import flat.events.KeyEvent;
 import flat.events.PointerEvent;
 import flat.exception.FlatException;
+import flat.graphics.Color;
 import flat.graphics.Graphics;
 import flat.graphics.context.Context;
+import flat.math.Vector2;
+import flat.math.stroke.BasicStroke;
 import flat.resources.ResourceStream;
 import flat.uxml.*;
 import flat.uxml.value.UXValue;
-import flat.widget.Group;
 import flat.widget.Parent;
 import flat.widget.Scene;
 import flat.widget.Widget;
+import flat.widget.structure.ToolItem;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
@@ -33,7 +38,9 @@ public class Activity {
     private final ArrayList<Widget> keyFilters = new ArrayList<>();
     private final ArrayList<Widget> resizeFilters = new ArrayList<>();
     private final ArrayList<Widget> filtersTemp = new ArrayList<>();
+    private final HashSet<Widget> focusables = new HashSet<>();
     private Widget focus;
+    private float focusAnim;
 
     private float width;
     private float height;
@@ -329,9 +336,30 @@ public class Activity {
         scene.onDraw(graphics);
     }
 
+    private void drawFocus(Graphics graphics) {
+        if (focusAnim > 0) {
+            if (focus != null && focus.isFocused() && focus.getActivity() == this) {
+                float anim = Math.min(1, (1 - Math.abs((focusAnim - 0.5f) * 2f)) * 4f);
+                float bb = focus.getFocusWidth() * 0.5f;
+                var bg = focus.getBackgroundShape();
+                int color = focus.getFocusColor();
+                color = Color.multiplyColorAlpha(color, anim);
+                graphics.setTransform2D(focus.getTransform());
+                graphics.setColor(color);
+                graphics.setStroke(new BasicStroke(bb * 2));
+                graphics.drawRoundRect(
+                        bg.x - bb, bg.y - bb, bg.width + bb * 2, bg.height + bb * 2,
+                        bg.arcTop + bb, bg.arcRight + bb, bg.arcBottom + bb, bg.arcLeft + bb, false);
+            }
+            invalidate();
+            focusAnim -= Application.getLoopTime() * 0.5f;
+        }
+    }
+
     private void onDraw(Graphics graphics) {
         drawBackground(graphics);
         drawWidgets(graphics);
+        drawFocus(graphics);
 
         if (controller != null && controller.isListening()) {
             try {
@@ -349,20 +377,9 @@ public class Activity {
     }
 
     private void clearUnusedFilters() {
-        filtersTemp.addAll(pointerFilters);
-        for (var widget : filtersTemp) {
-            if (widget.getActivity() != this) {
-                removePointerFilter(widget);
-            }
-        }
-        filtersTemp.clear();
-        filtersTemp.addAll(keyFilters);
-        for (var widget : filtersTemp) {
-            if (widget.getActivity() != this) {
-                removePointerFilter(widget);
-            }
-        }
-        filtersTemp.clear();
+        pointerFilters.removeIf(widget -> widget.getActivity() != this);
+        keyFilters.removeIf(widget -> widget.getActivity() != this);
+        focusables.removeIf(widget -> widget.getActivity() != this);
     }
 
     public void addPointerFilter(Widget widget) {
@@ -388,6 +405,16 @@ public class Activity {
             }
         }
         filtersTemp.clear();
+    }
+
+    public void addFocusableWidget(Widget widget) {
+        if (widget.getActivity() == this) {
+            focusables.add(widget);
+        }
+    }
+
+    public void removeFocusableWidget(Widget widget) {
+        focusables.remove(widget);
     }
 
     public void addKeyFilter(Widget widget) {
@@ -421,26 +448,83 @@ public class Activity {
             }
         }
         filtersTemp.clear();
+    }
 
-        if (!event.isConsumed() && event.getKeycode() == KeyCode.KEY_TAB) {
-            Widget nextFocus = getFocus() == null ? scene : getFocus();
-            do {
-                if (nextFocus instanceof Group group) {
-                    if (group.getInitialFocusId() != null) {
-                        nextFocus = nextFocus.findById(group.getInitialFocusId());
-                    } else if (nextFocus.getGroup() != null) {
-                        nextFocus = nextFocus.getGroup().findById(nextFocus.getNextFocusId());
-                    } else {
-                        nextFocus = nextFocus.findById(nextFocus.getNextFocusId());
+    public void onKey(KeyEvent event) {
+        if (event.isConsumed() || event.getType() != KeyEvent.PRESSED || event.getKeycode() != KeyCode.KEY_TAB) {
+            return;
+        }
+
+        if (focus != null) {
+            if (event.isShiftDown()) {
+                if (focus.getPrevFocusId() != null) {
+                    Widget prev = findById(focus.getPrevFocusId());
+                    if (prev != null) {
+                        setFocusByKeyboard(prev);
+                        return;
                     }
-                } else {
-                    nextFocus = nextFocus.findById(nextFocus.getNextFocusId());
                 }
-            } while (nextFocus instanceof Group group && group.getInitialFocusId() != null);
-
-            if (nextFocus != null && nextFocus.isFocusable()) {
-                setFocus(nextFocus);
+            } else {
+                if (focus.getNextFocusId() != null) {
+                    Widget next = findById(focus.getNextFocusId());
+                    if (next != null) {
+                        setFocusByKeyboard(next);
+                        return;
+                    }
+                }
             }
+        }
+
+        int strideW = (int) Math.floor(getWidth() / 8) + 1;
+        int strideH = (int) Math.floor(getHeight() / 8) + 1;
+        Vector2 base = focus == null ? new Vector2(0, 0) : focus.localToScreen(0, 0);
+        int baseX = (int) Math.floor(base.x / 8);
+        int baseY = (int) Math.floor(base.y / 8);
+        if (baseX < 0 || baseX > strideW) baseX = 0;
+        if (baseY < 0 || baseY > strideH) baseY = 0;
+        int baseI = focus == null ? -1 : baseX + baseY * strideW;
+
+        Widget next = null;
+        Widget prev = null;
+        Widget first = null;
+        Widget last = null;
+        int nextI = -1;
+        int prevI = -1;
+        int firstI = -1;
+        int lastI = -1;
+        for (var widget : focusables) {
+            if (!widget.isFocusable() || widget.getActivity() != this || widget == focus) continue;
+            Vector2 current = widget.localToScreen(0, 0);
+            int currentX = (int) Math.floor(current.x / 8);
+            int currentY = (int) Math.floor(current.y / 8);
+            int currentI = currentX + currentY * strideW;
+            if (currentX < 0 || currentX > strideW) continue;
+            if (currentY < 0 || currentY > strideH) continue;
+            Vector2 current2 = widget.localToScreen(widget.getOutWidth() / 2, widget.getOutHeight() / 2);
+            if (findByPosition(widget.getOutX() + current2.x, widget.getOutY() + current2.y, false) != widget) continue;
+
+            if (currentI > baseI && (currentI < nextI || nextI == -1)) {
+                next = widget;
+                nextI = currentI;
+            }
+            if (currentI < baseI && (currentI > prevI || prevI == -1)) {
+                prev = widget;
+                prevI = currentI;
+            }
+            if (currentI < firstI || firstI == -1) {
+                first = widget;
+                firstI = currentI;
+            }
+            if (currentI > lastI || lastI == -1) {
+                last = widget;
+                lastI = currentI;
+            }
+        }
+
+        if (event.isShiftDown()) {
+            setFocusByKeyboard(prev == null ? last : prev);
+        } else {
+            setFocusByKeyboard(next == null ? first : next);
         }
     }
 
@@ -488,6 +572,12 @@ public class Activity {
         if (focus != null) {
             focus.fireFocus(new FocusEvent(focus, focus));
         }
+        focusAnim = 0;
+    }
+
+    public void setFocusByKeyboard(Widget widget) {
+        setFocus(widget);
+        focusAnim = 1f;
     }
 
     public Widget getFocus() {

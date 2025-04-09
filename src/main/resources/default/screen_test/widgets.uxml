@@ -2,7 +2,7 @@
     <LinearBox direction="VERTICAL" width="MATCH_PARENT" height="MATCH_PARENT">
         <ToolBar width="MATCH_PARENT" on-navigation="toggleDrawer"
                  title="Flat.UI Showcase" subtitle="Material" style="double-dense primary">
-            <ToolItem navigation-item="true" style="navigation dense primary"/>
+            <ToolItem navigation-item="true" style="navigation dense primary" id="nav"/>
             <ToolItem overflow-item="true" style="overflow dense primary"/>
             <ToolItem icon="icon(fill, bug_report)" style="dense primary" menu-text="Dark" on-action="toggleDebugMode"/>
             <ToolItem icon="icon(fill, light_mode)" style="dense primary" menu-text="Light" on-action="setThemeLight"/>
@@ -10,22 +10,22 @@
         </ToolBar>
         <Drawer id="mainDrawer" width="MATCH_PARENT" height="MATCH_PARENT" block-events="true" auto-close="true" overlay-mode="FLOATING">
             <LinearBox front-content="true" direction="vertical" style="layout-drawer-menu">
-                <MenuItem text="Default" on-action="setTabDefault" style="navigation"/>
-                <MenuItem text="Buttons" on-action="setTabButtons" style="navigation"/>
-                <MenuItem text="Chips" on-action="setTabChips" style="navigation"/>
-                <MenuItem text="Forms" on-action="setTabForms" style="navigation"/>
-                <MenuItem text="Progress" on-action="setTabProgress" style="navigation"/>
-                <MenuItem text="Text" on-action="setTabText" style="navigation"/>
-                <MenuItem text="TextFields" on-action="setTabTextFields" style="navigation"/>
-                <MenuItem text="Emojis" on-action="setTabEmojis" style="navigation"/>
-                <MenuItem text="Tabs" on-action="setTabTabs" style="navigation"/>
-                <MenuItem text="Toolbars" on-action="setTabToolbars" style="navigation"/>
-                <MenuItem text="Scrolls" on-action="setTabScrolls" style="navigation"/>
-                <MenuItem text="Images" on-action="setTabImages" style="navigation"/>
-                <MenuItem text="Lists" on-action="setTabLists" style="navigation"/>
-                <MenuItem text="Menus" on-action="setTabMenus" style="navigation"/>
-                <MenuItem text="Dialogs" on-action="setTabDialogs" style="navigation"/>
-                <MenuItem text="Effects" on-action="setTabEffects" style="navigation"/>
+                <MenuItem text="Default" on-action="setTabDefault" style="navigation" id="menuItem1"/>
+                <MenuItem text="Buttons" on-action="setTabButtons" style="navigation" id="menuItem2"/>
+                <MenuItem text="Chips" on-action="setTabChips" style="navigation" id="menuItem3"/>
+                <MenuItem text="Forms" on-action="setTabForms" style="navigation" id="menuItem4"/>
+                <MenuItem text="Progress" on-action="setTabProgress" style="navigation" id="menuItem5"/>
+                <MenuItem text="Text" on-action="setTabText" style="navigation" id="menuItem6"/>
+                <MenuItem text="TextFields" on-action="setTabTextFields" style="navigation" id="menuItem7"/>
+                <MenuItem text="Emojis" on-action="setTabEmojis" style="navigation" id="menuItem8"/>
+                <MenuItem text="Tabs" on-action="setTabTabs" style="navigation" id="menuItem9"/>
+                <MenuItem text="Toolbars" on-action="setTabToolbars" style="navigation" id="menuItem10"/>
+                <MenuItem text="Scrolls" on-action="setTabScrolls" style="navigation" id="menuItem11"/>
+                <MenuItem text="Images" on-action="setTabImages" style="navigation" id="menuItem12"/>
+                <MenuItem text="Lists" on-action="setTabLists" style="navigation" id="menuItem13"/>
+                <MenuItem text="Menus" on-action="setTabMenus" style="navigation" id="menuItem14"/>
+                <MenuItem text="Dialogs" on-action="setTabDialogs" style="navigation" id="menuItem15"/>
+                <MenuItem text="Effects" on-action="setTabEffects" style="navigation" id="menuItem16"/>
             </LinearBox>
             <LinearBox back-content="true" direction="vertical" style="layout-drawer-content">
                 <TabView width="MATCH_PARENT" height="MATCH_PARENT" id="mainTab" hidden-tabs="true">

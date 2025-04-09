@@ -185,6 +185,7 @@ public class Window {
 
     void processStartup() {
         if (!started) {
+            setPosition((getMonitorWidth() - getWidth()) / 2, (getMonitorHeight() - getHeight()) / 2);
             show();
             started = true;
             activity.initialize();
@@ -441,6 +442,18 @@ public class Window {
         checkDisposed();
 
         return WL.GetClientHeight(windowId);
+    }
+
+    public int getMonitorWidth() {
+        checkDisposed();
+
+        return WL.GetMonitorWidth(windowId);
+    }
+
+    public int getMonitorHeight() {
+        checkDisposed();
+
+        return WL.GetMonitorHeight(windowId);
     }
 
     public float getPhysicalWidth() {

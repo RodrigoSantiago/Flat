@@ -86,8 +86,10 @@ public class MainController extends Controller {
 
     @Flat public ListView listView1;
     @Flat public ListView listView2;
+    @Flat public ListView listView3;
     @Flat public ListView treeView1;
     @Flat public ListView treeView2;
+    @Flat public ListView treeView3;
 
     @Flat public Label statusLabel;
 
@@ -102,6 +104,7 @@ public class MainController extends Controller {
 
     @Flat
     public void setTabDefault() {
+        setupListView(listView3, treeView3);
         mainTab.selectTab(tabDefault);
         mainDrawer.hide();
     }
@@ -186,6 +189,7 @@ public class MainController extends Controller {
 
     @Flat
     public void setTabLists() {
+        setupListView(listView1, treeView1);
         mainTab.selectTab(tabLists);
         mainDrawer.hide();
     }
@@ -209,10 +213,14 @@ public class MainController extends Controller {
     }
 
     @Flat
-    public void linearAction(ActionEvent actionEvent) {
-        List<Tab> list = new ArrayList<>();
-        new TabView().addTab(list);
-        getActivity().getWindow().setIcon((PixelMap) iconButton.getIcon());
+    public void onSnackDialog() {
+        var alert = new SnackbarDialogBuilder()
+                .message("This is an alert message")
+                .duration(5f)
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .build();
+        alert.show(getActivity());
     }
 
     @Flat
@@ -493,7 +501,7 @@ public class MainController extends Controller {
     PixelMap pix;
     Font arial;
 
-    private void setupListView() {
+    private void setupListView(ListView listView1, ListView treeView1) {
         ObservableList<String> list1 = new ObservableList<>();
         ObservableList<String> list2 = new ObservableList<>();
         for (int i = 0; i < 50; i++) {
@@ -569,16 +577,12 @@ public class MainController extends Controller {
     @Flat public ImageView img0, img1, img2, img3, img4, img5, img6, img7, img8, img9, img10, img11;
     private ImageView[] images;
 
-    Font font;
     @Override
     public void onShow() {
-        getWindow().setIcon(PixelMap.parse(new ResourceStream("/default/icons/window-icon.png")));
-
         images = new ImageView[]{img0, img1, img2, img3, img4, img5, img6, img7, img8, img9, img10, img11};
-        setupListView();
-        font = FontManager.findFont(FontStyle.FANTASY);
-        System.out.println(font.getGlyphCount());
-        System.out.println(font.getName());
+        getWindow().setIcon(PixelMap.parse(new ResourceStream("/default/icons/window-icon.png")));
+        setupListView(listView3, treeView3);
+
         // getActivity().setContinuousRendering(true);
         var graphics = getGraphics();
 
@@ -611,9 +615,12 @@ public class MainController extends Controller {
 
         graphics.setSurface(null);
 
-
         if (tabChips != null) {
             search(tabChips.getFrame());
+        }
+
+        if (tabDefault != null) {
+            search(tabDefault.getFrame());
         }
     }
 

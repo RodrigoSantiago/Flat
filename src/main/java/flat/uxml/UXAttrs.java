@@ -437,7 +437,7 @@ public class UXAttrs {
         if (currentValues == null) {
             return null;
         } else {
-            float dpi = activity == null ? 160 : activity.getDensity();
+            float dpi = theme == null ? 160 : theme.getDpi();
             return mixStyle(state, currentValues, dpi);
         }
     }

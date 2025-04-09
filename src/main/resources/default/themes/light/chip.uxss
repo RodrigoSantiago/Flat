@@ -10,6 +10,7 @@ chip : chip.default {
     padding-top : 7dp;
     padding-bottom : 7dp;
     focusable : true;
+    focus-width : 2dp;
 
     icon-spacing : 8dp;
     action-spacing : 8dp;
@@ -112,6 +113,7 @@ chip.default {
     close-icon-color : alpha($on-card-color, 0.5);
     background-color : alpha($on-card-color, 0.05);
     ripple-color : alpha($on-card-color, 0.5);
+    focus-color : $primary-color;
 
     hovered {
         background-color : alpha($on-card-color, 0.10);
@@ -142,6 +144,7 @@ chip.primary {
     close-icon-color : alpha($on-card-color, 0.5);
     background-color : alpha($on-card-color, 0.05);
     ripple-color : alpha($primary-color, 0.5);
+    focus-color : $primary-color;
 
     hovered {
         background-color : alpha($on-card-color, 0.10);
@@ -174,6 +177,7 @@ chip.outlined {
     border-color : alpha($on-card-color, 0.5);
     border-width : 1dp;
     ripple-color : alpha($on-card-color, 0.5);
+    focus-color : $primary-color;
 
     hovered {
         background-color : alpha($on-card-color, 0.05);
@@ -208,6 +212,7 @@ chip.outlined-primary {
     border-color : $primary-color;
     border-width : 1dp;
     ripple-color : alpha($primary-color-fade, 0.25);
+    focus-color : $primary-color;
 
     hovered {
         background-color : alpha($primary-color-fade, 0.05);

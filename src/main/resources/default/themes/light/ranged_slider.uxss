@@ -22,6 +22,7 @@ ranged-slider : ranged-slider.primary {
     slide-transition-duration : 0.2;
 
     focusable : true;
+    focus-width : 2dp;
     cursor : hand;
 }
 
@@ -34,6 +35,8 @@ ranged-slider.primary {
     line-width : 6dp;
     line-cap : ROUND;
     ripple-color : alpha($primary-color-fade, 0.5);
+    focus-color : $primary-color;
+
     hovered {
         icon-bg-color : alpha($primary-color-fade, 0.15);
     }

@@ -31,6 +31,20 @@ dialog-choice {
 dialog-multiple-choices {
     width : 420dp;
 }
+dialog-snackbar {
+    min-width : 420dp;
+    max-width : 600dp;
+    vertical-align : middle;
+    background-color : $on-card-color;
+    radius-top : 4dp;
+    radius-left : 4dp;
+    radius-right : 4dp;
+    radius-bottom : 4dp;
+    padding-top : 8dp;
+    padding-left : 16dp;
+    padding-right : 8dp;
+    padding-bottom : 8dp;
+}
 dialog-header {
     height : 32dp;
     width : MATCH_PARENT;
@@ -46,6 +60,15 @@ dialog-message {
     text-font : font("Roboto");
     text-size : 16sp;
     padding-top : 8dp;
+}
+dialog-snackbar-message {
+    text-font : font("Roboto");
+    text-size : 18sp;
+    text-color : $card-color;
+    width : MATCH_PARENT;
+}
+dialog-snackbar-button {
+
 }
 dialog-message-area {
     min-width : 420dp;

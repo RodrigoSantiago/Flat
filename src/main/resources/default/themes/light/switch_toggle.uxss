@@ -20,6 +20,7 @@ switch-toggle : switch-toggle.primary {
     slide-transition-duration : 0.2;
 
     focusable : true;
+    focus-width : 2dp;
     cursor : hand;
 }
 
@@ -31,6 +32,8 @@ switch-toggle.primary {
     line-width : 12dp;
     line-cap : ROUND;
     ripple-color : alpha($primary-color-fade, 0.5);
+    focus-color : $primary-color;
+
     hovered {
         icon-color : $card-color;
         icon-bg-color : alpha($primary-color-fade, 0.15);

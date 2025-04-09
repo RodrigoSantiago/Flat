@@ -4,121 +4,143 @@
                    padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
             <Label text="Default" style="subtitle" margin-left="4dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button text="@contained" style="" on-key="onKeypress" on-action="onEmojiExport"/>
-                <Button margin-left="16dp" text="Contained" style="primary" on-action="onEmojiLoad"/>
-                <Button margin-left="16dp" text="Outlined" style="outlined-primary"/>
-                <Button margin-left="16dp" text="Text" style="text-primary"/>
+                <Button width="MATCH_PARENT" text="Button" style=""/>
+                <Button width="MATCH_PARENT" margin-left="16dp" text="Button" style="primary"/>
+                <Button width="MATCH_PARENT" margin-left="16dp" text="Button" style="outlined-primary"/>
+                <Button width="MATCH_PARENT" margin-left="16dp" text="Button" style="text-primary"/>
             </LinearBox>
-            <Label text="Trailing Icons Left" style="subtitle" margin-left="4dp" margin-top="16dp"/>
-            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button text="Contained" style="icon-left" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" text="Contained" style="icon-left primary" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" text="Outlined" style="icon-left outlined-primary" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" text="Text" style="icon-left text-primary" icon="icon(fill, star)"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="16dp">
+                <Button width="MATCH_PARENT" text="Button" style="icon-left" icon="icon(star)"/>
+                <Button width="MATCH_PARENT" margin-left="16dp" text="Button" style="icon-left primary" icon="icon(star)"/>
+                <Button width="MATCH_PARENT" margin-left="16dp" text="Button" style="icon-left outlined-primary" icon="icon(star)"/>
+                <Button width="MATCH_PARENT" margin-left="16dp" text="Button" style="icon-left text-primary" icon="icon(star)"/>
             </LinearBox>
-            <Label text="Trailing Icons Right" style="subtitle" margin-left="4dp" margin-top="16dp"/>
-            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button text="Contained" style="icon-right" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" text="Contained" style="icon-right primary" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" text="Outlined" style="icon-right outlined-primary" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" text="Text" style="icon-right text-primary" icon="icon(fill, star)"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="16dp">
+                <Button style="icon" icon="icon(star)"/>
+                <Button margin-left="16dp" style="icon" icon="icon(fill, refresh)"/>
+                <Button margin-left="16dp" style="icon primary" icon="icon(outline, mood)"/>
+                <Button margin-left="16dp" style="icon primary" icon="icon(fill, mood)"/>
+                <Button margin-left="16dp" style="icon outlined-primary" icon="icon(fill, settings)"/>
+                <Button margin-left="16dp" style="icon outlined-primary" icon="icon(fill, block)"/>
+                <Button margin-left="16dp" style="icon text-primary" icon="icon(fill, close)"/>
+                <Button margin-left="16dp" style="icon text-primary" icon="icon(fill, menu)"/>
             </LinearBox>
-            <Label text="Icons" style="subtitle" margin-left="4dp" margin-top="16dp"/>
-            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button style="icon" icon="icon(fill, star)" />
-                <Button margin-left="16dp" style="icon primary" icon="icon(fill, star)" />
-                <Button margin-left="16dp" style="icon outlined-primary" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" style="icon text-primary" icon="icon(fill, star)"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="16dp">
+                <TextInputField width="MATCH_PARENT" text-hint="Text Field" style="" multiline-enabled="false"/>
+                <TextInputField width="MATCH_PARENT" margin-left="16dp" text="01/01/2025" style="" icon="icon(event)" multiline-enabled="false"/>
             </LinearBox>
-            <Label text="Dense" style="subtitle" margin-left="4dp" margin-top="16dp"/>
-            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button text="Contained" style="dense"/>
-                <Button margin-left="16dp" text="Contained" style="primary dense"/>
-                <Button margin-left="16dp" text="Outlined" style="outlined-primary dense"/>
-                <Button margin-left="16dp" text="Text" style="text-primary dense"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="16dp">
+                <TextArea width="MATCH_PARENT" text="Text Area&#10;For Multiline&#10;Comments or Posts" style=""/>
             </LinearBox>
-
-            <Label text="Dense Trailing Icons Left" style="subtitle" margin-left="4dp" margin-top="16dp"/>
-            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button text="Contained" style="icon-left dense" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" text="Contained" style="icon-left primary dense" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" text="Outlined" style="icon-left outlined-primary dense" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" text="Text" style="icon-left text-primary dense" icon="icon(fill, star)"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="16dp">
+                <TextInputField width="MATCH_PARENT" text="Text with emojis &#x1F602; &#x2764; &#x1F60D; &#x1F923; &#x1F60A; &#x1F97A; &#x1F64F; &#x1F495; &#x1F62D; &#x1F618;"/>
             </LinearBox>
-            <Label text="Dense Trailing Icons Right" style="subtitle" margin-left="4dp" margin-top="16dp"/>
-            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button text="Contained" style="icon-right dense" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" text="Contained" style="icon-right primary dense" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" text="Outlined" style="icon-right outlined-primary dense" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" text="Text" style="icon-right text-primary dense" icon="icon(fill, star)"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="16dp">
+                <Chip text="Filter 1" style="complete-left primary" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Filter 2" style="complete-left primary" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Filter 3" style="complete-left primary" icon="icon(fill, account_circle)"/>
+                <Chip margin-left="8dp" text="Filter 4" style="complete-left primary" icon="icon(fill, account_circle)"/>
             </LinearBox>
-            <Label text="Dense Icons" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="16dp">
+                <ProgressBar width="MATCH_PARENT" value="-1.0" style="split"/>
+            </LinearBox>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button style="icon-dense" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" style="icon-dense primary" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" style="icon-dense outlined-primary" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" style="icon-dense text-primary" icon="icon(fill, star)"/>
+                <LinearBox direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT">
+                    <Label text="Checkboxes" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+                    <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="MIDDLE">
+                        <Checkbox activated="true" style=""/><Label text="Option 1"/>
+                    </LinearBox>
+                    <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="MIDDLE">
+                        <Checkbox undefined="true" style=""/><Label text="Option 2"/>
+                    </LinearBox>
+                    <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="MIDDLE">
+                        <Checkbox style=""/><Label text="Option 3"/>
+                    </LinearBox>
+                </LinearBox>
+                <LinearBox direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT">
+                    <Label text="RadioButtons" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+                    <RadioGroup id="group1"/>
+                    <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="MIDDLE">
+                        <RadioButton activated="true" style="radio-button-primary" radio-group-id="group1"/><Label text="Option 1"/>
+                    </LinearBox>
+                    <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="MIDDLE">
+                        <RadioButton style="radio-button-primary" radio-group-id="group1"/><Label text="Option 2"/>
+                    </LinearBox>
+                    <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="MIDDLE">
+                        <RadioButton style="radio-button-primary" radio-group-id="group1"/><Label text="Option 3"/>
+                    </LinearBox>
+                </LinearBox>
+                <LinearBox direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT">
+                    <Label text="Swich Toggle" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+                    <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="MIDDLE">
+                        <SwitchToggle activated="true"/><Label text="Option 1"/>
+                    </LinearBox>
+                    <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="MIDDLE">
+                        <SwitchToggle/><Label text="Option 2"/>
+                    </LinearBox>
+                    <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="MIDDLE">
+                        <SwitchToggle/><Label text="Option 3"/>
+                    </LinearBox>
+                </LinearBox>
+            </LinearBox>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="16dp">
+                <Slider style="" value="0.5" width="MATCH_PARENT"/>
+                <RangedSlider style="" start-value="0.15" end-value="0.65" width="MATCH_PARENT"/>
+            </LinearBox>
+            <LinearBox margin-left="4dp" direction="HORIZONTAL" horizontal-align="LEFT" margin-top="16dp">
+                <Text text="Lorem ipsum dolor sit amet. Quo dolor debitis aut culpa pariatur 33 amet suscipit sed doloremque repudiandae qui sapiente illo! aut ratione quos eos adipisci galisum et illum corrupti! Eum galisum quaerat et illum enim est laborum harum ut soluta voluptatibus.&#10;&#10;Lorem ipsum dolor sit amet. Quo dolor debitis aut culpa pariatur 33 amet suscipit sed doloremque repudiandae qui sapiente illo!"/>
             </LinearBox>
         </LinearBox>
-        <LinearBox enabled="false" direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
-                   padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
-            <Label text="Default" style="subtitle" margin-left="4dp"/>
-            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button text="Contained" style=""/>
-                <Button margin-left="16dp" text="Contained" style="primary"/>
-                <Button margin-left="16dp" text="Outlined" style="outlined-primary"/>
-                <Button margin-left="16dp" text="Text" style="text-primary"/>
-            </LinearBox>
-            <Label text="Trailing Icons Left" style="subtitle" margin-left="4dp" margin-top="16dp"/>
-            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button text="Contained" style="icon-left" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" text="Contained" style="icon-left primary" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" text="Outlined" style="icon-left outlined-primary" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" text="Text" style="icon-left text-primary" icon="icon(fill, star)"/>
-            </LinearBox>
-            <Label text="Trailing Icons Right" style="subtitle" margin-left="4dp" margin-top="16dp"/>
-            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button text="Contained" style="icon-right" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" text="Contained" style="icon-right primary" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" text="Outlined" style="icon-right outlined-primary" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" text="Text" style="icon-right text-primary" icon="icon(fill, star)"/>
-            </LinearBox>
-            <Label text="Icons" style="subtitle" margin-left="4dp" margin-top="16dp"/>
-            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button style="icon" icon="icon(fill, star)" />
-                <Button margin-left="16dp" style="icon primary" icon="icon(fill, star)" />
-                <Button margin-left="16dp" style="icon outlined-primary" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" style="icon text-primary" icon="icon(fill, star)"/>
-            </LinearBox>
-            <Label text="Dense" style="subtitle" margin-left="4dp" margin-top="16dp"/>
-            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button text="Contained" style="dense"/>
-                <Button margin-left="16dp" text="Contained" style="primary dense"/>
-                <Button margin-left="16dp" text="Outlined" style="outlined-primary dense"/>
-                <Button margin-left="16dp" text="Text" style="text-primary dense"/>
-            </LinearBox>
-
-            <Label text="Dense Trailing Icons Left" style="subtitle" margin-left="4dp" margin-top="16dp"/>
-            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button text="Contained" style="icon-left dense" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" text="Contained" style="icon-left primary dense" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" text="Outlined" style="icon-left outlined-primary dense" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" text="Text" style="icon-left text-primary dense" icon="icon(fill, star)"/>
-            </LinearBox>
-            <Label text="Dense Trailing Icons Right" style="subtitle" margin-left="4dp" margin-top="16dp"/>
-            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button text="Contained" style="icon-right dense" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" text="Contained" style="icon-right primary dense" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" text="Outlined" style="icon-right outlined-primary dense" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" text="Text" style="icon-right text-primary dense" icon="icon(fill, star)"/>
-            </LinearBox>
-            <Label text="Dense Icons" style="subtitle" margin-left="4dp" margin-top="16dp"/>
-            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button style="icon-dense" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" style="icon-dense primary" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" style="icon-dense outlined-primary" icon="icon(fill, star)"/>
-                <Button margin-left="16dp" style="icon-dense text-primary" icon="icon(fill, star)"/>
-            </LinearBox>
+        <LinearBox direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
+               padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
+        <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+            <TabView height="70dp" style="primary" background-color="$card-color" width="MATCH_PARENT">
+                <Tab text="Tab 1" style="complete-left primary" icon="icon(fill, star)"/>
+                <Tab text="Tab 2" style="complete-left primary" icon="icon(fill, star)"/>
+                <Tab text="Tab 3" style="complete-left primary" icon="icon(fill, star)"/>
+                <Tab text="Tab 4" style="complete-right primary" icon="icon(fill, star)"/>
+                <Tab text="Tab 5" style="complete-right primary" icon="icon(fill, star)"/>
+                <Tab text="Tab 6" style="complete-right primary" icon="icon(fill, star)"/>
+            </TabView>
         </LinearBox>
+        <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="16dp">
+            <ToolBar style="primary" width="MATCH_PARENT" title="Toolbar Main Title" subtitle="Subtitle">
+                <ToolItem navigation-item="true" style="navigation primary"/>
+                <ToolItem overflow-item="true" style="overflow primary"/>
+                <ToolItem menu-text="Edit" style="primary" icon="icon(fill, edit)" enabled="false"/>
+                <ToolItem menu-text="Filter" style="primary" icon="icon(fill, filter_alt)"/>
+                <ToolItem menu-text="Search" style="primary" icon="icon(fill, search)"/>
+                <ToolItem menu-text="SettingsonSnackDialog" style="primary" icon="icon(fill, settings)"/>
+                <Menu>
+                    <MenuItem text="Menu Item A"/>
+                    <MenuItem text="Menu Item B"/>
+                    <MenuItem text="Menu Item C"/>
+                </Menu>
+            </ToolBar>
+        </LinearBox>
+        <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="16dp" max-height="400dp">
+            <ListView id="listView3" width="MATCH_PARENT" height="MATCH_PARENT"/>
+            <ListView margin-left="8dp" id="treeView3" width="MATCH_PARENT" height="MATCH_PARENT"/>
+        </LinearBox>
+        <Label text="Dialogs" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+        <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+            <Button width="MATCH_PARENT" text="Alert" style="icon-left" on-action="onBlockAlertDialog" icon="icon(fill, error)"/>
+            <Button width="MATCH_PARENT" margin-left="16dp" text="Confirm" style="icon-left" on-action="onBlockConfirmDialog" icon="icon(fill, help)"/>
+            <Button width="MATCH_PARENT" margin-left="16dp" text="Process" style="icon-left" on-action="onBlockProcessDialog" icon="icon(fill, restore)"/>
+            <Button width="MATCH_PARENT" margin-left="16dp" text="Date" style="icon-left" on-action="onBlockDatePickerDialog" icon="icon(fill, event)"/>
+        </LinearBox>
+        <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="16dp">
+            <Button width="MATCH_PARENT" text="Emoji" style="icon-left" icon="icon(emoji, smile)" on-action="onEmojiPickerDialog" icon-color="white"/>
+            <Button width="MATCH_PARENT" margin-left="16dp" text="Snack" style="icon-left" on-action="onSnackDialog" icon="icon(fill, warning)"/>
+            <Button width="MATCH_PARENT" margin-left="16dp" text="Option" style="icon-left" on-action="onBlockChoiceDialog" icon="icon(fill, list_alt)"/>
+            <Button width="MATCH_PARENT" margin-left="16dp" text="Multiple" style="icon-left" on-action="onBlockMultipleChoicesDialog" icon="icon(fill, fact_check)"/>
+        </LinearBox>
+        <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="16dp">
+            <Button width="MATCH_PARENT" text="Open File" style="icon-left primary" on-action="onFileOpenDialog" icon="icon(fill, folder)"/>
+            <Button width="MATCH_PARENT" margin-left="16dp" text="Open Multiple File" style="icon-left primary" on-action="onFileOpenMultipleDialog" icon="icon(fill, folder_copy)"/>
+            <Button width="MATCH_PARENT" margin-left="16dp" text="Open Directory" style="icon-left primary" on-action="onFileOpenDirDialog" icon="icon(fill, folder_open)"/>
+            <Button width="MATCH_PARENT" margin-left="16dp" text="Save File" style="icon-left primary" on-action="onFileSaveDialog" icon="icon(fill, save)"/>
+        </LinearBox>
+    </LinearBox>
     </LinearBox>
 </Scene>

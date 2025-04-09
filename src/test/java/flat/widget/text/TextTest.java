@@ -1,6 +1,7 @@
 package flat.widget.text;
 
 import flat.graphics.symbols.Font;
+import flat.graphics.symbols.FontManager;
 import flat.uxml.Controller;
 import flat.uxml.UXBuilder;
 import flat.uxml.UXHash;
@@ -25,7 +26,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({Font.class})
+@PrepareForTest({Font.class, FontManager.class})
 public class TextTest {
 
     Controller controller;
@@ -39,12 +40,13 @@ public class TextTest {
         builder = mock(UXBuilder.class);
 
         mockStatic(Font.class);
+        mockStatic(FontManager.class);
 
         defaultFont = mock(Font.class);
         boldFont = mock(Font.class);
         when(Font.getDefault()).thenReturn(defaultFont);
 
-        when(Font.findFont(any(), any(), any(), any())).thenReturn(defaultFont);
+        when(FontManager.findFont(any(), any(), any(), any())).thenReturn(defaultFont);
         when(defaultFont.getHeight(anyFloat())).thenAnswer((a) -> (Float) a.getArgument(0));
         when(defaultFont.getWidth(any(), anyFloat(), anyFloat())).thenAnswer((a) -> {
             String text = a.getArgument(0);

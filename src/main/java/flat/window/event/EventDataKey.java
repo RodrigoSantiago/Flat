@@ -64,6 +64,7 @@ public class EventDataKey extends EventData {
 
                 KeyEvent keyEvent = new KeyEvent(widget, eventType, shift, ctrl, alt, spr, "", key);
                 widget.fireKey(keyEvent);
+                activity.onKey(keyEvent);
             }
         } finally {
             release();

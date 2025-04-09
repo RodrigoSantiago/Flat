@@ -103,6 +103,8 @@ public class Widget {
     private int borderColor;
     private float borderWidth;
     private float opacity = 1;
+    private int focusColor;
+    private float focusWidth;
 
     private RippleEffect ripple;
     private int rippleColor;
@@ -156,6 +158,9 @@ public class Widget {
         setCursor(attrs.getConstant("cursor", info, getCursor()));
 
         setFocusable(attrs.getBool("focusable", info, isFocusable()));
+        setFocusColor(attrs.getColor("focus-color", info, getFocusColor()));
+        setFocusWidth(attrs.getNumber("focus-width", info, getFocusWidth()));
+
         setHandleEventsEnabled(attrs.getBool("handle-events-enabled", info, isHandleEventsEnabled()));
 
         setPrefWidth(attrs.getSize("width", info, getPrefWidth()));
@@ -553,6 +558,9 @@ public class Widget {
     protected void onActivityChange(Activity prev, Activity current, TaskList tasks) {
         refreshFocus();
 
+        updateFocusOnActivity(prev);
+        updateFocusOnActivity(current);
+
         if (contextMenu != null && contextMenu.isShown() && contextMenu.getActivity() != null) {
             Menu menu = this.contextMenu;
             tasks.add(() -> menu.hide());
@@ -938,6 +946,20 @@ public class Widget {
         }
     }
 
+    private void updateFocusOnActivity(Activity activity) {
+        if (activity != null) {
+            if (activity == getActivity()) {
+                if (focusable) {
+                    activity.addFocusableWidget(this);
+                } else {
+                    activity.removeFocusableWidget(this);
+                }
+            } else {
+                activity.removeFocusableWidget(this);
+            }
+        }
+    }
+
     public boolean isFocusable() {
         return focusable;
     }
@@ -945,6 +967,7 @@ public class Widget {
     public void setFocusable(boolean focusable) {
         if (this.focusable != focusable) {
             this.focusable = focusable;
+            updateFocusOnActivity(getActivity());
 
             if (!focusable) {
                 setFocused(false);
@@ -1610,6 +1633,32 @@ public class Widget {
 
     public RoundRectangle getBackgroundShape() {
         return new RoundRectangle(bg);
+    }
+
+    public int getFocusColor() {
+        return focusColor;
+    }
+
+    public void setFocusColor(int focusColor) {
+        if (this.focusColor != focusColor) {
+            this.focusColor = focusColor;
+            if (isFocused()) {
+                invalidate(false);
+            }
+        }
+    }
+
+    public float getFocusWidth() {
+        return focusWidth;
+    }
+
+    public void setFocusWidth(float focusWidth) {
+        if (this.focusWidth != focusWidth) {
+            this.focusWidth = focusWidth;
+            if (isFocused()) {
+                invalidate(false);
+            }
+        }
     }
 
     public boolean isShadowEnabled() {

@@ -5,6 +5,7 @@ text-area : text-area.default {
     horizontal-align : left;
     cursor : ibeam;
     focusable : true;
+    focus-width : 2dp;
     floating-bars : true;
 
     padding-top : 8dp;
@@ -19,6 +20,7 @@ text-area.default {
     caret-color : $on-card-color;
     text-selected-color : $selection-on-card-color;
     background-color : $card-color-fade;
+    focus-color : $primary-color;
 
     hovered {
         background-color : $card-color-hover;
@@ -40,6 +42,7 @@ text-field : text-field.primary {
     horizontal-align : left;
     cursor : ibeam;
     focusable : true;
+    focus-width : 2dp;
     floating-bars : true;
 
     padding-top : 8dp;
@@ -65,6 +68,7 @@ text-field.primary {
     text-selected-color : $selection-on-card-color;
     text-divider-color : $disabled-color;
     background-color : $card-color-fade;
+    focus-color : $primary-color;
 
     hovered {
         background-color : $card-color-hover;
@@ -91,6 +95,7 @@ text-input-field : text-input-field.primary {
     vertical-align : middle;
     horizontal-align : left;
     focusable : true;
+    focus-width : 2dp;
     floating-bars : true;
 
     padding-top : 8dp;
@@ -127,6 +132,7 @@ text-input-field.primary {
     text-selected-color : $selection-on-card-color;
     text-divider-color : $disabled-color;
     background-color : $card-color-fade;
+    focus-color : $primary-color;
 
     hovered {
         background-color : $card-color-hover;
@@ -159,6 +165,7 @@ text-drop-down : text-drop-down.primary {
     vertical-align : middle;
     horizontal-align : left;
     focusable : true;
+    focus-width : 2dp;
     floating-bars : true;
 
     padding-top : 8dp;
@@ -196,6 +203,7 @@ text-drop-down.primary {
     text-selected-color : $selection-on-card-color;
     text-divider-color : $disabled-color;
     background-color : $card-color-fade;
+    focus-color : $primary-color;
 
     cursor : ibeam;
     hovered {

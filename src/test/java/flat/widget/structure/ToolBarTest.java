@@ -4,6 +4,7 @@ import flat.events.ActionEvent;
 import flat.graphics.symbols.Font;
 import flat.graphics.image.Drawable;
 import flat.graphics.image.DrawableReader;
+import flat.graphics.symbols.FontManager;
 import flat.resources.ResourceStream;
 import flat.uxml.*;
 import flat.uxml.value.*;
@@ -28,7 +29,7 @@ import static org.powermock.api.mockito.PowerMockito.*;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({UXNode.class, Font.class, DrawableReader.class})
+@PrepareForTest({UXNode.class, Font.class, FontManager.class, DrawableReader.class})
 public class ToolBarTest {
 
     ResourceStream resIcon;
@@ -40,13 +41,14 @@ public class ToolBarTest {
     @Before
     public void before() {
         mockStatic(Font.class);
+        mockStatic(FontManager.class);
 
         defaultFont = mock(Font.class);
         boldFont = mock(Font.class);
         italicFont = mock(Font.class);
         when(Font.getDefault()).thenReturn(defaultFont);
 
-        when(Font.findFont(any(), any(), any(), any())).thenReturn(defaultFont);
+        when(FontManager.findFont(any(), any(), any(), any())).thenReturn(defaultFont);
         when(defaultFont.getHeight(eq(16f))).thenReturn(16f);
         when(defaultFont.getHeight(eq(8f))).thenReturn(8f);
         when(defaultFont.getWidth(any(), anyInt(), eq(0), eq(16f), anyFloat())).thenReturn(0f);

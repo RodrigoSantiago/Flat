@@ -399,13 +399,13 @@ public class TextArea extends Scrollable {
         if (event.isConsumed()) {
             return;
         }
-        event.consume();
 
         var first = getFirstCaret();
         var second = getSecondCaret();
 
         if (event.getType() == KeyEvent.TYPED) {
             editText(first, second, new String(Character.toChars(event.getKeycode())));
+            event.consume();
         }
 
         if (event.getKeycode() != KeyCode.KEY_UNKNOWN &&
@@ -414,7 +414,11 @@ public class TextArea extends Scrollable {
             if (event.getKeycode() == KeyCode.KEY_ENTER || event.getKeycode() == KeyCode.KEY_KP_ENTER) {
                 editText(first, second, "\n");
             } else if (event.getKeycode() == KeyCode.KEY_TAB) {
-                editText(first, second, "\t");
+                if (caretBlink.isPlaying()) {
+                    editText(first, second, "\t");
+                } else {
+                    return;
+                }
             } else if (event.getKeycode() == keyBackspace) {
                 actionDeleteBackwards(first, second);
             } else if (event.getKeycode() == keyDelete) {
@@ -462,6 +466,7 @@ public class TextArea extends Scrollable {
                 setCaretVisible();
                 slideToCaret(1);
             }
+            event.consume();
         }
     }
 

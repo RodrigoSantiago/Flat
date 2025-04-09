@@ -35,6 +35,8 @@ tab : tab.default {
     transition-duration : 0.2;
     cursor : hand;
     horizontal-align : center;
+    focusable : true;
+    focus-width : 2dp;
 }
 
 tab.dense {
@@ -104,6 +106,7 @@ tab.default {
     close-icon-color : alpha($primary-color, 0.5);
     background-color : $card-color;
     ripple-color : $card-color-press;
+    focus-color : $primary-color;
 
     hovered {
         background-color : $card-color-hover;
@@ -131,6 +134,7 @@ tab.primary {
     close-icon-color : alpha($on-primary-color, 0.5);
     background-color : $primary-color;
     ripple-color : $primary-color-press;
+    focus-color : $on-card-color;
 
     hovered {
         background-color : $primary-color-hover;

@@ -13,6 +13,7 @@ checkbox : checkbox.primary {
     icon-height : 20dp;
     cursor : hand;
     focusable : true;
+    focus-width : 2dp;
     transition-duration : 0.2;
 }
 
@@ -21,6 +22,8 @@ checkbox.primary {
     icon-color : $primary-color;
     background-color : transparent;
     ripple-color : alpha($primary-color-fade, 0.5);
+    focus-color : $primary-color;
+
     hovered {
         background-color : alpha($primary-color-fade, 0.15);
     }

@@ -16,6 +16,7 @@ button : button.default {
     vertical-align : middle;
     cursor : hand;
     focusable : true;
+    focus-width : 2dp;
     transition-duration : 0.2;
     text-all-caps : true;
     min-width : 64dp;
@@ -91,6 +92,7 @@ button.default {
     icon-color : $on-card-color;
     background-color : $card-color;
     ripple-color : $card-color-press;
+    focus-color : $primary-color;
 
     hovered {
         background-color : $card-color-hover;
@@ -114,6 +116,7 @@ button.primary {
     icon-color : $on-primary-color;
     background-color : $primary-color;
     ripple-color : $primary-color-press;
+    focus-color : $on-card-color;
 
     hovered {
         background-color : $primary-color-hover;
@@ -139,6 +142,7 @@ button.outlined-primary {
     ripple-color : alpha($primary-color-fade, 0.25);
     border-color : $primary-color;
     border-width : 1dp;
+    focus-color : $primary-color;
 
     hovered {
         background-color : alpha($primary-color-fade, 0.15);
@@ -163,6 +167,7 @@ button.text-primary {
     icon-color : $primary-color;
     background-color : transparent;
     ripple-color : alpha($primary-color-fade, 0.25);
+    focus-color : $primary-color;
 
     hovered {
         background-color : alpha($primary-color-fade, 0.15);

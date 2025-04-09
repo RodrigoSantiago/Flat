@@ -39,6 +39,8 @@ public class WL {
     public static native int GetHeight(long window);
     public static native int GetClientWidth(long window);
     public static native int GetClientHeight(long window);
+    public static native int GetMonitorWidth(long window);
+    public static native int GetMonitorHeight(long window);
     public static native double GetPhysicalWidth(long window);
     public static native double GetPhysicalHeight(long window);
     public static native double GetDpi(long window);

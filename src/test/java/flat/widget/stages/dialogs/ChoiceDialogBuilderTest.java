@@ -2,6 +2,7 @@ package flat.widget.stages.dialogs;
 
 import flat.events.ActionEvent;
 import flat.graphics.symbols.Font;
+import flat.graphics.symbols.FontManager;
 import flat.resources.ResourceStream;
 import flat.uxml.*;
 import flat.widget.Scene;
@@ -28,7 +29,7 @@ import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({UXNode.class, Font.class})
+@PrepareForTest({UXNode.class, Font.class, FontManager.class})
 public class ChoiceDialogBuilderTest {
 
     Font defaultFont;
@@ -36,11 +37,12 @@ public class ChoiceDialogBuilderTest {
     @Before
     public void before() {
         mockStatic(Font.class);
+        mockStatic(FontManager.class);
 
         defaultFont = mock(Font.class);
         when(Font.getDefault()).thenReturn(defaultFont);
 
-        when(Font.findFont(any(), any(), any(), any())).thenReturn(defaultFont);
+        when(FontManager.findFont(any(), any(), any(), any())).thenReturn(defaultFont);
         when(defaultFont.getHeight(anyFloat())).thenReturn(16f);
         when(defaultFont.getWidth(any(), anyFloat(), anyFloat())).thenReturn(64f);
 

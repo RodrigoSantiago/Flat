@@ -71,6 +71,8 @@ tool-item : tool-item.default {
     radius-right : 100;
     radius-bottom : 100;
     transition-duration : 0.2;
+    focusable : true;
+    focus-width : 2dp;
 }
 
 tool-item.dense {
@@ -84,6 +86,8 @@ tool-item.default {
     icon-color : $primary-color;
     background-color : transparent;
     ripple-color : alpha($primary-color-fade, 0.5);
+    focus-color : $primary-color;
+
     hovered {
         background-color : alpha($primary-color-fade, 0.1);
     }
@@ -99,6 +103,8 @@ tool-item.primary {
     icon-color : $on-primary-color;
     background-color : transparent;
     ripple-color : alpha($on-primary-color, 0.5);
+    focus-color : $on-primary-color;
+
     hovered {
         background-color : alpha($on-primary-color, 0.1);
     }

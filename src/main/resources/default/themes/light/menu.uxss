@@ -35,6 +35,8 @@ menu-item : menu-item.default {
     shortcut-text-size : 12sp;
     width : match_parent;
     cursor : hand;
+    focusable : true;
+    focus-width : 2dp;
 
     submenu-icon : icon(fill, arrow_right);
 }
@@ -52,6 +54,7 @@ menu-item.default {
     submenu-color : alpha($on-card-color, 0.5);
     background-color : $card-color;
     ripple-color : $card-color-press;
+    focus-color : $primary-color;
 
     hovered {
         background-color : $card-color-hover;

@@ -2,6 +2,7 @@ package flat.widget.text;
 
 import flat.events.TextEvent;
 import flat.graphics.symbols.Font;
+import flat.graphics.symbols.FontManager;
 import flat.uxml.*;
 import flat.uxml.value.*;
 import flat.widget.Widget;
@@ -25,7 +26,7 @@ import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({Font.class})
+@PrepareForTest({Font.class, FontManager.class})
 public class TextFieldTest {
 
     Controller controller;
@@ -39,12 +40,13 @@ public class TextFieldTest {
         builder = mock(UXBuilder.class);
 
         mockStatic(Font.class);
+        mockStatic(FontManager.class);
 
         defaultFont = mock(Font.class);
         boldFont = mock(Font.class);
         when(Font.getDefault()).thenReturn(defaultFont);
 
-        when(Font.findFont(any(), any(), any(), any())).thenReturn(defaultFont);
+        when(FontManager.findFont(any(), any(), any(), any())).thenReturn(defaultFont);
         when(defaultFont.getHeight(anyFloat())).thenReturn(16f);
         when(defaultFont.getWidth(any(), anyFloat(), anyFloat())).thenReturn(16f);
         when(defaultFont.getWidth(any(), eq(0), eq(0), anyFloat(), anyFloat())).thenReturn(0f);
