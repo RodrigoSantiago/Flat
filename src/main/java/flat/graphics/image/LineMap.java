@@ -170,9 +170,6 @@ public class LineMap implements Drawable {
         graphics.setTransform2D(base);
 
         if (paths != null) {
-            graphics.setColor(Color.red);
-            graphics.setStroke(new BasicStroke(1));
-            graphics.drawRect(view, false);
             graphics.setColor(color);
             for (var path : paths) {
                 graphics.drawPath(path, true, optimize);
