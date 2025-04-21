@@ -6,6 +6,7 @@ import flat.backend.GL;
 import flat.backend.SVG;
 import flat.data.ObservableList;
 import flat.events.ActionEvent;
+import flat.events.KeyCode;
 import flat.events.KeyEvent;
 import flat.events.PointerEvent;
 import flat.graphics.Color;
@@ -32,9 +33,7 @@ import flat.widget.layout.Drawer;
 import flat.widget.layout.LinearBox;
 import flat.widget.stages.dialogs.*;
 import flat.widget.structure.*;
-import flat.widget.text.Button;
-import flat.widget.text.Chip;
-import flat.widget.text.Label;
+import flat.widget.text.*;
 import flat.window.Application;
 import flat.window.WindowSettings;
 
@@ -96,6 +95,16 @@ public class MainController extends Controller {
     private ObservableList<String> items = new ObservableList<>();
 
     private int num;
+
+
+    @Flat public TextArea simple;
+    @Flat
+    public void onHidden(KeyEvent keyEvent) {
+        if (keyEvent.getType() == KeyEvent.RELEASED && keyEvent.getKeycode() == KeyCode.KEY_LEFT_SHIFT) {
+            simple.setFollowStyleProperty("hidden", false);
+            simple.setHidden(!simple.isHidden());
+        }
+    }
 
     @Flat
     public void toggleDrawer() {

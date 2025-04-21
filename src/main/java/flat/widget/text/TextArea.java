@@ -113,6 +113,7 @@ public class TextArea extends Scrollable {
         setTextSelectedColor(attrs.getColor("text-selected-color", info, getTextSelectedColor()));
         setCaretColor(attrs.getColor("caret-color", info, getCaretColor()));
         setCaretBlinkDuration(attrs.getNumber("caret-blink-duration", info, getCaretBlinkDuration()));
+        setHidden(attrs.getBool("hidden", info, isHidden()));
 
         setVerticalAlign(attrs.getConstant("vertical-align", info, getVerticalAlign()));
         setHorizontalAlign(attrs.getConstant("horizontal-align", info, getHorizontalAlign()));
@@ -201,7 +202,7 @@ public class TextArea extends Scrollable {
     }
 
     protected boolean isLineWrapReallyEnabled() {
-        return isLineWrapEnabled() && isMultiLineEnabled();
+        return isLineWrapEnabled() && isMultiLineEnabled() && !isHidden();
     }
 
     protected Caret getStartCaret() {
@@ -521,7 +522,7 @@ public class TextArea extends Scrollable {
     }
 
     protected void actionCut(Caret first, Caret second) {
-        String str = textRender.getText(first, second);
+        String str = isHidden() ? textRender.getHiddenChars() : textRender.getText(first, second);
         if (str != null && !str.isEmpty()) {
             getActivity().getWindow().setClipboard(str);
         }
@@ -529,7 +530,7 @@ public class TextArea extends Scrollable {
     }
 
     protected void actionCopy(Caret first, Caret second) {
-        String str = textRender.getText(first, second);
+        String str = isHidden() ? textRender.getHiddenChars() : textRender.getText(first, second);
         if (str != null && !str.isEmpty()) {
             getActivity().getWindow().setClipboard(str);
         }
@@ -638,6 +639,23 @@ public class TextArea extends Scrollable {
     private void setLocalText(String text) {
         this.text = text;
         invalidTextString = false;
+    }
+
+    private boolean hidden;
+
+    public boolean isHidden() {
+        return hidden;
+    }
+
+    public void setHidden(boolean hidden) {
+        if (this.hidden != hidden) {
+            this.hidden = hidden;
+            textRender.setHidden(hidden);
+            invalidateTextSize();
+            invalidate(true);
+            textRender.moveCaret(startCaret, 0);
+            textRender.moveCaret(endCaret, 0);
+        }
     }
 
     public void setText(String text) {

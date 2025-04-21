@@ -95,10 +95,11 @@ public class UXSheetParserTest {
                     pixels : 20px;
                     inches : -30in;
                     centimeter : 40cm;
-                    milimeter : 50.2mm;
+                    millimeter : 50.2mm;
                     picas : 15pc;
                     density : 10dp;
                     angle : 45º;
+                    percent : 75%;
                     font-size : 15sp;
                 }
                 """
@@ -111,10 +112,11 @@ public class UXSheetParserTest {
                 "pixels", new UXValueNumber(20),
                 "inches", new UXValueSizeIn(-30),
                 "centimeter", new UXValueSizeIn(40 / 2.54f),
-                "milimeter", new UXValueSizeIn(50.2f / 25.4f),
+                "millimeter", new UXValueSizeIn(50.2f / 25.4f),
                 "picas", new UXValueSizeIn(15.0f / 6.0f),
                 "density", new UXValueSizeDp(10),
                 "angle", new UXValueAngle(45),
+                "percent", new UXValueNumber(75f / 100),
                 "font-size", new UXValueSizeSp(15)
         );
 

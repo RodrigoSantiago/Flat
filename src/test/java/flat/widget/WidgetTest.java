@@ -118,8 +118,10 @@ public class WidgetTest {
         assertEquals(Visibility.INVISIBLE, widget.getVisibility());
         assertEquals(Cursor.ARROW, widget.getCursor());
 
-        assertEquals(true, widget.isFocusable());
-        assertEquals(false, widget.isHandleEventsEnabled());
+        assertTrue(widget.isFocusable());
+        assertEquals(2, widget.getFocusWidth(), 0.0001f);
+        assertEquals(0xFF00FFFF, widget.getFocusColor());
+        assertFalse(widget.isHandleEventsEnabled());
 
         assertEquals(160, widget.getPrefWidth(), 0.0001f);
         assertEquals(80, widget.getPrefHeight(), 0.0001f);
@@ -187,6 +189,8 @@ public class WidgetTest {
         widget.setCursor(Cursor.UNSET);
 
         widget.setFocusable(false);
+        widget.setFocusWidth(1);
+        widget.setFocusColor(0xFFFFFFFF);
         widget.setHandleEventsEnabled(true);
 
         widget.setPrefWidth(161);
@@ -237,8 +241,10 @@ public class WidgetTest {
 
         widget.applyStyle();
 
-        assertEquals(true, widget.isFocusable());
-        assertEquals(false, widget.isHandleEventsEnabled());
+        assertTrue(widget.isFocusable());
+        assertEquals(2, widget.getFocusWidth(), 0.0001f);
+        assertEquals(0xFF00FFFF, widget.getFocusColor());
+        assertFalse(widget.isHandleEventsEnabled());
 
         assertEquals(160, widget.getPrefWidth(), 0.0001f);
         assertEquals(80, widget.getPrefHeight(), 0.0001f);
@@ -309,6 +315,10 @@ public class WidgetTest {
 
         widget.setFocusable(false);
         widget.setFollowStyleProperty("focusable", false);
+        widget.setFocusWidth(1);
+        widget.setFollowStyleProperty("focus-width", false);
+        widget.setFocusColor(0xFFFFFFFF);
+        widget.setFollowStyleProperty("focus-color", false);
         widget.setHandleEventsEnabled(true);
         widget.setFollowStyleProperty("handle-events-enabled", false);
 
@@ -395,8 +405,10 @@ public class WidgetTest {
 
         widget.applyStyle();
 
-        assertEquals(false, widget.isFocusable());
-        assertEquals(true, widget.isHandleEventsEnabled());
+        assertFalse(widget.isFocusable());
+        assertEquals(1, widget.getFocusWidth(), 0.0001f);
+        assertEquals(0xFFFFFFFF, widget.getFocusColor());
+        assertTrue(widget.isHandleEventsEnabled());
 
         assertEquals(161, widget.getPrefWidth(), 0.0001f);
         assertEquals(801, widget.getPrefHeight(), 0.0001f);
@@ -450,6 +462,8 @@ public class WidgetTest {
         hash.put(UXHash.getHash("cursor"), new UXValueText(Cursor.ARROW.toString()));
 
         hash.put(UXHash.getHash("focusable"), new UXValueBool(true));
+        hash.put(UXHash.getHash("focus-width"), new UXValueSizeDp(2));
+        hash.put(UXHash.getHash("focus-color"), new UXValueColor(0xFF00FFFF));
         hash.put(UXHash.getHash("handle-events-enabled"), new UXValueBool(false));
 
         hash.put(UXHash.getHash("width"), new UXValueSizeDp(160));

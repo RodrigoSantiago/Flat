@@ -63,6 +63,7 @@ public class UXBuilder {
         UXBuilder.install("TextInputField", TextInputField::new);
         UXBuilder.install("TextDropDown", TextDropDown::new);
         UXBuilder.install("TextArea", TextArea::new);
+        UXBuilder.install("NumberInputField", NumberInputField::new);
         UXBuilder.install("ToolBar", ToolBar::new);
         UXBuilder.install("ToolItem", ToolItem::new);
         UXBuilder.install("Grid", Grid::new);
