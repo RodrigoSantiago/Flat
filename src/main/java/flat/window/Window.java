@@ -160,7 +160,7 @@ public class Window {
     }
 
     void addEvent(EventData eventData) {
-        if (!closed) {
+        if (!closed && !modal) {
             events.add(eventData);
         }
     }

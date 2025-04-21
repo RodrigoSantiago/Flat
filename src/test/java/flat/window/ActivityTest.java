@@ -430,7 +430,7 @@ public class ActivityTest {
         when(focus2.getGroup()).thenReturn(scene);
 
         KeyEvent keyEvent = mock(KeyEvent.class);
-        when(keyEvent.getType()).thenReturn(KeyEvent.RELEASED);
+        when(keyEvent.getType()).thenReturn(KeyEvent.PRESSED);
         when(keyEvent.getKeycode()).thenReturn(KeyCode.KEY_TAB);
 
         WindowSettings settings = new WindowSettings.Builder().size(200, 100).theme(theme).layout(scene).build();
@@ -446,8 +446,8 @@ public class ActivityTest {
 
         activity.show();
 
-        activity.onKeyFilter(keyEvent);
-        activity.onKeyFilter(keyEvent);
+        activity.setFocus(focus1);
+        activity.onKey(keyEvent);
 
         verify(focus1, times(2)).fireFocus(any());
         verify(focus2).fireFocus(any());

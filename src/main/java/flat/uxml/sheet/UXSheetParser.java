@@ -529,7 +529,7 @@ public class UXSheetParser {
             readNextChar();
             builder.appendCodePoint(current);
         }
-        if (next == 'º') {
+        if (next == 'º' || next == '%') {
             readNextChar();
             builder.appendCodePoint(current);
         } else {
@@ -596,6 +596,9 @@ public class UXSheetParser {
             } else if (lastChar == 'º') {
                 val = Float.parseFloat(source.substring(0, source.length() - 1));
                 return new UXValueAngle(val);
+            } else if (lastChar == '%') {
+                val = Float.parseFloat(source.substring(0, source.length() - 1));
+                return new UXValueNumber(val / 100);
             } else {
                 val = Float.parseFloat(source.substring(0, source.length() - 2));
             }

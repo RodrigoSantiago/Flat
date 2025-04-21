@@ -4,8 +4,8 @@
                    padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
             <Label text="Text Area" style="subtitle" margin-left="4dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" vertical-align="bottom">
-                <TextArea width="200dp" style="text-area-primary" text="Simplest Text"/>
-                <TextArea width="200dp"  margin-left="8dp" style="text-area-primary" text="Multline&#10;Text"/>
+                <TextArea width="200dp" style="text-area-primary" text="Simplest Text" hidden="true" on-key="onHidden" id="simple"/>
+                <NumberInputField width="200dp"  margin-left="8dp" style="number-input-field-primary" text="13245"/>
                 <TextArea width="200dp"  margin-left="8dp" style="text-area-primary" id="emoji"
                           text="Emojis &#x1F602; &#x2764; &#x1F60D; &#x1F923; &#x1F60A; &#x1F97A; &#x1F64F; &#x1F495; &#x1F62D; &#x1F618;"/>
             </LinearBox>
