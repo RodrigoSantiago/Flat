@@ -73,9 +73,9 @@ public class ToolBar extends Parent {
         var overflow = new ToolItem();
         overflow.addStyle("overflow");
         setOverflowItem(overflow);
-        var navigation = new ToolItem();
-        navigation.addStyle("navigation");
-        setNavigationItem(navigation);
+        // var navigation = new ToolItem();
+        // navigation.addStyle("navigation");
+        // setNavigationItem(navigation);
     }
 
     @Override

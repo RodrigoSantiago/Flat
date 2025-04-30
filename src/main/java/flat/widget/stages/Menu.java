@@ -542,6 +542,14 @@ public class Menu extends Stage {
         }
     }
 
+    public void hideCascade() {
+        if (parentMenu != null) {
+            parentMenu.hideCascade();
+        } else {
+            hide();
+        }
+    }
+
     private void onShow(Activity act, float x, float y, float width, float height, DropdownAlign align) {
         refreshStyle();
 

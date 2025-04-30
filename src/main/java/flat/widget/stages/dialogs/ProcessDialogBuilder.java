@@ -1,5 +1,6 @@
 package flat.widget.stages.dialogs;
 
+import flat.concurrent.ProgressTask;
 import flat.resources.ResourceStream;
 import flat.uxml.UXListener;
 import flat.uxml.UXSheet;
@@ -18,6 +19,7 @@ public class ProcessDialogBuilder {
     UXListener<Dialog> onShowListener;
     UXListener<Dialog> onHideListener;
     UXListener<Dialog> onRequestCancelListener;
+    ProgressTask<?> task;
 
     public ProcessDialogBuilder() {
         var stream = new ResourceStream("/default/dialogs/dialog_process.uxml");
@@ -86,8 +88,14 @@ public class ProcessDialogBuilder {
         return this;
     }
 
+    public ProcessDialogBuilder task(ProgressTask<?> task) {
+        this.task = task;
+        return this;
+    }
+
     public Dialog build() {
         final Dialog dialog = new Dialog();
+        dialog.addStyle("process");
         dialog.setBlockEvents(block);
         if (theme != null) {
             dialog.setTheme(theme);

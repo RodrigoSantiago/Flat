@@ -17,10 +17,8 @@ import flat.uxml.value.UXValue;
 import flat.widget.Parent;
 import flat.widget.Scene;
 import flat.widget.Widget;
-import flat.widget.structure.ToolItem;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.concurrent.Callable;
@@ -34,6 +32,8 @@ public class Activity {
     private final ArrayList<Animation> animations = new ArrayList<>();
     private final ArrayList<Animation> animationsAdd = new ArrayList<>();
     private final ArrayList<Animation> animationsRemove = new ArrayList<>();
+    private final ArrayList<Animation> animationsAdded = new ArrayList<>();
+    private final ArrayList<Animation> animationsRemoved = new ArrayList<>();
     private final ArrayList<Widget> pointerFilters = new ArrayList<>();
     private final ArrayList<Widget> keyFilters = new ArrayList<>();
     private final ArrayList<Widget> resizeFilters = new ArrayList<>();
@@ -201,13 +201,17 @@ public class Activity {
     }
 
     public void addAnimation(Animation animation) {
-        animationsAdd.add(animation);
         animationsRemove.remove(animation);
+        if (!animations.contains(animation) && !animationsAdd.contains(animation)) {
+            animationsAdd.add(animation);
+        }
     }
 
     public void removeAnimation(Animation animation) {
-        animationsRemove.add(animation);
         animationsAdd.remove(animation);
+        if (animations.contains(animation) && !animationsRemove.contains(animation)) {
+            animationsRemove.add(animation);
+        }
     }
 
     public void runLater(FutureTask<?> task) {
@@ -589,22 +593,30 @@ public class Activity {
     }
 
     boolean animate(float loopTime) {
+        animations.addAll(animationsAdd);
         animations.removeAll(animationsRemove);
+        animationsAdded.addAll(animationsAdd);
+        animationsRemoved.addAll(animationsRemove);
+
+        animationsAdd.clear();
         animationsRemove.clear();
 
-        for (Animation anim : animationsAdd) {
-            if (!animations.contains(anim)) {
-                animations.add(anim);
-            }
+        for (var anim : animationsRemoved) {
+            anim.onRemoved();
         }
-        animationsAdd.clear();
+        for (var anim : animationsAdded) {
+            anim.onAdded();
+        }
+        animationsAdded.clear();
+        animationsRemoved.clear();
 
         boolean wasAnimated = false;
 
         for (int i = 0; i < animations.size(); i++) {
             Animation anim = animations.get(i);
             if (anim.getSource() != this) {
-                animations.remove(i--); // todo animation.onRemoved();
+                anim.onRemoved();
+                animations.remove(i--);
                 continue;
             }
 
@@ -613,6 +625,7 @@ public class Activity {
                 anim.handle(loopTime);
             }
             if (!anim.isPlaying()) {
+                anim.onRemoved();
                 animations.remove(i--);
             }
         }

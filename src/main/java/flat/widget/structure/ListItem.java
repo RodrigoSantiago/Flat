@@ -394,7 +394,6 @@ public class ListItem extends Button {
         }
     }
 
-
     @Override
     public void hover(HoverEvent event) {
         super.hover(event);
@@ -413,11 +412,7 @@ public class ListItem extends Button {
     @Override
     public void pointer(PointerEvent event) {
         UXListener.safeHandle(getPointerListener(), event);
-        if (!event.isConsumed() && event.getPointerID() == 1 && event.getType() == PointerEvent.PRESSED) {
-            event.consume();
-        }
-        if (!event.isConsumed() && event.getPointerID() == 1 && event.getType() == PointerEvent.RELEASED) {
-            event.consume();
+        if (event.getPointerID() == 1 && event.getType() == PointerEvent.RELEASED) {
             if (isOverActionButton(screenToLocal(event.getX(), event.getY()))) {
                 changeStateAction();
             } else {

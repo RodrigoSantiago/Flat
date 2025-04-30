@@ -2,7 +2,7 @@
     <LinearBox style="dialog-header"/>
     <LinearBox direction="vertical" vertical-alig="right" style="dialog-message-area">
         <Label style="dialog-title" id="titleLabel"/>
-        <Label style="dialog-message" id="messageLabel"/>
+        <Text style="dialog-message" id="messageLabel"/>
     </LinearBox>
     <Divider/>
     <ScrollBox style="dialog-choice-scroll-box">

@@ -10,4 +10,8 @@ public interface Animation {
 
     void handle(float seconds);
 
+    default void onAdded() { }
+
+    default void onRemoved() { }
+
 }

@@ -21,6 +21,7 @@ public class Dialog extends Stage {
 
     private VerticalAlign verticalAlign = VerticalAlign.MIDDLE;
     private HorizontalAlign horizontalAlign = HorizontalAlign.CENTER;
+    private float showTransitionDelay = 0;
     private float showTransitionDuration = 0;
     private float hideTransitionDuration = 0;
     private boolean blockEvents;
@@ -80,6 +81,7 @@ public class Dialog extends Stage {
         setHorizontalAlign(attrs.getConstant("horizontal-align", info, getHorizontalAlign()));
         setVerticalAlign(attrs.getConstant("vertical-align", info, getVerticalAlign()));
         setShowTransitionDuration(attrs.getNumber("show-transition-duration", info, getShowTransitionDuration()));
+        setShowTransitionDelay(attrs.getNumber("show-transition-delay", info, getShowTransitionDelay()));
         setHideTransitionDuration(attrs.getNumber("hide-transition-duration", info, getHideTransitionDuration()));
         setBlockColor(attrs.getColor("block-color", info, getBlockColor()));
     }
@@ -104,7 +106,8 @@ public class Dialog extends Stage {
         if (getParent() != null && isBlockEvents() && Color.getAlpha(getBlockColor()) > 0) {
             float a;
             if (showupAnimation.isPlaying()) {
-                a = showupAnimation.getInterpolatedPosition();
+                float diff = getShowTransitionDelay() / (getShowTransitionDelay() + getShowTransitionDuration());
+                a = Interpolation.circleOut.apply((showupAnimation.getPosition() - diff) / (1 - diff));
             } else if (hideAnimation.isPlaying()) {
                 a = 1 - hideAnimation.getInterpolatedPosition();
             } else {
@@ -169,7 +172,7 @@ public class Dialog extends Stage {
     @Override
     public Widget findByPosition(float x, float y, boolean includeDisabled) {
         if (!isCurrentHandleEventsEnabled()
-                || getVisibility() != Visibility.VISIBLE
+                || getVisibility() == Visibility.GONE
                 || (!includeDisabled && !isEnabled())
                 || (!isBlockEvents() && !contains(x, y))) {
             return null;
@@ -228,6 +231,16 @@ public class Dialog extends Stage {
     public void setShowTransitionDuration(float showTransitionDuration) {
         if (this.showTransitionDuration != showTransitionDuration) {
             this.showTransitionDuration = showTransitionDuration;
+        }
+    }
+
+    public float getShowTransitionDelay() {
+        return showTransitionDelay;
+    }
+
+    public void setShowTransitionDelay(float showTransitionDelay) {
+        if (this.showTransitionDelay != showTransitionDelay) {
+            this.showTransitionDelay = showTransitionDelay;
         }
     }
 
@@ -336,16 +349,16 @@ public class Dialog extends Stage {
         targetX = x - getWidth() / 2f - getMarginLeft();
         targetY = y - getHeight() / 2f - getMarginTop();
 
-        if (showTransitionDuration > 0) {
+        if (showTransitionDuration + showTransitionDelay > 0) {
             showupAnimation.setDelta(1);
-            showupAnimation.setDuration(showTransitionDuration);
+            showupAnimation.setDuration(showTransitionDuration + showTransitionDelay);
             showupAnimation.play(act);
         }
     }
 
     private class ShowAnimation extends NormalizedAnimation {
         private float scaleX, scaleY, centerX, centerY;
-        private boolean followX, followY, followCX, followCY;
+        private boolean followX, followY, followCX, followCY, followVs;
 
         public ShowAnimation() {
             super(Interpolation.circleOut);
@@ -358,8 +371,15 @@ public class Dialog extends Stage {
 
         @Override
         protected void compute(float t) {
-            setScaleX(scaleX * 0.5f + (scaleX * 0.5f * t));
-            setScaleY(scaleY * 0.5f + (scaleY * 0.5f * t));
+            float diff = getShowTransitionDelay() / (getShowTransitionDelay() + getShowTransitionDuration());
+            float p = (getPosition() - diff) / (1 - diff);
+            if (p <= 0) {
+                setVisibility(Visibility.INVISIBLE);
+            } else {
+                setVisibility(Visibility.VISIBLE);
+                setScaleX(scaleX * 0.5f + (scaleX * 0.5f * getInterpolation().apply(p)));
+                setScaleY(scaleY * 0.5f + (scaleY * 0.5f * getInterpolation().apply(p)));
+            }
             invalidate(false);
         }
 
@@ -369,10 +389,12 @@ public class Dialog extends Stage {
             scaleY = getScaleY();
             centerX = getCenterX();
             centerY = getCenterY();
+            followVs = isFollowStyleProperty("visibility");
             followX = isFollowStyleProperty("scale-x");
             followY = isFollowStyleProperty("scale-y");
             followCX = isFollowStyleProperty("center-x");
             followCY = isFollowStyleProperty("center-y");
+            setFollowStyleProperty("visibility", false);
             setFollowStyleProperty("scale-x", false);
             setFollowStyleProperty("scale-y", false);
             setFollowStyleProperty("center-x", false);
@@ -387,6 +409,7 @@ public class Dialog extends Stage {
             setScaleY(scaleY);
             setCenterX(centerX);
             setCenterY(centerY);
+            setFollowStyleProperty("visibility", followVs);
             setFollowStyleProperty("scale-x", followX);
             setFollowStyleProperty("scale-y", followY);
             setFollowStyleProperty("scale-x", followCX);

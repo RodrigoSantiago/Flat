@@ -68,6 +68,7 @@ public class UXBuilder {
         UXBuilder.install("ToolItem", ToolItem::new);
         UXBuilder.install("Grid", Grid::new);
         UXBuilder.install("Drawer", Drawer::new);
+        UXBuilder.install("TreeView", TreeView::new);
         /*
         UXBuilder.install("Canvas", Canvas::new);*/
         // RichText text + multiple fonts + images + Emoji icons

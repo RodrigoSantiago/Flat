@@ -15,6 +15,9 @@ import flat.uxml.sheet.UXSheetParser;
 import flat.uxml.value.UXValue;
 import flat.uxml.value.UXValueSizeList;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class SvgBuilder {
 
     private final UXNodeElement root;
@@ -190,41 +193,62 @@ public class SvgBuilder {
 
     private Affine readTransform(UXNodeElement node) {
         UXNodeAttribute pathNode = node.getAttributes().get("transform");
-        if (pathNode != null && pathNode.getValue() != null) {
-            UXValue val = pathNode.getValue().getSource(null);
-            if (val instanceof UXValueSizeList list) {
-                if ("translate".equalsIgnoreCase(list.getName())) {
-                    float[] numbers = list.asSizeList(null);
-                    if (numbers.length == 2) {
-                        return new Affine().translate(numbers[0], numbers[1]);
-                    }
-                } else if ("scale".equalsIgnoreCase(list.getName())) {
-                    float[] numbers = list.asSizeList(null);
-                    if (numbers.length == 2) {
-                        return new Affine().scale(numbers[0], numbers[1]);
-                    }
-                } else if ("rotate".equalsIgnoreCase(list.getName())) {
-                    float[] numbers = list.asSizeList(null);
-                    if (numbers.length == 1) {
-                        return new Affine().rotate(numbers[0]);
-                    }
-                } else if ("skewX".equalsIgnoreCase(list.getName())) {
-                    float[] numbers = list.asSizeList(null);
-                    if (numbers.length == 1) {
-                        return new Affine().shear(numbers[0], 0);
-                    }
-                } else if ("skewY".equalsIgnoreCase(list.getName())) {
-                    float[] numbers = list.asSizeList(null);
-                    if (numbers.length == 1) {
-                        return new Affine().shear(0, numbers[0]);
-                    }
-                } else if ("matrix".equalsIgnoreCase(list.getName())) {
-                    float[] numbers = list.asSizeList(null);
-                    if (numbers.length == 6) {
-                        return new Affine(numbers[0], numbers[1], numbers[2], numbers[3], numbers[4], numbers[5]);
+        String val = pathNode == null ? "" : pathNode.getValue().asString(null);
+        if (val.isEmpty()) {
+            return null;
+        }
+        try {
+            Pattern pattern = Pattern.compile("[a-zA-Z_]+\\([^)]*\\)");
+            Matcher matcher = pattern.matcher(val);
+
+            Affine transform = new Affine();
+            while (matcher.find()) {
+                String value = matcher.group();
+                if (innerParser == null) {
+                    innerParser = new UXSheetParser(value);
+                } else {
+                    innerParser.reset(value);
+                }
+                UXValue uxValue = innerParser.parseXmlAttribute().getSource(null);
+                if (uxValue instanceof UXValueSizeList list) {
+                    if ("translate".equalsIgnoreCase(list.getName())) {
+                        float[] numbers = list.asSizeList(null);
+                        if (numbers.length == 2) {
+                            transform.translate(numbers[0], numbers[1]);
+                        }
+                    } else if ("scale".equalsIgnoreCase(list.getName())) {
+                        float[] numbers = list.asSizeList(null);
+                        if (numbers.length == 2) {
+                            transform.scale(numbers[0], numbers[1]);
+                        }
+                        if (numbers.length == 1) {
+                            transform.scale(numbers[0], numbers[0]);
+                        }
+                    } else if ("rotate".equalsIgnoreCase(list.getName())) {
+                        float[] numbers = list.asSizeList(null);
+                        if (numbers.length == 1) {
+                            transform.rotate(numbers[0]);
+                        }
+                    } else if ("skewX".equalsIgnoreCase(list.getName())) {
+                        float[] numbers = list.asSizeList(null);
+                        if (numbers.length == 1) {
+                            transform.shear(numbers[0], 0);
+                        }
+                    } else if ("skewY".equalsIgnoreCase(list.getName())) {
+                        float[] numbers = list.asSizeList(null);
+                        if (numbers.length == 1) {
+                            transform.shear(0, numbers[0]);
+                        }
+                    } else if ("matrix".equalsIgnoreCase(list.getName())) {
+                        float[] numbers = list.asSizeList(null);
+                        if (numbers.length == 6) {
+                            transform = new Affine(numbers[0], numbers[1], numbers[2], numbers[3], numbers[4], numbers[5]);
+                        }
                     }
                 }
             }
+            return transform;
+        } catch (Exception ignored) {
         }
         return null;
     }

@@ -11,7 +11,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +24,7 @@ public class UXSheetTest {
 
     @Test
     public void empty() {
-        UXSheet sheet = UXSheet.parse(mockStream(""));
+        UXSheet sheet = UXSheet.parse(mockStream("", "sheet"));
         assertNotNull(sheet);
     }
 
@@ -41,7 +40,7 @@ public class UXSheetTest {
 
     @Test
     public void emptyStyle() {
-        UXSheet sheet = UXSheet.parse(mockStream("simple { }"));
+        UXSheet sheet = UXSheet.parse(mockStream("simple { }", "sheet"));
         assertNotNull(sheet);
 
         UXStyle style = sheet.getStyle("simple");
@@ -52,7 +51,7 @@ public class UXSheetTest {
 
     @Test
     public void simpleStyle() {
-        UXSheet sheet = UXSheet.parse(mockStream("simple { width : 100; }"));
+        UXSheet sheet = UXSheet.parse(mockStream("simple { width : 100; }", "sheet"));
         assertNotNull(sheet);
 
         UXStyle style = sheet.getStyle("simple");
@@ -65,7 +64,7 @@ public class UXSheetTest {
 
     @Test
     public void parentStyle() {
-        UXSheet sheet = UXSheet.parse(mockStream("simple { width : 100; } complex : simple { height : 200; }"));
+        UXSheet sheet = UXSheet.parse(mockStream("simple { width : 100; } complex : simple { height : 200; }", "sheet"));
         assertNotNull(sheet);
 
         UXStyle simple = sheet.getStyle("simple");
@@ -85,7 +84,7 @@ public class UXSheetTest {
 
     @Test
     public void parentStyleBefore() {
-        UXSheet sheet = UXSheet.parse(mockStream("complex : simple { height : 200; } simple { width : 100; }"));
+        UXSheet sheet = UXSheet.parse(mockStream("complex : simple { height : 200; } simple { width : 100; }", "sheet"));
         assertNotNull(sheet);
 
         UXStyle simple = sheet.getStyle("simple");
@@ -116,7 +115,7 @@ public class UXSheetTest {
                 "disabled { width : 800; } " +
                 "enabled { width : 900; } " +
                 "}";
-        UXSheet sheet = UXSheet.parse(mockStream(value));
+        UXSheet sheet = UXSheet.parse(mockStream(value, "sheet"));
         assertNotNull(sheet);
 
         UXStyle style = sheet.getStyle("simple");
@@ -150,7 +149,7 @@ public class UXSheetTest {
 
     @Test
     public void styleValueString() {
-        UXSheet sheet = UXSheet.parse(mockStream("simple { text : \"open {\\\"}\"; }"));
+        UXSheet sheet = UXSheet.parse(mockStream("simple { text : \"open {\\\"}\"; }", "sheet"));
         assertNotNull(sheet);
 
         UXStyle style = sheet.getStyle("simple");
@@ -163,7 +162,7 @@ public class UXSheetTest {
 
     @Test
     public void variable() {
-        UXSheet sheet = UXSheet.parse(mockStream("$var : 10; simple { size : $var; }"));
+        UXSheet sheet = UXSheet.parse(mockStream("$var : 10; simple { size : $var; }", "sheet"));
         assertNotNull(sheet);
 
         UXStyle style = sheet.getStyle("simple");
@@ -178,8 +177,8 @@ public class UXSheetTest {
     @Test
     public void multipleFiles() {
         List<ResourceStream> streams = new ArrayList<>();
-        streams.add(mockStream("complex : simple { height : 200; }"));
-        streams.add(mockStream("simple { width : 100; }"));
+        streams.add(mockStream("complex : simple { height : 200; }", "sheetA"));
+        streams.add(mockStream("simple { width : 100; }", "sheetB"));
         ResourceStream folderStream = mock(ResourceStream.class);
         when(folderStream.isFolder()).thenReturn(true);
         when(folderStream.getFiles()).thenReturn(streams);
@@ -204,7 +203,7 @@ public class UXSheetTest {
 
     @Test
     public void fail_CyclicParent() {
-        UXSheet sheet = UXSheet.parse(mockStream("simple : parent { size : 10; } parent : simple { size : 10; }"));
+        UXSheet sheet = UXSheet.parse(mockStream("simple : parent { size : 10; } parent : simple { size : 10; }", "sheet"));
         assertNotNull(sheet);
 
         UXStyle simple = sheet.getStyle("simple");
@@ -222,7 +221,7 @@ public class UXSheetTest {
 
     @Test
     public void fail_RepeatedVariable() {
-        UXSheet sheet = UXSheet.parse(mockStream("$var : 10; $var : 20;"));
+        UXSheet sheet = UXSheet.parse(mockStream("$var : 10; $var : 20;", "sheet"));
         assertNotNull(sheet);
 
         assertEquals(new UXValueNumber(20), sheet.getVariableInitialValue("$var"));
@@ -232,8 +231,8 @@ public class UXSheetTest {
     @Test
     public void fail_RepeatedVariableAtMultipleFiles() {
         List<ResourceStream> streams = new ArrayList<>();
-        streams.add(mockStream("$var : 10;"));
-        streams.add(mockStream("$var : 10;"));
+        streams.add(mockStream("$var : 10;", "sheetA"));
+        streams.add(mockStream("$var : 10;", "sheetB"));
         ResourceStream folderStream = mock(ResourceStream.class);
         when(folderStream.isFolder()).thenReturn(true);
         when(folderStream.getFiles()).thenReturn(streams);
@@ -247,7 +246,7 @@ public class UXSheetTest {
 
     @Test
     public void fail_RepeatedStyle() {
-        UXSheet sheet = UXSheet.parse(mockStream("simple { size : 10; } simple { size : 20; }"));
+        UXSheet sheet = UXSheet.parse(mockStream("simple { size : 10; } simple { size : 20; }", "sheet"));
         assertNotNull(sheet);
 
         UXStyle simple = sheet.getStyle("simple");
@@ -261,8 +260,8 @@ public class UXSheetTest {
     @Test
     public void fail_RepeatedStyleAtMultipleFiles() {
         List<ResourceStream> streams = new ArrayList<>();
-        streams.add(mockStream("simple { height : 200; }"));
-        streams.add(mockStream("simple { width : 100; }"));
+        streams.add(mockStream("simple { height : 200; }", "sheetA"));
+        streams.add(mockStream("simple { width : 100; }", "sheetB"));
         ResourceStream folderStream = mock(ResourceStream.class);
         when(folderStream.isFolder()).thenReturn(true);
         when(folderStream.getFiles()).thenReturn(streams);
@@ -275,9 +274,10 @@ public class UXSheetTest {
         assertLogs(sheet.getLogs(), UXSheetParser.ErroLog.REPEATED_STYLE);
     }
 
-    private ResourceStream mockStream(String value) {
+    private ResourceStream mockStream(String value, String name) {
         ResourceStream stream = mock(ResourceStream.class);
         when(stream.readData()).thenReturn(value.getBytes(StandardCharsets.UTF_8));
+        when(stream.getResourceName()).thenReturn(name+".uxss");
         return stream;
     }
 

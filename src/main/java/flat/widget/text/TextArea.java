@@ -472,6 +472,19 @@ public class TextArea extends Scrollable {
     }
 
     @Override
+    public void requestFocus(boolean focus) {
+        if (isFocusable()) {
+            Activity activity = getActivity();
+            if (activity != null) {
+                activity.runLater(() -> {
+                    setFocused(focus);
+                    if (focus) setCaretVisible();
+                });
+            }
+        }
+    }
+
+    @Override
     public void focus(FocusEvent event) {
         super.focus(event);
         if (!isFocused()) {
@@ -494,6 +507,14 @@ public class TextArea extends Scrollable {
         float caretY = endCaret.getLine() * getLineHeight() + ypos;
         var pos = localToScreen(Math.min(x + width, Math.max(x, caretX)), Math.min(y + height, Math.max(y, caretY)));
         showContextMenu(pos.x, pos.y);
+    }
+
+    public void clearSelection() {
+        actionClearSelection();
+    }
+
+    public void selectAll() {
+        actionSelectAll();
     }
 
     protected void actionClearSelection() {

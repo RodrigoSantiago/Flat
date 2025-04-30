@@ -11,9 +11,13 @@ dialog {
     margin-bottom : 16dp;
     show-transition-duration : 0.25;
     hide-transition-duration : 0.15;
+    show-transition-delay : 0;
 
     background-color : $card-color;
     block-color : #00000080;
+}
+dialog.process {
+    show-transition-delay : 1;
 }
 
 dialog-alert {

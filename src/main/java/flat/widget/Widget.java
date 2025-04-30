@@ -9,6 +9,7 @@ import flat.graphics.Graphics;
 import flat.graphics.cursor.Cursor;
 import flat.math.Affine;
 import flat.math.Vector2;
+import flat.math.shapes.Path;
 import flat.math.shapes.RoundRectangle;
 import flat.math.stroke.BasicStroke;
 import flat.uxml.*;
@@ -96,13 +97,13 @@ public class Widget {
     private boolean currentDisabled;
 
     private final RoundRectangle bg = new RoundRectangle();
+    private Path tempInverse;
     private float inx, iny, inw, inh;
 
     private int backgroundColor;
     private boolean borderRound;
     private int borderColor;
     private float borderWidth;
-    private float opacity = 1;
     private int focusColor;
     private float focusWidth;
 
@@ -239,12 +240,29 @@ public class Widget {
 
         // Draw Background Shadow
         if (bgOpacity > 0 && shadowEnabled && elevation >= 1) {
+            if (bgOpacity < 0.95f) {
+                if (tempInverse == null) {
+                    tempInverse = new Path();
+                }
+                float e = elevation * 2;
+                tempInverse.reset();
+                tempInverse.moveTo(-e, -e);
+                tempInverse.lineTo(getLayoutWidth() + e, -e);
+                tempInverse.lineTo(getLayoutWidth() + e, getLayoutHeight() + e);
+                tempInverse.lineTo(-e, getLayoutHeight() + e);
+                tempInverse.closePath();
+                tempInverse.append(getBackgroundShape(), false);
+                graphics.pushClip(tempInverse);
+            }
             graphics.setTransform2D(getTransform().preTranslate(0, Math.max(0, elevation * 0.5f)));
             graphics.drawRoundRectShadow(
                     bg.x - b, bg.y - b, bg.width + b * 2, bg.height + b * 2,
                     bg.arcTop + b, bg.arcRight + b, bg.arcBottom + b, bg.arcLeft + b,
                     elevation, 0.55f * bgOpacity);
             graphics.setTransform2D(getTransform());
+            if (bgOpacity < 0.95f) {
+                graphics.popClip();
+            }
         }
 
         // Draw Background

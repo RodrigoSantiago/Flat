@@ -224,11 +224,11 @@ public class MenuItem extends Button {
             ActionEvent event = new ActionEvent(this);
             UXListener.safeHandle(getActionListener(), event);
             if (getContextMenu() == null && !event.isConsumed() && getParent() instanceof Menu menu) {
-                menu.hide();
+                menu.hideCascade();
             }
         } else {
             if (getContextMenu() == null && getParent() instanceof Menu menu) {
-                menu.hide();
+                menu.hideCascade();
             }
         }
     }

@@ -10,28 +10,34 @@ public class DragEvent extends Event {
     public static final Type ENTERED = new Type("ENTERED");
     public static final Type EXITED  = new Type("EXITED");
     public static final Type OVER    = new Type("OVER");
+    public static final Type HOVER   = new Type("HOVER");
 
     private final Window window;
     private Object data;
-    private final float x, y;
+    private final float x, y, pressX, pressY;
     private Widget dragHandler;
     private Widget dragAccepted;
     private boolean canceled;
 
-    public DragEvent(Widget source, Window window, Type type, Object data, float x, float y) {
+    public DragEvent(Widget source, Window window, Type type, Object data, float x, float y, float pressX, float pressY) {
         super(source, type);
         this.window = window;
         this.data = data;
         this.x = x;
         this.y = y;
+        this.pressX = pressX;
+        this.pressY = pressY;
     }
 
-    public DragEvent(Widget source, Window window, Type type, Object data, float x, float y, Widget dragHandler, Widget dragAccepted) {
+    public DragEvent(Widget source, Window window, Type type, Object data, float x, float y, float pressX, float pressY,
+                     Widget dragHandler, Widget dragAccepted) {
         super(source, type);
         this.window = window;
         this.data = data;
         this.x = x;
         this.y = y;
+        this.pressX = pressX;
+        this.pressY = pressY;
         this.dragHandler = dragHandler;
         this.dragAccepted = dragAccepted;
     }
@@ -54,6 +60,18 @@ public class DragEvent extends Event {
 
     public float getY() {
         return y;
+    }
+
+    public float getPressX() {
+        return pressX;
+    }
+
+    public float getPressY() {
+        return pressY;
+    }
+
+    public float getDistance() {
+        return (float) Math.sqrt((x - pressX) * (x - pressX) + (y - pressY) * (y - pressY));
     }
 
     public void accept(Widget source) {

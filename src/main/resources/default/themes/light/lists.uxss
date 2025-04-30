@@ -9,6 +9,17 @@ list-view {
     background-color : $card-color;
 }
 
+tree-view {
+    item-height : 32dp;
+    radius-top : 4dp;
+    radius-left : 4dp;
+    radius-right : 4dp;
+    radius-bottom : 4dp;
+    floating-bars : true;
+    transition-duration : 0.2;
+    background-color : $card-color;
+}
+
 list-item : list-item.default {
     min-width : 128dp;
     width : match_parent;
@@ -53,6 +64,7 @@ list-item.default {
 }
 
 tree-item : list-item {
+    icon : '/default/icons/empty.svg';
     layer-line-color : alpha($on-card-color, 0.15);
     layer-line-width : 1dp;
     state-icon-width : 16dp;
@@ -71,4 +83,43 @@ tree-item-folder-open {
     icon : icon(fill, folder_open);
     state-icon : icon(fill, keyboard_arrow_down);
     state-action-enabled : true;
+}
+
+tree-item-selected {
+    background-color : $card-color-hover;
+}
+
+tree-item-dragged {
+    background-color : $card-color-press;
+    cursor : ARROW;
+}
+
+tree-item-floating {
+    radius-top : 4dp;
+    radius-left : 4dp;
+    radius-right : 4dp;
+    radius-bottom : 4dp;
+    text-color : alpha($on-card-color, 0.5);
+    icon-color : alpha(white, 0.4);
+    state-icon-color : alpha($on-card-color, 0.4);
+    background-color : transparent;
+    cursor : ARROW;
+}
+
+tree-view-drag-box {
+    elevation : 8dp;
+    background-color : alpha($card-color, 0.5);
+}
+
+tree-view-drop-box {
+    width : MATCH_PARENT;
+    height : 4dp;
+    background-color : $primary-color;
+    elevation : 8dp;
+}
+
+tree-item-multiselection {
+    text-color : alpha($on-card-color, 0.25);
+    icon-color : alpha(white, 0.2);
+    state-icon-color : alpha($on-card-color, 0.2);
 }

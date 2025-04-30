@@ -2,10 +2,10 @@
     <LinearBox style="dialog-header"/>
     <LinearBox direction="vertical" vertical-alig="right" style="dialog-message-area">
         <Label style="dialog-title" id="titleLabel"/>
-        <Label style="dialog-message" id="messageLabel"/>
+        <Text style="dialog-message" id="messageLabel"/>
     </LinearBox>
     <LinearBox direction="horizontal" style="dialog-action-area">
-        <ProgressBar value="-1" style="split dialog-progress-bar"/>
+        <ProgressBar id="progressBar" value="-1" style="split dialog-progress-bar"/>
     </LinearBox>
     <LinearBox direction="horizontal" style="dialog-action-area">
         <Button id="cancelButton" text="Cancel" style="text-primary dialog-cancel-button" on-action="onRequestCancel"/>

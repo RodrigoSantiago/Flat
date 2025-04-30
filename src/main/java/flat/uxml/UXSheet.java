@@ -73,7 +73,9 @@ public class UXSheet {
     private static void readRecursive(UXSheet sheet, ResourceStream stream, ArrayList<String> includes) throws IOException {
         if (stream.isFolder()) {
             for (var st : stream.getFiles()) {
-                readRecursive(sheet, st, includes);
+                if (st.getResourceName().endsWith(".uxss")) {
+                    readRecursive(sheet, st, includes);
+                }
             }
         } else {
             byte[] data = stream.readData();

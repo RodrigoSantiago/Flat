@@ -12,13 +12,15 @@ public class PointerEvent extends Event {
     private final Window window;
     private final float x, y;
     private final int buttonID;
+    private final int clickCount;
 
-    public PointerEvent(Widget source, Window window, Type type, int buttonID, float x, float y) {
+    public PointerEvent(Widget source, Window window, Type type, int buttonID, float x, float y, int clickCount) {
         super(source, type);
         this.window = window;
         this.buttonID = buttonID;
         this.x = x;
         this.y = y;
+        this.clickCount = clickCount;
     }
 
     public int getPointerID() {
@@ -31,6 +33,10 @@ public class PointerEvent extends Event {
 
     public float getY() {
         return y;
+    }
+
+    public int getClickCount() {
+        return clickCount;
     }
 
     public Window getWindow() {

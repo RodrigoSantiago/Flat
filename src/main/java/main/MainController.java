@@ -4,11 +4,9 @@ import flat.Flat;
 import flat.animations.Interpolation;
 import flat.backend.GL;
 import flat.backend.SVG;
+import flat.concurrent.ProgressTask;
 import flat.data.ObservableList;
-import flat.events.ActionEvent;
-import flat.events.KeyCode;
-import flat.events.KeyEvent;
-import flat.events.PointerEvent;
+import flat.events.*;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
 import flat.graphics.Surface;
@@ -22,6 +20,7 @@ import flat.graphics.image.PixelMap;
 import flat.graphics.symbols.FontManager;
 import flat.graphics.symbols.FontStyle;
 import flat.graphics.symbols.IconsManager;
+import flat.math.Vector4;
 import flat.math.shapes.Circle;
 import flat.math.shapes.Path;
 import flat.resources.ResourceStream;
@@ -86,9 +85,9 @@ public class MainController extends Controller {
     @Flat public ListView listView1;
     @Flat public ListView listView2;
     @Flat public ListView listView3;
-    @Flat public ListView treeView1;
-    @Flat public ListView treeView2;
-    @Flat public ListView treeView3;
+    @Flat public TreeView treeView1;
+    @Flat public TreeView treeView2;
+    @Flat public TreeView treeView3;
 
     @Flat public Label statusLabel;
 
@@ -113,7 +112,6 @@ public class MainController extends Controller {
 
     @Flat
     public void setTabDefault() {
-        setupListView(listView3, treeView3);
         mainTab.selectTab(tabDefault);
         mainDrawer.hide();
     }
@@ -198,7 +196,6 @@ public class MainController extends Controller {
 
     @Flat
     public void setTabLists() {
-        setupListView(listView1, treeView1);
         mainTab.selectTab(tabLists);
         mainDrawer.hide();
     }
@@ -286,15 +283,29 @@ public class MainController extends Controller {
 
     @Flat
     public void onProcessDialog() {
+        ProgressTask<Integer> task = new ProgressTask<>(getWindow(), (report) -> {
+            for (int i = 0; i < 100; i++) {
+                if (report.isRequestCancel()) {
+                    break;
+                }
+                report.setProgress(i / 99f);
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ignored) {
+                }
+            }
+            return 0;
+        });
+        new Thread(task).start();
         var alert = new ProcessDialogBuilder()
                 .title("This is process Dialog")
                 .message("Please cancel this process")
                 .onShowListener((dg) -> System.out.println("Show"))
                 .onHideListener((dg) -> System.out.println("Hide"))
                 .onRequestCancelListener((dg) -> {
-                    System.out.println("Cancel");
-                    dg.smoothHide();
+                    System.out.println("Request the cancel!!!");
                 })
+                .task(task)
                 .cancelable(true)
                 .block(false)
                 .build();
@@ -303,15 +314,30 @@ public class MainController extends Controller {
 
     @Flat
     public void onBlockProcessDialog() {
+        ProgressTask<Integer> task = new ProgressTask<>(getWindow(), (report) -> {
+            for (int i = 0; i < 100; i++) {
+                if (report.isRequestCancel()) {
+                    break;
+                }
+                report.setProgress(i / 99f);
+                System.out.println("Progress " + (i / 99f));
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ignored) {
+                }
+            }
+            return 0;
+        });
+        new Thread(task).start();
         var alert = new ProcessDialogBuilder()
                 .title("This is process Dialog")
                 .message("Please cancel this process")
                 .onShowListener((dg) -> System.out.println("Show"))
                 .onHideListener((dg) -> System.out.println("Hide"))
                 .onRequestCancelListener((dg) -> {
-                    System.out.println("Cancel");
-                    dg.smoothHide();
+                    System.out.println("Request the cancel!!!");
                 })
+                .task(task)
                 .cancelable(true)
                 .block(true)
                 .build();
@@ -510,54 +536,27 @@ public class MainController extends Controller {
     PixelMap pix;
     Font arial;
 
-    private void setupListView(ListView listView1, ListView treeView1) {
+    private void setupListView(ListView listView) {
         ObservableList<String> list1 = new ObservableList<>();
-        ObservableList<String> list2 = new ObservableList<>();
         for (int i = 0; i < 50; i++) {
             list1.add("List Item " + (i + 1));
-            list2.add("List Item " + (i + 1));
         }
-        listView1.setAdapter(new ListViewDefaultAdapter<>(list1));
-        listView2.setAdapter(new ListViewDefaultAdapter<>(list2));
-        ObservableList<TreeCell> list3 = new ObservableList<>();
-        ObservableList<TreeCell> list4 = new ObservableList<>();
+        listView.setAdapter(new ListViewDefaultAdapter<>(list1));
+    }
 
-        Drawable icon = IconsManager.getIcon("outline", "draft");
-
-        TreeCell rootA = new TreeCell(list3, "Tree Item Root", true, icon);
-        TreeCell rootB = new TreeCell(list4, "Tree Item Root", true, icon);
-        list3.add(rootA);
-        list4.add(rootB);
-
-        int aIndex = 1;
-        TreeCell child = new TreeCell(list3, "Child", true, icon);
-        rootA.add(child);
-        for (int i = 0; i < 5; i++) {
-            TreeCell child2 = new TreeCell(list3, "Child " + (aIndex++), false, icon);
-            child.add(child2);
-        }
-        TreeCell child3 = new TreeCell(list3, "Child " + (aIndex++), true, icon);
-        child.add(child3);
-        for (int i = 0; i < 3; i++) {
-            TreeCell child2 = new TreeCell(list3, "Other Child With very long Name " + (aIndex++), false, icon);
-            child3.add(child2);
-        }
-        for (int i = 0; i < 3; i++) {
-            TreeCell child2 = new TreeCell(list3, "Siblings " + (aIndex++), false, icon);
-            rootA.add(child2);
-        }
-        for (int i = 0; i < 3; i++) {
-            TreeCell child2 = new TreeCell(list3, "Root Siblings " + (aIndex++), false, icon);
-            list3.add(child2);
-        }
-        TreeCell child4 = new TreeCell(list3, "Child " + (aIndex++), true, icon);
-        list3.add(child4);
-        for (int i = 0; i < 3; i++) {
-            TreeCell child2 = new TreeCell(list3, "Other Child " + (aIndex++), false, icon);
-            child4.add(child2);
-        }
-        treeView1.setAdapter(new TreeViewAdapter(list3));
-        treeView2.setAdapter(new TreeViewAdapter(list4));
+    private void setupTreeView(TreeView treeView) {
+        treeView.addTreeItem(new AssetData("Item", false), false);
+        treeView.addTreeItem(new AssetData("Item2", false), false);
+        treeView.addTreeItem(new AssetData("Item3", false), false);
+        treeView.addTreeItem(new AssetData("Item4", false), false);
+        treeView.addTreeItem(new AssetData("ZFolder", true), false);
+        treeView.addTreeItem(new AssetData("ZFolder/Item5", false), false);
+        treeView.addTreeItem(new AssetData("ZFolder/Item6", false), false);
+        treeView.addTreeItem(new AssetData("ZFolder/AFolder", true), false);
+        treeView.addTreeItem(new AssetData("ZFolder/AFolder/Item7", false), false);
+        treeView.addTreeItem(new AssetData("ZFolder/AFolder/Item8", false), false);
+        treeView.setStylizeListener(this::onTreeViewStylize);
+        treeView.setDragListener(this::onTreeViewDrag);
     }
 
     @Flat
@@ -590,7 +589,12 @@ public class MainController extends Controller {
     public void onShow() {
         images = new ImageView[]{img0, img1, img2, img3, img4, img5, img6, img7, img8, img9, img10, img11};
         getWindow().setIcon(PixelMap.parse(new ResourceStream("/default/icons/window-icon.png")));
-        setupListView(listView3, treeView3);
+        setupListView(listView1);
+        setupListView(listView2);
+        setupListView(listView3);
+        setupTreeView(treeView1);
+        setupTreeView(treeView2);
+        setupTreeView(treeView3);
 
         // getActivity().setContinuousRendering(true);
         var graphics = getGraphics();
@@ -599,27 +603,49 @@ public class MainController extends Controller {
                 """
                 #version 330 core
                 uniform vec4 col;
+                uniform vec4 bac;
                 vec4 fragment(vec2 pos, vec2 uv) {
-                    return pos.x > 8 && col.r > 0 ? vec4(col.rgb, clamp(col.a * (pos.x - 8) / 16, 0, 1))
-                    : pos.x > 40 && col.b > 0 ? vec4(col.rgb, 1 - clamp(col.a * (pos.x - 40) / 16, 0, 1))
+                    return pos.x > 8 && bac.r > 0 ? vec4(col.rgb, clamp(col.a * (pos.x - 8) / 16, 0, 1))
+                    : pos.x > 40 && bac.r < 0 ? vec4(col.rgb, 1 - clamp(col.a * (pos.x - 40) / 16, 0, 1))
                     : col;
                 }
                 """);
         Surface surface = new Surface(64, 64, 8);
         graphics.setSurface(surface);
 
+        int[] colors = new int[] {
+                0x0000FFFF,
+                0xC0C0C0FF,
+                0x808080FF,
+                0xFFFFFFFF,
+                0x800000FF,
+                0xFF0000FF,
+                0x800080FF,
+                0xFF00FFFF,
+                0x008000FF,
+                0x00FF00FF,
+                0x808000FF,
+                0xFFFF00FF,
+                0x000080FF,
+                0x0000FFFF,
+                0x008080FF,
+                0x00FFFFFF,
+        };
         maps = new PixelMap[AlphaComposite.values().length];
         for (int i = 0; i < maps.length; i++) {
             graphics.setAlphaComposite(AlphaComposite.SRC_OVER);
-            shader.set("col", Color.toFloat(Color.blue));
+            shader.set("col", Color.toFloat(colors[i]));
+            shader.set("bac", new Vector4(-1, -1, -1, -1));
             graphics.blitCustomShader(shader, 0, 0, 56, 40);
             graphics.setAlphaComposite(AlphaComposite.values()[i]);
-            shader.set("col", Color.toFloat(Color.red));
+            shader.set("col", Color.toFloat(colors[i + 1]));
+            shader.set("bac", new Vector4(1, 1, 1, 1));
             graphics.blitCustomShader(shader, 8, 24, 56, 40);
             graphics.setAlphaComposite(AlphaComposite.SRC_OVER);
             maps[i] = graphics.createPixelMap();
             images[i].setImage(maps[i]);
             graphics.clear(0, 0, 0);
+            System.out.println("Clear ");
         }
 
         graphics.setSurface(null);
@@ -630,6 +656,53 @@ public class MainController extends Controller {
 
         if (tabDefault != null) {
             search(tabDefault.getFrame());
+        }
+    }
+
+    @Flat
+    public void onTreeViewDrag(DragEvent event) {
+        if (event.getType() == DragEvent.DONE && event.getData() instanceof TreeViewDragData data) {
+            var drop = data.getSource().getDropPos(event.getX(), event.getY());
+            System.out.println(data.getItems().size() + " >> " + drop.getCell().getData());
+        }
+    }
+
+    @Flat
+    public void onTreeViewStylize(TreeViewStyle event) {
+        TreeItemCell cell = event.getCell();
+        ListItem item = event.getItem();
+        AssetData data = (AssetData) event.getData();
+        TreeView treeView = event.getTreeView();
+
+        item.setText(event.isMultiselection() ? "..." : data.getName());
+        item.removeStyle("tree-item-dragged");
+        item.removeStyle("tree-item-selected");
+        item.removeStyle("tree-item-folder");
+        item.removeStyle("tree-item-folder-open");
+        item.removeStyle("tree-item-floating");
+        item.removeStyle("tree-item-multiselection");
+        item.addStyle("tree-item");
+        if (cell.isFolder()) {
+            if (cell.isOpen()) {
+                item.addStyle("tree-item-folder-open");
+            } else {
+                item.addStyle("tree-item-folder");
+            }
+        }
+        if (cell.isSelected()) {
+            item.addStyle("tree-item-selected");
+        }
+        if (cell.isDragged()) {
+            item.addStyle("tree-item-dragged");
+        }
+        if (event.isFloating()) {
+            item.setLayers(0);
+            item.addStyle("tree-item-floating");
+        } else {
+            item.setLayers(cell.getLevels());
+        }
+        if (event.isMultiselection()) {
+            item.addStyle("tree-item-multiselection");
         }
     }
 
@@ -756,4 +829,5 @@ public class MainController extends Controller {
     public void toggleDrawer2(ActionEvent event) {
         drawer2.toggle();
     }
+
 }

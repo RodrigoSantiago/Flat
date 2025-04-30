@@ -412,7 +412,7 @@ public class EventDataMouseMoveTest {
 
         verify(widgetA, times(3)).firePointer(capPointer.capture());
         verify(widgetA, times(3)).fireDrag(capDrag.capture());
-        verify(widgetB, times(3)).fireDrag(capDrag.capture());
+        verify(widgetB, times(4)).fireDrag(capDrag.capture());
 
         // Hover is Independent
         assertHoverEvent(capHover.getAllValues().get(0), HoverEvent.ENTERED, 10, 20);
@@ -430,8 +430,9 @@ public class EventDataMouseMoveTest {
         assertDragEvent(capDrag.getAllValues().get(2), DragEvent.DONE, widgetA, null, widgetB);
 
         assertDragEvent(capDrag.getAllValues().get(3), DragEvent.ENTERED, widgetA, null, widgetB);
-        assertDragEvent(capDrag.getAllValues().get(4), DragEvent.DROPPED, widgetA, null, widgetB);
-        assertDragEvent(capDrag.getAllValues().get(5), DragEvent.EXITED, widgetA, null, widgetB);
+        assertDragEvent(capDrag.getAllValues().get(4), DragEvent.HOVER, widgetA, null, widgetB);
+        assertDragEvent(capDrag.getAllValues().get(5), DragEvent.DROPPED, widgetA, null, widgetB);
+        assertDragEvent(capDrag.getAllValues().get(6), DragEvent.EXITED, widgetA, null, widgetB);
     }
 
     // press + drag [accept] + move [reject] + releas
@@ -478,7 +479,7 @@ public class EventDataMouseMoveTest {
 
         verify(widgetA, times(3)).firePointer(capPointer.capture());
         verify(widgetA, times(3)).fireDrag(capDrag.capture());
-        verify(widgetB, times(2)).fireDrag(capDrag.capture());
+        verify(widgetB, times(3)).fireDrag(capDrag.capture());
 
         // Hover is Independent
         assertHoverEvent(capHover.getAllValues().get(0), HoverEvent.ENTERED, 10, 20);
@@ -496,7 +497,8 @@ public class EventDataMouseMoveTest {
         assertDragEvent(capDrag.getAllValues().get(2), DragEvent.DONE, widgetA, null, null);
 
         assertDragEvent(capDrag.getAllValues().get(3), DragEvent.ENTERED, widgetA, null, null);
-        assertDragEvent(capDrag.getAllValues().get(4), DragEvent.EXITED, widgetA, null, null);
+        assertDragEvent(capDrag.getAllValues().get(4), DragEvent.HOVER, widgetA, null, null);
+        assertDragEvent(capDrag.getAllValues().get(5), DragEvent.EXITED, widgetA, null, null);
 
     }
 
@@ -552,7 +554,7 @@ public class EventDataMouseMoveTest {
 
         verify(widgetA, times(3)).firePointer(capPointer.capture());
         verify(widgetA, times(3)).fireDrag(capDrag.capture());
-        verify(widgetB, times(2)).fireDrag(capDrag.capture());
+        verify(widgetB, times(3)).fireDrag(capDrag.capture());
 
         // Hover is Independent
         assertHoverEvent(capHover.getAllValues().get(0), HoverEvent.ENTERED, 10, 20);
@@ -571,7 +573,8 @@ public class EventDataMouseMoveTest {
         assertTrue(capDrag.getAllValues().get(2).isCanceled());
 
         assertDragEvent(capDrag.getAllValues().get(3), DragEvent.ENTERED, widgetA, null, widgetB);
-        assertDragEvent(capDrag.getAllValues().get(4), DragEvent.EXITED, widgetA, null, widgetB);
+        assertDragEvent(capDrag.getAllValues().get(4), DragEvent.HOVER, widgetA, null, widgetB);
+        assertDragEvent(capDrag.getAllValues().get(5), DragEvent.EXITED, widgetA, null, widgetB);
     }
 
     // press + drag [accept] + move [accept+cancel] + releas
@@ -677,7 +680,7 @@ public class EventDataMouseMoveTest {
             DragEvent dragEvent = obj.getArgument(0);
             if (dragEvent.getType() == DragEvent.ENTERED) {
                 dragEvent.accept(widgetB);
-            } else {
+            } else if (dragEvent.getType() != DragEvent.HOVER) {
                 dragEvent.cancel();
             }
             return null;
@@ -702,7 +705,7 @@ public class EventDataMouseMoveTest {
 
         verify(widgetA, times(4)).firePointer(capPointer.capture());
         verify(widgetA, times(4)).fireDrag(capDrag.capture());
-        verify(widgetB, times(2)).fireDrag(capDrag.capture());
+        verify(widgetB, times(3)).fireDrag(capDrag.capture());
 
         // Hover is Independent
         assertHoverEvent(capHover.getAllValues().get(0), HoverEvent.ENTERED, 10, 20);
@@ -728,7 +731,8 @@ public class EventDataMouseMoveTest {
 
         assertDragEvent(capDrag.getAllValues().get(3), DragEvent.DONE, widgetA, null, null);
         assertDragEvent(capDrag.getAllValues().get(4), DragEvent.ENTERED, widgetA, null, widgetB);
-        assertDragEvent(capDrag.getAllValues().get(5), DragEvent.EXITED, widgetA, null, null);
+        assertDragEvent(capDrag.getAllValues().get(5), DragEvent.HOVER, widgetA, null, widgetB);
+        assertDragEvent(capDrag.getAllValues().get(6), DragEvent.EXITED, widgetA, null, null);
     }
 
     @Test
