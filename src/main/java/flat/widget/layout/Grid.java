@@ -475,6 +475,7 @@ public class Grid extends Parent {
                 cell.widget.setLayoutPosition(0, 0);
             }
         }
+        fireLayout();
     }
 
     @Override

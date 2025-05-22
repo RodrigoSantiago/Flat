@@ -247,6 +247,7 @@ public class TabView extends Parent {
         if (prevViewOffset != getViewOffset() && getActivity() != null) {
             getActivity().runLater(() -> setViewOffset(getViewOffset()));
         }
+        fireLayout();
     }
 
     @Override

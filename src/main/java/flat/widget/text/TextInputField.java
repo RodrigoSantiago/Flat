@@ -137,8 +137,8 @@ public class TextInputField extends TextField {
     }
 
     @Override
-    public void onLayout(float width, float height) {
-        super.onLayout(width, height);
+    public void setLayout(float layoutWidth, float layoutHeight) {
+        super.setLayout(layoutWidth, layoutHeight);
         updateActionPosition();
     }
 

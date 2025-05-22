@@ -59,6 +59,10 @@
                 <ImageView image="/default/images/tiger.svg" width="400dp" height="400dp" image-scale="STRETCH" image-filter="LINEAR"
                            on-pointer="optimize"/>
             </LinearBox>
+            <Label text="Repeating Pattern" style="subtitle" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <ImageView image="/default/images/pacman.png" width="400dp" height="400dp" image-scale="REPEAT"/>
+            </LinearBox>
         </LinearBox>
     </LinearBox>
 </Scene>

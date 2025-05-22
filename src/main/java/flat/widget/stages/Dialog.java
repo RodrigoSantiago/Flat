@@ -97,6 +97,7 @@ public class Dialog extends Stage {
         performLayoutConstraints(getInWidth(), getInHeight(), getInX(), getInY(), verticalAlign, horizontalAlign);
         limitPosition();
         setLayoutPosition(targetX, targetY);
+        fireLayout();
     }
 
     @Override
@@ -181,7 +182,7 @@ public class Dialog extends Stage {
             Widget found = child.findByPosition(x, y, includeDisabled);
             if (found != null) return found;
         }
-        return this;
+        return isHandlePointerEnabled() ? this : null;
     }
 
     private void limitPosition() {

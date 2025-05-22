@@ -85,7 +85,7 @@ public class ToolBarTest {
         assertEquals(0x000000FF, toolBar.getTitleColor());
         assertEquals(0x000000FF, toolBar.getSubtitleColor());
         assertNull(toolBar.getNavigationAction());
-        assertNotNull(toolBar.getNavigationItem());
+        assertNull(toolBar.getNavigationItem());
         assertNotNull(toolBar.getOverflowItem());
 
         toolBar.setAttributes(createNonDefaultValues(), null);
@@ -100,7 +100,7 @@ public class ToolBarTest {
         assertEquals(0x000000FF, toolBar.getTitleColor());
         assertEquals(0x000000FF, toolBar.getSubtitleColor());
         assertEquals(action, toolBar.getNavigationAction());
-        assertNotNull(toolBar.getNavigationItem());
+        assertNull(toolBar.getNavigationItem());
         assertNotNull(toolBar.getOverflowItem());
 
         toolBar.applyStyle();
@@ -114,7 +114,7 @@ public class ToolBarTest {
         assertEquals(0xFF0000FF, toolBar.getTitleColor());
         assertEquals(0xFFFF00FF, toolBar.getSubtitleColor());
         assertEquals(action, toolBar.getNavigationAction());
-        assertNotNull(toolBar.getNavigationItem());
+        assertNull(toolBar.getNavigationItem());
         assertNotNull(toolBar.getOverflowItem());
     }
 
@@ -131,11 +131,10 @@ public class ToolBarTest {
         assertNull(itemB.getParent());
         assertNull(panel.getParent());
         toolBar.applyChildren(uxChild);
-        assertEquals(4, toolBar.getChildrenIterable().size());
+        assertEquals(3, toolBar.getChildrenIterable().size());
         assertNotNull(toolBar.getChildrenIterable().get(0));
-        assertNotNull(toolBar.getChildrenIterable().get(1));
-        assertEquals(itemA, toolBar.getChildrenIterable().get(2));
-        assertEquals(itemB, toolBar.getChildrenIterable().get(3));
+        assertEquals(itemA, toolBar.getChildrenIterable().get(1));
+        assertEquals(itemB, toolBar.getChildrenIterable().get(2));
         assertEquals(toolBar, itemA.getParent());
         assertEquals(toolBar, itemB.getParent());
         assertNull(panel.getParent());

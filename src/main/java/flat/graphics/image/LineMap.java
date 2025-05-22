@@ -1,7 +1,6 @@
 package flat.graphics.image;
 
 import flat.exception.FlatException;
-import flat.graphics.Color;
 import flat.graphics.Graphics;
 import flat.graphics.Surface;
 import flat.graphics.context.Paint;
@@ -10,16 +9,13 @@ import flat.graphics.image.svg.SvgRoot;
 import flat.graphics.image.svg.SvgShape;
 import flat.math.Affine;
 import flat.math.shapes.*;
-import flat.math.stroke.BasicStroke;
 import flat.resources.ResourceStream;
 import flat.uxml.node.UXNodeElement;
 import flat.uxml.node.UXNodeParser;
 import flat.widget.enums.ImageFilter;
 import flat.window.Application;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 
 public class LineMap implements Drawable {
@@ -45,28 +41,36 @@ public class LineMap implements Drawable {
         }
     }
 
-    private static LineMap loadLineMap(ResourceStream stream) {
-        byte[] data = stream.readData();
-        if (data == null) {
-            throw new FlatException("Invalid image " + stream.getResourceName());
-        }
-
+    public static LineMap parse(byte[] data) {
         String xml = new String(data, StandardCharsets.UTF_8);
         UXNodeParser parser = new UXNodeParser(xml);
         parser.parse();
 
         UXNodeElement root = parser.getRootElement();
         if (root == null) {
-            throw new FlatException("Invalid image format " + stream.getResourceName());
+            throw new FlatException("Invalid image format");
         }
 
         SvgBuilder builder = new SvgBuilder(root);
         SvgRoot svg = builder.build();
         if (svg == null) {
-            throw new FlatException("Invalid image format " + stream.getResourceName());
+            throw new FlatException("Invalid image format");
         }
 
         return new LineMap(svg);
+    }
+
+    private static LineMap loadLineMap(ResourceStream stream) {
+        byte[] data = stream.readData();
+        if (data == null) {
+            throw new FlatException("Invalid image " + stream.getResourceName());
+        }
+
+        try {
+            return parse(data);
+        } catch (FlatException e) {
+            throw new FlatException("Invalid image format " + stream.getResourceName());
+        }
     }
 
     private SvgRoot root;

@@ -13,7 +13,7 @@ import flat.widget.Widget;
 import flat.widget.enums.Direction;
 import flat.widget.enums.LineCap;
 
-public class ScrollBar extends Widget {
+public abstract class ScrollBar extends Widget {
 
     private UXListener<SlideEvent> slideListener;
     private UXListener<SlideEvent> slideFilter;
@@ -57,6 +57,13 @@ public class ScrollBar extends Widget {
         setLineCap(attrs.getConstant("line-cap", info, getLineCap()));
     }
 
+    private float getHandleMove() {
+        if (totalDimension == 0 || Math.abs(totalDimension - viewDimension) < 0.01f) {
+            return 0;
+        }
+        return Math.max(0, Math.min(1, viewOffset / (totalDimension - viewDimension)));
+    }
+
     @Override
     public void onDraw(Graphics graphics) {
         if (discardDraw(graphics)) return;
@@ -77,7 +84,7 @@ public class ScrollBar extends Widget {
         float minR = Math.min(0.5f, minRange / (hor ? width : height));
         float handleSize = totalDimension == 0 ? 1 : Math.max(minR, Math.min(1, viewDimension / totalDimension));
         float handleSpace = 1 - handleSize;
-        float handleMove = totalDimension == 0 ? 0 : Math.max(0, Math.min(1, viewOffset / (totalDimension - viewDimension)));
+        float handleMove = getHandleMove();
 
         float lineW = Math.min(width, Math.min(height, getLineWidth()));
         float lineH = getLineCap() == LineCap.BUTT ? 0 : lineW * 0.5f;
@@ -141,19 +148,19 @@ public class ScrollBar extends Widget {
 
         float handleSize = totalDimension == 0 ? 1 : Math.max(minR, Math.min(1, viewDimension / totalDimension));
         float moveOffset = totalDimension == 0 ? 0 : Math.max(0, 1 - handleSize);
-        float handleMove = totalDimension == 0 ? 0 : Math.max(0, Math.min(1, viewOffset / (totalDimension - viewDimension)));
+        float handleMove = getHandleMove();
         float handleSpace = 1 - handleSize;
 
         if (event.getType() == PointerEvent.PRESSED) {
             event.consume();
             grabOffset = Math.max(0, Math.min(1, (((pos - start) / size) - handleMove * handleSpace) / handleSize));
 
-            float py2 = (((pos - start) / size - handleSize * grabOffset) / moveOffset) * (totalDimension - viewDimension);
+            float py2 = moveOffset == 0 ? 0 : (((pos - start) / size - handleSize * grabOffset) / moveOffset) * (totalDimension - viewDimension);
             slideTo(py2);
 
         } else if (event.getType() == PointerEvent.DRAGGED) {
             event.consume();
-            float py2 = (((pos - start) / size - handleSize * grabOffset) / moveOffset) * (totalDimension - viewDimension);
+            float py2 = moveOffset == 0 ? 0 : (((pos - start) / size - handleSize * grabOffset) / moveOffset) * (totalDimension - viewDimension);
             slideTo(py2);
 
         } else if (event.getType() == PointerEvent.RELEASED) {
@@ -162,9 +169,7 @@ public class ScrollBar extends Widget {
         }
     }
 
-    public Direction getDirection() {
-        return null;
-    }
+    public abstract Direction getDirection();
 
     public float getViewOffset() {
         return viewOffset;

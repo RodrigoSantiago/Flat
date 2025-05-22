@@ -40,6 +40,8 @@ public class NumberInputField extends TextField {
     private float decreaseIconSpacing;
     private float decreaseIconWidth;
     private float decreaseIconHeight;
+    private int minValue = Integer.MIN_VALUE;
+    private int maxValue = Integer.MAX_VALUE;
 
     private int actionIconColor = Color.transparent;
 
@@ -52,6 +54,7 @@ public class NumberInputField extends TextField {
         super.applyAttributes(controller);
         UXAttrs attrs = getAttrs();
 
+        setRangeLimits((int)attrs.getAttributeNumber("min-value", getMinValue()), (int)attrs.getAttributeNumber("max-value", getMaxValue()));
         setActionIncreaseListener(attrs.getAttributeListener("on-increase", ActionEvent.class, controller));
         setActionDecreaseListener(attrs.getAttributeListener("on-decrease", ActionEvent.class, controller));
     }
@@ -159,8 +162,8 @@ public class NumberInputField extends TextField {
     }
 
     @Override
-    public void onLayout(float width, float height) {
-        super.onLayout(width, height);
+    public void setLayout(float layoutWidth, float layoutHeight) {
+        super.setLayout(layoutWidth, layoutHeight);
         updateActionPosition();
     }
 
@@ -394,7 +397,6 @@ public class NumberInputField extends TextField {
 
     @Override
     public void setText(String input) {
-        if (!isEditable()) return;
         if (input != null && input.startsWith("-")) {
             super.setText("-" + input.substring(1).replaceAll("\\D", ""));
         } else {
@@ -405,16 +407,17 @@ public class NumberInputField extends TextField {
     public long getNumber() {
         String text = getText();
         if (text == null) {
-            return 0;
+            return Math.max(minValue, Math.min(maxValue, 0));
         }
         try {
-            return Long.parseLong(text);
+            return Math.max(minValue, Math.min(maxValue, Long.parseLong(text)));
         } catch (Exception e) {
-            return  0;
+            return Math.max(minValue, Math.min(maxValue, 0));
         }
     }
 
     public void setNumber(long number) {
+        number = Math.max(minValue, Math.min(maxValue, number));
         setText(String.valueOf(number));
     }
 
@@ -426,6 +429,12 @@ public class NumberInputField extends TextField {
     public void decrease() {
         setNumber(getNumber() - 1);
         fireActionDecrease();
+    }
+
+    @Override
+    protected void setCaretHidden() {
+        super.setCaretHidden();
+        setNumber(getNumber());
     }
 
     private void fireActionIncrease() {
@@ -732,6 +741,24 @@ public class NumberInputField extends TextField {
         if (this.actionIconColor != actionIconColor) {
             this.actionIconColor = actionIconColor;
             invalidate(false);
+        }
+    }
+
+    public float getMinValue() {
+        return minValue;
+    }
+
+    public float getMaxValue() {
+        return maxValue;
+    }
+
+    public void setRangeLimits(int minValue, int maxValue) {
+        int cMinValue = Math.min(minValue, maxValue);
+        int cMaxValue = Math.max(minValue, maxValue);
+        if (cMinValue != this.minValue || cMaxValue != this.maxValue) {
+            this.minValue = cMinValue;
+            this.maxValue = cMaxValue;
+            setNumber(getNumber());
         }
     }
 }

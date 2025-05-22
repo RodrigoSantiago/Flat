@@ -11,6 +11,7 @@ import flat.graphics.symbols.Font;
 import flat.math.Affine;
 import flat.math.Vector2;
 import flat.math.Vector4;
+import flat.math.operations.Area;
 import flat.math.shapes.*;
 import flat.math.stroke.BasicStroke;
 
@@ -202,8 +203,9 @@ public class Graphics {
     }
 
     public PixelMap createPixelMap(PixelFormat format) {
+        context.softFlush();
         if (surface != null) {
-            return surface.createPixelMap(this, format);
+            return new PixelMap(surface.bakeToTexture(this, format, null));
         } else {
             FrameBuffer fbo = new FrameBuffer(context);
             Texture2D target = new Texture2D(getWidth(), getHeight(), format);
@@ -212,6 +214,20 @@ public class Graphics {
                     0, 0, getWidth(), getHeight(),
                     0, getHeight(), getWidth(), -getHeight(), BlitMask.Color, MagFilter.NEAREST);
             return new PixelMap(target);
+        }
+    }
+
+    public PixelMap bakeToTexture(Texture2D texture) {
+        context.softFlush();
+        if (surface != null) {
+            return new PixelMap(surface.bakeToTexture(this, null, texture));
+        } else {
+            FrameBuffer fbo = new FrameBuffer(context);
+            fbo.attach(LayerTarget.COLOR_0, texture, 0);
+            context.blitFrames(null, fbo,
+                    0, 0, getWidth(), getHeight(),
+                    0, getHeight(), getWidth(), -getHeight(), BlitMask.Color, MagFilter.NEAREST);
+            return new PixelMap(texture);
         }
     }
 
@@ -314,7 +330,6 @@ public class Graphics {
 
         ClipState state = getClipState();
 
-        state.clipShapes.add(inverse);
         if (state.clipBox.isEmpty()) {
             state.clipBox.add(bounds);
         } else {
@@ -335,6 +350,21 @@ public class Graphics {
             }
         }
         state.box = state.clipBox.get(state.clipBox.size() - 1);
+
+        if (state.clipShapes.isEmpty()) {
+            state.clipShapes.add(real);
+        } else if (!state.isFullyClipped()) {
+            if (state.clipShapes.size() == 1) {
+                var s = state.clipShapes.get(0);
+                if (!(s instanceof Area)) {
+                    state.clipShapes.set(0, new Area(s));
+                }
+            }
+            var s = (Area) state.clipShapes.get(state.clipShapes.size() - 1);
+            state.clipShapes.add(new Area(real).intersect(s));
+        } else {
+            state.clipShapes.add(new Area());
+        }
 
         updateClip();
     }
@@ -362,11 +392,9 @@ public class Graphics {
             context.svgClearClip(true);
 
         } else {
-            context.svgClearClip(false);
+            context.svgClearClip(true);
             context.svgTransform(null);
-            for (Shape clip : state.clipShapes) {
-                context.svgClip(clip);
-            }
+            context.svgUnclip(state.clipShapes.get(state.clipShapes.size() - 1));
             context.svgTransform(transform2D);
         }
     }
@@ -769,12 +797,18 @@ public class Graphics {
     void bakeSurface(TextureMultisample2D texture) {
         bakeMsProgram.set("samples", texture.getSamples());
         bakeMsProgram.set("mainTexture", 0);
+        var comp = getAlphaComposite();
+        setAlphaComposite(AlphaComposite.SRC);
         blitCustomShader(bakeMsProgram, 0, 0, getWidth(), getHeight(), texture);
+        setAlphaComposite(comp);
     }
 
     void bakeSurface(Texture texture) {
         bakeProgram.set("mainTexture", 0);
+        var comp = getAlphaComposite();
+        setAlphaComposite(AlphaComposite.SRC);
         blitCustomShader(bakeProgram, 0, 0, getWidth(), getHeight(), texture);
+        setAlphaComposite(comp);
     }
 
     public void blitCustomShader(ShaderProgram program, Texture... textures) {
@@ -782,6 +816,7 @@ public class Graphics {
     }
 
     public void blitCustomShader(ShaderProgram program, float x, float y, float width, float height, Texture... textures) {
+        context.softFlush();
         if (ver == null) {
             ver = new VertexArray(context);
             ebo = new BufferObject(context, BufferType.Element, 6 * 4, UsageType.STATIC_DRAW);
@@ -826,7 +861,16 @@ public class Graphics {
         return program;
     }
 
+    AlphaComposite alphaComposite = AlphaComposite.SRC_OVER;
+
+    public AlphaComposite getAlphaComposite() {
+        return alphaComposite;
+    }
+
     public void setAlphaComposite(AlphaComposite mode) {
+        this.alphaComposite = mode;
+        context.svgAlphaComposite(mode);
+
         switch (mode) {
             case SRC_OVER:
                 context.setBlendFunction(

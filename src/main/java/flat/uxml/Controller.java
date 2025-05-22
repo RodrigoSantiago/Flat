@@ -13,12 +13,21 @@ public class Controller {
 
     private Activity activity;
     private boolean listening;
+    private boolean firstLoad;
 
     public final void setActivity(Activity activity) {
         if (this.activity != activity) {
             Activity old = this.activity;
             this.activity = activity;
             if (old == null) {
+                if (!firstLoad) {
+                    firstLoad = true;
+                    try {
+                        onLoad();
+                    } catch (Exception e) {
+                        Application.handleException(e);
+                    }
+                }
                 try {
                     onShow();
                 } catch (Exception e) {
@@ -112,6 +121,10 @@ public class Controller {
 
     public boolean isListening() {
         return activity != null;
+    }
+
+    public void onLoad() {
+
     }
 
     public void onShow() {

@@ -42,8 +42,12 @@ public class DragEvent extends Event {
         this.dragAccepted = dragAccepted;
     }
 
-    public boolean isRecyclable(Widget source) {
-        return !isAccepted() && !isCanceled();
+    @Override
+    public boolean recycle(Widget current) {
+        if (!isAccepted() && !isCanceled()) {
+            return super.recycle(current);
+        }
+        return false;
     }
 
     public Object getData() {

@@ -19,6 +19,7 @@ class ConfirmDialogController extends Controller {
     private final UXListener<Dialog> onHideListener;
     private final UXListener<Dialog> onYesListener;
     private final UXListener<Dialog> onNoListener;
+    private final UXListener<Dialog> onCancelListener;
 
     ConfirmDialogController(Dialog dialog, ConfirmDialogBuilder builder) {
         this.dialog = dialog;
@@ -29,6 +30,7 @@ class ConfirmDialogController extends Controller {
         this.onHideListener = builder.onHideListener;
         this.onYesListener = builder.onYesListener;
         this.onNoListener = builder.onNoListener;
+        this.onCancelListener = builder.onCancelListener;
     }
 
     @Flat
@@ -59,6 +61,7 @@ class ConfirmDialogController extends Controller {
 
     @Flat
     public void onCancel(ActionEvent event) {
+        UXListener.safeHandle(onCancelListener, dialog);
         dialog.smoothHide();
     }
 

@@ -184,11 +184,6 @@ public class TextArea extends Scrollable {
     }
 
     @Override
-    public void onLayout(float width, float height) {
-        super.onLayout(width, height);
-    }
-
-    @Override
     public void setLayout(float layoutWidth, float layoutHeight) {
         super.setLayout(layoutWidth, layoutHeight);
         if (getActivity() != null && isLineWrapReallyEnabled() && textRender.isBreakLines(getViewDimensionX())) {

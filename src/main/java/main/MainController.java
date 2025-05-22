@@ -613,32 +613,14 @@ public class MainController extends Controller {
         Surface surface = new Surface(64, 64, 8);
         graphics.setSurface(surface);
 
-        int[] colors = new int[] {
-                0x0000FFFF,
-                0xC0C0C0FF,
-                0x808080FF,
-                0xFFFFFFFF,
-                0x800000FF,
-                0xFF0000FF,
-                0x800080FF,
-                0xFF00FFFF,
-                0x008000FF,
-                0x00FF00FF,
-                0x808000FF,
-                0xFFFF00FF,
-                0x000080FF,
-                0x0000FFFF,
-                0x008080FF,
-                0x00FFFFFF,
-        };
         maps = new PixelMap[AlphaComposite.values().length];
         for (int i = 0; i < maps.length; i++) {
             graphics.setAlphaComposite(AlphaComposite.SRC_OVER);
-            shader.set("col", Color.toFloat(colors[i]));
+            shader.set("col", Color.toFloat(Color.blue));
             shader.set("bac", new Vector4(-1, -1, -1, -1));
             graphics.blitCustomShader(shader, 0, 0, 56, 40);
             graphics.setAlphaComposite(AlphaComposite.values()[i]);
-            shader.set("col", Color.toFloat(colors[i + 1]));
+            shader.set("col", Color.toFloat(Color.red));
             shader.set("bac", new Vector4(1, 1, 1, 1));
             graphics.blitCustomShader(shader, 8, 24, 56, 40);
             graphics.setAlphaComposite(AlphaComposite.SRC_OVER);
@@ -828,6 +810,16 @@ public class MainController extends Controller {
     @Flat
     public void toggleDrawer2(ActionEvent event) {
         drawer2.toggle();
+    }
+
+    @Flat
+    public void onCanvasDraw(DrawEvent event) {
+        var graphics = event.getGraphics();
+        var box = event.getInBox();
+        graphics.setColor(0xFF0000FF);
+        graphics.setAlphaComposite(AlphaComposite.DST_OUT);
+        graphics.drawEllipse(box.x, box.y, box.width, box.height, true);
+        graphics.setAlphaComposite(AlphaComposite.SRC_OVER);
     }
 
 }

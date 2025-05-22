@@ -13,6 +13,7 @@ public class PointerEvent extends Event {
     private final float x, y;
     private final int buttonID;
     private final int clickCount;
+    private boolean focusConsumed;
 
     public PointerEvent(Widget source, Window window, Type type, int buttonID, float x, float y, int clickCount) {
         super(source, type);
@@ -57,6 +58,14 @@ public class PointerEvent extends Event {
 
     public boolean isSprDown() {
         return window.isSprDown();
+    }
+
+    public void consumeFocus() {
+        this.focusConsumed = true;
+    }
+
+    public boolean isFocusConsumed() {
+        return focusConsumed;
     }
 
     @Override

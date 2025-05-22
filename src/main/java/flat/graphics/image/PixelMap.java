@@ -13,6 +13,24 @@ import java.lang.ref.WeakReference;
 
 public class PixelMap implements Drawable, ImageTexture {
 
+    public static PixelMap parse(byte[] data) {
+        int[] imageData = new int[3];
+        byte[] readImage = SVG.ReadImage(data, imageData);
+        if (readImage == null) {
+            throw new FlatException("Invalid image format");
+        }
+        return new PixelMap(readImage, imageData[0], imageData[1], PixelFormat.RGBA);
+    }
+
+    public static ImageData parseImageData(byte[] data) {
+        int[] imageData = new int[3];
+        byte[] readImage = SVG.ReadImage(data, imageData);
+        if (readImage == null) {
+            throw new FlatException("Invalid image format");
+        }
+        return new ImageData(readImage, imageData[0], imageData[1], PixelFormat.RGBA);
+    }
+
     public static PixelMap parse(ResourceStream stream) {
         Object cache = stream.getCache();
         if (cache != null) {
@@ -40,12 +58,11 @@ public class PixelMap implements Drawable, ImageTexture {
             throw new FlatException("Invalid image " + stream.getResourceName());
         }
 
-        int[] imageData = new int[3];
-        byte[] readImage = SVG.ReadImage(data, imageData);
-        if (readImage == null) {
+        try {
+            return parse(data);
+        } catch (FlatException e) {
             throw new FlatException("Invalid image format " + stream.getResourceName());
         }
-        return new PixelMap(readImage, imageData[0], imageData[1], PixelFormat.RGBA);
     }
 
     private final Texture2D texture;

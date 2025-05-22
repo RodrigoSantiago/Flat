@@ -58,6 +58,7 @@ public class LinearBox extends Parent {
             performLayoutHorizontal(getInWidth(), getInHeight(), getInX(), getInY()
                     , orderedList, verticalAlign, horizontalAlign, direction);
         }
+        fireLayout();
     }
 
     @Override

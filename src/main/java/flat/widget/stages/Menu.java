@@ -147,6 +147,7 @@ public class Menu extends Stage {
         }
 
         setLayoutPosition(targetX, targetY);
+        fireLayout();
     }
 
     @Override
@@ -291,7 +292,7 @@ public class Menu extends Stage {
                     if (found != null) return found;
                 }
             }
-            return this;
+            return isHandlePointerEnabled() ? this : null;
         }
         return null;
     }

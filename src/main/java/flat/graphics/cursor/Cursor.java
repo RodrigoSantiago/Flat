@@ -10,8 +10,12 @@ public enum Cursor {
     IBEAM(WLEnums.STANDARD_IBEAM_CURSOR),
     CROSSHAIR(WLEnums.STANDARD_CROSSHAIR_CURSOR),
     HAND(WLEnums.STANDARD_HAND_CURSOR),
-    HRESIZE(WLEnums.STANDARD_HRESIZE_CURSOR),
-    VRESIZE(WLEnums.STANDARD_VRESIZE_CURSOR);
+    EW_RESIZE(WLEnums.STANDARD_EW_RESIZE_CURSOR),
+    NS_RESIZE(WLEnums.STANDARD_NS_RESIZE_CURSOR),
+    NWSE_RESIZE(WLEnums.STANDARD_NWSE_RESIZE_CURSOR),
+    NESW_RESIZE(WLEnums.STANDARD_NESW_RESIZE_CURSOR),
+    MOVE(WLEnums.STANDARD_RESIZE_ALL_CURSOR),
+    NOT(WLEnums.STANDARD_NOT_ALLOWED_CURSOR);
 
     private final int shape;
     private long cursor = 0;
@@ -21,7 +25,10 @@ public enum Cursor {
     }
 
     public long getInternalCursor() {
-        if (this.cursor == 0 && this.shape != 0) {
+        if (this.shape == 0) {
+            return 0;
+        }
+        if (this.cursor == 0) {
             this.cursor = WL.CreateStandardCursor(shape);
         }
         return cursor;

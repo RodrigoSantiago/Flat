@@ -286,6 +286,7 @@ public class ToolBar extends Parent {
             item.setLayoutPosition(xpos, getInY());
             xpos += w;
         }
+        fireLayout();
     }
 
     @Override
@@ -310,7 +311,7 @@ public class ToolBar extends Parent {
             if (found != null) return found;
         }
 
-        return isHandleEventsEnabled() ? this : null;
+        return isHandlePointerEnabled() ? this : null;
     }
 
     private boolean hasExtraContextMenuItems() {

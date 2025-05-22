@@ -10,6 +10,7 @@ import flat.graphics.cursor.Cursor;
 import flat.math.Affine;
 import flat.math.Vector2;
 import flat.math.shapes.Path;
+import flat.math.shapes.Rectangle;
 import flat.math.shapes.RoundRectangle;
 import flat.math.stroke.BasicStroke;
 import flat.uxml.*;
@@ -79,12 +80,14 @@ public class Widget {
     //---------------------
     private boolean currentHandleEventsEnabled = true;
     private boolean handleEventsEnabled = true;
+    private boolean handlePointerEnabled = true;
     private UXListener<PointerEvent> pointerListener;
     private UXListener<HoverEvent> hoverListener;
     private UXListener<ScrollEvent> scrollListener;
     private UXListener<KeyEvent> keyListener;
     private UXListener<DragEvent> dragListener;
     private UXListener<FocusEvent> focusListener;
+    private UXListener<LayoutEvent> layoutListener;
 
     //---------------------
     //    Style
@@ -139,6 +142,7 @@ public class Widget {
         setKeyListener(attrs.getAttributeListener("on-key", KeyEvent.class, controller));
         setDragListener(attrs.getAttributeListener("on-drag", DragEvent.class, controller));
         setFocusListener(attrs.getAttributeListener("on-focus", FocusEvent.class, controller));
+        setLayoutListener(attrs.getAttributeListener("on-layout", LayoutEvent.class, controller));
 
         setNextFocusId(attrs.getAttributeString("next-focus-id", getNextFocusId()));
         setPrevFocusId(attrs.getAttributeString("prev-focus-id", getPrevFocusId()));
@@ -162,6 +166,7 @@ public class Widget {
         setFocusColor(attrs.getColor("focus-color", info, getFocusColor()));
         setFocusWidth(attrs.getNumber("focus-width", info, getFocusWidth()));
 
+        setHandlePointerEnabled(attrs.getBool("handle-pointer-enabled", info, isHandlePointerEnabled()));
         setHandleEventsEnabled(attrs.getBool("handle-events-enabled", info, isHandleEventsEnabled()));
 
         setPrefWidth(attrs.getSize("width", info, getPrefWidth()));
@@ -353,6 +358,19 @@ public class Widget {
      */
     public void onLayout(float width, float height) {
         setLayout(width, height);
+        fireLayout();
+    }
+
+    protected void fireLayout() {
+        if (layoutListener != null && getActivity() != null) {
+            getActivity().runLater(() -> {
+                UXListener.safeHandle(layoutListener, new LayoutEvent(this,
+                        new Rectangle(0, 0, getLayoutWidth(), getLayoutHeight()),
+                        getBackgroundShape(),
+                        new Rectangle(getInX(), getInY(), getInWidth(), getInHeight()),
+                        getTransform()));
+                    });
+        }
     }
 
     /**
@@ -675,7 +693,7 @@ public class Widget {
             Widget found = child.findByPosition(x, y, includeDisabled);
             if (found != null) return found;
         }
-        return this;
+        return isHandlePointerEnabled() ? this : null;
     }
 
     public boolean isChildOf(Widget widget) {
@@ -707,6 +725,14 @@ public class Widget {
             this.handleEventsEnabled = handleEventsEnabled;
             onHandleEventsChangeLocal();
         }
+    }
+
+    public boolean isHandlePointerEnabled() {
+        return handlePointerEnabled;
+    }
+
+    public void setHandlePointerEnabled(boolean handlePointerEnabled) {
+        this.handlePointerEnabled = handlePointerEnabled;
     }
 
     public Menu getContextMenu() {
@@ -1806,6 +1832,14 @@ public class Widget {
         return focusListener;
     }
 
+    public void setLayoutListener(UXListener<LayoutEvent> layoutListener) {
+        this.layoutListener = layoutListener;
+    }
+
+    public UXListener<LayoutEvent> getLayoutListener() {
+        return layoutListener;
+    }
+
     public void firePointer(PointerEvent event) {
         // -- Pressed -- //
         if (isCurrentHandleEventsEnabled()) {
@@ -1821,7 +1855,7 @@ public class Widget {
                     pointerMenu(event);
                 }
                 if (!event.isFocusConsumed() && isFocusable()) {
-                    event.consumeFocus(true);
+                    event.consumeFocus();
                     requestFocus(true);
                 }
             }
@@ -1830,7 +1864,7 @@ public class Widget {
         }
 
         if (event.getType() != PointerEvent.FILTER) {
-            if (parent != null) {
+            if (parent != null && event.recycle(parent)) {
                 parent.firePointer(event);
             }
         }
@@ -1864,7 +1898,7 @@ public class Widget {
             hover(event);
         }
 
-        if (parent != null) {
+        if (parent != null && event.recycle(parent)) {
             parent.fireHover(event);
         }
     }
@@ -1878,7 +1912,7 @@ public class Widget {
             scroll(event);
         }
 
-        if (parent != null) {
+        if (parent != null && event.recycle(parent)) {
             parent.fireScroll(event);
         }
     }
@@ -1892,7 +1926,7 @@ public class Widget {
             drag(event);
         }
 
-        if (parent != null && event.isRecyclable(parent)) {
+        if (parent != null && event.recycle(parent)) {
             parent.fireDrag(event);
         }
     }
@@ -1906,7 +1940,7 @@ public class Widget {
             key(event);
         }
 
-        if (parent != null) {
+        if (parent != null && event.recycle(parent)) {
             parent.fireKey(event);
         }
     }

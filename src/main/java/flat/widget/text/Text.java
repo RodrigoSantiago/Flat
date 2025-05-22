@@ -27,11 +27,6 @@ public class Text extends Label {
     }
 
     @Override
-    public void onLayout(float width, float height) {
-        super.onLayout(width, height);
-    }
-
-    @Override
     public void setLayout(float layoutWidth, float layoutHeight) {
         super.setLayout(layoutWidth, layoutHeight);
         if (getActivity() != null && textRender.isBreakLines(getInWidth())) {

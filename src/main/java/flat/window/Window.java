@@ -128,9 +128,9 @@ public class Window {
         // Cursor
         var pointer = getPointer();
         if (pointer.getPressed() != null) {
-            setCursor(pointer.getPressed().getCursor());
+            setCursor(pointer.getPressed().getCurrentCursor());
         } else if (pointer.getHover() != null) {
-            setCursor(pointer.getHover().getCursor());
+            setCursor(pointer.getHover().getCurrentCursor());
         } else {
             setCursor(Cursor.UNSET);
         }

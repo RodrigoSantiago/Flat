@@ -88,6 +88,7 @@ public class Context {
     private float svgMiterLimit;
     private float svgDashPhase;
     private float[] svgDash;
+    private AlphaComposite svgAlphaComposite;
 
     private Font svgTextFont;
     private float svgTextScale, svgTextSpacing, svgTextBlur;
@@ -230,6 +231,7 @@ public class Context {
         svgMiterLimit = 10.0f;
         svgDashPhase = 0;
         svgDash = null;
+        svgAlphaComposite = AlphaComposite.SRC_OVER;
 
         svgTextFont = Font.getDefault();
         svgTextScale = 1.0f;
@@ -1183,6 +1185,7 @@ public class Context {
             svgApplyTransformGradients();
 
             SVG.SetAntiAlias(svgId, svgAntialias);
+            SVG.SetBlendMode(svgId, svgAlphaComposite.ordinal());
 
             SVG.SetStroke(svgId, svgStrokeWidth,
                     svgLineCap.getInternalEnum(),
@@ -1270,6 +1273,21 @@ public class Context {
 
     public boolean svgAntialias() {
         return svgAntialias;
+    }
+
+    public void svgAlphaComposite(AlphaComposite alphaComposite) {
+        checkDisposed();
+
+        if (svgAlphaComposite != alphaComposite) {
+            svgAlphaComposite = alphaComposite;
+            if (svgMode) {
+                SVG.SetBlendMode(svgId, alphaComposite.ordinal());
+            }
+        }
+    }
+
+    public AlphaComposite svgAlphaComposite() {
+        return svgAlphaComposite;
     }
 
     public void svgPaint(Paint paint) {
@@ -1448,8 +1466,6 @@ public class Context {
     public void svgClip(Shape shape) {
         checkDisposed();
 
-        if (shape.isEmpty()) return;
-
         PathIterator pi = shape.pathIterator(null);
 
         svgBegin();
@@ -1480,12 +1496,10 @@ public class Context {
     public void svgUnclip(Shape shape) {
         checkDisposed();
 
-        if (shape.isEmpty()) return;
-
         PathIterator pi = shape.pathIterator(null);
 
         svgBegin();
-        SVG.PathBegin(svgId, SVGEnums.SVG_CLIP, pi.windingRule());
+        SVG.PathBegin(svgId, SVGEnums.SVG_UNCLIP, pi.windingRule());
         while (!pi.isDone()) {
             switch (pi.currentSegment(data)) {
                 case PathIterator.SEG_MOVETO:
@@ -1511,8 +1525,6 @@ public class Context {
 
     public void svgDrawShape(Shape shape, boolean fill) {
         checkDisposed();
-
-        if (shape.isEmpty()) return;
 
         PathIterator pi = shape.pathIterator(null);
         svgBegin();

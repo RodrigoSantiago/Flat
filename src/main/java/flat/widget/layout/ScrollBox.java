@@ -4,8 +4,10 @@ import flat.events.ScrollEvent;
 import flat.graphics.Graphics;
 import flat.math.Vector2;
 import flat.uxml.Controller;
+import flat.uxml.UXAttrs;
 import flat.uxml.UXChildren;
 import flat.widget.Widget;
+import flat.widget.enums.Direction;
 import flat.widget.enums.Policy;
 import flat.widget.enums.Visibility;
 import flat.widget.value.HorizontalScrollBar;
@@ -14,6 +16,8 @@ import flat.widget.value.VerticalScrollBar;
 import java.util.List;
 
 public class ScrollBox extends Scrollable {
+
+    private Direction mouseScrollDirection = Direction.VERTICAL;
 
     @Override
     public void applyChildren(UXChildren children) {
@@ -35,6 +39,8 @@ public class ScrollBox extends Scrollable {
     @Override
     public void applyAttributes(Controller controller) {
         super.applyAttributes(controller);
+        UXAttrs attrs = getAttrs();
+        setMouseScrollDirection(attrs.getAttributeConstant("mouse-scroll-direction", getMouseScrollDirection()));
     }
 
     @Override
@@ -143,16 +149,6 @@ public class ScrollBox extends Scrollable {
     }
 
     @Override
-    public void onLayout(float width, float height) {
-        super.onLayout(width, height);
-    }
-
-    @Override
-    public boolean onLayoutSingleChild(Widget child) {
-        return false;
-    }
-
-    @Override
     public void add(Widget... children) {
         super.add(children);
     }
@@ -199,8 +195,24 @@ public class ScrollBox extends Scrollable {
     public void scroll(ScrollEvent event) {
         super.scroll(event);
         if (!event.isConsumed()) {
-            slideVertical(- event.getDeltaY() * getScrollSensibility());
+            if (getMouseScrollDirection() == Direction.VERTICAL || getMouseScrollDirection() == Direction.IVERTICAL) {
+                slideVertical(-event.getDeltaY() * getScrollSensibility());
+            } else {
+                slideHorizontal(-event.getDeltaY() * getScrollSensibility());
+            }
             event.consume();
+        }
+    }
+
+    public Direction getMouseScrollDirection() {
+        return mouseScrollDirection;
+    }
+
+    public void setMouseScrollDirection(Direction mouseScrollDirection) {
+        if (mouseScrollDirection == null) mouseScrollDirection = Direction.VERTICAL;
+
+        if (this.mouseScrollDirection != mouseScrollDirection) {
+            this.mouseScrollDirection = mouseScrollDirection;
         }
     }
 }

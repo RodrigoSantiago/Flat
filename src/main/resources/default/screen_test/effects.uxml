@@ -3,42 +3,66 @@
         <LinearBox direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
                    padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
             <LinearBox direction="HORIZONTAL">
-                <LinearBox direction="VERTICAL">
-                    <Label text="Clear"/><ImageView id="img0" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
+                <LinearBox direction="VERTICAL" margin-left="8dp">
+                    <Label style="subtitle" text="Src"/><ImageView id="img1" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
                 </LinearBox>
                 <LinearBox direction="VERTICAL" margin-left="8dp">
-                    <Label text="Src"/><ImageView id="img1" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
+                    <Label style="subtitle" text="Dst"/><ImageView id="img2" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
                 </LinearBox>
                 <LinearBox direction="VERTICAL" margin-left="8dp">
-                    <Label text="Dst"/><ImageView id="img2" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
+                    <Label style="subtitle" text="Src Over"/><ImageView id="img3" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
                 </LinearBox>
                 <LinearBox direction="VERTICAL" margin-left="8dp">
-                    <Label text="Src Over"/><ImageView id="img3" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
+                    <Label style="subtitle" text="Dst Over"/><ImageView id="img4" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
                 </LinearBox>
                 <LinearBox direction="VERTICAL" margin-left="8dp">
-                    <Label text="Dst Over"/><ImageView id="img4" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
+                    <Label style="subtitle" text="Src In"/><ImageView id="img5" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
                 </LinearBox>
                 <LinearBox direction="VERTICAL" margin-left="8dp">
-                    <Label text="Src In"/><ImageView id="img5" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
+                    <Label style="subtitle" text="Dst In"/><ImageView id="img6" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
+                </LinearBox>
+            </LinearBox>
+            <LinearBox direction="HORIZONTAL" margin-top="8dp">
+                <LinearBox direction="VERTICAL" margin-left="8dp">
+                    <Label style="subtitle" text="Src Out"/><ImageView id="img7" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
                 </LinearBox>
                 <LinearBox direction="VERTICAL" margin-left="8dp">
-                    <Label text="Dst In"/><ImageView id="img6" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
+                    <Label style="subtitle" text="Dst Out"/><ImageView id="img8" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
                 </LinearBox>
                 <LinearBox direction="VERTICAL" margin-left="8dp">
-                    <Label text="Src Out"/><ImageView id="img7" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
+                    <Label style="subtitle" text="Src Atop"/><ImageView id="img9" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
                 </LinearBox>
                 <LinearBox direction="VERTICAL" margin-left="8dp">
-                    <Label text="Dst Out"/><ImageView id="img8" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
+                    <Label style="subtitle" text="Dst Atop"/><ImageView id="img10" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
                 </LinearBox>
                 <LinearBox direction="VERTICAL" margin-left="8dp">
-                    <Label text="Src Atop"/><ImageView id="img9" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
+                    <Label style="subtitle" text="Xor"/><ImageView id="img11" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
                 </LinearBox>
                 <LinearBox direction="VERTICAL" margin-left="8dp">
-                    <Label text="Dst Atop"/><ImageView id="img10" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
+                    <Label style="subtitle" text="Clear"/><ImageView id="img0" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
                 </LinearBox>
-                <LinearBox direction="VERTICAL" margin-left="8dp">
-                    <Label text="Xor"/><ImageView id="img11" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
-                </LinearBox>
+            </LinearBox>
+            <Label text="Canvas" style="subtitle" margin-left="4dp" margin-top="32dp"/>
+            <Canvas margin-left="4dp" width="400" height="400" on-draw="onCanvasDraw" background-color="$card-color"/>
+        </LinearBox>
+
+        <LinearBox direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
+                   padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
+            <Label text="Cursor" style="subtitle" margin-left="4dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <Button width="80dp" text="ARROW" cursor="ARROW"/>
+                <Button width="80dp" margin-left="8dp" text="NONE" cursor="NONE"/>
+                <Button width="80dp" margin-left="8dp" text="HAND" cursor="HAND"/>
+                <Button width="80dp" margin-left="8dp" text="IBEAM" cursor="IBEAM"/>
+                <Button margin-left="8dp" text="CROSSHAIR" cursor="CROSSHAIR"/>
+            </LinearBox>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="8dp">
+                <Button width="80dp" text="EW" cursor="EW_RESIZE"/>
+                <Button width="80dp" margin-left="8dp" text="NS" cursor="NS_RESIZE"/>
+                <Button width="80dp" margin-left="8dp" text="NWSE" cursor="NWSE_RESIZE"/>
+                <Button width="80dp" margin-left="8dp" text="NESW" cursor="NESW_RESIZE"/>
+                <Button width="80dp" margin-left="8dp" text="MOVE" cursor="MOVE"/>
+                <Button width="80dp" margin-left="8dp" text="NOT" cursor="NOT"/>
             </LinearBox>
         </LinearBox>
     </LinearBox>

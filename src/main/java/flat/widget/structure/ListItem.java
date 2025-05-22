@@ -114,6 +114,7 @@ public class ListItem extends Button {
     public void onLayout(float width, float height) {
         super.onLayout(width, height);
         updateStatePosition();
+        fireLayout();
     }
 
     private void updateStatePosition() {

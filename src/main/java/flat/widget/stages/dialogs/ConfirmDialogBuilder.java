@@ -19,6 +19,7 @@ public class ConfirmDialogBuilder {
     UXListener<Dialog> onHideListener;
     UXListener<Dialog> onYesListener;
     UXListener<Dialog> onNoListener;
+    UXListener<Dialog> onCancelListener;
 
     public ConfirmDialogBuilder() {
         var stream = new ResourceStream("/default/dialogs/dialog_confirm.uxml");
@@ -79,6 +80,11 @@ public class ConfirmDialogBuilder {
 
     public ConfirmDialogBuilder onNoListener(UXListener<Dialog> onNoListener) {
         this.onNoListener = onNoListener;
+        return this;
+    }
+
+    public ConfirmDialogBuilder onCancelListener(UXListener<Dialog> onCancelListener) {
+        this.onCancelListener = onCancelListener;
         return this;
     }
 

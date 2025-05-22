@@ -26,6 +26,7 @@ public class Panel extends Parent {
     public void onLayout(float width, float height) {
         setLayout(width, height);
         performLayoutFree(getInWidth(), getInHeight());
+        fireLayout();
     }
 
     @Override

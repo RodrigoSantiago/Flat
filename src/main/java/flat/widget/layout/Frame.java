@@ -93,6 +93,7 @@ public class Frame extends Group {
     public void onLayout(float width, float height) {
         setLayout(width, height);
         performLayoutConstraints(getInWidth(), getInHeight(), getInX(), getInY(), verticalAlign, horizontalAlign);
+        fireLayout();
     }
 
     @Override
