@@ -3,7 +3,7 @@ package flat.widget.stages;
 import flat.animations.Interpolation;
 import flat.animations.NormalizedAnimation;
 import flat.animations.StateInfo;
-import flat.events.DragEvent;
+import flat.events.KeyEvent;
 import flat.events.PointerEvent;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
@@ -28,7 +28,6 @@ public class Dialog extends Stage {
     private int blockColor = Color.transparent;
 
     private float targetX, targetY;
-    private float dragX, dragY;
     private boolean show;
     private Controller controller;
 
@@ -140,33 +139,6 @@ public class Dialog extends Stage {
         super.pointer(event);
         if (event.getType() == PointerEvent.PRESSED) {
             bringToFront();
-            pressed = !event.isConsumed();
-        }
-        if (event.getType() == PointerEvent.RELEASED) {
-            pressed = false;
-        }
-    }
-
-    boolean pressed = false;
-
-    @Override
-    public void drag(DragEvent event) {
-        super.drag(event);
-        if (pressed && !event.isConsumed()) {
-            if (contains(event.getX(), event.getY()) && event.getType() == DragEvent.STARTED) {
-                if (!event.isCanceled()) {
-                    event.accept(this);
-                    dragX = event.getX();
-                    dragY = event.getY();
-                }
-            } else if (event.getType() == DragEvent.OVER) {
-                targetX += (event.getX() - dragX);
-                targetY += (event.getY() - dragY);
-                limitPosition();
-                dragX = event.getX();
-                dragY = event.getY();
-                setLayoutPosition(targetX, targetY);
-            }
         }
     }
 
@@ -327,7 +299,19 @@ public class Dialog extends Stage {
         }
     }
 
+    public float getMoveCenterX() {
+        return getLayoutX() + getOutWidth() / 2f + getOutX();
+    }
+
+    public float getMoveCenterY() {
+        return getLayoutY() + getOutHeight() / 2f + getOutY();
+    }
+
     public void move(float x, float y) {
+        moveTo(getMoveCenterX() + x, getMoveCenterY() + y);
+    }
+
+    public void moveTo(float x, float y) {
         Activity act = getActivity();
         if (act != null) {
             onMeasure();
@@ -335,8 +319,9 @@ public class Dialog extends Stage {
             float mH = Math.min(Math.min(getMeasureHeight(), getLayoutMaxHeight()), act.getHeight());
             onLayout(mW, mH);
 
-            targetX = x - getWidth() / 2f - getMarginLeft();
-            targetY = y - getHeight() / 2f - getMarginTop();
+            targetX = x - getOutWidth() / 2f - getOutX();
+            targetY = y - getOutHeight() / 2f - getOutY();
+            invalidate(true);
         }
     }
 
@@ -354,6 +339,22 @@ public class Dialog extends Stage {
             showupAnimation.setDelta(1);
             showupAnimation.setDuration(showTransitionDuration + showTransitionDelay);
             showupAnimation.play(act);
+        }
+    }
+
+    @Override
+    public void key(KeyEvent event) {
+        super.key(event);
+        if (controller != null && controller.isListening()) {
+            try {
+                if (event.getType() == KeyEvent.FILTER) {
+                    controller.onKeyFilter(event);
+                } else {
+                    controller.onKey(event);
+                }
+            } catch (Exception e) {
+                Application.handleException(e);
+            }
         }
     }
 

@@ -2,21 +2,21 @@ package flat.widget.stages.dialogs;
 
 import flat.Flat;
 import flat.events.ActionEvent;
+import flat.events.PointerEvent;
 import flat.uxml.Controller;
 import flat.uxml.UXListener;
 import flat.widget.stages.Dialog;
 import flat.widget.text.Button;
 import flat.widget.text.Label;
 
-public class AlertDialogController extends Controller {
-    private final Dialog dialog;
+public class AlertDialogController extends DefaultDialogController {
     private final String title;
     private final String message;
     private final UXListener<Dialog> onShowListener;
     private final UXListener<Dialog> onHideListener;
 
     AlertDialogController(Dialog dialog, AlertDialogBuilder builder) {
-        this.dialog = dialog;
+        super(dialog);
         this.title = builder.title;
         this.message = builder.message;
         this.onShowListener = builder.onShowListener;

@@ -148,6 +148,22 @@ public final class CubicCurve implements Shape, Serializable {
         CubicCurves.subdivide(this, left, right);
     }
 
+    public Vector2 getPointAt(float t) {
+        float u = 1 - t;
+
+        float x = u * u * u * x1
+                + 3 * u * u * t * ctrlx1
+                + 3 * u * t * t * ctrlx2
+                + t * t * t * x2;
+
+        float y = u * u * u * y1
+                + 3 * u * u * t * ctrly1
+                + 3 * u * t * t * ctrly2
+                + t * t * t * y2;
+
+        return new Vector2(x, y);
+    }
+
     @Override
     public boolean isEmpty() {
         return true; // curves contain no space

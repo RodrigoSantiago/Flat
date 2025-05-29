@@ -12,9 +12,8 @@ import flat.widget.text.Button;
 import flat.widget.text.Label;
 import flat.widget.value.ProgressBar;
 
-class ProcessDialogController extends Controller {
+class ProcessDialogController extends DefaultDialogController {
 
-    private final Dialog dialog;
     private final String title;
     private final String message;
     private final boolean cancelable;
@@ -25,7 +24,7 @@ class ProcessDialogController extends Controller {
     private ProgressTaskRefresh anim;
 
     ProcessDialogController(Dialog dialog, ProcessDialogBuilder builder) {
-        this.dialog = dialog;
+        super(dialog);
         this.title = builder.title;
         this.message = builder.message;
         this.cancelable = builder.cancelable;

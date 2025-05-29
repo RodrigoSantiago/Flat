@@ -24,6 +24,7 @@ public class Application {
     private static final ArrayList<Runnable> vsyncRun = new ArrayList<>();
     private static final ArrayList<Runnable> vsyncRunTemp = new ArrayList<>();
 
+    private static int fps;
     private static int vsync;
     private static int currentVsync;
     private static int systemQuality = 3;
@@ -35,7 +36,7 @@ public class Application {
     private static float loopTime;
 
     private static long autoFrameLimit = 0;
-    private static final long autoFrameFPS = 1_000_000_000L / 120L;
+    private static long autoFrameFPS = 1_000_000_000L / 120L;
 
     private static boolean finalized;
     private static SystemType systemType;
@@ -291,21 +292,20 @@ public class Application {
             if (window.isBufferInvalided()) {
                 assignWindow(window);
                 if (i != lastWindows) {
-                    if (window.getVsync() != 0) {
-                        window.setVsync(0);
+                    if (currentVsync != 0) {
+                        currentVsync = 0;
                         WL.SetVsync(0);
                     }
                 } else {
-                    if (window.getVsync() != getVsync()) {
-                        window.setVsync(getVsync());
+                    if (currentVsync != getVsync()) {
+                        currentVsync = getVsync();
                         WL.SetVsync(getVsync());
                     }
                 }
                 WL.SwapBuffers(window.getWindowId());
             }
         }
-        for (int i = 0; i < windows.size(); i++) {
-            Window window = windows.get(i);
+        for (Window window : windows) {
             window.unsetBufferInvalided();
         }
         return lastWindows == -1;
@@ -325,7 +325,7 @@ public class Application {
         }
         vsyncRunTemp.clear();
 
-        if (getVsync() == 0 || noSync) {
+        if (getVsync() == 0 || noSync || fps != 0) {
             long now = System.nanoTime();
             if (autoFrameLimit == 0) {
                 autoFrameLimit = now;
@@ -358,6 +358,16 @@ public class Application {
 
     public static int getVsync() {
         return vsync;
+    }
+
+    public static void setMaxFps(int fps) {
+        fps = Math.max(0, Math.min(120, fps));
+        Application.fps = fps;
+        Application.autoFrameFPS = 1_000_000_000L / (fps == 0 ? 120 : fps);
+    }
+
+    public static int getMaxFps() {
+        return fps;
     }
 
     public static void runOnContextSync(Runnable task) {

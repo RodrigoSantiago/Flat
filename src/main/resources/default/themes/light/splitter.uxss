@@ -1,11 +1,11 @@
 horizontal-splitter {
     width : 6dp;
     height : MATCH_PARENT;
-    cursor : NS_RESIZE;
+    cursor : EW_RESIZE;
 }
 
 vertical-splitter {
     width : MATCH_PARENT;
     height : 6dp;
-    cursor : EW_WRESIZE;
+    cursor : NS_WRESIZE;
 }

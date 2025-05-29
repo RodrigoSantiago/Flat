@@ -49,10 +49,9 @@ public class Window {
     private float dpi;
     private Cursor cursor;
     private Cursor currentCursor;
-    private int minWidth, minHeight, maxWidth, maxHeight;
+    private int multiSample, minWidth, minHeight, maxWidth, maxHeight;
 
     private float loopTime;
-    private int vsync;
     private boolean assigned;
     private boolean started;
     private boolean releaseEventDelayed, eventConsume;
@@ -82,6 +81,7 @@ public class Window {
         outMouseX = (float) WL.GetCursorX(windowId);
         outMouseY = (float) WL.GetCursorY(windowId);
 
+        this.multiSample = settings.getMultiSamples();
         this.context = Context.create(this, svgId);
         this.activity = Activity.create(this, settings);
     }
@@ -258,14 +258,6 @@ public class Window {
 
     long getSvgId() {
         return svgId;
-    }
-
-    int getVsync() {
-        return vsync;
-    }
-
-    void setVsync(int vsync) {
-        this.vsync = vsync;
     }
 
     public boolean isStarted() {
@@ -484,6 +476,10 @@ public class Window {
         checkDisposed();
 
         return WL.GetHeight(windowId);
+    }
+
+    public int getMultiSample() {
+        return multiSample;
     }
 
     public void setSize(int width, int height) {

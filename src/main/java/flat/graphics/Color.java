@@ -1,5 +1,6 @@
 package flat.graphics;
 
+import flat.math.Mathf;
 import flat.math.Vector4;
 
 public final class Color {
@@ -39,6 +40,33 @@ public final class Color {
 
     public static float getOpacity(int rgba) {
         return (rgba & 0xFF) / 255f;
+    }
+
+    private static float invGamma(float c) {
+        if (c <= 0.04045f) {
+            return c / 12.92f;
+        } else {
+            return Mathf.pow(((c + 0.055f) / (1.055f)), 2.4f);
+        }
+    }
+
+    private static float gamma(float v) {
+        if (v <= 0.0031308f) {
+            v *= 12.92f;
+        } else {
+            v = 1.055f * Mathf.pow(v, 1.0f / 2.4f) - 0.055f;
+        }
+        return v;
+    }
+
+    public static float getLuminescence(int rgba) {
+        float r = ((rgba >> 16) & 0xFF) / 255.0f;
+        float g = ((rgba >> 8) & 0xFF) / 255.0f;
+        float b = (rgba & 0xFF) / 255.0f;
+        float a = ((rgba >> 24) & 0xFF) / 255.0f;
+
+        float brightness = Mathf.sqrt(0.299f * r * r + 0.587f * g * g + 0.114f * b * b);
+        return Math.max(0, Math.min(1, gamma(brightness) * a));
     }
 
     public static int rgbToColor(int red, int green, int blue) {
@@ -91,6 +119,15 @@ public final class Color {
         float alpha = (rgba & 0xFF) / 255f;
 
         return new Vector4(red, green, blue, alpha);
+    }
+
+    public static int toLittleEndian(int rgba) {
+        int red = ((rgba >> 24) & 0xFF);
+        int green = ((rgba >> 16) & 0xFF);
+        int blue = ((rgba >> 8) & 0xFF);
+        int alpha = (rgba & 0xFF);
+
+        return rgbaToColor(alpha, blue, green, red);
     }
 
     public static float getHue(int rgba) {

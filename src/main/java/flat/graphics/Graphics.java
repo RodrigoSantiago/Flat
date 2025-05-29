@@ -20,6 +20,7 @@ import java.nio.Buffer;
 public class Graphics {
 
     private final Context context;
+    private Surface baseSurface;
     private Surface surface;
 
     private final Affine transform2D = new Affine();
@@ -188,6 +189,7 @@ public class Graphics {
     public void resetStateConfig() {
         stroke = new BasicStroke(1);
         textSize = 24;
+        setTransform2D(null);
         context.svgTextScale(textSize);
         context.svgStroke(stroke);
         context.svgTextFont(Font.getDefault());
@@ -199,35 +201,32 @@ public class Graphics {
     }
 
     public PixelMap createPixelMap() {
-        return createPixelMap(PixelFormat.RGBA);
+        return createPixelMap(0, 0, getWidth(), getHeight(), PixelFormat.RGBA);
     }
 
-    public PixelMap createPixelMap(PixelFormat format) {
-        context.softFlush();
-        if (surface != null) {
-            return new PixelMap(surface.bakeToTexture(this, format, null));
-        } else {
-            FrameBuffer fbo = new FrameBuffer(context);
-            Texture2D target = new Texture2D(getWidth(), getHeight(), format);
-            fbo.attach(LayerTarget.COLOR_0, target, 0);
-            context.blitFrames(null, fbo,
-                    0, 0, getWidth(), getHeight(),
-                    0, getHeight(), getWidth(), -getHeight(), BlitMask.Color, MagFilter.NEAREST);
-            return new PixelMap(target);
+    public PixelMap createPixelMap(int x, int y, int width, int height, PixelFormat format) {
+        Texture2D texture = new Texture2D(width, height, format);
+        renderToTexture(x, y, width, height, texture);
+        return new PixelMap(texture);
+    }
+
+    public void renderToTexture(Texture2D texture) {
+        renderToTexture(0, 0, getWidth(), getHeight(), texture);
+    }
+
+    public void renderToTexture(int x, int y, int width, int height, Texture2D texture) {
+        if (x < 0 || y < 0 || width <= 0 || height <= 0 || x + width > getWidth() || x + height > getHeight()) {
+            throw new FlatException("The rendered area must be inside the view (0, 0, " + getWidth() + ", " + getHeight() + ")");
         }
-    }
-
-    public PixelMap bakeToTexture(Texture2D texture) {
         context.softFlush();
         if (surface != null) {
-            return new PixelMap(surface.bakeToTexture(this, null, texture));
+            surface.renderToTexture(this, x, y, width, height, null, texture);
         } else {
             FrameBuffer fbo = new FrameBuffer(context);
             fbo.attach(LayerTarget.COLOR_0, texture, 0);
             context.blitFrames(null, fbo,
-                    0, 0, getWidth(), getHeight(),
-                    0, getHeight(), getWidth(), -getHeight(), BlitMask.Color, MagFilter.NEAREST);
-            return new PixelMap(texture);
+                    x, getHeight() - (y + height), width, height,
+                    0, height, width, -height, BlitMask.Color, MagFilter.NEAREST);
         }
     }
 
@@ -273,6 +272,26 @@ public class Graphics {
             if (this.surface != null) {
                 this.surface.begin(this);
                 context.setFrameBuffer(this.surface.getFrameBuffer());
+            } else if (this.baseSurface != null) {
+                this.baseSurface.begin(this);
+                context.setFrameBuffer(this.baseSurface.getFrameBuffer());
+            } else {
+                context.setFrameBuffer(null);
+            }
+            resetStateConfig();
+        }
+    }
+
+    public Surface getBaseSurface() {
+        return baseSurface;
+    }
+
+    public void setBaseSurface(Surface baseSurface) {
+        if (this.baseSurface != baseSurface) {
+            this.baseSurface = baseSurface;
+            if (this.baseSurface != null) {
+                this.baseSurface.begin(this);
+                context.setFrameBuffer(this.baseSurface.getFrameBuffer());
             } else {
                 context.setFrameBuffer(null);
             }
@@ -794,20 +813,20 @@ public class Graphics {
         context.svgPaint(paint);
     }
 
-    void bakeSurface(TextureMultisample2D texture) {
+    void bakeSurface(int x, int y, TextureMultisample2D texture) {
         bakeMsProgram.set("samples", texture.getSamples());
         bakeMsProgram.set("mainTexture", 0);
         var comp = getAlphaComposite();
         setAlphaComposite(AlphaComposite.SRC);
-        blitCustomShader(bakeMsProgram, 0, 0, getWidth(), getHeight(), texture);
+        blitCustomShader(bakeMsProgram, -x, y, texture.getWidth(), texture.getHeight(), texture);
         setAlphaComposite(comp);
     }
 
-    void bakeSurface(Texture texture) {
+    void bakeSurface(int x, int y, Texture2D texture) {
         bakeProgram.set("mainTexture", 0);
         var comp = getAlphaComposite();
         setAlphaComposite(AlphaComposite.SRC);
-        blitCustomShader(bakeProgram, 0, 0, getWidth(), getHeight(), texture);
+        blitCustomShader(bakeProgram, -x, y, texture.getWidth(), texture.getHeight(), texture);
         setAlphaComposite(comp);
     }
 
@@ -871,6 +890,16 @@ public class Graphics {
         this.alphaComposite = mode;
         context.svgAlphaComposite(mode);
 
+        if (mode == AlphaComposite.SUB) {
+            context.setBlendEquation(BlendEquation.REVERSE_SUB, BlendEquation.ADD);
+        } else if (mode == AlphaComposite.DARKEN) {
+            context.setBlendEquation(BlendEquation.MIN, BlendEquation.ADD);
+        } else if (mode == AlphaComposite.LIGHTEN) {
+            context.setBlendEquation(BlendEquation.MAX, BlendEquation.ADD);
+        } else {
+            context.setBlendEquation(BlendEquation.ADD, BlendEquation.ADD);
+        }
+
         switch (mode) {
             case SRC_OVER:
                 context.setBlendFunction(
@@ -931,6 +960,31 @@ public class Graphics {
                 context.setBlendFunction(
                         BlendFunction.ZERO, BlendFunction.ONE,
                         BlendFunction.ZERO, BlendFunction.ONE);
+                break;
+            case ADD:
+                context.setBlendFunction(
+                        BlendFunction.ONE, BlendFunction.ONE,
+                        BlendFunction.ONE, BlendFunction.ONE_MINUS_SRC_ALPHA);
+                break;
+            case SUB:
+                context.setBlendFunction(
+                        BlendFunction.ONE, BlendFunction.ONE,
+                        BlendFunction.ONE, BlendFunction.ONE_MINUS_SRC_ALPHA);
+                break;
+            case MUL:
+                context.setBlendFunction(
+                        BlendFunction.DST_COLOR, BlendFunction.ZERO,
+                        BlendFunction.ONE, BlendFunction.ONE_MINUS_SRC_ALPHA);
+                break;
+            case LIGHTEN:
+                context.setBlendFunction(
+                        BlendFunction.ONE, BlendFunction.ONE,
+                        BlendFunction.ONE, BlendFunction.ONE_MINUS_SRC_ALPHA);
+                break;
+            case DARKEN:
+                context.setBlendFunction(
+                        BlendFunction.ONE, BlendFunction.ONE,
+                        BlendFunction.ONE, BlendFunction.ONE_MINUS_SRC_ALPHA);
                 break;
         }
     }

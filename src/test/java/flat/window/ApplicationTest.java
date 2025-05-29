@@ -284,9 +284,6 @@ public class ApplicationTest {
         File fileLibrary = mock(File.class);
 
         Window window = mock(Window.class);
-        int[] fakeWindowState = new int[]{0};
-        doAnswer(a -> fakeWindowState[0]).when(window).getVsync();
-        doAnswer(a -> fakeWindowState[0] = a.getArgument(0)).when(window).setVsync(1);
 
         when(window.isClosed()).thenReturn(false).thenReturn(false).thenReturn(true);
         when(window.isBufferInvalided()).thenReturn(true);

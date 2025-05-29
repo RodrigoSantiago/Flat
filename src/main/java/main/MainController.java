@@ -10,6 +10,7 @@ import flat.events.*;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
 import flat.graphics.Surface;
+import flat.graphics.context.enums.PixelFormat;
 import flat.graphics.symbols.Font;
 import flat.graphics.context.ShaderProgram;
 import flat.graphics.context.enums.AlphaComposite;
@@ -23,6 +24,7 @@ import flat.graphics.symbols.IconsManager;
 import flat.math.Vector4;
 import flat.math.shapes.Circle;
 import flat.math.shapes.Path;
+import flat.math.stroke.BasicStroke;
 import flat.resources.ResourceStream;
 import flat.uxml.Controller;
 import flat.widget.Parent;
@@ -429,6 +431,19 @@ public class MainController extends Controller {
     }
 
     @Flat
+    public void onColorPickerDialog() {
+        var alert = new ColorPickerDialogBuilder()
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onColorPickListener((dg, value) -> System.out.println(Color.toFloat(value)))
+                .alpha(true)
+                .palette(Color.red, Color.yellow, Color.green, Color.aqua, Color.blue, Color.purple, Color.gray, Color.black)
+                .block(false)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
     public void onBlockRangedDatePickerDialog() {
         var alert = new DatePickerDialogBuilder()
                 .title("Select a date range")
@@ -582,12 +597,15 @@ public class MainController extends Controller {
     float av = 0;
 
     PixelMap[] maps;
-    @Flat public ImageView img0, img1, img2, img3, img4, img5, img6, img7, img8, img9, img10, img11;
+    @Flat public ImageView img0, img1, img2, img3, img4, img5, img6, img7, img8, img9, img10,
+            img11, img12, img13, img14, img15, img16;
     private ImageView[] images;
 
+    private PixelMap cutTest;
     @Override
     public void onShow() {
-        images = new ImageView[]{img0, img1, img2, img3, img4, img5, img6, img7, img8, img9, img10, img11};
+        images = new ImageView[]{img0, img1, img2, img3, img4, img5, img6, img7, img8, img9, img10,
+                img11, img12, img13, img14, img15, img16};
         getWindow().setIcon(PixelMap.parse(new ResourceStream("/default/icons/window-icon.png")));
         setupListView(listView1);
         setupListView(listView2);
@@ -596,7 +614,7 @@ public class MainController extends Controller {
         setupTreeView(treeView2);
         setupTreeView(treeView3);
 
-        // getActivity().setContinuousRendering(true);
+        getActivity().setContinuousRendering(true);
         var graphics = getGraphics();
 
         shader = graphics.createImageRenderShader(
@@ -615,22 +633,39 @@ public class MainController extends Controller {
 
         maps = new PixelMap[AlphaComposite.values().length];
         for (int i = 0; i < maps.length; i++) {
+            if (i >= maps.length - 5) {
+                graphics.clear(0xFFFFFFFF, 0, 0);
+            }
             graphics.setAlphaComposite(AlphaComposite.SRC_OVER);
-            shader.set("col", Color.toFloat(Color.blue));
+            shader.set("col", Color.toFloat(0x0040FFFF));
             shader.set("bac", new Vector4(-1, -1, -1, -1));
             graphics.blitCustomShader(shader, 0, 0, 56, 40);
             graphics.setAlphaComposite(AlphaComposite.values()[i]);
-            shader.set("col", Color.toFloat(Color.red));
+            shader.set("col", Color.toFloat(0xFF4000FF));
             shader.set("bac", new Vector4(1, 1, 1, 1));
             graphics.blitCustomShader(shader, 8, 24, 56, 40);
             graphics.setAlphaComposite(AlphaComposite.SRC_OVER);
             maps[i] = graphics.createPixelMap();
             images[i].setImage(maps[i]);
             graphics.clear(0, 0, 0);
-            System.out.println("Clear ");
         }
 
-        graphics.setSurface(null);
+        //graphics.clear(0, 0, 0);
+        //graphics.setTransform2D(null);
+        //graphics.setColor(Color.blue);
+        //graphics.drawRect(0, 0, 64, 64, true);
+        //graphics.setColor(Color.red);
+        //graphics.drawRect(0, 0, 32, 32, true);
+        //graphics.setColor(Color.black);
+        //graphics.setStroke(new BasicStroke(1));
+        //graphics.drawCircle(32, 32, 32, false);
+        //graphics.drawCircle(32, 32, 16, false);
+        //graphics.drawCircle(32, 32, 8, false);
+        //graphics.drawLine(0, 16, 32, 16);
+        //cutTest = graphics.createPixelMap(32, 16, 32, 32, PixelFormat.RGBA);
+        //graphics.setSurface(null);
+
+        cutTest = new PixelMap(new byte[] {(byte)0x00, (byte)0x00, (byte)0x00, (byte)0xFF}, 1, 1, PixelFormat.RGBA);
 
         if (tabChips != null) {
             search(tabChips.getFrame());
@@ -705,6 +740,9 @@ public class MainController extends Controller {
     @Override
     public void onDraw(Graphics graphics) {
         super.onDraw(graphics);
+        graphics.setTransform2D(null);
+        // graphics.drawImage(cutTest, 200, 200, 50, 50);
+
         n++;
         long now = System.currentTimeMillis();
         if (now - time > 250) {

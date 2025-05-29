@@ -14,6 +14,9 @@ import java.lang.ref.WeakReference;
 public class PixelMap implements Drawable, ImageTexture {
 
     public static PixelMap parse(byte[] data) {
+        if (data == null) {
+            throw new FlatException("Invalid image data");
+        }
         int[] imageData = new int[3];
         byte[] readImage = SVG.ReadImage(data, imageData);
         if (readImage == null) {
@@ -23,6 +26,9 @@ public class PixelMap implements Drawable, ImageTexture {
     }
 
     public static ImageData parseImageData(byte[] data) {
+        if (data == null) {
+            throw new FlatException("Invalid image data");
+        }
         int[] imageData = new int[3];
         byte[] readImage = SVG.ReadImage(data, imageData);
         if (readImage == null) {
@@ -127,6 +133,10 @@ public class PixelMap implements Drawable, ImageTexture {
 
     public PixelFormat getFormat() {
         return format;
+    }
+
+    public void invalidateTextureData() {
+        localData = null;
     }
 
     @Override

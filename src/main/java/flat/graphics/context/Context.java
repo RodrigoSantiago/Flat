@@ -806,11 +806,17 @@ public class Context {
         checkDisposed();
 
         if (blendSrcColorFun != srcColor || blendDstColorFun != dstColor || blendSrcAlphaFun != srcAlpha || blendDstAlphaFun != dstAlpha) {
-            svgEnd();
-            GL.SetBlendFunction((blendSrcColorFun = srcColor).getInternalEnum(),
-                    (blendDstColorFun = dstColor).getInternalEnum(),
-                    (blendSrcAlphaFun = srcAlpha).getInternalEnum(),
-                    (blendDstAlphaFun = dstAlpha).getInternalEnum());
+            blendSrcColorFun = srcColor;
+            blendDstColorFun = dstColor;
+            blendSrcAlphaFun = srcAlpha;
+            blendDstAlphaFun = dstAlpha;
+            if (!svgMode) {
+                GL.SetBlendFunction(
+                        blendSrcColorFun.getInternalEnum(),
+                        blendDstColorFun.getInternalEnum(),
+                        blendSrcAlphaFun.getInternalEnum(),
+                        blendDstAlphaFun.getInternalEnum());
+            }
         }
     }
 
@@ -834,9 +840,11 @@ public class Context {
         checkDisposed();
 
         if (blendColorEquation != colorEquation || blendAlphaEquation != alphaEquation) {
-            svgEnd();
-            GL.SetBlendEquation((blendColorEquation = colorEquation).getInternalEnum(),
-                    (blendAlphaEquation = alphaEquation).getInternalEnum());
+            blendColorEquation = colorEquation;
+            blendAlphaEquation = alphaEquation;
+            if (!svgMode) {
+                GL.SetBlendEquation(blendColorEquation.getInternalEnum(), blendAlphaEquation.getInternalEnum());
+            }
         }
     }
 
@@ -1235,6 +1243,7 @@ public class Context {
                 stencilBackSFail.getInternalEnum(), stencilBackDFail.getInternalEnum(), stencilBackDPass.getInternalEnum());
 
         GL.EnableBlend(blendEnabled);
+        GL.SetBlendEquation(blendColorEquation.getInternalEnum(), blendAlphaEquation.getInternalEnum());
         GL.SetBlendFunction(
                 blendSrcColorFun.getInternalEnum(), blendDstColorFun.getInternalEnum(),
                 blendSrcAlphaFun.getInternalEnum(), blendDstAlphaFun.getInternalEnum());

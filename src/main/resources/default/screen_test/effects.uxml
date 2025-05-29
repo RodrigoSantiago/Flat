@@ -42,6 +42,23 @@
                     <Label style="subtitle" text="Clear"/><ImageView id="img0" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
                 </LinearBox>
             </LinearBox>
+            <LinearBox direction="HORIZONTAL" margin-top="8dp">
+                <LinearBox direction="VERTICAL" margin-left="8dp">
+                    <Label style="subtitle" text="Add"/><ImageView id="img12" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
+                </LinearBox>
+                <LinearBox direction="VERTICAL" margin-left="8dp">
+                    <Label style="subtitle" text="Sub"/><ImageView id="img13" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
+                </LinearBox>
+                <LinearBox direction="VERTICAL" margin-left="8dp">
+                    <Label style="subtitle" text="Mul"/><ImageView id="img14" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
+                </LinearBox>
+                <LinearBox direction="VERTICAL" margin-left="8dp">
+                    <Label style="subtitle" text="Lighten"/><ImageView id="img15" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
+                </LinearBox>
+                <LinearBox direction="VERTICAL" margin-left="8dp">
+                    <Label style="subtitle" text="Darken"/><ImageView id="img16" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
+                </LinearBox>
+            </LinearBox>
             <Label text="Canvas" style="subtitle" margin-left="4dp" margin-top="32dp"/>
             <Canvas margin-left="4dp" width="400" height="400" on-draw="onCanvasDraw" background-color="$card-color"/>
         </LinearBox>

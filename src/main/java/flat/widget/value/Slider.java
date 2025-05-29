@@ -110,6 +110,8 @@ public class Slider extends Widget {
 
         if (width <= 0 || height <= 0) return;
 
+        float lineWidth = Math.min(getLineWidth(), Math.min(width, height));
+
         float iw = Math.min(width, getLayoutIconWidth());
         float ih = Math.min(height, getLayoutIconHeight());
 
@@ -124,6 +126,16 @@ public class Slider extends Widget {
         } else {
             lineStart = y + height - ih * 0.5f;
             lineEnd = y + ih * 0.5f;
+        }
+
+        float iLineStart;
+        float iLineEnd;
+        if (hor) {
+            iLineStart = x + lineWidth;
+            iLineEnd = x + width - lineWidth;
+        } else {
+            iLineStart = y + height - lineWidth;
+            iLineEnd = y + lineWidth;
         }
 
         float diff = maxValue - minValue;
@@ -143,29 +155,27 @@ public class Slider extends Widget {
             ypos = (lineStart * (1 - pos) + lineEnd * pos);
         }
 
-        float lineWidth = Math.min(getLineWidth(), Math.min(width, height));
-
         graphics.setStroke(new BasicStroke(lineWidth, getLineCap().ordinal(), 0));
         if (hor) {
             graphics.setColor(getLineColor());
-            graphics.drawLine(lineStart, ypos, lineEnd, ypos);
+            graphics.drawLine(iLineStart, ypos, iLineEnd, ypos);
             if (getValue() > getMinValue()) {
                 graphics.setColor(getLineFilledColor());
                 if (rev) {
-                    graphics.drawLine(xpos, ypos, lineEnd, ypos);
+                    graphics.drawLine(xpos, ypos, iLineEnd, ypos);
                 } else {
-                    graphics.drawLine(lineStart, ypos, xpos, ypos);
+                    graphics.drawLine(iLineStart, ypos, xpos, ypos);
                 }
             }
         } else {
             graphics.setColor(getLineColor());
-            graphics.drawLine(xpos, lineStart, xpos, lineEnd);
+            graphics.drawLine(xpos, iLineStart, xpos, iLineEnd);
             if (getValue() > getMinValue()) {
                 graphics.setColor(getLineFilledColor());
                 if (rev) {
-                    graphics.drawLine(xpos, ypos, xpos, lineEnd);
+                    graphics.drawLine(xpos, ypos, xpos, iLineEnd);
                 } else {
-                    graphics.drawLine(xpos, lineStart, xpos, ypos);
+                    graphics.drawLine(xpos, iLineStart, xpos, ypos);
                 }
             }
         }

@@ -139,6 +139,10 @@ public class Controller {
 
     }
 
+    public void onKey(KeyEvent keyEvent) {
+
+    }
+
     public void onKeyFilter(KeyEvent keyEvent) {
 
     }

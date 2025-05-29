@@ -35,6 +35,9 @@ dialog-choice {
 dialog-multiple-choices {
     width : 420dp;
 }
+dialog-colorpicker {
+    width : 240dp;
+}
 dialog-snackbar {
     min-width : 420dp;
     max-width : 600dp;
@@ -55,6 +58,7 @@ dialog-header {
     background-color : $primary-color;
     radius-top : 4dp;
     radius-right : 4dp;
+    cursor : MOVE;
 }
 dialog-title {
     text-font : font("Roboto", BOLD);
@@ -174,12 +178,17 @@ dialog-datepicker-date-label {
     text-size : 28sp;
     text-color : $on-primary-color;
 }
+dialog-datepicker-title-base {
+    width : MATCH_PARENT;
+    height : 120dp;
+    vertical-align : top;
+    horizontal-align : left;
+}
 dialog-datepicker-title-area {
     width : MATCH_PARENT;
     height : 120dp;
     vertical-align : top;
     horizontal-align : left;
-    padding-top : 24dp;
     padding-left : 24dp;
     padding-right : 24dp;
     padding-bottom : 24dp;
@@ -396,4 +405,199 @@ dialog-emojis-search-bar {
     radius-bottom : 4dp;
     text-divider-size : 0;
     title-appearance : LINE;
+}
+
+// Palette
+dialog-colorpicker-card : editor-card {
+//--------
+}
+
+dialog-colorpicker-field {
+    width : 40dp;
+    text-size : 16dp;
+    padding-top : 4dp;
+    padding-left : 0dp;
+    padding-right : 0dp;
+    horizontal-align : center;
+    padding-bottom : 4dp;
+    radius-top : 100dp;
+    radius-left : 100dp;
+    radius-right : 100dp;
+    radius-bottom : 100dp;
+}
+dialog-colorpicker-area {
+    padding-left : 8dp;
+    padding-right : 8dp;
+}
+dialog-colorpicker-canvas {
+    width : 214dp;
+    height : 214dp;
+    margin-top : 4dp;
+    margin-left : 4dp;
+    margin-right : 4dp;
+    margin-bottom : 4dp;
+    radius-top : 200dp;
+    radius-left : 200dp;
+    radius-right : 200dp;
+    radius-bottom : 200dp;
+    background-color : alpha($on-card-color, 0.05);
+}
+
+dialog-colorpicker-canvas-area {
+    width : 222dp;
+    height : 222dp;
+    horizontal-align : center;
+}
+
+dialog-colorpicker-slider-container {
+    vertical-align : middle;
+}
+dialog-colorpicker-rgb {
+    padding-left : 8dp;
+}
+dialog-colorpicker-slider-r {
+    width : MATCH_PARENT;
+    icon-color : #FF0020;
+    line-color : $disabled-color;
+    line-filled-color : #FF0020;
+    ripple-color : alpha(#FF0020, 0.5);
+    icon-bg-color : transparent;
+
+    hovered {
+        icon-bg-color : alpha(#FF0020, 0.15);
+    }
+    focused {
+        icon-bg-color : alpha(#FF0020, 0.2);
+    }
+}
+
+dialog-colorpicker-slider-g {
+    width : MATCH_PARENT;
+    icon-color : #008020;
+    line-color : $disabled-color;
+    line-filled-color : #008020;
+    ripple-color : alpha(#008020, 0.5);
+    icon-bg-color : transparent;
+
+    hovered {
+        icon-bg-color : alpha(#008020, 0.15);
+    }
+    focused {
+        icon-bg-color : alpha(#008020, 0.2);
+    }
+}
+
+dialog-colorpicker-slider-b {
+    width : MATCH_PARENT;
+    icon-color : #0080FF;
+    line-color : $disabled-color;
+    line-filled-color : #0080FF;
+    ripple-color : alpha(#0080FF, 0.5);
+    icon-bg-color : transparent;
+
+    hovered {
+        icon-bg-color : alpha(#0080FF, 0.15);
+    }
+    focused {
+        icon-bg-color : alpha(#0080FF, 0.2);
+    }
+}
+
+dialog-colorpicker-slider-a {
+    width : MATCH_PARENT;
+    icon-color : $on-card-color;
+    line-color : transparent;
+    line-filled-color : transparent;
+    ripple-color : alpha($on-card-color, 0.5);
+    icon-bg-color : transparent;
+    icon : icon(outline, circle);
+
+    hovered {
+        icon-bg-color : alpha($on-card-color, 0.15);
+    }
+    focused {
+        icon-bg-color : alpha($on-card-color, 0.2);
+    }
+}
+
+dialog-colorpicker-alpha {
+    padding-left : 8dp;
+    height : 36dp;
+}
+
+dialog-colorpicker-alpha-image {
+    width : 152dp;
+    height : 14dp;
+    radius-top : 100dp;
+    radius-left : 100dp;
+    radius-right : 100dp;
+    radius-bottom : 100dp;
+    margin-top : 11dp;
+    margin-left : 51dp;
+    margin-right : 10dp;
+    margin-bottom : 10dp;
+    image : "/default/images/alpha-grid-small.png";
+    image-scale : REPEAT;
+    border-width : 2dp;
+    border-color : $on-card-color;
+}
+
+dialog-colorpicker-alpha-image-color : dialog-colorpicker-alpha-image {
+    image : "/default/images/alpha-gradient.png";
+    image-scale : STRETCH;
+    border-width : 0;
+    border-color : transparent;
+}
+dialog-colorpicker-btns {
+    horizontal-align : center;
+    vertical-align : middle;
+}
+dialog-colorpicker-btn-color {
+    width : 20dp;
+    height : 20dp;
+    min-width : 20dp;
+    min-height : 20dp;
+    radius-top : 100dp;
+    radius-left : 100dp;
+    radius-right : 100dp;
+    radius-bottom : 100dp;
+    padding-top : 0dp;
+    padding-left : 0dp;
+    padding-right : 0dp;
+    padding-bottom : 0dp;
+    margin-top : 4dp;
+    margin-left : 2dp;
+    margin-right : 2dp;
+    margin-bottom : 4dp;
+    border-width : 0.5dp;
+    border-color : alpha($on-card-color, 0.5);
+    elevation : 2dp;
+    icon : icon(fill, circle);
+    background-color : white;
+    hovered {
+        border-width : 1dp;
+        border-color : black;
+        elevation : 4dp;
+    }
+}
+dialog-colorpicker-hex {
+    margin-top : 8dp;
+    padding-left : 8dp;
+}
+dialog-colorpicker-hex-field {
+    width : MATCH_PARENT;
+    margin-top : 0dp;
+    margin-bottom : 0dp;
+    margin-left : 8dp;
+    margin-right : 8dp;
+    radius-top : 100dp;
+    radius-left : 100dp;
+    radius-right : 100dp;
+    radius-bottom : 100dp;
+    padding-left : 16dp;
+    padding-right : 16dp;
+    text-divider-size : 0;
+    title-appearance : LINE;
+}
+dialog-colorpicker-hex-title : dialog-colorpicker-field {
 }

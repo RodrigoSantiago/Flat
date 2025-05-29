@@ -160,7 +160,7 @@ public class Widget {
         StateInfo info = getStateInfo();
 
         setVisibility(attrs.getConstant("visibility", info, getVisibility()));
-        setCursor(attrs.getConstant("cursor", info, getCursor()));
+        setCursor(attrs.getCursor("cursor", info, getCursor()));
 
         setFocusable(attrs.getBool("focusable", info, isFocusable()));
         setFocusColor(attrs.getColor("focus-color", info, getFocusColor()));
@@ -442,7 +442,7 @@ public class Widget {
                 } else {
                     activity.invalidateWidget(this);
                 }
-            } else {
+            } else if (getVisibility() == Visibility.VISIBLE) {
                 activity.invalidate();
             }
         }

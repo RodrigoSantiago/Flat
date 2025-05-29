@@ -1,6 +1,7 @@
 package flat.widget.layout;
 
 import flat.animations.StateInfo;
+import flat.events.KeyEvent;
 import flat.graphics.Graphics;
 import flat.resources.ResourceStream;
 import flat.uxml.*;
@@ -20,32 +21,33 @@ public class Frame extends Group {
 
     private Controller controller;
 
-    public void build(String uxmlStream) {
-        build(new ResourceStream(uxmlStream), null);
+    public Frame build(String uxmlStream) {
+        return build(new ResourceStream(uxmlStream), null);
     }
 
-    public void build(String uxmlStream, Controller controller) {
-        build(new ResourceStream(uxmlStream), controller);
+    public Frame build(String uxmlStream, Controller controller) {
+        return build(new ResourceStream(uxmlStream), controller);
     }
 
-    public void build(ResourceStream uxmlStream) {
-        build(uxmlStream, null);
+    public Frame build(ResourceStream uxmlStream) {
+        return build(uxmlStream, null);
     }
 
-    public void build(ResourceStream uxmlStream, Controller controller) {
-        build(UXNode.parse(uxmlStream).instance(controller).build(getCurrentTheme()), controller);
+    public Frame build(ResourceStream uxmlStream, Controller controller) {
+        return build(UXNode.parse(uxmlStream).instance(controller).build(getCurrentTheme()), controller);
     }
 
-    public void build(Widget root) {
-        build(root, null);
+    public Frame build(Widget root) {
+        return build(root, null);
     }
 
-    public void build(Widget root, Controller controller) {
+    public Frame build(Widget root, Controller controller) {
         removeAll();
         if (root != null) {
             add(root);
         }
         setController(controller);
+        return this;
     }
 
     public void setController(Controller controller) {
@@ -163,6 +165,22 @@ public class Frame extends Group {
         if (this.horizontalAlign != horizontalAlign) {
             this.horizontalAlign = horizontalAlign;
             invalidate(true);
+        }
+    }
+
+    @Override
+    public void key(KeyEvent event) {
+        super.key(event);
+        if (controller != null && controller.isListening()) {
+            try {
+                if (event.getType() == KeyEvent.FILTER) {
+                    controller.onKeyFilter(event);
+                } else {
+                    controller.onKey(event);
+                }
+            } catch (Exception e) {
+                Application.handleException(e);
+            }
         }
     }
 }

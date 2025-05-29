@@ -25,6 +25,7 @@ public class TextArea extends Scrollable {
     private UXValueListener<String> textChangeListener;
     private UXListener<TextEvent> textChangeFilter;
     private UXListener<TextEvent> textInputFilter;
+    private UXListener<TextEvent> textTypeListener;
     private String text;
     private boolean invalidTextString;
 
@@ -96,6 +97,7 @@ public class TextArea extends Scrollable {
         setText(attrs.getAttributeString("text", getText()));
         setEditable(attrs.getAttributeBool("editable", isEditable()));
         setTextChangeListener(attrs.getAttributeValueListener("on-text-change", String.class, controller));
+        setTextTypeListener(attrs.getAttributeListener("on-text-type", TextEvent.class, controller));
         setTextChangeFilter(attrs.getAttributeListener("on-text-change-filter", TextEvent.class, controller));
         setTextInputFilter(attrs.getAttributeListener("on-text-input-filter", TextEvent.class, controller));
     }
@@ -760,7 +762,7 @@ public class TextArea extends Scrollable {
         Caret caret = new Caret();
         caret.set(endCaret);
 
-        if (textChangeFilter != null || textChangeListener != null) {
+        if (textChangeFilter != null || textChangeListener != null || textTypeListener != null) {
             String old = getText();
 
             if (!textRender.editText(first, second, input, caret)) {
@@ -803,6 +805,7 @@ public class TextArea extends Scrollable {
             slideToCaretLater(1);
 
             fireTextChange(old);
+            fireTextType();
         } else {
             if (!textRender.editText(first, second, input, caret)) {
                 return;
@@ -1077,6 +1080,20 @@ public class TextArea extends Scrollable {
     private void fireTextChange(String old) {
         if (textChangeListener != null && !Objects.equals(old, text)) {
             UXValueListener.safeHandle(textChangeListener, new ValueChange<>(this, old, text));
+        }
+    }
+
+    public UXListener<TextEvent> getTextTypeListener() {
+        return textTypeListener;
+    }
+
+    public void setTextTypeListener(UXListener<TextEvent> textTypeListener) {
+        this.textTypeListener = textTypeListener;
+    }
+
+    private void fireTextType() {
+        if (textTypeListener != null) {
+            UXListener.safeHandle(textTypeListener, new TextEvent(this, TextEvent.TYPE, 0, textRender.getTotalBytes(), text));
         }
     }
 

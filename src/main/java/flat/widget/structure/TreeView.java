@@ -425,7 +425,7 @@ public class TreeView extends RecycleView {
     // ------------------------------
     private void dragOver(Vector2 point) {
         dragPopup.setPrefWidth(getWidth());
-        dragPopup.move(point.x, point.y);
+        dragPopup.moveTo(point.x, point.y);
     }
 
     private void dragHover(Vector2 point) {

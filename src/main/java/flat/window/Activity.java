@@ -8,7 +8,10 @@ import flat.events.PointerEvent;
 import flat.exception.FlatException;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
+import flat.graphics.Surface;
 import flat.graphics.context.Context;
+import flat.graphics.context.enums.BlitMask;
+import flat.graphics.context.enums.MagFilter;
 import flat.math.Vector2;
 import flat.math.stroke.BasicStroke;
 import flat.resources.ResourceStream;
@@ -34,6 +37,7 @@ public class Activity {
     private final ArrayList<Animation> animationsRemove = new ArrayList<>();
     private final ArrayList<Animation> animationsAdded = new ArrayList<>();
     private final ArrayList<Animation> animationsRemoved = new ArrayList<>();
+    private final ArrayList<Widget> keyListeners = new ArrayList<>();
     private final ArrayList<Widget> pointerFilters = new ArrayList<>();
     private final ArrayList<Widget> keyFilters = new ArrayList<>();
     private final ArrayList<Widget> resizeFilters = new ArrayList<>();
@@ -42,8 +46,8 @@ public class Activity {
     private Widget focus;
     private float focusAnim;
 
-    private float width;
-    private float height;
+    private int width;
+    private int height;
 
     private Scene scene;
     private Controller controller;
@@ -269,7 +273,7 @@ public class Activity {
         refreshFocus();
     }
 
-    void layout(float width, float height) {
+    void layout(int width, int height) {
         if (width != 0 && height != 0 && (this.width != width || this.height != height)) {
             this.width = width;
             this.height = height;
@@ -360,11 +364,7 @@ public class Activity {
         }
     }
 
-    private void onDraw(Graphics graphics) {
-        drawBackground(graphics);
-        drawWidgets(graphics);
-        drawFocus(graphics);
-
+    private void drawController(Graphics graphics) {
         if (controller != null && controller.isListening()) {
             try {
                 controller.onDraw(graphics);
@@ -372,6 +372,28 @@ public class Activity {
                 Application.handleException(e);
             }
         }
+    }
+
+    private Surface baseSurface;
+
+    public Surface getBaseSurface() {
+        if (baseSurface == null || baseSurface.getWidth() != getWidth() || baseSurface.getHeight() != getHeight()) {
+            baseSurface = new Surface(getWidth(), getHeight(), window.getMultiSample());
+        }
+        return baseSurface;
+    }
+
+    private void onDraw(Graphics graphics) {
+        graphics.setBaseSurface(getBaseSurface());
+        drawBackground(graphics);
+        drawWidgets(graphics);
+        drawFocus(graphics);
+        drawController(graphics);
+        var baseBuffer = context.getFrameBuffer();
+        graphics.setBaseSurface(null);
+        context.blitFrames(baseBuffer, null,
+                0, 0, getWidth(), getHeight(),
+                0, 0, getWidth(), getHeight(), BlitMask.Color, MagFilter.LINEAR);
     }
 
     private void refreshFocus() {
@@ -384,6 +406,7 @@ public class Activity {
         pointerFilters.removeIf(widget -> widget.getActivity() != this);
         keyFilters.removeIf(widget -> widget.getActivity() != this);
         focusables.removeIf(widget -> widget.getActivity() != this);
+        keyListeners.removeIf(widget -> widget.getActivity() != this);
     }
 
     public void addPointerFilter(Widget widget) {
@@ -421,6 +444,17 @@ public class Activity {
         focusables.remove(widget);
     }
 
+    public void addKeyListener(Widget widget) {
+        if (widget.getActivity() == this && !keyListeners.contains(widget)) {
+            keyListeners.remove(widget);
+            keyListeners.add(widget);
+        }
+    }
+
+    public void removeKeyListener(Widget widget) {
+        keyListeners.remove(widget);
+    }
+
     public void addKeyFilter(Widget widget) {
         if (widget.getActivity() == this && !keyFilters.contains(widget)) {
             keyFilters.remove(widget);
@@ -455,6 +489,26 @@ public class Activity {
     }
 
     public void onKey(KeyEvent event) {
+        if (controller != null && controller.isListening()) {
+            try {
+                controller.onKey(event);
+            } catch (Exception e) {
+                Application.handleException(e);
+            }
+        }
+
+        filtersTemp.addAll(keyListeners);
+        for (int i = keyListeners.size() - 1; i >= 0; i--) {
+            var widget = keyListeners.get(i);
+            if (widget.getActivity() == this) {
+                widget.fireKey(event);
+                if (event.isConsumed()) {
+                    break;
+                }
+            }
+        }
+        filtersTemp.clear();
+
         if (event.isConsumed() || event.getType() != KeyEvent.PRESSED || event.getKeycode() != KeyCode.KEY_TAB) {
             return;
         }
@@ -674,11 +728,11 @@ public class Activity {
         return child == null ? scene : child;
     }
 
-    public float getWidth() {
+    public int getWidth() {
         return width;
     }
 
-    public float getHeight() {
+    public int getHeight() {
         return height;
     }
 

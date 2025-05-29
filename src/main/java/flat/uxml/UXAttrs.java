@@ -2,6 +2,7 @@ package flat.uxml;
 
 import flat.animations.StateInfo;
 import flat.exception.FlatException;
+import flat.graphics.cursor.Cursor;
 import flat.graphics.symbols.Font;
 import flat.graphics.image.Drawable;
 import flat.graphics.image.DrawableReader;
@@ -402,6 +403,25 @@ public class UXAttrs {
             var constant = value.asConstant(theme, def.getDeclaringClass());
             if (constant != null) {
                 return constant;
+            }
+        }
+        return def;
+    }
+
+    public Cursor getCursor(String name, Cursor def) {
+        return getCursor(name, null, def);
+    }
+
+    public Cursor getCursor(String name, StateInfo state, Cursor def) {
+        UXValue value = getValue(UXHash.getHash(name), state);
+        if (value != null) {
+            if (def == null) {
+                throw new FlatException("Cursor default value cannot be null");
+            }
+
+            var cursor = Cursor.getByName(value.asString(theme));
+            if (cursor != null) {
+                return cursor;
             }
         }
         return def;
