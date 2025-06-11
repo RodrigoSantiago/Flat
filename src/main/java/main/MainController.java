@@ -4,6 +4,7 @@ import flat.Flat;
 import flat.animations.Interpolation;
 import flat.backend.GL;
 import flat.backend.SVG;
+import flat.backend.WL;
 import flat.concurrent.ProgressTask;
 import flat.data.ObservableList;
 import flat.events.*;
@@ -11,18 +12,15 @@ import flat.graphics.Color;
 import flat.graphics.Graphics;
 import flat.graphics.Surface;
 import flat.graphics.context.enums.PixelFormat;
+import flat.graphics.image.ImageData;
 import flat.graphics.symbols.Font;
 import flat.graphics.context.ShaderProgram;
 import flat.graphics.context.enums.AlphaComposite;
 import flat.graphics.context.enums.ImageFileFormat;
-import flat.graphics.image.Drawable;
-import flat.graphics.image.DrawableReader;
 import flat.graphics.image.PixelMap;
-import flat.graphics.symbols.FontManager;
-import flat.graphics.symbols.FontStyle;
-import flat.graphics.symbols.IconsManager;
-import flat.math.Vector4;
+import flat.math.*;
 import flat.math.shapes.Circle;
+import flat.math.shapes.Ellipse;
 import flat.math.shapes.Path;
 import flat.math.stroke.BasicStroke;
 import flat.resources.ResourceStream;
@@ -41,11 +39,9 @@ import flat.window.WindowSettings;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 public class MainController extends Controller {
 
@@ -601,6 +597,24 @@ public class MainController extends Controller {
             img11, img12, img13, img14, img15, img16;
     private ImageView[] images;
 
+    private boolean mode;
+    private ImageData pasteImageData;
+    private PixelMap pasteImage;
+    @Flat
+    public void toggleDefault(ActionEvent event) {
+        //mode = !mode;
+        //getActivity().setRenderPartialEnabled(mode);
+        //System.out.println(mode);
+        var old = pasteImageData;
+        pasteImageData = WL.GetClipboardImage(0);
+        if (pasteImageData != null) {
+            pasteImage = new PixelMap(pasteImageData.getData(), pasteImageData.getWidth(), pasteImageData.getHeight(), pasteImageData.getFormat());
+        }
+        if (old != null) {
+            WL.SetClipboardImage(0, old);
+        }
+    }
+
     private PixelMap cutTest;
     @Override
     public void onShow() {
@@ -614,7 +628,8 @@ public class MainController extends Controller {
         setupTreeView(treeView2);
         setupTreeView(treeView3);
 
-        getActivity().setContinuousRendering(true);
+        Application.setVsync(1);
+        getActivity().setContinuousRendering(false);
         var graphics = getGraphics();
 
         shader = graphics.createImageRenderShader(
@@ -737,17 +752,69 @@ public class MainController extends Controller {
     PixelMap screen;
     int n;
     long time;
+
+    public static Vector2 magicLerp(Vector2 a, Vector2 b, float t, float distortion) {
+        float ax = a.x, ay = a.y;
+        float bx = b.x, by = b.y;
+
+        float az = (float)Math.sqrt(Math.max(0, 1 - ax * ax - ay * ay));
+        float bz = (float)Math.sqrt(Math.max(0, 1 - bx * bx - by * by));
+
+        // Convert to 3D vectors
+        float[] A = new float[] { ax, ay, az };
+        float[] B = new float[] { bx, by, bz };
+
+        // Dot and angle
+        float dot = A[0]*B[0] + A[1]*B[1] + A[2]*B[2];
+        dot = Math.max(-1f, Math.min(1f, dot)); // Clamp
+        float theta = (float)Math.acos(dot);
+
+        // Avoid divide by zero
+        if (theta < 0.0001f) {
+            return new Vector2(ax + t * (bx - ax), ay + t * (by - ay));
+        }
+
+        // Slerp in 3D
+        float sinTheta = (float)Math.sin(theta);
+        float w1 = (float)Math.sin((1 - t) * theta) / sinTheta;
+        float w2 = (float)Math.sin(t * theta) / sinTheta;
+
+        float sx = w1 * A[0] + w2 * B[0];
+        float sy = w1 * A[1] + w2 * B[1];
+        float sz = w1 * A[2] + w2 * B[2];
+
+        // Project back to 2D
+        Vector2 spherical = new Vector2(sx, sy);
+        Vector2 linear = new Vector2(ax + t * (bx - ax), ay + t * (by - ay));
+
+        // Blend between linear and spherical based on distortion
+        Vector2 result = new Vector2(
+                (1 - distortion) * linear.x + distortion * spherical.x,
+                (1 - distortion) * linear.y + distortion * spherical.y
+        );
+
+        return result;
+    }
+
+    float a = 0;
     @Override
     public void onDraw(Graphics graphics) {
         super.onDraw(graphics);
+        a += 1;
+        if (a > 500) a = 0;
         graphics.setTransform2D(null);
+        if (pasteImage != null) graphics.drawImage(pasteImage, 100, 100);
+
+        //graphics.setColor(Color.black);
+        //graphics.setStroke(new BasicStroke(5, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 1, new float[]{18, 6}, 0));
+        //graphics.drawRect(100, 100, 100, 100, false);
         // graphics.drawImage(cutTest, 200, 200, 50, 50);
 
         n++;
         long now = System.currentTimeMillis();
         if (now - time > 250) {
             time = time == 0 ? now : now - (now - time - 250);
-            statusLabel.setText("FPS : " + (n * 4));
+            // statusLabel.setText("FPS : " + (n * 4));
             n = 0;
         }
 
@@ -772,7 +839,7 @@ public class MainController extends Controller {
             graphics.drawImage(screen, 0, 0, getActivity().getWidth(), getActivity().getHeight());
             graphics.popClip();
             t -= Application.getLoopTime();
-            getActivity().invalidateWidget(getActivity().getScene());
+            getActivity().repaint();
         }
     }
 

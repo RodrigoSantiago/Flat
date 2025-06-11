@@ -414,6 +414,38 @@ public class Context {
         if (scissorEnabled != enable) {
             svgEnd();
             GL.EnableScissorTest(scissorEnabled = enable);
+            if (enable) {
+                GL.SetScissor(scissorX, scissorY, scissorWidth, scissorHeight);
+            }
+        }
+    }
+
+    public int getScissorX() {
+        return scissorX;
+    }
+
+    public int getScissorY() {
+        return scissorY;
+    }
+
+    public int getScissorWidth() {
+        return scissorWidth;
+    }
+
+    public int getScissorHeight() {
+        return scissorHeight;
+    }
+
+    public void setScissorBox(int x, int y, int width, int height) {
+        checkDisposed();
+
+        if (scissorX != x || scissorY != y || scissorWidth != width || scissorHeight != height) {
+            svgEnd();
+            scissorX = x;
+            scissorY = y;
+            scissorWidth = width;
+            scissorHeight = height;
+            GL.SetScissor(scissorX, scissorY, scissorWidth, scissorHeight);
         }
     }
 
@@ -918,8 +950,10 @@ public class Context {
         checkDisposed();
 
         if (multiSampleEnabled != enable) {
-            svgEnd();
-            GL.EnableMultisample(multiSampleEnabled = enable);
+            multiSampleEnabled = enable;
+            if (!svgMode) {
+                GL.EnableMultisample(multiSampleEnabled);
+            }
         }
     }
 
@@ -1258,6 +1292,7 @@ public class Context {
         GL.SetPixelStore(GLEnums.PS_UNPACK_SKIP_ROWS, pixelUnpackSkipRows);
 
         GL.SetActiveTexture(activeTexture);
+        GL.EnableMultisample(multiSampleEnabled);
     }
 
     private void svgApplyTransformGradients() {

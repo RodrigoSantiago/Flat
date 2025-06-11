@@ -333,6 +333,7 @@ public class ColorPickerDialogController extends DefaultDialogController {
         graphics.blitCustomShader(shader);
         graphics.renderToTexture(preview.getTexture());
         graphics.setSurface(null);
+        palettePreview.repaint();
     }
 
     public void setCurrentColor(int color) {

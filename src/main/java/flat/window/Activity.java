@@ -8,12 +8,12 @@ import flat.events.PointerEvent;
 import flat.exception.FlatException;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
-import flat.graphics.Surface;
 import flat.graphics.context.Context;
-import flat.graphics.context.enums.BlitMask;
-import flat.graphics.context.enums.MagFilter;
+import flat.math.Mathf;
 import flat.math.Vector2;
+import flat.math.shapes.Rectangle;
 import flat.math.stroke.BasicStroke;
+import flat.resources.Dimension;
 import flat.resources.ResourceStream;
 import flat.uxml.*;
 import flat.uxml.value.UXValue;
@@ -45,6 +45,7 @@ public class Activity {
     private final HashSet<Widget> focusables = new HashSet<>();
     private Widget focus;
     private float focusAnim;
+    private boolean renderPartial;
 
     private int width;
     private int height;
@@ -61,8 +62,12 @@ public class Activity {
 
     private UXStringBundle stringBundle;
 
-    private boolean invalided, invalidScene, invalidThemeStyle;
+    private boolean invalidScene, invalidThemeStyle;
     private Widget invalidWidget;
+    private boolean invalidLayout;
+    private Rectangle invalidRect;
+    private Rectangle invalidRectPrev;
+    private final HashSet<Widget> invalidParents = new HashSet<>();
 
     private float lastDpi = 160f;
     private boolean continuousRendering;
@@ -117,7 +122,7 @@ public class Activity {
         initialSettings = null;
 
         scene.getActivityScene().setActivity(this);
-        invalidateWidget(scene);
+        invalidateWidget(scene, true);
         invalidateThemeStyle();
     }
 
@@ -254,7 +259,7 @@ public class Activity {
                 old.getActivityScene().setActivity(null);
             }
             scene.getActivityScene().setActivity(this);
-            invalidateWidget(scene);
+            invalidateWidget(scene, true);
             invalidateThemeStyle();
         }
     }
@@ -278,36 +283,75 @@ public class Activity {
             this.width = width;
             this.height = height;
             onResizeFilter();
-            invalidateWidget(scene);
+            invalidateWidget(scene, true);
         }
 
         if (invalidWidget != null) {
             var widget = invalidWidget;
             invalidWidget = null;
-            if (widget == scene) {
-                widget.onMeasure();
-                widget.onLayout(width, height);
-            } else {
-                Parent parent = widget.getParent();
-                if (parent == null) {
+            invalidParents.clear();
+            if (invalidLayout) {
+                invalidLayout = false;
+                if (widget == scene) {
                     widget.onMeasure();
-                    widget.onLayout(widget.getLayoutWidth(), widget.getLayoutHeight());
-                } else if (parent.isWrapContent() || !parent.onLayoutSingleChild(widget)) {
-                    parent.onMeasure();
-                    parent.onLayout(parent.getLayoutWidth(), parent.getLayoutHeight());
+                    widget.onLayout(width, height);
+                } else {
+                    Parent parent = widget.getParent();
+                    if (parent == null) {
+                        widget.onMeasure();
+                        widget.onLayout(widget.getLayoutWidth(), widget.getLayoutHeight());
+                    } else if (parent.isWrapContent() || !parent.onLayoutSingleChild(widget)) {
+                        parent.onMeasure();
+                        parent.onLayout(parent.getLayoutWidth(), parent.getLayoutHeight());
+                        widget = parent;
+                    }
                 }
             }
+            if (widget.getActivity() != this) {
+                invalidRect = new Rectangle(0, 0, getWidth(), getHeight());
+            } else {
+                float e = Dimension.dpPx(getDensity(), 16f) * 2f;
+                Vector2 p1 = widget.localToScreen(-e, -e);
+                Vector2 p2 = widget.localToScreen(widget.getLayoutWidth() + e, -e);
+                Vector2 p3 = widget.localToScreen(-e, widget.getLayoutHeight() + e);
+                Vector2 p4 = widget.localToScreen(widget.getLayoutWidth() + e, widget.getLayoutHeight() + e);
+                float minX = Mathf.floor(Math.min(p1.x, Math.min(p2.x, Math.min(p3.x, p4.x))));
+                float minY = Mathf.floor(Math.min(p1.y, Math.min(p2.y, Math.min(p3.y, p4.y))));
+                float maxX = Mathf.ceil(Math.max(p1.x, Math.max(p2.x, Math.max(p3.x, p4.x))));
+                float maxY = Mathf.ceil(Math.max(p1.y, Math.max(p2.y, Math.max(p3.y, p4.y))));
+                invalidRect = new Rectangle(Math.max(0, minX), Math.max(0, minY),
+                        Math.min(getWidth(), maxX - minX), Math.min(getHeight(), maxY - minY));
+            }
+        }
+        if (repaintRect != null) {
+            if (invalidRect == null) {
+                invalidRect = repaintRect;
+            } else {
+                invalidRect.add(repaintRect);
+            }
+            repaintRect = null;
+            invalidRect.x = Math.max(0, invalidRect.x);
+            invalidRect.y = Math.max(0, invalidRect.y);
+            invalidRect.width = Math.min(getWidth(), invalidRect.width);
+            invalidRect.height = Math.min(getHeight(), invalidRect.height);
         }
     }
 
     boolean draw(Graphics context) {
-        if (invalided || continuousRendering) {
-            invalided = false;
-            onDraw(context);
-            return true;
+        if (renderPartial) {
+            if (invalidRect != null) {
+                onDraw(context);
+                invalidRect = null;
+                return true;
+            }
         } else {
-            return false;
+            if (invalidRect != null || continuousRendering) {
+                onDrawDefault(context);
+                invalidRect = null;
+                return true;
+            }
         }
+        return false;
     }
 
     void show() {
@@ -359,7 +403,7 @@ public class Activity {
                         bg.x - bb, bg.y - bb, bg.width + bb * 2, bg.height + bb * 2,
                         bg.arcTop + bb, bg.arcRight + bb, bg.arcBottom + bb, bg.arcLeft + bb, false);
             }
-            invalidate();
+            invalidateWidget(scene, false);
             focusAnim -= Application.getLoopTime() * 0.5f;
         }
     }
@@ -374,26 +418,36 @@ public class Activity {
         }
     }
 
-    private Surface baseSurface;
-
-    public Surface getBaseSurface() {
-        if (baseSurface == null || baseSurface.getWidth() != getWidth() || baseSurface.getHeight() != getHeight()) {
-            baseSurface = new Surface(getWidth(), getHeight(), window.getMultiSample());
-        }
-        return baseSurface;
+    public void setRenderPartialEnabled(boolean renderPartial) {
+        this.renderPartial = renderPartial;
     }
 
-    private void onDraw(Graphics graphics) {
-        graphics.setBaseSurface(getBaseSurface());
+    public boolean isRenderPartialEnabled() {
+        return renderPartial;
+    }
+
+    private void onDrawDefault(Graphics graphics) {
         drawBackground(graphics);
         drawWidgets(graphics);
         drawFocus(graphics);
         drawController(graphics);
-        var baseBuffer = context.getFrameBuffer();
-        graphics.setBaseSurface(null);
-        context.blitFrames(baseBuffer, null,
-                0, 0, getWidth(), getHeight(),
-                0, 0, getWidth(), getHeight(), BlitMask.Color, MagFilter.LINEAR);
+    }
+
+    private void onDraw(Graphics graphics) {
+        Rectangle rect = invalidRect;
+        if (invalidRectPrev != null) {
+            rect = new Rectangle(invalidRect);
+            rect.add(invalidRectPrev);
+        }
+        graphics.setScissor(
+                Mathf.round(rect.x), Mathf.round(rect.y),
+                Mathf.round(rect.width), Mathf.round(rect.height));
+        drawBackground(graphics);
+        drawWidgets(graphics);
+        drawFocus(graphics);
+        drawController(graphics);
+        graphics.clearScissor();
+        invalidRectPrev = invalidRect;
     }
 
     private void refreshFocus() {
@@ -693,30 +747,64 @@ public class Activity {
         animations.clear();
     }
 
-    public void invalidate() {
-        if (!invalided) {
-            invalided = true;
+    public void repaint() {
+        invalidateWidget(scene, false);
+    }
+
+    private Rectangle repaintRect;
+
+    public void repaintRect(float x, float y, float width, float height) {
+        if (repaintRect != null) {
+            repaintRect.add(x, y, width, height);
+        } else {
+            repaintRect = new Rectangle(x, y, width, height);
         }
     }
 
-    public void invalidateWidget(Widget widget) {
-        invalidate();
+    public void repaintRect(Rectangle rect) {
+        if (repaintRect != null) {
+            repaintRect.add(rect);
+        } else {
+            repaintRect = new Rectangle(rect);
+        }
+    }
+
+    public void invalidateWidget(Widget widget, boolean layout) {
         if (invalidWidget != scene && widget.getActivity() == this) {
             if (invalidWidget != null) {
-                if (invalidWidget.isChildOf(widget)) {
-                    invalidWidget = widget;
-                } else if (!widget.isChildOf(invalidWidget)) {
-                    invalidWidget = scene;
+                Widget parent = null;
+                var w = widget;
+                while (w != null) {
+                    if (invalidParents.contains(w)) {
+                        parent = w;
+                        break;
+                    }
+                    w = w.getParent();
+                }
+                if (parent != null) {
+                    setInvalidWidget(parent);
+                } else {
+                    setInvalidWidget(scene);
                 }
             } else {
-                invalidWidget = widget;
+                setInvalidWidget(widget);
             }
         }
+        invalidLayout = invalidLayout || layout;
+    }
+
+    private void setInvalidWidget(Widget widget) {
+        invalidParents.clear();
+        var w = widget;
+        while ((w = w.getParent()) != null) {
+            invalidParents.add(w);
+        }
+        invalidWidget = widget;
     }
 
     private void invalidateThemeStyle() {
         invalidThemeStyle = true;
-        invalidate();
+        invalidateWidget(scene, true);
     }
 
     public Widget findById(String id) {

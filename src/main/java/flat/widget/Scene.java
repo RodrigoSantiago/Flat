@@ -93,7 +93,7 @@ public class Scene extends Group {
                 var children = getChildren();
                 children.remove(stage);
                 children.add(stage);
-                childInvalidate(stage);
+                childInvalidate(stage, true);
             }
 
         } else {
@@ -122,7 +122,7 @@ public class Scene extends Group {
 
     @Override
     protected void sortChildren() {
-        if (stages.size() == 0) {
+        if (stages.isEmpty()) {
             super.sortChildren();
         } else {
             var children = getChildren();
@@ -133,11 +133,11 @@ public class Scene extends Group {
     }
 
     @Override
-    protected void childInvalidate(Widget child) {
+    protected void childInvalidate(Widget child, boolean layout) {
         if (activityScene != null && activityScene.getActivity() != null) {
-            activityScene.getActivity().invalidateWidget(child);
+            activityScene.getActivity().invalidateWidget(child, layout);
         } else {
-            super.childInvalidate(child);
+            super.childInvalidate(child, layout);
         }
     }
 }

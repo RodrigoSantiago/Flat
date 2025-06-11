@@ -5,6 +5,7 @@ import flat.events.KeyCode;
 import flat.events.KeyEvent;
 import flat.graphics.Graphics;
 import flat.graphics.context.Context;
+import flat.math.Vector2;
 import flat.resources.ResourceStream;
 import flat.uxml.*;
 import flat.widget.Scene;
@@ -209,6 +210,8 @@ public class ActivityTest {
         Scene scene = mock(Scene.class);
         Widget child = mock(Widget.class);
         when(scene.getActivityScene()).thenReturn(mock(ActivityScene.class));
+        mockLocalToScreen(scene);
+        mockLocalToScreen(child);
 
         when(child.getLayoutWidth()).thenReturn(20f);
         when(child.getLayoutHeight()).thenReturn(10f);
@@ -229,17 +232,17 @@ public class ActivityTest {
 
         assertEquals(scene, activity.getScene());
 
-        activity.layout(200f, 100f);
+        activity.layout(200, 100);
         verify(scene, times(1)).onMeasure();
         verify(scene, times(1)).onLayout(200f, 100f);
 
-        activity.invalidateWidget(scene);
-        activity.layout(100f, 100f);
+        activity.invalidateWidget(scene, true);
+        activity.layout(100, 100);
         verify(scene, times(2)).onMeasure();
         verify(scene, times(1)).onLayout(100f, 100f);
 
-        activity.invalidateWidget(child);
-        activity.layout(100f, 100f);
+        activity.invalidateWidget(child, true);
+        activity.layout(100, 100);
         verify(scene, times(2)).onMeasure();
         verify(scene, times(1)).onLayout(100f, 100f);
         verify(child, times(1)).onMeasure();
@@ -252,6 +255,7 @@ public class ActivityTest {
         UXTheme theme = mock(UXTheme.class);
         Scene scene = mock(Scene.class);
         when(scene.getActivityScene()).thenReturn(mock(ActivityScene.class));
+        mockLocalToScreen(scene);
 
         WindowSettings settings = new WindowSettings.Builder().size(200, 100).theme(theme).layout(scene).build();
         Activity activity = Activity.create(window, settings);
@@ -263,16 +267,19 @@ public class ActivityTest {
 
         activity.show();
 
+        activity.layout(200, 100);
         activity.draw(graphics);
         verify(graphics, times(1)).clear(0x0, 1, 0);
         verify(scene, times(1)).onDraw(graphics);
 
+        activity.layout(200, 100);
         activity.draw(graphics);
         verify(graphics, times(1)).clear(0x0, 1, 0);
         verify(scene, times(1)).onDraw(graphics);
 
-        activity.invalidate();
+        activity.repaint();
 
+        activity.layout(200, 100);
         activity.draw(graphics);
         verify(graphics, times(2)).clear(0x0, 1, 0);
         verify(scene, times(2)).onDraw(graphics);
@@ -285,6 +292,7 @@ public class ActivityTest {
         Scene scene = mock(Scene.class);
         when(scene.getActivityScene()).thenReturn(mock(ActivityScene.class));
         when(animation.isPlaying()).thenReturn(true);
+        mockLocalToScreen(scene);
 
         WindowSettings settings = new WindowSettings.Builder().size(200, 100).theme(theme).layout(scene).build();
         Activity activity = Activity.create(window, settings);
@@ -333,6 +341,8 @@ public class ActivityTest {
         when(scene.getActivityScene()).thenReturn(mock(ActivityScene.class));
         Widget widget = mock(Widget.class);
         when(scene.findById("findId")).thenReturn(widget);
+        mockLocalToScreen(scene);
+        mockLocalToScreen(widget);
 
         WindowSettings settings = new WindowSettings.Builder().size(200, 100).theme(theme).layout(scene).build();
         Activity activity = Activity.create(window, settings);
@@ -356,6 +366,8 @@ public class ActivityTest {
         when(scene.getActivityScene()).thenReturn(mock(ActivityScene.class));
         Widget widget = mock(Widget.class);
         when(scene.findByPosition(10, 20, true)).thenReturn(widget);
+        mockLocalToScreen(scene);
+        mockLocalToScreen(widget);
 
         WindowSettings settings = new WindowSettings.Builder().size(200, 100).theme(theme).layout(scene).build();
         Activity activity = Activity.create(window, settings);
@@ -381,6 +393,7 @@ public class ActivityTest {
         UXTheme theme = mock(UXTheme.class);
         Scene scene = mock(Scene.class);
         when(scene.getActivityScene()).thenReturn(mock(ActivityScene.class));
+        mockLocalToScreen(scene);
 
         WindowSettings settings = new WindowSettings.Builder().size(200, 100)
                 .theme(theme).layout(scene).controller(factory).build();
@@ -398,6 +411,10 @@ public class ActivityTest {
         verify(controller).onHide();
     }
 
+    private void mockLocalToScreen(Widget widget) {
+        when(widget.localToScreen(anyFloat(), anyFloat())).thenAnswer(a -> new Vector2(a.getArgument(0), a.getArgument(1)));
+    }
+
     @Test
     public void onTabPressedChangeFocus() {
         String sceneId = "sceneId";
@@ -409,6 +426,9 @@ public class ActivityTest {
         when(scene.getActivityScene()).thenReturn(mock(ActivityScene.class));
         Widget focus1 = mock(Widget.class);
         Widget focus2 = mock(Widget.class);
+        mockLocalToScreen(scene);
+        mockLocalToScreen(focus1);
+        mockLocalToScreen(focus2);
 
         when(scene.findById(sceneId)).thenReturn(scene);
         when(scene.findById(focus1Id)).thenReturn(focus1);

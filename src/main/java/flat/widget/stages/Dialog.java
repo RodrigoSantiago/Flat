@@ -101,8 +101,6 @@ public class Dialog extends Stage {
 
     @Override
     public void onDraw(Graphics graphics) {
-        if (discardDraw(graphics)) return;
-
         if (getParent() != null && isBlockEvents() && Color.getAlpha(getBlockColor()) > 0) {
             float a;
             if (showupAnimation.isPlaying()) {
@@ -120,6 +118,8 @@ public class Dialog extends Stage {
                         getParent().getInWidth(), getParent().getInHeight(), true);
             }
         }
+
+        if (discardDraw(graphics)) return;
 
         drawBackground(graphics);
         drawRipple(graphics);
@@ -382,7 +382,9 @@ public class Dialog extends Stage {
                 setScaleX(scaleX * 0.5f + (scaleX * 0.5f * getInterpolation().apply(p)));
                 setScaleY(scaleY * 0.5f + (scaleY * 0.5f * getInterpolation().apply(p)));
             }
-            invalidate(false);
+            if (getParent() != null) {
+                getParent().invalidate(false);
+            }
         }
 
         @Override
@@ -436,7 +438,9 @@ public class Dialog extends Stage {
         protected void compute(float t) {
             setScaleX(scaleX * 0.5f + (scaleX * 0.5f * (1 - t)));
             setScaleY(scaleY * 0.5f + (scaleY * 0.5f * (1 - t)));
-            invalidate(false);
+            if (getParent() != null) {
+                getParent().invalidate(false);
+            }
         }
 
         @Override

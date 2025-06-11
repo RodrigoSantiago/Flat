@@ -13,6 +13,7 @@ import flat.math.shapes.Path;
 import flat.math.shapes.Rectangle;
 import flat.math.shapes.RoundRectangle;
 import flat.math.stroke.BasicStroke;
+import flat.resources.Dimension;
 import flat.uxml.*;
 import flat.uxml.value.UXValue;
 import flat.widget.stages.Menu;
@@ -232,8 +233,9 @@ public class Widget {
     protected boolean discardDraw(Graphics graphics) {
         if (bg.width <= 0 || bg.height <= 0) return true;
         graphics.setTransform2D(getTransform());
-        return graphics.discardDraw(bg.x - borderWidth, bg.y - borderWidth,
-                bg.width + borderWidth * 2, bg.height + borderWidth * 2);
+        float dp32 = Dimension.dpPx(graphics.getDensity(), 32);
+        return graphics.discardDraw(bg.x - borderWidth - dp32, bg.y - borderWidth - dp32,
+                bg.width + (borderWidth + dp32) * 2, bg.height + (borderWidth + dp32) * 2);
     }
 
     protected void drawBackground(Graphics graphics) {
@@ -424,26 +426,28 @@ public class Widget {
         }
     }
 
-    protected void childInvalidate(Widget child) {
+    protected void childInvalidate(Widget child, boolean layout) {
         if (activity != null) {
-            if (getPrefWidth() == WRAP_CONTENT || getPrefHeight() == WRAP_CONTENT) {
+            if (layout && (getPrefWidth() == WRAP_CONTENT || getPrefHeight() == WRAP_CONTENT)) {
                 invalidate(true);
             } else {
-                activity.invalidateWidget(child);
+                activity.invalidateWidget(child, layout);
             }
         }
     }
 
+    public void repaint() {
+        invalidate(false);
+    }
+
     public void invalidate(boolean layout) {
         if (activity != null) {
-            if (layout) {
+            if ((layout && getVisibility() != Visibility.GONE) || (!layout && getVisibility() == Visibility.VISIBLE)) {
                 if (parent != null) {
-                    parent.childInvalidate(this);
+                    parent.childInvalidate(this, layout);
                 } else {
-                    activity.invalidateWidget(this);
+                    activity.invalidateWidget(this, layout);
                 }
-            } else if (getVisibility() == Visibility.VISIBLE) {
-                activity.invalidate();
             }
         }
     }

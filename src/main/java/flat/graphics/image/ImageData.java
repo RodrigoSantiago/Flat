@@ -7,6 +7,13 @@ public class ImageData {
     private final int width, height;
     private final byte[] data;
 
+    public ImageData(byte[] data, int width, int height, int channels) {
+        this.format = PixelFormat.fromChannels(channels);
+        this.width = width;
+        this.height = height;
+        this.data = data;
+    }
+
     public ImageData(byte[] data, int width, int height, PixelFormat format) {
         this.format = format;
         this.width = width;
@@ -16,6 +23,10 @@ public class ImageData {
 
     public PixelFormat getFormat() {
         return format;
+    }
+
+    public int getChannels() {
+        return format.getPixelBytes();
     }
 
     public int getWidth() {

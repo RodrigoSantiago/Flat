@@ -38,15 +38,15 @@ public class MenuTest {
         sceneA = new Scene();
         ActivitySupport.setActivity(sceneA, activityA);
         when(activityA.getScene()).thenReturn(sceneA);
-        when(activityA.getWidth()).thenReturn(800f);
-        when(activityA.getHeight()).thenReturn(600f);
+        when(activityA.getWidth()).thenReturn(800);
+        when(activityA.getHeight()).thenReturn(600);
 
         activityB = mock(Activity.class);
         sceneB = new Scene();
         ActivitySupport.setActivity(sceneB, activityB);
         when(activityB.getScene()).thenReturn(sceneB);
-        when(activityB.getWidth()).thenReturn(800f);
-        when(activityB.getHeight()).thenReturn(600f);
+        when(activityB.getWidth()).thenReturn(800);
+        when(activityB.getHeight()).thenReturn(600);
     }
 
     @Test

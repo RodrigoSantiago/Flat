@@ -22,6 +22,15 @@ public enum PixelFormat {
         this.bytes= bytes;
     }
 
+    public static PixelFormat fromChannels(int channels) {
+        return switch (channels) {
+            case 1 -> RED;
+            case 2 -> RG;
+            case 3 -> RGB;
+            default -> RGBA;
+        };
+    }
+
     public int getInternalEnum() {
         return glEnum;
     }

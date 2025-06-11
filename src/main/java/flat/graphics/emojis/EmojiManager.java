@@ -45,7 +45,7 @@ public class EmojiManager {
                     emojiTexture.generateMipmapLevels();
                     SVG.FontCreateEmoji(emojiTexture.getInternalId(), EmojiDictionary.getInstance().getUnicodes());
                     for (var window : Application.getAssignedWindows()) {
-                        window.getActivity().invalidate();
+                        window.getActivity().repaint();
                     }
                 });
             } catch (Exception e) {

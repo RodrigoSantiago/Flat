@@ -13,6 +13,7 @@ import flat.window.event.EventData;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.locks.LockSupport;
 
 public class Application {
 
@@ -333,9 +334,9 @@ public class Application {
             long off = now - autoFrameLimit;
 
             long sleepTime = autoFrameFPS - off;
-            if (sleepTime > 0) {
+            if (sleepTime > 1_000_000) {
                 try {
-                    Thread.sleep(sleepTime / 1_000_000);
+                    Thread.sleep(sleepTime / 1_000_000 - 1);
                 } catch (InterruptedException ignored) {
                 }
             }

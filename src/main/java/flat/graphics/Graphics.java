@@ -1,5 +1,6 @@
 package flat.graphics;
 
+import flat.backend.GL;
 import flat.exception.FlatException;
 import flat.graphics.context.*;
 import flat.graphics.context.enums.*;
@@ -9,6 +10,7 @@ import flat.graphics.context.paints.ImagePattern;
 import flat.graphics.image.PixelMap;
 import flat.graphics.symbols.Font;
 import flat.math.Affine;
+import flat.math.Mathf;
 import flat.math.Vector2;
 import flat.math.Vector4;
 import flat.math.operations.Area;
@@ -20,7 +22,6 @@ import java.nio.Buffer;
 public class Graphics {
 
     private final Context context;
-    private Surface baseSurface;
     private Surface surface;
 
     private final Affine transform2D = new Affine();
@@ -60,12 +61,14 @@ public class Graphics {
                 #version 330 core
                 layout (location = 0) in vec2 iPos;
                 layout (location = 1) in vec2 iTex;
+                uniform mat3x2 transform;
                 uniform vec2 view;
                 uniform vec4 area;
                 out vec2 oPos;
                 out vec2 oTex;
                 void main() {
                     vec2 real = vec2(area.x + iPos.x * area.z, area.y + iPos.y * area.w);
+                    real = (transform * vec3(real, 1.0)).xy;
                     oPos = real;
                     oTex = iTex;
                 	gl_Position = vec4(real.x / view.x * 2 - 1, - (real.y / view.y * 2 - 1), 0, 1);
@@ -107,7 +110,7 @@ public class Graphics {
                 
                 void main() {
                     vec4 col = texture(mainTexture, oTex);
-                    if (col.a > 0) {
+                    if (col.a >= 0.00196) {
                         col.rgb /= col.a;
                     } else {
                         vec2 size = textureSize(mainTexture, 0);
@@ -115,7 +118,7 @@ public class Graphics {
                         vec4 c1 = texture(mainTexture, oTex - vec2(1 / size.x, 0.0));
                         vec4 c2 = texture(mainTexture, oTex + vec2(0.0, 1 / size.y));
                         vec4 c3 = texture(mainTexture, oTex - vec2(0.0, 1 / size.y));
-                        col.rgb = (c0 * c0.a + c1 * c1.a + c2 * c2.a + c3 * c3.a).rgb / max(0.001, (c0.a + c1.a + c2.a + c3.a));
+                        col.rgb = (c0.rgb + c1.rgb + c2.rgb + c3.rgb) / max(0.001, (c0.a + c1.a + c2.a + c3.a));
                         col.a = 0;
                     }
                     FragColor = col;
@@ -150,14 +153,14 @@ public class Graphics {
                         col += texelFetch(mainTexture, texCoord, i);
                     }
                     col /= float(samples);
-                    if (col.a > 0) {
+                    if (col.a >= 0.00196) {
                         col.rgb /= col.a;
                     } else {
                         vec4 c0 = texelFetch(mainTexture, texCoord + ivec2(1, 0), 0);
                         vec4 c1 = texelFetch(mainTexture, texCoord - ivec2(1, 0), 0);
                         vec4 c2 = texelFetch(mainTexture, texCoord + ivec2(0, 1), 0);
                         vec4 c3 = texelFetch(mainTexture, texCoord - ivec2(0, 1), 0);
-                        col.rgb = (c0 * c0.a + c1 * c1.a + c2 * c2.a + c3 * c3.a).rgb / max(0.001, (c0.a + c1.a + c2.a + c3.a));
+                        col.rgb = (c0.rgb + c1.rgb + c2.rgb + c3.rgb) / max(0.001, (c0.a + c1.a + c2.a + c3.a));
                         col.a = 0;
                     }
                     FragColor = col;
@@ -196,8 +199,8 @@ public class Graphics {
         context.svgTextBlur(0);
         context.svgPaint(new ColorPaint(0xFFFFFFFF));
         context.svgAntialias(true);
+        context.setViewPort(0, 0, getWidth(), getHeight());
         setAlphaComposite(AlphaComposite.SRC_OVER);
-        setView(0, 0, getWidth(), getHeight());
     }
 
     public PixelMap createPixelMap() {
@@ -206,15 +209,15 @@ public class Graphics {
 
     public PixelMap createPixelMap(int x, int y, int width, int height, PixelFormat format) {
         Texture2D texture = new Texture2D(width, height, format);
-        renderToTexture(x, y, width, height, texture);
+        renderToTexture(texture, x, y, width, height);
         return new PixelMap(texture);
     }
 
     public void renderToTexture(Texture2D texture) {
-        renderToTexture(0, 0, getWidth(), getHeight(), texture);
+        renderToTexture(texture, 0, 0, getWidth(), getHeight());
     }
 
-    public void renderToTexture(int x, int y, int width, int height, Texture2D texture) {
+    public void renderToTexture(Texture2D texture, int x, int y, int width, int height) {
         if (x < 0 || y < 0 || width <= 0 || height <= 0 || x + width > getWidth() || x + height > getHeight()) {
             throw new FlatException("The rendered area must be inside the view (0, 0, " + getWidth() + ", " + getHeight() + ")");
         }
@@ -272,39 +275,12 @@ public class Graphics {
             if (this.surface != null) {
                 this.surface.begin(this);
                 context.setFrameBuffer(this.surface.getFrameBuffer());
-            } else if (this.baseSurface != null) {
-                this.baseSurface.begin(this);
-                context.setFrameBuffer(this.baseSurface.getFrameBuffer());
             } else {
                 context.setFrameBuffer(null);
             }
             resetStateConfig();
+            updateScissor();
         }
-    }
-
-    public Surface getBaseSurface() {
-        return baseSurface;
-    }
-
-    public void setBaseSurface(Surface baseSurface) {
-        if (this.baseSurface != baseSurface) {
-            this.baseSurface = baseSurface;
-            if (this.baseSurface != null) {
-                this.baseSurface.begin(this);
-                context.setFrameBuffer(this.baseSurface.getFrameBuffer());
-            } else {
-                context.setFrameBuffer(null);
-            }
-            resetStateConfig();
-        }
-    }
-
-    public void setView(int x, int y, int width, int height) {
-        context.setViewPort(x, y, width, height);
-    }
-
-    public Rectangle getView() {
-        return new Rectangle(context.getViewX(), context.getViewY(), context.getViewWidth(), context.getViewHeight());
     }
 
     public void setTransform2D(Affine transform2D) {
@@ -333,6 +309,30 @@ public class Graphics {
         getClipState().clear();
 
         context.svgClearClip(false);
+    }
+
+    public void setScissor(int x, int y, int width, int height) {
+        ClipState state = getClipState();
+        state.setScissor(x, y, width, height);
+        updateScissor();
+    }
+
+    public void clearScissor() {
+        ClipState state = getClipState();
+        state.clearScissor();
+        updateScissor();
+    }
+
+    private void updateScissor() {
+        ClipState state = getClipState();
+        if (state.scissor == null) {
+            context.setScissorEnabled(false);
+        } else {
+            context.setScissorEnabled(true);
+            context.setScissorBox(Mathf.round(state.scissor.x),
+                    Mathf.round(getHeight() - (state.scissor.y + state.scissor.height)),
+                    Mathf.round(state.scissor.width), Mathf.round(state.scissor.height));
+        }
     }
 
     public void pushClip(Shape shape) {
@@ -419,7 +419,8 @@ public class Graphics {
     }
 
     public boolean discardDraw(float x, float y, float w, float h) {
-        if (getClipState().isClear()) return false;
+        Rectangle scissor = getClipState().scissor;
+        if (getClipState().isClear() && scissor == null) return false;
         if (getClipState().isFullyClipped()) return true;
         if (!transform2D.isTranslationOnly()) return false;
         x += transform2D.m02;
@@ -428,12 +429,25 @@ public class Graphics {
         float fw = stroke.getLineWidth() + 1;
         float hw = fw * 0.5f;
 
-        Rectangle box = getClipState().box;
-        float x1 = box.x - hw;
-        float y1 = box.y - hw;
-        float x2 = x1 + box.width + fw;
-        float y2 = y1 + box.height + fw;
-        return x + w < x1 || x >= x2 || y + h < y1 || y >= y2;
+        if (!getClipState().isClear()) {
+            Rectangle box = getClipState().box;
+            float x1 = box.x - hw;
+            float y1 = box.y - hw;
+            float x2 = x1 + box.width + fw;
+            float y2 = y1 + box.height + fw;
+            if (x + w < x1 || x >= x2 || y + h < y1 || y >= y2) {
+                return true;
+            }
+        }
+
+        if (scissor != null) {
+            float sx1 = scissor.x - hw;
+            float sy1 = scissor.y - hw;
+            float sx2 = sx1 + scissor.width + fw;
+            float sy2 = sy1 + scissor.height + fw;
+            return x + w < sx1 || x >= sx2 || y + h < sy1 || y >= sy2;
+        }
+        return false;
     }
 
     public boolean discardDrawLine(float x1, float y1, float x2, float y2) {
@@ -462,6 +476,7 @@ public class Graphics {
 
     public void setAntialiasEnabled(boolean enabled) {
         context.svgAntialias(enabled);
+        context.setMultiSampleEnabled(enabled);
     }
 
     public boolean isAntialiasEnabled() {
@@ -831,10 +846,14 @@ public class Graphics {
     }
 
     public void blitCustomShader(ShaderProgram program, Texture... textures) {
-        blitCustomShader(program, 0, 0, getWidth(), getHeight(),textures);
+        blitCustomShader(program, 0, 0, getWidth(), getHeight(), textures);
     }
 
     public void blitCustomShader(ShaderProgram program, float x, float y, float width, float height, Texture... textures) {
+        blitCustomShader(program, x, y, width, height, new Affine(), textures);
+    }
+
+    public void blitCustomShader(ShaderProgram program, float x, float y, float width, float height, Affine transform, Texture... textures) {
         context.softFlush();
         if (ver == null) {
             ver = new VertexArray(context);
@@ -855,6 +874,7 @@ public class Graphics {
 
         ShaderProgram current = context.getShaderProgram();
         context.setShaderProgram(program);
+        program.set("transform", transform);
         program.set("area", new Vector4(x, y, width, height));
         program.set("view", new Vector2(getWidth(), getHeight()));
         context.setShaderTextures(textures);

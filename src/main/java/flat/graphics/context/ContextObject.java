@@ -42,7 +42,7 @@ abstract class ContextObject {
     public void dispose() {
         if (!disposed) {
             disposed = true;
-            if (!context.isDisposed() && disposeTask != null) disposeTask.run();
+            if ((context == null || !context.isDisposed()) && disposeTask != null) disposeTask.run();
         }
     }
 }

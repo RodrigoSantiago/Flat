@@ -4,7 +4,7 @@
                    padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
             <Label text="Default" style="subtitle" margin-left="4dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button width="MATCH_PARENT" text="Button" style="" cursor="WAIT"/>
+                <Button width="MATCH_PARENT" text="Button" style="" on-action="toggleDefault"/>
                 <Button width="MATCH_PARENT" margin-left="16dp" text="Button" style="primary"/>
                 <Button width="MATCH_PARENT" margin-left="16dp" text="Button" style="outlined-primary"/>
                 <Button width="MATCH_PARENT" margin-left="16dp" text="Button" style="text-primary"/>

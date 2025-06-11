@@ -6,6 +6,7 @@ import flat.backend.WLEnums;
 import flat.exception.FlatException;
 import flat.graphics.context.Context;
 import flat.graphics.cursor.Cursor;
+import flat.graphics.image.ImageData;
 import flat.graphics.image.PixelMap;
 import flat.uxml.UXListener;
 import flat.window.event.EventData;
@@ -568,6 +569,18 @@ public class Window {
         checkDisposed();
 
         WL.SetClipboardString(windowId, clipboard);
+    }
+
+    public ImageData getClipboardImage() {
+        checkDisposed();
+
+        return WL.GetClipboardImage(windowId);
+    }
+
+    public void setClipboardImage(ImageData imageData) {
+        checkDisposed();
+
+        WL.SetClipboardImage(windowId, imageData);
     }
 
     public boolean requestClose() {

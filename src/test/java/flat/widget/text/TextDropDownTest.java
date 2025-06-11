@@ -101,8 +101,8 @@ public class TextDropDownTest {
         Scene sceneA = new Scene();
         ActivitySupport.setActivity(sceneA, activityA);
         PowerMockito.when(activityA.getScene()).thenReturn(sceneA);
-        PowerMockito.when(activityA.getWidth()).thenReturn(800f);
-        PowerMockito.when(activityA.getHeight()).thenReturn(600f);
+        PowerMockito.when(activityA.getWidth()).thenReturn(800);
+        PowerMockito.when(activityA.getHeight()).thenReturn(600);
 
         sceneA.add(dropDown);
 
