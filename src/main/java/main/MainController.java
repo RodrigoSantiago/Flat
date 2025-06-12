@@ -440,6 +440,20 @@ public class MainController extends Controller {
     }
 
     @Flat
+    public void onFontPickerDialog() {
+        var alert = new FontPickerDialogBuilder()
+                .title("Select a font")
+                .message("Filter")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .initialFont(Font.getDefault())
+                .onChooseListener((widget, value) -> System.out.println("Font: " + value))
+                .block(false)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
     public void onBlockRangedDatePickerDialog() {
         var alert = new DatePickerDialogBuilder()
                 .title("Select a date range")

@@ -107,7 +107,7 @@ class WindowsSystemFonts {
             if (microsoftName != null) {
                 a.name = microsoftName;
             } else {
-                a.name = a.originalName;
+                a.name = a.family;
             }
             FontStyle style = styles.get(a.name);
             if (style != null) {

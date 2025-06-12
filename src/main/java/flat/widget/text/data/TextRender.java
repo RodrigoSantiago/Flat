@@ -361,11 +361,11 @@ public class TextRender {
         return height * lineCount;
     }
 
-    public void drawText(Graphics context, float x, float y, float width, float height, HorizontalAlign align) {
-        drawText(context, x, y, width, height, align, 0, lineCount);
+    public void drawText(Graphics graphics, float x, float y, float width, float height, HorizontalAlign align) {
+        drawText(graphics, x, y, width, height, align, 0, lineCount);
     }
 
-    public void drawText(Graphics context, float x, float y, float width, float height, HorizontalAlign align, int startLine, int endLine) {
+    public void drawText(Graphics graphics, float x, float y, float width, float height, HorizontalAlign align, int startLine, int endLine) {
         if (byteSize == 0 || font == null) {
             return;
         }
@@ -374,9 +374,9 @@ public class TextRender {
 
         if (lineCount == 1) {
             if (hidden) {
-                context.drawTextSlice(x, y, width, height, getHiddenChars());
+                graphics.drawTextSlice(x, y, width, height, getHiddenChars());
             } else {
-                context.drawTextSlice(x, y, width, height, buffer, 0, byteSize);
+                graphics.drawTextSlice(x, y, width, height, buffer, 0, byteSize);
             }
             return;
         }
@@ -402,7 +402,7 @@ public class TextRender {
                 wd -= off;
             }
             if (wd > 0 && hg > 0) {
-                context.drawTextSlice(xpos, ypos, wd, hg, buffer, line.start, line.length);
+                graphics.drawTextSlice(xpos, ypos, wd, hg, buffer, line.start, line.length);
             }
         }
     }

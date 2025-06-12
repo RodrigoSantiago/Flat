@@ -35,6 +35,9 @@ dialog-choice {
 dialog-multiple-choices {
     width : 420dp;
 }
+dialog-fontpicker {
+    width : 420dp;
+}
 dialog-colorpicker {
     width : 240dp;
 }
@@ -600,4 +603,46 @@ dialog-colorpicker-hex-field {
     title-appearance : LINE;
 }
 dialog-colorpicker-hex-title : dialog-colorpicker-field {
+}
+dialog-fontpicker-list {
+    width : MATCH_PARENT;
+    height : 256dp;
+    item-height : 32dp;
+    elevation : 4dp;
+    background-color : alpha($card-color-hover, 0.5);
+}
+dialog-fontpicker-data {
+    width : 184dp;
+    height : 256dp;
+    margin-left : 16dp;
+    item-height : 32dp;
+    background-color : alpha($card-color-hover, 0.5);
+}
+dialog-fontpicker-image {
+    width : MATCH_PARENT;
+    height : 32dp;
+    image-scale : FIT;
+
+    ripple-enabled : true;
+    background-color : transparent;
+    ripple-color : $card-color-press;
+    focus-color : $primary-color;
+    cursor : hand;
+    transition-duration : 0.2;
+
+    hovered {
+        background-color : $card-color-hover;
+    }
+    pressed {
+        background-color : $card-color-active;
+    }
+}
+dialog-fontpicker-image-selected {
+    background-color : $card-color-press;
+}
+dialog-fontpicker-list-area {
+    padding-top : 8dp;
+    padding-left : 8dp;
+    padding-right : 8dp;
+    padding-bottom : 8dp;
 }

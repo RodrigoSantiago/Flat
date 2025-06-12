@@ -182,15 +182,15 @@ public class MenuItem extends Button {
         }
     }
 
-    protected void drawShortcutText(Graphics context, float x, float y, float width, float height) {
+    protected void drawShortcutText(Graphics graphics, float x, float y, float width, float height) {
         if (getShortcutTextFont() != null && getShortcutTextSize() > 0 && Color.getAlpha(getShortcutTextColor()) > 0) {
-            context.setTransform2D(getTransform());
-            context.setColor(getShortcutTextColor());
-            context.setTextFont(getShortcutTextFont());
-            context.setTextSize(getShortcutTextSize());
-            context.setTextBlur(0);
+            graphics.setTransform2D(getTransform());
+            graphics.setColor(getShortcutTextColor());
+            graphics.setTextFont(getShortcutTextFont());
+            graphics.setTextSize(getShortcutTextSize());
+            graphics.setTextBlur(0);
 
-            shortcutRender.drawText(context, x, y, width, height, getHorizontalAlign());
+            shortcutRender.drawText(graphics, x, y, width, height, getHorizontalAlign());
         }
     }
 

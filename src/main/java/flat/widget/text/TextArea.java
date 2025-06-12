@@ -249,22 +249,22 @@ public class TextArea extends Scrollable {
         }
     }
 
-    protected void onDrawText(Graphics context, float x, float y, float width, float height) {
+    protected void onDrawText(Graphics graphics, float x, float y, float width, float height) {
         if (getOutWidth() <= 0 || getOutHeight() <= 0 || getTextFont() == null || getTextSize() <= 0) {
             return;
         }
 
-        context.setTransform2D(getTransform());
+        graphics.setTransform2D(getTransform());
         x -= getViewOffsetX();
         y -= getViewOffsetY();
         float xpos = getTextWidth() < width ? xOff(x, x + width, getTextWidth()) : x;
         float ypos = getTextHeight() < height ? yOff(y, y + height, getTextHeight()) : y;
 
-        context.setTransform2D(getTransform());
-        context.setColor(getTextColor());
-        context.setTextFont(getTextFont());
-        context.setTextSize(getTextSize());
-        context.setTextBlur(0);
+        graphics.setTransform2D(getTransform());
+        graphics.setColor(getTextColor());
+        graphics.setTextFont(getTextFont());
+        graphics.setTextSize(getTextSize());
+        graphics.setTextBlur(0);
 
         Caret first = getFirstCaret();
         Caret second = getSecondCaret();
@@ -274,14 +274,14 @@ public class TextArea extends Scrollable {
         float secondX = textRender.getCaretHorizontalOffset(second, horizontalAlign) + xpos;
 
         // Text Selection
-        context.setColor(getTextSelectedColor());
+        graphics.setColor(getTextSelectedColor());
         if (first.getLine() == second.getLine()) {
-            context.drawRect(firstX, ypos + first.getLine() * lineH, secondX - firstX, lineH, true);
+            graphics.drawRect(firstX, ypos + first.getLine() * lineH, secondX - firstX, lineH, true);
         } else {
-            context.drawRect(firstX, ypos + first.getLine() * lineH, getTotalDimensionX() - (firstX - x), lineH, true);
-            context.drawRect(x, y + second.getLine() * lineH, secondX - x, lineH, true);
+            graphics.drawRect(firstX, ypos + first.getLine() * lineH, getTotalDimensionX() - (firstX - x), lineH, true);
+            graphics.drawRect(x, y + second.getLine() * lineH, secondX - x, lineH, true);
             if (first.getLine() + 1 < second.getLine()) {
-                context.drawRect(
+                graphics.drawRect(
                         x, y + (first.getLine() + 1) * lineH
                         , getTotalDimensionX(), (second.getLine() - first.getLine() - 1) * lineH, true);
             }
@@ -289,10 +289,10 @@ public class TextArea extends Scrollable {
 
         // Text
         if (!isTextEmpty()) {
-            context.setColor(getTextColor());
+            graphics.setColor(getTextColor());
             int start = Math.max(0, (int) Math.floor((getViewOffsetY() - getInY()) / lineH) - 1);
             int end = start + Math.max(0, (int) Math.ceil(getHeight() / lineH) + 2);
-            textRender.drawText(context, xpos, ypos, width * 9999, height * 9999, horizontalAlign, start, end);
+            textRender.drawText(graphics, xpos, ypos, width * 9999, height * 9999, horizontalAlign, start, end);
         }
 
         // Caret
@@ -305,9 +305,9 @@ public class TextArea extends Scrollable {
             } else {
                 caretX += xpos;
             }
-            context.setColor(getCaretColor());
-            context.setStroke(new BasicStroke(2));
-            context.drawLine(
+            graphics.setColor(getCaretColor());
+            graphics.setStroke(new BasicStroke(2));
+            graphics.drawLine(
                     caretX, ypos + endCaret.getLine() * lineH,
                     caretX, ypos + (endCaret.getLine() + 1) * lineH);
         }

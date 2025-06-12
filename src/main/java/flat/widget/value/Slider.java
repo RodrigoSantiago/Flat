@@ -139,7 +139,7 @@ public class Slider extends Widget {
         }
 
         float diff = maxValue - minValue;
-        float pos = diff == 0 ? 0 : value / diff;
+        float pos = diff == 0 ? 0 : (value - minValue) / diff;
         if (rev) {
             pos = 1 - pos;
         }

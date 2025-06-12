@@ -176,7 +176,7 @@ public class LineMap implements Drawable {
         if (paths != null) {
             graphics.setColor(color);
             for (var path : paths) {
-                graphics.drawPath(path, true, optimize);
+                graphics.drawPath(path, true, null, optimize);
             }
             graphics.setTransform2D(affine);
             return;
@@ -198,7 +198,7 @@ public class LineMap implements Drawable {
             if (svgPath.getFillPaint() != null) {
                 graphics.setPaint(svgPath.getFillPaint().multiply(color));
                 if (shape instanceof Path p) {
-                    graphics.drawPath(p, true, optimize);
+                    graphics.drawPath(p, true, null, optimize);
                 } else {
                     graphics.drawShape(shape, true);
                 }
@@ -213,7 +213,7 @@ public class LineMap implements Drawable {
             if (svgPath.getFillPaint() == null && svgPath.getStrokePaint() == null) {
                 graphics.setColor(color);
                 if (shape instanceof Path p) {
-                    graphics.drawPath(p, true, optimize);
+                    graphics.drawPath(p, true, null, optimize);
                 } else {
                     graphics.drawShape(shape, true);
                 }

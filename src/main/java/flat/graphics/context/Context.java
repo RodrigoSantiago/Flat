@@ -1567,10 +1567,10 @@ public class Context {
         SVG.PathEnd(svgId);
     }
 
-    public void svgDrawShape(Shape shape, boolean fill) {
+    public void svgDrawShape(Shape shape, boolean fill, Affine transform) {
         checkDisposed();
 
-        PathIterator pi = shape.pathIterator(null);
+        PathIterator pi = shape.pathIterator(transform);
         svgBegin();
         SVG.PathBegin(svgId, fill ? SVGEnums.SVG_FILL : SVGEnums.SVG_STROKE, pi.windingRule());
         while (!pi.isDone()) {
@@ -1596,8 +1596,8 @@ public class Context {
         SVG.PathEnd(svgId);
     }
 
-    public void svgDrawShapeOptimized(Path p) {
-        PathIterator pi = p.pathIterator(null);
+    public void svgDrawShapeOptimized(Path p, Affine transform) {
+        PathIterator pi = p.pathIterator(transform);
         svgBegin();
         SVG.PathBegin(svgId, SVGEnums.SVG_FILL, pi.windingRule());
         while (!pi.isDone()) {

@@ -337,16 +337,16 @@ public class Activity {
         }
     }
 
-    boolean draw(Graphics context) {
+    boolean draw(Graphics graphics) {
         if (renderPartial) {
             if (invalidRect != null) {
-                onDraw(context);
+                onDraw(graphics);
                 invalidRect = null;
                 return true;
             }
         } else {
             if (invalidRect != null || continuousRendering) {
-                onDrawDefault(context);
+                onDrawDefault(graphics);
                 invalidRect = null;
                 return true;
             }

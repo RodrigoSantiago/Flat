@@ -45,7 +45,7 @@ public class RippleEffect {
         return animation.isPlaying();
     }
 
-    public void drawRipple(Graphics context, Shape clip, int color) {
+    public void drawRipple(Graphics graphics, Shape clip, int color) {
         float a = (((color & 0xFF) / 255f) * (1 - animation.getPosition()));
         colors[0] = (color & 0xFFFFFF00) | ((int) (a * 255));
         colors[1] = (color & 0xFFFFFF00);
@@ -55,15 +55,15 @@ public class RippleEffect {
         float pos = animation.getInterpolatedPosition();
         float radius = (min * (1 - pos)) + max * (pos);
         if (clip == null) {
-            context.setColor(colors[0]);
-            context.drawCircle(ripple.x, ripple.y, radius, true);
+            graphics.setColor(colors[0]);
+            graphics.drawCircle(ripple.x, ripple.y, radius, true);
         } else {
-            context.setPaint(new RadialGradient.Builder(ripple.x, ripple.y, radius)
+            graphics.setPaint(new RadialGradient.Builder(ripple.x, ripple.y, radius)
                     .stop(1 - 1f / radius, colors[0])
                     .stop(1, colors[1])
                     .cycleMethod(CycleMethod.CLAMP)
                     .build());
-            context.drawShape(clip, true);
+            graphics.drawShape(clip, true);
         }
     }
 

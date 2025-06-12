@@ -159,6 +159,16 @@ public class FontManager {
         }
     }
 
+    public static HashMap<String, ArrayList<FontDetail>> listSystemFontFamilies() {
+        readDefaultFonts();
+
+        return new HashMap<>(SystemFonts.listSystemFontFamilies());
+    }
+
+    public static HashMap<String, ArrayList<Font>> getInstalledFontFamilies() {
+        return new HashMap<>(fontFamilies);
+    }
+
     public static ArrayList<FontDetail> listSystemFonts() {
         readDefaultFonts();
 
@@ -175,7 +185,7 @@ public class FontManager {
         try {
             byte[] data = Files.readAllBytes(fontDetail.getFile().toPath());
             return new Font(fontDetail.getFamily(), fontDetail.getWeight(), fontDetail.getPosture(), fontDetail.getStyle(), data);
-        } catch (IOException e) {
+        } catch (Exception e) {
             return null;
         }
     }

@@ -199,6 +199,7 @@ public class Graphics {
         context.svgTextBlur(0);
         context.svgPaint(new ColorPaint(0xFFFFFFFF));
         context.svgAntialias(true);
+        context.setMultiSampleEnabled(true);
         context.setViewPort(0, 0, getWidth(), getHeight());
         setAlphaComposite(AlphaComposite.SRC_OVER);
     }
@@ -531,7 +532,7 @@ public class Graphics {
     }
 
     public void drawShape(Shape shape, boolean fill) {
-        if (shape instanceof Path path) drawPath(path, fill, true);
+        if (shape instanceof Path path) drawPath(path, fill, null, true);
         else if (shape instanceof RoundRectangle roundRect) drawRoundRect(roundRect, fill);
         else if (shape instanceof Circle circle) drawCircle(circle, fill);
         else if (shape instanceof Rectangle rect) drawRect(rect, fill);
@@ -539,14 +540,22 @@ public class Graphics {
         else if (shape instanceof Line line) drawLine(line);
         else if (shape instanceof QuadCurve quad) drawQuadCurve(quad);
         else if (shape instanceof CubicCurve cubic) drawCubicCurve(cubic);
-        else context.svgDrawShape(shape, fill);
+        else context.svgDrawShape(shape, fill, null);
     }
 
-    public void drawPath(Path path, boolean fill, boolean optimize) {
+    public void drawPath(Path path, boolean fill) {
+        drawPath(path, fill, null);
+    }
+
+    public void drawPath(Path path, boolean fill, Affine transform) {
+        drawPath(path, fill, transform, false);
+    }
+
+    public void drawPath(Path path, boolean fill, Affine transform, boolean optimize) {
         if (optimize && fill && path.length() > 3000) {
-            context.svgDrawShapeOptimized(path);
+            context.svgDrawShapeOptimized(path, transform);
         } else {
-            context.svgDrawShape(path, fill);
+            context.svgDrawShape(path, fill, transform);
         }
     }
 
