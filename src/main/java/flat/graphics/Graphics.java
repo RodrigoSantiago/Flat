@@ -1,6 +1,5 @@
 package flat.graphics;
 
-import flat.backend.GL;
 import flat.exception.FlatException;
 import flat.graphics.context.*;
 import flat.graphics.context.enums.*;
@@ -204,14 +203,31 @@ public class Graphics {
         setAlphaComposite(AlphaComposite.SRC_OVER);
     }
 
-    public PixelMap createPixelMap() {
-        return createPixelMap(0, 0, getWidth(), getHeight(), PixelFormat.RGBA);
+    public PixelMap renderToImage() {
+        return renderToImage(0, 0, getWidth(), getHeight());
     }
 
-    public PixelMap createPixelMap(int x, int y, int width, int height, PixelFormat format) {
-        Texture2D texture = new Texture2D(width, height, format);
-        renderToTexture(texture, x, y, width, height);
-        return new PixelMap(texture);
+    public PixelMap renderToImage(int x, int y, int width, int height) {
+        return new PixelMap(renderToTexture(x, y, width, height));
+    }
+
+    public void renderToImage(PixelMap pixelMap) {
+        renderToImage(pixelMap, 0, 0, getWidth(), getHeight());
+    }
+
+    public void renderToImage(PixelMap pixelMap, int x, int y, int width, int height) {
+        renderToTexture(pixelMap.getTexture(), 0, 0, getWidth(), getHeight());
+        pixelMap.invalidateTextureData();
+    }
+
+    public Texture2D renderToTexture() {
+        return renderToTexture(0, 0, getWidth(), getHeight());
+    }
+
+    public Texture2D renderToTexture(int x, int y, int width, int height) {
+        Texture2D texture = new Texture2D(width, height, PixelFormat.RGBA);
+        renderToTexture(texture, 0, 0, width, height);
+        return texture;
     }
 
     public void renderToTexture(Texture2D texture) {
@@ -219,12 +235,15 @@ public class Graphics {
     }
 
     public void renderToTexture(Texture2D texture, int x, int y, int width, int height) {
+        if (texture == null) {
+            throw new FlatException("Invalid texture argument");
+        }
         if (x < 0 || y < 0 || width <= 0 || height <= 0 || x + width > getWidth() || x + height > getHeight()) {
             throw new FlatException("The rendered area must be inside the view (0, 0, " + getWidth() + ", " + getHeight() + ")");
         }
         context.softFlush();
         if (surface != null) {
-            surface.renderToTexture(this, x, y, width, height, null, texture);
+            surface.renderToTexture(this, x, y, width, height, texture);
         } else {
             FrameBuffer fbo = new FrameBuffer(context);
             fbo.attach(LayerTarget.COLOR_0, texture, 0);

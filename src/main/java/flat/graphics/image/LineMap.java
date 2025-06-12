@@ -126,7 +126,7 @@ public class LineMap implements Drawable {
         graphics.setTransform2D(null);
         graphics.setAntialiasEnabled(true);
         drawSvg(graphics, 0, 0, w, h, 0xFFFFFFFF, false);
-        pixelMap = graphics.createPixelMap();
+        pixelMap = graphics.renderToImage();
         graphics.setSurface(null);
 
         graphics.setTransform2D(transform);

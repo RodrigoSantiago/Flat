@@ -200,7 +200,7 @@ public class EmojiConverter {
                 gr.drawImage(map, i % 64 * iconSize, i / 64 * iconSize, iconSize, iconSize);
             }
         }
-        PixelMap complete = gr.createPixelMap();
+        PixelMap complete = gr.renderToImage();
         gr.setSurface(null);
 
         return complete;

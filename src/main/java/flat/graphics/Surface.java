@@ -48,14 +48,11 @@ public class Surface {
         return clipState;
     }
 
-    Texture2D renderToTexture(Graphics graphics, int x, int y, int width, int height, PixelFormat format, Texture2D textureTransfer) {
+    Texture2D renderToTexture(Graphics graphics, int x, int y, int width, int height, Texture2D textureTransfer) {
         checkDisposed();
 
         if (frameBuffer == null) {
             return null;
-        }
-        if (textureTransfer == null) {
-            textureTransfer = new Texture2D(width, height, format);
         }
         frameBuffer.attach(LayerTarget.COLOR_0, textureTransfer, 0);
         frameBuffer.detach(LayerTarget.DEPTH_STENCIL);

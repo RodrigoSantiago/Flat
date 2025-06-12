@@ -20,9 +20,7 @@ import flat.graphics.context.enums.ImageFileFormat;
 import flat.graphics.image.PixelMap;
 import flat.math.*;
 import flat.math.shapes.Circle;
-import flat.math.shapes.Ellipse;
 import flat.math.shapes.Path;
-import flat.math.stroke.BasicStroke;
 import flat.resources.ResourceStream;
 import flat.uxml.Controller;
 import flat.widget.Parent;
@@ -674,7 +672,7 @@ public class MainController extends Controller {
             shader.set("bac", new Vector4(1, 1, 1, 1));
             graphics.blitCustomShader(shader, 8, 24, 56, 40);
             graphics.setAlphaComposite(AlphaComposite.SRC_OVER);
-            maps[i] = graphics.createPixelMap();
+            maps[i] = graphics.renderToImage();
             images[i].setImage(maps[i]);
             graphics.clear(0, 0, 0);
         }
@@ -834,7 +832,7 @@ public class MainController extends Controller {
 
         if (t > 0) {
             if (t == 1) {
-                screen = getActivity().getContext().getGraphics().createPixelMap();
+                screen = getActivity().getContext().getGraphics().renderToImage();
                 System.out.println("Print : " + GL.GetError());
             }
             int w = (int) getActivity().getWidth();

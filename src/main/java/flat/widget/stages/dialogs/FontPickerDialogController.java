@@ -168,9 +168,11 @@ class FontPickerDialogController extends DefaultDialogController {
         }
         systemFamilies.sort((o1, o2) -> o1.get(0).compareTo(o2.get(0)));
 
+        int familyId = 0;
         if (initialFont != null) {
             var init = new DetailInstalled(null, initialFont);
-            for (var list : systemFamilies) {
+            for (int i = 0; i < systemFamilies.size(); i++) {
+                var list = systemFamilies.get(i);
                 for (var item : list) {
                     if (item.compareTo(init) == 0) {
                         selected = item;
@@ -178,6 +180,7 @@ class FontPickerDialogController extends DefaultDialogController {
                     }
                 }
                 if (selected != null) {
+                    familyId = i;
                     break;
                 }
             }
@@ -204,6 +207,12 @@ class FontPickerDialogController extends DefaultDialogController {
             }
         });
         fontStyleView.setAdapter(adapterB);
+        float id = familyId;
+        getWindow().runSync(() -> {
+            fontView.slideVertical(
+                    (fontView.getTotalDimensionY() - fontView.getViewDimensionY()) * (id / fontFamily.size())
+            );
+        });
         UXListener.safeHandle(onShowListener, dialog);
     }
 
@@ -252,6 +261,8 @@ class FontPickerDialogController extends DefaultDialogController {
             });
             return null;
         }
+
+        PixelMap pixelMap = new PixelMap(new byte[256 * 32 * 4], 256, 32, PixelFormat.RGBA);
         var graphics = getGraphics();
         graphics.setSurface(surface);
         graphics.clear(0, 0, 0);
@@ -259,7 +270,7 @@ class FontPickerDialogController extends DefaultDialogController {
         graphics.setTextSize(20f);
         graphics.setColor(Color.black);
         graphics.drawTextSlice(8, 6, 240, 0, font.getName());
-        PixelMap fontPreview = graphics.createPixelMap();
+        PixelMap fontPreview = graphics.renderToTexture(pixelMap);
         graphics.setSurface(null);
         if (fontDetail.font == null) {
             font.dispose();
