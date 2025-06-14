@@ -18,8 +18,8 @@ public class Controller {
     public final void setActivity(Activity activity) {
         if (this.activity != activity) {
             Activity old = this.activity;
-            this.activity = activity;
             if (old == null) {
+                this.activity = activity;
                 if (!firstLoad) {
                     firstLoad = true;
                     try {
@@ -39,6 +39,9 @@ public class Controller {
                 } catch (Exception e) {
                     Application.handleException(e);
                 }
+                this.activity = null;
+            } else {
+                this.activity = activity;
             }
         }
     }

@@ -89,7 +89,11 @@ public class EventDataPointer {
             }
             lastPressed = pressed;
             lastPress = now;
-            pressed.firePointer(new PointerEvent(pressed, window, PointerEvent.PRESSED, button, x, y, clickCount));
+            var event = new PointerEvent(pressed, window, PointerEvent.PRESSED, button, x, y, clickCount);
+            pressed.firePointer(event);
+            if (!event.isFocusConsumed()) {
+                window.getActivity().setFocus(null);
+            }
         }
     }
 
@@ -104,9 +108,6 @@ public class EventDataPointer {
         if (released != null) {
             PointerEvent event = new PointerEvent(released, window, PointerEvent.RELEASED, button, x, y, clickCount);
             released.firePointer(event);
-            if (!event.isFocusConsumed()) {
-                window.getActivity().setFocus(null);
-            }
         } else {
             window.getActivity().setFocus(null);
         }

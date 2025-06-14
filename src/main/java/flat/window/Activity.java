@@ -1,6 +1,8 @@
 package flat.window;
 
 import flat.animations.Animation;
+import flat.animations.PlayLaterTimer;
+import flat.animations.Timer;
 import flat.events.FocusEvent;
 import flat.events.KeyCode;
 import flat.events.KeyEvent;
@@ -235,6 +237,30 @@ public class Activity {
         return window.runSync(task);
     }
 
+    public void runLater(FutureTask<?> task, float seconds) {
+        if (seconds <= 0) {
+            runLater(task);
+            return;
+        }
+        new PlayLaterTimer(this, seconds, () -> window.runSync(task)).play();
+    }
+
+    public void runLater(Callable<?> task, float seconds) {
+        if (seconds <= 0) {
+            runLater(task);
+            return;
+        }
+        new PlayLaterTimer(this, seconds, () -> window.runSync(task)).play();
+    }
+
+    public void runLater(Runnable task, float seconds) {
+        if (seconds <= 0) {
+            runLater(task);
+            return;
+        }
+        new PlayLaterTimer(this, seconds, () -> window.runSync(task)).play();
+    }
+
     private void updateDensity() {
         float dpi = getWindow() == null ? 160f : getWindow().getDpi();
         if (lastDpi != dpi) {
@@ -338,7 +364,7 @@ public class Activity {
     }
 
     boolean draw(Graphics graphics) {
-        if (renderPartial) {
+        if (renderPartial && !continuousRendering) {
             if (invalidRect != null) {
                 onDraw(graphics);
                 invalidRect = null;

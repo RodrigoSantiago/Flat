@@ -7,7 +7,7 @@ import flat.graphics.context.Texture2D;
 import flat.graphics.context.enums.CycleMethod;
 import flat.graphics.context.paints.ImagePattern;
 import flat.graphics.image.Drawable;
-import flat.graphics.image.PixelMap;
+import flat.graphics.image.ImageTexture;
 import flat.math.shapes.Shape;
 import flat.math.stroke.BasicStroke;
 import flat.uxml.UXAttrs;
@@ -118,8 +118,8 @@ public class ImageView extends Widget {
 
             Shape oldClip = null;
             graphics.setTransform2D(getTransform());
-            if (image instanceof PixelMap map) {
-                Texture2D tex = map.getTexture();
+            if (image instanceof ImageTexture img) {
+                Texture2D tex = img.getTexture();
                 float tx = imageScale == ImageScale.REPEAT ? x : xOff(x, x + width, dW);
                 float ty = imageScale == ImageScale.REPEAT ? y : yOff(y, y + height, dH);
                 drawPattern(graphics, tex,
@@ -167,7 +167,7 @@ public class ImageView extends Widget {
                 .destin(dstX1, dstY1, dstX2, dstY2)
                 .color(color)
                 .nearest(imageFilter == ImageFilter.NEAREST)
-                .cycleMethod(imageScale == ImageScale.REPEAT ? CycleMethod.REPEAT : CycleMethod.CLAMP)
+                .cycleMethod(imageScale == ImageScale.REPEAT ? CycleMethod.REPEAT : CycleMethod.EMPTY)
                 .build());
         graphics.drawRoundRect(getBackgroundShape(), true);
     }

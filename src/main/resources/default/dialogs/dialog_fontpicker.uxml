@@ -1,8 +1,11 @@
 <LinearBox direction="vertical" style="dialog-fontpicker">
     <LinearBox style="dialog-header" on-pointer="onHeaderPointer"/>
-    <LinearBox direction="vertical" vertical-alig="right" style="dialog-message-area">
-        <Label style="dialog-title" id="titleLabel"/>
-        <Text style="dialog-message" id="messageLabel"/>
+    <LinearBox  direction="horizontal">
+        <LinearBox direction="vertical" vertical-alig="right" style="dialog-message-area">
+            <Label style="dialog-title" id="titleLabel"/>
+            <Text style="dialog-message" id="messageLabel"/>
+        </LinearBox>
+        <Button style="icon-left dialog-fontpicker-open primary" on-action="onOpenFont" icon="icon(fill, folder)"/>
     </LinearBox>
     <Divider/>
     <LinearBox  direction="horizontal" style="dialog-fontpicker-list-area">

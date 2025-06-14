@@ -3,7 +3,7 @@ package flat.graphics.context;
 import flat.backend.GL;
 import flat.backend.GLEnums;
 import flat.exception.FlatException;
-import flat.graphics.ImageTexture;
+import flat.graphics.RenderTexture;
 import flat.graphics.context.enums.MagFilter;
 import flat.graphics.context.enums.MinFilter;
 import flat.graphics.context.enums.PixelFormat;
@@ -11,7 +11,7 @@ import flat.graphics.context.enums.WrapMode;
 
 import java.nio.Buffer;
 
-public final class Texture2D extends Texture implements ImageTexture {
+public final class Texture2D extends Texture implements RenderTexture {
 
     private final int textureId;
 

@@ -21,21 +21,21 @@ public class DrawableReader {
         if (stream.getResourceName().toLowerCase().endsWith(".svg")) {
             if (suppressException) {
                 try {
-                    return LineMap.parse(stream);
+                    return ImageVector.parse(stream);
                 } catch (Exception e) {
                     return null;
                 }
             }
-            return LineMap.parse(stream);
+            return ImageVector.parse(stream);
         } else {
             if (suppressException) {
                 try {
-                    return PixelMap.parse(stream);
+                    return ImageTexture.parse(stream);
                 } catch (Exception e) {
                     return null;
                 }
             }
-            return PixelMap.parse(stream);
+            return ImageTexture.parse(stream);
         }
     }
 }

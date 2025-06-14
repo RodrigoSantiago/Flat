@@ -1,14 +1,14 @@
 package flat.graphics.emojis;
 
 import flat.backend.SVG;
-import flat.graphics.ImageTexture;
+import flat.graphics.RenderTexture;
 import flat.graphics.context.Texture2D;
 import flat.graphics.context.enums.MagFilter;
 import flat.graphics.context.enums.MinFilter;
 import flat.graphics.context.enums.PixelFormat;
 import flat.graphics.context.enums.WrapMode;
 import flat.graphics.image.Drawable;
-import flat.graphics.image.SpriteMap;
+import flat.graphics.image.ImageTextureMap;
 import flat.resources.ResourceStream;
 import flat.window.Application;
 
@@ -18,7 +18,7 @@ public class EmojiManager {
 
     private static Texture2D emojiTexture;
     private static final HashMap<Integer, Drawable> drawables = new HashMap<>();
-    private static final ImageTexture imageTexture = () -> emojiTexture;
+    private static final RenderTexture RENDER_TEXTURE = () -> emojiTexture;
 
     private static boolean enabled;
 
@@ -73,7 +73,7 @@ public class EmojiManager {
                 int s = (Application.getSystemQuality() * 1024) / 64;
                 int x = index % 64;
                 int y = index / 64;
-                drawable = new SpriteMap(imageTexture, x * s, y * s, s, s);
+                drawable = new ImageTextureMap(RENDER_TEXTURE, x * s, y * s, s, s);
                 drawables.put(index, drawable);
             }
             return drawable;

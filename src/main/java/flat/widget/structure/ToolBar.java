@@ -16,7 +16,7 @@ import flat.widget.enums.Visibility;
 import flat.widget.stages.Divider;
 import flat.widget.stages.Menu;
 import flat.widget.stages.MenuItem;
-import flat.widget.text.data.TextRender;
+import flat.widget.text.data.TextBox;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,8 +52,8 @@ public class ToolBar extends Parent {
     private List<ToolItem> unmodifiableToolItems;
     private Divider divider;
 
-    private TextRender titleRender = new TextRender();
-    private TextRender subtitleRender = new TextRender();
+    private TextBox titleRender = new TextBox();
+    private TextBox subtitleRender = new TextBox();
 
     private boolean overflowVisible;
     private boolean navigationVisible;

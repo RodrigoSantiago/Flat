@@ -44,6 +44,8 @@
                 <ImageView margin-left="16dp" image="/default/images/placeholder_img.jpg" width="86dp" height="64dp" image-scale="STRETCH" color="#80FF80"/>
                 <ImageView margin-left="16dp" image="/default/images/placeholder_img.jpg" width="86dp" height="64dp" image-scale="STRETCH" color="#8080FF"/>
                 <ImageView margin-left="16dp" image="/default/images/placeholder_img.jpg" width="86dp" height="64dp" image-scale="STRETCH" color="#FFFFFF80"/>
+                <ImageView margin-left="16dp" image="/default/images/placeholder_img.jpg" width="160dp" height="64dp" image-scale="FIT"
+                           radius-top="8dp" radius-bottom="8dp"  radius-right="8dp"  radius-left="8dp" background-color="red"/>
             </LinearBox>
         </LinearBox>
 

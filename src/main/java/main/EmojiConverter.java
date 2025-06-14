@@ -7,7 +7,7 @@ import flat.graphics.context.enums.MinFilter;
 import flat.graphics.emojis.EmojiCharacter;
 import flat.graphics.emojis.EmojiDictionary;
 import flat.graphics.emojis.EmojiGroup;
-import flat.graphics.image.PixelMap;
+import flat.graphics.image.ImageTexture;
 import flat.resources.ResourceStream;
 import flat.window.Application;
 
@@ -142,7 +142,7 @@ public class EmojiConverter {
         }
     }
 
-    public static PixelMap createFromNotoEmoji(String path, ArrayList<int[]> allUnicodes, int size) {
+    public static ImageTexture createFromNotoEmoji(String path, ArrayList<int[]> allUnicodes, int size) {
         File file = new File(path);
         File[] children = file.listFiles();
 
@@ -179,14 +179,14 @@ public class EmojiConverter {
             System.arraycopy(unicodes, 0, uni, 0, 6);
             allUnicodes.add(uni);
 
-            PixelMap map = PixelMap.parse(new ResourceStream(child));
-            map.getTexture().setLevels(8);
-            map.getTexture().generateMipmapLevels();
-            map.getTexture().setScaleFilters(MagFilter.LINEAR, MinFilter.LINEAR_MIPMAP_LINEAR);
-            if (map.getWidth() != map.getHeight()) {
+            ImageTexture img = ImageTexture.parse(new ResourceStream(child));
+            img.getTexture().setLevels(8);
+            img.getTexture().generateMipmapLevels();
+            img.getTexture().setScaleFilters(MagFilter.LINEAR, MinFilter.LINEAR_MIPMAP_LINEAR);
+            if (img.getWidth() != img.getHeight()) {
                 if (iconSize < 32) {
                 }
-                float d = map.getWidth() / map.getHeight();
+                float d = img.getWidth() / img.getHeight();
                 int w, h;
                 if (d > 1) {
                     w = iconSize;
@@ -195,12 +195,12 @@ public class EmojiConverter {
                     h = iconSize;
                     w = (int) (h * d);
                 }
-                gr.drawImage(map, i % 64 * iconSize + (iconSize - w) / 2.0f, i / 64 * iconSize + (iconSize - h) / 2.0f, w, h);
+                gr.drawImage(img, i % 64 * iconSize + (iconSize - w) / 2.0f, i / 64 * iconSize + (iconSize - h) / 2.0f, w, h);
             } else {
-                gr.drawImage(map, i % 64 * iconSize, i / 64 * iconSize, iconSize, iconSize);
+                gr.drawImage(img, i % 64 * iconSize, i / 64 * iconSize, iconSize, iconSize);
             }
         }
-        PixelMap complete = gr.renderToImage();
+        ImageTexture complete = gr.renderToImage();
         gr.setSurface(null);
 
         return complete;

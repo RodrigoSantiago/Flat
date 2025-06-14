@@ -82,7 +82,7 @@ dialog-snackbar-button {
 
 }
 dialog-message-area {
-    min-width : 420dp;
+    width : 420dp;
     vertical-align : top;
     horizontal-align : left;
     padding-top : 24dp;
@@ -612,7 +612,7 @@ dialog-fontpicker-list {
     background-color : alpha($card-color-hover, 0.5);
 }
 dialog-fontpicker-data {
-    width : 184dp;
+    width : 160dp;
     height : 256dp;
     margin-left : 16dp;
     item-height : 32dp;
@@ -642,7 +642,19 @@ dialog-fontpicker-image-selected {
 }
 dialog-fontpicker-list-area {
     padding-top : 8dp;
-    padding-left : 8dp;
-    padding-right : 8dp;
+    padding-left : 16dp;
+    padding-right : 16dp;
     padding-bottom : 8dp;
+}
+dialog-fontpicker-open {
+    margin-top : 32dp;
+    margin-right : 32dp;
+    min-width : 64dp;
+}
+dialog-generic-area {
+    width : MATCH_PARENT;
+    margin-left : 24dp;
+    margin-right : 24dp;
+    margin-top : 8dp;
+    margin-bottom : 8dp;
 }

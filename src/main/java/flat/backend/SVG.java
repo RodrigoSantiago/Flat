@@ -72,6 +72,7 @@ public class SVG {
     public static native void FontGetAllCodePoints(long font, int[] codePoints);
     public static native void FontGetGlyph(long font, int codePoint, float[] data);
     public static native float[] FontGetGlyphShape(long font, int codePoints);
+    public static native float FontGetKerning(long font, int codePointA , int codePointB);
     public static native String FontGetName(long font);
     public static native boolean FontIsBold(long font);
     public static native boolean FontIsItalic(long font);

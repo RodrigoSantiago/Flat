@@ -22,7 +22,7 @@
             <Label text="Special" style="subtitle" margin-left="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
                 <Button text="Color Picker" style="icon-left" on-action="onColorPickerDialog" icon="icon(fill, palette)"/>
-                <Button margin-left="16dp" text="Font Picker" style="icon-left" on-action="onFontPickerDialog" icon="icon(fill, event)"/>
+                <Button margin-left="16dp" text="Font Picker" style="icon-left" on-action="onFontPickerDialog" icon="icon(fill, format_shapes)"/>
 
             </LinearBox>
             <Label text="Emojis" style="subtitle" margin-left="4dp" margin-top="16dp"/>

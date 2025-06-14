@@ -58,9 +58,12 @@
                 <LinearBox direction="VERTICAL" margin-left="8dp">
                     <Label style="subtitle" text="Darken"/><ImageView id="img16" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
                 </LinearBox>
+                <LinearBox direction="VERTICAL" margin-left="8dp">
+                    <Label style="subtitle" text="Reverse Sub"/><ImageView id="img17" width="64dp" height="64dp" border-width="1dp" border-color="black"/>
+                </LinearBox>
             </LinearBox>
             <Label text="Canvas" style="subtitle" margin-left="4dp" margin-top="32dp"/>
-            <Canvas margin-left="4dp" width="400" height="400" on-draw="onCanvasDraw" background-color="$card-color"/>
+            <Canvas margin-left="4dp" margin-top="16dp" width="400" height="400" on-draw="onCanvasDraw" background-color="$card-color"/>
         </LinearBox>
 
         <LinearBox direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
@@ -81,6 +84,9 @@
                 <Button width="80dp" margin-left="8dp" text="MOVE" cursor="MOVE"/>
                 <Button width="80dp" margin-left="8dp" text="NOT" cursor="NOT"/>
             </LinearBox>
+            <Label text="Canvas" style="subtitle" margin-left="4dp" margin-top="32dp"/>
+            <Canvas margin-top="16dp" width="128dp" height="128dp" on-draw="onCanvasDraw2" background-color="$card-color"/>
+            <Canvas margin-top="16dp" width="128dp" height="128dp" on-draw="onCanvasDraw3" background-color="$card-color"/>
         </LinearBox>
     </LinearBox>
 </Scene>

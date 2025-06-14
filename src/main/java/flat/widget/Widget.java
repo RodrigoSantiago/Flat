@@ -1850,6 +1850,11 @@ public class Widget {
             if (event.getType() == PointerEvent.PRESSED) {
                 setPressed(true);
                 fireRipple(event.getX(), event.getY());
+                
+                if (!event.isFocusConsumed() && isFocusable()) {
+                    event.consumeFocus();
+                    requestFocus(true);
+                }
             }
             if (event.getType() == PointerEvent.RELEASED) {
                 setPressed(false);
@@ -1857,10 +1862,6 @@ public class Widget {
 
                 if (event.getPointerID() == 2 && contextMenu != null) {
                     pointerMenu(event);
-                }
-                if (!event.isFocusConsumed() && isFocusable()) {
-                    event.consumeFocus();
-                    requestFocus(true);
                 }
             }
 

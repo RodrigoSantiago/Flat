@@ -15,7 +15,7 @@ import flat.widget.enums.DropdownAlign;
 import flat.widget.enums.HorizontalPosition;
 import flat.widget.enums.ImageFilter;
 import flat.widget.text.Button;
-import flat.widget.text.data.TextRender;
+import flat.widget.text.data.TextBox;
 import flat.window.Activity;
 
 import java.util.Objects;
@@ -35,7 +35,7 @@ public class MenuItem extends Button {
     private Drawable submenuIcon;
     private ImageFilter submenuImageFilter = ImageFilter.LINEAR;
     private int submenuColor = Color.black;
-    private final TextRender shortcutRender = new TextRender();
+    private final TextBox shortcutRender = new TextBox();
 
     public MenuItem() {
         shortcutRender.setFont(shortcutTextFont);

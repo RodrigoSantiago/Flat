@@ -104,6 +104,16 @@ public class UXBuilder {
 
         return child;
     }
+    
+    public Widget build(UXListener<Widget> assignTo) {
+        Widget child = buildRecursive(root);
+        if (child != null) {
+            UXListener.safeHandle(assignTo, child);
+            assignWidgets();
+        }
+        
+        return child;
+    }
 
     public Scene buildScene(UXTheme theme) {
         Widget child = root == null ? null : buildRecursive(root);

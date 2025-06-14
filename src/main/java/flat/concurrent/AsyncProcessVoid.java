@@ -1,5 +1,5 @@
 package flat.concurrent;
 
 public interface AsyncProcessVoid {
-    void run(ProgressReport report);
+    void run(ProgressReport report) throws Exception;
 }

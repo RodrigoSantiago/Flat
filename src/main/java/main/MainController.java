@@ -9,18 +9,23 @@ import flat.concurrent.ProgressTask;
 import flat.data.ObservableList;
 import flat.events.*;
 import flat.graphics.Color;
+import flat.graphics.TextVectorRender;
 import flat.graphics.Graphics;
 import flat.graphics.Surface;
+import flat.graphics.context.enums.CycleMethod;
 import flat.graphics.context.enums.PixelFormat;
+import flat.graphics.context.paints.LinearGradient;
+import flat.graphics.context.paints.RadialGradient;
 import flat.graphics.image.ImageData;
 import flat.graphics.symbols.Font;
 import flat.graphics.context.ShaderProgram;
 import flat.graphics.context.enums.AlphaComposite;
 import flat.graphics.context.enums.ImageFileFormat;
-import flat.graphics.image.PixelMap;
+import flat.graphics.image.ImageTexture;
 import flat.math.*;
 import flat.math.shapes.Circle;
 import flat.math.shapes.Path;
+import flat.math.stroke.BasicStroke;
 import flat.resources.ResourceStream;
 import flat.uxml.Controller;
 import flat.widget.Parent;
@@ -556,7 +561,7 @@ public class MainController extends Controller {
     }
 
     ShaderProgram shader;
-    PixelMap pix;
+    ImageTexture pix;
     Font arial;
 
     private void setupListView(ListView listView) {
@@ -586,8 +591,8 @@ public class MainController extends Controller {
     public void optimize(PointerEvent pointer) {
         /*if (pointer.getPointerID() == 1 && pointer.getType() == PointerEvent.PRESSED) {
             if (pointer.getSource() instanceof ImageView view) {
-                LineMap lineMap = (LineMap) view.getImage();
-                lineMap.optimize();
+                ImageVector imageVector = (ImageVector) view.getImage();
+                imageVector.optimize();
             }
         }*/
     }
@@ -604,14 +609,14 @@ public class MainController extends Controller {
     float t = 0;
     float av = 0;
 
-    PixelMap[] maps;
+    ImageTexture[] maps;
     @Flat public ImageView img0, img1, img2, img3, img4, img5, img6, img7, img8, img9, img10,
-            img11, img12, img13, img14, img15, img16;
+            img11, img12, img13, img14, img15, img16, img17;
     private ImageView[] images;
 
     private boolean mode;
     private ImageData pasteImageData;
-    private PixelMap pasteImage;
+    private ImageTexture pasteImage;
     @Flat
     public void toggleDefault(ActionEvent event) {
         //mode = !mode;
@@ -620,19 +625,20 @@ public class MainController extends Controller {
         var old = pasteImageData;
         pasteImageData = WL.GetClipboardImage(0);
         if (pasteImageData != null) {
-            pasteImage = new PixelMap(pasteImageData.getData(), pasteImageData.getWidth(), pasteImageData.getHeight(), pasteImageData.getFormat());
+            pasteImage = new ImageTexture(pasteImageData.getData(), pasteImageData.getWidth(), pasteImageData.getHeight(), pasteImageData.getFormat());
         }
         if (old != null) {
             WL.SetClipboardImage(0, old);
         }
     }
 
-    private PixelMap cutTest;
+    private ImageTexture cutTest;
     @Override
     public void onShow() {
+        getActivity().setRenderPartialEnabled(true);
         images = new ImageView[]{img0, img1, img2, img3, img4, img5, img6, img7, img8, img9, img10,
-                img11, img12, img13, img14, img15, img16};
-        getWindow().setIcon(PixelMap.parse(new ResourceStream("/default/icons/window-icon.png")));
+                img11, img12, img13, img14, img15, img16, img17};
+        getWindow().setIcon(ImageTexture.parse(new ResourceStream("/default/icons/window-icon.png")));
         setupListView(listView1);
         setupListView(listView2);
         setupListView(listView3);
@@ -658,9 +664,9 @@ public class MainController extends Controller {
         Surface surface = new Surface(64, 64, 8);
         graphics.setSurface(surface);
 
-        maps = new PixelMap[AlphaComposite.values().length];
+        maps = new ImageTexture[AlphaComposite.values().length];
         for (int i = 0; i < maps.length; i++) {
-            if (i >= maps.length - 5) {
+            if (i >= maps.length - 6) {
                 graphics.clear(0xFFFFFFFF, 0, 0);
             }
             graphics.setAlphaComposite(AlphaComposite.SRC_OVER);
@@ -689,10 +695,10 @@ public class MainController extends Controller {
         //graphics.drawCircle(32, 32, 16, false);
         //graphics.drawCircle(32, 32, 8, false);
         //graphics.drawLine(0, 16, 32, 16);
-        //cutTest = graphics.createPixelMap(32, 16, 32, 32, PixelFormat.RGBA);
+        //cutTest = graphics.createImageTexture(32, 16, 32, 32, PixelFormat.RGBA);
         //graphics.setSurface(null);
 
-        cutTest = new PixelMap(new byte[] {(byte)0x00, (byte)0x00, (byte)0x00, (byte)0xFF}, 1, 1, PixelFormat.RGBA);
+        cutTest = new ImageTexture(new byte[] {(byte)0x00, (byte)0x00, (byte)0x00, (byte)0xFF}, 1, 1, PixelFormat.RGBA);
 
         if (tabChips != null) {
             search(tabChips.getFrame());
@@ -761,7 +767,7 @@ public class MainController extends Controller {
     }
 
 
-    PixelMap screen;
+    ImageTexture screen;
     int n;
     long time;
 
@@ -808,13 +814,24 @@ public class MainController extends Controller {
         return result;
     }
 
+    TextVectorRender render = new TextVectorRender(Font.getDefault());
     float a = 0;
     @Override
     public void onDraw(Graphics graphics) {
         super.onDraw(graphics);
         a += 1;
-        if (a > 500) a = 0;
-        graphics.setTransform2D(null);
+        if (a > 360) a = 0;
+        if (tabEffects.isSelected()) {
+            graphics.setTransform2D(new Affine().translate(100, 40).rotate(a).translate(-100, -40));
+            graphics.setColor(Color.white);
+            graphics.setAlphaComposite(AlphaComposite.REV_SUB);
+            graphics.drawRect(0, 0, 200, 80, true);
+            graphics.setAlphaComposite(AlphaComposite.SRC_OVER);
+            getActivity().setContinuousRendering(true);
+        } else {
+            getActivity().setContinuousRendering(false);
+        }
+
         if (pasteImage != null) graphics.drawImage(pasteImage, 100, 100);
 
         //graphics.setColor(Color.black);
@@ -855,9 +872,9 @@ public class MainController extends Controller {
         }
     }
 
-    public static void saveImage(PixelMap pixelMap, String filePath) {
+    public static void saveImage(ImageTexture imageTexture, String filePath) {
         try {
-            Files.write(new File(filePath).toPath(), pixelMap.export(ImageFileFormat.PNG));
+            Files.write(new File(filePath).toPath(), imageTexture.export(ImageFileFormat.PNG));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -903,8 +920,8 @@ public class MainController extends Controller {
     @Flat
     public void onEmojiExport(ActionEvent event) {
         /*Font font = Font.getDefault();
-        PixelMap pixelMap = font.createImageFromAtlas(getActivity().getContext());
-        saveImage(pixelMap, "C:\\Nova\\image-3.png");
+        ImageTexture imageTexture = font.createImageFromAtlas(getActivity().getContext());
+        saveImage(imageTexture, "C:\\Nova\\image-3.png");
         System.out.println("SAVED");*/
 //        getActivity().getWindow().showOpenFolderDialog((file) -> {
 //            try {
@@ -918,7 +935,7 @@ public class MainController extends Controller {
         // }, null, "json");
 //        getActivity().getWindow().showOpenFolderDialog((file) -> {
 //            ArrayList<int[]> emojis = new ArrayList<>();
-//            PixelMap map = EmojiConverter.createFromNotoEmoji(file, emojis, 4096);
+//            ImageTexture map = EmojiConverter.createFromNotoEmoji(file, emojis, 4096);
 //            saveImage(map, "C:\\Nova\\emojis.png");
 //            saveEmojis(emojis, "C:\\Nova\\emojis.txt");
 //        }, null);
@@ -937,6 +954,41 @@ public class MainController extends Controller {
         graphics.setAlphaComposite(AlphaComposite.DST_OUT);
         graphics.drawEllipse(box.x, box.y, box.width, box.height, true);
         graphics.setAlphaComposite(AlphaComposite.SRC_OVER);
+    }
+    
+    @Flat
+    public void onCanvasDraw2(DrawEvent event) {
+        var graphics = event.getGraphics();
+        var box = event.getInBox();
+        graphics.setPaint(new LinearGradient.Builder(0, 0, 64, 64)
+                                  .stop(0, 0xFF0000FF)
+                                  .stop(1 / 6f, 0xFFFF00FF)
+                                  .stop(2 / 6f, 0x00FF00FF)
+                                  .stop(3 / 6f, 0x00FFFFFF)
+                                  .stop(4 / 6f, 0x0000FFFF)
+                                  .stop(5 / 6f, 0xFF00FFFF)
+                                  .stop(6 / 6f, 0xFF0000FF)
+                                  .cycleMethod(CycleMethod.EMPTY)
+                                  .build());
+        graphics.drawRect(box, true);
+    }
+    
+    @Flat
+    public void onCanvasDraw3(DrawEvent event) {
+        var graphics = event.getGraphics();
+        var box = event.getInBox();
+        graphics.setPaint(new RadialGradient.Builder(64, 64, 64)
+                                  .focus(112, 64)
+                                  .stop(0, 0xFF0000FF)
+                                  .stop(1 / 6f, 0xFFFF00FF)
+                                  .stop(2 / 6f, 0x00FF00FF)
+                                  .stop(3 / 6f, 0x00FFFFFF)
+                                  .stop(4 / 6f, 0x0000FFFF)
+                                  .stop(5 / 6f, 0xFF00FFFF)
+                                  .stop(6 / 6f, 0xFF0000FF)
+                                  .cycleMethod(CycleMethod.REFLECT)
+                                  .build());
+        graphics.drawRect(box, true);
     }
 
 }

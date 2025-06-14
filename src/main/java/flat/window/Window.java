@@ -7,7 +7,7 @@ import flat.exception.FlatException;
 import flat.graphics.context.Context;
 import flat.graphics.cursor.Cursor;
 import flat.graphics.image.ImageData;
-import flat.graphics.image.PixelMap;
+import flat.graphics.image.ImageTexture;
 import flat.uxml.UXListener;
 import flat.window.event.EventData;
 import flat.window.event.EventDataPointer;
@@ -360,7 +360,7 @@ public class Window {
         WL.SetTitle(windowId, this.title = title);
     }
 
-    public void setIcon(PixelMap icon) {
+    public void setIcon(ImageTexture icon) {
         checkDisposed();
 
         WL.SetIcon(windowId, icon.readData(), (int) icon.getWidth(), (int) icon.getHeight());

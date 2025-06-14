@@ -1,5 +1,5 @@
 package flat.graphics.context.enums;
 
 public enum CycleMethod {
-    CLAMP, REPEAT, REFLECT
+    CLAMP, REPEAT, REFLECT, EMPTY
 }

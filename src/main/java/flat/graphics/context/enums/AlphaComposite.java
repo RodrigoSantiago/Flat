@@ -13,5 +13,5 @@ public enum AlphaComposite {
     SRC_ATOP,
     DST_ATOP,
     XOR,
-    ADD, SUB, MUL, LIGHTEN, DARKEN
+    ADD, SUB, MUL, LIGHTEN, DARKEN, REV_SUB
 }

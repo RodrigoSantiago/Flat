@@ -10,7 +10,7 @@ import flat.math.shapes.RoundRectangle;
 import flat.math.stroke.BasicStroke;
 import flat.uxml.Controller;
 import flat.uxml.UXAttrs;
-import flat.widget.text.data.TextRender;
+import flat.widget.text.data.TextBox;
 import flat.window.Activity;
 
 import java.util.Objects;
@@ -36,8 +36,8 @@ public class TextField extends TextArea {
     private float textHintWidth;
     private boolean invalidTextHintSize;
 
-    private final TextRender hintRender = new TextRender();
-    private final TextRender titleRender = new TextRender();
+    private final TextBox hintRender = new TextBox();
+    private final TextBox titleRender = new TextBox();
     private final TitleToTitleAnimation titleToTitle = new TitleToTitleAnimation();
 
     public TextField() {

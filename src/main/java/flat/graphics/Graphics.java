@@ -6,7 +6,7 @@ import flat.graphics.context.enums.*;
 import flat.graphics.context.paints.ColorPaint;
 import flat.graphics.context.paints.GaussianShadow;
 import flat.graphics.context.paints.ImagePattern;
-import flat.graphics.image.PixelMap;
+import flat.graphics.image.ImageTexture;
 import flat.graphics.symbols.Font;
 import flat.math.Affine;
 import flat.math.Mathf;
@@ -27,6 +27,8 @@ public class Graphics {
     private final ClipState clipState = new ClipState();
     private Stroke stroke;
     private float textSize;
+
+    private TextVectorRender textVectorRender;
 
     // Custom Draw
     private Shader vertex;
@@ -203,21 +205,21 @@ public class Graphics {
         setAlphaComposite(AlphaComposite.SRC_OVER);
     }
 
-    public PixelMap renderToImage() {
+    public ImageTexture renderToImage() {
         return renderToImage(0, 0, getWidth(), getHeight());
     }
 
-    public PixelMap renderToImage(int x, int y, int width, int height) {
-        return new PixelMap(renderToTexture(x, y, width, height));
+    public ImageTexture renderToImage(int x, int y, int width, int height) {
+        return new ImageTexture(renderToTexture(x, y, width, height));
     }
 
-    public void renderToImage(PixelMap pixelMap) {
-        renderToImage(pixelMap, 0, 0, getWidth(), getHeight());
+    public void renderToImage(ImageTexture imageTexture) {
+        renderToImage(imageTexture, 0, 0, getWidth(), getHeight());
     }
 
-    public void renderToImage(PixelMap pixelMap, int x, int y, int width, int height) {
-        renderToTexture(pixelMap.getTexture(), 0, 0, getWidth(), getHeight());
-        pixelMap.invalidateTextureData();
+    public void renderToImage(ImageTexture imageTexture, int x, int y, int width, int height) {
+        renderToTexture(imageTexture.getTexture(), 0, 0, getWidth(), getHeight());
+        imageTexture.invalidateTextureData();
     }
 
     public Texture2D renderToTexture() {
@@ -663,6 +665,18 @@ public class Graphics {
         context.svgDrawText(x, y, text, offset, length, maxWidth, maxHeight);
     }
 
+    public void drawTextVector(float x, float y, float maxWidth, float maxHeight, String text, boolean fill) {
+        if (discardDraw(x, y,
+                maxWidth == 0 ? text.length() * textSize * 10 : maxWidth,
+                Math.min(textSize * 2, maxHeight))) return;
+        if (textVectorRender == null) {
+            textVectorRender = new TextVectorRender(getTextFont());
+        }
+        textVectorRender.setFont(getTextFont());
+        textVectorRender.setSize(getTextSize());
+        textVectorRender.drawText(this, x, y, text, maxWidth, maxHeight, fill);
+    }
+
     public void drawLinearShadowDown(float x, float y, float width, float height, float alpha) {
         if (discardDraw(x, y, width, height)) return;
         Paint paint = context.svgPaint();
@@ -755,42 +769,42 @@ public class Graphics {
         drawRoundRectShadow(rect.x, rect.y, rect.width, rect.height, rect.arcTop, rect.arcRight, rect.arcBottom, rect.arcLeft, blur, alpha);
     }
 
-    public void drawImage(ImageTexture image, float x, float y) {
+    public void drawImage(RenderTexture image, float x, float y) {
         Texture2D tex = image.getTexture();
         drawImage(tex,
                 0, 0, tex.getWidth(), tex.getHeight(),
                 x, y, x + tex.getWidth(), y + tex.getHeight(), 0xFFFFFFFF, false, null);
     }
 
-    public void drawImage(ImageTexture image, float x, float y, float width, float height) {
+    public void drawImage(RenderTexture image, float x, float y, float width, float height) {
         Texture2D tex = image.getTexture();
         drawImage(tex,
                 0, 0, tex.getWidth(), tex.getHeight(),
                 x, y, x + width, y + height, 0xFFFFFFFF, false, null);
     }
 
-    public void drawImage(ImageTexture image, float x, float y, float width, float height, int color) {
+    public void drawImage(RenderTexture image, float x, float y, float width, float height, int color) {
         Texture2D tex = image.getTexture();
         drawImage(tex,
                 0, 0, tex.getWidth(), tex.getHeight(),
                 x, y, x + width, y + height, color, false, null);
     }
 
-    public void drawImage(ImageTexture image, float x, float y, float width, float height, int color, boolean pixelated) {
+    public void drawImage(RenderTexture image, float x, float y, float width, float height, int color, boolean pixelated) {
         Texture2D tex = image.getTexture();
         drawImage(tex,
                 0, 0, tex.getWidth(), tex.getHeight(),
                 x, y, x + width, y + height, color, pixelated, null);
     }
 
-    public void drawImage(ImageTexture image, float x, float y, float width, float height, int color, boolean pixelated, Affine transform) {
+    public void drawImage(RenderTexture image, float x, float y, float width, float height, int color, boolean pixelated, Affine transform) {
         Texture2D tex = image.getTexture();
         drawImage(tex,
                 0, 0, tex.getWidth(), tex.getHeight(),
                 x, y, x + width, y + height, color, pixelated, transform);
     }
 
-    public void drawImage(ImageTexture image,
+    public void drawImage(RenderTexture image,
                           float srcX1, float srcY1, float srcX2, float srcY2,
                           float dstX1, float dstY1, float dstX2, float dstY2,
                           int color) {
@@ -800,7 +814,7 @@ public class Graphics {
                 dstX1, dstY1, dstX2, dstY2, color, false, null);
     }
 
-    public void drawImage(ImageTexture image,
+    public void drawImage(RenderTexture image,
                           float srcX1, float srcY1, float srcX2, float srcY2,
                           float dstX1, float dstY1, float dstX2, float dstY2,
                           int color, boolean pixelated) {
@@ -810,7 +824,7 @@ public class Graphics {
                 dstX1, dstY1, dstX2, dstY2, color, pixelated, null);
     }
 
-    public void drawImage(ImageTexture image,
+    public void drawImage(RenderTexture image,
                           float srcX1, float srcY1, float srcX2, float srcY2,
                           float dstX1, float dstY1, float dstX2, float dstY2,
                           int color, boolean pixelated, Affine transform) {
@@ -940,6 +954,8 @@ public class Graphics {
 
         if (mode == AlphaComposite.SUB) {
             context.setBlendEquation(BlendEquation.REVERSE_SUB, BlendEquation.ADD);
+        } else if (mode == AlphaComposite.REV_SUB) {
+            context.setBlendEquation(BlendEquation.SUB, BlendEquation.ADD);
         } else if (mode == AlphaComposite.DARKEN) {
             context.setBlendEquation(BlendEquation.MIN, BlendEquation.ADD);
         } else if (mode == AlphaComposite.LIGHTEN) {
@@ -1030,6 +1046,11 @@ public class Graphics {
                         BlendFunction.ONE, BlendFunction.ONE_MINUS_SRC_ALPHA);
                 break;
             case DARKEN:
+                context.setBlendFunction(
+                        BlendFunction.ONE, BlendFunction.ONE,
+                        BlendFunction.ONE, BlendFunction.ONE_MINUS_SRC_ALPHA);
+                break;
+            case REV_SUB:
                 context.setBlendFunction(
                         BlendFunction.ONE, BlendFunction.ONE,
                         BlendFunction.ONE, BlendFunction.ONE_MINUS_SRC_ALPHA);

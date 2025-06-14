@@ -34,39 +34,51 @@ public class Dialog extends Stage {
     private final ShowAnimation showupAnimation = new ShowAnimation();
     private final HideAnimation hideAnimation = new HideAnimation();
 
-    public void build(String uxmlStream) {
-        build(new ResourceStream(uxmlStream), null);
+    public Dialog build(String uxmlStream) {
+        return build(new ResourceStream(uxmlStream), null);
     }
 
-    public void build(String uxmlStream, Controller controller) {
-        build(new ResourceStream(uxmlStream), controller);
+    public Dialog build(String uxmlStream, Controller controller) {
+        return build(new ResourceStream(uxmlStream), controller);
     }
 
-    public void build(ResourceStream uxmlStream) {
-        build(uxmlStream, null);
+    public Dialog build(ResourceStream uxmlStream) {
+        return build(uxmlStream, null);
     }
 
-    public void build(ResourceStream uxmlStream, Controller controller) {
-        build(UXNode.parse(uxmlStream).instance(controller).build(getCurrentTheme()), controller);
+    public Dialog build(ResourceStream uxmlStream, Controller controller) {
+        removeAll();
+        UXNode.parse(uxmlStream).instance(controller).build(this::add);
+        setController(controller);
+        return this;
     }
 
-    public void build(Widget root) {
-        build(root, null);
+    public Dialog build(Widget root) {
+        return build(root, null);
     }
 
-    public void build(Widget root, Controller controller) {
-        this.controller = controller;
-
+    public Dialog build(Widget root, Controller controller) {
         removeAll();
         if (root != null) {
             add(root);
         }
+        setController(controller);
+        return this;
     }
-
-    protected void setController(Controller controller) {
-        this.controller = controller;
+    
+    public void setController(Controller controller) {
+        if (this.controller != controller) {
+            Controller old = this.controller;
+            this.controller = controller;
+            if (old != null) {
+                old.setActivity(null);
+            }
+            if (this.controller != null) {
+                this.controller.setActivity(getActivity());
+            }
+        }
     }
-
+    
     public Controller getController() {
         return controller;
     }

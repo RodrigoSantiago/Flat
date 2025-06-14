@@ -34,7 +34,9 @@ public class Frame extends Group {
     }
 
     public Frame build(ResourceStream uxmlStream, Controller controller) {
-        return build(UXNode.parse(uxmlStream).instance(controller).build(getCurrentTheme()), controller);
+        UXNode.parse(uxmlStream).instance(controller).build(this::add);
+        setController(controller);
+        return this;
     }
 
     public Frame build(Widget root) {

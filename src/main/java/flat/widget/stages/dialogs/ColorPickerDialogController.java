@@ -6,7 +6,7 @@ import flat.graphics.Color;
 import flat.graphics.Surface;
 import flat.graphics.context.ShaderProgram;
 import flat.graphics.context.enums.PixelFormat;
-import flat.graphics.image.PixelMap;
+import flat.graphics.image.ImageTexture;
 import flat.math.Mathf;
 import flat.math.Vector2;
 import flat.math.Vector4;
@@ -49,7 +49,7 @@ public class ColorPickerDialogController extends DefaultDialogController {
     private final UXWidgetValueListener<Dialog, Integer> onColorPickListener;
 
     private Surface surface;
-    private PixelMap preview;
+    private ImageTexture preview;
 
     ColorPickerDialogController(Dialog dialog, ColorPickerDialogBuilder builder) {
         super(dialog);
@@ -102,7 +102,7 @@ public class ColorPickerDialogController extends DefaultDialogController {
         int w = Mathf.round(paletteCanvas.getWidth());
         int h = Mathf.round(paletteCanvas.getHeight());
         surface = new Surface(w, h, 8);
-        preview = new PixelMap(new byte[w * h * 4], w, h, PixelFormat.RGBA);
+        preview = new ImageTexture(new byte[w * h * 4], w, h, PixelFormat.RGBA);
         palettePreview.setImage(preview);
         sliderAlpha.setValue(255);
         fieldAlpha.setText("255");
