@@ -4,38 +4,42 @@
 ![Opengl ES : 3.1](https://img.shields.io/badge/opengl%20ES-3.1-red.svg)
 
 ## Overview
-Fuse.Flat is a library for material design UI development on Java. It also provides simple and indispensable set of tools for working with xml, themes, fonts, svg and images  
+Fuse.Flat is a library for material design UI development on Java. It also provides simple and indispensable set of tools for working with xml, themes, fonts, svg and images
 
-The main purpose is to work similar to HTML/CSS, but with solid and clear standards for styles.  
+The main purpose is to work similar to HTML/CSS, but with solid and clear standards for styles.
 
 ![print.png](images/print.png)
+![print.png](images/dialogs_01.png)
+![print.png](images/dialogs_02.png)
+![print.png](images/dialogs_03.png)
+![print.png](images/dialogs_04.png)
 
 ## Features
 
 ### Avaliable
- - All useful Material Design features
- - Fully customizable
- - Easy responsiveness
- - Direct access to OpenGL (Core)
- - Graphics Canvas (Easy to render shapes, text, colors, gradients and more)
- - Multiple Windows/OpenGL context support (Single Thread)
- - Localization / StringBundles
- - XML UI Reader
- - SVG support (render, icons, boolean operations)
- - TTF Font support (SDF)
- - Animations and Transforms
- - CSS-Like themes
- - Ready to Use Dialogs
- - Emojis 😁
+- All useful Material Design features
+- Fully customizable
+- Easy responsiveness
+- Direct access to OpenGL (Core)
+- Graphics Canvas (Easy to render shapes, text, colors, gradients and more)
+- Multiple Windows/OpenGL context support (Single Thread)
+- Localization / StringBundles
+- XML UI Reader
+- SVG support (render, icons, boolean operations)
+- TTF Font support (SDF)
+- Animations and Transforms
+- CSS-Like themes
+- Ready to Use Dialogs
+- Emojis 😁
 
 ### Getting started
 
 The project starts when the first `Window` is created and launched.
 A `Window` always have an `Activity` which is a bridge between `Window` and `Widget`
-The Controller class will handle Activity events, and it should be extended. 
+The Controller class will handle Activity events, and it should be extended.
 Controllers can also be used to control a `Dialog` and a `Frame`
 
-The UXBuilder can assign variables and methods based upon widget's id. The field must be assigned with the annotation `@Flat`. All the fields will be assigned after the onLoad event.
+The UXBuilder can assign variables and methods based upon widget's id. The field must be assigned with the annotation `@Flat`. All the fields will be assigned after the onShow event.
 ```java
 public class MainController extends Controller {
    @Flat 
@@ -92,7 +96,7 @@ public static void main(String[] args) {
 A new Window can be created later using `Application.createWindow`
 
 ### Style-Properties and Attributes
-All proprties have two names : CamelCaase for Java and kebab-case for CSS-Like and String
+All properties have two names : CamelCase for Java and kebab-case for CSS-Like and Strings
 
 A Style-Property is a property that will change according to the current Style, Theme and Widget's State.
 To set the Style-property manually, always `setFollowStyleProperty` to false.
@@ -104,12 +108,12 @@ Usually event listeners, text, adapters and such are Attributes.
 #### Size
 Widgets have 3 main size(X/Y/Width/Height) barriers:
 - **Layout Box** : This is the total size that the widget occupies in its Parent, including margins.
-This represents the safe space for drawing, even for the shadow.
-The position X/Y is relative to the Parent
+  This represents the safe space for drawing, even for the shadow.
+  The position X/Y is relative to the Parent
 - **Out Box**: This is the size at which the widget can be visible, not including Margins, but including Padding.
-The position X/Y is local, usually X=Margin-Left, Y=Margin-Top, but it can be distorted to less if the widget space is smaller.
+  The position X/Y is local, usually X=Margin-Left, Y=Margin-Top, but it can be distorted to less if the widget space is smaller.
 - **In Box**: This is the size at which the main part of the Widget will be drawn, not including Padding or Margin.
-The position X/Y is local, usually X=Margin-Left + Padding-Left, Y=Margin-Top + Padding-Top, but it can be distorted to less if the widget space is smaller.
+  The position X/Y is local, usually X=Margin-Left + Padding-Left, Y=Margin-Top + Padding-Top, but it can be distorted to less if the widget space is smaller.
 
 The Layout size and position does not have a direct Style-Property, it is computed by the parent layout.
 The `width`, `height`, `max-width`, `max-height`, `min-width`, `max-width` style-properties are only a prefered size for the **out box** limmit
@@ -122,7 +126,7 @@ The border simply does not affect the size.
 The `width`, `height`, `max-width`, `max-height`, `min-width`, `max-width` size Style-Properties are compatible to `WRAP_CONTENT` and `MATCH_PARENT`.
 - **WRAP_CONTENT** will set the minimum possible comfortable size to render the widget.
 - **MATCH_PARENT** will set the size to take up all the **remaining space** of its Parent. So all others widgets will have priority.
-The widgets also have `weight` Style-Property so multiple MATCH_PARENT widgets can resolve the size.
+  The widgets also have `weight` Style-Property so multiple MATCH_PARENT widgets can resolve the size.
 
 Paddings and Margins properties will affect the final Layout/Out/In size independently
 ### Widgets
@@ -134,12 +138,11 @@ Paddings and Margins properties will affect the final Layout/Out/In size indepen
 - StackBox
 - Grid
 - Frame
-- TabView
-- Tab
 - ScrollBox
+- Drawer
 - VerticalScrollBar
 - HorizontalScrollBar
-- Drawer
+- Splitter
 
 #### Text
 - Label
@@ -149,9 +152,11 @@ Paddings and Margins properties will affect the final Layout/Out/In size indepen
 - TextField
 - TextInputField
 - TextDropDown
+- NumberInputField
 
 #### Image
 - ImageView
+- Canvas
 - ProgressBar
 - ProgressCircle
 
@@ -165,13 +170,28 @@ Paddings and Margins properties will affect the final Layout/Out/In size indepen
 
 #### Structure
 - ListView
+- TreeView
 - ToolBar
 - ToolItem
+- TabView
+- Tab
 
-#### Dialogs
+#### Menus
 - Menu
 - MenuItem
 - Divider
+
+#### Dialogs
+- Dialog
+- Alert
+- SingleChoice
+- MultipleChoice
+- Confirm
+- Process
+- Snackbar
+- DatePicker
+- ColorPicker
+- FontPicker
 
 ### UXML (XML-Like)
 The UXML should have only one root.
@@ -262,7 +282,7 @@ style : parent {
   - `px` or number only : pixel value
   - `MATCH_PARENT`, `WRAP_CONTENT` : use only for width/heigh
 - `Size List` : as function with any paremeter count `list(10, 10dp, match_parent)`
-- `Color` : 
+- `Color` :
   - `#FFFFFF` : rgb hexadecimal
   - `#FFFFFFFF` : rgba hexadecimal
   - `rgb(255, 255, 255)` : rgb decimal color
@@ -270,7 +290,7 @@ style : parent {
   - `alpha(color-or-variable, 1.0)` : alpha modifier
   - `color-name` : basic colors name (same as css)
 - `Font` : as function `font("Arial", BOLD, ITALIC)`. The order does not matter. It can only have one Family, one Weight, one Style and one Posture (For now)
-  - Style : `SANS`, `SERIF`, `MONO`, `CURSIVE`, `EMOJI` 
+  - Style : `SANS`, `SERIF`, `MONO`, `CURSIVE`, `EMOJI`
   - Weight : `NORMAL`, `MEDIUM`, `SEMI_BOLD`, `BOLD`, `LIGHT`, `EXTRA_BOLD`, `EXTRA_LIGHT`, `BLACK`, `THIN`
   - Posture : `REGULAR`, `ITALIC`
 - `Text` or `Constant` : simple write the plain text or use quots for spaces and special characters. Constants are case-insensitive
@@ -311,7 +331,4 @@ UXSS themes can be a individual uxss file or a folder. An UXSS theme can include
 
 ### Todo - List
 - [ ] Wiki
-- [ ] Pickers
-   - [ ] Color Picker
-   - [ ] Font Picker
-- [ ] Add "paint" to all "color" css-like styles
+- [ ] Add gradients widgets
