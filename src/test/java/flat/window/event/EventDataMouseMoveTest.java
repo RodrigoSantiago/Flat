@@ -66,6 +66,7 @@ public class EventDataMouseMoveTest {
         pointer.setPosition(10, 20);
 
         when(window.getActivity()).thenReturn(activity);
+        when(widget.getActivity()).thenReturn(activity);
         when(activity.findByPosition(anyFloat(), anyFloat(), anyBoolean())).thenReturn(widget);
         when(window.getPointer()).thenReturn(pointer);
 
@@ -124,6 +125,7 @@ public class EventDataMouseMoveTest {
         pointer.setPosition(10, 20);
 
         when(window.getActivity()).thenReturn(activity);
+        when(widget.getActivity()).thenReturn(activity);
         when(activity.findByPosition(anyFloat(), anyFloat(), anyBoolean())).thenReturn(widget);
         when(window.getPointer()).thenReturn(pointer);
 
@@ -241,6 +243,7 @@ public class EventDataMouseMoveTest {
         pointer.setPosition(10, 20);
 
         when(window.getActivity()).thenReturn(activity);
+        when(widget.getActivity()).thenReturn(activity);
         when(activity.findByPosition(anyFloat(), anyFloat(), anyBoolean())).thenReturn(widget);
         when(window.getPointer()).thenReturn(pointer);
 
@@ -307,6 +310,7 @@ public class EventDataMouseMoveTest {
         pointer.setPosition(10, 20);
 
         when(window.getActivity()).thenReturn(activity);
+        when(widget.getActivity()).thenReturn(activity);
         when(activity.findByPosition(anyFloat(), anyFloat(), anyBoolean())).thenReturn(widget);
         when(window.getPointer()).thenReturn(pointer);
 
@@ -375,6 +379,8 @@ public class EventDataMouseMoveTest {
         pointer.setPosition(10, 20);
 
         when(window.getActivity()).thenReturn(activity);
+        when(widgetA.getActivity()).thenReturn(activity);
+        when(widgetB.getActivity()).thenReturn(activity);
         when(activity.findByPosition(10f, 20f, false)).thenReturn(widgetA);
         when(activity.findByPosition(20f, 30f, false)).thenReturn(widgetB);
         when(window.getPointer()).thenReturn(pointer);
@@ -447,6 +453,8 @@ public class EventDataMouseMoveTest {
         pointer.setPosition(10, 20);
 
         when(window.getActivity()).thenReturn(activity);
+        when(widgetA.getActivity()).thenReturn(activity);
+        when(widgetB.getActivity()).thenReturn(activity);
         when(activity.findByPosition(10f, 20f, false)).thenReturn(widgetA);
         when(activity.findByPosition(20f, 30f, false)).thenReturn(widgetB);
         when(window.getPointer()).thenReturn(pointer);
@@ -514,6 +522,8 @@ public class EventDataMouseMoveTest {
         pointer.setPosition(10, 20);
 
         when(window.getActivity()).thenReturn(activity);
+        when(widgetA.getActivity()).thenReturn(activity);
+        when(widgetB.getActivity()).thenReturn(activity);
         when(activity.findByPosition(10f, 20f, false)).thenReturn(widgetA);
         when(activity.findByPosition(20f, 30f, false)).thenReturn(widgetB);
         when(window.getPointer()).thenReturn(pointer);
@@ -589,6 +599,8 @@ public class EventDataMouseMoveTest {
         pointer.setPosition(10, 20);
 
         when(window.getActivity()).thenReturn(activity);
+        when(widgetA.getActivity()).thenReturn(activity);
+        when(widgetB.getActivity()).thenReturn(activity);
         when(activity.findByPosition(10f, 20f, false)).thenReturn(widgetA);
         when(activity.findByPosition(20f, 30f, false)).thenReturn(widgetB);
         when(window.getPointer()).thenReturn(pointer);
@@ -663,6 +675,8 @@ public class EventDataMouseMoveTest {
         pointer.setPosition(10, 20);
 
         when(window.getActivity()).thenReturn(activity);
+        when(widgetA.getActivity()).thenReturn(activity);
+        when(widgetB.getActivity()).thenReturn(activity);
         when(activity.findByPosition(10f, 20f, false)).thenReturn(widgetA);
         when(activity.findByPosition(20f, 30f, false)).thenReturn(widgetB);
         when(window.getPointer()).thenReturn(pointer);

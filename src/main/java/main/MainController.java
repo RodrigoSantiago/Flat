@@ -623,12 +623,12 @@ public class MainController extends Controller {
         //getActivity().setRenderPartialEnabled(mode);
         //System.out.println(mode);
         var old = pasteImageData;
-        pasteImageData = WL.GetClipboardImage(0);
+        pasteImageData = WL.GetClipboardImage();
         if (pasteImageData != null) {
             pasteImage = new ImageTexture(pasteImageData.getData(), pasteImageData.getWidth(), pasteImageData.getHeight(), pasteImageData.getFormat());
         }
         if (old != null) {
-            WL.SetClipboardImage(0, old);
+            WL.SetClipboardImage(old);
         }
     }
 
@@ -817,8 +817,9 @@ public class MainController extends Controller {
     TextVectorRender render = new TextVectorRender(Font.getDefault());
     float a = 0;
     @Override
-    public void onDraw(Graphics graphics) {
-        super.onDraw(graphics);
+    public void onDraw(DrawEvent event) {
+        super.onDraw(event);
+        var graphics = event.getGraphics();
         a += 1;
         if (a > 360) a = 0;
         if (tabEffects.isSelected()) {
@@ -874,7 +875,7 @@ public class MainController extends Controller {
 
     public static void saveImage(ImageTexture imageTexture, String filePath) {
         try {
-            Files.write(new File(filePath).toPath(), imageTexture.export(ImageFileFormat.PNG));
+            Files.write(new File(filePath).toPath(), imageTexture.readImageData().export(ImageFileFormat.PNG));
         } catch (IOException e) {
             e.printStackTrace();
         }

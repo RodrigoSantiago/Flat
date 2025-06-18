@@ -1,10 +1,12 @@
 package flat.widget.stages.dialogs;
 
 import flat.Flat;
+import flat.animations.Animation;
+import flat.animations.SyncProcessRefresh;
 import flat.animations.ProgressTaskRefresh;
 import flat.concurrent.ProgressTask;
+import flat.concurrent.SyncProcess;
 import flat.events.ActionEvent;
-import flat.uxml.Controller;
 import flat.uxml.UXListener;
 import flat.widget.enums.Visibility;
 import flat.widget.stages.Dialog;
@@ -20,8 +22,9 @@ class ProcessDialogController extends DefaultDialogController {
     private final UXListener<Dialog> onShowListener;
     private final UXListener<Dialog> onHideListener;
     private final UXListener<Dialog> onRequestCancelListener;
-    private final ProgressTask<?> task;
-    private ProgressTaskRefresh anim;
+    private ProgressTask<?> task;
+    private SyncProcess graphicTask;
+    private Animation anim;
 
     ProcessDialogController(Dialog dialog, ProcessDialogBuilder builder) {
         super(dialog);
@@ -31,9 +34,13 @@ class ProcessDialogController extends DefaultDialogController {
         this.onShowListener = builder.onShowListener;
         this.onHideListener = builder.onHideListener;
         this.onRequestCancelListener = builder.onRequestCancelListener;
-        this.task = builder.task;
+        this.task = builder.progressTask;
         if (task != null) {
             anim = new ProgressTaskRefresh(this, task, this::onProgress, this::onDone);
+        }
+        this.graphicTask = builder.graphicTask;
+        if (graphicTask != null) {
+            anim = new SyncProcessRefresh(this, graphicTask, 1f / 60f, this::onDone);
         }
     }
 

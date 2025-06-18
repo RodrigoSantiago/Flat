@@ -359,11 +359,15 @@ public class Window {
 
         WL.SetTitle(windowId, this.title = title);
     }
-
+    
     public void setIcon(ImageTexture icon) {
+        setIcon(icon.readImageData());
+    }
+    
+    public void setIcon(ImageData icon) {
         checkDisposed();
-
-        WL.SetIcon(windowId, icon.readData(), (int) icon.getWidth(), (int) icon.getHeight());
+        
+        WL.SetIcon(windowId, icon.getData(), icon.getWidth(), icon.getHeight());
     }
 
     public void setCursor(Cursor cursor) {
@@ -558,31 +562,7 @@ public class Window {
 
         WL.Focus(windowId);
     }
-
-    public String getClipboard() {
-        checkDisposed();
-
-        return WL.GetClipboardString(windowId);
-    }
-
-    public void setClipboard(String clipboard) {
-        checkDisposed();
-
-        WL.SetClipboardString(windowId, clipboard);
-    }
-
-    public ImageData getClipboardImage() {
-        checkDisposed();
-
-        return WL.GetClipboardImage(windowId);
-    }
-
-    public void setClipboardImage(ImageData imageData) {
-        checkDisposed();
-
-        WL.SetClipboardImage(windowId, imageData);
-    }
-
+    
     public boolean requestClose() {
         return onRequestClose(false);
     }

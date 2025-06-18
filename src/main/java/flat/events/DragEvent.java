@@ -87,6 +87,7 @@ public class DragEvent extends Event {
     }
 
     public boolean isAccepted() {
+        if (getSource().getActivity() == null) return false;
         if (getType() == STARTED) {
             return dragHandler != null;
         } else {
@@ -107,7 +108,7 @@ public class DragEvent extends Event {
     }
 
     public boolean isCanceled() {
-        return canceled;
+        return getSource().getActivity() == null || canceled;
     }
 
     public Window getWindow() {

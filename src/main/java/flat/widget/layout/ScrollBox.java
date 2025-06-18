@@ -119,8 +119,9 @@ public class ScrollBox extends Scrollable {
                 localDimensionY = Math.max(localDimensionY, child.getLayoutMinHeight());
             }
         }
-
-        return new Vector2(localDimensionX, localDimensionY);
+        
+        return new Vector2(getHorizontalBarPolicy() == Policy.NEVER ? getInWidth() : localDimensionX,
+                getVerticalBarPolicy() == Policy.NEVER ? getInHeight() : localDimensionY);
     }
 
     @Override

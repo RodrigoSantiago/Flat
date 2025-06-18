@@ -3,10 +3,7 @@ package flat.window;
 import flat.animations.Animation;
 import flat.animations.PlayLaterTimer;
 import flat.animations.Timer;
-import flat.events.FocusEvent;
-import flat.events.KeyCode;
-import flat.events.KeyEvent;
-import flat.events.PointerEvent;
+import flat.events.*;
 import flat.exception.FlatException;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
@@ -304,10 +301,10 @@ public class Activity {
         refreshFocus();
     }
 
-    void layout(int width, int height) {
-        if (width != 0 && height != 0 && (this.width != width || this.height != height)) {
-            this.width = width;
-            this.height = height;
+    void layout(int w, int h) {
+        if (w != 0 && h != 0 && (this.width != w || this.height != h)) {
+            this.width = w;
+            this.height = h;
             onResizeFilter();
             invalidateWidget(scene, true);
         }
@@ -385,6 +382,7 @@ public class Activity {
         layout(getWindow().getClientWidth(), getWindow().getClientHeight());
 
         if (controller != null) {
+            controller.setRoot(scene);
             controller.setActivity(this);
         }
     }
@@ -437,7 +435,7 @@ public class Activity {
     private void drawController(Graphics graphics) {
         if (controller != null && controller.isListening()) {
             try {
-                controller.onDraw(graphics);
+                controller.onDraw(new DrawEvent(scene, graphics));
             } catch (Exception e) {
                 Application.handleException(e);
             }

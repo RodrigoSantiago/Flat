@@ -542,7 +542,7 @@ public class TextArea extends Scrollable {
     protected void actionCut(Caret first, Caret second) {
         String str = isHidden() ? textBox.getHiddenChars() : textBox.getText(first, second);
         if (str != null && !str.isEmpty()) {
-            getActivity().getWindow().setClipboard(str);
+            Application.setClipboard(str);
         }
         editText(first, second, "");
     }
@@ -550,12 +550,12 @@ public class TextArea extends Scrollable {
     protected void actionCopy(Caret first, Caret second) {
         String str = isHidden() ? textBox.getHiddenChars() : textBox.getText(first, second);
         if (str != null && !str.isEmpty()) {
-            getActivity().getWindow().setClipboard(str);
+            Application.setClipboard(str);
         }
     }
 
     protected void actionPaste(Caret first, Caret second) {
-        String str = getActivity().getWindow().getClipboard();
+        String str = Application.getClipboard();
         if (str != null && !str.isEmpty()) {
             editText(first, second, str);
             slideToCaretLater(1);
@@ -1091,7 +1091,7 @@ public class TextArea extends Scrollable {
         this.textTypeListener = textTypeListener;
     }
 
-    private void fireTextType() {
+    protected void fireTextType() {
         if (textTypeListener != null) {
             UXListener.safeHandle(textTypeListener, new TextEvent(this, TextEvent.TYPE, 0, textBox.getTotalBytes(), text));
         }

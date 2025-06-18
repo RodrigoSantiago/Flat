@@ -22,9 +22,11 @@ public class ToolItem extends Widget {
     private float iconWidth;
     private float iconHeight;
     private ImageFilter iconImageFilter = ImageFilter.LINEAR;
+    private boolean divider;
 
     private String menuText;
     private String menuShortcutText;
+    private Drawable menuIcon;
 
     @Override
     public void applyAttributes(Controller controller) {
@@ -34,6 +36,7 @@ public class ToolItem extends Widget {
         setActionListener(attrs.getAttributeListener("on-action", ActionEvent.class, controller));
         setMenuText(attrs.getAttributeString("menu-text", getMenuText()));
         setMenuShortcutText(attrs.getAttributeString("menu-shortcut-text", getMenuShortcutText()));
+        setDivider(attrs.getAttributeBool("divider", isDivider()));
     }
 
     @Override
@@ -58,6 +61,7 @@ public class ToolItem extends Widget {
         setIconImageFilter(attrs.getConstant("icon-image-filter", info, getIconImageFilter()));
         setIconWidth(attrs.getSize("icon-width", info, getIconWidth()));
         setIconHeight(attrs.getSize("icon-height", info, getIconHeight()));
+        setMenuIcon(attrs.getDrawable("menu-icon", info, getMenuIcon(), false));
     }
 
     @Override
@@ -145,6 +149,17 @@ public class ToolItem extends Widget {
             invalidateMenu();
         }
     }
+    
+    public Drawable getMenuIcon() {
+        return menuIcon;
+    }
+    
+    public void setMenuIcon(Drawable menuIcon) {
+        if (this.menuIcon != menuIcon) {
+            this.menuIcon = menuIcon;
+            invalidateMenu();
+        }
+    }
 
     public String getMenuShortcutText() {
         return menuShortcutText;
@@ -178,7 +193,7 @@ public class ToolItem extends Widget {
             invalidate(isWrapContent());
         }
     }
-
+    
     public float getIconWidth() {
         return iconWidth;
     }
@@ -221,10 +236,34 @@ public class ToolItem extends Widget {
             invalidate(false);
         }
     }
-
+    
+    public boolean isDivider() {
+        return divider;
+    }
+    
+    public void setDivider(boolean divider) {
+        if (this.divider != divider) {
+            this.divider = divider;
+            invalidate(false);
+        }
+    }
+    
     protected void invalidateMenu() {
         if (getParent() instanceof ToolBar toolBar) {
             toolBar.invalidateToolItem(this);
         }
+    }
+    
+    @Override
+    public void setActivated(boolean activated) {
+        if (activated != isActivated()) {
+            super.setActivated(activated);
+            invalidateMenu();
+        }
+    }
+    
+    @Override
+    public boolean isActivated() {
+        return super.isActivated();
     }
 }

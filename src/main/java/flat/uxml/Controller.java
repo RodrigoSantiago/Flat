@@ -1,8 +1,10 @@
 package flat.uxml;
 
 import flat.Flat;
+import flat.events.DrawEvent;
 import flat.events.KeyEvent;
 import flat.graphics.Graphics;
+import flat.widget.Widget;
 import flat.window.Activity;
 import flat.window.Application;
 import flat.window.Window;
@@ -12,6 +14,7 @@ import java.lang.reflect.*;
 public class Controller {
 
     private Activity activity;
+    private Widget root;
     private boolean listening;
     private boolean firstLoad;
 
@@ -49,7 +52,15 @@ public class Controller {
     public Activity getActivity() {
         return activity;
     }
-
+    
+    public final void setRoot(Widget root) {
+        this.root = root;
+    }
+    
+    public Widget getRoot() {
+        return root;
+    }
+    
     public Window getWindow() {
         return activity != null ? activity.getWindow() : null;
     }
@@ -85,24 +96,24 @@ public class Controller {
 
     public <T> UXValueListener<T> getValueListenerMethod(String name, Class<T> argument) {
         try {
-            Method method = getClass().getMethod(name, ValueChange.class);
-            method.setAccessible(true);
-            if (method.isAnnotationPresent(Flat.class)
-                    && Modifier.isPublic(method.getModifiers())
-                    && !Modifier.isStatic(method.getModifiers())) {
-
+            Method method = findMethod(name, ValueChange.class);
+            if (method != null) {
                 Type[] genParamTypes = method.getGenericParameterTypes();
                 if (genParamTypes.length == 1 && genParamTypes[0] instanceof ParameterizedType paramType) {
                     Type actualTypeArgument = paramType.getActualTypeArguments()[0];
 
                     if (actualTypeArgument.equals(argument)) {
-                        return new ControllerValueListener<>(this, method);
+                        return new ControllerValueListener<>(this, method, false);
                     }
                 }
             }
+            method = findMethod(name, argument);
+            if (method != null) {
+                return new ControllerValueListener<>(this, method, true);
+            }
             method = findMethod(name, null);
             if (method != null) {
-                return new ControllerValueListener<>(this, method);
+                return new ControllerValueListener<>(this, method, false);
             }
         } catch (Exception ignored) {
         }
@@ -134,7 +145,7 @@ public class Controller {
 
     }
 
-    public void onDraw(Graphics graphics) {
+    public void onDraw(DrawEvent drawEvent) {
 
     }
 

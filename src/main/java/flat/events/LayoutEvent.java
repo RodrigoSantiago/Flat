@@ -14,12 +14,12 @@ public class LayoutEvent extends Event {
     private final Rectangle inBox;
     private final Affine transform;
 
-    public LayoutEvent(Widget source, Rectangle bBox, RoundRectangle outBox, Rectangle inBox, Affine transform) {
+    public LayoutEvent(Widget source) {
         super(source, LAYOUT);
-        this.bBox = bBox;
-        this.outBox = outBox;
-        this.inBox = inBox;
-        this.transform = transform;
+        this.bBox = new Rectangle(0, 0, source.getLayoutWidth(), source.getLayoutHeight());
+        this.outBox = source.getBackgroundShape();
+        this.inBox = new Rectangle(source.getInX(), source.getInY(), source.getInWidth(), source.getInHeight());
+        this.transform = source.getTransform();
     }
 
     public Rectangle getBBox() {

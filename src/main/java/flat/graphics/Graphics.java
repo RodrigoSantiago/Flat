@@ -218,7 +218,7 @@ public class Graphics {
     }
 
     public void renderToImage(ImageTexture imageTexture, int x, int y, int width, int height) {
-        renderToTexture(imageTexture.getTexture(), 0, 0, getWidth(), getHeight());
+        renderToTexture(imageTexture.getTexture(), x, y, width, height);
         imageTexture.invalidateTextureData();
     }
 
@@ -240,7 +240,7 @@ public class Graphics {
         if (texture == null) {
             throw new FlatException("Invalid texture argument");
         }
-        if (x < 0 || y < 0 || width <= 0 || height <= 0 || x + width > getWidth() || x + height > getHeight()) {
+        if (x < 0 || y < 0 || width <= 0 || height <= 0 || x + width > getWidth() || y + height > getHeight()) {
             throw new FlatException("The rendered area must be inside the view (0, 0, " + getWidth() + ", " + getHeight() + ")");
         }
         context.softFlush();

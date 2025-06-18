@@ -424,11 +424,13 @@ public class NumberInputField extends TextField {
     public void increase() {
         setNumber(getNumber() + 1);
         fireActionIncrease();
+        fireTextType();
     }
 
     public void decrease() {
         setNumber(getNumber() - 1);
         fireActionDecrease();
+        fireTextType();
     }
 
     @Override

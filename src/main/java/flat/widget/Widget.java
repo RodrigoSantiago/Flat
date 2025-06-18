@@ -365,13 +365,7 @@ public class Widget {
 
     protected void fireLayout() {
         if (layoutListener != null && getActivity() != null) {
-            getActivity().runLater(() -> {
-                UXListener.safeHandle(layoutListener, new LayoutEvent(this,
-                        new Rectangle(0, 0, getLayoutWidth(), getLayoutHeight()),
-                        getBackgroundShape(),
-                        new Rectangle(getInX(), getInY(), getInWidth(), getInHeight()),
-                        getTransform()));
-                    });
+            getActivity().runLater(() -> UXListener.safeHandle(layoutListener, new LayoutEvent(this)));
         }
     }
 

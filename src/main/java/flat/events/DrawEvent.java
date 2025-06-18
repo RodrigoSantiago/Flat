@@ -15,13 +15,13 @@ public class DrawEvent extends Event {
     private final Rectangle inBox;
     private final Affine transform;
 
-    public DrawEvent(Widget source, Graphics graphics, Rectangle bBox, RoundRectangle outBox, Rectangle inBox, Affine transform) {
+    public DrawEvent(Widget source, Graphics graphics) {
         super(source, DRAW);
         this.graphics = graphics;
-        this.bBox = bBox;
-        this.outBox = outBox;
-        this.inBox = inBox;
-        this.transform = transform;
+        this.bBox = new Rectangle(0, 0, source.getLayoutWidth(), source.getLayoutHeight());
+        this.outBox = source.getBackgroundShape();
+        this.inBox = new Rectangle(source.getInX(), source.getInY(), source.getInWidth(), source.getInHeight());
+        this.transform = source.getTransform();
     }
 
     public Graphics getGraphics() {

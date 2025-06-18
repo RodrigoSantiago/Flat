@@ -5,6 +5,7 @@ import flat.events.ActionEvent;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
 import flat.graphics.symbols.Font;
+import flat.math.Mathf;
 import flat.math.Vector2;
 import flat.uxml.*;
 import flat.widget.Parent;
@@ -35,6 +36,8 @@ public class ToolBar extends Parent {
     private float subtitleSize = 8f;
     private int titleColor = Color.black;
     private int subtitleColor = Color.black;
+    private String menuItemStyle = "tool-bar-menu-item";
+    private String menuDividerStyle = "tool-bar-divider";
 
     private boolean invalidTitleSize;
     private boolean invalidSubtitleSize;
@@ -47,7 +50,7 @@ public class ToolBar extends Parent {
     private ToolItem navigationItem;
 
     private Menu overflowMenu;
-    private List<MenuItem> menuItems = new ArrayList<>();
+    private List<Widget> menuItems = new ArrayList<>();
     private List<ToolItem> toolItems = new ArrayList<>();
     private List<ToolItem> unmodifiableToolItems;
     private Divider divider;
@@ -63,6 +66,7 @@ public class ToolBar extends Parent {
 
     private VerticalAlign verticalAlign = VerticalAlign.TOP;
     private HorizontalAlign horizontalAlign = HorizontalAlign.LEFT;
+    private HorizontalAlign itemsHorizontalAlign = HorizontalAlign.RIGHT;
 
     public ToolBar() {
         titleRender.setFont(titleFont);
@@ -83,9 +87,11 @@ public class ToolBar extends Parent {
         super.setContextMenu(contextMenu);
         if (contextMenu != overflowMenu) {
             if (overflowMenu != null) {
-                while (menuItems.size() > 0) {
-                    MenuItem removed = menuItems.remove(menuItems.size() - 1);
-                    removed.setActionListener(null);
+                while (!menuItems.isEmpty()) {
+                    Widget removed = menuItems.remove(menuItems.size() - 1);
+                    if (removed instanceof MenuItem menuItem) {
+                        menuItem.setActionListener(null);
+                    }
                     overflowMenu.remove(removed);
                 }
                 if (divider != null) {
@@ -129,6 +135,8 @@ public class ToolBar extends Parent {
         setTitle(attrs.getAttributeString("title", getTitle()));
         setSubtitle(attrs.getAttributeString("subtitle", getSubtitle()));
         setNavigationAction(attrs.getAttributeListener("on-navigation", ActionEvent.class, controller));
+        setMenuItemStyle(attrs.getAttributeString("menu-item-style", getMenuItemStyle()));
+        setMenuDividerStyle(attrs.getAttributeString("menu-divider-style", getMenuDividerStyle()));
     }
 
     @Override
@@ -146,6 +154,7 @@ public class ToolBar extends Parent {
         setSubtitleColor(attrs.getColor("subtitle-color", info, getSubtitleColor()));
         setVerticalAlign(attrs.getConstant("vertical-align", info, getVerticalAlign()));
         setHorizontalAlign(attrs.getConstant("horizontal-align", info, getHorizontalAlign()));
+        setItemsHorizontalAlign(attrs.getConstant("items-horizontal-align", info, getItemsHorizontalAlign()));
     }
 
     @Override
@@ -276,9 +285,19 @@ public class ToolBar extends Parent {
             navigationItem.setLayoutPosition(getInX(), getInY());
         }
         itemsWidth = itemsSpace;
-        float xpos = Math.max(0, getInX() + inWidth - (overflowVisible ? oveWidth : 0) - itemsSpace);
-        for (int i = 0; i < toolItems.size(); i++) {
-            ToolItem item = toolItems.get(i);
+        float tw = Math.max(hasTitle() ? getTitleWidth() : 0, hasSubtitle() ? getSubtitleWidth() : 0);
+        float xpos;
+        if (getItemsHorizontalAlign() == HorizontalAlign.LEFT) {
+            xpos = Math.max(0, getInX() + (navigationVisible && navigationItem != null ? navigationItem.getLayoutWidth() : 0) + tw);
+        } else if (getItemsHorizontalAlign() == HorizontalAlign.RIGHT) {
+            xpos = Math.max(0, getInX() + inWidth - (overflowVisible ? oveWidth : 0) - itemsSpace);
+        } else {
+            float min = Math.max(0, getInX() + (navigationVisible && navigationItem != null ? navigationItem.getLayoutWidth() : 0) + tw);
+            float max = Math.max(0, getInX() + inWidth - (overflowVisible ? oveWidth : 0) - itemsSpace);
+            xpos = (min + max) / 2f;
+        }
+        Math.max(0, getInX() + inWidth - (overflowVisible ? oveWidth : 0) - itemsSpace);
+        for (ToolItem item : toolItems) {
             float defWidth = Math.min(item.getMeasureWidth(), item.getLayoutMaxWidth());
             float w = defWidth == MATCH_PARENT ? Math.min(itemsTotal, defWidth) : defWidth;
             float h = Math.min(inHeight, Math.min(item.getMeasureHeight(), item.getLayoutMaxHeight()));
@@ -329,11 +348,13 @@ public class ToolBar extends Parent {
             for (int i = 0; i < hiddenItems; i++) {
                 ToolItem item = toolItems.get(toolItems.size() - 1 - i);
                 if (item == toolItem) {
-                    MenuItem menuItem = i >= menuItems.size() ? null : menuItems.get(i);
-                    if (menuItem != null) {
+                    Widget widget = i >= menuItems.size() ? null : menuItems.get(i);
+                    if (widget instanceof MenuItem menuItem) {
                         menuItem.setEnabled(item.isEnabled());
                         menuItem.setText(item.getMenuText());
                         menuItem.setShortcutText(item.getMenuShortcutText());
+                        menuItem.setIcon(item.getMenuIcon());
+                        menuItem.setActivated(item.isActivated());
                     }
                     break;
                 }
@@ -352,30 +373,62 @@ public class ToolBar extends Parent {
 
         // Add or Update
         for (int i = 0; i < hiddenItems; i++) {
-            MenuItem menuItem = i >= menuItems.size() ? null : menuItems.get(i);
-            if (menuItem == null) {
-                menuItem = new MenuItem();
-                menuItem.addStyle("tool-bar-menu-item");
-                menuItem.setActionListener(this::onToolItemAction);
-                menuItems.add(menuItem);
-                if (divider == null && hasExtraContextMenuItems()) {
-                    divider = new Divider();
+            ToolItem item = toolItems.get(toolItems.size() - 1 - i);
+            Widget widget = i >= menuItems.size() ? null : menuItems.get(i);
+            if (item.isDivider()) {
+                if (!(widget instanceof Divider)) {
+                    if (widget != null) {
+                        menuItems.remove(widget);
+                        overflowMenu.remove(widget);
+                    }
+                    var divider = new Divider();
+                    if (getMenuDividerStyle() != null) {
+                        divider.addStyle(getMenuDividerStyle());
+                    }
+                    menuItems.add(divider);
                     overflowMenu.addDivider(divider);
                     overflowMenu.moveChild(divider, 0);
                 }
-                overflowMenu.addMenuItem(menuItem);
-                overflowMenu.moveChild(menuItem, 0);
+            } else {
+                if (widget instanceof MenuItem menuItem) {
+                    menuItem.setEnabled(item.isEnabled());
+                    menuItem.setText(item.getMenuText());
+                    menuItem.setShortcutText(item.getMenuShortcutText());
+                    menuItem.setIcon(item.getMenuIcon());
+                    menuItem.setActivated(item.isActivated());
+                } else {
+                    if (widget != null) {
+                        menuItems.remove(widget);
+                        overflowMenu.remove(widget);
+                    }
+                    var menuItem = new MenuItem();
+                    if (getMenuItemStyle() != null) {
+                        menuItem.addStyle(getMenuItemStyle());
+                    }
+                    menuItem.setActionListener(this::onToolItemAction);
+                    menuItems.add(menuItem);
+                    if (divider == null && hasExtraContextMenuItems()) {
+                        divider = new Divider();
+                        overflowMenu.addDivider(divider);
+                        overflowMenu.moveChild(divider, 0);
+                    }
+                    overflowMenu.addMenuItem(menuItem);
+                    overflowMenu.moveChild(menuItem, 0);
+                    menuItem.setEnabled(item.isEnabled());
+                    menuItem.setText(item.getMenuText());
+                    menuItem.setShortcutText(item.getMenuShortcutText());
+                    menuItem.setIcon(item.getMenuIcon());
+                    menuItem.setActivated(item.isActivated());
+                }
             }
-            ToolItem item = toolItems.get(toolItems.size() - 1 - i);
-            menuItem.setEnabled(item.isEnabled());
-            menuItem.setText(item.getMenuText());
-            menuItem.setShortcutText(item.getMenuShortcutText());
         }
 
         // Remove excedent
         while (menuItems.size() > hiddenItems) {
-            MenuItem removed = menuItems.remove(menuItems.size() - 1);
-            removed.setActionListener(null);
+            Widget removed = menuItems.remove(menuItems.size() - 1);
+            if (removed instanceof MenuItem menuItem) {
+                menuItem.setActionListener(null);
+            }
             overflowMenu.remove(removed);
         }
 
@@ -506,7 +559,7 @@ public class ToolBar extends Parent {
 
     private void onToolItemAction(ActionEvent actionEvent) {
         for (int i = 0; i < prevHiddenItems; i++) {
-            MenuItem menuItem = i >= menuItems.size() ? null : menuItems.get(i);
+            Widget menuItem = i >= menuItems.size() ? null : menuItems.get(i);
             if (menuItem == actionEvent.getSource()) {
                 ToolItem item = toolItems.get(toolItems.size() - 1 - i);
                 item.action();
@@ -744,7 +797,52 @@ public class ToolBar extends Parent {
             invalidate(false);
         }
     }
-
+    
+    public HorizontalAlign getItemsHorizontalAlign() {
+        return itemsHorizontalAlign;
+    }
+    
+    public void setItemsHorizontalAlign(HorizontalAlign itemsHorizontalAlign) {
+        if (itemsHorizontalAlign == null) itemsHorizontalAlign = HorizontalAlign.RIGHT;
+        
+        if (this.itemsHorizontalAlign != itemsHorizontalAlign) {
+            this.itemsHorizontalAlign = itemsHorizontalAlign;
+            invalidate(false);
+        }
+    }
+    
+    public String getMenuDividerStyle() {
+        return menuDividerStyle;
+    }
+    
+    public void setMenuDividerStyle(String menuDividerStyle) {
+        if (!Objects.equals(this.menuDividerStyle, menuDividerStyle)) {
+            for (var item : menuItems) {
+                if (item instanceof Divider) {
+                    item.removeStyle(this.menuDividerStyle);
+                    item.addStyle(this.menuDividerStyle);
+                }
+            }
+            this.menuDividerStyle = menuDividerStyle;
+        }
+    }
+    
+    public String getMenuItemStyle() {
+        return menuItemStyle;
+    }
+    
+    public void setMenuItemStyle(String menuItemStyle) {
+        if (!Objects.equals(this.menuItemStyle, menuItemStyle)) {
+            for (var item : menuItems) {
+                if (item instanceof MenuItem) {
+                    item.removeStyle(this.menuItemStyle);
+                    item.addStyle(this.menuItemStyle);
+                }
+            }
+            this.menuItemStyle = menuItemStyle;
+        }
+    }
+    
     public UXListener<ActionEvent> getNavigationAction() {
         return navigationAction;
     }

@@ -7,10 +7,12 @@ public class ControllerValueListener<T> implements UXValueListener<T> {
     private WeakReference<Controller> controller;
     private Method method;
     private boolean simple;
+    private boolean direct;
 
-    ControllerValueListener(Controller controller, Method method) {
+    ControllerValueListener(Controller controller, Method method, boolean direct) {
         this.controller = new WeakReference<>(controller);
         this.method = method;
+        this.direct = direct;
         this.simple = method.getParameterCount() == 0;
     }
 
@@ -25,10 +27,12 @@ public class ControllerValueListener<T> implements UXValueListener<T> {
             if (obj != null && obj.isListening()) {
                 if (simple) {
                     method.invoke(obj);
+                } else if (direct) {
+                    method.invoke(obj, change.getValue());
                 } else {
                     method.invoke(obj, change);
                 }
-            } else {
+            } else if (obj == null) {
                 controller = null;
                 method = null;
             }

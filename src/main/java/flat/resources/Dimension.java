@@ -154,4 +154,12 @@ public class Dimension {
     public static float pxDp(float dpi, float px) {
         return (float) Math.ceil(px / (getDensity(dpi).dpi / 160f));
     }
+    
+    public static float dpPx(float dp) {
+        return dpPx(Application.getCurrentWindow().getDpi(), dp);
+    }
+    
+    public static float pxDp(float px) {
+        return pxDp(Application.getCurrentWindow().getDpi(), px);
+    }
 }

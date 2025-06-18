@@ -35,12 +35,7 @@ public class Canvas extends Widget {
 
     private void draw(Graphics graphics) {
         if (drawListener != null) {
-            UXListener.safeHandle(drawListener, new DrawEvent(this, graphics,
-                    new Rectangle(0, 0, getLayoutWidth(), getLayoutHeight()),
-                    getBackgroundShape(),
-                    new Rectangle(getInX(), getInY(), getInWidth(), getInHeight()),
-                    getTransform())
-            );
+            UXListener.safeHandle(drawListener, new DrawEvent(this, graphics));
         }
     }
 }

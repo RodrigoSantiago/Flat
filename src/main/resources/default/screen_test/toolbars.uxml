@@ -46,6 +46,17 @@
                     <ToolItem menu-text="Icon 4" style="primary" icon="icon(fill, star)"/>
                 </ToolBar>
             </LinearBox>
+            <Label text="Minimal" style="subtitle" margin-left="4dp" margin-top="16dp"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
+                <ToolBar style="dense primary" width="MATCH_PARENT" title="" items-horizontal-align="LEFT">
+                    <ToolItem overflow-item="true" style="dense overflow primary"/>
+                    <ToolItem menu-text="Icon 1" style="dense primary" icon="icon(fill, star)" enabled="false"/>
+                    <ToolItem menu-text="Icon 2" style="dense primary" icon="icon(fill, star)"/>
+                    <ToolItem divider="true" style="dense tool-item-divider-primary"/>
+                    <ToolItem menu-text="Icon 3" style="dense primary" icon="icon(fill, star)"/>
+                    <ToolItem menu-text="Icon 4" style="dense primary" icon="icon(fill, star)"/>
+                </ToolBar>
+            </LinearBox>
             <Label text="Dense" style="subtitle" margin-left="4dp" margin-top="16dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
                 <ToolBar style="dense primary" width="MATCH_PARENT" title="Toolbar Main Title">

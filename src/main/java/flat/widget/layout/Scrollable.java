@@ -115,8 +115,8 @@ public abstract class Scrollable extends Parent {
         Vector2 viewDimension = onLayoutViewDimension(width, height);
         viewDimension.x = Math.max(0, viewDimension.x);
         viewDimension.y = Math.max(0, viewDimension.y);
-        localDimension.x = getHorizontalBarPolicy() == Policy.NEVER ? viewDimension.x : Math.max(0, localDimension.x);
-        localDimension.y = getVerticalBarPolicy() == Policy.NEVER ? viewDimension.y : Math.max(0, localDimension.y);
+        localDimension.x = Math.max(0, localDimension.x);
+        localDimension.y = Math.max(0, localDimension.y);
 
         viewDimensionX = viewDimension.x;
         viewDimensionY = viewDimension.y;

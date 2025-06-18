@@ -1,6 +1,7 @@
 package flat.widget.layout;
 
 import flat.animations.StateInfo;
+import flat.events.DrawEvent;
 import flat.events.KeyEvent;
 import flat.graphics.Graphics;
 import flat.resources.ResourceStream;
@@ -60,6 +61,7 @@ public class Frame extends Group {
                 old.setActivity(null);
             }
             if (this.controller != null) {
+                this.controller.setRoot(this);
                 this.controller.setActivity(getActivity());
             }
         }
@@ -106,6 +108,7 @@ public class Frame extends Group {
         if ((prev == null) != (current == null) && controller != null) {
             tasks.add(() -> {
                 if (controller != null) {
+                    controller.setRoot(this);
                     controller.setActivity(this.getActivity());
                 }
             });
@@ -137,7 +140,7 @@ public class Frame extends Group {
 
         if (controller != null && controller.isListening()) {
             try {
-                controller.onDraw(graphics);
+                controller.onDraw(new DrawEvent(this, graphics));
             } catch (Exception e) {
                 Application.handleException(e);
             }

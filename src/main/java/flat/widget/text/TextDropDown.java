@@ -187,6 +187,7 @@ public class TextDropDown extends TextInputField {
         if (index >= 0 && index < options.size()) {
             setText(options.get(index));
             fireOptionSelected(options.get(index));
+            fireTextType();
         }
     }
     

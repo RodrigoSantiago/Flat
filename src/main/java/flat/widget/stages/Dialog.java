@@ -3,6 +3,7 @@ package flat.widget.stages;
 import flat.animations.Interpolation;
 import flat.animations.NormalizedAnimation;
 import flat.animations.StateInfo;
+import flat.events.DrawEvent;
 import flat.events.KeyEvent;
 import flat.events.PointerEvent;
 import flat.graphics.Color;
@@ -139,7 +140,7 @@ public class Dialog extends Stage {
 
         if (controller != null && controller.isListening()) {
             try {
-                controller.onDraw(graphics);
+                controller.onDraw(new DrawEvent(this, graphics));
             } catch (Exception e) {
                 Application.handleException(e);
             }
@@ -273,6 +274,7 @@ public class Dialog extends Stage {
         onShow(activity, x, y);
         if (controller != null) {
             try {
+                controller.setRoot(this);
                 controller.setActivity(getActivity());
             } catch (Exception e) {
                 Application.handleException(e);

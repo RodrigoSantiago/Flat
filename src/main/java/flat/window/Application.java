@@ -6,6 +6,7 @@ import flat.backend.WL;
 import flat.exception.FlatException;
 import flat.graphics.context.Context;
 import flat.graphics.emojis.EmojiManager;
+import flat.graphics.image.ImageData;
 import flat.resources.ResourceStream;
 import flat.resources.ResourcesManager;
 import flat.window.event.EventData;
@@ -384,7 +385,27 @@ public class Application {
     public static List<Window> getAssignedWindows() {
         return new ArrayList<>(windows);
     }
-
+    
+    public static Window getCurrentWindow() {
+        return assignedWindow;
+    }
+    
+    public static String getClipboard() {
+        return WL.GetClipboardString();
+    }
+    
+    public static void setClipboard(String clipboard) {
+        WL.SetClipboardString(clipboard);
+    }
+    
+    public static ImageData getClipboardImage() {
+        return WL.GetClipboardImage();
+    }
+    
+    public static void setClipboardImage(ImageData imageData) {
+        WL.SetClipboardImage(imageData);
+    }
+    
     public static void handleException(Exception e) {
         e.printStackTrace();
     }
