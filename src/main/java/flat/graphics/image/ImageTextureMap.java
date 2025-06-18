@@ -1,17 +1,17 @@
 package flat.graphics.image;
 
 import flat.graphics.Graphics;
-import flat.graphics.ImageTexture;
+import flat.graphics.RenderTexture;
 import flat.widget.enums.ImageFilter;
 
-public class SpriteMap implements Drawable {
-    private final ImageTexture texture;
+public class ImageTextureMap implements Drawable {
+    private final RenderTexture texture;
     private final float srcX;
     private final float srcY;
     private final float srcWidth;
     private final float srcHeight;
 
-    public SpriteMap(ImageTexture texture, float srcX, float srcY, float srcWidth, float srcHeight) {
+    public ImageTextureMap(RenderTexture texture, float srcX, float srcY, float srcWidth, float srcHeight) {
         this.texture = texture;
         this.srcX = srcX;
         this.srcY = srcY;
@@ -19,7 +19,7 @@ public class SpriteMap implements Drawable {
         this.srcHeight = srcHeight;
     }
 
-    public ImageTexture getImageTexture() {
+    public RenderTexture getImageTexture() {
         return texture;
     }
 

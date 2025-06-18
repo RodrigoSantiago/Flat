@@ -20,9 +20,8 @@ import flat.window.Activity;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-class DatePickerDialogController extends Controller {
+class DatePickerDialogController extends DefaultDialogController {
 
-    private final Dialog dialog;
     private final String title;
     private final boolean cancelable;
     private final boolean ranged;
@@ -46,7 +45,7 @@ class DatePickerDialogController extends Controller {
     };
 
     DatePickerDialogController(Dialog dialog, DatePickerDialogBuilder builder) {
-        this.dialog = dialog;
+        super(dialog);
         this.title = builder.title;
         this.cancelable = builder.cancelable;
         this.ranged = builder.ranged;
@@ -208,7 +207,7 @@ class DatePickerDialogController extends Controller {
                 }
             }
             if (getActivity() != null) {
-                dialog.move(getActivity().getWidth() / 2, getActivity().getHeight() / 2);
+                dialog.moveTo(getActivity().getWidth() / 2, getActivity().getHeight() / 2);
             }
         }
 

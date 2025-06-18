@@ -9,7 +9,7 @@ import flat.uxml.UXAttrs;
 import flat.widget.Widget;
 import flat.widget.enums.HorizontalAlign;
 import flat.widget.enums.VerticalAlign;
-import flat.widget.text.data.TextRender;
+import flat.widget.text.data.TextBox;
 
 import java.util.Objects;
 
@@ -27,11 +27,11 @@ public class Label extends Widget {
 
     private String showText;
     protected float textWidth;
-    protected final TextRender textRender = new TextRender();
+    protected final TextBox textBox = new TextBox();
 
     public Label() {
-        textRender.setFont(textFont);
-        textRender.setTextSize(textSize);
+        textBox.setFont(textFont);
+        textBox.setTextSize(textSize);
     }
 
     @Override
@@ -119,7 +119,7 @@ public class Label extends Widget {
             graphics.setTextSize(getTextSize());
             graphics.setTextBlur(0);
 
-            textRender.drawText(graphics, x, y, width, height, horizontalAlign);
+            textBox.drawText(graphics, x, y, width, height, horizontalAlign);
         }
     }
 
@@ -131,7 +131,7 @@ public class Label extends Widget {
         if (!Objects.equals(this.text, text)) {
             this.text = text;
             showText = text == null ? null : textAllCaps ? text.toUpperCase() : text;
-            textRender.setText(showText);
+            textBox.setText(showText);
             invalidate(isWrapContent());
         }
     }
@@ -144,7 +144,7 @@ public class Label extends Widget {
         if (this.textAllCaps != textAllCaps) {
             this.textAllCaps = textAllCaps;
             showText = text == null ? null : textAllCaps ? text.toUpperCase() : text;
-            textRender.setText(showText);
+            textBox.setText(showText);
             invalidate(isWrapContent());
         }
     }
@@ -156,7 +156,7 @@ public class Label extends Widget {
     public void setTextFont(Font textFont) {
         if (this.textFont != textFont) {
             this.textFont = textFont;
-            textRender.setFont(textFont);
+            textBox.setFont(textFont);
             invalidate(isWrapContent());
         }
     }
@@ -168,7 +168,7 @@ public class Label extends Widget {
     public void setTextSize(float textSize) {
         if (this.textSize != textSize) {
             this.textSize = textSize;
-            textRender.setTextSize(textSize);
+            textBox.setTextSize(textSize);
             invalidate(isWrapContent());
         }
     }
@@ -211,11 +211,11 @@ public class Label extends Widget {
     }
 
     protected float getTextWidth() {
-        return textRender.getTextWidth();
+        return textBox.getTextWidth();
     }
 
     protected float getTextHeight() {
-        return textRender.getTextHeight();
+        return textBox.getTextHeight();
     }
 
     protected String getShowText() {

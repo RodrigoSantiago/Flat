@@ -35,3 +35,19 @@ $selection-on-card-color : #64B5F680;
 widget {
 
 }
+
+test {
+    center-x : 0.5;
+    center-y : 0.5;
+    scale-x : 1;
+    scale-y : 1;
+    hovered {
+        scale-x : 2;
+        scale-y : 2;
+    }
+    pressed {
+        scale-x : 0.9;
+        scale-y : 0.9;
+    }
+    transition-duration : 2;
+}

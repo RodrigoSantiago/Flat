@@ -80,8 +80,8 @@ public class Chip extends Button {
     }
 
     @Override
-    public void onLayout(float width, float height) {
-        super.onLayout(width, height);
+    public void setLayout(float layoutWidth, float layoutHeight) {
+        super.setLayout(layoutWidth, layoutHeight);
         updateClosePosition();
     }
 

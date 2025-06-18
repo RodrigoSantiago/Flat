@@ -137,8 +137,8 @@ public class TextInputField extends TextField {
     }
 
     @Override
-    public void onLayout(float width, float height) {
-        super.onLayout(width, height);
+    public void setLayout(float layoutWidth, float layoutHeight) {
+        super.setLayout(layoutWidth, layoutHeight);
         updateActionPosition();
     }
 
@@ -340,7 +340,7 @@ public class TextInputField extends TextField {
         this.actionListener = actionListener;
     }
 
-    private boolean isOverActionButton(Vector2 local) {
+    protected boolean isOverActionButton(Vector2 local) {
         return actionIcon != null && !(local.x < x1 || local.x > x2 || local.y < y1 || local.y > y2);
     }
 

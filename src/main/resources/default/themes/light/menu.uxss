@@ -62,6 +62,9 @@ menu-item.default {
     pressed {
         background-color : $card-color-hover;
     }
+    activated {
+        background-color : $card-color-active;
+    }
     disabled {
         text-color : alpha($on-card-color, 0.25);
         icon-color : alpha($on-card-color, 0.15);

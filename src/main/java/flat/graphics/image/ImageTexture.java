@@ -1,9 +1,8 @@
 package flat.graphics.image;
 
-import flat.backend.SVG;
 import flat.exception.FlatException;
 import flat.graphics.Graphics;
-import flat.graphics.ImageTexture;
+import flat.graphics.RenderTexture;
 import flat.graphics.context.Texture2D;
 import flat.graphics.context.enums.*;
 import flat.resources.ResourceStream;
@@ -11,49 +10,42 @@ import flat.widget.enums.ImageFilter;
 
 import java.lang.ref.WeakReference;
 
-public class PixelMap implements Drawable, ImageTexture {
+public class ImageTexture implements Drawable, RenderTexture {
 
-    public static PixelMap parse(ResourceStream stream) {
+    public static ImageTexture parse(byte[] data) {
+        return new ImageTexture(ImageData.parse(data));
+    }
+
+    public static ImageTexture parse(ResourceStream stream) {
         Object cache = stream.getCache();
         if (cache != null) {
             if (cache instanceof Exception) {
                 return null;
-            } else if (cache instanceof PixelMap) {
-                return (PixelMap) cache;
+            } else if (cache instanceof Object[] dual) {
+                return (ImageTexture) dual[1];
             } else {
                 stream.clearCache();
             }
         }
         try {
-            PixelMap pixelMap = loadPixelMap(stream);
-            stream.putCache(pixelMap);
-            return pixelMap;
+            ImageData data = ImageData.load(stream);
+            ImageTexture texture = new ImageTexture(data);
+            
+            stream.putCache(new Object[]{data, texture});
+            return texture;
         } catch (Exception e) {
             stream.putCache(e);
             throw new FlatException(e);
         }
     }
 
-    private static PixelMap loadPixelMap(ResourceStream stream) {
-        byte[] data = stream.readData();
-        if (data == null) {
-            throw new FlatException("Invalid image " + stream.getResourceName());
-        }
-
-        int[] imageData = new int[3];
-        byte[] readImage = SVG.ReadImage(data, imageData);
-        if (readImage == null) {
-            throw new FlatException("Invalid image format " + stream.getResourceName());
-        }
-        return new PixelMap(readImage, imageData[0], imageData[1], PixelFormat.RGBA);
-    }
-
-    private final Texture2D texture;
     private final PixelFormat format;
     private final int width, height;
+    private byte[] initialData;
+    private Texture2D texture;
     private WeakReference<byte[]> localData;
 
-    public PixelMap(Texture2D texture) {
+    public ImageTexture(Texture2D texture) {
         this.texture = texture;
         this.format = texture.getFormat();
         this.width = texture.getWidth(0);
@@ -61,8 +53,12 @@ public class PixelMap implements Drawable, ImageTexture {
         texture.setScaleFilters(MagFilter.LINEAR, MinFilter.LINEAR);
         texture.setWrapModes(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
     }
+    
+    public ImageTexture(ImageData data) {
+        this(data.getData(), data.getWidth(), data.getHeight(), data.getFormat());
+    }
 
-    public PixelMap(byte[] data, int width, int height, PixelFormat format) {
+    public ImageTexture(byte[] data, int width, int height, PixelFormat format) {
         int required = width * height * format.getPixelBytes();
         if (data.length < required) {
             throw new FlatException("The image data is too short. Provided : " + data.length + ", Required : " + required);
@@ -72,44 +68,40 @@ public class PixelMap implements Drawable, ImageTexture {
         this.height = height;
         this.format = format;
         this.localData = new WeakReference<>(data);
-
-        texture = new Texture2D(width, height, format);
-        texture.setData(0, data, 0, 0, 0, width, height);
-        texture.setLevels(0);
-        texture.generateMipmapLevels();
-        texture.setScaleFilters(MagFilter.LINEAR, MinFilter.LINEAR);
-        texture.setWrapModes(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
+        this.initialData = data;
     }
 
-    public byte[] export(ImageFileFormat imageFileFormat) {
-        return export(imageFileFormat, 100);
-    }
-
-    public byte[] export(ImageFileFormat imageFileFormat, int quality) {
-        quality = Math.max(100, Math.max(0, quality));
-        return SVG.WriteImage(getData(), width, height, format.getPixelBytes(), imageFileFormat.ordinal(), quality);
-    }
-
-    public byte[] readData() {
-        return getData().clone();
-    }
-
-    private byte[] getData() {
+    public ImageData readImageData() {
         byte[] data = localData == null ? null : localData.get();
         if (data == null) {
             data = new byte[width * height * format.getPixelBytes()];
-            localData = new WeakReference<>(data);
             texture.getData(0, data, 0);
+        } else {
+            data = data.clone();
         }
-        return data;
+        return new ImageData(data, width, height, format);
     }
-
+    
+    @Override
     public Texture2D getTexture() {
+        if (texture == null) {
+            texture = new Texture2D(width, height, format);
+            texture.setData(0, initialData, 0, 0, 0, width, height);
+            texture.setLevels(0);
+            texture.generateMipmapLevels();
+            texture.setScaleFilters(MagFilter.LINEAR, MinFilter.LINEAR);
+            texture.setWrapModes(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
+            initialData = null;
+        }
         return texture;
     }
 
     public PixelFormat getFormat() {
         return format;
+    }
+
+    public void invalidateTextureData() {
+        localData = null;
     }
 
     @Override

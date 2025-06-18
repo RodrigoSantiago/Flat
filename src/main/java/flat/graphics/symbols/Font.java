@@ -9,7 +9,7 @@ import flat.graphics.context.DisposeTask;
 import flat.graphics.context.Glyph;
 import flat.graphics.context.enums.PixelFormat;
 import flat.graphics.context.fonts.SystemFonts;
-import flat.graphics.image.PixelMap;
+import flat.graphics.image.ImageTexture;
 import flat.math.shapes.Path;
 import flat.window.Application;
 
@@ -262,15 +262,19 @@ public class Font {
             return new Path();
         }
     }
+    public float getGlyphKerning(int codePointA, int codePointB) {
+        checkDisposed();
+        return SVG.FontGetKerning(fontId, codePointA, codePointB);
+    }
 
-    public PixelMap createImageFromAtlas(Context context) {
+    public ImageTexture createImageFromAtlas(Context context) {
         int[] data = new int[4];
         int imageId = (int) SVG.FontGetAtlas(getInternalId(), data);
         int w = data[0];
         int h = data[1];
         byte[] imageData = new byte[w * h];
         if (imageId == 0) {
-            return new PixelMap(imageData, w, h, PixelFormat.RED);
+            return new ImageTexture(imageData, w, h, PixelFormat.RED);
         } else {
 
             int oldId = GL.TextureGetBound(GLEnums.TT_TEXTURE_2D);
@@ -278,7 +282,7 @@ public class Font {
             GL.TexGetImageB(GLEnums.TT_TEXTURE_2D, 0, PixelFormat.RED.getInternalEnum(), imageData, 0);
             GL.TextureBind(GLEnums.TT_TEXTURE_2D, oldId);
 
-            return new PixelMap(imageData, w, h, PixelFormat.RED);
+            return new ImageTexture(imageData, w, h, PixelFormat.RED);
         }
     }
 

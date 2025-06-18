@@ -1,8 +1,6 @@
 package flat.animations;
 
-import flat.animations.interpolation.Exp;
-import flat.animations.interpolation.ExpIn;
-import flat.animations.interpolation.ExpOut;
+import flat.animations.interpolation.*;
 
 public interface Interpolation {
 
@@ -88,6 +86,18 @@ public interface Interpolation {
     Interpolation exp5 = new Exp(2, 5);
     Interpolation exp5In = new ExpIn(2, 5);
     Interpolation exp5Out = new ExpOut(2, 5);
+
+    Interpolation pow2 = new Pow(2);
+    Interpolation pow2In = new PowIn(2);
+    Interpolation pow2Out = new PowOut(2);
+
+    Interpolation pow3 = new Pow(3);
+    Interpolation pow3In = new PowIn(3);
+    Interpolation pow3Out = new PowOut(3);
+
+    Interpolation pow4 = new Pow(4);
+    Interpolation pow4In = new PowIn(4);
+    Interpolation pow4Out = new PowOut(4);
 
     static float mix(float a, float b, float t) {
         return a * (1 - t) + b * t;

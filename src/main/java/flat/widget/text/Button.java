@@ -7,7 +7,7 @@ import flat.graphics.Color;
 import flat.graphics.Graphics;
 import flat.graphics.context.paints.ImagePattern;
 import flat.graphics.image.Drawable;
-import flat.graphics.image.PixelMap;
+import flat.graphics.image.ImageTexture;
 import flat.math.shapes.Ellipse;
 import flat.uxml.*;
 import flat.widget.enums.HorizontalPosition;
@@ -112,8 +112,8 @@ public class Button extends Label {
     protected void drawIcon(Graphics graphics, float x, float y, float width, float height) {
         if (!isIconClipCircle()) {
             getIcon().draw(graphics, x, y, width, height, getIconColor(), getIconImageFilter());
-        } else if (getIcon() instanceof PixelMap pixelMap) {
-            var tex = pixelMap.getTexture();
+        } else if (getIcon() instanceof ImageTexture imageTexture) {
+            var tex = imageTexture.getTexture();
             ImagePattern paint = new ImagePattern.Builder(tex, x, y, width, height)
                     .color(getIconColor())
                     .build();

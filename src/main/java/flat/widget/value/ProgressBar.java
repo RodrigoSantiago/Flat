@@ -11,6 +11,7 @@ import flat.uxml.TaskList;
 import flat.uxml.UXAttrs;
 import flat.widget.Widget;
 import flat.widget.enums.ProgressLineMode;
+import flat.widget.enums.Visibility;
 import flat.window.Activity;
 
 public class ProgressBar extends Widget {

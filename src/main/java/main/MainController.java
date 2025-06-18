@@ -4,26 +4,28 @@ import flat.Flat;
 import flat.animations.Interpolation;
 import flat.backend.GL;
 import flat.backend.SVG;
+import flat.backend.WL;
+import flat.concurrent.ProgressTask;
 import flat.data.ObservableList;
-import flat.events.ActionEvent;
-import flat.events.KeyCode;
-import flat.events.KeyEvent;
-import flat.events.PointerEvent;
+import flat.events.*;
 import flat.graphics.Color;
+import flat.graphics.TextVectorRender;
 import flat.graphics.Graphics;
 import flat.graphics.Surface;
+import flat.graphics.context.enums.CycleMethod;
+import flat.graphics.context.enums.PixelFormat;
+import flat.graphics.context.paints.LinearGradient;
+import flat.graphics.context.paints.RadialGradient;
+import flat.graphics.image.ImageData;
 import flat.graphics.symbols.Font;
 import flat.graphics.context.ShaderProgram;
 import flat.graphics.context.enums.AlphaComposite;
 import flat.graphics.context.enums.ImageFileFormat;
-import flat.graphics.image.Drawable;
-import flat.graphics.image.DrawableReader;
-import flat.graphics.image.PixelMap;
-import flat.graphics.symbols.FontManager;
-import flat.graphics.symbols.FontStyle;
-import flat.graphics.symbols.IconsManager;
+import flat.graphics.image.ImageTexture;
+import flat.math.*;
 import flat.math.shapes.Circle;
 import flat.math.shapes.Path;
+import flat.math.stroke.BasicStroke;
 import flat.resources.ResourceStream;
 import flat.uxml.Controller;
 import flat.widget.Parent;
@@ -40,11 +42,9 @@ import flat.window.WindowSettings;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 public class MainController extends Controller {
 
@@ -86,9 +86,9 @@ public class MainController extends Controller {
     @Flat public ListView listView1;
     @Flat public ListView listView2;
     @Flat public ListView listView3;
-    @Flat public ListView treeView1;
-    @Flat public ListView treeView2;
-    @Flat public ListView treeView3;
+    @Flat public TreeView treeView1;
+    @Flat public TreeView treeView2;
+    @Flat public TreeView treeView3;
 
     @Flat public Label statusLabel;
 
@@ -113,7 +113,6 @@ public class MainController extends Controller {
 
     @Flat
     public void setTabDefault() {
-        setupListView(listView3, treeView3);
         mainTab.selectTab(tabDefault);
         mainDrawer.hide();
     }
@@ -198,7 +197,6 @@ public class MainController extends Controller {
 
     @Flat
     public void setTabLists() {
-        setupListView(listView1, treeView1);
         mainTab.selectTab(tabLists);
         mainDrawer.hide();
     }
@@ -286,15 +284,29 @@ public class MainController extends Controller {
 
     @Flat
     public void onProcessDialog() {
+        ProgressTask<Integer> task = new ProgressTask<>(getWindow(), (report) -> {
+            for (int i = 0; i < 100; i++) {
+                if (report.isRequestCancel()) {
+                    break;
+                }
+                report.setProgress(i / 99f);
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ignored) {
+                }
+            }
+            return 0;
+        });
+        new Thread(task).start();
         var alert = new ProcessDialogBuilder()
                 .title("This is process Dialog")
                 .message("Please cancel this process")
                 .onShowListener((dg) -> System.out.println("Show"))
                 .onHideListener((dg) -> System.out.println("Hide"))
                 .onRequestCancelListener((dg) -> {
-                    System.out.println("Cancel");
-                    dg.smoothHide();
+                    System.out.println("Request the cancel!!!");
                 })
+                .task(task)
                 .cancelable(true)
                 .block(false)
                 .build();
@@ -303,15 +315,30 @@ public class MainController extends Controller {
 
     @Flat
     public void onBlockProcessDialog() {
+        ProgressTask<Integer> task = new ProgressTask<>(getWindow(), (report) -> {
+            for (int i = 0; i < 100; i++) {
+                if (report.isRequestCancel()) {
+                    break;
+                }
+                report.setProgress(i / 99f);
+                System.out.println("Progress " + (i / 99f));
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ignored) {
+                }
+            }
+            return 0;
+        });
+        new Thread(task).start();
         var alert = new ProcessDialogBuilder()
                 .title("This is process Dialog")
                 .message("Please cancel this process")
                 .onShowListener((dg) -> System.out.println("Show"))
                 .onHideListener((dg) -> System.out.println("Hide"))
                 .onRequestCancelListener((dg) -> {
-                    System.out.println("Cancel");
-                    dg.smoothHide();
+                    System.out.println("Request the cancel!!!");
                 })
+                .task(task)
                 .cancelable(true)
                 .block(true)
                 .build();
@@ -398,6 +425,33 @@ public class MainController extends Controller {
                 .onHideListener((dg) -> System.out.println("Hide"))
                 .onDatePickListener((dg, valueStart, valueEnd) -> System.out.println(valueStart + " - " + valueEnd))
                 .block(true)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onColorPickerDialog() {
+        var alert = new ColorPickerDialogBuilder()
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .onColorPickListener((dg, value) -> System.out.println(Color.toFloat(value)))
+                .alpha(true)
+                .palette(Color.red, Color.yellow, Color.green, Color.aqua, Color.blue, Color.purple, Color.gray, Color.black)
+                .block(false)
+                .build();
+        alert.show(getActivity());
+    }
+
+    @Flat
+    public void onFontPickerDialog() {
+        var alert = new FontPickerDialogBuilder()
+                .title("Select a font")
+                .message("Filter")
+                .onShowListener((dg) -> System.out.println("Show"))
+                .onHideListener((dg) -> System.out.println("Hide"))
+                .initialFont(Font.getDefault())
+                .onChooseListener((widget, value) -> System.out.println("Font: " + value))
+                .block(false)
                 .build();
         alert.show(getActivity());
     }
@@ -507,65 +561,38 @@ public class MainController extends Controller {
     }
 
     ShaderProgram shader;
-    PixelMap pix;
+    ImageTexture pix;
     Font arial;
 
-    private void setupListView(ListView listView1, ListView treeView1) {
+    private void setupListView(ListView listView) {
         ObservableList<String> list1 = new ObservableList<>();
-        ObservableList<String> list2 = new ObservableList<>();
         for (int i = 0; i < 50; i++) {
             list1.add("List Item " + (i + 1));
-            list2.add("List Item " + (i + 1));
         }
-        listView1.setAdapter(new ListViewDefaultAdapter<>(list1));
-        listView2.setAdapter(new ListViewDefaultAdapter<>(list2));
-        ObservableList<TreeCell> list3 = new ObservableList<>();
-        ObservableList<TreeCell> list4 = new ObservableList<>();
+        listView.setAdapter(new ListViewDefaultAdapter<>(list1));
+    }
 
-        Drawable icon = IconsManager.getIcon("outline", "draft");
-
-        TreeCell rootA = new TreeCell(list3, "Tree Item Root", true, icon);
-        TreeCell rootB = new TreeCell(list4, "Tree Item Root", true, icon);
-        list3.add(rootA);
-        list4.add(rootB);
-
-        int aIndex = 1;
-        TreeCell child = new TreeCell(list3, "Child", true, icon);
-        rootA.add(child);
-        for (int i = 0; i < 5; i++) {
-            TreeCell child2 = new TreeCell(list3, "Child " + (aIndex++), false, icon);
-            child.add(child2);
-        }
-        TreeCell child3 = new TreeCell(list3, "Child " + (aIndex++), true, icon);
-        child.add(child3);
-        for (int i = 0; i < 3; i++) {
-            TreeCell child2 = new TreeCell(list3, "Other Child With very long Name " + (aIndex++), false, icon);
-            child3.add(child2);
-        }
-        for (int i = 0; i < 3; i++) {
-            TreeCell child2 = new TreeCell(list3, "Siblings " + (aIndex++), false, icon);
-            rootA.add(child2);
-        }
-        for (int i = 0; i < 3; i++) {
-            TreeCell child2 = new TreeCell(list3, "Root Siblings " + (aIndex++), false, icon);
-            list3.add(child2);
-        }
-        TreeCell child4 = new TreeCell(list3, "Child " + (aIndex++), true, icon);
-        list3.add(child4);
-        for (int i = 0; i < 3; i++) {
-            TreeCell child2 = new TreeCell(list3, "Other Child " + (aIndex++), false, icon);
-            child4.add(child2);
-        }
-        treeView1.setAdapter(new TreeViewAdapter(list3));
-        treeView2.setAdapter(new TreeViewAdapter(list4));
+    private void setupTreeView(TreeView treeView) {
+        treeView.addTreeItem(new AssetData("Item", false), false);
+        treeView.addTreeItem(new AssetData("Item2", false), false);
+        treeView.addTreeItem(new AssetData("Item3", false), false);
+        treeView.addTreeItem(new AssetData("Item4", false), false);
+        treeView.addTreeItem(new AssetData("ZFolder", true), false);
+        treeView.addTreeItem(new AssetData("ZFolder/Item5", false), false);
+        treeView.addTreeItem(new AssetData("ZFolder/Item6", false), false);
+        treeView.addTreeItem(new AssetData("ZFolder/AFolder", true), false);
+        treeView.addTreeItem(new AssetData("ZFolder/AFolder/Item7", false), false);
+        treeView.addTreeItem(new AssetData("ZFolder/AFolder/Item8", false), false);
+        treeView.setStylizeListener(this::onTreeViewStylize);
+        treeView.setDragListener(this::onTreeViewDrag);
     }
 
     @Flat
     public void optimize(PointerEvent pointer) {
         /*if (pointer.getPointerID() == 1 && pointer.getType() == PointerEvent.PRESSED) {
             if (pointer.getSource() instanceof ImageView view) {
-                LineMap lineMap = (LineMap) view.getImage();
-                lineMap.optimize();
+                ImageVector imageVector = (ImageVector) view.getImage();
+                imageVector.optimize();
             }
         }*/
     }
@@ -582,47 +609,96 @@ public class MainController extends Controller {
     float t = 0;
     float av = 0;
 
-    PixelMap[] maps;
-    @Flat public ImageView img0, img1, img2, img3, img4, img5, img6, img7, img8, img9, img10, img11;
+    ImageTexture[] maps;
+    @Flat public ImageView img0, img1, img2, img3, img4, img5, img6, img7, img8, img9, img10,
+            img11, img12, img13, img14, img15, img16, img17;
     private ImageView[] images;
 
+    private boolean mode;
+    private ImageData pasteImageData;
+    private ImageTexture pasteImage;
+    @Flat
+    public void toggleDefault(ActionEvent event) {
+        //mode = !mode;
+        //getActivity().setRenderPartialEnabled(mode);
+        //System.out.println(mode);
+        var old = pasteImageData;
+        pasteImageData = WL.GetClipboardImage();
+        if (pasteImageData != null) {
+            pasteImage = new ImageTexture(pasteImageData.getData(), pasteImageData.getWidth(), pasteImageData.getHeight(), pasteImageData.getFormat());
+        }
+        if (old != null) {
+            WL.SetClipboardImage(old);
+        }
+    }
+
+    private ImageTexture cutTest;
     @Override
     public void onShow() {
-        images = new ImageView[]{img0, img1, img2, img3, img4, img5, img6, img7, img8, img9, img10, img11};
-        getWindow().setIcon(PixelMap.parse(new ResourceStream("/default/icons/window-icon.png")));
-        setupListView(listView3, treeView3);
+        getActivity().setRenderPartialEnabled(true);
+        images = new ImageView[]{img0, img1, img2, img3, img4, img5, img6, img7, img8, img9, img10,
+                img11, img12, img13, img14, img15, img16, img17};
+        getWindow().setIcon(ImageTexture.parse(new ResourceStream("/default/icons/window-icon.png")));
+        setupListView(listView1);
+        setupListView(listView2);
+        setupListView(listView3);
+        setupTreeView(treeView1);
+        setupTreeView(treeView2);
+        setupTreeView(treeView3);
 
-        // getActivity().setContinuousRendering(true);
+        Application.setVsync(1);
+        getActivity().setContinuousRendering(false);
         var graphics = getGraphics();
 
         shader = graphics.createImageRenderShader(
                 """
                 #version 330 core
                 uniform vec4 col;
+                uniform vec4 bac;
                 vec4 fragment(vec2 pos, vec2 uv) {
-                    return pos.x > 8 && col.r > 0 ? vec4(col.rgb, clamp(col.a * (pos.x - 8) / 16, 0, 1))
-                    : pos.x > 40 && col.b > 0 ? vec4(col.rgb, 1 - clamp(col.a * (pos.x - 40) / 16, 0, 1))
+                    return pos.x > 8 && bac.r > 0 ? vec4(col.rgb, clamp(col.a * (pos.x - 8) / 16, 0, 1))
+                    : pos.x > 40 && bac.r < 0 ? vec4(col.rgb, 1 - clamp(col.a * (pos.x - 40) / 16, 0, 1))
                     : col;
                 }
                 """);
         Surface surface = new Surface(64, 64, 8);
         graphics.setSurface(surface);
 
-        maps = new PixelMap[AlphaComposite.values().length];
+        maps = new ImageTexture[AlphaComposite.values().length];
         for (int i = 0; i < maps.length; i++) {
+            if (i >= maps.length - 6) {
+                graphics.clear(0xFFFFFFFF, 0, 0);
+            }
             graphics.setAlphaComposite(AlphaComposite.SRC_OVER);
-            shader.set("col", Color.toFloat(Color.blue));
+            shader.set("col", Color.toFloat(0x0040FFFF));
+            shader.set("bac", new Vector4(-1, -1, -1, -1));
             graphics.blitCustomShader(shader, 0, 0, 56, 40);
             graphics.setAlphaComposite(AlphaComposite.values()[i]);
-            shader.set("col", Color.toFloat(Color.red));
+            shader.set("col", Color.toFloat(0xFF4000FF));
+            shader.set("bac", new Vector4(1, 1, 1, 1));
             graphics.blitCustomShader(shader, 8, 24, 56, 40);
             graphics.setAlphaComposite(AlphaComposite.SRC_OVER);
-            maps[i] = graphics.createPixelMap();
+            maps[i] = graphics.renderToImage();
             images[i].setImage(maps[i]);
             graphics.clear(0, 0, 0);
         }
 
-        graphics.setSurface(null);
+        //graphics.clear(0, 0, 0);
+        //graphics.setTransform2D(null);
+        //graphics.setColor(Color.blue);
+        //graphics.drawRect(0, 0, 64, 64, true);
+        //graphics.setColor(Color.red);
+        //graphics.drawRect(0, 0, 32, 32, true);
+        //graphics.setColor(Color.black);
+        //graphics.setStroke(new BasicStroke(1));
+        //graphics.drawCircle(32, 32, 32, false);
+        //graphics.drawCircle(32, 32, 16, false);
+        //graphics.drawCircle(32, 32, 8, false);
+        //graphics.drawLine(0, 16, 32, 16);
+        //cutTest = graphics.createImageTexture(32, 16, 32, 32, PixelFormat.RGBA);
+        //graphics.setSurface(null);
+
+        cutTest = new ImageTexture(new byte[] {(byte)0x00, (byte)0x00, (byte)0x00, (byte)0xFF}, 1, 1, PixelFormat.RGBA);
 
         if (tabChips != null) {
             search(tabChips.getFrame());
@@ -630,6 +706,53 @@ public class MainController extends Controller {
 
         if (tabDefault != null) {
             search(tabDefault.getFrame());
+        }
+    }
+
+    @Flat
+    public void onTreeViewDrag(DragEvent event) {
+        if (event.getType() == DragEvent.DONE && event.getData() instanceof TreeViewDragData data) {
+            var drop = data.getSource().getDropPos(event.getX(), event.getY());
+            System.out.println(data.getItems().size() + " >> " + drop.getCell().getData());
+        }
+    }
+
+    @Flat
+    public void onTreeViewStylize(TreeViewStyle event) {
+        TreeItemCell cell = event.getCell();
+        ListItem item = event.getItem();
+        AssetData data = (AssetData) event.getData();
+        TreeView treeView = event.getTreeView();
+
+        item.setText(event.isMultiselection() ? "..." : data.getName());
+        item.removeStyle("tree-item-dragged");
+        item.removeStyle("tree-item-selected");
+        item.removeStyle("tree-item-folder");
+        item.removeStyle("tree-item-folder-open");
+        item.removeStyle("tree-item-floating");
+        item.removeStyle("tree-item-multiselection");
+        item.addStyle("tree-item");
+        if (cell.isFolder()) {
+            if (cell.isOpen()) {
+                item.addStyle("tree-item-folder-open");
+            } else {
+                item.addStyle("tree-item-folder");
+            }
+        }
+        if (cell.isSelected()) {
+            item.addStyle("tree-item-selected");
+        }
+        if (cell.isDragged()) {
+            item.addStyle("tree-item-dragged");
+        }
+        if (event.isFloating()) {
+            item.setLayers(0);
+            item.addStyle("tree-item-floating");
+        } else {
+            item.setLayers(cell.getLevels());
+        }
+        if (event.isMultiselection()) {
+            item.addStyle("tree-item-multiselection");
         }
     }
 
@@ -644,23 +767,90 @@ public class MainController extends Controller {
     }
 
 
-    PixelMap screen;
+    ImageTexture screen;
     int n;
     long time;
+
+    public static Vector2 magicLerp(Vector2 a, Vector2 b, float t, float distortion) {
+        float ax = a.x, ay = a.y;
+        float bx = b.x, by = b.y;
+
+        float az = (float)Math.sqrt(Math.max(0, 1 - ax * ax - ay * ay));
+        float bz = (float)Math.sqrt(Math.max(0, 1 - bx * bx - by * by));
+
+        // Convert to 3D vectors
+        float[] A = new float[] { ax, ay, az };
+        float[] B = new float[] { bx, by, bz };
+
+        // Dot and angle
+        float dot = A[0]*B[0] + A[1]*B[1] + A[2]*B[2];
+        dot = Math.max(-1f, Math.min(1f, dot)); // Clamp
+        float theta = (float)Math.acos(dot);
+
+        // Avoid divide by zero
+        if (theta < 0.0001f) {
+            return new Vector2(ax + t * (bx - ax), ay + t * (by - ay));
+        }
+
+        // Slerp in 3D
+        float sinTheta = (float)Math.sin(theta);
+        float w1 = (float)Math.sin((1 - t) * theta) / sinTheta;
+        float w2 = (float)Math.sin(t * theta) / sinTheta;
+
+        float sx = w1 * A[0] + w2 * B[0];
+        float sy = w1 * A[1] + w2 * B[1];
+        float sz = w1 * A[2] + w2 * B[2];
+
+        // Project back to 2D
+        Vector2 spherical = new Vector2(sx, sy);
+        Vector2 linear = new Vector2(ax + t * (bx - ax), ay + t * (by - ay));
+
+        // Blend between linear and spherical based on distortion
+        Vector2 result = new Vector2(
+                (1 - distortion) * linear.x + distortion * spherical.x,
+                (1 - distortion) * linear.y + distortion * spherical.y
+        );
+
+        return result;
+    }
+
+    TextVectorRender render = new TextVectorRender(Font.getDefault());
+    float a = 0;
     @Override
-    public void onDraw(Graphics graphics) {
-        super.onDraw(graphics);
+    public void onDraw(DrawEvent event) {
+        super.onDraw(event);
+        var graphics = event.getGraphics();
+        a += 1;
+        if (a > 360) a = 0;
+        if (tabEffects.isSelected()) {
+            graphics.setTransform2D(new Affine().translate(100, 40).rotate(a).translate(-100, -40));
+            graphics.setColor(Color.white);
+            graphics.setAlphaComposite(AlphaComposite.REV_SUB);
+            graphics.drawRect(0, 0, 200, 80, true);
+            graphics.setAlphaComposite(AlphaComposite.SRC_OVER);
+            getActivity().setContinuousRendering(true);
+        } else {
+            getActivity().setContinuousRendering(false);
+        }
+
+        if (pasteImage != null) graphics.drawImage(pasteImage, 100, 100);
+
+        //graphics.setColor(Color.black);
+        //graphics.setStroke(new BasicStroke(5, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 1, new float[]{18, 6}, 0));
+        //graphics.drawRect(100, 100, 100, 100, false);
+        // graphics.drawImage(cutTest, 200, 200, 50, 50);
+
         n++;
         long now = System.currentTimeMillis();
         if (now - time > 250) {
             time = time == 0 ? now : now - (now - time - 250);
-            statusLabel.setText("FPS : " + (n * 4));
+            // statusLabel.setText("FPS : " + (n * 4));
             n = 0;
         }
 
         if (t > 0) {
             if (t == 1) {
-                screen = getActivity().getContext().getGraphics().createPixelMap();
+                screen = getActivity().getContext().getGraphics().renderToImage();
                 System.out.println("Print : " + GL.GetError());
             }
             int w = (int) getActivity().getWidth();
@@ -679,13 +869,13 @@ public class MainController extends Controller {
             graphics.drawImage(screen, 0, 0, getActivity().getWidth(), getActivity().getHeight());
             graphics.popClip();
             t -= Application.getLoopTime();
-            getActivity().invalidateWidget(getActivity().getScene());
+            getActivity().repaint();
         }
     }
 
-    public static void saveImage(PixelMap pixelMap, String filePath) {
+    public static void saveImage(ImageTexture imageTexture, String filePath) {
         try {
-            Files.write(new File(filePath).toPath(), pixelMap.export(ImageFileFormat.PNG));
+            Files.write(new File(filePath).toPath(), imageTexture.readImageData().export(ImageFileFormat.PNG));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -731,8 +921,8 @@ public class MainController extends Controller {
     @Flat
     public void onEmojiExport(ActionEvent event) {
         /*Font font = Font.getDefault();
-        PixelMap pixelMap = font.createImageFromAtlas(getActivity().getContext());
-        saveImage(pixelMap, "C:\\Nova\\image-3.png");
+        ImageTexture imageTexture = font.createImageFromAtlas(getActivity().getContext());
+        saveImage(imageTexture, "C:\\Nova\\image-3.png");
         System.out.println("SAVED");*/
 //        getActivity().getWindow().showOpenFolderDialog((file) -> {
 //            try {
@@ -746,7 +936,7 @@ public class MainController extends Controller {
         // }, null, "json");
 //        getActivity().getWindow().showOpenFolderDialog((file) -> {
 //            ArrayList<int[]> emojis = new ArrayList<>();
-//            PixelMap map = EmojiConverter.createFromNotoEmoji(file, emojis, 4096);
+//            ImageTexture map = EmojiConverter.createFromNotoEmoji(file, emojis, 4096);
 //            saveImage(map, "C:\\Nova\\emojis.png");
 //            saveEmojis(emojis, "C:\\Nova\\emojis.txt");
 //        }, null);
@@ -756,4 +946,50 @@ public class MainController extends Controller {
     public void toggleDrawer2(ActionEvent event) {
         drawer2.toggle();
     }
+
+    @Flat
+    public void onCanvasDraw(DrawEvent event) {
+        var graphics = event.getGraphics();
+        var box = event.getInBox();
+        graphics.setColor(0xFF0000FF);
+        graphics.setAlphaComposite(AlphaComposite.DST_OUT);
+        graphics.drawEllipse(box.x, box.y, box.width, box.height, true);
+        graphics.setAlphaComposite(AlphaComposite.SRC_OVER);
+    }
+    
+    @Flat
+    public void onCanvasDraw2(DrawEvent event) {
+        var graphics = event.getGraphics();
+        var box = event.getInBox();
+        graphics.setPaint(new LinearGradient.Builder(0, 0, 64, 64)
+                                  .stop(0, 0xFF0000FF)
+                                  .stop(1 / 6f, 0xFFFF00FF)
+                                  .stop(2 / 6f, 0x00FF00FF)
+                                  .stop(3 / 6f, 0x00FFFFFF)
+                                  .stop(4 / 6f, 0x0000FFFF)
+                                  .stop(5 / 6f, 0xFF00FFFF)
+                                  .stop(6 / 6f, 0xFF0000FF)
+                                  .cycleMethod(CycleMethod.EMPTY)
+                                  .build());
+        graphics.drawRect(box, true);
+    }
+    
+    @Flat
+    public void onCanvasDraw3(DrawEvent event) {
+        var graphics = event.getGraphics();
+        var box = event.getInBox();
+        graphics.setPaint(new RadialGradient.Builder(64, 64, 64)
+                                  .focus(112, 64)
+                                  .stop(0, 0xFF0000FF)
+                                  .stop(1 / 6f, 0xFFFF00FF)
+                                  .stop(2 / 6f, 0x00FF00FF)
+                                  .stop(3 / 6f, 0x00FFFFFF)
+                                  .stop(4 / 6f, 0x0000FFFF)
+                                  .stop(5 / 6f, 0xFF00FFFF)
+                                  .stop(6 / 6f, 0xFF0000FF)
+                                  .cycleMethod(CycleMethod.REFLECT)
+                                  .build());
+        graphics.drawRect(box, true);
+    }
+
 }

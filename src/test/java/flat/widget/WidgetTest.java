@@ -116,7 +116,7 @@ public class WidgetTest {
         widget.applyStyle();
 
         assertEquals(Visibility.INVISIBLE, widget.getVisibility());
-        assertEquals(Cursor.ARROW, widget.getCursor());
+        assertEquals(Cursor.UNSET, widget.getCursor());
 
         assertTrue(widget.isFocusable());
         assertEquals(2, widget.getFocusWidth(), 0.0001f);
@@ -141,11 +141,11 @@ public class WidgetTest {
         assertEquals(180, widget.getRotate(), 0.0001f);
 
         assertEquals(12, widget.getElevation(), 0.0001f);
-        assertEquals(true, widget.isShadowEnabled());
+        assertTrue(widget.isShadowEnabled());
 
-        assertEquals(true, widget.isRippleEnabled());
+        assertTrue(widget.isRippleEnabled());
         assertEquals(0xFF0000FF, widget.getRippleColor());
-        assertEquals(false, widget.isRippleOverflow());
+        assertFalse(widget.isRippleOverflow());
 
         assertEquals(1, widget.getMarginTop(), 0.0001f);
         assertEquals(2, widget.getMarginRight(), 0.0001f);
@@ -163,7 +163,7 @@ public class WidgetTest {
         assertEquals(4, widget.getRadiusLeft(), 0.0001f);
 
         assertEquals(0x00FF00FF, widget.getBackgroundColor());
-        assertEquals(true, widget.isBorderRound());
+        assertTrue(widget.isBorderRound());
         assertEquals(0x000000FF, widget.getBorderColor());
         assertEquals(1, widget.getBorderWidth(), 0.0001f);
 
@@ -264,11 +264,11 @@ public class WidgetTest {
         assertEquals(180, widget.getRotate(), 0.0001f);
 
         assertEquals(12, widget.getElevation(), 0.0001f);
-        assertEquals(true, widget.isShadowEnabled());
+        assertTrue(widget.isShadowEnabled());
 
-        assertEquals(true, widget.isRippleEnabled());
+        assertTrue(widget.isRippleEnabled());
         assertEquals(0xFF0000FF, widget.getRippleColor());
-        assertEquals(false, widget.isRippleOverflow());
+        assertFalse(widget.isRippleOverflow());
 
         assertEquals(1, widget.getMarginTop(), 0.0001f);
         assertEquals(2, widget.getMarginRight(), 0.0001f);
@@ -286,7 +286,7 @@ public class WidgetTest {
         assertEquals(4, widget.getRadiusLeft(), 0.0001f);
 
         assertEquals(0x00FF00FF, widget.getBackgroundColor());
-        assertEquals(true, widget.isBorderRound());
+        assertTrue(widget.isBorderRound());
         assertEquals(0x000000FF, widget.getBorderColor());
         assertEquals(1, widget.getBorderWidth(), 0.0001f);
 
@@ -428,11 +428,11 @@ public class WidgetTest {
         assertEquals(181, widget.getRotate(), 0.0001f);
 
         assertEquals(121, widget.getElevation(), 0.0001f);
-        assertEquals(false, widget.isShadowEnabled());
+        assertFalse(widget.isShadowEnabled());
 
-        assertEquals(false, widget.isRippleEnabled());
+        assertFalse(widget.isRippleEnabled());
         assertEquals(0xFF1000FF, widget.getRippleColor());
-        assertEquals(true, widget.isRippleOverflow());
+        assertTrue(widget.isRippleOverflow());
 
         assertEquals(11, widget.getMarginTop(), 0.0001f);
         assertEquals(21, widget.getMarginRight(), 0.0001f);
@@ -450,7 +450,7 @@ public class WidgetTest {
         assertEquals(41, widget.getRadiusLeft(), 0.0001f);
 
         assertEquals(0x10FF00FF, widget.getBackgroundColor());
-        assertEquals(false, widget.isBorderRound());
+        assertFalse(widget.isBorderRound());
         assertEquals(0x100000FF, widget.getBorderColor());
         assertEquals(11, widget.getBorderWidth(), 0.0001f);
     }

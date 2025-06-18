@@ -3,7 +3,8 @@ package flat.widget.stages;
 import flat.animations.Interpolation;
 import flat.animations.NormalizedAnimation;
 import flat.animations.StateInfo;
-import flat.events.DragEvent;
+import flat.events.DrawEvent;
+import flat.events.KeyEvent;
 import flat.events.PointerEvent;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
@@ -21,52 +22,64 @@ public class Dialog extends Stage {
 
     private VerticalAlign verticalAlign = VerticalAlign.MIDDLE;
     private HorizontalAlign horizontalAlign = HorizontalAlign.CENTER;
+    private float showTransitionDelay = 0;
     private float showTransitionDuration = 0;
     private float hideTransitionDuration = 0;
     private boolean blockEvents;
     private int blockColor = Color.transparent;
 
     private float targetX, targetY;
-    private float dragX, dragY;
     private boolean show;
     private Controller controller;
 
     private final ShowAnimation showupAnimation = new ShowAnimation();
     private final HideAnimation hideAnimation = new HideAnimation();
 
-    public void build(String uxmlStream) {
-        build(new ResourceStream(uxmlStream), null);
+    public Dialog build(String uxmlStream) {
+        return build(new ResourceStream(uxmlStream), null);
     }
 
-    public void build(String uxmlStream, Controller controller) {
-        build(new ResourceStream(uxmlStream), controller);
+    public Dialog build(String uxmlStream, Controller controller) {
+        return build(new ResourceStream(uxmlStream), controller);
     }
 
-    public void build(ResourceStream uxmlStream) {
-        build(uxmlStream, null);
+    public Dialog build(ResourceStream uxmlStream) {
+        return build(uxmlStream, null);
     }
 
-    public void build(ResourceStream uxmlStream, Controller controller) {
-        build(UXNode.parse(uxmlStream).instance(controller).build(getCurrentTheme()), controller);
+    public Dialog build(ResourceStream uxmlStream, Controller controller) {
+        removeAll();
+        UXNode.parse(uxmlStream).instance(controller).build(this::add);
+        setController(controller);
+        return this;
     }
 
-    public void build(Widget root) {
-        build(root, null);
+    public Dialog build(Widget root) {
+        return build(root, null);
     }
 
-    public void build(Widget root, Controller controller) {
-        this.controller = controller;
-
+    public Dialog build(Widget root, Controller controller) {
         removeAll();
         if (root != null) {
             add(root);
         }
+        setController(controller);
+        return this;
     }
-
-    protected void setController(Controller controller) {
-        this.controller = controller;
+    
+    public void setController(Controller controller) {
+        if (this.controller != controller) {
+            Controller old = this.controller;
+            this.controller = controller;
+            if (old != null) {
+                old.setActivity(null);
+            }
+            if (this.controller != null) {
+                this.controller.setActivity(getActivity());
+            }
+        }
     }
-
+    
     public Controller getController() {
         return controller;
     }
@@ -80,6 +93,7 @@ public class Dialog extends Stage {
         setHorizontalAlign(attrs.getConstant("horizontal-align", info, getHorizontalAlign()));
         setVerticalAlign(attrs.getConstant("vertical-align", info, getVerticalAlign()));
         setShowTransitionDuration(attrs.getNumber("show-transition-duration", info, getShowTransitionDuration()));
+        setShowTransitionDelay(attrs.getNumber("show-transition-delay", info, getShowTransitionDelay()));
         setHideTransitionDuration(attrs.getNumber("hide-transition-duration", info, getHideTransitionDuration()));
         setBlockColor(attrs.getColor("block-color", info, getBlockColor()));
     }
@@ -95,16 +109,16 @@ public class Dialog extends Stage {
         performLayoutConstraints(getInWidth(), getInHeight(), getInX(), getInY(), verticalAlign, horizontalAlign);
         limitPosition();
         setLayoutPosition(targetX, targetY);
+        fireLayout();
     }
 
     @Override
     public void onDraw(Graphics graphics) {
-        if (discardDraw(graphics)) return;
-
         if (getParent() != null && isBlockEvents() && Color.getAlpha(getBlockColor()) > 0) {
             float a;
             if (showupAnimation.isPlaying()) {
-                a = showupAnimation.getInterpolatedPosition();
+                float diff = getShowTransitionDelay() / (getShowTransitionDelay() + getShowTransitionDuration());
+                a = Interpolation.circleOut.apply((showupAnimation.getPosition() - diff) / (1 - diff));
             } else if (hideAnimation.isPlaying()) {
                 a = 1 - hideAnimation.getInterpolatedPosition();
             } else {
@@ -118,13 +132,15 @@ public class Dialog extends Stage {
             }
         }
 
+        if (discardDraw(graphics)) return;
+
         drawBackground(graphics);
         drawRipple(graphics);
         drawChildren(graphics);
 
         if (controller != null && controller.isListening()) {
             try {
-                controller.onDraw(graphics);
+                controller.onDraw(new DrawEvent(this, graphics));
             } catch (Exception e) {
                 Application.handleException(e);
             }
@@ -136,40 +152,13 @@ public class Dialog extends Stage {
         super.pointer(event);
         if (event.getType() == PointerEvent.PRESSED) {
             bringToFront();
-            pressed = !event.isConsumed();
-        }
-        if (event.getType() == PointerEvent.RELEASED) {
-            pressed = false;
-        }
-    }
-
-    boolean pressed = false;
-
-    @Override
-    public void drag(DragEvent event) {
-        super.drag(event);
-        if (pressed && !event.isConsumed()) {
-            if (contains(event.getX(), event.getY()) && event.getType() == DragEvent.STARTED) {
-                if (!event.isCanceled()) {
-                    event.accept(this);
-                    dragX = event.getX();
-                    dragY = event.getY();
-                }
-            } else if (event.getType() == DragEvent.OVER) {
-                targetX += (event.getX() - dragX);
-                targetY += (event.getY() - dragY);
-                limitPosition();
-                dragX = event.getX();
-                dragY = event.getY();
-                setLayoutPosition(targetX, targetY);
-            }
         }
     }
 
     @Override
     public Widget findByPosition(float x, float y, boolean includeDisabled) {
         if (!isCurrentHandleEventsEnabled()
-                || getVisibility() != Visibility.VISIBLE
+                || getVisibility() == Visibility.GONE
                 || (!includeDisabled && !isEnabled())
                 || (!isBlockEvents() && !contains(x, y))) {
             return null;
@@ -178,7 +167,7 @@ public class Dialog extends Stage {
             Widget found = child.findByPosition(x, y, includeDisabled);
             if (found != null) return found;
         }
-        return this;
+        return isHandlePointerEnabled() ? this : null;
     }
 
     private void limitPosition() {
@@ -231,6 +220,16 @@ public class Dialog extends Stage {
         }
     }
 
+    public float getShowTransitionDelay() {
+        return showTransitionDelay;
+    }
+
+    public void setShowTransitionDelay(float showTransitionDelay) {
+        if (this.showTransitionDelay != showTransitionDelay) {
+            this.showTransitionDelay = showTransitionDelay;
+        }
+    }
+
     public float getHideTransitionDuration() {
         return hideTransitionDuration;
     }
@@ -275,6 +274,7 @@ public class Dialog extends Stage {
         onShow(activity, x, y);
         if (controller != null) {
             try {
+                controller.setRoot(this);
                 controller.setActivity(getActivity());
             } catch (Exception e) {
                 Application.handleException(e);
@@ -313,7 +313,19 @@ public class Dialog extends Stage {
         }
     }
 
+    public float getMoveCenterX() {
+        return getLayoutX() + getOutWidth() / 2f + getOutX();
+    }
+
+    public float getMoveCenterY() {
+        return getLayoutY() + getOutHeight() / 2f + getOutY();
+    }
+
     public void move(float x, float y) {
+        moveTo(getMoveCenterX() + x, getMoveCenterY() + y);
+    }
+
+    public void moveTo(float x, float y) {
         Activity act = getActivity();
         if (act != null) {
             onMeasure();
@@ -321,8 +333,9 @@ public class Dialog extends Stage {
             float mH = Math.min(Math.min(getMeasureHeight(), getLayoutMaxHeight()), act.getHeight());
             onLayout(mW, mH);
 
-            targetX = x - getWidth() / 2f - getMarginLeft();
-            targetY = y - getHeight() / 2f - getMarginTop();
+            targetX = x - getOutWidth() / 2f - getOutX();
+            targetY = y - getOutHeight() / 2f - getOutY();
+            invalidate(true);
         }
     }
 
@@ -336,16 +349,32 @@ public class Dialog extends Stage {
         targetX = x - getWidth() / 2f - getMarginLeft();
         targetY = y - getHeight() / 2f - getMarginTop();
 
-        if (showTransitionDuration > 0) {
+        if (showTransitionDuration + showTransitionDelay > 0) {
             showupAnimation.setDelta(1);
-            showupAnimation.setDuration(showTransitionDuration);
+            showupAnimation.setDuration(showTransitionDuration + showTransitionDelay);
             showupAnimation.play(act);
+        }
+    }
+
+    @Override
+    public void key(KeyEvent event) {
+        super.key(event);
+        if (controller != null && controller.isListening()) {
+            try {
+                if (event.getType() == KeyEvent.FILTER) {
+                    controller.onKeyFilter(event);
+                } else {
+                    controller.onKey(event);
+                }
+            } catch (Exception e) {
+                Application.handleException(e);
+            }
         }
     }
 
     private class ShowAnimation extends NormalizedAnimation {
         private float scaleX, scaleY, centerX, centerY;
-        private boolean followX, followY, followCX, followCY;
+        private boolean followX, followY, followCX, followCY, followVs;
 
         public ShowAnimation() {
             super(Interpolation.circleOut);
@@ -358,9 +387,18 @@ public class Dialog extends Stage {
 
         @Override
         protected void compute(float t) {
-            setScaleX(scaleX * 0.5f + (scaleX * 0.5f * t));
-            setScaleY(scaleY * 0.5f + (scaleY * 0.5f * t));
-            invalidate(false);
+            float diff = getShowTransitionDelay() / (getShowTransitionDelay() + getShowTransitionDuration());
+            float p = (getPosition() - diff) / (1 - diff);
+            if (p <= 0) {
+                setVisibility(Visibility.INVISIBLE);
+            } else {
+                setVisibility(Visibility.VISIBLE);
+                setScaleX(scaleX * 0.5f + (scaleX * 0.5f * getInterpolation().apply(p)));
+                setScaleY(scaleY * 0.5f + (scaleY * 0.5f * getInterpolation().apply(p)));
+            }
+            if (getParent() != null) {
+                getParent().invalidate(false);
+            }
         }
 
         @Override
@@ -369,10 +407,12 @@ public class Dialog extends Stage {
             scaleY = getScaleY();
             centerX = getCenterX();
             centerY = getCenterY();
+            followVs = isFollowStyleProperty("visibility");
             followX = isFollowStyleProperty("scale-x");
             followY = isFollowStyleProperty("scale-y");
             followCX = isFollowStyleProperty("center-x");
             followCY = isFollowStyleProperty("center-y");
+            setFollowStyleProperty("visibility", false);
             setFollowStyleProperty("scale-x", false);
             setFollowStyleProperty("scale-y", false);
             setFollowStyleProperty("center-x", false);
@@ -387,6 +427,7 @@ public class Dialog extends Stage {
             setScaleY(scaleY);
             setCenterX(centerX);
             setCenterY(centerY);
+            setFollowStyleProperty("visibility", followVs);
             setFollowStyleProperty("scale-x", followX);
             setFollowStyleProperty("scale-y", followY);
             setFollowStyleProperty("scale-x", followCX);
@@ -411,7 +452,9 @@ public class Dialog extends Stage {
         protected void compute(float t) {
             setScaleX(scaleX * 0.5f + (scaleX * 0.5f * (1 - t)));
             setScaleY(scaleY * 0.5f + (scaleY * 0.5f * (1 - t)));
-            invalidate(false);
+            if (getParent() != null) {
+                getParent().invalidate(false);
+            }
         }
 
         @Override

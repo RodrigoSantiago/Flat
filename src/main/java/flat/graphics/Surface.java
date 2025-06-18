@@ -3,7 +3,6 @@ package flat.graphics;
 import flat.exception.FlatException;
 import flat.graphics.context.*;
 import flat.graphics.context.enums.*;
-import flat.graphics.image.PixelMap;
 
 public class Surface {
     private final int width;
@@ -49,25 +48,24 @@ public class Surface {
         return clipState;
     }
 
-    PixelMap createPixelMap(Graphics graphics, PixelFormat format) {
+    Texture2D renderToTexture(Graphics graphics, int x, int y, int width, int height, Texture2D textureTransfer) {
         checkDisposed();
 
         if (frameBuffer == null) {
             return null;
         }
-        Texture2D textureTransfer = new Texture2D(width, height, format);
         frameBuffer.attach(LayerTarget.COLOR_0, textureTransfer, 0);
         frameBuffer.detach(LayerTarget.DEPTH_STENCIL);
         if (multiSamples > 0) {
-            graphics.bakeSurface(textureMultisamples);
+            graphics.bakeSurface(x, y, textureMultisamples);
             frameBuffer.attach(LayerTarget.COLOR_0, textureMultisamples, 0);
         } else {
-            graphics.bakeSurface(texture);
+            graphics.bakeSurface(x, y, texture);
             frameBuffer.attach(LayerTarget.COLOR_0, texture, 0);
         }
         frameBuffer.attach(LayerTarget.DEPTH_STENCIL, render);
 
-        return new PixelMap(textureTransfer);
+        return textureTransfer;
     }
 
     protected void checkDisposed() {

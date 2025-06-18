@@ -28,7 +28,7 @@ public class ControllerListener<T> implements UXListener<T> {
                 } else {
                     method.invoke(obj, event);
                 }
-            } else {
+            }  else if (obj == null) {
                 controller = null;
                 method = null;
             }

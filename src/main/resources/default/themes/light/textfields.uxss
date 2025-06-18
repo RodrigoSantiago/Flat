@@ -29,7 +29,7 @@ text-area.default {
         background-color : $card-color-hover;
     }
     disabled {
-        background-color : $disabled-color;
+        background-color : alpha($disabled-color, 0.5);
         text-color : alpha($on-disabled-color, 0.75);
         text-selected-color : alpha($on-disabled-color, 0.15);
     }
@@ -85,7 +85,7 @@ text-field.primary {
         title-color :  alpha($on-disabled-color, 0.5);
         text-selected-color : alpha($on-disabled-color, 0.15);
         text-divider-color : $disabled-color;
-        background-color : $disabled-color;
+        background-color : alpha($disabled-color, 0.5);
     }
 }
 
@@ -155,7 +155,7 @@ text-input-field.primary {
         action-icon-color : alpha($on-disabled-color, 0.5);
         text-selected-color : alpha($on-disabled-color, 0.15);
         text-divider-color : $disabled-color;
-        background-color : $disabled-color;
+        background-color : alpha($disabled-color, 0.5);
     }
 }
 
@@ -228,7 +228,7 @@ text-drop-down.primary {
         action-icon-color : alpha($on-disabled-color, 0.5);
         text-selected-color : alpha($on-disabled-color, 0.15);
         text-divider-color : $disabled-color;
-        background-color : $disabled-color;
+        background-color : alpha($disabled-color, 0.5);
     }
 }
 
@@ -308,6 +308,6 @@ number-input-field.primary {
         action-icon-color : alpha($on-disabled-color, 0.5);
         text-selected-color : alpha($on-disabled-color, 0.15);
         text-divider-color : $disabled-color;
-        background-color : $disabled-color;
+        background-color : alpha($disabled-color, 0.5);
     }
 }

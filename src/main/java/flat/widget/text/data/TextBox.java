@@ -5,12 +5,13 @@ import flat.graphics.symbols.Font;
 import flat.graphics.emojis.EmojiManager;
 import flat.widget.enums.HorizontalAlign;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class TextRender {
+public class TextBox {
 
     private Font font;
     private float textSize;
@@ -27,6 +28,9 @@ public class TextRender {
     private float layoutWidth;
     private float naturalWidth;
     private int naturalLines;
+
+    private boolean vectorRender;
+    private boolean vectorRenderFill = true;
 
     private boolean hidden;
     private String hiddenChars;
@@ -51,6 +55,22 @@ public class TextRender {
     public void setTextSize(float textSize) {
         this.textSize = textSize;
         recreateLines(false);
+    }
+
+    public void setVectorRender(boolean vectorRender) {
+        this.vectorRender = vectorRender;
+    }
+
+    public boolean isVectorRender() {
+        return vectorRender;
+    }
+
+    public void setVectorRenderFill(boolean vectorRenderFill) {
+        this.vectorRenderFill = vectorRenderFill;
+    }
+
+    public boolean isVectorRenderFill() {
+        return vectorRenderFill;
     }
 
     public void setMaxCharacters(int maxCharacters) {
@@ -361,11 +381,11 @@ public class TextRender {
         return height * lineCount;
     }
 
-    public void drawText(Graphics context, float x, float y, float width, float height, HorizontalAlign align) {
-        drawText(context, x, y, width, height, align, 0, lineCount);
+    public void drawText(Graphics graphics, float x, float y, float width, float height, HorizontalAlign align) {
+        drawText(graphics, x, y, width, height, align, 0, lineCount);
     }
 
-    public void drawText(Graphics context, float x, float y, float width, float height, HorizontalAlign align, int startLine, int endLine) {
+    public void drawText(Graphics graphics, float x, float y, float width, float height, HorizontalAlign align, int startLine, int endLine) {
         if (byteSize == 0 || font == null) {
             return;
         }
@@ -374,9 +394,9 @@ public class TextRender {
 
         if (lineCount == 1) {
             if (hidden) {
-                context.drawTextSlice(x, y, width, height, getHiddenChars());
+                drawTextSlice(graphics, x, y, width, height, getHiddenChars());
             } else {
-                context.drawTextSlice(x, y, width, height, buffer, 0, byteSize);
+                drawTextSlice(graphics, x, y, width, height, buffer, 0, byteSize);
             }
             return;
         }
@@ -402,9 +422,33 @@ public class TextRender {
                 wd -= off;
             }
             if (wd > 0 && hg > 0) {
-                context.drawTextSlice(xpos, ypos, wd, hg, buffer, line.start, line.length);
+                drawTextSlice(graphics, xpos, ypos, wd, hg, buffer, line.start, line.length);
             }
         }
+    }
+
+    private void drawTextSlice(Graphics graphics, float x, float y, float maxWidth, float maxHeight, String string) {
+        if (vectorRender) {
+            graphics.drawTextVector(x, y, maxWidth, maxHeight, string, vectorRenderFill);
+        } else {
+            graphics.drawTextSlice(x, y, maxWidth, maxHeight, string);
+        }
+    }
+
+    private void drawTextSlice(Graphics graphics, float x, float y, float maxWidth, float maxHeight, Buffer text, int offset, int length) {
+        if (vectorRender) {
+            byte[] subArray = new byte[length];
+            System.arraycopy(textBytes, offset, subArray, 0, length);
+            graphics.drawTextVector(x, y, maxWidth, maxHeight, new String(subArray, StandardCharsets.UTF_8), vectorRenderFill);
+        } else {
+            graphics.drawTextSlice(x, y, maxWidth, maxHeight, buffer, offset, length);
+        }
+    }
+
+    private String getLocalString(int offset, int length) {
+        byte[] subArray = new byte[length];
+        System.arraycopy(textBytes, offset, subArray, 0, length);
+        return new String(subArray, StandardCharsets.UTF_8);
     }
 
     public void getCaret(Caret caretPos) {

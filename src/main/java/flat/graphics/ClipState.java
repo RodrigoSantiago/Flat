@@ -9,6 +9,7 @@ class ClipState {
     static final Rectangle noClip = new Rectangle();
 
     public Rectangle box = noClip;
+    public Rectangle scissor = null;
     public final ArrayList<Shape> clipShapes = new ArrayList<>();
     public final ArrayList<Rectangle> clipBox = new ArrayList<>();
 
@@ -24,5 +25,17 @@ class ClipState {
 
     public boolean isFullyClipped() {
         return box == null;
+    }
+
+    public void setScissor(int x, int y, int width, int height) {
+        if (scissor == null) {
+            scissor = new Rectangle(x, y, width, height);
+        } else {
+            scissor.set(x, y, width, height);
+        }
+    }
+
+    public void clearScissor() {
+        scissor = null;
     }
 }

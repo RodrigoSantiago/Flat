@@ -16,9 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-class MultipleChoicesDialogController extends Controller {
+class MultipleChoicesDialogController extends DefaultDialogController {
 
-    private final Dialog dialog;
     private final String title;
     private final String message;
     private final boolean cancelable;
@@ -31,7 +30,7 @@ class MultipleChoicesDialogController extends Controller {
     private Checkbox[] checkboxes;
 
     MultipleChoicesDialogController(Dialog dialog, MultipleChoicesDialogBuilder builder) {
-        this.dialog = dialog;
+        super(dialog);
         this.title = builder.title;
         this.message = builder.message;
         this.cancelable = builder.cancelable;
@@ -111,7 +110,7 @@ class MultipleChoicesDialogController extends Controller {
                 optionsArea.add(box);
             }
             if (getActivity() != null) {
-                dialog.move(getActivity().getWidth() / 2, getActivity().getHeight() / 2);
+                dialog.moveTo(getActivity().getWidth() / 2, getActivity().getHeight() / 2);
             }
         }
         if (checkboxes != null) {

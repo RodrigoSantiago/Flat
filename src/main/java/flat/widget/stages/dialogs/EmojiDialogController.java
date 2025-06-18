@@ -17,9 +17,8 @@ import flat.widget.text.TextInputField;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class EmojiDialogController extends Controller {
+public class EmojiDialogController extends DefaultDialogController {
 
-    private final Dialog dialog;
     private final UXListener<Dialog> onShowListener;
     private final UXListener<Dialog> onHideListener;
     private final UXWidgetValueListener<Dialog, String> onEmojiPick;
@@ -28,7 +27,7 @@ public class EmojiDialogController extends Controller {
     UXListener<ActionEvent> emojiClick;
 
     public EmojiDialogController(Dialog dialog, EmojiDialogBuilder builder) {
-        this.dialog = dialog;
+        super(dialog);
         this.dictionary = EmojiDictionary.getInstance();
         this.onShowListener = builder.onShowListener;
         this.onHideListener = builder.onHideListener;

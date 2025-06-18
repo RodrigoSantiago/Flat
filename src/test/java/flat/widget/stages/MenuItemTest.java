@@ -322,8 +322,8 @@ public class MenuItemTest {
         Scene sceneA = new Scene();
         ActivitySupport.setActivity(sceneA, activityA);
         when(activityA.getScene()).thenReturn(sceneA);
-        when(activityA.getWidth()).thenReturn(800f);
-        when(activityA.getHeight()).thenReturn(600f);
+        when(activityA.getWidth()).thenReturn(800);
+        when(activityA.getHeight()).thenReturn(600);
 
         Menu parent = new Menu();
         MenuItem menuItem = new MenuItem();

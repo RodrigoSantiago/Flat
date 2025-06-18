@@ -2,7 +2,6 @@ package flat.widget.stages.dialogs;
 
 import flat.Flat;
 import flat.events.ActionEvent;
-import flat.uxml.Controller;
 import flat.uxml.UXListener;
 import flat.uxml.UXWidgetValueListener;
 import flat.widget.enums.Visibility;
@@ -13,9 +12,8 @@ import flat.widget.stages.Dialog;
 import flat.widget.text.Button;
 import flat.widget.text.Label;
 
-class ChoiceDialogController extends Controller {
+class ChoiceDialogController extends DefaultDialogController {
 
-    private final Dialog dialog;
     private final String title;
     private final String message;
     private final boolean cancelable;
@@ -28,7 +26,7 @@ class ChoiceDialogController extends Controller {
     private RadioButton[] radioButtons;
 
     ChoiceDialogController(Dialog dialog, ChoiceDialogBuilder builder) {
-        this.dialog = dialog;
+        super(dialog);
         this.title = builder.title;
         this.message = builder.message;
         this.cancelable = builder.cancelable;
@@ -106,7 +104,7 @@ class ChoiceDialogController extends Controller {
                 optionsArea.add(box);
             }
             if (getActivity() != null) {
-                dialog.move(getActivity().getWidth() / 2, getActivity().getHeight() / 2);
+                dialog.moveTo(getActivity().getWidth() / 2, getActivity().getHeight() / 2);
             }
         }
         if (optionsGroup != null) {

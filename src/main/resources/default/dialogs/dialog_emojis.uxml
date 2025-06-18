@@ -1,4 +1,5 @@
 <LinearBox direction="vertical" style="dialog-emojis">
+    <LinearBox style="dialog-header" on-pointer="onHeaderPointer"/>
     <LinearBox direction="horizontal" style="dialog-emojis-groups-area">
         <Button id="btnGroup0" style="icon dialog-emojis-group-icon" icon="icon(fill, mood)" on-action="onGroup0Click"/>
         <Button id="btnGroup1" style="icon dialog-emojis-group-icon" icon="icon(fill, account_circle)" on-action="onGroup1Click"/>

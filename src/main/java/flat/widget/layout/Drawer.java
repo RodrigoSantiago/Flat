@@ -184,6 +184,7 @@ public class Drawer extends Parent {
         } else if (layoutBack) {
             layoutBack();
         }
+        fireLayout();
     }
 
     private void layoutBack() {
@@ -432,7 +433,7 @@ public class Drawer extends Parent {
             Widget found = backContent.findByPosition(x, y, includeDisabled);
             if (found != null) return found;
         }
-        return this;
+        return isHandlePointerEnabled() ? this : null;
     }
 
     @Override

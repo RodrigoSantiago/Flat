@@ -1,0 +1,58 @@
+<LinearBox direction="VERTICAL" style="dialog-colorpicker">
+    <LinearBox style="dialog-header" on-pointer="onHeaderPointer"/>
+    <LinearBox direction="VERTICAL" style="dialog-colorpicker-area">
+        <StackBox style="dialog-colorpicker-canvas-area">
+            <ImageView id="palettePreview" style="dialog-colorpicker-canvas" handle-pointer-enabled="false"/>
+            <Canvas id="paletteCanvas" style="dialog-colorpicker-canvas" on-draw="onPaletteDraw" on-pointer="onPalettePointer"/>
+        </StackBox>
+        <LinearBox id="paletteBtns" direction="HORIZONTAL" width="MATCH_PARENT" style="dialog-colorpicker-btns">
+            <Button id="btnCol0" style="dialog-colorpicker-btn-color"/>
+            <Button id="btnCol1" style="dialog-colorpicker-btn-color"/>
+            <Button id="btnCol2" style="dialog-colorpicker-btn-color"/>
+            <Button id="btnCol3" style="dialog-colorpicker-btn-color"/>
+            <Button id="btnCol4" style="dialog-colorpicker-btn-color"/>
+            <Button id="btnCol5" style="dialog-colorpicker-btn-color"/>
+            <Button id="btnCol6" style="dialog-colorpicker-btn-color"/>
+            <Button id="btnCol7" style="dialog-colorpicker-btn-color"/>
+        </LinearBox>
+        <LinearBox direction="HORIZONTAL" vertical-align="MIDDLE" style="dialog-colorpicker-hex">
+            <Label text="Hex" style="dialog-colorpicker-hex-title"/>
+            <TextInputField id="fieldHex" style="dialog-colorpicker-hex-field" on-text-input-filter="onFieldHexFilter" on-text-type="onTypeHex"
+                            on-focus="onFieldHexLostFocus" max-characters="6" text-hint="HEX" icon="icon(fill, numbers)"/>
+        </LinearBox>
+        <LinearBox direction="VERTICAL" style="dialog-colorpicker-rgb">
+            <LinearBox direction="HORIZONTAL" style="dialog-colorpicker-slider-container">
+                <TextArea id="fieldRed" style="dialog-colorpicker-field" on-text-input-filter="onFieldFilter" on-text-type="onTypeRed"
+                          on-focus="onFieldLostFocus" max-characters="3"/>
+                <Slider id="sliderRed" direction="HORIZONTAL" style="dialog-colorpicker-slider-r" on-slide="onSlideRed"
+                        min-value="0" max-value="255" steps="1"/>
+            </LinearBox>
+            <LinearBox direction="HORIZONTAL" style="dialog-colorpicker-slider-container">
+                <TextArea id="fieldGreen" style="dialog-colorpicker-field" on-text-input-filter="onFieldFilter" on-text-type="onTypeGreen"
+                          on-focus="onFieldLostFocus" max-characters="3"/>
+                <Slider id="sliderGreen" direction="HORIZONTAL" style="dialog-colorpicker-slider-g" on-slide="onSlideGreen"
+                        min-value="0" max-value="255" steps="1"/>
+            </LinearBox>
+            <LinearBox direction="HORIZONTAL" style="dialog-colorpicker-slider-container">
+                <TextArea id="fieldBlue" style="dialog-colorpicker-field" on-text-input-filter="onFieldFilter" on-text-type="onTypeBlue"
+                          on-focus="onFieldLostFocus" max-characters="3"/>
+                <Slider id="sliderBlue" direction="HORIZONTAL" style="dialog-colorpicker-slider-b" on-slide="onSlideBlue"
+                        min-value="0" max-value="255" steps="1"/>
+            </LinearBox>
+        </LinearBox>
+        <StackBox id="paletteAlpha" style="dialog-colorpicker-alpha">
+            <ImageView style="dialog-colorpicker-alpha-image"/>
+            <ImageView id="paletteAlphaColor" style="dialog-colorpicker-alpha-image-color"/>
+            <LinearBox direction="HORIZONTAL" style="dialog-colorpicker-slider-container">
+                <TextArea id="fieldAlpha" style="dialog-colorpicker-field" on-text-input-filter="onFieldFilter" on-text-type="onTypeAlpha"
+                          on-focus="onFieldAlphaLostFocus" max-characters="3"/>
+                <Slider id="sliderAlpha" direction="HORIZONTAL" style="dialog-colorpicker-slider-a" on-slide="onSlideAlpha"
+                        min-value="0" max-value="255" steps="1"/>
+            </LinearBox>
+        </StackBox>
+    </LinearBox>
+    <LinearBox direction="horizontal" style="dialog-action-area">
+        <Button id="cancelButton" text="Cancel" style="text-primary dialog-cancel-button" on-action="onCancel"/>
+        <Button text="OK" style="text-primary dialog-ok-button" on-action="onChoose"/>
+    </LinearBox>
+</LinearBox>

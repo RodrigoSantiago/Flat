@@ -1,5 +1,7 @@
 package flat.backend;
 
+import flat.graphics.image.ImageData;
+
 public class WL {
 
     //---------------------------
@@ -65,8 +67,10 @@ public class WL {
     //---------------------------
     public static native int GetInputMode(long window, int mode);
     public static native void SetInputMode(long window, int mode, int value);
-    public static native void SetClipboardString(long window, String clipboard);
-    public static native String GetClipboardString(long window);
+    public static native void SetClipboardString(String clipboard);
+    public static native String GetClipboardString();
+    public static native void SetClipboardImage(ImageData imageData);
+    public static native ImageData GetClipboardImage();
 
     public static native String GetKeyName(int key, int scancode);
     public static native int GetKey(long window, int key);

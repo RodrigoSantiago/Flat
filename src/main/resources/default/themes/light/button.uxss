@@ -106,7 +106,7 @@ button.default {
     disabled {
         text-color : $on-disabled-color;
         icon-color : $on-disabled-color;
-        background-color : $disabled-color;
+        background-color : alpha($disabled-color, 0.5);
     }
 }
 

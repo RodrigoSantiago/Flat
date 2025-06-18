@@ -5,6 +5,7 @@ import flat.graphics.symbols.FontStyle;
 import flat.graphics.symbols.FontWeight;
 
 import java.io.File;
+import java.util.Comparator;
 
 public class FontDetail {
     private final File file;
@@ -48,5 +49,20 @@ public class FontDetail {
                 ", " + style +
                 ", " + posture +
                 ", " + weight + '}';
+    }
+
+    public int compareTo(FontDetail o2) {
+        int result;
+
+        result = getFamily().compareToIgnoreCase(o2.getFamily());
+        if (result != 0) return result;
+
+        result = getStyle().compareTo(o2.getStyle());
+        if (result != 0) return result;
+
+        result = getPosture().compareTo(o2.getPosture());
+        if (result != 0) return result;
+
+        return getWeight().compareTo(o2.getWeight());
     }
 }

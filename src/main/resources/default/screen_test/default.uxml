@@ -4,7 +4,7 @@
                    padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
             <Label text="Default" style="subtitle" margin-left="4dp"/>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button width="MATCH_PARENT" text="Button" style=""/>
+                <Button width="MATCH_PARENT" text="Button" style="" on-action="toggleDefault"/>
                 <Button width="MATCH_PARENT" margin-left="16dp" text="Button" style="primary"/>
                 <Button width="MATCH_PARENT" margin-left="16dp" text="Button" style="outlined-primary"/>
                 <Button width="MATCH_PARENT" margin-left="16dp" text="Button" style="text-primary"/>
@@ -120,7 +120,7 @@
         </LinearBox>
         <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="16dp" max-height="400dp">
             <ListView id="listView3" width="MATCH_PARENT" height="MATCH_PARENT"/>
-            <ListView margin-left="8dp" id="treeView3" width="MATCH_PARENT" height="MATCH_PARENT"/>
+            <TreeView margin-left="8dp" id="treeView1" width="MATCH_PARENT" height="MATCH_PARENT"/>
         </LinearBox>
         <Label text="Dialogs" style="subtitle" margin-left="4dp" margin-top="16dp"/>
         <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">

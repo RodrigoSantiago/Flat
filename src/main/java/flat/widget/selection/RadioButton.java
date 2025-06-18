@@ -11,6 +11,7 @@ import flat.uxml.*;
 import flat.widget.Group;
 import flat.widget.Widget;
 import flat.widget.enums.ImageFilter;
+import flat.widget.text.Label;
 import flat.window.Activity;
 
 public class RadioButton extends Widget {
@@ -39,6 +40,17 @@ public class RadioButton extends Widget {
                 Widget widget = group.findById(groupId);
                 if (widget instanceof RadioGroup rGroup) {
                     rGroup.add(this);
+                }
+            }
+        }
+        String labelId = attrs.getAttributeString("label-id", null);
+        if (labelId != null) {
+            Group group = getGroup();
+            if (group != null) {
+                Widget widget = group.findById(labelId);
+                if (widget instanceof Label label) {
+                    label.setHoverListener(this::fireHover);
+                    label.setPointerListener(this::firePointer);
                 }
             }
         }

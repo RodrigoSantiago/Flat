@@ -27,22 +27,17 @@ public class Text extends Label {
     }
 
     @Override
-    public void onLayout(float width, float height) {
-        super.onLayout(width, height);
-    }
-
-    @Override
     public void setLayout(float layoutWidth, float layoutHeight) {
         super.setLayout(layoutWidth, layoutHeight);
-        if (getActivity() != null && textRender.isBreakLines(getInWidth())) {
+        if (getActivity() != null && textBox.isBreakLines(getInWidth())) {
             getActivity().runLater(() -> {
-                textRender.breakLines(getInWidth());
+                textBox.breakLines(getInWidth());
                 invalidate(true);
             });
         }
     }
 
     protected float getNaturalTextWidth() {
-        return textRender.getNaturalWidth();
+        return textBox.getNaturalWidth();
     }
 }

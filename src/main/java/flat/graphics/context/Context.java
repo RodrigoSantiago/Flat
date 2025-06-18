@@ -88,6 +88,7 @@ public class Context {
     private float svgMiterLimit;
     private float svgDashPhase;
     private float[] svgDash;
+    private AlphaComposite svgAlphaComposite;
 
     private Font svgTextFont;
     private float svgTextScale, svgTextSpacing, svgTextBlur;
@@ -230,6 +231,7 @@ public class Context {
         svgMiterLimit = 10.0f;
         svgDashPhase = 0;
         svgDash = null;
+        svgAlphaComposite = AlphaComposite.SRC_OVER;
 
         svgTextFont = Font.getDefault();
         svgTextScale = 1.0f;
@@ -412,6 +414,38 @@ public class Context {
         if (scissorEnabled != enable) {
             svgEnd();
             GL.EnableScissorTest(scissorEnabled = enable);
+            if (enable) {
+                GL.SetScissor(scissorX, scissorY, scissorWidth, scissorHeight);
+            }
+        }
+    }
+
+    public int getScissorX() {
+        return scissorX;
+    }
+
+    public int getScissorY() {
+        return scissorY;
+    }
+
+    public int getScissorWidth() {
+        return scissorWidth;
+    }
+
+    public int getScissorHeight() {
+        return scissorHeight;
+    }
+
+    public void setScissorBox(int x, int y, int width, int height) {
+        checkDisposed();
+
+        if (scissorX != x || scissorY != y || scissorWidth != width || scissorHeight != height) {
+            svgEnd();
+            scissorX = x;
+            scissorY = y;
+            scissorWidth = width;
+            scissorHeight = height;
+            GL.SetScissor(scissorX, scissorY, scissorWidth, scissorHeight);
         }
     }
 
@@ -804,11 +838,17 @@ public class Context {
         checkDisposed();
 
         if (blendSrcColorFun != srcColor || blendDstColorFun != dstColor || blendSrcAlphaFun != srcAlpha || blendDstAlphaFun != dstAlpha) {
-            svgEnd();
-            GL.SetBlendFunction((blendSrcColorFun = srcColor).getInternalEnum(),
-                    (blendDstColorFun = dstColor).getInternalEnum(),
-                    (blendSrcAlphaFun = srcAlpha).getInternalEnum(),
-                    (blendDstAlphaFun = dstAlpha).getInternalEnum());
+            blendSrcColorFun = srcColor;
+            blendDstColorFun = dstColor;
+            blendSrcAlphaFun = srcAlpha;
+            blendDstAlphaFun = dstAlpha;
+            if (!svgMode) {
+                GL.SetBlendFunction(
+                        blendSrcColorFun.getInternalEnum(),
+                        blendDstColorFun.getInternalEnum(),
+                        blendSrcAlphaFun.getInternalEnum(),
+                        blendDstAlphaFun.getInternalEnum());
+            }
         }
     }
 
@@ -832,9 +872,11 @@ public class Context {
         checkDisposed();
 
         if (blendColorEquation != colorEquation || blendAlphaEquation != alphaEquation) {
-            svgEnd();
-            GL.SetBlendEquation((blendColorEquation = colorEquation).getInternalEnum(),
-                    (blendAlphaEquation = alphaEquation).getInternalEnum());
+            blendColorEquation = colorEquation;
+            blendAlphaEquation = alphaEquation;
+            if (!svgMode) {
+                GL.SetBlendEquation(blendColorEquation.getInternalEnum(), blendAlphaEquation.getInternalEnum());
+            }
         }
     }
 
@@ -908,8 +950,10 @@ public class Context {
         checkDisposed();
 
         if (multiSampleEnabled != enable) {
-            svgEnd();
-            GL.EnableMultisample(multiSampleEnabled = enable);
+            multiSampleEnabled = enable;
+            if (!svgMode) {
+                GL.EnableMultisample(multiSampleEnabled);
+            }
         }
     }
 
@@ -1183,6 +1227,7 @@ public class Context {
             svgApplyTransformGradients();
 
             SVG.SetAntiAlias(svgId, svgAntialias);
+            SVG.SetBlendMode(svgId, svgAlphaComposite.ordinal());
 
             SVG.SetStroke(svgId, svgStrokeWidth,
                     svgLineCap.getInternalEnum(),
@@ -1232,6 +1277,7 @@ public class Context {
                 stencilBackSFail.getInternalEnum(), stencilBackDFail.getInternalEnum(), stencilBackDPass.getInternalEnum());
 
         GL.EnableBlend(blendEnabled);
+        GL.SetBlendEquation(blendColorEquation.getInternalEnum(), blendAlphaEquation.getInternalEnum());
         GL.SetBlendFunction(
                 blendSrcColorFun.getInternalEnum(), blendDstColorFun.getInternalEnum(),
                 blendSrcAlphaFun.getInternalEnum(), blendDstAlphaFun.getInternalEnum());
@@ -1246,6 +1292,7 @@ public class Context {
         GL.SetPixelStore(GLEnums.PS_UNPACK_SKIP_ROWS, pixelUnpackSkipRows);
 
         GL.SetActiveTexture(activeTexture);
+        GL.EnableMultisample(multiSampleEnabled);
     }
 
     private void svgApplyTransformGradients() {
@@ -1270,6 +1317,21 @@ public class Context {
 
     public boolean svgAntialias() {
         return svgAntialias;
+    }
+
+    public void svgAlphaComposite(AlphaComposite alphaComposite) {
+        checkDisposed();
+
+        if (svgAlphaComposite != alphaComposite) {
+            svgAlphaComposite = alphaComposite;
+            if (svgMode) {
+                SVG.SetBlendMode(svgId, alphaComposite.ordinal());
+            }
+        }
+    }
+
+    public AlphaComposite svgAlphaComposite() {
+        return svgAlphaComposite;
     }
 
     public void svgPaint(Paint paint) {
@@ -1448,8 +1510,6 @@ public class Context {
     public void svgClip(Shape shape) {
         checkDisposed();
 
-        if (shape.isEmpty()) return;
-
         PathIterator pi = shape.pathIterator(null);
 
         svgBegin();
@@ -1480,12 +1540,10 @@ public class Context {
     public void svgUnclip(Shape shape) {
         checkDisposed();
 
-        if (shape.isEmpty()) return;
-
         PathIterator pi = shape.pathIterator(null);
 
         svgBegin();
-        SVG.PathBegin(svgId, SVGEnums.SVG_CLIP, pi.windingRule());
+        SVG.PathBegin(svgId, SVGEnums.SVG_UNCLIP, pi.windingRule());
         while (!pi.isDone()) {
             switch (pi.currentSegment(data)) {
                 case PathIterator.SEG_MOVETO:
@@ -1509,12 +1567,10 @@ public class Context {
         SVG.PathEnd(svgId);
     }
 
-    public void svgDrawShape(Shape shape, boolean fill) {
+    public void svgDrawShape(Shape shape, boolean fill, Affine transform) {
         checkDisposed();
 
-        if (shape.isEmpty()) return;
-
-        PathIterator pi = shape.pathIterator(null);
+        PathIterator pi = shape.pathIterator(transform);
         svgBegin();
         SVG.PathBegin(svgId, fill ? SVGEnums.SVG_FILL : SVGEnums.SVG_STROKE, pi.windingRule());
         while (!pi.isDone()) {
@@ -1540,8 +1596,8 @@ public class Context {
         SVG.PathEnd(svgId);
     }
 
-    public void svgDrawShapeOptimized(Path p) {
-        PathIterator pi = p.pathIterator(null);
+    public void svgDrawShapeOptimized(Path p, Affine transform) {
+        PathIterator pi = p.pathIterator(transform);
         svgBegin();
         SVG.PathBegin(svgId, SVGEnums.SVG_FILL, pi.windingRule());
         while (!pi.isDone()) {

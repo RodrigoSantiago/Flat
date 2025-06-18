@@ -3,7 +3,7 @@ package flat.graphics.context;
 import flat.backend.GL;
 import flat.backend.GLEnums;
 import flat.exception.FlatException;
-import flat.graphics.ImageTexture;
+import flat.graphics.RenderTexture;
 import flat.graphics.context.enums.MagFilter;
 import flat.graphics.context.enums.MinFilter;
 import flat.graphics.context.enums.PixelFormat;
@@ -11,7 +11,7 @@ import flat.graphics.context.enums.WrapMode;
 
 import java.nio.Buffer;
 
-public final class Texture2D extends Texture implements ImageTexture {
+public final class Texture2D extends Texture implements RenderTexture {
 
     private final int textureId;
 
@@ -101,12 +101,20 @@ public final class Texture2D extends Texture implements ImageTexture {
 
         GL.TexGetImageB(GLEnums.TT_TEXTURE_2D, level, format.getInternalEnum(), data, offset);
     }
-
+    
+    public void setData(int level, Buffer buffer, int offset) {
+        setData(level, buffer, offset, 0, 0, width, height);
+    }
+    
     public void setData(int level, Buffer buffer, int offset, int x, int y, int width, int height) {
         dataBoundsCheckBox(level, buffer.capacity() - offset, 1, x, y, width, height);
         boundCheck();
 
         GL.TextureSubDataBuffer(GLEnums.TT_TEXTURE_2D, level, x, y, width, height, format.getInternalEnum(), buffer, offset);
+    }
+    
+    public void setData(int level, int[] data, int offset) {
+        setData(level, data, offset, 0, 0, width, height);
     }
 
     public void setData(int level, int[] data, int offset, int x, int y, int width, int height) {
@@ -114,6 +122,10 @@ public final class Texture2D extends Texture implements ImageTexture {
         boundCheck();
 
         GL.TextureSubDataI(GLEnums.TT_TEXTURE_2D, level, x, y, width, height, format.getInternalEnum(), data, offset);
+    }
+    
+    public void setData(int level, byte[] data, int offset) {
+        setData(level, data, offset, 0, 0, width, height);
     }
 
     public void setData(int level, byte[] data, int offset, int x, int y, int width, int height) {

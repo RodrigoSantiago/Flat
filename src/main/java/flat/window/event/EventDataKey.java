@@ -40,32 +40,32 @@ public class EventDataKey extends EventData {
     @Override
     public void handle(Window window) {
         try {
+
+            KeyEvent.Type eventType =
+                    (action == WLEnums.PRESS) ? KeyEvent.PRESSED :
+                    (action == WLEnums.RELEASE) ? KeyEvent.RELEASED : KeyEvent.REPEATED;
+
+            boolean shift = (mods & (WLEnums.MOD_SHIFT)) != 0;
+            boolean ctrl = (mods & (WLEnums.MOD_CONTROL)) != 0;
+            boolean alt = (mods & (WLEnums.MOD_ALT)) != 0;
+            boolean spr = (mods & (WLEnums.MOD_SUPER)) != 0;
+            window.setMods(shift, ctrl, alt, spr);
+
             Activity activity = window.getActivity();
             Widget widget = activity.getKeyFocus();
-            if (widget != null) {
-                KeyEvent.Type eventType =
-                        (action == WLEnums.PRESS) ? KeyEvent.PRESSED :
-                                (action == WLEnums.RELEASE) ? KeyEvent.RELEASED : KeyEvent.REPEATED;
-
-                boolean shift = (mods & (WLEnums.MOD_SHIFT)) != 0;
-                boolean ctrl = (mods & (WLEnums.MOD_CONTROL)) != 0;
-                boolean alt = (mods & (WLEnums.MOD_ALT)) != 0;
-                boolean spr = (mods & (WLEnums.MOD_SUPER)) != 0;
-
-                window.setMods(shift, ctrl, alt, spr);
-
-                if (eventType == KeyEvent.PRESSED || eventType == KeyEvent.REPEATED) {
-                    KeyEvent event = new KeyEvent(widget, KeyEvent.FILTER, shift, ctrl, alt, spr, "", key);
-                    activity.onKeyFilter(event);
-                    if (event.isConsumed()) {
-                        return;
-                    }
+            if (eventType == KeyEvent.PRESSED || eventType == KeyEvent.REPEATED) {
+                KeyEvent event = new KeyEvent(widget, KeyEvent.FILTER, shift, ctrl, alt, spr, "", key);
+                activity.onKeyFilter(event);
+                if (event.isConsumed()) {
+                    return;
                 }
-
-                KeyEvent keyEvent = new KeyEvent(widget, eventType, shift, ctrl, alt, spr, "", key);
-                widget.fireKey(keyEvent);
-                activity.onKey(keyEvent);
             }
+
+            KeyEvent keyEvent = new KeyEvent(widget, eventType, shift, ctrl, alt, spr, "", key);
+            if (widget != null) {
+                widget.fireKey(keyEvent);
+            }
+            activity.onKey(keyEvent);
         } finally {
             release();
         }

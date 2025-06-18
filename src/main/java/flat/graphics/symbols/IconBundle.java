@@ -3,7 +3,7 @@ package flat.graphics.symbols;
 import flat.exception.FlatException;
 import flat.graphics.context.Glyph;
 import flat.graphics.image.Drawable;
-import flat.graphics.image.LineMap;
+import flat.graphics.image.ImageVector;
 import flat.math.shapes.Path;
 import flat.math.shapes.Rectangle;
 
@@ -60,7 +60,7 @@ public class IconBundle {
                 Rectangle view = new Rectangle(
                         -(a - bounds.width) * 0.5f + bounds.x,
                         -(a - bounds.height) * 0.5f + bounds.y, a, a);
-                drawable = new LineMap(view, path);
+                drawable = new ImageVector(view, path);
             }
             drawables.put(unicode, drawable);
         }

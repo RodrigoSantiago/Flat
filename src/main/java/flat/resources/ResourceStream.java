@@ -5,6 +5,7 @@ import flat.window.Application;
 
 import java.io.*;
 import java.lang.ref.WeakReference;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -83,6 +84,14 @@ public class ResourceStream {
         } else {
             return Application.getResourcesManager().getData(resourceName);
         }
+    }
+
+    public String readString() {
+        byte[] data = readData();
+        if (data != null) {
+            return new String(data, StandardCharsets.UTF_8);
+        }
+        return null;
     }
 
     public void clearCache() {

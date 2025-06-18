@@ -300,7 +300,7 @@ public class ScrollBoxTest {
         assertMeasure(scrollBox, 500, 350);
         scrollBox.onLayout(250, 400);
         assertLayout(scrollBox, 0, 0, 250, 400);
-        assertEquals(500, scrollBox.getTotalDimensionX(), 0.1f);
+        assertEquals(250, scrollBox.getTotalDimensionX(), 0.1f);
         assertEquals(400, scrollBox.getTotalDimensionY(), 0.1f);
         assertEquals(250, scrollBox.getViewDimensionX(), 0.1f);
         assertEquals(400, scrollBox.getViewDimensionY(), 0.1f);
@@ -313,7 +313,7 @@ public class ScrollBoxTest {
         scrollBox.onLayout(600, 150);
         assertLayout(scrollBox, 0, 0, 600, 150);
         assertEquals(600, scrollBox.getTotalDimensionX(), 0.1f);
-        assertEquals(350, scrollBox.getTotalDimensionY(), 0.1f);
+        assertEquals(150, scrollBox.getTotalDimensionY(), 0.1f);
         assertEquals(600, scrollBox.getViewDimensionX(), 0.1f);
         assertEquals(150, scrollBox.getViewDimensionY(), 0.1f);
         scrollBox.setVerticalBarPolicy(Policy.AS_NEEDED);
@@ -335,8 +335,8 @@ public class ScrollBoxTest {
         assertMeasure(scrollBox, 500, 350);
         scrollBox.onLayout(250, 150);
         assertLayout(scrollBox, 0, 0, 250, 150);
-        assertEquals(500, scrollBox.getTotalDimensionX(), 0.1f);
-        assertEquals(350, scrollBox.getTotalDimensionY(), 0.1f);
+        assertEquals(250, scrollBox.getTotalDimensionX(), 0.1f);
+        assertEquals(150, scrollBox.getTotalDimensionY(), 0.1f);
         assertEquals(250, scrollBox.getViewDimensionX(), 0.1f);
         assertEquals(150, scrollBox.getViewDimensionY(), 0.1f);
         scrollBox.setVerticalBarPolicy(Policy.AS_NEEDED);
@@ -428,7 +428,7 @@ public class ScrollBoxTest {
         assertMeasure(scrollBox, 500, 350);
         scrollBox.onLayout(250, 400);
         assertLayout(scrollBox, 0, 0, 250, 400);
-        assertEquals(500, scrollBox.getTotalDimensionX(), 0.1f);
+        assertEquals(250, scrollBox.getTotalDimensionX(), 0.1f);
         assertEquals(400, scrollBox.getTotalDimensionY(), 0.1f);
         assertEquals(250, scrollBox.getViewDimensionX(), 0.1f);
         assertEquals(400, scrollBox.getViewDimensionY(), 0.1f);
@@ -441,7 +441,7 @@ public class ScrollBoxTest {
         scrollBox.onLayout(600, 150);
         assertLayout(scrollBox, 0, 0, 600, 150);
         assertEquals(600, scrollBox.getTotalDimensionX(), 0.1f);
-        assertEquals(350, scrollBox.getTotalDimensionY(), 0.1f);
+        assertEquals(150, scrollBox.getTotalDimensionY(), 0.1f);
         assertEquals(600, scrollBox.getViewDimensionX(), 0.1f);
         assertEquals(150, scrollBox.getViewDimensionY(), 0.1f);
         scrollBox.setVerticalBarPolicy(Policy.AS_NEEDED);
@@ -463,8 +463,8 @@ public class ScrollBoxTest {
         assertMeasure(scrollBox, 500, 350);
         scrollBox.onLayout(250, 150);
         assertLayout(scrollBox, 0, 0, 250, 150);
-        assertEquals(500, scrollBox.getTotalDimensionX(), 0.1f);
-        assertEquals(350, scrollBox.getTotalDimensionY(), 0.1f);
+        assertEquals(250, scrollBox.getTotalDimensionX(), 0.1f);
+        assertEquals(150, scrollBox.getTotalDimensionY(), 0.1f);
         assertEquals(250, scrollBox.getViewDimensionX(), 0.1f);
         assertEquals(150, scrollBox.getViewDimensionY(), 0.1f);
         scrollBox.setVerticalBarPolicy(Policy.AS_NEEDED);

@@ -1,12 +1,15 @@
 <LinearBox direction="vertical" style="dialog-datepicker">
-    <LinearBox direction="vertical" vertical-alig="right" style="dialog-datepicker-title-area">
-        <Label style="dialog-datepicker-title" id="titleLabel"/>
-        <LinearBox direction="horizontal">
-            <TextInputField id="textDateIn" style="dialog-datepicker-date" text="01/01/2024" max-characters="10"
-                            on-text-change-filter="onTextFilter" on-text-input-filter="onTextInputFilter" on-focus="onTextInputFocus" on-key="onTextKey"/>
-            <Label id="labelLine" style="dialog-datepicker-date-label" text="-"/>
-            <TextInputField id="textDateOut" style="dialog-datepicker-date" text="01/01/2024" max-characters="10"
-                            on-text-change-filter="onTextFilter" on-text-input-filter="onTextInputFilter" on-focus="onTextInputFocus" on-key="onTextKey"/>
+    <LinearBox direction="vertical" vertical-alig="right" style="dialog-datepicker-title-base">
+        <LinearBox style="dialog-header" on-pointer="onHeaderPointer"/>
+        <LinearBox direction="vertical" vertical-alig="right" style="dialog-datepicker-title-area">
+            <Label style="dialog-datepicker-title" id="titleLabel"/>
+            <LinearBox direction="horizontal">
+                <TextInputField id="textDateIn" style="dialog-datepicker-date" text="01/01/2024" max-characters="10"
+                                on-text-change-filter="onTextFilter" on-text-input-filter="onTextInputFilter" on-focus="onTextInputFocus" on-key="onTextKey"/>
+                <Label id="labelLine" style="dialog-datepicker-date-label" text="-"/>
+                <TextInputField id="textDateOut" style="dialog-datepicker-date" text="01/01/2024" max-characters="10"
+                                on-text-change-filter="onTextFilter" on-text-input-filter="onTextInputFilter" on-focus="onTextInputFocus" on-key="onTextKey"/>
+            </LinearBox>
         </LinearBox>
     </LinearBox>
     <LinearBox direction="vertical" style="dialog-datepicker-background">

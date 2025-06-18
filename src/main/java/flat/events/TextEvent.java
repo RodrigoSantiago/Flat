@@ -6,6 +6,7 @@ public class TextEvent extends Event {
 
     public static final Type CHANGE = new Type("CHANGE");
     public static final Type FILTER = new Type("FILTER");
+    public static final Type TYPE = new Type("TYPE");
 
     private final int start;
     private final int end;

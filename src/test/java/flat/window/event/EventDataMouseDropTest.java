@@ -26,7 +26,8 @@ public class EventDataMouseDropTest {
         Activity activity = mock(Activity.class);
         Window window = mock(Window.class);
         Widget widget = mock(Widget.class);
-
+        
+        when(widget.getActivity()).thenReturn(activity);
         when(window.getActivity()).thenReturn(activity);
         when(window.getPointerX()).thenReturn(10f);
         when(window.getPointerY()).thenReturn(20f);

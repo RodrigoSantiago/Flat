@@ -9,9 +9,8 @@ import flat.widget.stages.Dialog;
 import flat.widget.text.Button;
 import flat.widget.text.Label;
 
-class ConfirmDialogController extends Controller {
+class ConfirmDialogController extends DefaultDialogController {
 
-    private final Dialog dialog;
     private final String title;
     private final String message;
     private final boolean cancelable;
@@ -19,9 +18,10 @@ class ConfirmDialogController extends Controller {
     private final UXListener<Dialog> onHideListener;
     private final UXListener<Dialog> onYesListener;
     private final UXListener<Dialog> onNoListener;
+    private final UXListener<Dialog> onCancelListener;
 
     ConfirmDialogController(Dialog dialog, ConfirmDialogBuilder builder) {
-        this.dialog = dialog;
+        super(dialog);
         this.title = builder.title;
         this.message = builder.message;
         this.cancelable = builder.cancelable;
@@ -29,6 +29,7 @@ class ConfirmDialogController extends Controller {
         this.onHideListener = builder.onHideListener;
         this.onYesListener = builder.onYesListener;
         this.onNoListener = builder.onNoListener;
+        this.onCancelListener = builder.onCancelListener;
     }
 
     @Flat
@@ -59,6 +60,7 @@ class ConfirmDialogController extends Controller {
 
     @Flat
     public void onCancel(ActionEvent event) {
+        UXListener.safeHandle(onCancelListener, dialog);
         dialog.smoothHide();
     }
 

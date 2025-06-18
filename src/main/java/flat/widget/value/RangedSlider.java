@@ -140,8 +140,8 @@ public class RangedSlider extends Widget {
         }
 
         float diff = maxValue - minValue;
-        float posStart = diff == 0 ? 0 : startValue / diff;
-        float posEnd = diff == 0 ? 0 : endValue / diff;
+        float posStart = diff == 0 ? 0 : (startValue - minValue) / diff;
+        float posEnd = diff == 0 ? 0 : (endValue - minValue) / diff;
         if (rev) {
             posStart = 1 - posStart;
             posEnd = 1 - posEnd;

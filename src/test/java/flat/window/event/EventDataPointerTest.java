@@ -16,6 +16,7 @@ import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 @RunWith(PowerMockRunner.class)
 public class EventDataPointerTest {
@@ -44,6 +45,9 @@ public class EventDataPointerTest {
         Window window = mock(Window.class);
         Widget widgetA = mock(Widget.class);
         Widget widgetB = mock(Widget.class);
+        when(widgetA.getActivity()).thenReturn(activity);
+        when(widgetB.getActivity()).thenReturn(activity);
+        when(window.getActivity()).thenReturn(activity);
 
         doAnswer(obj -> {
             DragEvent dragEvent = obj.getArgument(0);

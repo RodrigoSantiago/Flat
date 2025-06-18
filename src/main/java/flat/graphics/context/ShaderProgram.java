@@ -429,6 +429,10 @@ public final class ShaderProgram extends ContextObject {
         private void onUpdate() {
             if (getContext().getShaderProgram() == ShaderProgram.this) {
                 setShaderValue();
+                int err = GL.GetError();
+                if (err != 0) {
+                    System.out.println("Err : " + err);
+                }
                 invalid = false;
             } else {
                 invalid = true;

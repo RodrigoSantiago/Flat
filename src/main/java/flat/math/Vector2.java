@@ -388,6 +388,46 @@ public final class Vector2 implements Serializable {
         return this;
     }
 
+    public static Vector2 slerp(Vector2 v0, Vector2 v1, float t) {
+        float dot = v0.dot(v1);
+
+        dot = Math.max(-1.0f, Math.min(1.0f, dot));
+
+        if (dot > 0.9995f) {
+            return new Vector2(
+                    v0.x + t * (v1.x - v0.x),
+                    v0.y + t * (v1.y - v0.y)
+            ).normalize();
+        }
+
+        if (dot < -0.9995f) {
+            float angle = (float) Math.PI * t;
+            float cos = (float) Math.cos(angle);
+            float sin = (float) Math.sin(angle);
+
+            float px = -v0.y;
+            float py = v0.x;
+
+            return new Vector2(
+                    v0.x * cos + px * sin,
+                    v0.y * cos + py * sin
+            );
+        }
+
+        float theta = (float) Math.acos(dot) * t;
+
+        Vector2 relative = new Vector2(v1.x - dot * v0.x, v1.y - dot * v0.y);
+        relative.normalize();
+
+        float cosTheta = (float) Math.cos(theta);
+        float sinTheta = (float) Math.sin(theta);
+
+        return new Vector2(
+                v0.x * cosTheta + relative.x * sinTheta,
+                v0.y * cosTheta + relative.y * sinTheta
+        );
+    }
+
     public Vector2 moveTowards(Vector2 target, float maxDistance) {
         float distance = distanceSqr(target);
         if (distance > maxDistance * maxDistance) {

@@ -45,7 +45,8 @@ public class SnackbarDialogBuilderTest {
             controller[0] = a.getArgument(0, Controller.class);
             return builder;
         });
-        when(builder.build(theme)).thenAnswer((a) -> {
+        when(builder.build((UXListener<Widget>) any())).thenAnswer((a) -> {
+            ((UXListener)a.getArgument(0)).handle(root);
             controller[0].assign("messageLabel", message);
             return root;
         });

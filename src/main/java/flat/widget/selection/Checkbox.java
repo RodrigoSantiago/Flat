@@ -8,8 +8,10 @@ import flat.graphics.Color;
 import flat.graphics.Graphics;
 import flat.graphics.image.Drawable;
 import flat.uxml.*;
+import flat.widget.Group;
 import flat.widget.Widget;
 import flat.widget.enums.ImageFilter;
+import flat.widget.text.Label;
 import flat.window.Activity;
 
 public class Checkbox extends Widget {
@@ -29,6 +31,17 @@ public class Checkbox extends Widget {
         super.applyAttributes(controller);
 
         UXAttrs attrs = getAttrs();
+        String labelId = attrs.getAttributeString("label-id", null);
+        if (labelId != null) {
+            Group group = getGroup();
+            if (group != null) {
+                Widget widget = group.findById(labelId);
+                if (widget instanceof Label label) {
+                    label.setHoverListener(this::fireHover);
+                    label.setPointerListener(this::firePointer);
+                }
+            }
+        }
         setActivated(attrs.getAttributeBool("activated", isActivated()));
         setUndefined(attrs.getAttributeBool("undefined", isUndefined()));
         setToggleListener(attrs.getAttributeListener("on-toggle", ActionEvent.class, controller));

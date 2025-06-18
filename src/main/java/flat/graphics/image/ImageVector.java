@@ -1,7 +1,6 @@
 package flat.graphics.image;
 
 import flat.exception.FlatException;
-import flat.graphics.Color;
 import flat.graphics.Graphics;
 import flat.graphics.Surface;
 import flat.graphics.context.Paint;
@@ -10,73 +9,78 @@ import flat.graphics.image.svg.SvgRoot;
 import flat.graphics.image.svg.SvgShape;
 import flat.math.Affine;
 import flat.math.shapes.*;
-import flat.math.stroke.BasicStroke;
 import flat.resources.ResourceStream;
 import flat.uxml.node.UXNodeElement;
 import flat.uxml.node.UXNodeParser;
 import flat.widget.enums.ImageFilter;
 import flat.window.Application;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 
-public class LineMap implements Drawable {
+public class ImageVector implements Drawable {
 
-    public static LineMap parse(ResourceStream stream) {
+    public static ImageVector parse(ResourceStream stream) {
         Object cache = stream.getCache();
         if (cache != null) {
             if (cache instanceof Exception) {
                 return null;
             } else if (cache instanceof Drawable) {
-                return (LineMap) cache;
+                return (ImageVector) cache;
             } else {
                 stream.clearCache();
             }
         }
         try {
-            LineMap lineMap = loadLineMap(stream);
-            stream.putCache(lineMap);
-            return lineMap;
+            ImageVector imageVector = loadLineMap(stream);
+            stream.putCache(imageVector);
+            return imageVector;
         } catch (Exception e) {
             stream.putCache(e);
             throw new FlatException(e);
         }
     }
 
-    private static LineMap loadLineMap(ResourceStream stream) {
-        byte[] data = stream.readData();
-        if (data == null) {
-            throw new FlatException("Invalid image " + stream.getResourceName());
-        }
-
+    public static ImageVector parse(byte[] data) {
         String xml = new String(data, StandardCharsets.UTF_8);
         UXNodeParser parser = new UXNodeParser(xml);
         parser.parse();
 
         UXNodeElement root = parser.getRootElement();
         if (root == null) {
-            throw new FlatException("Invalid image format " + stream.getResourceName());
+            throw new FlatException("Invalid image format");
         }
 
         SvgBuilder builder = new SvgBuilder(root);
         SvgRoot svg = builder.build();
         if (svg == null) {
-            throw new FlatException("Invalid image format " + stream.getResourceName());
+            throw new FlatException("Invalid image format");
         }
 
-        return new LineMap(svg);
+        return new ImageVector(svg);
+    }
+
+    private static ImageVector loadLineMap(ResourceStream stream) {
+        byte[] data = stream.readData();
+        if (data == null) {
+            throw new FlatException("Invalid image " + stream.getResourceName());
+        }
+
+        try {
+            return parse(data);
+        } catch (FlatException e) {
+            throw new FlatException("Invalid image format " + stream.getResourceName());
+        }
     }
 
     private SvgRoot root;
     private List<Path> paths;
     private Rectangle view;
     private boolean needClipping;
-    private PixelMap pixelMap;
+    private ImageTexture imageTexture;
     private boolean optimize;
 
-    public LineMap(Rectangle view, Path... paths) {
+    public ImageVector(Rectangle view, Path... paths) {
         this.view = new Rectangle(view);
         this.paths = List.of(paths);
 
@@ -92,7 +96,7 @@ public class LineMap implements Drawable {
         needClipping = rec != null && !view.contains(rec);
     }
 
-    public LineMap(SvgRoot root) {
+    public ImageVector(SvgRoot root) {
         this.root = root;
         this.view = root.getView();
         needClipping = !root.getView().contains(root.getBoundingBox());
@@ -122,7 +126,7 @@ public class LineMap implements Drawable {
         graphics.setTransform2D(null);
         graphics.setAntialiasEnabled(true);
         drawSvg(graphics, 0, 0, w, h, 0xFFFFFFFF, false);
-        pixelMap = graphics.createPixelMap();
+        imageTexture = graphics.renderToImage();
         graphics.setSurface(null);
 
         graphics.setTransform2D(transform);
@@ -144,12 +148,12 @@ public class LineMap implements Drawable {
         if (root != null && root.getAllShapes().isEmpty()) return;
         if (paths != null && paths.isEmpty()) return;
 
-        if (optimize && pixelMap == null) {
+        if (optimize && imageTexture == null) {
             bake(graphics);
         }
 
-        if (pixelMap != null) {
-            pixelMap.draw(graphics, x, y, width, height, color, filter);
+        if (imageTexture != null) {
+            imageTexture.draw(graphics, x, y, width, height, color, filter);
         } else {
             drawSvg(graphics, x, y, width, height, color, true);
         }
@@ -172,7 +176,7 @@ public class LineMap implements Drawable {
         if (paths != null) {
             graphics.setColor(color);
             for (var path : paths) {
-                graphics.drawPath(path, true, optimize);
+                graphics.drawPath(path, true, null, optimize);
             }
             graphics.setTransform2D(affine);
             return;
@@ -194,7 +198,7 @@ public class LineMap implements Drawable {
             if (svgPath.getFillPaint() != null) {
                 graphics.setPaint(svgPath.getFillPaint().multiply(color));
                 if (shape instanceof Path p) {
-                    graphics.drawPath(p, true, optimize);
+                    graphics.drawPath(p, true, null, optimize);
                 } else {
                     graphics.drawShape(shape, true);
                 }
@@ -209,7 +213,7 @@ public class LineMap implements Drawable {
             if (svgPath.getFillPaint() == null && svgPath.getStrokePaint() == null) {
                 graphics.setColor(color);
                 if (shape instanceof Path p) {
-                    graphics.drawPath(p, true, optimize);
+                    graphics.drawPath(p, true, null, optimize);
                 } else {
                     graphics.drawShape(shape, true);
                 }

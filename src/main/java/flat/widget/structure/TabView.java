@@ -247,6 +247,7 @@ public class TabView extends Parent {
         if (prevViewOffset != getViewOffset() && getActivity() != null) {
             getActivity().runLater(() -> setViewOffset(getViewOffset()));
         }
+        fireLayout();
     }
 
     @Override
@@ -269,29 +270,7 @@ public class TabView extends Parent {
             }
         } else {
             graphics.setTransform2D(getTransform());
-            if (isTabsScrollable()) {
-                if (tabsVerticalPosition == VerticalPosition.TOP) {
-                    clipShape.x = x;
-                    clipShape.y = y;
-                    clipShape.width = width;
-                    clipShape.height = tabsHeight;
-                    clipShape.arcTop = getRadiusTop();
-                    clipShape.arcRight = getRadiusRight();
-                    clipShape.arcBottom = 0;
-                    clipShape.arcLeft = 0;
-                } else {
-                    clipShape.x = x;
-                    clipShape.y = y + height - tabsHeight;
-                    clipShape.width = width;
-                    clipShape.height = tabsHeight;
-                    clipShape.arcTop = 0;
-                    clipShape.arcRight = 0;
-                    clipShape.arcBottom = getRadiusBottom();
-                    clipShape.arcLeft = getRadiusLeft();
-                }
-                graphics.pushClip(clipShape);
-            }
-
+            graphics.pushClip(getBackgroundShape());
             if (Color.getAlpha(getTabsBgColor()) > 0) {
                 graphics.setTransform2D(getTransform());
                 graphics.setColor(getTabsBgColor());
@@ -327,10 +306,6 @@ public class TabView extends Parent {
                 graphics.drawLine(tx1, ty, tx2, ty);
             }
 
-            if (isTabsScrollable()) {
-                graphics.popClip();
-            }
-
             float el = Math.min(tabsElevation, height - tabsHeight);
             if (el >= 1) {
                 graphics.setTransform2D(getTransform());
@@ -344,6 +319,7 @@ public class TabView extends Parent {
             if (content != null && content.getVisibility() == Visibility.VISIBLE) {
                 content.onDraw(graphics);
             }
+            graphics.popClip();
         }
     }
 

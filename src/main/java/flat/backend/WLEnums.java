@@ -14,8 +14,12 @@ public class WLEnums {
     public static final int	STANDARD_IBEAM_CURSOR = 0x00036002;
     public static final int	STANDARD_CROSSHAIR_CURSOR = 0x00036003;
     public static final int	STANDARD_HAND_CURSOR = 0x00036004;
-    public static final int	STANDARD_HRESIZE_CURSOR = 0x00036005;
-    public static final int	STANDARD_VRESIZE_CURSOR = 0x00036006;
+    public static final int	STANDARD_EW_RESIZE_CURSOR = 0x00036005;
+    public static final int	STANDARD_NS_RESIZE_CURSOR = 0x00036006;
+    public static final int	STANDARD_NWSE_RESIZE_CURSOR = 0x00036007;
+    public static final int	STANDARD_NESW_RESIZE_CURSOR = 0x00036008;
+    public static final int	STANDARD_RESIZE_ALL_CURSOR = 0x00036009;
+    public static final int	STANDARD_NOT_ALLOWED_CURSOR = 0x0003600A;
 
     public static final int RELEASE = 0;
     public static final int PRESS = 1;

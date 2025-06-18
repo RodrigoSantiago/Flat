@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.*;
@@ -78,7 +79,10 @@ public class FrameTest {
         mockStatic(UXNode.class);
         when(UXNode.parse(stream)).thenReturn(node);
         when(node.instance(controller)).thenReturn(builder);
-        when(builder.build(theme)).thenReturn(child);
+        when(builder.build((UXListener<Widget>) any())).thenAnswer((a) -> {
+            ((UXListener)a.getArgument(0)).handle(child);
+            return child;
+        });
 
         Frame frame = new Frame();
         frame.setTheme(theme);

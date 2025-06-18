@@ -124,3 +124,25 @@ tool-item.navigation {
 tool-item.overflow {
     icon : icon(fill, more_vert);
 }
+
+tool-item.tool-item-divider {
+    width : 1dp;
+    height : 32dp;
+    padding-top : 0dp;
+    padding-left : 0dp;
+    padding-right : 0dp;
+    padding-bottom : 0dp;
+    ripple-enabled : false;
+    background-color : $primary-color;
+}
+
+tool-item.tool-item-divider-primary {
+    width : 1dp;
+    height : 32dp;
+    padding-top : 0dp;
+    padding-left : 0dp;
+    padding-right : 0dp;
+    padding-bottom : 0dp;
+    ripple-enabled : false;
+    background-color : $on-primary-color;
+}

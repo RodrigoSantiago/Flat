@@ -10,8 +10,7 @@ import flat.widget.text.Button;
 import flat.widget.text.Label;
 import flat.window.Activity;
 
-public class SnackbarDialogController extends Controller {
-    private final Dialog dialog;
+public class SnackbarDialogController extends DefaultDialogController {
     private final String message;
     private final float duration;
     private final UXListener<Dialog> onShowListener;
@@ -19,7 +18,7 @@ public class SnackbarDialogController extends Controller {
     SelfClose anim;
 
     SnackbarDialogController(Dialog dialog, SnackbarDialogBuilder builder) {
-        this.dialog = dialog;
+        super(dialog);
         this.message = builder.message;
         this.duration = builder.duration;
         this.onShowListener = builder.onShowListener;
@@ -50,7 +49,7 @@ public class SnackbarDialogController extends Controller {
             messageLabel.setText(message);
         }
         if (getActivity() != null) {
-            dialog.move(getActivity().getWidth() / 2, getActivity().getHeight() - dialog.getHeight());
+            dialog.moveTo(getActivity().getWidth() / 2, getActivity().getHeight() - dialog.getHeight());
         }
         anim.play(getActivity());
         UXListener.safeHandle(onShowListener, dialog);

@@ -4,7 +4,7 @@ import flat.widget.Widget;
 
 public abstract class ListViewAdapter<T> {
 
-    private ListView listView;
+    private RecycleView listView;
 
     public int size() {
         return 0;
@@ -16,11 +16,11 @@ public abstract class ListViewAdapter<T> {
 
     }
 
-    public ListView getListView() {
+    public RecycleView getListView() {
         return listView;
     }
 
-    void setListView(ListView listView) {
+    void setListView(RecycleView listView) {
         this.listView = listView;
     }
 }

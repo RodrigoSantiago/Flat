@@ -6,7 +6,8 @@ import flat.backend.WLEnums;
 import flat.exception.FlatException;
 import flat.graphics.context.Context;
 import flat.graphics.cursor.Cursor;
-import flat.graphics.image.PixelMap;
+import flat.graphics.image.ImageData;
+import flat.graphics.image.ImageTexture;
 import flat.uxml.UXListener;
 import flat.window.event.EventData;
 import flat.window.event.EventDataPointer;
@@ -49,10 +50,9 @@ public class Window {
     private float dpi;
     private Cursor cursor;
     private Cursor currentCursor;
-    private int minWidth, minHeight, maxWidth, maxHeight;
+    private int multiSample, minWidth, minHeight, maxWidth, maxHeight;
 
     private float loopTime;
-    private int vsync;
     private boolean assigned;
     private boolean started;
     private boolean releaseEventDelayed, eventConsume;
@@ -82,6 +82,7 @@ public class Window {
         outMouseX = (float) WL.GetCursorX(windowId);
         outMouseY = (float) WL.GetCursorY(windowId);
 
+        this.multiSample = settings.getMultiSamples();
         this.context = Context.create(this, svgId);
         this.activity = Activity.create(this, settings);
     }
@@ -128,9 +129,9 @@ public class Window {
         // Cursor
         var pointer = getPointer();
         if (pointer.getPressed() != null) {
-            setCursor(pointer.getPressed().getCursor());
+            setCursor(pointer.getPressed().getCurrentCursor());
         } else if (pointer.getHover() != null) {
-            setCursor(pointer.getHover().getCursor());
+            setCursor(pointer.getHover().getCurrentCursor());
         } else {
             setCursor(Cursor.UNSET);
         }
@@ -260,14 +261,6 @@ public class Window {
         return svgId;
     }
 
-    int getVsync() {
-        return vsync;
-    }
-
-    void setVsync(int vsync) {
-        this.vsync = vsync;
-    }
-
     public boolean isStarted() {
         return started;
     }
@@ -366,11 +359,15 @@ public class Window {
 
         WL.SetTitle(windowId, this.title = title);
     }
-
-    public void setIcon(PixelMap icon) {
+    
+    public void setIcon(ImageTexture icon) {
+        setIcon(icon.readImageData());
+    }
+    
+    public void setIcon(ImageData icon) {
         checkDisposed();
-
-        WL.SetIcon(windowId, icon.readData(), (int) icon.getWidth(), (int) icon.getHeight());
+        
+        WL.SetIcon(windowId, icon.getData(), icon.getWidth(), icon.getHeight());
     }
 
     public void setCursor(Cursor cursor) {
@@ -486,6 +483,10 @@ public class Window {
         return WL.GetHeight(windowId);
     }
 
+    public int getMultiSample() {
+        return multiSample;
+    }
+
     public void setSize(int width, int height) {
         checkDisposed();
 
@@ -561,19 +562,7 @@ public class Window {
 
         WL.Focus(windowId);
     }
-
-    public String getClipboard() {
-        checkDisposed();
-
-        return WL.GetClipboardString(windowId);
-    }
-
-    public void setClipboard(String clipboard) {
-        checkDisposed();
-
-        WL.SetClipboardString(windowId, clipboard);
-    }
-
+    
     public boolean requestClose() {
         return onRequestClose(false);
     }

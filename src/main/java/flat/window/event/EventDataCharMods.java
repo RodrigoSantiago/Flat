@@ -39,16 +39,18 @@ public class EventDataCharMods extends EventData {
         try {
             Activity activity = window.getActivity();
             Widget widget = activity.getKeyFocus();
+
+            boolean shift = (mods & (WLEnums.MOD_SHIFT)) != 0;
+            boolean ctrl = (mods & (WLEnums.MOD_CONTROL)) != 0;
+            boolean alt = (mods & (WLEnums.MOD_ALT)) != 0;
+            boolean spr = (mods & (WLEnums.MOD_SUPER)) != 0;
+
+            String value = new String(Character.toChars(codepoint));
+            KeyEvent event = new KeyEvent(widget, KeyEvent.TYPED, shift, ctrl, alt, spr, value, codepoint);
             if (widget != null) {
-
-                boolean shift = (mods & (WLEnums.MOD_SHIFT)) != 0;
-                boolean ctrl = (mods & (WLEnums.MOD_CONTROL)) != 0;
-                boolean alt = (mods & (WLEnums.MOD_ALT)) != 0;
-                boolean spr = (mods & (WLEnums.MOD_SUPER)) != 0;
-
-                String value = new String(Character.toChars(codepoint));
-                widget.fireKey(new KeyEvent(widget, KeyEvent.TYPED, shift, ctrl, alt, spr, value, codepoint));
+                widget.fireKey(event);
             }
+            activity.onKey(event);
         } finally {
             release();
         }

@@ -3,8 +3,13 @@ package flat.widget.image;
 import flat.animations.StateInfo;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
+import flat.graphics.context.Texture2D;
+import flat.graphics.context.enums.CycleMethod;
+import flat.graphics.context.paints.ImagePattern;
 import flat.graphics.image.Drawable;
+import flat.graphics.image.ImageTexture;
 import flat.math.shapes.Shape;
+import flat.math.stroke.BasicStroke;
 import flat.uxml.UXAttrs;
 import flat.widget.Widget;
 import flat.widget.enums.HorizontalAlign;
@@ -38,6 +43,7 @@ public class ImageView extends Widget {
         setImageScale(attrs.getConstant("image-scale", info, getImageScale()));
         setVerticalAlign(attrs.getConstant("vertical-align", info, getVerticalAlign()));
         setHorizontalAlign(attrs.getConstant("horizontal-align", info, getHorizontalAlign()));
+        setImageScale(attrs.getConstant("image-scale", info, getImageScale()));
     }
 
     @Override
@@ -112,17 +118,58 @@ public class ImageView extends Widget {
 
             Shape oldClip = null;
             graphics.setTransform2D(getTransform());
-            if (hasRadius || overflow) {
-                graphics.pushClip(getBackgroundShape());
-            }
-            image.draw(graphics
-                    , xOff(x, x + width, dW)
-                    , yOff(y, y + height, dH)
-                    , dW, dH, color, imageFilter);
-            if (hasRadius || overflow) {
-                graphics.popClip();
+            if (image instanceof ImageTexture img) {
+                Texture2D tex = img.getTexture();
+                float tx = imageScale == ImageScale.REPEAT ? x : xOff(x, x + width, dW);
+                float ty = imageScale == ImageScale.REPEAT ? y : yOff(y, y + height, dH);
+                drawPattern(graphics, tex,
+                        0, 0, tex.getWidth(), tex.getHeight(),
+                        tx, ty, tx + dW, ty + dH, width, height);
+            } else {
+                if (hasRadius || overflow) {
+                    graphics.pushClip(getBackgroundShape());
+                }
+                image.draw(graphics
+                        , xOff(x, x + width, dW)
+                        , yOff(y, y + height, dH)
+                        , dW, dH, color, imageFilter);
+                if (hasRadius || overflow) {
+                    graphics.popClip();
+                }
             }
         }
+    }
+
+    public void drawPattern(Graphics graphics, Texture2D texture,
+                            float srcX1, float srcY1, float srcX2, float srcY2,
+                            float dstX1, float dstY1, float dstX2, float dstY2, float w, float h) {
+        if (dstX1 > dstX2) {
+            float v = dstX1;
+            dstX1 = dstX2;
+            dstX2 = v;
+
+            v = srcX1;
+            srcX1 = srcX2;
+            srcX2 = v;
+        }
+        if (dstY1 > dstY2) {
+            float v = dstY1;
+            dstY1 = dstY2;
+            dstY2 = v;
+
+            v = srcY1;
+            srcY1 = srcY2;
+            srcY2 = v;
+        }
+
+        graphics.setPaint(new ImagePattern.Builder(texture)
+                .source(srcX1, srcY1, srcX2, srcY2)
+                .destin(dstX1, dstY1, dstX2, dstY2)
+                .color(color)
+                .nearest(imageFilter == ImageFilter.NEAREST)
+                .cycleMethod(imageScale == ImageScale.REPEAT ? CycleMethod.REPEAT : CycleMethod.EMPTY)
+                .build());
+        graphics.drawRoundRect(getBackgroundShape(), true);
     }
 
     public Drawable getImage() {

@@ -1,32 +1,47 @@
 package flat.widget.stages.dialogs;
 
 import flat.Flat;
+import flat.animations.Animation;
+import flat.animations.SyncProcessRefresh;
+import flat.animations.ProgressTaskRefresh;
+import flat.concurrent.ProgressTask;
+import flat.concurrent.SyncProcess;
 import flat.events.ActionEvent;
-import flat.uxml.Controller;
 import flat.uxml.UXListener;
 import flat.widget.enums.Visibility;
 import flat.widget.stages.Dialog;
 import flat.widget.text.Button;
 import flat.widget.text.Label;
+import flat.widget.value.ProgressBar;
 
-class ProcessDialogController extends Controller {
+class ProcessDialogController extends DefaultDialogController {
 
-    private final Dialog dialog;
     private final String title;
     private final String message;
     private final boolean cancelable;
     private final UXListener<Dialog> onShowListener;
     private final UXListener<Dialog> onHideListener;
     private final UXListener<Dialog> onRequestCancelListener;
+    private ProgressTask<?> task;
+    private SyncProcess graphicTask;
+    private Animation anim;
 
     ProcessDialogController(Dialog dialog, ProcessDialogBuilder builder) {
-        this.dialog = dialog;
+        super(dialog);
         this.title = builder.title;
         this.message = builder.message;
         this.cancelable = builder.cancelable;
         this.onShowListener = builder.onShowListener;
         this.onHideListener = builder.onHideListener;
         this.onRequestCancelListener = builder.onRequestCancelListener;
+        this.task = builder.progressTask;
+        if (task != null) {
+            anim = new ProgressTaskRefresh(this, task, this::onProgress, this::onDone);
+        }
+        this.graphicTask = builder.graphicTask;
+        if (graphicTask != null) {
+            anim = new SyncProcessRefresh(this, graphicTask, 1f / 60f, this::onDone);
+        }
     }
 
     @Flat
@@ -39,12 +54,18 @@ class ProcessDialogController extends Controller {
     public Button cancelButton;
 
     @Flat
+    public ProgressBar progressBar;
+
+    @Flat
     public void hide(ActionEvent event) {
         dialog.smoothHide();
     }
 
     @Flat
     public void onRequestCancel(ActionEvent event) {
+        if (task != null) {
+            task.requestCancel();
+        }
         UXListener.safeHandle(onRequestCancelListener, dialog);
     }
 
@@ -59,11 +80,27 @@ class ProcessDialogController extends Controller {
         if (!cancelable && cancelButton != null) {
             cancelButton.setVisibility(Visibility.GONE);
         }
+        if (anim != null) {
+            getActivity().addAnimation(anim);
+        }
         UXListener.safeHandle(onShowListener, dialog);
     }
 
     @Override
     public void onHide() {
+        if (task != null) {
+            task.requestCancel();
+        }
         UXListener.safeHandle(onHideListener, dialog);
+    }
+
+    private void onProgress(float val) {
+        if (progressBar != null) {
+            progressBar.setValue(val);
+        }
+    }
+
+    private void onDone() {
+        dialog.smoothHide();
     }
 }

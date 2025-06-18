@@ -187,9 +187,19 @@ public class TextDropDown extends TextInputField {
         if (index >= 0 && index < options.size()) {
             setText(options.get(index));
             fireOptionSelected(options.get(index));
+            fireTextType();
         }
     }
-
+    
+    public int getSelectedOption() {
+        return options.indexOf(getText());
+    }
+    
+    protected boolean isOverActionButton(Vector2 local) {
+        return !isEditable() || super.isOverActionButton(local);
+    }
+    
+    @Override
     public void action() {
         showSubMenu();
         super.action();

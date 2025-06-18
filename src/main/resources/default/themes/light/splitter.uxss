@@ -1,0 +1,11 @@
+horizontal-splitter {
+    width : 6dp;
+    height : MATCH_PARENT;
+    cursor : EW_RESIZE;
+}
+
+vertical-splitter {
+    width : MATCH_PARENT;
+    height : 6dp;
+    cursor : NS_WRESIZE;
+}

@@ -1,0 +1,22 @@
+<LinearBox direction="vertical" style="dialog-fontpicker">
+    <LinearBox style="dialog-header" on-pointer="onHeaderPointer"/>
+    <LinearBox  direction="horizontal">
+        <LinearBox direction="vertical" vertical-alig="right" style="dialog-message-area">
+            <Label style="dialog-title" id="titleLabel"/>
+            <Text style="dialog-message" id="messageLabel"/>
+        </LinearBox>
+        <Button style="icon-left dialog-fontpicker-open primary" on-action="onOpenFont" icon="icon(fill, folder)"/>
+    </LinearBox>
+    <Divider/>
+    <LinearBox  direction="horizontal" style="dialog-fontpicker-list-area">
+        <ListView id="fontView" style="dialog-fontpicker-list">
+        </ListView>
+        <ListView id="fontStyleView" style="dialog-fontpicker-data">
+        </ListView>
+    </LinearBox>
+    <Divider/>
+    <LinearBox direction="horizontal" style="dialog-action-area">
+        <Button id="cancelButton" text="Cancel" style="text-primary dialog-cancel-button" on-action="onCancel"/>
+        <Button text="OK" style="text-primary dialog-ok-button" on-action="onChoose"/>
+    </LinearBox>
+</LinearBox>

@@ -1,6 +1,7 @@
 package flat.uxml;
 
 import flat.uxml.value.UXValue;
+import flat.widget.image.Canvas;
 import flat.widget.layout.*;
 import flat.widget.stages.Divider;
 import flat.widget.stages.Menu;
@@ -68,8 +69,10 @@ public class UXBuilder {
         UXBuilder.install("ToolItem", ToolItem::new);
         UXBuilder.install("Grid", Grid::new);
         UXBuilder.install("Drawer", Drawer::new);
-        /*
-        UXBuilder.install("Canvas", Canvas::new);*/
+        UXBuilder.install("TreeView", TreeView::new);
+        UXBuilder.install("HorizontalSplitter", HorizontalSplitter::new);
+        UXBuilder.install("VerticalSplitter", VerticalSplitter::new);
+        UXBuilder.install("Canvas", Canvas::new);
         // RichText text + multiple fonts + images + Emoji icons
         // MonoText text + multiple monospaced fonts
         // RawText text + monospaced infinity reading efficiency
@@ -99,6 +102,16 @@ public class UXBuilder {
             assignWidgets();
         }
 
+        return child;
+    }
+    
+    public Widget build(UXListener<Widget> assignTo) {
+        Widget child = buildRecursive(root);
+        if (child != null) {
+            UXListener.safeHandle(assignTo, child);
+            assignWidgets();
+        }
+        
         return child;
     }
 
