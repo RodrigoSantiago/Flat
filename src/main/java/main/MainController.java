@@ -446,7 +446,7 @@ public class MainController extends Controller {
     public void onFontPickerDialog() {
         var alert = new FontPickerDialogBuilder()
                 .title("Select a font")
-                .message("Filter")
+                .message("All compatible installed system fonts")
                 .onShowListener((dg) -> System.out.println("Show"))
                 .onHideListener((dg) -> System.out.println("Hide"))
                 .initialFont(Font.getDefault())
@@ -547,7 +547,7 @@ public class MainController extends Controller {
                     }
                     System.out.println();
                 })
-                .block(true)
+                .block(false)
                 .build();
         alert.show(getActivity());
     }
