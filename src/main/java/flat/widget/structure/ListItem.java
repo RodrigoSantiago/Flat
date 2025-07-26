@@ -54,7 +54,7 @@ public class ListItem extends Button {
         super.applyAttributes(controller);
         UXAttrs attrs = getAttrs();
 
-        setChangeStateListener(attrs.getAttributeListener("on-change-state", ActionEvent.class, controller));
+        setChangeStateListener(attrs.getAttributeListener("on-change-state", ActionEvent.class, controller, getChangeStateListener()));
     }
 
     @Override

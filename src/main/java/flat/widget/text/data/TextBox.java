@@ -157,7 +157,13 @@ public class TextBox {
         int oldCharacters = countChars(textBytes, start, end);
 
         if (maxCharacters > 0 && totalCharacters - oldCharacters + newCharacters > maxCharacters) {
-            return false;
+            int l = findLength(replaceBytes, 0, replaceBytes.length, maxCharacters - (totalCharacters - oldCharacters));
+            if (l == 0) {
+                return false;
+            } else {
+                replaceBytes = Arrays.copyOf(replaceBytes, l);
+                newCharacters = countChars(replaceBytes, 0, replaceBytes.length);
+            }
         }
 
         int newSize = byteSize - length + replaceBytes.length;

@@ -8,13 +8,12 @@ import flat.uxml.UXAttrs;
 import flat.uxml.UXListener;
 import flat.uxml.UXTheme;
 import flat.widget.enums.DropdownAlign;
+import flat.widget.stages.Divider;
 import flat.widget.stages.Menu;
 import flat.widget.stages.MenuItem;
 import flat.window.Activity;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class TextDropDown extends TextInputField {
 
@@ -23,15 +22,18 @@ public class TextDropDown extends TextInputField {
     private boolean invalidSubmenuItems;
 
     private Menu subMenu;
-    private List<String> options = new ArrayList<>();
-    private List<String> unmodifiableOptions;
-    private List<MenuItem> menuItems = new ArrayList<>();
-    private List<String> attOpts = new ArrayList<>();
+    private final List<Option> options = new ArrayList<>();
+    private final List<Option> unmodifiableOptions;
+    private final List<MenuItem> menuItems = new ArrayList<>();
+    private final List<Option> attOpts = new ArrayList<>();
+    private final List<Integer> dividers = new ArrayList<>();
+    private final List<Integer> unmodifiableDividers;
 
     private float x1, y1, x2, y2;
 
     public TextDropDown() {
         unmodifiableOptions = Collections.unmodifiableList(options);
+        unmodifiableDividers = Collections.unmodifiableList(dividers);
         updateSubmenu();
     }
 
@@ -41,32 +43,44 @@ public class TextDropDown extends TextInputField {
         UXAttrs attrs = getAttrs();
         String content = attrs.getAttributeString("content", null);
         if (content != null) {
-            attOpts.clear();
+            List<Option> attOpts = new ArrayList<>();
             for (var option : content.trim().split("\n")) {
                 option = option.trim();
                 if (!option.isEmpty()) {
-                    attOpts.add(option);
+                    if (!option.startsWith("@@") && option.startsWith("@")) {
+                        attOpts.add(new Option(option.substring(1), option.substring(1)));
+                    } else if (option.startsWith("@@")) {
+                        attOpts.add(new Option(option.substring(1)));
+                    } else {
+                        attOpts.add(new Option(option));
+                    }
                 }
             }
-            setOptions(attOpts.stream().map(this::localizeOption).toList());
+            setOptions(attOpts.toArray(new Option[0]));
         }
 
-        setOptionSelectedListener(attrs.getAttributeListener("on-option-selected", TextEvent.class, controller));
-    }
-
-    @Override
-    public void applyLocalization() {
-        super.applyLocalization();
-        UXAttrs attrs = getAttrs();
-        setOptions(attOpts.stream().map(this::localizeOption).toList());
+        setOptionSelectedListener(attrs.getAttributeListener("on-option-selected", TextEvent.class, controller, getOptionSelectedListener()));
     }
     
     @Override
     public void applyStyle() {
         super.applyStyle();
-
     }
-
+    
+    @Override
+    public void applyLocalization() {
+        int selectedOption = getSelectedOption();
+        for (int i = 0; i < options.size(); i++) {
+            Option option = options.get(i);
+            if (option.getLocale() != null) {
+                this.options.set(i, new Option(translate(option), option.getLocale()));
+            }
+        }
+        if (selectedOption != -1 && selectedOption <= this.options.size()) {
+            setTextSilently(this.options.get(selectedOption).getValue());
+        }
+    }
+    
     private String localizeOption(String option) {
         if (option.startsWith("@@")) {
             return option.substring(1);
@@ -79,36 +93,58 @@ public class TextDropDown extends TextInputField {
         }
         return option;
     }
-
-    public List<String> getUnmodifiableOptions() {
+    
+    public List<Integer> getUnmodifiableDividers() {
+        return unmodifiableDividers;
+    }
+    
+    public void setDividers(List<Integer> dividers) {
+        this.dividers.clear();
+        for (var index : dividers) {
+            if (!this.dividers.contains(index)) {
+                this.dividers.add(index);
+            }
+        }
+        this.dividers.sort(Integer::compare);
+        updateSubmenu();
+    }
+    
+    public void addDivider(int index) {
+        if (!dividers.contains(index)) {
+            dividers.add(index);
+            dividers.sort(Integer::compare);
+        }
+    }
+    
+    public void removeDivider(int index) {
+        dividers.remove((Integer)index);
+        updateSubmenu();
+    }
+    
+    public void clearDividers() {
+        dividers.clear();
+        updateSubmenu();
+    }
+    
+    public List<Option> getUnmodifiableOptions() {
         return unmodifiableOptions;
     }
-
-    public void setOptions(List<String> options) {
+    
+    public void setOptions(Option... options) {
         this.options.clear();
-        this.options.addAll(options);
-        updateSubmenu();
-    }
-
-    public void addOption(String option) {
-        options.add(option);
-        updateSubmenu();
-    }
-
-    public void addOption(List<String> options) {
-        this.options.addAll(options);
-        updateSubmenu();
-    }
-
-    public void addOption(String... options) {
-        for (var option : options) {
-            addOption(option);
+        for (Option option : options) {
+            if (option.getLocale() == null) {
+                this.options.add(option);
+            } else {
+                this.options.add(new Option(translate(option), option.getLocale()));
+            }
         }
         updateSubmenu();
     }
-
-    public void removeOption(String option) {
-        options.remove(option);
+    
+    public void setOptions(String... options) {
+        this.options.clear();
+        this.options.addAll(Arrays.stream(options).map(Option::new).toList());
         updateSubmenu();
     }
 
@@ -134,14 +170,33 @@ public class TextDropDown extends TextInputField {
         }
         menuItems.clear();
         subMenu.removeAll();
-        for (var option : options) {
+        for (int i = 0; i < options.size(); i++) {
+            var option = options.get(i);
             MenuItem menuItem = new MenuItem();
-            menuItem.setText(option);
+            menuItem.setText(option.getValue());
             menuItem.setActionListener(this::onMenuItemAction);
+            if (dividers.contains(i)) {
+                subMenu.addDivider(new Divider());
+            }
             subMenu.addMenuItem(menuItem);
             menuItems.add(menuItem);
         }
         invalidSubmenuItems = false;
+    }
+    
+    private String translate(Option option) {
+        if (option.getLocale() == null) {
+            return option.getValue();
+        }
+        
+        var theme = getCurrentTheme();
+        if (theme != null) {
+            var bundle = theme.getStringBundle();
+            if (bundle != null) {
+                return bundle.get(option.getLocale(), option.getValue());
+            }
+        }
+        return option.getValue();
     }
 
     protected Menu getSubMenu() {
@@ -182,17 +237,29 @@ public class TextDropDown extends TextInputField {
             subMenu.hide();
         }
     }
+    
+    public void setSelectedOption(int index) {
+        if (index >= 0 && index < options.size()) {
+            setText(options.get(index).getValue());
+        }
+    }
 
     public void selectOption(int index) {
         if (index >= 0 && index < options.size()) {
-            setText(options.get(index));
-            fireOptionSelected(options.get(index));
+            setText(options.get(index).getValue());
+            fireOptionSelected(options.get(index).getValue());
             fireTextType();
         }
     }
     
     public int getSelectedOption() {
-        return options.indexOf(getText());
+        String text = getText();
+        for (int i = 0; i < options.size(); i++) {
+            if (options.get(i).getValue().equals(text)) {
+                return i;
+            }
+        }
+        return -1;
     }
     
     protected boolean isOverActionButton(Vector2 local) {
@@ -219,4 +286,5 @@ public class TextDropDown extends TextInputField {
                     new TextEvent(this, TextEvent.CHANGE, 0, getLastCaretPosition(), option));
         }
     }
+    
 }

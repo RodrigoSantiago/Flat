@@ -134,7 +134,7 @@ public class ToolBar extends Parent {
         UXAttrs attrs = getAttrs();
         setTitle(attrs.getAttributeString("title", getTitle()));
         setSubtitle(attrs.getAttributeString("subtitle", getSubtitle()));
-        setNavigationAction(attrs.getAttributeListener("on-navigation", ActionEvent.class, controller));
+        setNavigationAction(attrs.getAttributeListener("on-navigation", ActionEvent.class, controller, getNavigationAction()));
         setMenuItemStyle(attrs.getAttributeString("menu-item-style", getMenuItemStyle()));
         setMenuDividerStyle(attrs.getAttributeString("menu-divider-style", getMenuDividerStyle()));
     }
@@ -311,7 +311,7 @@ public class ToolBar extends Parent {
     @Override
     public Widget findByPosition(float x, float y, boolean includeDisabled) {
         if (!isCurrentHandleEventsEnabled()
-                || getVisibility() != Visibility.VISIBLE
+                || getVisibility() == Visibility.GONE
                 || (!includeDisabled && !isEnabled())
                 || !contains(x, y)) {
             return null;

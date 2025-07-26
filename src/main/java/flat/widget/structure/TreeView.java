@@ -129,9 +129,9 @@ public class TreeView extends RecycleView {
         UXAttrs attrs = getAttrs();
         setDragItemEnabled(attrs.getAttributeBool("drag-item-enabled", isDragItemEnabled()));
         setSelfDropItemEnabled(attrs.getAttributeBool("self-drop-item-enabled", isSelfDropItemEnabled()));
-        setSelectionChangeListener(attrs.getAttributeValueListener("on-selection-change", TreeItemData[].class, controller));
-        setStylizeListener(attrs.getAttributeListener("on-stylize", TreeViewStyle.class, controller));
-        setCellActionListener(attrs.getAttributeListener("on-cell-action", TreeViewCellAction.class, controller));
+        setSelectionChangeListener(attrs.getAttributeValueListener("on-selection-change", TreeItemData[].class, controller, getSelectionChangeListener()));
+        setStylizeListener(attrs.getAttributeListener("on-stylize", TreeViewStyle.class, controller, getStylizeListener()));
+        setCellActionListener(attrs.getAttributeListener("on-cell-action", TreeViewCellAction.class, controller, getCellActionListener()));
     }
 
     @Override

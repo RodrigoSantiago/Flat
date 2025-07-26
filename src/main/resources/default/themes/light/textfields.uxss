@@ -101,7 +101,7 @@ text-input-field : text-input-field.primary {
     padding-top : 8dp;
     padding-bottom : 8dp;
     padding-left : 16dp;
-    padding-right : 16dp;
+    padding-right : 8dp;
     transition-duration : 0.2;
 
     radius-top : 4dp;
@@ -171,7 +171,7 @@ text-drop-down : text-drop-down.primary {
     padding-top : 8dp;
     padding-bottom : 8dp;
     padding-left : 16dp;
-    padding-right : 16dp;
+    padding-right : 8dp;
     transition-duration : 0.2;
 
     radius-top : 4dp;
@@ -244,7 +244,7 @@ number-input-field : number-input-field.primary {
     padding-top : 8dp;
     padding-bottom : 8dp;
     padding-left : 16dp;
-    padding-right : 16dp;
+    padding-right : 8dp;
     transition-duration : 0.2;
 
     radius-top : 4dp;

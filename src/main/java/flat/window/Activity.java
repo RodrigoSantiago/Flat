@@ -2,7 +2,6 @@ package flat.window;
 
 import flat.animations.Animation;
 import flat.animations.PlayLaterTimer;
-import flat.animations.Timer;
 import flat.events.*;
 import flat.exception.FlatException;
 import flat.graphics.Color;
@@ -333,7 +332,7 @@ public class Activity {
             if (widget.getActivity() != this) {
                 invalidRect = new Rectangle(0, 0, getWidth(), getHeight());
             } else {
-                float e = Dimension.dpPx(getDensity(), 16f) * 2f;
+                float e = Dimension.dpPx(16f, getDensity()) * 2f;
                 Vector2 p1 = widget.localToScreen(-e, -e);
                 Vector2 p2 = widget.localToScreen(widget.getLayoutWidth() + e, -e);
                 Vector2 p3 = widget.localToScreen(-e, widget.getLayoutHeight() + e);

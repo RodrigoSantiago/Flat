@@ -41,7 +41,8 @@ public class UXValueSizeSp extends UXValue {
     public float asSize(UXTheme theme) {
         float density = theme == null ? 160f : theme.getDpi();
         float fontScale = theme == null ? 1f : theme.getFontScale();
-        return Math.round(value * (Dimension.getDensity(density).dpi / 160f * fontScale));
+        float pixels = value * (Dimension.getDensity(density).dpi / 160f * fontScale);
+        return value < 1 && value > 0 ? pixels : Math.round(pixels);
     }
 
     @Override

@@ -272,13 +272,21 @@ public class UXAttrs {
     }
 
     public <T> UXListener<T> getAttributeListener(String name, Class<T> argument, Controller controller) {
+        return getAttributeListener(name, argument, controller, null);
+    }
+    
+    public <T> UXListener<T> getAttributeListener(String name, Class<T> argument, Controller controller, UXListener<T> def) {
         UXValue value = getAttribute(name);
-        return value != null ? value.asListener(theme, argument, controller) : null;
+        return value != null ? value.asListener(theme, argument, controller) : def;
+    }
+    
+    public <T> UXValueListener<T> getAttributeValueListener(String name, Class<T> argument, Controller controller) {
+        return getAttributeValueListener(name, argument, controller, null);
     }
 
-    public <T> UXValueListener<T> getAttributeValueListener(String name, Class<T> argument, Controller controller) {
+    public <T> UXValueListener<T> getAttributeValueListener(String name, Class<T> argument, Controller controller, UXValueListener<T> def) {
         UXValue value = getAttribute(name);
-        return value != null ? value.asValueListener(theme, argument, controller) : null;
+        return value != null ? value.asValueListener(theme, argument, controller) : def;
     }
 
     public float[] getAttributeSizeList(String name, float[] def) {

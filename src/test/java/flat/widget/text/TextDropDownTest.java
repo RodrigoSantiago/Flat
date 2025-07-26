@@ -87,7 +87,7 @@ public class TextDropDownTest {
 
     @Test
     public void action() {
-        List<String> options = List.of("A", "B", "C");
+        String[] options = {"A", "B", "C"};
         TextDropDown dropDown = new TextDropDown();
         dropDown.setOptions(options);
 
@@ -116,7 +116,7 @@ public class TextDropDownTest {
         for (var child : menu.getUnmodifiableItemsList()) {
             assertEquals(child.getClass(), MenuItem.class);
             MenuItem item = (MenuItem) child;
-            assertEquals(options.get(i), item.getText());
+            assertEquals(options[i], item.getText());
             i++;
         }
 

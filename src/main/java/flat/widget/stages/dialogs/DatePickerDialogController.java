@@ -39,9 +39,12 @@ class DatePickerDialogController extends DefaultDialogController {
     private LocalDate dateOut;
     private boolean dayIn = true;
 
-    private final String[] months = {
+    private String[] months = {
             "January", "February", "March", "April", "May", "June",
             "July", "August", "September", "October", "November", "December"
+    };
+    private String[] weekdays = {
+            "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
     };
 
     DatePickerDialogController(Dialog dialog, DatePickerDialogBuilder builder) {
@@ -75,7 +78,22 @@ class DatePickerDialogController extends DefaultDialogController {
 
     @Flat
     public Label labelLine;
-
+    @Flat
+    public Label labelWeekDay1;
+    @Flat
+    public Label labelWeekDay2;
+    @Flat
+    public Label labelWeekDay3;
+    @Flat
+    public Label labelWeekDay4;
+    @Flat
+    public Label labelWeekDay5;
+    @Flat
+    public Label labelWeekDay6;
+    @Flat
+    public Label labelWeekDay7;
+    public Label[] labelWeekDay;
+    
     @Flat
     public void onTextInputFilter(TextEvent event) {
         event.setText(event.getText().replaceAll("\\D", ""));
@@ -178,6 +196,23 @@ class DatePickerDialogController extends DefaultDialogController {
 
     @Override
     public void onShow() {
+        labelWeekDay = new Label[]{labelWeekDay1, labelWeekDay2, labelWeekDay3, labelWeekDay4,
+                labelWeekDay5, labelWeekDay6, labelWeekDay7};
+        var theme = dialog.getTheme();
+        if (theme != null) {
+            var bundle = theme.getStringBundle();
+            for (int i = 0; i < months.length; i++) {
+                months[i] = bundle.get(months[i], months[i]);
+            }
+            for (int i = 0; i < weekdays.length; i++) {
+                weekdays[i] = bundle.get(weekdays[i], weekdays[i]);
+                if (weekdays[i].length() > 1) {
+                    weekdays[i] = new String(Character.toChars(weekdays[i].codePointAt(0)));
+                }
+                labelWeekDay[i].setText(weekdays[i]);
+            }
+        }
+        
         if (titleLabel != null) {
             titleLabel.setText(title);
         }

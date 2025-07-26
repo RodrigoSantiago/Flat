@@ -23,6 +23,7 @@ public class Drawer extends Parent {
 
     private boolean autoClose;
     private boolean blockEvents;
+    private Policy showPolicy = Policy.AS_NEEDED;
     private int blockColor = Color.transparent;
 
     private OverlayMode overlayMode = OverlayMode.FLOATING;
@@ -51,6 +52,7 @@ public class Drawer extends Parent {
     public void applyAttributes(Controller controller) {
         super.applyAttributes(controller);
         UXAttrs attrs = getAttrs();
+        setShownNow(attrs.getAttributeBool("show", isShown()));
     }
 
     @Override
@@ -67,6 +69,7 @@ public class Drawer extends Parent {
         setOverlayMode(attrs.getConstant("overlay-mode", info, getOverlayMode()));
         setBlockEvents(attrs.getBool("block-events", info, isBlockEvents()));
         setAutoClose(attrs.getBool("auto-close", info, isAutoClose()));
+        setShowPolicy(attrs.getConstant("show-policy", info, getShowPolicy()));
     }
 
     @Override
@@ -366,6 +369,8 @@ public class Drawer extends Parent {
     }
 
     private float lerp(float hide, float show) {
+        if (showPolicy == Policy.NEVER) return hide;
+        if (showPolicy == Policy.ALWAYS) return show;
         if (lerpPos <= 0) return hide;
         if (lerpPos >= 1) return show;
         float t = Interpolation.fade.apply(lerpPos);
@@ -420,7 +425,7 @@ public class Drawer extends Parent {
     @Override
     public Widget findByPosition(float x, float y, boolean includeDisabled) {
         if (!isCurrentHandleEventsEnabled()
-                || getVisibility() != Visibility.VISIBLE
+                || getVisibility() == Visibility.GONE
                 || (!includeDisabled && !isEnabled())
                 || !contains(x, y)) {
             return null;
@@ -580,7 +585,20 @@ public class Drawer extends Parent {
             invalidate(false);
         }
     }
-
+    
+    public Policy getShowPolicy() {
+        return showPolicy;
+    }
+    
+    public void setShowPolicy(Policy showPolicy) {
+        if (showPolicy == null) showPolicy = Policy.AS_NEEDED;
+        
+        if (this.showPolicy != showPolicy) {
+            this.showPolicy = showPolicy;
+            invalidate(true);
+        }
+    }
+    
     public boolean isAutoClose() {
         return autoClose;
     }
@@ -608,6 +626,16 @@ public class Drawer extends Parent {
             invalidate(true);
         }
     }
+    private void setShownNow(boolean shown) {
+        if (this.shown != shown) {
+            this.shown = shown;
+            if (slideAnimationDuration > 0) {
+                slideAnimation.stop();
+            }
+            lerpPos = isShown() ? 1 : 0;
+            invalidate(true);
+        }
+    }
 
     public void show() {
         setShown(true);
@@ -629,6 +657,13 @@ public class Drawer extends Parent {
             playing = true;
             if (getActivity() != null) {
                 getActivity().addAnimation(this);
+            }
+        }
+        
+        public void stop() {
+            playing = false;
+            if (getActivity() != null) {
+                getActivity().removeAnimation(this);
             }
         }
 

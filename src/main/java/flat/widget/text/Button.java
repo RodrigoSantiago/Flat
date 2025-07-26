@@ -33,8 +33,8 @@ public class Button extends Label {
 
         UXAttrs attrs = getAttrs();
         setActivated(attrs.getAttributeBool("activated", isActivated()));
-        setActionListener(attrs.getAttributeListener("on-action", ActionEvent.class, controller));
-        setActivatedListener(attrs.getAttributeValueListener("on-activated-change", Boolean.class, controller));
+        setActionListener(attrs.getAttributeListener("on-action", ActionEvent.class, controller, getActionListener()));
+        setActivatedListener(attrs.getAttributeValueListener("on-activated-change", Boolean.class, controller, getActivatedListener()));
     }
 
     @Override

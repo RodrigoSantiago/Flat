@@ -38,6 +38,7 @@ import flat.widget.structure.*;
 import flat.widget.text.*;
 import flat.window.Application;
 import flat.window.WindowSettings;
+import main.morph.Morph;
 
 import java.io.File;
 import java.io.IOException;
@@ -815,11 +816,19 @@ public class MainController extends Controller {
     }
 
     TextVectorRender render = new TextVectorRender(Font.getDefault());
+    
+    @Flat
+    public void press() {
+        tt += 0.1f;
+        if (tt > 1) tt = 0;
+    }
+    float tt;
     float a = 0;
     @Override
     public void onDraw(DrawEvent event) {
         super.onDraw(event);
         var graphics = event.getGraphics();
+        
         a += 1;
         if (a > 360) a = 0;
         if (tabEffects.isSelected()) {

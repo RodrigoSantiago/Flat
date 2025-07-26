@@ -7,7 +7,7 @@
                 <Button width="MATCH_PARENT" text="Button" style="" on-action="toggleDefault"/>
                 <Button width="MATCH_PARENT" margin-left="16dp" text="Button" style="primary"/>
                 <Button width="MATCH_PARENT" margin-left="16dp" text="Button" style="outlined-primary"/>
-                <Button width="MATCH_PARENT" margin-left="16dp" text="Button" style="text-primary"/>
+                <Button width="MATCH_PARENT" margin-left="16dp" text="Button" style="text-primary" on-action="press"/>
             </LinearBox>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="16dp">
                 <Button width="MATCH_PARENT" text="Button" style="icon-left" icon="icon(star)"/>
@@ -30,7 +30,7 @@
                 <TextInputField width="MATCH_PARENT" margin-left="16dp" text="01/01/2025" style="" icon="icon(event)" multiline-enabled="false"/>
             </LinearBox>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="16dp">
-                <TextArea width="MATCH_PARENT" text="Text Area&#10;For Multiline&#10;Comments or Posts" style=""/>
+                <TextArea width="MATCH_PARENT" text="Text Area&#10;For Multiline&#10;Comments or Posts" style=""  max-characters="100"/>
             </LinearBox>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="16dp">
                 <TextInputField width="MATCH_PARENT" text="Text with emojis &#x1F602; &#x2764; &#x1F60D; &#x1F923; &#x1F60A; &#x1F97A; &#x1F64F; &#x1F495; &#x1F62D; &#x1F618;"/>

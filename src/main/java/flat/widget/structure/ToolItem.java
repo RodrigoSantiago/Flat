@@ -33,7 +33,7 @@ public class ToolItem extends Widget {
         super.applyAttributes(controller);
 
         UXAttrs attrs = getAttrs();
-        setActionListener(attrs.getAttributeListener("on-action", ActionEvent.class, controller));
+        setActionListener(attrs.getAttributeListener("on-action", ActionEvent.class, controller, getActionListener()));
         setMenuText(attrs.getAttributeString("menu-text", getMenuText()));
         setMenuShortcutText(attrs.getAttributeString("menu-shortcut-text", getMenuShortcutText()));
         setDivider(attrs.getAttributeBool("divider", isDivider()));

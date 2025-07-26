@@ -16,7 +16,7 @@
             <Button id="btnCol7" style="dialog-colorpicker-btn-color"/>
         </LinearBox>
         <LinearBox direction="HORIZONTAL" vertical-align="MIDDLE" style="dialog-colorpicker-hex">
-            <Label text="Hex" style="dialog-colorpicker-hex-title"/>
+            <Label text="@Hex" style="dialog-colorpicker-hex-title"/>
             <TextInputField id="fieldHex" style="dialog-colorpicker-hex-field" on-text-input-filter="onFieldHexFilter" on-text-type="onTypeHex"
                             on-focus="onFieldHexLostFocus" max-characters="6" text-hint="HEX" icon="icon(fill, numbers)"/>
         </LinearBox>
@@ -52,7 +52,7 @@
         </StackBox>
     </LinearBox>
     <LinearBox direction="horizontal" style="dialog-action-area">
-        <Button id="cancelButton" text="Cancel" style="text-primary dialog-cancel-button" on-action="onCancel"/>
-        <Button text="OK" style="text-primary dialog-ok-button" on-action="onChoose"/>
+        <Button id="cancelButton" text="@CANCEL" style="text-primary dialog-cancel-button" on-action="onCancel"/>
+        <Button text="@OK" style="text-primary dialog-ok-button" on-action="onChoose"/>
     </LinearBox>
 </LinearBox>

@@ -82,7 +82,7 @@ dialog-snackbar-button {
 
 }
 dialog-message-area {
-    width : 420dp;
+    width : MATCH_PARENT;
     vertical-align : top;
     horizontal-align : left;
     padding-top : 24dp;
@@ -91,7 +91,7 @@ dialog-message-area {
     padding-bottom : 24dp;
 }
 dialog-action-area {
-    min-width : 420dp;
+    width : MATCH_PARENT;
     vertical-align : bottom;
     horizontal-align : right;
     padding-top : 8dp;

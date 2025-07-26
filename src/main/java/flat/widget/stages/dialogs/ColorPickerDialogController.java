@@ -412,7 +412,7 @@ public class ColorPickerDialogController extends DefaultDialogController {
         int solidColor = Color.setColorAlpha(getCurrentColor(), 255);
 
         Vector2 pos = fromSVToPointer(paletteS, paletteV);
-        float dp_2 = Dimension.dpPx(getActivity().getDensity(), 2);
+        float dp_2 = Dimension.dpPx(2, getActivity().getDensity());
         graphics.setColor(solidColor);
         graphics.drawCircle(pos.x, pos.y, dp_2 * 3, true);
         graphics.setStroke(new BasicStroke(dp_2 + 2));

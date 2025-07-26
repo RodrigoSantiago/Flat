@@ -40,7 +40,7 @@ public class TextInputField extends TextField {
         super.applyAttributes(controller);
         UXAttrs attrs = getAttrs();
 
-        setActionListener(attrs.getAttributeListener("on-action", ActionEvent.class, controller));
+        setActionListener(attrs.getAttributeListener("on-action", ActionEvent.class, controller, getActionListener()));
     }
 
     @Override

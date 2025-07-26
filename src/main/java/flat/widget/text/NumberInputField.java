@@ -55,8 +55,8 @@ public class NumberInputField extends TextField {
         UXAttrs attrs = getAttrs();
 
         setRangeLimits((int)attrs.getAttributeNumber("min-value", getMinValue()), (int)attrs.getAttributeNumber("max-value", getMaxValue()));
-        setActionIncreaseListener(attrs.getAttributeListener("on-increase", ActionEvent.class, controller));
-        setActionDecreaseListener(attrs.getAttributeListener("on-decrease", ActionEvent.class, controller));
+        setActionIncreaseListener(attrs.getAttributeListener("on-increase", ActionEvent.class, controller, getActionIncreaseListener()));
+        setActionDecreaseListener(attrs.getAttributeListener("on-decrease", ActionEvent.class, controller, getActionDecreaseListener()));
     }
 
     @Override

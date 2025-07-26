@@ -49,13 +49,21 @@ public class Scene extends Group {
     @Override
     public void onLayout(float width, float height) {
         setLayout(width, height);
-        performLayoutFree(getInWidth(), getInHeight());
+        if (activityScene != null && activityScene.getActivity() != null) {
+            performLayoutUnbounded(getInWidth(), getInHeight());
+        } else {
+            performLayoutFree(getInWidth(), getInHeight());
+        }
     }
 
     public boolean onLayoutSingleChild(Widget child) {
         if (getChildren().contains(child)) {
             child.onMeasure();
-            performSingleLayoutFree(getInWidth(), getInHeight(), child);
+            if (activityScene != null && activityScene.getActivity() != null) {
+                performSingleLayoutUnbounded(getInWidth(), getInHeight(), child);
+            } else {
+                performSingleLayoutFree(getInWidth(), getInHeight(), child);
+            }
             return true;
         }
         return false;

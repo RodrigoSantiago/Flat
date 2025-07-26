@@ -9,6 +9,7 @@ import flat.uxml.UXAttrs;
 import flat.widget.Widget;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class LinearBox extends Parent {
@@ -18,6 +19,11 @@ public class LinearBox extends Parent {
     private HorizontalAlign horizontalAlign = HorizontalAlign.LEFT;
 
     private final ArrayList<Widget> orderedList = new ArrayList<>();
+    final List<Widget> unmodifiableOrderedChildren = Collections.unmodifiableList(orderedList);
+    
+    public List<Widget> getUnmodifiableOrderedChildren() {
+        return unmodifiableOrderedChildren;
+    }
 
     @Override
     public void applyChildren(UXChildren children) {

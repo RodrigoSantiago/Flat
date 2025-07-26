@@ -865,6 +865,7 @@ public class Graphics {
                 .color(color)
                 .nearest(pixelated)
                 .transform(transform)
+                .cycleMethod(CycleMethod.EMPTY)
                 .build());
         drawRect(dstX1, dstY1, dstX2 - dstX1, dstY2 - dstY1, true);
         context.svgPaint(paint);
@@ -900,7 +901,7 @@ public class Graphics {
         if (ver == null) {
             ver = new VertexArray(context);
             ebo = new BufferObject(context, BufferType.Element, 6 * 4, UsageType.STATIC_DRAW);
-            ebo.setData(0, new int[]{0, 1, 2, 0, 2, 3}, 0, 6);
+            ebo.setData(0, new int[]{2, 1, 0, 3, 2, 0}, 0, 6);
 
             vbo = new BufferObject(context, BufferType.Array, 16 * 4, UsageType.STATIC_DRAW);
             vbo.setData(0, new float[]{
@@ -920,7 +921,15 @@ public class Graphics {
         program.set("area", new Vector4(x, y, width, height));
         program.set("view", new Vector2(getWidth(), getHeight()));
         context.setShaderTextures(textures);
+        boolean enabled = context.isStencilEnabled();
+        var func = context.getStencilFrontFunction();
+        int ref = context.getStencilFrontMask();
+        int mask = context.getStencilFrontFunRef();
+        context.setStencilEnabled(true);
+        context.setStencilFrontFunction(MathFunction.EQUAL, 0x00, 0xFF);
         ver.drawElements(VertexMode.TRIANGLES, 0, 6, 1);
+        context.setStencilFrontFunction(func, ref, mask);
+        context.setStencilEnabled(enabled);
         context.setShaderTextures();
         context.setShaderProgram(current);
     }

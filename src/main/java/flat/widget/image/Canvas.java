@@ -16,7 +16,7 @@ public class Canvas extends Widget {
     public void applyAttributes(Controller controller) {
         super.applyAttributes(controller);
         UXAttrs attrs = getAttrs();
-        setDrawListener(attrs.getAttributeListener("on-draw", DrawEvent.class, controller));
+        setDrawListener(attrs.getAttributeListener("on-draw", DrawEvent.class, controller, getDrawListener()));
     }
 
     @Override

@@ -55,8 +55,8 @@ public class RadioButton extends Widget {
             }
         }
         setActivated(attrs.getAttributeBool("activated", isActivated()));
-        setToggleListener(attrs.getAttributeListener("on-toggle", ActionEvent.class, controller));
-        setActivatedListener(attrs.getAttributeValueListener("on-activated-change", Boolean.class, controller));
+        setToggleListener(attrs.getAttributeListener("on-toggle", ActionEvent.class, controller, getToggleListener()));
+        setActivatedListener(attrs.getAttributeValueListener("on-activated-change", Boolean.class, controller, getActivatedListener()));
     }
 
     @Override

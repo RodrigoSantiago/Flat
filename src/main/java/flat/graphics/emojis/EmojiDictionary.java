@@ -79,7 +79,7 @@ public class EmojiDictionary implements Serializable {
     }
 
     private static EmojiDictionary read(String content, String emojiCharacters) {
-        String[] lines = content.split("\n");
+        String[] lines = content.split("(\n)|(\r\n)");
         ArrayList<EmojiGroup> groups = new ArrayList<>();
         EmojiGroup group = null;
         for (var line : lines) {

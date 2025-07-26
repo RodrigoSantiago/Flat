@@ -19,18 +19,18 @@
             <Button style="icon text-primary dialog-datepicker-month-right" on-action="onNextMonth"/>
         </LinearBox>
         <Grid id="calendarGrid" columns="list(40dp 40dp 40dp 40dp 40dp 40dp 40dp)" rows="list(40dp 40dp 40dp 40dp 40dp 40dp 40dp)" style="data-picker-grid">
-            <Label cell-x="0" cell-y="0" text="S" style="dialog-datepicker-week-day"/>
-            <Label cell-x="1" cell-y="0" text="M" style="dialog-datepicker-week-day"/>
-            <Label cell-x="2" cell-y="0" text="T" style="dialog-datepicker-week-day"/>
-            <Label cell-x="3" cell-y="0" text="W" style="dialog-datepicker-week-day"/>
-            <Label cell-x="4" cell-y="0" text="T" style="dialog-datepicker-week-day"/>
-            <Label cell-x="5" cell-y="0" text="F" style="dialog-datepicker-week-day"/>
-            <Label cell-x="6" cell-y="0" text="S" style="dialog-datepicker-week-day"/>
+            <Label cell-x="0" cell-y="0" id="labelWeekDay1" text="S" style="dialog-datepicker-week-day"/>
+            <Label cell-x="1" cell-y="0" id="labelWeekDay2" text="M" style="dialog-datepicker-week-day"/>
+            <Label cell-x="2" cell-y="0" id="labelWeekDay3" text="T" style="dialog-datepicker-week-day"/>
+            <Label cell-x="3" cell-y="0" id="labelWeekDay4" text="W" style="dialog-datepicker-week-day"/>
+            <Label cell-x="4" cell-y="0" id="labelWeekDay5" text="T" style="dialog-datepicker-week-day"/>
+            <Label cell-x="5" cell-y="0" id="labelWeekDay6" text="F" style="dialog-datepicker-week-day"/>
+            <Label cell-x="6" cell-y="0" id="labelWeekDay7" text="S" style="dialog-datepicker-week-day"/>
         </Grid>
         <Divider/>
         <LinearBox direction="horizontal" style="dialog-action-area">
-            <Button id="cancelButton" text="Cancel" style="text-primary dialog-cancel-button" on-action="onCancel"/>
-            <Button text="OK" style="text-primary dialog-ok-button" on-action="onOk"/>
+            <Button id="cancelButton" text="@CANCEL" style="text-primary dialog-cancel-button" on-action="onCancel"/>
+            <Button text="@OK" style="text-primary dialog-ok-button" on-action="onOk"/>
         </LinearBox>
     </LinearBox>
 </LinearBox>

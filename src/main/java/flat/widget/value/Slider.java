@@ -47,9 +47,9 @@ public class Slider extends Widget {
         setRangeLimits(attrs.getAttributeNumber("min-value", getMinValue()), attrs.getAttributeNumber("max-value", getMaxValue()));
         setSteps(attrs.getAttributeNumber("steps", getSteps()));
         setValue(attrs.getAttributeNumber("value", getValue()));
-        setSlideListener(attrs.getAttributeListener("on-slide", SlideEvent.class, controller));
-        setSlideFilter(attrs.getAttributeListener("on-slide-filter", SlideEvent.class, controller));
-        setValueListener(attrs.getAttributeValueListener("on-value-change", Float.class, controller));
+        setSlideListener(attrs.getAttributeListener("on-slide", SlideEvent.class, controller, getSlideListener()));
+        setSlideFilter(attrs.getAttributeListener("on-slide-filter", SlideEvent.class, controller, getSlideFilter()));
+        setValueListener(attrs.getAttributeValueListener("on-value-change", Float.class, controller, getValueListener()));
     }
 
     @Override

@@ -18,6 +18,7 @@ public class DragEvent extends Event {
     private Widget dragHandler;
     private Widget dragAccepted;
     private boolean canceled;
+    private boolean consumed;
 
     public DragEvent(Widget source, Window window, Type type, Object data, float x, float y, float pressX, float pressY) {
         super(source, type);
@@ -44,7 +45,7 @@ public class DragEvent extends Event {
 
     @Override
     public boolean recycle(Widget current) {
-        if (!isAccepted() && !isCanceled()) {
+        if (!consumed && !isCanceled()) {
             return super.recycle(current);
         }
         return false;
@@ -84,6 +85,7 @@ public class DragEvent extends Event {
         } else {
             dragAccepted = source;
         }
+        consumed = true;
     }
 
     public boolean isAccepted() {
@@ -105,6 +107,7 @@ public class DragEvent extends Event {
 
     public void cancel() {
         this.canceled = true;
+        consumed = true;
     }
 
     public boolean isCanceled() {

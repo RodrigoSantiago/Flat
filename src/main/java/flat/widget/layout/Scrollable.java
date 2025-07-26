@@ -72,12 +72,12 @@ public abstract class Scrollable extends Parent {
         super.applyAttributes(controller);
 
         UXAttrs attrs = getAttrs();
-        setViewOffsetXListener(attrs.getAttributeValueListener("on-view-offset-x-change", Float.class, controller));
-        setViewOffsetYListener(attrs.getAttributeValueListener("on-view-offset-y-change", Float.class, controller));
-        setSlideHorizontalListener(attrs.getAttributeListener("on-slide-horizontal", SlideEvent.class, controller));
-        setSlideVerticalListener(attrs.getAttributeListener("on-slide-vertical", SlideEvent.class, controller));
-        setSlideHorizontalFilter(attrs.getAttributeListener("on-slide-horizontal-filter", SlideEvent.class, controller));
-        setSlideVerticalFilter(attrs.getAttributeListener("on-slide-vertical-filter", SlideEvent.class, controller));
+        setViewOffsetXListener(attrs.getAttributeValueListener("on-view-offset-x-change", Float.class, controller, getViewOffsetXListener()));
+        setViewOffsetYListener(attrs.getAttributeValueListener("on-view-offset-y-change", Float.class, controller, getViewOffsetYListener()));
+        setSlideHorizontalListener(attrs.getAttributeListener("on-slide-horizontal", SlideEvent.class, controller, getSlideHorizontalListener()));
+        setSlideVerticalListener(attrs.getAttributeListener("on-slide-vertical", SlideEvent.class, controller, getSlideVerticalListener()));
+        setSlideHorizontalFilter(attrs.getAttributeListener("on-slide-horizontal-filter", SlideEvent.class, controller, getSlideHorizontalFilter()));
+        setSlideVerticalFilter(attrs.getAttributeListener("on-slide-vertical-filter", SlideEvent.class, controller, getSlideVerticalFilter()));
     }
 
     @Override
@@ -250,7 +250,7 @@ public abstract class Scrollable extends Parent {
     @Override
     public Widget findByPosition(float x, float y, boolean includeDisabled) {
         if (!isCurrentHandleEventsEnabled()
-                || getVisibility() != Visibility.VISIBLE
+                || getVisibility() == Visibility.GONE
                 || (!includeDisabled && !isEnabled())
                 || !contains(x, y)) {
             return null;

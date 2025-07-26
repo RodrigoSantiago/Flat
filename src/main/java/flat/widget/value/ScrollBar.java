@@ -40,9 +40,9 @@ public abstract class ScrollBar extends Widget {
         setTotalDimension(attrs.getAttributeSize("total-dimension", getTotalDimension()));
         setViewDimension(attrs.getAttributeSize("view-dimension", getViewDimension()));
         setViewOffset(attrs.getAttributeSize("view-offset", getViewOffset()));
-        setSlideListener(attrs.getAttributeListener("on-slide", SlideEvent.class, controller));
-        setSlideFilter(attrs.getAttributeListener("on-slide-filter", SlideEvent.class, controller));
-        setViewOffsetListener(attrs.getAttributeValueListener("on-view-offset-change", Float.class, controller));
+        setSlideListener(attrs.getAttributeListener("on-slide", SlideEvent.class, controller, getSlideListener()));
+        setSlideFilter(attrs.getAttributeListener("on-slide-filter", SlideEvent.class, controller, getSlideFilter()));
+        setViewOffsetListener(attrs.getAttributeValueListener("on-view-offset-change", Float.class, controller, getViewOffsetListener()));
     }
 
     @Override

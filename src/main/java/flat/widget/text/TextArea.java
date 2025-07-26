@@ -96,10 +96,10 @@ public class TextArea extends Scrollable {
         setLineWrapEnabled(attrs.getAttributeBool("line-wrap-enabled", isLineWrapEnabled()));
         setText(attrs.getAttributeString("text", getText()));
         setEditable(attrs.getAttributeBool("editable", isEditable()));
-        setTextChangeListener(attrs.getAttributeValueListener("on-text-change", String.class, controller));
-        setTextTypeListener(attrs.getAttributeListener("on-text-type", TextEvent.class, controller));
-        setTextChangeFilter(attrs.getAttributeListener("on-text-change-filter", TextEvent.class, controller));
-        setTextInputFilter(attrs.getAttributeListener("on-text-input-filter", TextEvent.class, controller));
+        setTextChangeListener(attrs.getAttributeValueListener("on-text-change", String.class, controller, getTextChangeListener()));
+        setTextTypeListener(attrs.getAttributeListener("on-text-type", TextEvent.class, controller, getTextTypeListener()));
+        setTextChangeFilter(attrs.getAttributeListener("on-text-change-filter", TextEvent.class, controller, getTextChangeFilter()));
+        setTextInputFilter(attrs.getAttributeListener("on-text-input-filter", TextEvent.class, controller, getTextInputFilter()));
     }
 
     @Override
@@ -741,6 +741,28 @@ public class TextArea extends Scrollable {
 
             invalidateTextSize();
         }
+    }
+    
+    protected void setTextSilently(String text) {
+        if (Objects.equals(getText(), text)) return;
+        if (!isMultiLineEnabled() && text != null) {
+            text = text.replaceAll("[\\n\\r]", "");
+            if (Objects.equals(getText(), text)) return;
+        }
+        setLocalText(text);
+        
+        if (text != null && maxCharacters > 0) {
+            if (!textBox.setText(text)) {
+                invalidateTextString();
+            }
+        } else {
+            textBox.setText(text);
+        }
+        
+        textBox.moveCaretBegin(startCaret);
+        endCaret.set(startCaret);
+        breakLines();
+        invalidateTextSize();
     }
 
     protected void editText(Caret first, Caret second, String input) {
