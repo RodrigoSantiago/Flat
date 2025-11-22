@@ -21,6 +21,6 @@
     </ScrollBox>
     <Divider/>
     <LinearBox direction="horizontal" style="dialog-action-area">
-        <Button text="@OK" style="text-primary dialog-ok-button" on-action="onOk"/>
+        <Button text="@OK" style="primary dialog-ok-button" on-action="onOk"/>
     </LinearBox>
 </LinearBox>

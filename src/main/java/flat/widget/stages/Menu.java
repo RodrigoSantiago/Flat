@@ -651,6 +651,7 @@ public class Menu extends Stage {
             setCenterX(animX);
             setCenterY(animY);
             blockEvents = true;
+            compute(0);
         }
 
         @Override

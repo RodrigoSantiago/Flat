@@ -13,6 +13,6 @@
     <Divider/>
     <LinearBox direction="horizontal" style="dialog-action-area">
         <Button id="cancelButton" text="@CANCEL" style="text-primary dialog-cancel-button" on-action="onCancel"/>
-        <Button text="@OK" style="text-primary dialog-ok-button" on-action="onChoose"/>
+        <Button text="@OK" style="primary dialog-ok-button" on-action="onChoose"/>
     </LinearBox>
 </LinearBox>

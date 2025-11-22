@@ -2,6 +2,7 @@ package flat.widget.structure;
 
 import flat.animations.StateInfo;
 import flat.events.ActionEvent;
+import flat.exception.FlatException;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
 import flat.graphics.symbols.Font;
@@ -620,6 +621,16 @@ public class ToolBar extends Parent {
     public void addToolItem(ToolItem... items) {
         for (var item : items) {
             addToolItem(item);
+        }
+    }
+    
+    public void moveToolItem(ToolItem child, int index) {
+        if (index < 0 || index >= toolItems.size()) {
+            throw new FlatException("Invalid child index position");
+        }
+        if (toolItems.contains(child)) {
+            toolItems.remove(child);
+            toolItems.add(index, child);
         }
     }
 

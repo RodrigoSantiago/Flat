@@ -65,6 +65,9 @@ menu-item.default {
     activated {
         background-color : $card-color-active;
     }
+    focused {
+        background-color : $card-color-active;
+    }
     disabled {
         text-color : alpha($on-card-color, 0.25);
         icon-color : alpha($on-card-color, 0.15);

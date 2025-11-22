@@ -1,11 +1,13 @@
 package flat.animations;
 
 import flat.uxml.Controller;
+import flat.widget.Widget;
 import flat.window.Activity;
 
 public class Timer implements Animation {
 
     private Controller controller;
+    private Widget widget;
     private float duration;
     private boolean loop;
     private Runnable task;
@@ -22,6 +24,17 @@ public class Timer implements Animation {
         this.loop = loop;
         this.task = task;
     }
+    
+    public Timer(Widget widget, float duration, Runnable task) {
+        this(widget, duration, false, task);
+    }
+    
+    public Timer(Widget widget, float duration, boolean loop, Runnable task) {
+        this.widget = widget;
+        this.duration = duration;
+        this.loop = loop;
+        this.task = task;
+    }
 
     public void play() {
         if (getSource() != null) {
@@ -34,13 +47,13 @@ public class Timer implements Animation {
     public void stop() {
         playing = false;
         if (getSource() != null) {
-            controller.getActivity().removeAnimation(this);
+            getSource().removeAnimation(this);
         }
     }
 
     @Override
     public Activity getSource() {
-        return controller.getActivity();
+        return controller == null ? widget.getActivity() : controller.getActivity();
     }
 
     @Override

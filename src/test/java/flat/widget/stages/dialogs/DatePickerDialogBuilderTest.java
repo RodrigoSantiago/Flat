@@ -143,7 +143,7 @@ public class DatePickerDialogBuilderTest {
 
         dialog.show(activity);
         assertTrue(dialog.isShown());
-        onTextInputFocus.handle(new FocusEvent(textDateIn, null));
+        onTextInputFocus.handle(new FocusEvent(textDateIn, null, FocusEvent.LOST));
         onOk.handle(mock(ActionEvent.class));
         assertFalse(dialog.isShown());
 

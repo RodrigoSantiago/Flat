@@ -784,7 +784,7 @@ public class TextArea extends Scrollable {
         Caret caret = new Caret();
         caret.set(endCaret);
 
-        if (textChangeFilter != null || textChangeListener != null || textTypeListener != null) {
+        if (textChangeFilter != null || textChangeListener != null || textTypeListener != null || hasLocalFilter()) {
             String old = getText();
 
             if (!textBox.editText(first, second, input, caret)) {
@@ -793,27 +793,29 @@ public class TextArea extends Scrollable {
 
             // Change Filter
             String text = textBox.getText();
-            var textEvent = filterText(0, textBox.getTotalBytes(), text);
+            String newTxt = localFilter(text);
+            
+            var textEvent = filterText(0, textBox.getTotalBytes(), newTxt);
             if (textEvent != null) {
                 if (textEvent.isConsumed()) {
                     textBox.setText(old);
                     return;
                 }
-                String newTxt = textEvent.getText();
-                if (!Objects.equals(newTxt, text)) {
-                    int before = textBox.getTotalCharacters();
-
-                    text = newTxt;
-                    if (!textBox.setText(text)) {
-                        text = textBox.getText();
-                    }
-
-                    int after = textBox.getTotalCharacters();
-                    if (after < before) {
-                        textBox.moveCaret(caret, 0);
-                    } else if (after > before) {
-                        textBox.moveCaret(caret, after - before);
-                    }
+                newTxt = textEvent.getText();
+            }
+            if (!Objects.equals(newTxt, text)) {
+                int before = textBox.getTotalCharacters();
+                
+                text = newTxt;
+                if (!textBox.setText(text)) {
+                    text = textBox.getText();
+                }
+                
+                int after = textBox.getTotalCharacters();
+                if (after < before) {
+                    textBox.moveCaret(caret, 0);
+                } else if (after > before) {
+                    textBox.moveCaret(caret, after - before);
                 }
             }
             setLocalText(text);
@@ -842,6 +844,14 @@ public class TextArea extends Scrollable {
             setCaretVisible();
             slideToCaretLater(1);
         }
+    }
+    
+    protected boolean hasLocalFilter() {
+        return false;
+    }
+    
+    protected String localFilter(String value) {
+        return value;
     }
 
     public int getMaxCharacters() {

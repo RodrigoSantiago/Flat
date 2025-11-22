@@ -97,13 +97,29 @@ public class UXSheetParser {
                 }
 
             } else if (currentType == LOCALE) {
-                var value = parseImport();
-                if (value == null
-                        || !"@include".equals(value.getName())
-                        || !(value.getValue() instanceof UXValueText)) {
-                    log(ErroLog.INVALID_INCLUDE);
+                if (currentText.equals("@include")) {
+                    var value = parseImport();
+                    if (value == null || !(value.getValue() instanceof UXValueText)) {
+                        log(ErroLog.INVALID_INCLUDE);
+                    } else {
+                        getIncludes().add(value);
+                    }
+                } else if (currentText.equals("@if")) {
+                    var value = parseIf();
+                    if (value == null || !(value.getValue() instanceof UXValueVariable) || currentType != VARIABLE) {
+                        log(ErroLog.INVALID_IF);
+                    } else {
+                        readNext(); // skip var name
+                        if (currentType == TEXT) {
+                            var style = parseStyle();
+                            style.setFlow(value.getValue());
+                            getStyles().add(style);
+                        } else {
+                            log(ErroLog.INVALID_IF);
+                        }
+                    }
                 } else {
-                    getIncludes().add(value);
+                    log(ErroLog.INVALID_INCLUDE);
                 }
 
             } else if (currentType == TEXT) {
@@ -129,7 +145,7 @@ public class UXSheetParser {
                     getLogs().clear();
                     return new UXValueText(text);
                 }
-                if (value instanceof UXValueText) {
+                if (value == null || value instanceof UXValueText) {
                     return new UXValueText(text);
                 }
                 if (value instanceof UXValueVariable || value instanceof UXValueLocale) {
@@ -269,6 +285,31 @@ public class UXSheetParser {
             return null;
         }
         return new UXSheetAttribute(name, value == null ? new UXValue() : value);
+    }
+    
+    private UXSheetAttribute parseIf() {
+        String name = currentText;
+        UXValue value = null;
+        int state = 0;
+        while (nextType != CBRACE && readNext()) {
+            if ((value = parseValue()) != null) {
+                state = 1;
+                break;
+            } else if (currentType == INVALID) {
+                log(ErroLog.UNEXPECTED_TOKEN);
+                
+            } else {
+                log(ErroLog.UNEXPECTED_TOKEN);
+                break;
+            }
+        }
+        if (state != 1) {
+            log(ErroLog.UNEXPECTED_END_OF_TOKENS);
+        }
+        if (state < 1) {
+            return null;
+        }
+        return new UXSheetAttribute(name, value);
     }
 
     private UXValue parseValue() {
@@ -757,6 +798,7 @@ public class UXSheetParser {
         public static final String UNEXPECTED_TOKEN = "Unexpected token";
         public static final String UNEXPECTED_END_OF_TOKENS = "Unexpected end of tokens";
         public static final String INVALID_INCLUDE = "Invalid import";
+        public static final String INVALID_IF = "Invalid if";
         public static final String INVALID_NUMBER = "Invalid number";
         public static final String INVALID_FONT = "Invalid font";
         public static final String INVALID_COLOR = "Invalid color";

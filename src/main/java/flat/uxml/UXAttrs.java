@@ -456,7 +456,12 @@ public class UXAttrs {
         UXValue[] currentValues = null;
         var currentStyles = getUpdatedStyles();
         for (int i = currentStyles.size() - 1; i >= 0; i--) {
-            UXValue[] values = currentStyles.get(i).get(hash);
+            var style = currentStyles.get(i);
+            if (style.getFlow() != null && !style.getFlow().asBool(theme)) {
+                continue;
+            }
+            
+            UXValue[] values = style.get(hash);
             if (values != null) {
                 currentValues = values;
                 break;

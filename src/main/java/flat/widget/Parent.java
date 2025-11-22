@@ -204,10 +204,7 @@ public abstract class Parent extends Widget {
     protected final void performLayoutUnbounded(float lWidth, float lHeight) {
         for (Widget child : getChildrenIterable()) {
             if (child.getVisibility() == Visibility.GONE) continue;
-            
-            float childWidth = getDefWidth(child) == MATCH_PARENT ? lWidth : getDefWidth(child);
-            float childHeight = getDefHeight(child) == MATCH_PARENT ? lHeight : getDefHeight(child);
-            child.onLayout(childWidth, childHeight);
+            performSingleLayoutUnbounded(lWidth, lHeight, child);
         }
     }
     

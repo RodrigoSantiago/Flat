@@ -71,6 +71,7 @@ public class WL {
     public static native String GetClipboardString();
     public static native void SetClipboardImage(ImageData imageData);
     public static native ImageData GetClipboardImage();
+    public static native void ClearClipboard();
 
     public static native String GetKeyName(int key, int scancode);
     public static native int GetKey(long window, int key);

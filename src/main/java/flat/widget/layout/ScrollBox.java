@@ -179,14 +179,20 @@ public class ScrollBox extends Scrollable {
         if (getOutWidth() <= 0 || getOutHeight() <= 0) return;
 
         graphics.setTransform2D(getTransform());
-        graphics.pushClip(getBackgroundShape());
+        boolean clip = (getTotalDimensionX() * 0.001f < getViewDimensionX()) ||
+                               (getTotalDimensionY() * 0.001f < getViewDimensionY());
+        if (clip) {
+            graphics.pushClip(getBackgroundShape());
+        }
         for (Widget child : getChildrenIterable()) {
             if (child.getVisibility() == Visibility.VISIBLE &&
                     child != getHorizontalBar() && child != getVerticalBar()) {
                 child.onDraw(graphics);
             }
         }
-        graphics.popClip();
+        if (clip) {
+            graphics.popClip();
+        }
 
         if (getHorizontalBar() != null && isHorizontalVisible()) {
             getHorizontalBar().onDraw(graphics);

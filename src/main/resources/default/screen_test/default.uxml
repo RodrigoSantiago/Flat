@@ -3,14 +3,14 @@
         <LinearBox direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
                    padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">
             <Label text="Default" style="subtitle" margin-left="4dp"/>
-            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT">
-                <Button width="MATCH_PARENT" text="Button" style="" on-action="toggleDefault"/>
-                <Button width="MATCH_PARENT" margin-left="16dp" text="Button" style="primary"/>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" rotate="2" margin-bottom="32dp">
+                <Button width="MATCH_PARENT" text="Button" style="" on-action="onAction:string" rotate="2"/>
+                <Button width="MATCH_PARENT" margin-left="16dp" text="Button" style="primary" on-action="onExtra:complex&#10;:string"/>
                 <Button width="MATCH_PARENT" margin-left="16dp" text="Button" style="outlined-primary"/>
                 <Button width="MATCH_PARENT" margin-left="16dp" text="Button" style="text-primary" on-action="press"/>
             </LinearBox>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="16dp">
-                <Button width="MATCH_PARENT" text="Button" style="icon-left" icon="icon(star)"/>
+                <Button width="MATCH_PARENT" text="Button" style="icon-left red-on-small" icon="icon(star)" on-action="toggleVariable"/>
                 <Button width="MATCH_PARENT" margin-left="16dp" text="Button" style="icon-left primary" icon="icon(star)"/>
                 <Button width="MATCH_PARENT" margin-left="16dp" text="Button" style="icon-left outlined-primary" icon="icon(star)"/>
                 <Button width="MATCH_PARENT" margin-left="16dp" text="Button" style="icon-left text-primary" icon="icon(star)"/>
@@ -34,6 +34,10 @@
             </LinearBox>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="16dp">
                 <TextInputField width="MATCH_PARENT" text="Text with emojis &#x1F602; &#x2764; &#x1F60D; &#x1F923; &#x1F60A; &#x1F97A; &#x1F64F; &#x1F495; &#x1F62D; &#x1F618;"/>
+            </LinearBox>
+            <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="16dp">
+                <NumberInputField width="MATCH_PARENT" style=""/>
+                <DecimalInputField width="MATCH_PARENT" direction="VERTICAL" style="" margin-left="16dp" fixed-decimals="true" steps="0.01"/>
             </LinearBox>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="16dp">
                 <Chip text="Filter 1" style="complete-left primary" icon="icon(fill, account_circle)"/>
@@ -88,7 +92,7 @@
                 <RangedSlider style="" start-value="0.15" end-value="0.65" width="MATCH_PARENT"/>
             </LinearBox>
             <LinearBox margin-left="4dp" direction="HORIZONTAL" horizontal-align="LEFT" margin-top="16dp">
-                <Text text="Lorem ipsum dolor sit amet. Quo dolor debitis aut culpa pariatur 33 amet suscipit sed doloremque repudiandae qui sapiente illo! aut ratione quos eos adipisci galisum et illum corrupti! Eum galisum quaerat et illum enim est laborum harum ut soluta voluptatibus.&#10;&#10;Lorem ipsum dolor sit amet. Quo dolor debitis aut culpa pariatur 33 amet suscipit sed doloremque repudiandae qui sapiente illo!"/>
+                <Text height="MATCH_PARENT" text="Lorem ipsum dolor sit amet. Quo dolor debitis aut culpa pariatur 33 amet suscipit sed doloremque repudiandae qui sapiente illo! aut ratione quos eos adipisci galisum et illum corrupti! Eum galisum quaerat et illum enim est laborum harum ut soluta voluptatibus.&#10;&#10;Lorem ipsum dolor sit amet. Quo dolor debitis aut culpa pariatur 33 amet suscipit sed doloremque repudiandae qui sapiente illo!"/>
             </LinearBox>
         </LinearBox>
         <LinearBox direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"

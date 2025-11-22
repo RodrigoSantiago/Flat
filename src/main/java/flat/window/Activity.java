@@ -35,6 +35,7 @@ public class Activity {
     private final ArrayList<Animation> animationsRemove = new ArrayList<>();
     private final ArrayList<Animation> animationsAdded = new ArrayList<>();
     private final ArrayList<Animation> animationsRemoved = new ArrayList<>();
+    private final ArrayList<Widget> focusListener = new ArrayList<>();
     private final ArrayList<Widget> keyListeners = new ArrayList<>();
     private final ArrayList<Widget> pointerFilters = new ArrayList<>();
     private final ArrayList<Widget> keyFilters = new ArrayList<>();
@@ -219,6 +220,10 @@ public class Activity {
         if (animations.contains(animation) && !animationsRemove.contains(animation)) {
             animationsRemove.add(animation);
         }
+    }
+    
+    public boolean isBlockedByDialog() {
+        return getScene().isBlockedByDialog();
     }
 
     public void runLater(FutureTask<?> task) {
@@ -484,6 +489,7 @@ public class Activity {
         keyFilters.removeIf(widget -> widget.getActivity() != this);
         focusables.removeIf(widget -> widget.getActivity() != this);
         keyListeners.removeIf(widget -> widget.getActivity() != this);
+        focusListener.removeIf(widget -> widget.getActivity() != this);
     }
 
     public void addPointerFilter(Widget widget) {
@@ -683,6 +689,27 @@ public class Activity {
         }
         filtersTemp.clear();
     }
+    
+    public void addFocusListener(Widget widget) {
+        if (widget.getActivity() == this && !focusListener.contains(widget)) {
+            focusListener.add(widget);
+        }
+    }
+    
+    public void removeFocusListener(Widget widget) {
+        focusListener.remove(widget);
+    }
+    
+    private void onFocusChanged(FocusEvent event) {
+        filtersTemp.addAll(focusListener);
+        for (int i = focusListener.size() - 1; i >= 0; i--) {
+            var widget = focusListener.get(i);
+            if (widget.getActivity() == this) {
+                widget.fireFocus(event);
+            }
+        }
+        filtersTemp.clear();
+    }
 
     public void setFocus(Widget widget) {
         if ((widget == focus) ||
@@ -702,12 +729,13 @@ public class Activity {
         }
 
         if (oldFocus != null) {
-            oldFocus.fireFocus(new FocusEvent(oldFocus, focus));
+            oldFocus.fireFocus(new FocusEvent(oldFocus, focus, FocusEvent.LOST));
         }
         if (focus != null) {
-            focus.fireFocus(new FocusEvent(focus, focus));
+            focus.fireFocus(new FocusEvent(focus, focus, FocusEvent.OWNED));
         }
         focusAnim = 0;
+        onFocusChanged(new FocusEvent(oldFocus, focus, FocusEvent.OBSERVER));
     }
 
     public void setFocusByKeyboard(Widget widget) {

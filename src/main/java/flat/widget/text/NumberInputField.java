@@ -14,6 +14,7 @@ import flat.uxml.UXAttrs;
 import flat.uxml.UXListener;
 import flat.widget.enums.ImageFilter;
 import flat.widget.text.data.Caret;
+import flat.window.Activity;
 
 public class NumberInputField extends TextField {
 
@@ -326,6 +327,7 @@ public class NumberInputField extends TextField {
         if (!event.isConsumed() && event.getPointerID() == 1 && event.getType() == PointerEvent.PRESSED) {
             int act = getCurrentActionButton(screenToLocal(event.getX(), event.getY()));
             if (act != 0) {
+                setCaretHidden();
                 pressOnAction = act;
                 invalidate(false);
             }
@@ -431,6 +433,19 @@ public class NumberInputField extends TextField {
         setNumber(getNumber() - 1);
         fireActionDecrease();
         fireTextType();
+    }
+    
+    @Override
+    public void requestFocus(boolean focus) {
+        if (isFocusable()) {
+            Activity activity = getActivity();
+            if (activity != null) {
+                activity.runLater(() -> {
+                    setFocused(focus);
+                    if (focus && !isUndefined()) setCaretVisible();
+                });
+            }
+        }
     }
 
     @Override

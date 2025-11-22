@@ -72,7 +72,6 @@ public class Widget {
     private float x, y, centerX, centerY, translateX, translateY, scaleX = 1, scaleY = 1, rotate, elevation;
 
     private final Affine transform = new Affine();
-    private final Affine inverseTransform = new Affine();
     private boolean invalidTransform;
 
     //---------------------
@@ -446,10 +445,12 @@ public class Widget {
     }
 
     protected void invalidateTransform() {
-        for (Widget child : getChildrenIterable()) {
-            child.invalidateTransform();
+        if (!invalidTransform) {
+            for (Widget child : getChildrenIterable()) {
+                child.invalidateTransform();
+            }
+            invalidTransform = true;
         }
-        invalidTransform = true;
     }
 
     protected boolean invalidateChildrenOrder(Widget child) {
@@ -806,6 +807,20 @@ public class Widget {
             applyStyle();
         }
     }
+    
+    public void addStyles(String... styles) {
+        if (styles == null || styles.length == 0) {
+            return;
+        }
+        
+        boolean change = false;
+        for (String style : styles) {
+            change = attrs.addStyleName(style) || change;
+        }
+        if (change) {
+            applyStyle();
+        }
+    }
 
     public void addStyles(List<String> styles) {
         if (styles == null || styles.isEmpty()) {
@@ -819,6 +834,14 @@ public class Widget {
         if (change) {
             applyStyle();
         }
+    }
+    
+    public void setStyles(String... styles) {
+        attrs.cleatStyles();
+        for (String style : styles) {
+            attrs.addStyleName(style);
+        }
+        applyStyle();
     }
 
     public void setStyles(List<String> styles) {
@@ -837,10 +860,10 @@ public class Widget {
     public void setFollowStyleProperty(String name, boolean follow) {
         if (follow) {
             attrs.clearUnfollow(name);
+            applyStyle();
         } else {
             attrs.unfollow(name);
         }
-        applyStyle();
     }
 
     public boolean isFollowStyleProperty(String name) {
@@ -1054,17 +1077,14 @@ public class Widget {
 
     public void screenToLocal(Vector2 point) {
         transform();
-        float x = inverseTransform.pointX(point.x, point.y);
-        float y = inverseTransform.pointY(point.x, point.y);
-        point.x = x;
-        point.y = y;
+        transform.inverseTransform(point);
     }
 
     public boolean contains(float x, float y) {
         transform();
-        float px = inverseTransform.pointX(x, y);
-        float py = inverseTransform.pointY(x, y);
-        return bg.contains(px, py);
+        var p = new Vector2(x, y);
+        transform.inverseTransform(p);
+        return bg.contains(p);
     }
 
     public float getInX() {
@@ -1533,16 +1553,16 @@ public class Widget {
             invalidTransform = false;
             float cx = centerX * bg.width + bg.x + x;
             float cy = centerY * bg.height + bg.y + y;
-            transform.identity()
-                    .translate(cx, cy)
+            transform.identity();
+            
+            if (parent != null) {
+                transform.mul(parent.getTransform()); // multiply
+            }
+            
+            transform.translate(cx, cy)
                     .scale(scaleX, scaleY)
                     .rotate(rotate)
                     .translate(translateX + x - cx, translateY + y - cy);
-
-            if (parent != null) {
-                transform.preMul(parent.getTransform()); // multiply
-            }
-            inverseTransform.set(transform).invert();
         }
     }
 
@@ -1769,8 +1789,10 @@ public class Widget {
                 float h = getOutHeight();
                 ripple.setSize(Math.min(w, h) * 0.5f);
             } else {
-                ix = inverseTransform.pointX(x, y);
-                iy = inverseTransform.pointY(x, y);
+                var p = new Vector2(x, y);
+                transform.inverseTransform(p);
+                ix = p.x;
+                iy = p.y;
                 ripple.setSize(Math.max(getWidth(), getHeight()));
             }
             ripple.fire(ix, iy);
@@ -1859,8 +1881,9 @@ public class Widget {
                 setPressed(false);
                 releaseRipple();
 
-                if (event.getPointerID() == 2 && contextMenu != null) {
+                if (event.getPointerID() == 2 && contextMenu != null && !event.isConsumed()) {
                     pointerMenu(event);
+                    event.consume();
                 }
             }
 

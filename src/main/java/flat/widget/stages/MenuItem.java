@@ -1,6 +1,7 @@
 package flat.widget.stages;
 
 import flat.animations.StateInfo;
+import flat.animations.Timer;
 import flat.events.ActionEvent;
 import flat.events.HoverEvent;
 import flat.graphics.Color;
@@ -198,18 +199,30 @@ public class MenuItem extends Button {
         return getParent() instanceof Menu;
     }
 
+    private Timer timer;
+    
     @Override
     public void hover(HoverEvent event) {
         super.hover(event);
         Activity act = getActivity();
         if (act != null) {
             if (event.getType() == HoverEvent.ENTERED) {
-                if (getContextMenu() != null) {
-                    if (!getContextMenu().isShown()) {
-                        showContextMenu();
-                    }
-                } else {
-                    hideSiblingSubMenu();
+                if (timer == null) {
+                    timer = new Timer(this, 0.25f, () -> {
+                        if (getContextMenu() != null) {
+                            if (!getContextMenu().isShown()) {
+                                showContextMenu();
+                            }
+                        } else {
+                            hideSiblingSubMenu();
+                        }
+                    });
+                }
+                timer.play();
+            }
+            if (event.getType() == HoverEvent.EXITED) {
+                if (timer != null) {
+                    timer.stop();
                 }
             }
         }

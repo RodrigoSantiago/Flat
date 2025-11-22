@@ -2,6 +2,7 @@ package flat.uxml;
 
 import flat.Flat;
 import flat.events.DrawEvent;
+import flat.events.FocusEvent;
 import flat.events.KeyEvent;
 import flat.graphics.Graphics;
 import flat.widget.Widget;
@@ -10,8 +11,10 @@ import flat.window.Application;
 import flat.window.Window;
 
 import java.lang.reflect.*;
+import java.util.regex.Pattern;
 
 public class Controller {
+    private static final Pattern pattern = Pattern.compile("[a-zA-Z_][a-zA-Z_0-9]*:.+", Pattern.MULTILINE);
 
     private Activity activity;
     private Widget root;
@@ -74,8 +77,20 @@ public class Controller {
             Method method = argument == null ? getClass().getMethod(name) : getClass().getMethod(name, argument);
             method.setAccessible(true);
             if (method.isAnnotationPresent(Flat.class)
-                    && Modifier.isPublic(method.getModifiers())
                     && !Modifier.isStatic(method.getModifiers())) {
+                return method;
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+    
+    private Method findMethod(String name, Class<?> argument, Class<?> argumentExtra) {
+        try {
+            Method method = getClass().getMethod(name, argument, argumentExtra);
+            method.setAccessible(true);
+            if (method.isAnnotationPresent(Flat.class)
+                        && !Modifier.isStatic(method.getModifiers())) {
                 return method;
             }
         } catch (Exception ignored) {
@@ -84,12 +99,26 @@ public class Controller {
     }
 
     public <T> UXListener<T> getListenerMethod(String name, Class<T> argument) {
-        Method method = findMethod(name, argument);
-        if (method == null) {
-            method = findMethod(name, null);
-        }
-        if (method != null) {
-            return new ControllerListener<>(this, method);
+        int index = name.indexOf(":");
+        if (index > -1 && pattern.matcher(name).find()) {
+            String extra = name.substring(index + 1);
+            name = name.substring(0, index);
+            
+            var method = findMethod(name, argument, String.class);
+            if (method == null) {
+                method = findMethod(name, String.class);
+            }
+            if (method != null) {
+                return new ControllerListener<>(this, method, extra);
+            }
+        } else {
+            var method = findMethod(name, argument);
+            if (method == null) {
+                method = findMethod(name, null);
+            }
+            if (method != null) {
+                return new ControllerListener<>(this, method, null);
+            }
         }
         return null;
     }

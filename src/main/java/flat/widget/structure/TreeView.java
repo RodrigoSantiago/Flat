@@ -25,7 +25,8 @@ public class TreeView extends RecycleView {
     private ArrayList<TreeItemCell> selection = new ArrayList<>();
     private TreeItemData[] selectionData = new TreeItemData[0];
     private boolean invalidSelection;
-
+    
+    private boolean multiSelectionEnabled = true;
     private boolean dragItemEnabled = true;
     private boolean selfDropItemEnabled = true;
 
@@ -114,6 +115,7 @@ public class TreeView extends RecycleView {
         dragPopup = new Dialog();
         dragPopup.addStyle("tree-view-drag-box");
         dragPopup.build(lbox);
+        dragPopup.setHandleEventsEnabled(false);
 
         dropBox = new LinearBox();
         dropBox.addStyle("tree-view-drop-box");
@@ -127,6 +129,7 @@ public class TreeView extends RecycleView {
         super.applyAttributes(controller);
 
         UXAttrs attrs = getAttrs();
+        setMultiSelectionEnabled(attrs.getAttributeBool("multi-selection-enabled", isMultiSelectionEnabled()));
         setDragItemEnabled(attrs.getAttributeBool("drag-item-enabled", isDragItemEnabled()));
         setSelfDropItemEnabled(attrs.getAttributeBool("self-drop-item-enabled", isSelfDropItemEnabled()));
         setSelectionChangeListener(attrs.getAttributeValueListener("on-selection-change", TreeItemData[].class, controller, getSelectionChangeListener()));
@@ -180,6 +183,11 @@ public class TreeView extends RecycleView {
         if (cell != null && cell.getTopParent() == root) {
             cell.getParent().remove(cell);
         }
+        if (cell != null) {
+            for (var child : cell.getChildren()) {
+                localRemoveItem(child.getData());
+            }
+        }
     }
 
     public void addTreeItem(TreeItemData item, boolean select) {
@@ -221,6 +229,10 @@ public class TreeView extends RecycleView {
         refreshItems();
         fireValueListener();
     }
+    
+    public void removeAllTreeItems() {
+        removeTreeItems(root.getChildren().stream().map(TreeItemCell::getData).toList());
+    }
 
     private void checkNewChild(TreeItemData child) {
         if (cellById.containsKey(child.getId())) {
@@ -260,6 +272,29 @@ public class TreeView extends RecycleView {
         } else {
             selectNewCell(cell, true, false);
         }
+    }
+    
+    public void setSelection(TreeItemCell... cells) {
+        resetSelection();
+        for (var cell : cells) {
+            var itemCell = cellById.get(cell.getData().getId());
+            if (itemCell != null) {
+                select(itemCell, false);
+                select(itemCell, false);
+            }
+        }
+        refreshItems();
+    }
+    
+    public void setSelection(TreeItemData... cells) {
+        resetSelection();
+        for (var cell : cells) {
+            var itemCell = cellById.get(cell.getId());
+            if (itemCell != null) {
+                select(itemCell, false);
+            }
+        }
+        refreshItems();
     }
 
     public void clearSelection() {
@@ -347,7 +382,7 @@ public class TreeView extends RecycleView {
         super.pointer(ev);
 
         if (ev.getSource() == this && ev.getType() == PointerEvent.RELEASED) {
-            clearSelection();
+            // clearSelection();
         }
         if (ev.getSource() instanceof ListItem item && ev.getType() == PointerEvent.PRESSED) {
             if (item.getIndex() >= 0 && item.getIndex() < visibleCells.size()) {
@@ -421,7 +456,20 @@ public class TreeView extends RecycleView {
         }
         return null;
     }
-
+    
+    public boolean isMultiSelectionEnabled() {
+        return multiSelectionEnabled;
+    }
+    
+    public void setMultiSelectionEnabled(boolean multiSelectionEnabled) {
+        if (this.multiSelectionEnabled != multiSelectionEnabled) {
+            this.multiSelectionEnabled = multiSelectionEnabled;
+            if (!multiSelectionEnabled) {
+                clearSelection();
+            }
+        }
+    }
+    
     // ------------------------------
     private void dragOver(Vector2 point) {
         dragPopup.setPrefWidth(getWidth());
@@ -504,7 +552,7 @@ public class TreeView extends RecycleView {
 
         if (rpos.x < getOutX() || rpos.x > getOutX() + getOutWidth()) {
             dropBox.setVisibility(Visibility.GONE);
-            return new TreeDropPos(null, null, 0);
+            return new TreeDropPos(null, null, 0, 0);
         }
 
         var item = findByPosition(0, y, false);
@@ -540,24 +588,25 @@ public class TreeView extends RecycleView {
         } else {
             dropPos = pos.y < ih / 2 ? 0 : 1;
         }
-        return new TreeDropPos(item instanceof ListItem listItem ? listItem : null, cell, dropPos);
+        float realPos = pos.y < ih / 3 ? 0 : pos.y < ih / 3 * 2 ? 0.5f : 1;
+        return new TreeDropPos(item instanceof ListItem listItem ? listItem : null, cell, dropPos, realPos);
     }
 
     private void onCellPointerPressed(TreeItemCell cell, PointerEvent event) {
-        if (event.isShiftDown() && !selection.isEmpty()) {
+        if (isHoldShift(event) && !selection.isEmpty()) {
             selectRangeCell(cell);
         } else {
-            selectNewCell(cell, event.isCtrlDown(), true);
+            selectNewCell(cell, isHoldCtrl(event), true);
         }
         fireValueListener();
     }
 
     private void onCellPointerRequestContext(TreeItemCell cell, PointerEvent event) {
         if (!cell.isSelected()) {
-            if (event.isShiftDown() && !selection.isEmpty()) {
+            if (isHoldShift(event) && !selection.isEmpty()) {
                 selectRangeCell(cell);
             } else {
-                selectNewCell(cell, event.isCtrlDown(), false);
+                selectNewCell(cell, isHoldCtrl(event), false);
             }
         } else {
             // Move to TOP
@@ -565,5 +614,13 @@ public class TreeView extends RecycleView {
             selection.add(cell);
         }
         fireValueListener();
+    }
+    
+    private boolean isHoldCtrl(PointerEvent event) {
+        return multiSelectionEnabled && event.isCtrlDown();
+    }
+    
+    private boolean isHoldShift(PointerEvent event) {
+        return multiSelectionEnabled && event.isShiftDown();
     }
 }

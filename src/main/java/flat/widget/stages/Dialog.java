@@ -239,7 +239,12 @@ public class Dialog extends Stage {
             this.hideTransitionDuration = hideTransitionDuration;
         }
     }
-
+    
+    @Override
+    public boolean isModal() {
+        return isBlockEvents();
+    }
+    
     public boolean isBlockEvents() {
         return blockEvents;
     }

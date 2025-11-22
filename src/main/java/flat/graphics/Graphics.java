@@ -33,6 +33,7 @@ public class Graphics {
     // Custom Draw
     private Shader vertex;
     private Shader fragment;
+    private Shader bakeVertex;
     private Shader bakeFragment;
     private Shader bakeMsFragment;
     private ShaderProgram bakeMsProgram;
@@ -99,6 +100,33 @@ public class Graphics {
         if (!fragment.compile()) {
             throw new FlatException("The default image Fragment Shader fail to compile : " + fragment.getLog());
         }
+        
+        bakeVertex = new Shader(context, ShaderType.Vertex);
+        bakeVertex.setSource(
+                """
+                #version 330 core
+                layout (location = 0) in vec2 iPos;
+                layout (location = 1) in vec2 iTex;
+                uniform mat3x2 transform;
+                uniform vec2 view;
+                uniform vec4 area;
+                uniform vec4 offset;
+                out vec2 oPos;
+                out vec2 oTex;
+                void main() {
+                    vec2 real = vec2(area.x + iPos.x * area.z, area.y + iPos.y * area.w);
+                    real = (transform * vec3(real, 1.0)).xy;
+                    oPos = real;
+                    vec2 tex = (offset.xy + (area.zw * iTex)) / offset.zw;
+                    tex.y = 1 - tex.y;
+                    oTex = tex;
+                	gl_Position = vec4(real.x / view.x * 2 - 1, real.y / view.y * 2 - 1, 0, 1);
+                }
+                """
+        );
+        if (!bakeVertex.compile()) {
+            throw new FlatException("The default image Vertex Shader fail to compile : " + bakeVertex.getLog());
+        }
 
         bakeFragment = new Shader(context, ShaderType.Fragment);
         bakeFragment.setSource(
@@ -130,7 +158,7 @@ public class Graphics {
             throw new FlatException("The default image bake Fragment Shader fail to compile : " + bakeFragment.getLog());
         }
 
-        bakeProgram = new ShaderProgram(context, vertex, bakeFragment);
+        bakeProgram = new ShaderProgram(context, bakeVertex, bakeFragment);
         if (!bakeProgram.link()) {
             throw new FlatException("The default image bake Shader Program fail to link : " + bakeProgram.getLog());
         }
@@ -172,7 +200,7 @@ public class Graphics {
             throw new FlatException("The default image bake Fragment Shader fail to compile : " + bakeMsFragment.getLog());
         }
 
-        bakeMsProgram = new ShaderProgram(context, vertex, bakeMsFragment);
+        bakeMsProgram = new ShaderProgram(context, bakeVertex, bakeMsFragment);
         if (!bakeMsProgram.link()) {
             throw new FlatException("The default image bake Shader Program fail to link : " + bakeMsProgram.getLog());
         }
@@ -214,7 +242,7 @@ public class Graphics {
     }
 
     public void renderToImage(ImageTexture imageTexture) {
-        renderToImage(imageTexture, 0, 0, getWidth(), getHeight());
+        renderToImage(imageTexture, 0, 0, Math.min((int)imageTexture.getWidth(), getWidth()),  Math.min((int)imageTexture.getHeight(), getHeight()));
     }
 
     public void renderToImage(ImageTexture imageTexture, int x, int y, int width, int height) {
@@ -228,30 +256,43 @@ public class Graphics {
 
     public Texture2D renderToTexture(int x, int y, int width, int height) {
         Texture2D texture = new Texture2D(width, height, PixelFormat.RGBA);
-        renderToTexture(texture, 0, 0, width, height);
+        renderToTexture(texture, x, y, width, height);
         return texture;
     }
 
     public void renderToTexture(Texture2D texture) {
-        renderToTexture(texture, 0, 0, getWidth(), getHeight());
+        renderToTexture(texture, 0, 0, Math.min(texture.getWidth(), getWidth()),  Math.min(texture.getHeight(), getHeight()));
+    }
+    
+    public void renderToTexture(Texture2D texture, int x, int y, int width, int height) {
+        renderToTexture(texture, x, y, 0, 0, width, height);
     }
 
-    public void renderToTexture(Texture2D texture, int x, int y, int width, int height) {
+    public void renderToTexture(Texture2D texture, int srcX, int srcY, int dstX, int dstY, int width, int height) {
         if (texture == null) {
             throw new FlatException("Invalid texture argument");
         }
-        if (x < 0 || y < 0 || width <= 0 || height <= 0 || x + width > getWidth() || y + height > getHeight()) {
-            throw new FlatException("The rendered area must be inside the view (0, 0, " + getWidth() + ", " + getHeight() + ")");
-        }
+        
+        srcX = Math.max(0, Math.min(getWidth(), srcX));
+        srcY = Math.max(0, Math.min(getHeight(), srcY));
+        dstX = Math.max(0, Math.min(texture.getWidth(), dstX));
+        dstY = Math.max(0, Math.min(texture.getHeight(), dstY));
+        width = Math.min(width, getWidth() - srcX);
+        width = Math.min(width, texture.getWidth() - dstX);
+        height = Math.min(height, getHeight() - srcY);
+        height = Math.min(height, texture.getHeight() - dstY);
+        
+        if (width <= 0 || height <= 0) return;
+        
         context.softFlush();
         if (surface != null) {
-            surface.renderToTexture(this, x, y, width, height, texture);
+            surface.renderToTexture(this, srcX, srcY, dstX, dstY, width, height, texture);
         } else {
             FrameBuffer fbo = new FrameBuffer(context);
             fbo.attach(LayerTarget.COLOR_0, texture, 0);
             context.blitFrames(null, fbo,
-                    x, getHeight() - (y + height), width, height,
-                    0, height, width, -height, BlitMask.Color, MagFilter.NEAREST);
+                    srcX, getHeight() - (srcY + height), width, height,
+                    dstX, dstY + height, width, -height, BlitMask.Color, MagFilter.NEAREST);
         }
     }
 
@@ -563,6 +604,10 @@ public class Graphics {
         else if (shape instanceof CubicCurve cubic) drawCubicCurve(cubic);
         else context.svgDrawShape(shape, fill, null);
     }
+    
+    public void drawShape(Shape shape, boolean fill, Affine localTransform) {
+        context.svgDrawShape(shape, fill, localTransform);
+    }
 
     public void drawPath(Path path, boolean fill) {
         drawPath(path, fill, null);
@@ -704,7 +749,7 @@ public class Graphics {
     public void drawRoundRectShadow(float x, float y, float width, float height,
                                     float cTop, float cRight, float cBottom, float cLeft, float blur, float alpha) {
         if (discardDraw(x, y, width, height)) return;
-
+        
         Paint paint = context.svgPaint();
         if (blur > Math.max(width, height)) {
             alpha *= Math.max(width, height) / blur;
@@ -871,21 +916,27 @@ public class Graphics {
         context.svgPaint(paint);
     }
 
-    void bakeSurface(int x, int y, TextureMultisample2D texture) {
+    void bakeSurface(int srcX, int srcY, int dstX, int dstY, int width, int height, TextureMultisample2D texture) {
         bakeMsProgram.set("samples", texture.getSamples());
         bakeMsProgram.set("mainTexture", 0);
+        bakeMsProgram.set("offset", new Vector4(srcX, srcY, texture.getWidth(), texture.getHeight()));
+        context.setScissorEnabled(false);
         var comp = getAlphaComposite();
         setAlphaComposite(AlphaComposite.SRC);
-        blitCustomShader(bakeMsProgram, -x, y, texture.getWidth(), texture.getHeight(), texture);
+        blitCustomShader(bakeMsProgram, dstX, dstY, width, height, texture);
         setAlphaComposite(comp);
+        updateScissor();
     }
 
-    void bakeSurface(int x, int y, Texture2D texture) {
+    void bakeSurface(int srcX, int srcY, int dstX, int dstY, int width, int height, Texture2D texture) {
         bakeProgram.set("mainTexture", 0);
+        bakeProgram.set("offset", new Vector4(srcX, srcY, texture.getWidth(), texture.getHeight()));
+        context.setScissorEnabled(false);
         var comp = getAlphaComposite();
         setAlphaComposite(AlphaComposite.SRC);
-        blitCustomShader(bakeProgram, -x, y, texture.getWidth(), texture.getHeight(), texture);
+        blitCustomShader(bakeProgram, dstX, dstY, width, height, texture);
         setAlphaComposite(comp);
+        updateScissor();
     }
 
     public void blitCustomShader(ShaderProgram program, Texture... textures) {
