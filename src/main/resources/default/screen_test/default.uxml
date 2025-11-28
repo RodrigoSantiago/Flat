@@ -30,7 +30,8 @@
                 <TextInputField width="MATCH_PARENT" margin-left="16dp" text="01/01/2025" style="" icon="icon(event)" multiline-enabled="false"/>
             </LinearBox>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="16dp">
-                <TextArea width="MATCH_PARENT" text="Text Area&#10;For Multiline&#10;Comments or Posts" style=""  max-characters="100"/>
+                <!--TextArea width="MATCH_PARENT" text="Text Area&#10;For Multiline&#10;Comments or Posts" style=""  max-characters="100"/-->
+                <TextStyledEditor id="codeEditor" width="MATCH_PARENT" style="" height="200dp"/>
             </LinearBox>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="16dp">
                 <TextInputField width="MATCH_PARENT" text="Text with emojis &#x1F602; &#x2764; &#x1F60D; &#x1F923; &#x1F60A; &#x1F97A; &#x1F64F; &#x1F495; &#x1F62D; &#x1F618;"/>
@@ -91,9 +92,9 @@
                 <Slider style="" value="0.5" width="MATCH_PARENT"/>
                 <RangedSlider style="" start-value="0.15" end-value="0.65" width="MATCH_PARENT"/>
             </LinearBox>
-            <LinearBox margin-left="4dp" direction="HORIZONTAL" horizontal-align="LEFT" margin-top="16dp">
+            <!--LinearBox margin-left="4dp" direction="HORIZONTAL" horizontal-align="LEFT" margin-top="16dp">
                 <Text height="MATCH_PARENT" text="Lorem ipsum dolor sit amet. Quo dolor debitis aut culpa pariatur 33 amet suscipit sed doloremque repudiandae qui sapiente illo! aut ratione quos eos adipisci galisum et illum corrupti! Eum galisum quaerat et illum enim est laborum harum ut soluta voluptatibus.&#10;&#10;Lorem ipsum dolor sit amet. Quo dolor debitis aut culpa pariatur 33 amet suscipit sed doloremque repudiandae qui sapiente illo!"/>
-            </LinearBox>
+            </LinearBox-->
         </LinearBox>
         <LinearBox direction="VERTICAL" horizontal-align="LEFT" width="MATCH_PARENT"
                padding-top="32dp" padding-left="32dp" padding-right="32dp" padding-bottom="32dp">

@@ -13,7 +13,7 @@ import flat.uxml.Controller;
 import flat.uxml.UXAttrs;
 import flat.uxml.UXListener;
 import flat.widget.enums.ImageFilter;
-import flat.widget.text.data.Caret;
+import flat.widget.text.content.Caret;
 import flat.window.Activity;
 
 public class NumberInputField extends TextField {

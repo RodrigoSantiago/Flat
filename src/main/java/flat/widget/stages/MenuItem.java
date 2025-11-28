@@ -16,7 +16,7 @@ import flat.widget.enums.DropdownAlign;
 import flat.widget.enums.HorizontalPosition;
 import flat.widget.enums.ImageFilter;
 import flat.widget.text.Button;
-import flat.widget.text.data.TextBox;
+import flat.widget.text.area.TextBox;
 import flat.window.Activity;
 
 import java.util.Objects;

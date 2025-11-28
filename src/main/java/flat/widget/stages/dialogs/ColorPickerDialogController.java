@@ -104,8 +104,8 @@ public class ColorPickerDialogController extends DefaultDialogController {
         surface = new Surface(w, h, 8);
         preview = new ImageTexture(new byte[w * h * 4], w, h, PixelFormat.RGBA);
         palettePreview.setImage(preview);
-        sliderAlpha.setValue(255);
-        fieldAlpha.setText("255");
+        sliderAlpha.setValue(Color.getAlpha(initialColor));
+        fieldAlpha.setText(Color.getAlpha(initialColor) + "");
         paletteAlpha.setVisibility(alpha ? Visibility.VISIBLE : Visibility.GONE);
         paletteBtns.setVisibility(palette != null ? Visibility.VISIBLE : Visibility.GONE);
         if (palette != null) {

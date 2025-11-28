@@ -10,7 +10,7 @@ import flat.math.shapes.RoundRectangle;
 import flat.math.stroke.BasicStroke;
 import flat.uxml.Controller;
 import flat.uxml.UXAttrs;
-import flat.widget.text.data.TextBox;
+import flat.widget.text.area.TextBox;
 import flat.window.Activity;
 
 import java.util.Objects;

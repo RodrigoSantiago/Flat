@@ -4,15 +4,13 @@ import flat.animations.StateInfo;
 import flat.events.ActionEvent;
 import flat.events.HoverEvent;
 import flat.events.PointerEvent;
-import flat.math.Mathf;
 import flat.math.Vector2;
 import flat.uxml.Controller;
 import flat.uxml.UXAttrs;
 import flat.uxml.UXListener;
 import flat.widget.enums.Direction;
-import flat.widget.text.data.Caret;
+import flat.widget.text.content.Caret;
 import flat.window.Activity;
-import flat.window.Application;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;

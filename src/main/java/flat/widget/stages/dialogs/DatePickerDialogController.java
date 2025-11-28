@@ -200,12 +200,11 @@ class DatePickerDialogController extends DefaultDialogController {
                 labelWeekDay5, labelWeekDay6, labelWeekDay7};
         var theme = dialog.getTheme();
         if (theme != null) {
-            var bundle = theme.getStringBundle();
             for (int i = 0; i < months.length; i++) {
-                months[i] = bundle.get(months[i], months[i]);
+                months[i] = theme.getText(months[i], months[i]);
             }
             for (int i = 0; i < weekdays.length; i++) {
-                weekdays[i] = bundle.get(weekdays[i], weekdays[i]);
+                weekdays[i] = theme.getText(weekdays[i], weekdays[i]);
                 if (weekdays[i].length() > 1) {
                     weekdays[i] = new String(Character.toChars(weekdays[i].codePointAt(0)));
                 }

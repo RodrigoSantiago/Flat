@@ -382,3 +382,38 @@ decimal-input-field.primary {
         background-color : alpha($disabled-color, 0.5);
     }
 }
+
+text-styled-editor : text-styled-editor.default {
+    text-font : font(MONO);
+    text-size : 18sp;
+    cursor : ibeam;
+    focusable : true;
+    focus-width : 2dp;
+    floating-bars : true;
+
+    padding-top : 8dp;
+    padding-bottom : 8dp;
+    padding-left : 8dp;
+    padding-right : 8dp;
+    transition-duration : 0.2;
+}
+
+text-styled-editor.default {
+    text-color : $on-card-color;
+    caret-color : $on-card-color;
+    text-selected-color : $selection-on-card-color;
+    background-color : $card-color-fade;
+    focus-color : $primary-color;
+
+    hovered {
+        background-color : $card-color-hover;
+    }
+    focused {
+        background-color : $card-color-hover;
+    }
+    disabled {
+        background-color : alpha($disabled-color, 0.5);
+        text-color : alpha($on-disabled-color, 0.75);
+        text-selected-color : alpha($on-disabled-color, 0.15);
+    }
+}

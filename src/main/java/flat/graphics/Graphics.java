@@ -709,6 +709,11 @@ public class Graphics {
                 Math.min(textSize * 2, maxHeight))) return;
         context.svgDrawText(x, y, text, offset, length, maxWidth, maxHeight);
     }
+    
+    public void drawTextStyled(float x, float y, Buffer text, int offset, int length, int styleOffset, int[] styles) {
+        if (discardDraw(x, y, length * textSize * 10, textSize * 2)) return;
+        context.svgDrawTextStyled(x, y, text, offset, length, styleOffset, styles);
+    }
 
     public void drawTextVector(float x, float y, float maxWidth, float maxHeight, String text, boolean fill) {
         if (discardDraw(x, y,

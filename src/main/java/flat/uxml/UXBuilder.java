@@ -75,6 +75,7 @@ public class UXBuilder {
         UXBuilder.install("VerticalSplitter", VerticalSplitter::new);
         UXBuilder.install("Canvas", Canvas::new);
         UXBuilder.install("ClipBox", ClipBox::new);
+        UXBuilder.install("TextStyledEditor", TextStyledEditor::new);
         // RichText text + multiple fonts + images + Emoji icons
         // MonoText text + multiple monospaced fonts
         // RawText text + monospaced infinity reading efficiency

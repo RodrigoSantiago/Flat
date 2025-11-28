@@ -38,6 +38,9 @@ public class UXTheme {
     public String getText(String name) {
         return stringBundle == null ? name : stringBundle.get(name, name);
     }
+    public String getText(String name, String fallback) {
+        return stringBundle == null ? fallback : stringBundle.get(name, fallback);
+    }
 
     public UXSheet getSheet() {
         return sheet;

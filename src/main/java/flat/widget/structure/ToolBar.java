@@ -6,7 +6,6 @@ import flat.exception.FlatException;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
 import flat.graphics.symbols.Font;
-import flat.math.Mathf;
 import flat.math.Vector2;
 import flat.uxml.*;
 import flat.widget.Parent;
@@ -18,7 +17,7 @@ import flat.widget.enums.Visibility;
 import flat.widget.stages.Divider;
 import flat.widget.stages.Menu;
 import flat.widget.stages.MenuItem;
-import flat.widget.text.data.TextBox;
+import flat.widget.text.area.TextBox;
 
 import java.util.ArrayList;
 import java.util.Collections;

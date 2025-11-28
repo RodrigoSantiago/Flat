@@ -4,20 +4,16 @@ import flat.Flat;
 import flat.animations.Interpolation;
 import flat.backend.GL;
 import flat.backend.SVG;
-import flat.backend.WL;
 import flat.concurrent.ProgressTask;
 import flat.data.ObservableList;
 import flat.events.*;
 import flat.graphics.Color;
 import flat.graphics.TextVectorRender;
-import flat.graphics.Graphics;
 import flat.graphics.Surface;
-import flat.graphics.context.Texture2D;
 import flat.graphics.context.enums.CycleMethod;
 import flat.graphics.context.enums.PixelFormat;
 import flat.graphics.context.paints.LinearGradient;
 import flat.graphics.context.paints.RadialGradient;
-import flat.graphics.image.ImageData;
 import flat.graphics.symbols.Font;
 import flat.graphics.context.ShaderProgram;
 import flat.graphics.context.enums.AlphaComposite;
@@ -38,9 +34,10 @@ import flat.widget.layout.LinearBox;
 import flat.widget.stages.dialogs.*;
 import flat.widget.structure.*;
 import flat.widget.text.*;
+import flat.widget.text.styled.TextStyle;
+import flat.widget.text.styled.TextStyleBundle;
 import flat.window.Application;
 import flat.window.WindowSettings;
-import main.morph.Morph;
 
 import java.io.File;
 import java.io.IOException;
@@ -713,9 +710,26 @@ public class MainController extends Controller {
         // graphics.setSurface(null);
         
         img = new ImageTexture(imgBase);
+        TextStyleBundle bundle = new TextStyleBundle(new TextStyle(0x000000FF, false, false));
+        var reserved = new TextStyle(0xFF0000FF, false, false);
+        var bold = new TextStyle(0xFF0000FF, true, false);
+        var italic = new TextStyle(0xFF0000FF, false, true);
+        bundle.addWordStyle("ola", reserved);
+        bundle.addWordStyle("mundo", reserved);
+        bundle.addWordStyle("bold", bold);
+        bundle.addWordStyle("italic", italic);
+        bundle.setStringStyle(new TextStyle(0x004000FF, false, false));
+        bundle.setCharsetStyle(new TextStyle(0x00FF00FF, false, false));
+        bundle.setNumberStyle(new TextStyle(0x0000FFFF, false, false));
+        bundle.setHexStyle(new TextStyle(0x4040FFFF, false, false));
+        bundle.setCommentStyle(new TextStyle(0x404040FF, false, true));
+        codeEditor.setTextStyleBundle(bundle);
         
+        codeEditor.setTextFromString("ola mundo\naqui uma \"string\"\naqui um 'char'\num número 123456\nou hex #123456\nbold e italic");
     }
     
+    @Flat
+    TextStyledEditor codeEditor;
     ImageTexture img;
 
     @Flat

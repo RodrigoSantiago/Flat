@@ -58,12 +58,20 @@ public class DatePickerDialogBuilderTest {
         Button cancelButton = mock(Button.class);
         TextInputField textDateIn = mock(TextInputField.class);
         TextInputField textDateOut = mock(TextInputField.class);
+        Label labelWeekDay1 = mock(Label.class);
+        Label labelWeekDay2 = mock(Label.class);
+        Label labelWeekDay3 = mock(Label.class);
+        Label labelWeekDay4 = mock(Label.class);
+        Label labelWeekDay5 = mock(Label.class);
+        Label labelWeekDay6 = mock(Label.class);
+        Label labelWeekDay7 = mock(Label.class);
 
         ResourceStream stream = mock(ResourceStream.class);
         UXNode node = mock(UXNode.class);
         UXBuilder builder = mock(UXBuilder.class);
 
         UXTheme theme = mock(UXTheme.class);
+        when(theme.getText(any(), any())).thenAnswer(a -> a.getArgument(1, String.class));
         mockStatic(UXNode.class);
         when(UXNode.parse(stream)).thenReturn(node);
 
@@ -80,6 +88,13 @@ public class DatePickerDialogBuilderTest {
             controller[0].assign("cancelButton", cancelButton);
             controller[0].assign("textDateIn", textDateIn);
             controller[0].assign("textDateOut", textDateOut);
+            controller[0].assign("labelWeekDay1", labelWeekDay1);
+            controller[0].assign("labelWeekDay2", labelWeekDay2);
+            controller[0].assign("labelWeekDay3", labelWeekDay3);
+            controller[0].assign("labelWeekDay4", labelWeekDay4);
+            controller[0].assign("labelWeekDay5", labelWeekDay5);
+            controller[0].assign("labelWeekDay6", labelWeekDay6);
+            controller[0].assign("labelWeekDay7", labelWeekDay7);
             return root;
         });
 
