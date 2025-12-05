@@ -295,6 +295,7 @@ public class TreeView extends RecycleView {
             }
         }
         refreshItems();
+        fireValueListener();
     }
 
     public void clearSelection() {

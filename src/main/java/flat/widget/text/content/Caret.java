@@ -2,23 +2,25 @@ package flat.widget.text.content;
 
 public class Caret {
 
-    private int lineChar;
+    private int lineOffset;
     private int line;
     private int offset;
-    private float width;
     private int chars;
-
-    public void set(Caret other) {
-        this.setLineChar(other.getLineChar());
-        this.setLine(other.getLine());
-        this.setOffset(other.getOffset());
-        this.setWidth(other.getWidth());
+    private float width;
+    
+    public Caret() {
     }
     
-    public void set(int line, int lineChar, int offset) {
-        this.setLine(line);
-        this.setLineChar(lineChar);
-        this.setOffset(offset);
+    public Caret(Caret copy) {
+        set(copy);
+    }
+    
+    public void set(Caret other) {
+        this.lineOffset = other.lineOffset;
+        this.line = other.line;
+        this.offset = other.offset;
+        this.width = other.width;
+        this.chars = other.chars;
     }
     
     public int getChars() {
@@ -29,8 +31,8 @@ public class Caret {
         this.chars = chars;
     }
     
-    public void setLineChar(int lineChar) {
-        this.lineChar = lineChar;
+    public void setLineOffset(int lineOffset) {
+        this.lineOffset = lineOffset;
     }
     
     public void setLine(int line) {
@@ -45,8 +47,8 @@ public class Caret {
         this.width = width;
     }
     
-    public int getLineChar() {
-        return lineChar;
+    public int getLineOffset() {
+        return lineOffset;
     }
 
     public int getLine() {

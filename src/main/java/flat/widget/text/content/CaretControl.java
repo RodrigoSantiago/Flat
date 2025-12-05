@@ -7,6 +7,37 @@ import java.nio.charset.StandardCharsets;
 public class CaretControl {
     private static final int[] temp = new int[2];
     
+    public static int convertStringOffsetToCharOffset(String string, int offset) {
+        if (offset <= 0) return 0;
+        if (offset >= string.length()) return countChars(string);
+        
+        byte[] bytes = string.getBytes(StandardCharsets.UTF_8);
+        
+        int cpOffset = string.codePointCount(0, offset);
+        temp[0] = 0;
+        temp[1] = 0;
+        while (readNextChar(bytes.length, bytes, temp)) {
+            if (--cpOffset <= 0) {
+                break;
+            }
+        }
+        int byteIndex = temp[1];
+        
+        int count = 0;
+        int index = 0;
+        while (index < byteIndex && index < bytes.length) {
+            count++;
+            index = getNextCharIndex(index, bytes, bytes.length);
+        }
+        return count;
+    }
+    
+    public static int countChars(String string) {
+        byte[] newTextBytes = string.getBytes(StandardCharsets.UTF_8);
+        int len = newTextBytes.length;
+        return CaretControl.countChars(newTextBytes, 0, len);
+    }
+    
     public static int countChars(byte[] arr, int off, int end) {
         temp[0] = 0;
         temp[1] = off;

@@ -347,8 +347,6 @@ public class NumberInputField extends TextField {
         }
         if (pressOnAction == 0) {
             Vector2 point = screenToLocal(event.getX(), event.getY());
-            point.x += getViewOffsetX();
-            point.y += getViewOffsetY();
             textPointer(event, point);
         }
     }

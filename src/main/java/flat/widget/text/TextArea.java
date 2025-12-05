@@ -2,6 +2,7 @@ package flat.widget.text;
 
 import flat.animations.StateInfo;
 import flat.events.*;
+import flat.graphics.Color;
 import flat.graphics.Graphics;
 import flat.graphics.symbols.Font;
 import flat.math.Vector2;
@@ -239,16 +240,18 @@ public class TextArea extends TextEditor {
         float secondX = textBox.getCaretHorizontalOffset(second, horizontalAlign) + xpos;
 
         // Text Selection
-        graphics.setColor(getTextSelectedColor());
-        if (first.getLine() == second.getLine()) {
-            graphics.drawRect(firstX, ypos + first.getLine() * lineH, secondX - firstX, lineH, true);
-        } else {
-            graphics.drawRect(firstX, ypos + first.getLine() * lineH, getTotalDimensionX() - (firstX - x), lineH, true);
-            graphics.drawRect(x, y + second.getLine() * lineH, secondX - x, lineH, true);
-            if (first.getLine() + 1 < second.getLine()) {
-                graphics.drawRect(
-                        x, y + (first.getLine() + 1) * lineH
-                        , getTotalDimensionX(), (second.getLine() - first.getLine() - 1) * lineH, true);
+        if (Color.getAlpha(getTextSelectedColor()) > 0) {
+            graphics.setColor(getTextSelectedColor());
+            if (first.getLine() == second.getLine()) {
+                graphics.drawRect(firstX, ypos + first.getLine() * lineH, secondX - firstX, lineH, true);
+            } else {
+                graphics.drawRect(firstX, ypos + first.getLine() * lineH, getTotalDimensionX() - (firstX - x), lineH, true);
+                graphics.drawRect(x, y + second.getLine() * lineH, secondX - x, lineH, true);
+                if (first.getLine() + 1 < second.getLine()) {
+                    graphics.drawRect(
+                            x, y + (first.getLine() + 1) * lineH
+                            , getTotalDimensionX(), (second.getLine() - first.getLine() - 1) * lineH, true);
+                }
             }
         }
 

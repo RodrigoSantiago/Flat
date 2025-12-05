@@ -18,7 +18,7 @@ text-area : text-area.default {
 text-area.default {
     text-color : $on-card-color;
     caret-color : $on-card-color;
-    text-selected-color : $selection-on-card-color;
+    text-selected-color : transparent;
     background-color : $card-color-fade;
     focus-color : $primary-color;
 
@@ -27,11 +27,12 @@ text-area.default {
     }
     focused {
         background-color : $card-color-hover;
+        text-selected-color : $selection-on-card-color;
     }
     disabled {
         background-color : alpha($disabled-color, 0.5);
         text-color : alpha($on-disabled-color, 0.75);
-        text-selected-color : alpha($on-disabled-color, 0.15);
+        text-selected-color : transparent;
     }
 }
 
@@ -65,7 +66,7 @@ text-field.primary {
     text-hint-color : alpha($on-card-color, 0.5);
     title-color : alpha($on-card-color, 0.75);
     caret-color : $on-card-color;
-    text-selected-color : $selection-on-card-color;
+    text-selected-color : transparent;
     text-divider-color : $disabled-color;
     background-color : $card-color-fade;
     focus-color : $primary-color;
@@ -77,13 +78,14 @@ text-field.primary {
         text-divider-color : $primary-color;
         title-color : $primary-color;
         background-color : $card-color-hover;
+        text-selected-color : $selection-on-card-color;
     }
     disabled {
         caret-color : transparent;
         text-color : alpha($on-disabled-color, 0.75);
         text-hint-color : alpha($on-disabled-color, 0.25);
         title-color :  alpha($on-disabled-color, 0.5);
-        text-selected-color : alpha($on-disabled-color, 0.15);
+        text-selected-color : transparent;
         text-divider-color : $disabled-color;
         background-color : alpha($disabled-color, 0.5);
     }
@@ -129,7 +131,7 @@ text-input-field.primary {
     text-hint-color : alpha($on-card-color, 0.5);
     title-color : alpha($on-card-color, 0.75);
     caret-color : $on-card-color;
-    text-selected-color : $selection-on-card-color;
+    text-selected-color : transparent;
     text-divider-color : $disabled-color;
     background-color : $card-color-fade;
     focus-color : $primary-color;
@@ -141,6 +143,7 @@ text-input-field.primary {
         text-divider-color : $primary-color;
         title-color : $primary-color;
         background-color : $card-color-hover;
+        text-selected-color : $selection-on-card-color;
     }
     undefined {
         action-icon-color : $on-card-color;
@@ -153,7 +156,7 @@ text-input-field.primary {
         title-color :  alpha($on-disabled-color, 0.5);
         icon-color : alpha($on-disabled-color, 0.5);
         action-icon-color : alpha($on-disabled-color, 0.5);
-        text-selected-color : alpha($on-disabled-color, 0.15);
+        text-selected-color : transparent;
         text-divider-color : $disabled-color;
         background-color : alpha($disabled-color, 0.5);
     }
@@ -200,7 +203,7 @@ text-drop-down.primary {
     text-hint-color : alpha($on-card-color, 0.5);
     title-color : alpha($on-card-color, 0.75);
     caret-color : $on-card-color;
-    text-selected-color : $selection-on-card-color;
+    text-selected-color : transparent;
     text-divider-color : $disabled-color;
     background-color : $card-color-fade;
     focus-color : $primary-color;
@@ -213,6 +216,7 @@ text-drop-down.primary {
         text-divider-color : $primary-color;
         title-color : $primary-color;
         background-color : $card-color-hover;
+        text-selected-color : $selection-on-card-color;
     }
     undefined {
         action-icon-color : $on-card-color;
@@ -226,7 +230,7 @@ text-drop-down.primary {
         title-color :  alpha($on-disabled-color, 0.5);
         icon-color : alpha($on-disabled-color, 0.5);
         action-icon-color : alpha($on-disabled-color, 0.5);
-        text-selected-color : alpha($on-disabled-color, 0.15);
+        text-selected-color : transparent;
         text-divider-color : $disabled-color;
         background-color : alpha($disabled-color, 0.5);
     }
@@ -281,7 +285,7 @@ number-input-field.primary {
     text-hint-color : alpha($on-card-color, 0.5);
     title-color : alpha($on-card-color, 0.75);
     caret-color : $on-card-color;
-    text-selected-color : $selection-on-card-color;
+    text-selected-color : transparent;
     text-divider-color : $disabled-color;
     background-color : $card-color-fade;
     focus-color : $primary-color;
@@ -294,6 +298,7 @@ number-input-field.primary {
         text-divider-color : $primary-color;
         title-color : $primary-color;
         background-color : $card-color-hover;
+        text-selected-color : $selection-on-card-color;
     }
     undefined {
         cursor : hand;
@@ -306,7 +311,7 @@ number-input-field.primary {
         title-color :  alpha($on-disabled-color, 0.5);
         icon-color : alpha($on-disabled-color, 0.5);
         action-icon-color : alpha($on-disabled-color, 0.5);
-        text-selected-color : alpha($on-disabled-color, 0.15);
+        text-selected-color : transparent;
         text-divider-color : $disabled-color;
         background-color : alpha($disabled-color, 0.5);
     }
@@ -352,7 +357,7 @@ decimal-input-field.primary {
     text-hint-color : alpha($on-card-color, 0.5);
     title-color : alpha($on-card-color, 0.75);
     caret-color : $on-card-color;
-    text-selected-color : $selection-on-card-color;
+    text-selected-color : transparent;
     text-divider-color : $disabled-color;
     background-color : $card-color-fade;
     focus-color : $primary-color;
@@ -365,6 +370,7 @@ decimal-input-field.primary {
         text-divider-color : $primary-color;
         title-color : $primary-color;
         background-color : $card-color-hover;
+        text-selected-color : $selection-on-card-color;
     }
     undefined {
         cursor : EW_RESIZE;
@@ -377,7 +383,7 @@ decimal-input-field.primary {
         title-color :  alpha($on-disabled-color, 0.5);
         icon-color : alpha($on-disabled-color, 0.5);
         action-icon-color : alpha($on-disabled-color, 0.5);
-        text-selected-color : alpha($on-disabled-color, 0.15);
+        text-selected-color : transparent;
         text-divider-color : $disabled-color;
         background-color : alpha($disabled-color, 0.5);
     }
@@ -391,17 +397,17 @@ text-styled-editor : text-styled-editor.default {
     focus-width : 2dp;
     floating-bars : true;
 
-    padding-top : 8dp;
-    padding-bottom : 8dp;
-    padding-left : 8dp;
-    padding-right : 8dp;
+    padding-top : 0dp;
+    padding-left : 0dp;
+    padding-right : 0dp;
+    padding-bottom : 0dp;
     transition-duration : 0.2;
 }
 
 text-styled-editor.default {
     text-color : $on-card-color;
     caret-color : $on-card-color;
-    text-selected-color : $selection-on-card-color;
+    text-selected-color : transparent;
     background-color : $card-color-fade;
     focus-color : $primary-color;
 
@@ -410,10 +416,18 @@ text-styled-editor.default {
     }
     focused {
         background-color : $card-color-hover;
+        text-selected-color : $selection-on-card-color;
     }
     disabled {
         background-color : alpha($disabled-color, 0.5);
         text-color : alpha($on-disabled-color, 0.75);
-        text-selected-color : alpha($on-disabled-color, 0.15);
+        text-selected-color : transparent;
     }
+}
+
+text-styled-editor-lines {
+    line-number-text-size : 14dp;
+    line-number-width : 64dp;
+    line-number-color : black;
+    selected-line-number-color : red;
 }

@@ -726,6 +726,7 @@ public class MainController extends Controller {
         codeEditor.setTextStyleBundle(bundle);
         
         codeEditor.setTextFromString("ola mundo\naqui uma \"string\"\naqui um 'char'\num número 123456\nou hex #123456\nbold e italic");
+        codeEditor.setLineColor(3, 0x404040FF);
     }
     
     @Flat

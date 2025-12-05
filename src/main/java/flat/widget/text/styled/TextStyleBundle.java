@@ -13,6 +13,7 @@ public class TextStyleBundle {
     
     private HashMap<Character, Integer> charStyle;
     private HashMap<TextWord, Integer> wordStyles;
+    private HashMap<TextWord, Integer> identifierStyles;
     private ArrayList<TextStyle> styles;
     
     public TextStyleBundle(TextStyle defaultStyle) {
@@ -20,6 +21,7 @@ public class TextStyleBundle {
         charStyle = new HashMap<>();
         styles = new ArrayList<>();
         styles.add(defaultStyle);
+        identifierStyles = new HashMap<>();
     }
     
     public TextStyleBundle(TextStyleBundle copy) {
@@ -31,6 +33,7 @@ public class TextStyleBundle {
         this.wordStyles = new HashMap<>(copy.wordStyles);
         this.styles = new ArrayList<>(copy.styles);
         this.charStyle = new HashMap<>(copy.charStyle);
+        this.identifierStyles = new HashMap<>(copy.identifierStyles);
     }
     
     public int findCharStyle(char letter) {
@@ -41,6 +44,12 @@ public class TextStyleBundle {
     
     public int findWordStyle(TextWord search) {
         Integer i = wordStyles.get(search);
+        if (i == null) return 0;
+        return i;
+    }
+    
+    public int findIdentifierStyle(TextWord search) {
+        Integer i = identifierStyles.get(search);
         if (i == null) return 0;
         return i;
     }
@@ -85,6 +94,18 @@ public class TextStyleBundle {
                 styles.add(style);
             }
             wordStyles.put(tk, index);
+        }
+    }
+    
+    public void addIdentifierStyle(String word, TextStyle style) {
+        var tk = new TextWord(word);
+        if (!identifierStyles.containsKey(tk)) {
+            int index = styles.indexOf(style);
+            if (index == -1) {
+                index = styles.size();
+                styles.add(style);
+            }
+            identifierStyles.put(tk, index);
         }
     }
     

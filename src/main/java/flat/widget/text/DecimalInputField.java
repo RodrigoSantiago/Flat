@@ -168,8 +168,6 @@ public class DecimalInputField extends TextInputField {
         }
         if (!pressOnAction) {
             Vector2 point = screenToLocal(event.getX(), event.getY());
-            point.x += getViewOffsetX();
-            point.y += getViewOffsetY();
             textPointer(event, point);
         }
     }

@@ -31,6 +31,8 @@
             </LinearBox>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="16dp">
                 <!--TextArea width="MATCH_PARENT" text="Text Area&#10;For Multiline&#10;Comments or Posts" style=""  max-characters="100"/-->
+
+                <TextStyledEditorLines id="codeEditorLines" target-id="codeEditor" width="64dp" style="" height="200dp"/>
                 <TextStyledEditor id="codeEditor" width="MATCH_PARENT" style="" height="200dp"/>
             </LinearBox>
             <LinearBox direction="HORIZONTAL" horizontal-align="LEFT" margin-top="16dp">

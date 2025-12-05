@@ -475,7 +475,7 @@ public class TextBox implements TextContentController {
 
     public void getCaret(float px, float py, float x, float y, HorizontalAlign align, Caret caretPos) {
         if (byteSize == 0 || font == null) {
-            caretPos.setLineChar(0);
+            caretPos.setLineOffset(0);
             caretPos.setLine(0);
             caretPos.setOffset(0);
             caretPos.setWidth(0);
@@ -491,7 +491,7 @@ public class TextBox implements TextContentController {
             } else {
                 caret = font.getCaretOffset(buffer, 0, byteSize, textSize, 1, px - x, true);
             }
-            caretPos.setLineChar(caret.getIndex());
+            caretPos.setLineOffset(caret.getIndex());
             caretPos.setLine(0);
             caretPos.setOffset(caret.getIndex());
             caretPos.setWidth(caret.getWidth());
@@ -512,7 +512,7 @@ public class TextBox implements TextContentController {
         }
 
         var caret = font.getCaretOffset(buffer, line.start, line.length, textSize, 1, px - xpos, true);
-        caretPos.setLineChar(caret.getIndex());
+        caretPos.setLineOffset(caret.getIndex());
         caretPos.setLine(lineIndex);
         caretPos.setOffset(line.start + caret.getIndex());
         caretPos.setWidth(caret.getWidth());
@@ -539,7 +539,7 @@ public class TextBox implements TextContentController {
 
     private void updateCaret(Caret caret, int offset) {
         if (byteSize == 0 || font == null) {
-            caret.setLineChar(0);
+            caret.setLineOffset(0);
             caret.setLine(0);
             caret.setOffset(0);
             caret.setWidth(0);
@@ -551,13 +551,13 @@ public class TextBox implements TextContentController {
         if (lineCount == 1) {
             if (hidden) {
                 float width = font.getWidth("*", textSize, 1);
-                caret.setLineChar(offset);
+                caret.setLineOffset(offset);
                 caret.setLine(0);
                 caret.setOffset(offset);
                 caret.setWidth(width * offset);
             } else {
                 Font.CaretData newCaret = font.getCaretOffset(buffer, 0, offset, textSize, 1, 9999, true);
-                caret.setLineChar(newCaret.getIndex());
+                caret.setLineOffset(newCaret.getIndex());
                 caret.setLine(0);
                 caret.setOffset(newCaret.getIndex());
                 caret.setWidth(newCaret.getWidth());
@@ -576,7 +576,7 @@ public class TextBox implements TextContentController {
         }
         var line = lines.get(lineIndex);
         var newCaret = font.getCaretOffset(buffer, line.start, offset - line.start, textSize, 1, 9999, true);
-        caret.setLineChar(newCaret.getIndex());
+        caret.setLineOffset(newCaret.getIndex());
         caret.setLine(lineIndex);
         caret.setOffset(line.start + newCaret.getIndex());
         caret.setWidth(newCaret.getWidth());
@@ -683,7 +683,7 @@ public class TextBox implements TextContentController {
     public boolean isCaretLastOfLine(Caret caret) {
         if (lineCount <= 1) return caret.getOffset() >= byteSize;
         if (caret.getLine() >= lineCount) return true;
-        return caret.getLineChar() >= lines.get(caret.getLine()).length;
+        return caret.getLineOffset() >= lines.get(caret.getLine()).length;
     }
 
     private int findLength(byte[] arr, int off, int end, int max) {

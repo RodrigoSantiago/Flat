@@ -12,6 +12,24 @@ public interface TextContentController {
     
     void moveCaretVertical(Caret caret, int jumpLines);
     
+    default void moveCaretHorizontal(Caret caret, int characters) {
+        if (characters > 0) {
+            for (int i = 0; i < characters; i++) {
+                if (isCaretLastOfLine(caret)) {
+                    break;
+                }
+                moveCaretForward(caret);
+            }
+        } else {
+            for (int i = 0; i < -characters; i++) {
+                if (caret.getOffset() == 0) {
+                    break;
+                }
+                moveCaretBackwards(caret);
+            }
+        }
+    }
+    
     void moveCaretLineBegin(Caret caret);
     
     void moveCaretLineEnd(Caret caret);

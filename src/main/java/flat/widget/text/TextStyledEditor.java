@@ -1,41 +1,40 @@
 package flat.widget.text;
 
 import flat.animations.StateInfo;
-import flat.events.ActionEvent;
 import flat.events.PointerEvent;
-import flat.events.TextEvent;
+import flat.events.StyledTextEvent;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
 import flat.graphics.symbols.Font;
 import flat.graphics.symbols.FontManager;
 import flat.graphics.symbols.FontStyle;
 import flat.math.Vector2;
+import flat.math.shapes.Rectangle;
 import flat.math.stroke.BasicStroke;
 import flat.uxml.Controller;
 import flat.uxml.UXAttrs;
 import flat.uxml.UXChildren;
 import flat.uxml.UXListener;
 import flat.widget.text.content.Caret;
-import flat.widget.text.content.CaretControl;
-import flat.widget.text.content.SelectionPos;
 import flat.widget.text.content.SelectionRange;
 import flat.widget.text.styled.TextStyledContent;
 import flat.widget.text.styled.TextStyle;
 import flat.widget.text.styled.TextStyleBundle;
 import flat.widget.value.HorizontalScrollBar;
 import flat.widget.value.VerticalScrollBar;
-import flat.window.Application;
 
 import java.io.InputStream;
+import java.util.Iterator;
 
 public class TextStyledEditor extends TextEditor {
     
     private final TextStyledContent content;
-    private UXListener<ActionEvent> textTypeListener;
-    private UXListener<TextEvent> textInputFilter;
+    private UXListener<StyledTextEvent> textTypeListener;
+    private UXListener<StyledTextEvent> textInputFilter;
     
     private int textCurrentLineColor;
     private boolean editable = true;
+    TextStyledEditorLines plugin;
     
     public TextStyledEditor() {
         content = new TextStyledContent();
@@ -46,14 +45,30 @@ public class TextStyledEditor extends TextEditor {
         textContent = content;
     }
     
+    void setLinePlugin(TextStyledEditorLines plugin) {
+        this.plugin = plugin;
+    }
+    
+    TextStyledEditorLines getLinePlugin() {
+        return this.plugin;
+    }
+    
+    @Override
+    public void invalidate(boolean layout) {
+        super.invalidate(layout);
+        if (plugin != null) {
+            plugin.invalidate(layout);
+        }
+    }
+    
     @Override
     public void applyAttributes(Controller controller) {
         super.applyAttributes(controller);
         UXAttrs attrs = getAttrs();
         
         setEditable(attrs.getAttributeBool("editable", isEditable()));
-        setTextInputFilter(attrs.getAttributeListener("on-text-input-filter", TextEvent.class, controller, getTextInputFilter()));
-        setTextTypeListener(attrs.getAttributeListener("on-text-type", ActionEvent.class, controller, getTextTypeListener()));
+        setTextInputFilter(attrs.getAttributeListener("on-text-input-filter", StyledTextEvent.class, controller, getTextInputFilter()));
+        setTextTypeListener(attrs.getAttributeListener("on-text-type", StyledTextEvent.class, controller, getTextTypeListener()));
         
     }
     
@@ -131,8 +146,6 @@ public class TextStyledEditor extends TextEditor {
     public void pointer(PointerEvent event) {
         super.pointer(event);
         Vector2 point = screenToLocal(event.getX(), event.getY());
-        point.x += getViewOffsetX();
-        point.y += getViewOffsetY();
         textPointer(event, point);
     }
     
@@ -147,7 +160,7 @@ public class TextStyledEditor extends TextEditor {
         if (!isEditable()) return;
         
         // Input Filter
-        var event = filterInputText(start.getLineChar(), 0, text);
+        var event = filterInputText(start.getLine(), start.getChars(), end.getLine(), end.getChars(), text);
         if (event != null) {
             if (event.isConsumed() || event.getText() == null) {
                 return;
@@ -156,13 +169,17 @@ public class TextStyledEditor extends TextEditor {
             }
         }
         
-        content.editText(text, start.getLine(), start.getLineChar(), end.getLine(), end.getLineChar(), startCaret);
+        content.editText(text, start.getLine(), start.getLineOffset(), end.getLine(), end.getLineOffset(), startCaret);
         endCaret.set(startCaret);
         setCaretVisible();
         slideToCaretLater(1);
         invalidate(true);
         
-        fireTextType();
+        fireTextType(start.getLine(), start.getChars(), end.getLine(), end.getChars(), text);
+    }
+    
+    public int getLineCount() {
+        return content.getLineCount();
     }
     
     public void setTextFromString(String text) {
@@ -182,12 +199,45 @@ public class TextStyledEditor extends TextEditor {
         return content.getText(new Caret(), end);
     }
     
-    public String exportSelectedText() {
-        return content.getText(getFirstCaret(), getSecondCaret());
+    public String exportText(int startLine, int endLine) {
+        if (startLine > endLine) {
+            int e = startLine;
+            startLine = endLine;
+            endLine = e;
+        }
+        var start = new Caret();
+        textContent.moveCaretBegin(start);
+        textContent.moveCaretVertical(start, startLine);
+        var end = new Caret();
+        textContent.moveCaretBegin(end);
+        textContent.moveCaretVertical(end, endLine);
+        textContent.moveCaretLineEnd(end);
+        return content.getText(start, end);
     }
     
-    public int getLineCount() {
-        return content.getLineCount();
+    public String exportText(int startLine, int startCharacter, int endLine, int endCharacter) {
+        if (startLine > endLine) {
+            int e = startLine;
+            startLine = endLine;
+            endLine = e;
+        } else if (startLine == endLine && startCharacter > endCharacter) {
+            int e = startCharacter;
+            startCharacter = endCharacter;
+            endCharacter = e;
+        }
+        var start = new Caret();
+        textContent.moveCaretBegin(start);
+        textContent.moveCaretVertical(start, startLine);
+        textContent.moveCaretHorizontal(start, startCharacter);
+        var end = new Caret();
+        textContent.moveCaretBegin(end);
+        textContent.moveCaretVertical(end, endLine);
+        textContent.moveCaretHorizontal(start, endCharacter);
+        return content.getText(start, end);
+    }
+    
+    public String exportSelectedText() {
+        return content.getText(getFirstCaret(), getSecondCaret());
     }
     
     public String exportLineText(int line) {
@@ -218,36 +268,55 @@ public class TextStyledEditor extends TextEditor {
         return content.getText(start, end);
     }
     
-    public int getCurrentCharacterOffset() {
-        return endCaret.getOffset();
-    }
-    
     public SelectionRange getSelectionRange() {
         var first = getFirstCaret();
         var second = getSecondCaret();
-        return new SelectionRange(first.getLine(), first.getOffset(), second.getLine(), second.getOffset());
+        return new SelectionRange(first.getLine(), first.getChars(), second.getLine(), second.getChars());
     }
     
     public String getCurrentLine() {
-        var start = new Caret();
-        start.set(endCaret);
+        var start = new Caret(endCaret);
         content.moveCaretLineBegin(start);
-        var end = new Caret();
-        end.set(endCaret);
+        var end = new Caret(endCaret);
         content.moveCaretLineEnd(end);
         return content.getText(start, end);
     }
     
     public String getCurrentLineSubstring() {
-        return CaretControl.offsetByCodePoints(getCurrentLine(), endCaret.getOffset());
+        var start = new Caret(endCaret);
+        content.moveCaretLineBegin(start);
+        return content.getText(start, endCaret);
     }
     
     public String getCurrentWord() {
-        return "";
+        var start = new Caret(endCaret);
+        content.moveCaretWordBackwards(start);
+        var end = new Caret(endCaret);
+        content.moveCaretWordForward(end);
+        return content.getText(start, end);
+    }
+    
+    public String getCurrentWordSubstring() {
+        var start = new Caret(endCaret);
+        content.moveCaretWordBackwards(start);
+        return content.getText(start, endCaret);
     }
     
     public void setTextStyleBundle(TextStyleBundle bundle) {
         content.setBundle(bundle);
+        invalidate(false);
+    }
+    
+    public void setLineColor(int line, int color) {
+        content.setLineColor(line, color);
+    }
+    
+    public void clearLinesColor() {
+        content.clearLinesColor();
+    }
+    
+    public Iterable<String> iterateLines(int start, int end) {
+        return () -> content.iterateLines(start, end);
     }
     
     @Override
@@ -277,8 +346,14 @@ public class TextStyledEditor extends TextEditor {
         Caret second = getSecondCaret();
         
         float lineH = content.getFontHeight();
-        float firstX = x + first.getOffset() * content.getFontWidth();
-        float secondX = x + second.getOffset() * content.getFontWidth();
+        float firstX = x + first.getChars() * content.getFontWidth();
+        float secondX = x + second.getChars() * content.getFontWidth();
+        
+        // Current Line
+        if (Color.getAlpha(getTextCurrentLineColor()) > 0) {
+            graphics.setColor(getTextCurrentLineColor());
+            graphics.drawRect(x, y + second.getLine() * lineH, getTotalDimensionX(), lineH, true);
+        }
         
         // Text Selection
         graphics.setColor(getTextSelectedColor());
@@ -294,20 +369,15 @@ public class TextStyledEditor extends TextEditor {
             }
         }
         
-        if (Color.getAlpha(getTextCurrentLineColor()) > 0) {
-            graphics.setColor(getTextCurrentLineColor());
-            graphics.drawRect(x, y + second.getLine() * lineH, getTotalDimensionX(), lineH, true);
-        }
-        
         // Text
         graphics.setTextFont(getTextFont());
         graphics.setTextSize(getTextSize());
         graphics.setColor(Color.black);
-        content.drawText(graphics, x, y, width, height);
+        content.drawText(graphics, x, y, width, getOutHeight());
         
         // Caret
         if (isShowCaret() && isEditable()) {
-            float caretX = endCaret.getOffset() * content.getFontWidth();
+            float caretX = endCaret.getChars() * content.getFontWidth();
             if (caretX == 0) {
                 caretX += x + 1;
             } else if (content.isCaretLastOfLine(endCaret)) {
@@ -334,6 +404,14 @@ public class TextStyledEditor extends TextEditor {
         if (getVerticalBar() != null && isVerticalVisible()) {
             getVerticalBar().onDraw(graphics);
         }
+    }
+    
+    public void drawLines(Graphics graphics, TextStyledEditorLines lines, float lx, float ly, float lwidth, float lheight) {
+        float yOff = getViewOffsetY();
+        graphics.pushClip(lines.getBackgroundShape());
+        content.drawLineNumbers(graphics, yOff, lx, ly, lwidth, lheight, lines.getLineNumberTextSize(),
+                lines.getLineNumberColor(), lines.getSelectedLneNumberColor(), endCaret.getLine());
+        graphics.popClip();
     }
     
     @Override
@@ -365,7 +443,7 @@ public class TextStyledEditor extends TextEditor {
         float px = x - getViewOffsetX();
         float py = y - getViewOffsetY();
         
-        float caretX = endCaret.getOffset() * content.getFontWidth() + px;
+        float caretX = endCaret.getChars() * content.getFontWidth() + px;
         float caretY = (endCaret.getLine() + 1) * content.getFontHeight() + py;
         return localToScreen(Math.min(x + width, Math.max(x, caretX)), Math.min(y + height, Math.max(y, caretY)));
     }
@@ -376,19 +454,13 @@ public class TextStyledEditor extends TextEditor {
         showContextMenu(pos.x, pos.y);
     }
     
-    public void slideToCaretLater(float speed) {
-        if (getActivity() != null) {
-            getActivity().runLater(() -> slideToCaret(speed));
-        }
-    }
-    
     @Override
     public Caret getCaretFromPosition(float mx, float my) {
         Vector2 point = new Vector2(mx, my);
-        float x = getInX();
-        float y = getInY();
-        point.x -= x;
-        point.y -= y;
+        point.x += getViewOffsetX();
+        point.y += getViewOffsetY();
+        point.x -= getInX();
+        point.y -= getInY();
         
         Caret caret = new Caret();
         content.getCaret(point.x, point.y, caret);
@@ -396,9 +468,16 @@ public class TextStyledEditor extends TextEditor {
     }
     
     @Override
+    public void slideToCaretLater(float speed) {
+        if (getActivity() != null) {
+            getActivity().runLater(() -> slideToCaret(speed));
+        }
+    }
+    
+    @Override
     public void slideToCaret(float speed) {
         float lineH = content.getFontHeight();
-        float caretX = content.getFontWidth() * endCaret.getOffset();
+        float caretX = content.getFontWidth() * endCaret.getChars();
         float caretYMin = endCaret.getLine() * lineH;
         float caretYMax = (endCaret.getLine() + 1) * lineH;
         float caretY = (caretYMax + caretYMin) * 0.5F;
@@ -427,34 +506,35 @@ public class TextStyledEditor extends TextEditor {
         slideTo(targetX * speed + getViewOffsetX() * (1 - speed), targetY * speed + getViewOffsetY() * (1 - speed));
     }
     
-    public UXListener<TextEvent> getTextInputFilter() {
+    public UXListener<StyledTextEvent> getTextInputFilter() {
         return textInputFilter;
     }
     
-    public void setTextInputFilter(UXListener<TextEvent> textInputFilter) {
+    public void setTextInputFilter(UXListener<StyledTextEvent> textInputFilter) {
         this.textInputFilter = textInputFilter;
     }
     
-    private TextEvent filterInputText(int start, int end, String text) {
+    private StyledTextEvent filterInputText(int startLine, int startChar, int endLine, int endChar, String text) {
         if (textInputFilter != null) {
-            TextEvent event = new TextEvent(this, TextEvent.FILTER, start, end, text);
+            StyledTextEvent event = new StyledTextEvent(this, StyledTextEvent.FILTER, startLine, startChar, endLine, endChar, text);
             UXListener.safeHandle(textInputFilter, event);
             return event;
         }
         return null;
     }
     
-    public UXListener<ActionEvent> getTextTypeListener() {
+    public UXListener<StyledTextEvent> getTextTypeListener() {
         return textTypeListener;
     }
     
-    public void setTextTypeListener(UXListener<ActionEvent> textTypeListener) {
+    public void setTextTypeListener(UXListener<StyledTextEvent> textTypeListener) {
         this.textTypeListener = textTypeListener;
     }
     
-    protected void fireTextType() {
+    protected void fireTextType(int startLine, int startChar, int endLine, int endChar, String text) {
         if (textTypeListener != null) {
-            UXListener.safeHandle(textTypeListener, new ActionEvent(this));
+            StyledTextEvent event = new StyledTextEvent(this, StyledTextEvent.TYPE, startLine, startChar, endLine, endChar, text);
+            UXListener.safeHandle(textTypeListener, event);
         }
     }
     

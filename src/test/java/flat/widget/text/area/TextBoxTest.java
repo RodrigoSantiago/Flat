@@ -459,7 +459,7 @@ public class TextBoxTest {
 
     public void assertCaret(Caret caret, int line, int lineChar, int offset, float width) {
         assertEquals(line, caret.getLine());
-        assertEquals(lineChar, caret.getLineChar());
+        assertEquals(lineChar, caret.getLineOffset());
         assertEquals(offset, caret.getOffset());
         assertEquals(width, caret.getWidth(), 0.001f);
     }

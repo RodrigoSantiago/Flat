@@ -13,6 +13,7 @@ public class TextStyledLine {
     private byte[] textBytes;
     private int size;
     private int capacity;
+    private int color;
     private boolean invalid = true;
     
     public TextStyledLine(TextStyledContent parent, int capacity) {
@@ -47,6 +48,8 @@ public class TextStyledLine {
             int prev = 0;
             int state = 0;
             int style = 0;
+            boolean identifier = false;
+            byte lastCh = '\0';
             byte init = '\0';
             boolean rev = false;
             for (int i = 0; i < size; i ++) {
@@ -55,6 +58,7 @@ public class TextStyledLine {
                     prev = i;
                     if (isChar(ch)) {
                         state = 1;
+                        identifier = lastCh != '.';
                     } else if (ch >= '0' && ch <= '9') {
                         state = 2;
                     } else if (ch == '"' || ch == '\'') {
@@ -72,7 +76,9 @@ public class TextStyledLine {
                     }
                 } else if (state == 1) {
                     if (!isChar(ch) && !(ch >= '0' && ch <= '9')) {
-                        setStyleRange(parent.getBundle().findWordStyle(search.set(textBytes, prev, i)), prev, i);
+                        int s = parent.getBundle().findWordStyle(search.set(textBytes, prev, i));
+                        if (s == 0 && identifier) s = parent.getBundle().findIdentifierStyle(search);
+                        setStyleRange(s, prev, i);
                         state = 0;
                         i--;
                     }
@@ -98,10 +104,13 @@ public class TextStyledLine {
                         i--;
                     }
                 }
+                if (ch != ' ') lastCh = ch;
             }
             
             if (state == 1) {
-                setStyleRange(parent.getBundle().findWordStyle(search.set(textBytes, prev, size)), prev, size);
+                int s = parent.getBundle().findWordStyle(search.set(textBytes, prev, size));
+                if (s == 0 && identifier) s = parent.getBundle().findIdentifierStyle(search);
+                setStyleRange(s, prev, size);
             } else if (state == 2) {
                 setStyleRange(parent.getBundle().getNumberStyle(), prev, size);
             } else if (state == 3) {
@@ -180,7 +189,9 @@ public class TextStyledLine {
     
     public TextStyledLine recycle(TextStyledLine copy, int offset) {
         setLength(0);
+        setColor(0);
         if (copy != null) {
+            color = copy.color;
             ensureCapacity(copy.size - offset);
             if (size >= 0) {
                 System.arraycopy(copy.textBytes, offset, textBytes, 0, size);
@@ -201,7 +212,15 @@ public class TextStyledLine {
         return new String(textBytes, startChar, endChar - startChar, StandardCharsets.UTF_8);
     }
     
-    public int getOffsetLength() {
+    public int getCharsCount() {
         return CaretControl.countChars(textBytes, 0, size);
+    }
+    
+    public void setColor(int color) {
+        this.color = color;
+    }
+    
+    public int getColor() {
+        return color;
     }
 }

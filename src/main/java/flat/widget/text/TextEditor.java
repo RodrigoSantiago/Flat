@@ -62,7 +62,7 @@ public abstract class TextEditor extends Scrollable {
         super.scroll(event);
         if (!event.isConsumed() && isVerticalDimensionScroll()) {
             event.consume();
-            slideVertical(- event.getDeltaY() * 10);
+            slideVertical(- event.getDeltaY() * getScrollSensibility());
         }
     }
     
@@ -144,7 +144,7 @@ public abstract class TextEditor extends Scrollable {
         }
     }
     
-    protected void slideToCaret(float speed) {
+    public void slideToCaret(float speed) {
     
     }
     
@@ -171,7 +171,6 @@ public abstract class TextEditor extends Scrollable {
     public void focus(FocusEvent event) {
         super.focus(event);
         if (!isFocused()) {
-            actionClearSelection();
             setCaretHidden();
         }
     }
@@ -279,12 +278,8 @@ public abstract class TextEditor extends Scrollable {
     
     // -------- Actions --------
     
-    public int getCaretLine() {
-        return endCaret.getLine();
-    }
-    
-    public int getCaretCharacter() {
-        return endCaret.getOffset();
+    public Caret getCaret() {
+        return new Caret(endCaret);
     }
     
     public void setCaretPosition(int line, int character) {
@@ -304,7 +299,6 @@ public abstract class TextEditor extends Scrollable {
         if (!holdSelection) {
             startCaret.set(endCaret);
         }
-        slideToCaret(1);
         if (isFocused()) setCaretVisible();
         invalidate(false);
     }
@@ -326,7 +320,6 @@ public abstract class TextEditor extends Scrollable {
             }
         }
         endCaret.set(startCaret);
-        slideToCaret(1);
         if (isFocused()) setCaretVisible();
         invalidate(false);
     }
@@ -334,7 +327,6 @@ public abstract class TextEditor extends Scrollable {
     public void moveCaretVertical(int lines) {
         textContent.moveCaretVertical(startCaret, lines);
         endCaret.set(startCaret);
-        slideToCaret(1);
         if (isFocused()) setCaretVisible();
         invalidate(false);
     }
