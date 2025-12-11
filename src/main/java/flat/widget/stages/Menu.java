@@ -85,8 +85,8 @@ public class Menu extends Stage {
         super.applyAttributes(controller);
 
         UXAttrs attrs = getAttrs();
-        setViewOffsetListener(attrs.getAttributeValueListener("on-view-offset-change", Float.class, controller));
-        setSlideListener(attrs.getAttributeListener("on-slide", ActionEvent.class, controller));
+        setViewOffsetListener(attrs.getAttributeValueListener("on-view-offset-change", Float.class, controller, getViewOffsetListener()));
+        setSlideListener(attrs.getAttributeListener("on-slide", ActionEvent.class, controller, getSlideListener()));
     }
 
     @Override
@@ -275,7 +275,7 @@ public class Menu extends Stage {
     @Override
     public Widget findByPosition(float x, float y, boolean includeDisabled) {
         if (!isCurrentHandleEventsEnabled()
-                || getVisibility() != Visibility.VISIBLE
+                || getVisibility() == Visibility.GONE
                 || (!includeDisabled && !isEnabled())
                 || (!contains(x, y))) {
             return null;
@@ -651,6 +651,7 @@ public class Menu extends Stage {
             setCenterX(animX);
             setCenterY(animY);
             blockEvents = true;
+            compute(0);
         }
 
         @Override

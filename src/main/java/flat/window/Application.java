@@ -395,7 +395,11 @@ public class Application {
     }
     
     public static void setClipboard(String clipboard) {
-        WL.SetClipboardString(clipboard);
+        if (clipboard == null) {
+            WL.ClearClipboard();
+        } else {
+            WL.SetClipboardString(clipboard);
+        }
     }
     
     public static ImageData getClipboardImage() {
@@ -403,7 +407,15 @@ public class Application {
     }
     
     public static void setClipboardImage(ImageData imageData) {
-        WL.SetClipboardImage(imageData);
+        if (imageData == null) {
+            WL.ClearClipboard();
+        } else {
+            WL.SetClipboardImage(imageData);
+        }
+    }
+    
+    public static void clearClipboard() {
+        WL.ClearClipboard();
     }
     
     public static void handleException(Exception e) {

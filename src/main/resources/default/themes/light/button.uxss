@@ -161,6 +161,31 @@ button.outlined-primary {
     }
 }
 
+button.text-default {
+    shadow-enabled : false;
+    text-color : $on-card-color;
+    icon-color : alpha($on-card-color, 0.75);
+    background-color : transparent;
+    ripple-color : $card-color-press;
+    focus-color : $primary-color;
+
+    hovered {
+        background-color : alpha($card-color-press, 0.2);
+    }
+    pressed {
+        background-color : alpha($card-color-press, 0.5);
+    }
+    activated {
+        background-color : alpha($card-color-press, 0.75);
+    }
+    disabled {
+        text-color : alpha($on-card-color, 0.25);
+        icon-color : alpha($on-card-color, 0.15);
+        shortcut-text-color : alpha($on-card-color, 0.15);
+        submenu-color : alpha($on-card-color, 0.15);
+    }
+}
+
 button.text-primary {
     shadow-enabled : false;
     text-color : $primary-color;

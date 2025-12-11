@@ -1,8 +1,6 @@
 package flat.resources;
 
-import flat.graphics.context.Context;
 import flat.window.Application;
-import flat.window.Window;
 
 public class Dimension {
 
@@ -147,19 +145,19 @@ public class Dimension {
         return super.toString()+"["+size + ":" + density + ":" + orientation+"]";
     }
 
-    public static float dpPx(float dpi, float dp) {
+    public static float dpPx(float dp, float dpi) {
         return (float) Math.ceil(dp * (getDensity(dpi).dpi / 160f));
     }
 
-    public static float pxDp(float dpi, float px) {
+    public static float pxDp(float px, float dpi) {
         return (float) Math.ceil(px / (getDensity(dpi).dpi / 160f));
     }
     
     public static float dpPx(float dp) {
-        return dpPx(Application.getCurrentWindow().getDpi(), dp);
+        return dpPx(dp, Application.getCurrentWindow().getDpi());
     }
     
     public static float pxDp(float px) {
-        return pxDp(Application.getCurrentWindow().getDpi(), px);
+        return pxDp(px, Application.getCurrentWindow().getDpi());
     }
 }

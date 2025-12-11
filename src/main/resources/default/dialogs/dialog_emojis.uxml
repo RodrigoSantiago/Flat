@@ -12,7 +12,7 @@
         <Button id="btnGroup8" style="icon dialog-emojis-group-icon" icon="icon(fill, flag)" on-action="onGroup8Click"/>
     </LinearBox>
     <Divider/>
-    <TextInputField id="searchBar" style="dialog-emojis-search-bar" text-hint="Search Emoji" on-text-change="onTextSearch"/>
+    <TextInputField id="searchBar" style="dialog-emojis-search-bar" text-hint="@Search" on-text-change="onTextSearch"/>
     <Divider/>
     <ScrollBox id="emojiScroll" width="MATCH_PARENT" style="dialog-emoji-scroll">
         <LinearBox direction="horizontal" style="dialog-emoji-grid-area">
@@ -21,6 +21,6 @@
     </ScrollBox>
     <Divider/>
     <LinearBox direction="horizontal" style="dialog-action-area">
-        <Button text="OK" style="text-primary dialog-ok-button" on-action="onOk"/>
+        <Button text="@OK" style="primary dialog-ok-button" on-action="onOk"/>
     </LinearBox>
 </LinearBox>

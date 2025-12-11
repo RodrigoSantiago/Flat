@@ -28,7 +28,7 @@ public class RadioGroup extends Widget {
         super.applyAttributes(controller);
 
         UXAttrs attrs = getAttrs();
-        setSelectedListener(attrs.getAttributeValueListener("on-selected-change", Integer.class, controller));
+        setSelectedListener(attrs.getAttributeValueListener("on-selected-change", Integer.class, controller, getSelectedListener()));
     }
 
     public List<RadioButton> getUnmodifiableRadioButtons() {

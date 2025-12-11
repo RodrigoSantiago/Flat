@@ -4,19 +4,16 @@ import flat.Flat;
 import flat.animations.Interpolation;
 import flat.backend.GL;
 import flat.backend.SVG;
-import flat.backend.WL;
 import flat.concurrent.ProgressTask;
 import flat.data.ObservableList;
 import flat.events.*;
 import flat.graphics.Color;
 import flat.graphics.TextVectorRender;
-import flat.graphics.Graphics;
 import flat.graphics.Surface;
 import flat.graphics.context.enums.CycleMethod;
 import flat.graphics.context.enums.PixelFormat;
 import flat.graphics.context.paints.LinearGradient;
 import flat.graphics.context.paints.RadialGradient;
-import flat.graphics.image.ImageData;
 import flat.graphics.symbols.Font;
 import flat.graphics.context.ShaderProgram;
 import flat.graphics.context.enums.AlphaComposite;
@@ -28,6 +25,7 @@ import flat.math.shapes.Path;
 import flat.math.stroke.BasicStroke;
 import flat.resources.ResourceStream;
 import flat.uxml.Controller;
+import flat.uxml.value.UXValueBool;
 import flat.widget.Parent;
 import flat.widget.Widget;
 import flat.widget.image.ImageView;
@@ -36,6 +34,8 @@ import flat.widget.layout.LinearBox;
 import flat.widget.stages.dialogs.*;
 import flat.widget.structure.*;
 import flat.widget.text.*;
+import flat.widget.text.styled.TextStyle;
+import flat.widget.text.styled.TextStyleBundle;
 import flat.window.Application;
 import flat.window.WindowSettings;
 
@@ -602,10 +602,16 @@ public class MainController extends Controller {
     @Flat
     public void toggleDebugMode() {
         debug = !debug;
-        GL.SetDebug(debug);
+        // GL.SetDebug(debug);
         SVG.SetDebug(debug);
     }
-
+    
+    boolean testIf = false;
+    @Flat
+    public void toggleVariable() {
+        getActivity().setThemeVariable("$test-if", new UXValueBool(testIf = !testIf));
+    }
+    
     float t = 0;
     float av = 0;
 
@@ -614,22 +620,16 @@ public class MainController extends Controller {
             img11, img12, img13, img14, img15, img16, img17;
     private ImageView[] images;
 
-    private boolean mode;
-    private ImageData pasteImageData;
-    private ImageTexture pasteImage;
+    
     @Flat
-    public void toggleDefault(ActionEvent event) {
-        //mode = !mode;
-        //getActivity().setRenderPartialEnabled(mode);
-        //System.out.println(mode);
-        var old = pasteImageData;
-        pasteImageData = WL.GetClipboardImage();
-        if (pasteImageData != null) {
-            pasteImage = new ImageTexture(pasteImageData.getData(), pasteImageData.getWidth(), pasteImageData.getHeight(), pasteImageData.getFormat());
-        }
-        if (old != null) {
-            WL.SetClipboardImage(old);
-        }
+    public void onAction(ActionEvent event, String extra) {
+        System.out.println("Action " + event + " : " + extra);
+    }
+    
+    
+    @Flat
+    public void onExtra(String extra) {
+        System.out.println("Only Extra : " + extra);
     }
 
     private ImageTexture cutTest;
@@ -683,21 +683,6 @@ public class MainController extends Controller {
             graphics.clear(0, 0, 0);
         }
 
-        //graphics.clear(0, 0, 0);
-        //graphics.setTransform2D(null);
-        //graphics.setColor(Color.blue);
-        //graphics.drawRect(0, 0, 64, 64, true);
-        //graphics.setColor(Color.red);
-        //graphics.drawRect(0, 0, 32, 32, true);
-        //graphics.setColor(Color.black);
-        //graphics.setStroke(new BasicStroke(1));
-        //graphics.drawCircle(32, 32, 32, false);
-        //graphics.drawCircle(32, 32, 16, false);
-        //graphics.drawCircle(32, 32, 8, false);
-        //graphics.drawLine(0, 16, 32, 16);
-        //cutTest = graphics.createImageTexture(32, 16, 32, 32, PixelFormat.RGBA);
-        //graphics.setSurface(null);
-
         cutTest = new ImageTexture(new byte[] {(byte)0x00, (byte)0x00, (byte)0x00, (byte)0xFF}, 1, 1, PixelFormat.RGBA);
 
         if (tabChips != null) {
@@ -707,7 +692,46 @@ public class MainController extends Controller {
         if (tabDefault != null) {
             search(tabDefault.getFrame());
         }
+        
+       // Surface surf = new Surface(100, 100, 8);
+       // graphics.setSurface(surf);
+        graphics.setSurface(null);
+        graphics.clear(0, 0, 0);
+        var imgBase = graphics.renderToTexture(0, 0, 100, 100);
+        graphics.setColor(Color.blue);
+        graphics.drawRect(0, 0, 100, 100, true);
+        graphics.setColor(Color.red);
+        graphics.setStroke(new BasicStroke(4));
+        graphics.drawRect(10, 10, 80, 80, false);
+        graphics.setColor(Color.green);
+        graphics.setStroke(new BasicStroke(4));
+        graphics.drawRect(20, 20, 40, 40, false);
+        graphics.renderToTexture(imgBase, 0, 0, 25, 25, 50, 50);
+        // graphics.setSurface(null);
+        
+        img = new ImageTexture(imgBase);
+        TextStyleBundle bundle = new TextStyleBundle(new TextStyle(0x000000FF, false, false));
+        var reserved = new TextStyle(0xFF0000FF, false, false);
+        var bold = new TextStyle(0xFF0000FF, true, false);
+        var italic = new TextStyle(0xFF0000FF, false, true);
+        bundle.addWordStyle("ola", reserved);
+        bundle.addWordStyle("mundo", reserved);
+        bundle.addWordStyle("bold", bold);
+        bundle.addWordStyle("italic", italic);
+        bundle.setStringStyle(new TextStyle(0x004000FF, false, false));
+        bundle.setCharsetStyle(new TextStyle(0x00FF00FF, false, false));
+        bundle.setNumberStyle(new TextStyle(0x0000FFFF, false, false));
+        bundle.setHexStyle(new TextStyle(0x4040FFFF, false, false));
+        bundle.setCommentStyle(new TextStyle(0x404040FF, false, true));
+        codeEditor.setTextStyleBundle(bundle);
+        
+        codeEditor.setTextFromString("ola mundo\naqui uma \"string\"\naqui um 'char'\num número 123456\nou hex #123456\nbold e italic");
+        codeEditor.setLineColor(3, 0x404040FF);
     }
+    
+    @Flat
+    TextStyledEditor codeEditor;
+    ImageTexture img;
 
     @Flat
     public void onTreeViewDrag(DragEvent event) {
@@ -815,11 +839,19 @@ public class MainController extends Controller {
     }
 
     TextVectorRender render = new TextVectorRender(Font.getDefault());
+    
+    @Flat
+    public void press() {
+        tt += 0.1f;
+        if (tt > 1) tt = 0;
+    }
+    float tt;
     float a = 0;
     @Override
     public void onDraw(DrawEvent event) {
         super.onDraw(event);
         var graphics = event.getGraphics();
+        
         a += 1;
         if (a > 360) a = 0;
         if (tabEffects.isSelected()) {
@@ -832,8 +864,6 @@ public class MainController extends Controller {
         } else {
             getActivity().setContinuousRendering(false);
         }
-
-        if (pasteImage != null) graphics.drawImage(pasteImage, 100, 100);
 
         //graphics.setColor(Color.black);
         //graphics.setStroke(new BasicStroke(5, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 1, new float[]{18, 6}, 0));
@@ -871,6 +901,11 @@ public class MainController extends Controller {
             t -= Application.getLoopTime();
             getActivity().repaint();
         }
+        
+        graphics.setColor(Color.black);
+        graphics.setStroke(new BasicStroke(1));
+        graphics.drawRect(100, 100, 100, 100, false);
+        graphics.drawImage(img, 100, 100);
     }
 
     public static void saveImage(ImageTexture imageTexture, String filePath) {

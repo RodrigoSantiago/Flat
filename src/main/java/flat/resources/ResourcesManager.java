@@ -62,42 +62,48 @@ public class ResourcesManager {
 
     public File getFlatLibraryFile() {
         try {
-            String libName = "/flat." + switch(Application.getSystemType()) {
-                case WINDOWS  -> "dll";
-                case MAC -> "dylib";
-                default -> "so";
-            };
-
-            InputStream in = Flat.class.getResourceAsStream(libName);
-            if (in == null) {
-                return null;
+            if (Application.getSystemType() == SystemType.WINDOWS) {
+                extractLibraryFile("libwinpthread-1");
             }
-
-            File temp = new File(Paths.get("").toAbsolutePath().toFile(), libName);
-            if (temp.exists()) {
-                if (!temp.delete()) {
-                    return null;
-                }
-            }
-
-            if (!temp.createNewFile()) {
-                return null;
-            }
-
-            byte[] buffer = new byte[1024];
-            int read;
-            FileOutputStream fos = new FileOutputStream(temp);
-            while ((read = in.read(buffer)) != -1) {
-                fos.write(buffer, 0, read);
-            }
-            fos.close();
-            in.close();
-            temp.deleteOnExit();
-
-            return temp;
+            return extractLibraryFile("flat");
         } catch (Exception e) {
             return null;
         }
+    }
+    
+    private File extractLibraryFile(String name) throws IOException {
+        String libName = "/" + name + "." + switch(Application.getSystemType()) {
+            case WINDOWS  -> "dll";
+            case MAC -> "dylib";
+            default -> "so";
+        };
+        
+        InputStream in = Flat.class.getResourceAsStream(libName);
+        if (in == null) {
+            return null;
+        }
+        
+        File temp = new File(Paths.get("").toAbsolutePath().toFile(), libName);
+        if (temp.exists()) {
+            if (!temp.delete()) {
+                return null;
+            }
+        }
+        
+        if (!temp.createNewFile()) {
+            return null;
+        }
+        
+        byte[] buffer = new byte[1024];
+        int read;
+        FileOutputStream fos = new FileOutputStream(temp);
+        while ((read = in.read(buffer)) != -1) {
+            fos.write(buffer, 0, read);
+        }
+        fos.close();
+        in.close();
+        temp.deleteOnExit();
+        return temp;
     }
 
     public ResourceStream getResource(String value) {

@@ -8,6 +8,6 @@
         <ProgressBar id="progressBar" value="-1" style="split dialog-progress-bar"/>
     </LinearBox>
     <LinearBox direction="horizontal" style="dialog-action-area">
-        <Button id="cancelButton" text="Cancel" style="text-primary dialog-cancel-button" on-action="onRequestCancel"/>
+        <Button id="cancelButton" text="@CANCEL" style="text-primary dialog-cancel-button" on-action="onRequestCancel"/>
     </LinearBox>
 </LinearBox>

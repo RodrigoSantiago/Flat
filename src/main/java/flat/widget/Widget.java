@@ -10,7 +10,6 @@ import flat.graphics.cursor.Cursor;
 import flat.math.Affine;
 import flat.math.Vector2;
 import flat.math.shapes.Path;
-import flat.math.shapes.Rectangle;
 import flat.math.shapes.RoundRectangle;
 import flat.math.stroke.BasicStroke;
 import flat.resources.Dimension;
@@ -73,7 +72,6 @@ public class Widget {
     private float x, y, centerX, centerY, translateX, translateY, scaleX = 1, scaleY = 1, rotate, elevation;
 
     private final Affine transform = new Affine();
-    private final Affine inverseTransform = new Affine();
     private boolean invalidTransform;
 
     //---------------------
@@ -137,13 +135,13 @@ public class Widget {
 
         setEnabled(attrs.getAttributeBool("enabled", isEnabled()));
 
-        setPointerListener(attrs.getAttributeListener("on-pointer", PointerEvent.class, controller));
-        setHoverListener(attrs.getAttributeListener("on-hover", HoverEvent.class, controller));
-        setScrollListener(attrs.getAttributeListener("on-scroll", ScrollEvent.class, controller));
-        setKeyListener(attrs.getAttributeListener("on-key", KeyEvent.class, controller));
-        setDragListener(attrs.getAttributeListener("on-drag", DragEvent.class, controller));
-        setFocusListener(attrs.getAttributeListener("on-focus", FocusEvent.class, controller));
-        setLayoutListener(attrs.getAttributeListener("on-layout", LayoutEvent.class, controller));
+        setPointerListener(attrs.getAttributeListener("on-pointer", PointerEvent.class, controller, getPointerListener()));
+        setHoverListener(attrs.getAttributeListener("on-hover", HoverEvent.class, controller, getHoverListener()));
+        setScrollListener(attrs.getAttributeListener("on-scroll", ScrollEvent.class, controller, getScrollListener()));
+        setKeyListener(attrs.getAttributeListener("on-key", KeyEvent.class, controller, getKeyListener()));
+        setDragListener(attrs.getAttributeListener("on-drag", DragEvent.class, controller, getDragListener()));
+        setFocusListener(attrs.getAttributeListener("on-focus", FocusEvent.class, controller, getFocusListener()));
+        setLayoutListener(attrs.getAttributeListener("on-layout", LayoutEvent.class, controller, getLayoutListener()));
 
         setNextFocusId(attrs.getAttributeString("next-focus-id", getNextFocusId()));
         setPrevFocusId(attrs.getAttributeString("prev-focus-id", getPrevFocusId()));
@@ -233,7 +231,7 @@ public class Widget {
     protected boolean discardDraw(Graphics graphics) {
         if (bg.width <= 0 || bg.height <= 0) return true;
         graphics.setTransform2D(getTransform());
-        float dp32 = Dimension.dpPx(graphics.getDensity(), 32);
+        float dp32 = Dimension.dpPx(32, graphics.getDensity());
         return graphics.discardDraw(bg.x - borderWidth - dp32, bg.y - borderWidth - dp32,
                 bg.width + (borderWidth + dp32) * 2, bg.height + (borderWidth + dp32) * 2);
     }
@@ -447,10 +445,12 @@ public class Widget {
     }
 
     protected void invalidateTransform() {
-        for (Widget child : getChildrenIterable()) {
-            child.invalidateTransform();
+        if (!invalidTransform) {
+            for (Widget child : getChildrenIterable()) {
+                child.invalidateTransform();
+            }
+            invalidTransform = true;
         }
-        invalidTransform = true;
     }
 
     protected boolean invalidateChildrenOrder(Widget child) {
@@ -618,8 +618,8 @@ public class Widget {
             attrs.setTheme(getCurrentTheme());
             if (getActivity() != null) {
                 applyStyle();
-                applyLocalization();
             }
+            applyLocalization();
 
             if (contextMenu != null) {
                 contextMenu.setTheme(getCurrentTheme());
@@ -682,7 +682,7 @@ public class Widget {
 
     public Widget findByPosition(float x, float y, boolean includeDisabled) {
         if (!isCurrentHandleEventsEnabled()
-                || getVisibility() != Visibility.VISIBLE
+                || getVisibility() == Visibility.GONE
                 || (!includeDisabled && !isEnabled())
                 || !contains(x, y)) {
             return null;
@@ -807,6 +807,20 @@ public class Widget {
             applyStyle();
         }
     }
+    
+    public void addStyles(String... styles) {
+        if (styles == null || styles.length == 0) {
+            return;
+        }
+        
+        boolean change = false;
+        for (String style : styles) {
+            change = attrs.addStyleName(style) || change;
+        }
+        if (change) {
+            applyStyle();
+        }
+    }
 
     public void addStyles(List<String> styles) {
         if (styles == null || styles.isEmpty()) {
@@ -820,6 +834,14 @@ public class Widget {
         if (change) {
             applyStyle();
         }
+    }
+    
+    public void setStyles(String... styles) {
+        attrs.cleatStyles();
+        for (String style : styles) {
+            attrs.addStyleName(style);
+        }
+        applyStyle();
     }
 
     public void setStyles(List<String> styles) {
@@ -838,10 +860,10 @@ public class Widget {
     public void setFollowStyleProperty(String name, boolean follow) {
         if (follow) {
             attrs.clearUnfollow(name);
+            applyStyle();
         } else {
             attrs.unfollow(name);
         }
-        applyStyle();
     }
 
     public boolean isFollowStyleProperty(String name) {
@@ -1055,17 +1077,14 @@ public class Widget {
 
     public void screenToLocal(Vector2 point) {
         transform();
-        float x = inverseTransform.pointX(point.x, point.y);
-        float y = inverseTransform.pointY(point.x, point.y);
-        point.x = x;
-        point.y = y;
+        transform.inverseTransform(point);
     }
 
     public boolean contains(float x, float y) {
         transform();
-        float px = inverseTransform.pointX(x, y);
-        float py = inverseTransform.pointY(x, y);
-        return bg.contains(px, py);
+        var p = new Vector2(x, y);
+        transform.inverseTransform(p);
+        return bg.contains(p);
     }
 
     public float getInX() {
@@ -1488,8 +1507,14 @@ public class Widget {
         if (this.visibility != visibility.ordinal()) {
             var old = getVisibility();
             this.visibility = visibility.ordinal();
-
-            invalidate(old == Visibility.GONE || visibility == Visibility.GONE);
+            
+            if (activity != null) {
+                if (parent != null) {
+                    parent.childInvalidate(this, true);
+                } else {
+                    activity.invalidateWidget(this, true);
+                }
+            }
         }
     }
 
@@ -1528,16 +1553,16 @@ public class Widget {
             invalidTransform = false;
             float cx = centerX * bg.width + bg.x + x;
             float cy = centerY * bg.height + bg.y + y;
-            transform.identity()
-                    .translate(cx, cy)
+            transform.identity();
+            
+            if (parent != null) {
+                transform.mul(parent.getTransform()); // multiply
+            }
+            
+            transform.translate(cx, cy)
                     .scale(scaleX, scaleY)
                     .rotate(rotate)
                     .translate(translateX + x - cx, translateY + y - cy);
-
-            if (parent != null) {
-                transform.preMul(parent.getTransform()); // multiply
-            }
-            inverseTransform.set(transform).invert();
         }
     }
 
@@ -1764,8 +1789,10 @@ public class Widget {
                 float h = getOutHeight();
                 ripple.setSize(Math.min(w, h) * 0.5f);
             } else {
-                ix = inverseTransform.pointX(x, y);
-                iy = inverseTransform.pointY(x, y);
+                var p = new Vector2(x, y);
+                transform.inverseTransform(p);
+                ix = p.x;
+                iy = p.y;
                 ripple.setSize(Math.max(getWidth(), getHeight()));
             }
             ripple.fire(ix, iy);
@@ -1854,8 +1881,9 @@ public class Widget {
                 setPressed(false);
                 releaseRipple();
 
-                if (event.getPointerID() == 2 && contextMenu != null) {
+                if (event.getPointerID() == 2 && contextMenu != null && !event.isConsumed()) {
                     pointerMenu(event);
+                    event.consume();
                 }
             }
 

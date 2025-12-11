@@ -1,4 +1,4 @@
-package flat.widget.text.data;
+package flat.widget.text.area;
 
 class Line {
     int start;

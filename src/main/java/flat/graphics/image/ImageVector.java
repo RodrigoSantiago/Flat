@@ -94,12 +94,14 @@ public class ImageVector implements Drawable {
             }
         }
         needClipping = rec != null && !view.contains(rec);
+        optimize = view.width * view.height <= 65536;
     }
 
     public ImageVector(SvgRoot root) {
         this.root = root;
         this.view = root.getView();
         needClipping = !root.getView().contains(root.getBoundingBox());
+        optimize = view.width * view.height <= 65536;
     }
 
     public void optimize() {

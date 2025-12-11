@@ -8,6 +8,7 @@ import flat.graphics.context.Context;
 import flat.graphics.cursor.Cursor;
 import flat.graphics.image.ImageData;
 import flat.graphics.image.ImageTexture;
+import flat.math.Vector2;
 import flat.uxml.UXListener;
 import flat.window.event.EventData;
 import flat.window.event.EventDataPointer;
@@ -410,7 +411,15 @@ public class Window {
         }
         return pointersData.get(0);
     }
-
+    
+    public void setMousePosition(float x, float y) {
+        WL.SetCursorPos(windowId, x, y);
+    }
+    
+    public Vector2 getMousePosition() {
+        return new Vector2((float)WL.GetCursorX(windowId), (float)WL.GetCursorY(windowId));
+    }
+    
     public int getPositionX() {
         checkDisposed();
 

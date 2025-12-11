@@ -1,5 +1,6 @@
 horizontal-splitter {
     width : 6dp;
+    min-width : 6dp;
     height : MATCH_PARENT;
     cursor : EW_RESIZE;
 }
@@ -7,5 +8,6 @@ horizontal-splitter {
 vertical-splitter {
     width : MATCH_PARENT;
     height : 6dp;
-    cursor : NS_WRESIZE;
+    min-height : 6dp;
+    cursor : NS_RESIZE;
 }

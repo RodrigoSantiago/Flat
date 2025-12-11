@@ -44,9 +44,9 @@ public class Checkbox extends Widget {
         }
         setActivated(attrs.getAttributeBool("activated", isActivated()));
         setUndefined(attrs.getAttributeBool("undefined", isUndefined()));
-        setToggleListener(attrs.getAttributeListener("on-toggle", ActionEvent.class, controller));
-        setActivatedListener(attrs.getAttributeValueListener("on-activated-change", Boolean.class, controller));
-        setUndefinedListener(attrs.getAttributeValueListener("on-undefined-change", Boolean.class, controller));
+        setToggleListener(attrs.getAttributeListener("on-toggle", ActionEvent.class, controller, getToggleListener()));
+        setActivatedListener(attrs.getAttributeValueListener("on-activated-change", Boolean.class, controller, getActivatedListener()));
+        setUndefinedListener(attrs.getAttributeValueListener("on-undefined-change", Boolean.class, controller, getUndefinedListener()));
     }
 
     @Override

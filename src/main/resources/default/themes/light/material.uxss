@@ -36,6 +36,12 @@ widget {
 
 }
 
+$test-if : false;
+
+@if $test-if red-on-small {
+    background-color : red;
+}
+
 test {
     center-x : 0.5;
     center-y : 0.5;

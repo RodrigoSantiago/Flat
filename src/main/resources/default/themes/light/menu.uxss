@@ -1,5 +1,5 @@
 menu {
-    width : 200dp;
+    min-width : 200dp;
     shadow-enabled : true;
     elevation : 8dp;
     radius-top : 4dp;
@@ -33,7 +33,7 @@ menu-item : menu-item.default {
 
     text-size : 18sp;
     shortcut-text-size : 12sp;
-    width : match_parent;
+    min-width : 200dp;
     cursor : hand;
     focusable : true;
     focus-width : 2dp;
@@ -63,6 +63,9 @@ menu-item.default {
         background-color : $card-color-hover;
     }
     activated {
+        background-color : $card-color-active;
+    }
+    focused {
         background-color : $card-color-active;
     }
     disabled {

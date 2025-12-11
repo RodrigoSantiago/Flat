@@ -141,6 +141,20 @@ public final class QuadCurve implements Shape, Serializable {
 
         return new Vector2(x, y);
     }
+    
+    public static Vector2 getPointAt(float x1, float y1, float ctrlx, float ctrly, float x2, float y2, float t) {
+        float u = 1 - t;
+        
+        float x = u * u * x1
+                          + 2 * u * t * ctrlx
+                          + t * t * x2;
+        
+        float y = u * u * y1
+                          + 2 * u * t * ctrly
+                          + t * t * y2;
+        
+        return new Vector2(x, y);
+    }
 
     /**
      * Returns a mutable copy of this curve.

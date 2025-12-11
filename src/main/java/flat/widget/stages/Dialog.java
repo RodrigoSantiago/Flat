@@ -179,7 +179,7 @@ public class Dialog extends Stage {
             float avH = getParent().getHeight();
             targetX = Math.max(-getLayoutWidth() / 2f + getMarginRight() + getPaddingRight()
                     , Math.min(avW - getMarginLeft() - getPaddingLeft() - getLayoutWidth() / 2f, targetX));
-            targetY = Math.max(-getLayoutHeight() / 2f + getMarginBottom() + getPaddingBottom()
+            targetY = Math.max(-getMarginTop() - getPaddingTop()
                     , Math.min(avH - getMarginTop() - getPaddingTop() - getLayoutHeight() / 2f, targetY));
         }
     }
@@ -239,7 +239,12 @@ public class Dialog extends Stage {
             this.hideTransitionDuration = hideTransitionDuration;
         }
     }
-
+    
+    @Override
+    public boolean isModal() {
+        return isBlockEvents();
+    }
+    
     public boolean isBlockEvents() {
         return blockEvents;
     }

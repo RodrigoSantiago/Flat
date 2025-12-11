@@ -7,11 +7,13 @@ public class ControllerListener<T> implements UXListener<T> {
     private WeakReference<Controller> controller;
     private Method method;
     private boolean simple;
+    private String extra;
 
-    ControllerListener(Controller controller, Method method) {
+    ControllerListener(Controller controller, Method method, String extra) {
         this.controller = new WeakReference<>(controller);
         this.method = method;
-        simple = (method.getParameterCount() == 0);
+        this.extra = extra;
+        simple = extra == null ? (method.getParameterCount() == 0) : (method.getParameterCount() == 1);
     }
 
     @Override
@@ -24,9 +26,17 @@ public class ControllerListener<T> implements UXListener<T> {
             var obj = controller.get();
             if (obj != null && obj.isListening()) {
                 if (simple) {
-                    method.invoke(obj);
+                    if (extra != null) {
+                        method.invoke(obj, extra);
+                    } else {
+                        method.invoke(obj);
+                    }
                 } else {
-                    method.invoke(obj, event);
+                    if (extra != null) {
+                        method.invoke(obj, event, extra);
+                    } else {
+                        method.invoke(obj, event);
+                    }
                 }
             }  else if (obj == null) {
                 controller = null;

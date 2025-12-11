@@ -10,7 +10,7 @@ import flat.math.shapes.RoundRectangle;
 import flat.math.stroke.BasicStroke;
 import flat.uxml.Controller;
 import flat.uxml.UXAttrs;
-import flat.widget.text.data.TextBox;
+import flat.widget.text.area.TextBox;
 import flat.window.Activity;
 
 import java.util.Objects;
@@ -176,7 +176,7 @@ public class TextField extends TextArea {
     }
 
     protected void onDrawText(Graphics graphics, float x, float y, float width, float height) {
-        if (isTextEmpty() && getTextHint() != null && !getTextHint().isEmpty() && (!hasTitle() || isTitleFloating())) {
+        if (isTextEmpty() && getTextHint() != null && !getTextHint().isEmpty() && (!hasTitle() || isTitleFloating()) && width > 0) {
             graphics.setTransform2D(getTransform());
             x -= getViewOffsetX();
             y -= getViewOffsetY();
@@ -193,7 +193,7 @@ public class TextField extends TextArea {
             graphics.setColor(getTextHintColor());
             int start = Math.max(0, (int) Math.floor((getViewOffsetY() - getInY()) / lineH) - 1);
             int end = start + Math.max(0, (int) Math.ceil(getHeight() / lineH) + 2);
-            hintRender.drawText(graphics, xpos, ypos, width * 9999, height * 9999, getHorizontalAlign(), start, end);
+            hintRender.drawText(graphics, xpos, ypos, width, height * 9999, getHorizontalAlign(), start, end);
         }
         super.onDrawText(graphics, x, y, width, height);
     }

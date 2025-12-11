@@ -92,7 +92,7 @@ public class UXSheet {
 
             // Styles
             for (UXSheetStyle sheetStyle : reader.getStyles()) {
-                UXStyle style = new UXStyle(sheetStyle.getName(), sheetStyle.getParent());
+                UXStyle style = new UXStyle(sheetStyle.getName(), sheetStyle.getParent(), sheetStyle.getFlow());
                 for (var attr : sheetStyle.getAttributes().values()) {
                     style.add(UXHash.getHash(attr.getName()), State.ENABLED, attr.getValue());
                 }

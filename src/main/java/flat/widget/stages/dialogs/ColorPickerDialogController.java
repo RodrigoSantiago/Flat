@@ -104,8 +104,8 @@ public class ColorPickerDialogController extends DefaultDialogController {
         surface = new Surface(w, h, 8);
         preview = new ImageTexture(new byte[w * h * 4], w, h, PixelFormat.RGBA);
         palettePreview.setImage(preview);
-        sliderAlpha.setValue(255);
-        fieldAlpha.setText("255");
+        sliderAlpha.setValue(Color.getAlpha(initialColor));
+        fieldAlpha.setText(Color.getAlpha(initialColor) + "");
         paletteAlpha.setVisibility(alpha ? Visibility.VISIBLE : Visibility.GONE);
         paletteBtns.setVisibility(palette != null ? Visibility.VISIBLE : Visibility.GONE);
         if (palette != null) {
@@ -412,7 +412,7 @@ public class ColorPickerDialogController extends DefaultDialogController {
         int solidColor = Color.setColorAlpha(getCurrentColor(), 255);
 
         Vector2 pos = fromSVToPointer(paletteS, paletteV);
-        float dp_2 = Dimension.dpPx(getActivity().getDensity(), 2);
+        float dp_2 = Dimension.dpPx(2, getActivity().getDensity());
         graphics.setColor(solidColor);
         graphics.drawCircle(pos.x, pos.y, dp_2 * 3, true);
         graphics.setStroke(new BasicStroke(dp_2 + 2));

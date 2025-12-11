@@ -1,7 +1,7 @@
-package flat.widget.text.data;
+package flat.widget.text.area;
 
 import flat.graphics.symbols.Font;
-import flat.widget.enums.HorizontalAlign;
+import flat.widget.text.content.Caret;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -63,10 +63,10 @@ public class TextBoxTest {
         textBox.moveCaretBegin(caret);
         assertCaret(caret, 0, 0, 0, 0);
 
-        textBox.moveCaretFoward(caret);
+        textBox.moveCaretForward(caret);
         assertCaret(caret, 0, 1, 1, 5);
 
-        textBox.moveCaretFoward(caret);
+        textBox.moveCaretForward(caret);
         assertCaret(caret, 0, 1, 1, 5);
 
         textBox.moveCaretBackwards(caret);
@@ -75,19 +75,19 @@ public class TextBoxTest {
         textBox.moveCaretBackwards(caret);
         assertCaret(caret, 0, 0, 0, 0);
 
-        textBox.moveCaretVertical(caret, HorizontalAlign.LEFT, 1);
+        textBox.moveCaretVertical(caret, 1);
         assertCaret(caret, 0, 0, 0, 0);
 
-        textBox.moveCaretVertical(caret, HorizontalAlign.LEFT, -1);
+        textBox.moveCaretVertical(caret, -1);
         assertCaret(caret, 0, 0, 0, 0);
 
-        textBox.moveCaretFoward(caret);
+        textBox.moveCaretForward(caret);
         assertCaret(caret, 0, 1, 1, 5);
 
-        textBox.moveCaretVertical(caret, HorizontalAlign.LEFT, 1);
+        textBox.moveCaretVertical(caret, 1);
         assertCaret(caret, 0, 1, 1, 5);
 
-        textBox.moveCaretVertical(caret, HorizontalAlign.LEFT, -1);
+        textBox.moveCaretVertical(caret, -1);
         assertCaret(caret, 0, 1, 1, 5);
     }
 
@@ -118,10 +118,10 @@ public class TextBoxTest {
         textBox.moveCaretBegin(caret);
         assertCaret(caret, 0, 0, 0, 0);
 
-        textBox.moveCaretFoward(caret);
+        textBox.moveCaretForward(caret);
         assertCaret(caret, 0, 1, 1, 5);
 
-        textBox.moveCaretFoward(caret);
+        textBox.moveCaretForward(caret);
         assertCaret(caret, 0, 2, 2, 10);
 
         textBox.moveCaretBackwards(caret);
@@ -130,46 +130,46 @@ public class TextBoxTest {
         textBox.moveCaretBackwards(caret);
         assertCaret(caret, 0, 0, 0, 0);
 
-        textBox.moveCaretVertical(caret, HorizontalAlign.LEFT, 1);
+        textBox.moveCaretVertical(caret, 1);
         assertCaret(caret, 0, 0, 0, 0);
 
-        textBox.moveCaretVertical(caret, HorizontalAlign.LEFT, -1);
+        textBox.moveCaretVertical(caret, -1);
         assertCaret(caret, 0, 0, 0, 0);
 
-        textBox.moveCaretFoward(caret);
+        textBox.moveCaretForward(caret);
         assertCaret(caret, 0, 1, 1, 5);
 
-        textBox.moveCaretVertical(caret, HorizontalAlign.LEFT, 1);
+        textBox.moveCaretVertical(caret, 1);
         assertCaret(caret, 0, 1, 1, 5);
 
-        textBox.moveCaretVertical(caret, HorizontalAlign.LEFT, -1);
+        textBox.moveCaretVertical(caret, -1);
         assertCaret(caret, 0, 1, 1, 5);
 
-        textBox.moveCaretFoward(caret);
+        textBox.moveCaretForward(caret);
         assertCaret(caret, 0, 2, 2, 10);
 
-        textBox.moveCaretVertical(caret, HorizontalAlign.LEFT, 1);
+        textBox.moveCaretVertical(caret, 1);
         assertCaret(caret, 0, 2, 2, 10);
 
-        textBox.moveCaretVertical(caret, HorizontalAlign.LEFT, -1);
+        textBox.moveCaretVertical(caret, -1);
         assertCaret(caret, 0, 2, 2, 10);
 
-        textBox.moveCaretFoward(caret);
+        textBox.moveCaretForward(caret);
         assertCaret(caret, 0, 3, 3, 15);
 
-        textBox.moveCaretVertical(caret, HorizontalAlign.LEFT, 1);
+        textBox.moveCaretVertical(caret, 1);
         assertCaret(caret, 0, 3, 3, 15);
 
-        textBox.moveCaretVertical(caret, HorizontalAlign.LEFT, -1);
+        textBox.moveCaretVertical(caret, -1);
         assertCaret(caret, 0, 3, 3, 15);
 
         textBox.moveCaretBegin(caret);
         assertCaret(caret, 0, 0, 0, 0);
 
-        textBox.moveCaretFowardsLine(caret);
+        textBox.moveCaretLineEnd(caret);
         assertCaret(caret, 0, 3, 3, 15);
 
-        textBox.moveCaretBackwardsLine(caret);
+        textBox.moveCaretLineBegin(caret);
         assertCaret(caret, 0, 0, 0, 0);
     }
 
@@ -205,10 +205,10 @@ public class TextBoxTest {
         textBox.moveCaretBegin(caret);
         assertCaret(caret, 0, 0, 0, 0);
 
-        textBox.moveCaretFoward(caret);
+        textBox.moveCaretForward(caret);
         assertCaret(caret, 0, 1, 1, 5);
 
-        textBox.moveCaretFoward(caret);
+        textBox.moveCaretForward(caret);
         assertCaret(caret, 0, 2, 2, 10);
 
         textBox.moveCaretBackwards(caret);
@@ -217,52 +217,52 @@ public class TextBoxTest {
         textBox.moveCaretBackwards(caret);
         assertCaret(caret, 0, 0, 0, 0);
 
-        textBox.moveCaretVertical(caret, HorizontalAlign.LEFT, 1);
+        textBox.moveCaretVertical(caret, 1);
         assertCaret(caret, 1, 0, 3, 0);
 
-        textBox.moveCaretVertical(caret, HorizontalAlign.LEFT, -1);
+        textBox.moveCaretVertical(caret, -1);
         assertCaret(caret, 0, 0, 0, 0);
 
-        textBox.moveCaretFoward(caret);
+        textBox.moveCaretForward(caret);
         assertCaret(caret, 0, 1, 1, 5);
 
-        textBox.moveCaretVertical(caret, HorizontalAlign.LEFT, 1);
+        textBox.moveCaretVertical(caret, 1);
         assertCaret(caret, 1, 1, 4, 5);
 
-        textBox.moveCaretVertical(caret, HorizontalAlign.LEFT, -1);
+        textBox.moveCaretVertical(caret, -1);
         assertCaret(caret, 0, 1, 1, 5);
 
-        textBox.moveCaretFoward(caret);
+        textBox.moveCaretForward(caret);
         assertCaret(caret, 0, 2, 2, 10);
 
-        textBox.moveCaretVertical(caret, HorizontalAlign.LEFT, 1);
+        textBox.moveCaretVertical(caret, 1);
         assertCaret(caret, 1, 2, 5, 10);
 
-        textBox.moveCaretVertical(caret, HorizontalAlign.LEFT, -1);
+        textBox.moveCaretVertical(caret, -1);
         assertCaret(caret, 0, 2, 2, 10);
 
-        textBox.moveCaretBackwardsLine(caret);
+        textBox.moveCaretLineBegin(caret);
         assertCaret(caret, 0, 0, 0, 0);
 
-        textBox.moveCaretFowardsLine(caret);
+        textBox.moveCaretLineEnd(caret);
         assertCaret(caret, 0, 2, 2, 10);
 
-        textBox.moveCaretVertical(caret, HorizontalAlign.LEFT, 1);
+        textBox.moveCaretVertical(caret, 1);
         assertCaret(caret, 1, 2, 5, 10);
 
-        textBox.moveCaretBackwardsLine(caret);
+        textBox.moveCaretLineBegin(caret);
         assertCaret(caret, 1, 0, 3, 0);
 
-        textBox.moveCaretFowardsLine(caret);
+        textBox.moveCaretLineEnd(caret);
         assertCaret(caret, 1, 2, 5, 10);
 
-        textBox.moveCaretBackwardsLine(caret);
+        textBox.moveCaretLineBegin(caret);
         assertCaret(caret, 1, 0, 3, 0);
 
         textBox.moveCaretBackwards(caret);
         assertCaret(caret, 0, 2, 2, 10);
 
-        textBox.moveCaretFoward(caret);
+        textBox.moveCaretForward(caret);
         assertCaret(caret, 1, 0, 3, 0);
     }
 
@@ -313,7 +313,7 @@ public class TextBoxTest {
         when(font.getWidth(any(), eq(3), eq(2), anyFloat(), anyFloat())).thenReturn(10.0f);
 
         caretB.set(caretA);
-        textBox.moveCaretFoward(caretB);
+        textBox.moveCaretForward(caretB);
         assertCaret(caretB, 0, 2, 2, 10);
 
         textBox.editText(caretA, caretB, "B\n", caretA);
@@ -349,11 +349,11 @@ public class TextBoxTest {
 
         Caret caretA = new Caret();
         Caret caretB = new Caret();
-        textBox.moveCaretFoward(caretA);
-        textBox.moveCaretFoward(caretB);
-        textBox.moveCaretFoward(caretB);
-        textBox.moveCaretFoward(caretB);
-        textBox.moveCaretFoward(caretB);
+        textBox.moveCaretForward(caretA);
+        textBox.moveCaretForward(caretB);
+        textBox.moveCaretForward(caretB);
+        textBox.moveCaretForward(caretB);
+        textBox.moveCaretForward(caretB);
         assertEquals("B\nC", textBox.getText(caretA, caretB));
     }
 
@@ -425,25 +425,25 @@ public class TextBoxTest {
         textBox.moveCaretBegin(caret);
         assertCaret(caret, 0, 0, 0, 0);
 
-        textBox.moveCaretFoward(caret);
+        textBox.moveCaretForward(caret);
         assertCaret(caret, 0, 1, 1, 5);
 
-        textBox.moveCaretFoward(caret);
+        textBox.moveCaretForward(caret);
         assertCaret(caret, 0, 2, 2, 10);
 
-        textBox.moveCaretFoward(caret);
+        textBox.moveCaretForward(caret);
         assertCaret(caret, 1, 0, 3, 0);
 
-        textBox.moveCaretFoward(caret);
+        textBox.moveCaretForward(caret);
         assertCaret(caret, 1, 1, 4, 5);
 
-        textBox.moveCaretFoward(caret);
+        textBox.moveCaretForward(caret);
         assertCaret(caret, 1, 2, 5, 10);
 
-        textBox.moveCaretFoward(caret);
+        textBox.moveCaretForward(caret);
         assertCaret(caret, 2, 0, 6, 0);
 
-        textBox.moveCaretFoward(caret);
+        textBox.moveCaretForward(caret);
         assertCaret(caret, 3, 0, 7, 0);
     }
 
@@ -459,7 +459,7 @@ public class TextBoxTest {
 
     public void assertCaret(Caret caret, int line, int lineChar, int offset, float width) {
         assertEquals(line, caret.getLine());
-        assertEquals(lineChar, caret.getLineChar());
+        assertEquals(lineChar, caret.getLineOffset());
         assertEquals(offset, caret.getOffset());
         assertEquals(width, caret.getWidth(), 0.001f);
     }

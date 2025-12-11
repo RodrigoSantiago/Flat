@@ -65,6 +65,7 @@ public class UXBuilder {
         UXBuilder.install("TextDropDown", TextDropDown::new);
         UXBuilder.install("TextArea", TextArea::new);
         UXBuilder.install("NumberInputField", NumberInputField::new);
+        UXBuilder.install("DecimalInputField", DecimalInputField::new);
         UXBuilder.install("ToolBar", ToolBar::new);
         UXBuilder.install("ToolItem", ToolItem::new);
         UXBuilder.install("Grid", Grid::new);
@@ -73,6 +74,9 @@ public class UXBuilder {
         UXBuilder.install("HorizontalSplitter", HorizontalSplitter::new);
         UXBuilder.install("VerticalSplitter", VerticalSplitter::new);
         UXBuilder.install("Canvas", Canvas::new);
+        UXBuilder.install("ClipBox", ClipBox::new);
+        UXBuilder.install("TextStyledEditor", TextStyledEditor::new);
+        UXBuilder.install("TextStyledEditorLines", TextStyledEditorLines::new);
         // RichText text + multiple fonts + images + Emoji icons
         // MonoText text + multiple monospaced fonts
         // RawText text + monospaced infinity reading efficiency

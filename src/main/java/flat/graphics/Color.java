@@ -68,6 +68,35 @@ public final class Color {
         float brightness = Mathf.sqrt(0.299f * r * r + 0.587f * g * g + 0.114f * b * b);
         return Math.max(0, Math.min(1, gamma(brightness) * a));
     }
+    
+    public static int fromHex(String hex) {
+        int color = 0;
+        try {
+            if (hex.length() <= 6) {
+                color = ((int) Long.parseLong(hex, 16) << 8) | 0xFF;
+            } else {
+                color = (int) Long.parseLong(hex, 16);
+            }
+        } catch (Exception ignored) {
+        }
+        return color;
+    }
+    
+    public static String toHex(int color) {
+        if (getAlpha(color) < 255) {
+            StringBuilder hex = new StringBuilder(Long.toHexString(color & 0xFFFFFFFFL));
+            while (hex.length() < 8) {
+                hex.insert(0, "0");
+            }
+            return hex.toString();
+        } else {
+            StringBuilder hex = new StringBuilder(Long.toHexString((color >> 8) & 0xFFFFFF));
+            while (hex.length() < 6) {
+                hex.insert(0, "0");
+            }
+            return hex.toString();
+        }
+    }
 
     public static int rgbToColor(int red, int green, int blue) {
         return rgbaToColor(red, green, blue, 255);

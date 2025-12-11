@@ -6,6 +6,7 @@ import flat.uxml.UXAttrs;
 import flat.widget.Group;
 import flat.widget.Widget;
 import flat.widget.enums.Direction;
+import flat.widget.enums.Visibility;
 
 public abstract class Splitter extends Widget {
 
@@ -36,7 +37,7 @@ public abstract class Splitter extends Widget {
         }
         setInverse(attrs.getAttributeBool("inverse", isInverse()));
     }
-
+    
     @Override
     public void pointer(PointerEvent event) {
         super.pointer(event);
@@ -55,16 +56,32 @@ public abstract class Splitter extends Widget {
             grabSplit = false;
         }
         if (grabSplit && event.getType() == PointerEvent.DRAGGED) {
-            this.target.setFollowStyleProperty("width", false);
             float m = isInverse() ? -1 : 1;
             if (getDirection() == Direction.HORIZONTAL) {
-                target.setPrefWidth(grabP + (event.getX() - grabV) * m);
+                this.target.setFollowStyleProperty("width", false);
+                target.setPrefWidth(Math.max(1, grabP + (event.getX() - grabV) * m));
             } else {
-                target.setPrefHeight(grabP + (event.getY() - grabV) * m);
+                this.target.setFollowStyleProperty("height", false);
+                target.setPrefHeight(Math.max(1, grabP + (event.getY() - grabV) * m));
             }
         }
     }
-
+    
+    @Override
+    public void setVisibility(Visibility visibility) {
+        if (visibility != getVisibility()) {
+            super.setVisibility(visibility);
+            if (target == null) return;
+            if (getVisibility() == Visibility.GONE) {
+                if (getDirection() == Direction.HORIZONTAL) {
+                    this.target.setFollowStyleProperty("width", true);
+                } else {
+                    this.target.setFollowStyleProperty("height", true);
+                }
+            }
+        }
+    }
+    
     public void setTarget(Widget target) {
         if (this.target != target) {
             grabSplit = false;

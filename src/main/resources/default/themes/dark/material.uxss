@@ -24,7 +24,7 @@ $surface-color : #212121;
 
 // Disabled Colors (Bg + Details)
 $disabled-color : #181818FF;
-$on-disabled-color : #484848FF;
+$on-disabled-color : #686868FF;
 $disabled-color-low : #181818FF;      // Only for Chips
 $on-disabled-color-low : #303030FF;   // Only for Chips
 

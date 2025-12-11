@@ -57,12 +57,12 @@ public class RangedSlider extends Widget {
         setRangeLimits(attrs.getAttributeNumber("min-value", getMinValue()), attrs.getAttributeNumber("max-value", getMaxValue()));
         setSteps(attrs.getAttributeNumber("steps", getSteps()));
         setValue(attrs.getAttributeNumber("start-value", getStartValue()), attrs.getAttributeNumber("end-value", getEndValue()));
-        setStartSlideListener(attrs.getAttributeListener("on-start-slide", SlideEvent.class, controller));
-        setStartSlideFilter(attrs.getAttributeListener("on-start-slide-filter", SlideEvent.class, controller));
-        setStartValueListener(attrs.getAttributeValueListener("on-start-value-change", Float.class, controller));
-        setEndSlideListener(attrs.getAttributeListener("on-end-slide", SlideEvent.class, controller));
-        setEndSlideFilter(attrs.getAttributeListener("on-end-slide-filter", SlideEvent.class, controller));
-        setEndValueListener(attrs.getAttributeValueListener("on-end-value-change", Float.class, controller));
+        setStartSlideListener(attrs.getAttributeListener("on-start-slide", SlideEvent.class, controller, getStartSlideListener()));
+        setStartSlideFilter(attrs.getAttributeListener("on-start-slide-filter", SlideEvent.class, controller, getStartSlideFilter()));
+        setStartValueListener(attrs.getAttributeValueListener("on-start-value-change", Float.class, controller, getStartValueListener()));
+        setEndSlideListener(attrs.getAttributeListener("on-end-slide", SlideEvent.class, controller, getEndSlideListener()));
+        setEndSlideFilter(attrs.getAttributeListener("on-end-slide-filter", SlideEvent.class, controller, getEndSlideFilter()));
+        setEndValueListener(attrs.getAttributeValueListener("on-end-value-change", Float.class, controller, getEndValueListener()));
     }
 
     @Override

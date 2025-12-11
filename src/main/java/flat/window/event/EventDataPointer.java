@@ -72,7 +72,7 @@ public class EventDataPointer {
     }
 
     boolean performPressedFilter(Activity activity, int button, Widget widget) {
-        PointerEvent event = new PointerEvent(widget, window, PointerEvent.FILTER, button, x, y, clickCount);
+        PointerEvent event = new PointerEvent(widget, window, PointerEvent.FILTER, button, x, y, x, y, clickCount);
         activity.onPointerFilter(event);
         return !event.isConsumed();
     }
@@ -89,7 +89,7 @@ public class EventDataPointer {
             }
             lastPressed = pressed;
             lastPress = now;
-            var event = new PointerEvent(pressed, window, PointerEvent.PRESSED, button, x, y, clickCount);
+            var event = new PointerEvent(pressed, window, PointerEvent.PRESSED, button, x, y, x, y, clickCount);
             pressed.firePointer(event);
             if (!event.isFocusConsumed()) {
                 window.getActivity().setFocus(null);
@@ -106,7 +106,8 @@ public class EventDataPointer {
 
     void performReleased(Window window, Widget released, int button) {
         if (released != null) {
-            PointerEvent event = new PointerEvent(released, window, PointerEvent.RELEASED, button, x, y, clickCount);
+            PointerEvent event = new PointerEvent(released, window, PointerEvent.RELEASED, button,
+                    x, y, pressX, pressY, clickCount);
             released.firePointer(event);
         } else {
             window.getActivity().setFocus(null);
@@ -242,7 +243,8 @@ public class EventDataPointer {
 
     private void requestCancelDrag() {
         setDragHover(null);
-        DragEvent cancelEvent = new DragEvent(dragHandler, window, DragEvent.DONE, dragData, x, y, pressX, pressY, dragHandler, null);
+        DragEvent cancelEvent = new DragEvent(dragHandler, window, DragEvent.DONE, dragData,
+                x, y, pressX, pressY, dragHandler, null);
         cancelEvent.cancel();
         dragHandler.fireDrag(cancelEvent);
         setDragCanceled();
@@ -250,7 +252,8 @@ public class EventDataPointer {
 
     void performPointerDrag() {
         if (pressed != null) {
-            pressed.firePointer(new PointerEvent(pressed, window, PointerEvent.DRAGGED, pressedButton, x, y, clickCount));
+            pressed.firePointer(new PointerEvent(pressed, window, PointerEvent.DRAGGED, pressedButton,
+                    x, y, pressX, pressY, clickCount));
         }
     }
 
@@ -309,7 +312,8 @@ public class EventDataPointer {
                     x, y, pasPressX, pasPressY, pastDragHandler, null));
         }
         if (pastPressed != null) {
-            pastPressed.firePointer(new PointerEvent(pastPressed, window, PointerEvent.RELEASED, pastPressedButton, x, y, passClickCount));
+            pastPressed.firePointer(new PointerEvent(pastPressed, window, PointerEvent.RELEASED, pastPressedButton,
+                    x, y, pasPressX, pasPressY, passClickCount));
         }
         if (pastHover != null) {
             pastHover.fireHover(new HoverEvent(pastHover, HoverEvent.EXITED, x, y));

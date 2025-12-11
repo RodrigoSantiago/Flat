@@ -1,9 +1,11 @@
-package flat.widget.text.data;
+package flat.widget.text.area;
 
 import flat.graphics.Graphics;
 import flat.graphics.symbols.Font;
-import flat.graphics.emojis.EmojiManager;
 import flat.widget.enums.HorizontalAlign;
+import flat.widget.text.content.Caret;
+import flat.widget.text.content.CaretControl;
+import flat.widget.text.content.TextContentController;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -11,7 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class TextBox {
+public class TextBox implements TextContentController {
 
     private Font font;
     private float textSize;
@@ -34,7 +36,16 @@ public class TextBox {
 
     private boolean hidden;
     private String hiddenChars;
-
+    private HorizontalAlign align;
+    
+    public void setAlign(HorizontalAlign align) {
+        this.align = align;
+    }
+    
+    public HorizontalAlign getAlign() {
+        return align;
+    }
+    
     public String getHiddenChars() {
         if (hiddenChars == null || hiddenChars.length() != getTotalCharacters()) {
             hiddenChars = "*".repeat(getTotalCharacters());
@@ -104,8 +115,8 @@ public class TextBox {
     }
 
     public String getText(Caret caretStart, Caret caretEnd) {
-        byte[] bytes = new byte[caretEnd.offset - caretStart.offset];
-        System.arraycopy(textBytes, caretStart.offset, bytes, 0, bytes.length);
+        byte[] bytes = new byte[caretEnd.getOffset() - caretStart.getOffset()];
+        System.arraycopy(textBytes, caretStart.getOffset(), bytes, 0, bytes.length);
         return new String(bytes);
     }
 
@@ -117,7 +128,7 @@ public class TextBox {
         } else {
             byte[] newTextBytes = text.getBytes(StandardCharsets.UTF_8);
             int len = newTextBytes.length;
-            totalCharacters = countChars(newTextBytes, 0, len);
+            totalCharacters = CaretControl.countChars(newTextBytes, 0, len);
             if (maxCharacters > 0 && totalCharacters > maxCharacters) {
                 len = findLength(newTextBytes, 0, len, maxCharacters);
                 totalCharacters = maxCharacters;
@@ -145,19 +156,25 @@ public class TextBox {
 
     public boolean editText(Caret caretStart, Caret caretEnd, String replace, Caret newCaret) {
         byte[] replaceBytes = replace.getBytes(StandardCharsets.UTF_8);
-        int start = caretStart.offset;
-        int length = caretEnd.offset - start;
+        int start = caretStart.getOffset();
+        int length = caretEnd.getOffset() - start;
         int end = start + length;
 
         if (length == 0 && replaceBytes.length == 0) {
             return false;
         }
 
-        int newCharacters = countChars(replaceBytes, 0, replaceBytes.length);
-        int oldCharacters = countChars(textBytes, start, end);
+        int newCharacters = CaretControl.countChars(replaceBytes, 0, replaceBytes.length);
+        int oldCharacters = CaretControl.countChars(textBytes, start, end);
 
         if (maxCharacters > 0 && totalCharacters - oldCharacters + newCharacters > maxCharacters) {
-            return false;
+            int l = findLength(replaceBytes, 0, replaceBytes.length, maxCharacters - (totalCharacters - oldCharacters));
+            if (l == 0) {
+                return false;
+            } else {
+                replaceBytes = Arrays.copyOf(replaceBytes, l);
+                newCharacters = CaretControl.countChars(replaceBytes, 0, replaceBytes.length);
+            }
         }
 
         int newSize = byteSize - length + replaceBytes.length;
@@ -452,16 +469,16 @@ public class TextBox {
     }
 
     public void getCaret(Caret caretPos) {
-        caretPos.line = 0;
-        updateCaret(caretPos, caretPos.offset);
+        caretPos.setLine(0);
+        updateCaret(caretPos, caretPos.getOffset());
     }
 
     public void getCaret(float px, float py, float x, float y, HorizontalAlign align, Caret caretPos) {
         if (byteSize == 0 || font == null) {
-            caretPos.lineChar = 0;
-            caretPos.line = 0;
-            caretPos.offset = 0;
-            caretPos.width = 0;
+            caretPos.setLineOffset(0);
+            caretPos.setLine(0);
+            caretPos.setOffset(0);
+            caretPos.setWidth(0);
             return;
         }
 
@@ -474,10 +491,10 @@ public class TextBox {
             } else {
                 caret = font.getCaretOffset(buffer, 0, byteSize, textSize, 1, px - x, true);
             }
-            caretPos.lineChar = caret.getIndex();
-            caretPos.line = 0;
-            caretPos.offset = caret.getIndex();
-            caretPos.width = caret.getWidth();
+            caretPos.setLineOffset(caret.getIndex());
+            caretPos.setLine(0);
+            caretPos.setOffset(caret.getIndex());
+            caretPos.setWidth(caret.getWidth());
             return;
         }
 
@@ -495,10 +512,10 @@ public class TextBox {
         }
 
         var caret = font.getCaretOffset(buffer, line.start, line.length, textSize, 1, px - xpos, true);
-        caretPos.lineChar = caret.getIndex();
-        caretPos.line = lineIndex;
-        caretPos.offset = line.start + caret.getIndex();
-        caretPos.width = caret.getWidth();
+        caretPos.setLineOffset(caret.getIndex());
+        caretPos.setLine(lineIndex);
+        caretPos.setOffset(line.start + caret.getIndex());
+        caretPos.setWidth(caret.getWidth());
     }
 
     public float getCaretHorizontalOffset(Caret caret, HorizontalAlign align) {
@@ -508,7 +525,7 @@ public class TextBox {
 
         float localWidth = getTextWidth();
 
-        float w = lineCount == 1 ? localWidth : lines.get(caret.line).width;
+        float w = lineCount == 1 ? localWidth : lines.get(caret.getLine()).width;
 
         float xpos = 0;
         if (align == HorizontalAlign.RIGHT) {
@@ -517,15 +534,15 @@ public class TextBox {
             xpos = Math.max(0, localWidth - w) * 0.5f;
         }
 
-        return caret.width + xpos;
+        return caret.getWidth() + xpos;
     }
 
     private void updateCaret(Caret caret, int offset) {
         if (byteSize == 0 || font == null) {
-            caret.lineChar = 0;
-            caret.line = 0;
-            caret.offset = 0;
-            caret.width = 0;
+            caret.setLineOffset(0);
+            caret.setLine(0);
+            caret.setOffset(0);
+            caret.setWidth(0);
             return;
         }
 
@@ -534,21 +551,21 @@ public class TextBox {
         if (lineCount == 1) {
             if (hidden) {
                 float width = font.getWidth("*", textSize, 1);
-                caret.lineChar = offset;
-                caret.line = 0;
-                caret.offset = offset;
-                caret.width = width * offset;
+                caret.setLineOffset(offset);
+                caret.setLine(0);
+                caret.setOffset(offset);
+                caret.setWidth(width * offset);
             } else {
                 Font.CaretData newCaret = font.getCaretOffset(buffer, 0, offset, textSize, 1, 9999, true);
-                caret.lineChar = newCaret.getIndex();
-                caret.line = 0;
-                caret.offset = newCaret.getIndex();
-                caret.width = newCaret.getWidth();
+                caret.setLineOffset(newCaret.getIndex());
+                caret.setLine(0);
+                caret.setOffset(newCaret.getIndex());
+                caret.setWidth(newCaret.getWidth());
             }
             return;
         }
 
-        int startLine = Math.max(0, caret.line + Math.min(0, offset - caret.offset));
+        int startLine = Math.max(0, caret.getLine() + Math.min(0, offset - caret.getOffset()));
         int lineIndex = lineCount - 1;
         for (int i = startLine; i < lineCount; i++) {
             var line = lines.get(i);
@@ -559,75 +576,114 @@ public class TextBox {
         }
         var line = lines.get(lineIndex);
         var newCaret = font.getCaretOffset(buffer, line.start, offset - line.start, textSize, 1, 9999, true);
-        caret.lineChar = newCaret.getIndex();
-        caret.line = lineIndex;
-        caret.offset = line.start + newCaret.getIndex();
-        caret.width = newCaret.getWidth();
+        caret.setLineOffset(newCaret.getIndex());
+        caret.setLine(lineIndex);
+        caret.setOffset(line.start + newCaret.getIndex());
+        caret.setWidth(newCaret.getWidth());
     }
-
+    
+    @Override
     public void moveCaretBegin(Caret caret) {
-        if (caret.offset == 0) return;
+        if (caret.getOffset() == 0) return;
 
         int offset = 0;
         updateCaret(caret, offset);
     }
-
+    
+    @Override
     public void moveCaretEnd(Caret caret) {
-        if (caret.offset == byteSize) return;
+        if (caret.getOffset() == byteSize) return;
 
         int offset = byteSize;
         updateCaret(caret, offset);
     }
-
+    
+    @Override
+    public void moveCaretWordForward(Caret caret) {
+        int len = lineCount == 1 ? byteSize : lines.get(caret.getLine()).start + lines.get(caret.getLine()).length;
+        int offset = caret.getOffset();
+        int prevIndex = offset;
+        while (offset < len) {
+            offset = CaretControl.getNextCharIndex(offset, textBytes, byteSize);
+            String cp = new String(textBytes, prevIndex, offset - prevIndex);
+            if (cp.isEmpty() || (!Character.isLetterOrDigit(cp.codePointAt(0)) && !"_#".contains(cp))) {
+                break;
+            }
+            prevIndex = offset;
+        }
+        updateCaret(caret, prevIndex);
+    }
+    
+    @Override
+    public void moveCaretWordBackwards(Caret caret) {
+        var line = lineCount == 1 ? 0 : lines.get(caret.getLine()).start;
+        int offset = caret.getOffset();
+        int prevIndex = offset;
+        while (offset > line) {
+            offset = CaretControl.getPrevCharIndex(offset, textBytes, byteSize);
+            String cp = new String(textBytes, offset, prevIndex - offset);
+            if (cp.isEmpty() || (!Character.isLetterOrDigit(cp.codePointAt(0)) && !"_#".contains(cp))) {
+                break;
+            }
+            prevIndex = offset;
+        }
+        updateCaret(caret, prevIndex);
+    }
+    
+    @Override
     public void moveCaretBackwards(Caret caret) {
-        if (caret.offset == 0) return;
+        if (caret.getOffset() == 0) return;
 
-        int offset = getPrevCharIndex(caret.offset);
+        int offset = CaretControl.getPrevCharIndex(caret.getOffset(), textBytes, byteSize);
         updateCaret(caret, offset);
     }
+    
+    @Override
+    public void moveCaretForward(Caret caret) {
+        if (caret.getOffset() == byteSize) return;
 
-    public void moveCaretFoward(Caret caret) {
-        if (caret.offset == byteSize) return;
-
-        int offset = getNextCharIndex(caret.offset);
+        int offset = CaretControl.getNextCharIndex(caret.getOffset(), textBytes, byteSize);
         updateCaret(caret, offset);
     }
-
-    public void moveCaretVertical(Caret caret, HorizontalAlign align, int lines) {
+    
+    @Override
+    public void moveCaretVertical(Caret caret, int lines) {
         float px = getCaretHorizontalOffset(caret, align);
-        float py = (caret.line + 0.5f + lines) * (font == null ? textSize : font.getHeight(textSize));
+        float py = (caret.getLine() + 0.5f + lines) * (font == null ? textSize : font.getHeight(textSize));
         getCaret(px, py, 0, 0, align, caret);
     }
 
-    public void moveCaretBackwardsLine(Caret caret) {
-        if (caret.offset == 0) return;
+    @Override
+    public void moveCaretLineBegin(Caret caret) {
+        if (caret.getOffset() == 0) return;
 
-        int offset = lineCount == 1 ? 0 : lines.get(caret.line).start;
+        int offset = lineCount == 1 ? 0 : lines.get(caret.getLine()).start;
         updateCaret(caret, offset);
     }
 
     public void moveCaret(Caret caret, int by) {
-        int offset = Math.min(byteSize, Math.max(0, caret.offset + by));
+        int offset = Math.min(byteSize, Math.max(0, caret.getOffset() + by));
         updateCaret(caret, offset);
     }
-
-    public void moveCaretFowardsLine(Caret caret) {
-        if (caret.offset == byteSize) return;
+    
+    @Override
+    public void moveCaretLineEnd(Caret caret) {
+        if (caret.getOffset() == byteSize) return;
 
         int offset;
         if (lineCount == 1) {
             offset = byteSize;
         } else {
-            var line = lines.get(caret.line);
+            var line = lines.get(caret.getLine());
             offset = line.start + line.length;
         }
         updateCaret(caret, offset);
     }
 
     public boolean isCaretLastOfLine(Caret caret) {
-        if (lineCount <= 1) return caret.offset >= byteSize;
-        if (caret.line >= lineCount) return true;
-        return caret.lineChar >= lines.get(caret.line).length;
+        if (lineCount <= 1) return caret.getOffset() >= byteSize;
+        if (caret.getLine() >= lineCount) return true;
+        return caret.getLineOffset() >= lines.get(caret.getLine()).length;
     }
 
     private int findLength(byte[] arr, int off, int end, int max) {
@@ -653,48 +709,7 @@ public class TextBox {
     public int getCharCount(String str) {
         byte[] newTextBytes = str.getBytes(StandardCharsets.UTF_8);
         int len = newTextBytes.length;
-        return countChars(newTextBytes, 0, len);
-    }
-
-    private int countChars(byte[] arr, int off, int end) {
-        temp[0] = 0;
-        temp[1] = off;
-        int count = 0;
-        while (temp[1] < end) {
-            count++;
-            readNextUnicode(end, arr, temp);
-        }
-        return count;
-    }
-
-    private int getNextCharIndex(int currentIndex) {
-        if (currentIndex < 0 || currentIndex >= byteSize) {
-            throw new IndexOutOfBoundsException("Invalid currentIndex");
-        }
-        temp[0] = 0;
-        temp[1] = currentIndex;
-        readNextUnicode(byteSize, textBytes, temp);
-        return temp[1];
-    }
-
-    private int getPrevCharIndex(int currentIndex) {
-        if (currentIndex <= 0 || currentIndex > byteSize) {
-            throw new IndexOutOfBoundsException("Invalid currentIndex");
-        }
-
-        int pos = currentIndex;
-        for (int i = 0; i < 7; i++) {
-            pos = readPrevChar(pos);
-        }
-
-        int err = 10;
-        temp[0] = 0;
-        temp[1] = pos;
-        while (temp[1] < currentIndex && err-- > 0) {
-            pos = temp[1];
-            readNextUnicode(byteSize, textBytes, temp);
-        }
-        return pos;
+        return CaretControl.countChars(newTextBytes, 0, len);
     }
 
     private int getUtf8ByteCount(int byteValue) {
@@ -706,101 +721,6 @@ public class TextBox {
             return 4;
         }
         return 1;
-    }
-
-    int[] temp = new int[2];
-
-    private int readPrevChar(int currentIndex) {
-        int prevIndex = currentIndex - 1;
-
-        while (prevIndex > 0) {
-            int byteValue = textBytes[prevIndex] & 0xFF;
-
-            if ((byteValue & 0xC0) != 0x80) {
-                return prevIndex;
-            }
-
-            prevIndex--;
-        }
-
-        return 0;
-    }
-
-    private boolean isEmoji(int chr) {
-        return EmojiManager.isEnabled() && ((chr >= 0x1F000 && chr <= 0x1FAFF) || (chr >= 0x200D && chr <= 0x3300) || chr == 0xFE0E || chr == 0xFE0F);
-
-    }
-
-    private void readNextUnicode(int length, byte[] array, int[] outPut) {
-        // Usual Char
-        readNextChar(length, array, outPut);
-        int pc = outPut[0];
-        int pi = outPut[1];
-
-        if (!isEmoji(pc)) {
-            return;
-        }
-
-        // Emoji
-
-        boolean waitNext = false;
-        int pos = 1;
-        while (readNextChar(length, array, outPut)) {
-            int chr = outPut[0];
-            if (chr == 0x200D) {
-                waitNext = true;
-            } else if (waitNext || chr == 0x1F3FB || chr == 0x1F3FC || chr == 0x1F3FD || chr == 0x1F3FE || chr == 0x1F3FF) {
-                waitNext = false;
-                pos++;
-                if (pos == 6) {
-                    break;
-                }
-            } else if (pos == 1 && (pc >= 0x1f1e6 && pc <= 0x1f1ff) && (chr >= 0x1f1e6 && chr <= 0x1f1ff)) {
-                break;
-            } else if (chr != 0xFE0E && chr != 0xFE0F) {
-                outPut[0] = pc;
-                outPut[1] = pi;
-                break;
-            }
-            pc = outPut[0];
-            pi = outPut[1];
-        }
-    }
-
-    private boolean readNextChar(int length, byte[] array, int[] outPut) {
-        int position = outPut[1];
-        int nextPosition = position;
-        if (position < 0 || position >= length) return false;
-
-        int firstByte = array[position] & 0xFF;
-        int codePoint;
-
-        if ((firstByte & 0x80) == 0) {
-            codePoint = firstByte;
-            nextPosition += 1;
-        } else if ((firstByte & 0xE0) == 0xC0 && position + 1 < length) {
-            int secondByte = array[position + 1] & 0xFF;
-            codePoint = ((firstByte & 0x1F) << 6) | (secondByte & 0x3F);
-            nextPosition += 2;
-        } else if ((firstByte & 0xF0) == 0xE0 && position + 2 < length) {
-            int secondByte = array[position + 1] & 0xFF;
-            int thirdByte = array[position + 2] & 0xFF;
-            codePoint = ((firstByte & 0x0F) << 12) | ((secondByte & 0x3F) << 6) | (thirdByte & 0x3F);
-            nextPosition += 3;
-        } else if ((firstByte & 0xF8) == 0xF0 && position + 3 < length) {
-            int secondByte = array[position + 1] & 0xFF;
-            int thirdByte = array[position + 2] & 0xFF;
-            int fourthByte = array[position + 3] & 0xFF;
-            codePoint = ((firstByte & 0x07) << 18) | ((secondByte & 0x3F) << 12) |
-                    ((thirdByte & 0x3F) << 6) | (fourthByte & 0x3F);
-            nextPosition += 4;
-        } else {
-            codePoint = 0xFFFD;
-            nextPosition += 1;
-        }
-        outPut[0] = codePoint;
-        outPut[1] = nextPosition;
-        return true;
     }
 
 }

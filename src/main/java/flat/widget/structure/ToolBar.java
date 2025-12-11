@@ -2,10 +2,10 @@ package flat.widget.structure;
 
 import flat.animations.StateInfo;
 import flat.events.ActionEvent;
+import flat.exception.FlatException;
 import flat.graphics.Color;
 import flat.graphics.Graphics;
 import flat.graphics.symbols.Font;
-import flat.math.Mathf;
 import flat.math.Vector2;
 import flat.uxml.*;
 import flat.widget.Parent;
@@ -17,7 +17,7 @@ import flat.widget.enums.Visibility;
 import flat.widget.stages.Divider;
 import flat.widget.stages.Menu;
 import flat.widget.stages.MenuItem;
-import flat.widget.text.data.TextBox;
+import flat.widget.text.area.TextBox;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -134,7 +134,7 @@ public class ToolBar extends Parent {
         UXAttrs attrs = getAttrs();
         setTitle(attrs.getAttributeString("title", getTitle()));
         setSubtitle(attrs.getAttributeString("subtitle", getSubtitle()));
-        setNavigationAction(attrs.getAttributeListener("on-navigation", ActionEvent.class, controller));
+        setNavigationAction(attrs.getAttributeListener("on-navigation", ActionEvent.class, controller, getNavigationAction()));
         setMenuItemStyle(attrs.getAttributeString("menu-item-style", getMenuItemStyle()));
         setMenuDividerStyle(attrs.getAttributeString("menu-divider-style", getMenuDividerStyle()));
     }
@@ -311,7 +311,7 @@ public class ToolBar extends Parent {
     @Override
     public Widget findByPosition(float x, float y, boolean includeDisabled) {
         if (!isCurrentHandleEventsEnabled()
-                || getVisibility() != Visibility.VISIBLE
+                || getVisibility() == Visibility.GONE
                 || (!includeDisabled && !isEnabled())
                 || !contains(x, y)) {
             return null;
@@ -620,6 +620,16 @@ public class ToolBar extends Parent {
     public void addToolItem(ToolItem... items) {
         for (var item : items) {
             addToolItem(item);
+        }
+    }
+    
+    public void moveToolItem(ToolItem child, int index) {
+        if (index < 0 || index >= toolItems.size()) {
+            throw new FlatException("Invalid child index position");
+        }
+        if (toolItems.contains(child)) {
+            toolItems.remove(child);
+            toolItems.add(index, child);
         }
     }
 

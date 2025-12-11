@@ -200,6 +200,19 @@ public abstract class Parent extends Widget {
 
         setMeasure(mWidth, mHeight);
     }
+    
+    protected final void performLayoutUnbounded(float lWidth, float lHeight) {
+        for (Widget child : getChildrenIterable()) {
+            if (child.getVisibility() == Visibility.GONE) continue;
+            performSingleLayoutUnbounded(lWidth, lHeight, child);
+        }
+    }
+    
+    protected final void performSingleLayoutUnbounded(float lWidth, float lHeight, Widget child) {
+        float childWidth = getDefWidth(child) == MATCH_PARENT ? lWidth : getDefWidth(child);
+        float childHeight = getDefHeight(child) == MATCH_PARENT ? lHeight : getDefHeight(child);
+        child.onLayout(childWidth, childHeight);
+    }
 
     protected final void performLayoutFree(float lWidth, float lHeight) {
         for (Widget child : getChildrenIterable()) {
@@ -558,7 +571,7 @@ public abstract class Parent extends Widget {
 
             float childWidth = Math.min(getDefWidth(child), lWidth);
             float childHeight = childHeightM + childHeightD;
-            child.onLayout(childWidth, childHeight);
+            child.onLayout(lWidth, childHeight);
         }
 
         if (countMp > 0 && (tempSize == null || tempSize.length < countMp)) {
@@ -619,7 +632,7 @@ public abstract class Parent extends Widget {
 
             float childWidth = Math.min(getDefWidth(child), lWidth);
             float childHeight = childMin + tempSize[j++];
-            child.onLayout(childWidth, childHeight);
+            child.onLayout(lWidth, childHeight);
         }
 
         // Set Positions

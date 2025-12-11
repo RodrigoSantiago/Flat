@@ -103,7 +103,7 @@ public final class Affine {
     public Affine set(float scaleX, float scaleY, float angle, float x, float y) {
         angle = Mathf.toRadians(angle);
 
-        float sin = Mathf.sin(angle);
+        float sin = -Mathf.sin(angle);
         float cos = Mathf.cos(angle);
         this.m00 = cos * scaleX;
         this.m01 = sin * scaleY;
@@ -270,14 +270,14 @@ public final class Affine {
      */
     public Affine rotate(float angle) {
         angle = Mathf.toRadians(angle);
-        float sin = Mathf.sin(angle);
+        float sin = -Mathf.sin(angle);
         float cos = Mathf.cos(angle);
         return multiply(this, cos, sin, -sin, cos, 0, 0, this);
     }
 
     public Affine preRotate (float angle) {
         angle = Mathf.toRadians(angle);
-        float sin = Mathf.sin(angle);
+        float sin = -Mathf.sin(angle);
         float cos = Mathf.cos(angle);
         return multiply(cos, sin, -sin, cos, 0, 0, this, this);
     }
@@ -357,7 +357,7 @@ public final class Affine {
         angle = Mathf.toRadians(angle);
 
         float cos = Mathf.cos(angle);
-        float sin = Mathf.sin(angle);
+        float sin = -Mathf.sin(angle);
 
         m00 = cos;
         m01 = sin;
@@ -377,10 +377,16 @@ public final class Affine {
         if (Math.abs(det) < Mathf.EPSILON) {
             return identity();
         }
-        float rdet = 1f / det;
-        return set(m11 * rdet, -m10 * rdet, -m01 * rdet, m00 * rdet,
-                (m10 * m12 - m11 * m02) * rdet,
-                (m01 * m02 - m00 * m12) * rdet);
+        float invDet = 1f / det;
+        
+        float nm00 =  m11 * invDet;
+        float nm01 = -m01 * invDet;
+        float nm10 = -m10 * invDet;
+        float nm11 =  m00 * invDet;
+        float nm02 = (m10 * m12 - m11 * m02) * invDet;
+        float nm12 = (m01 * m02 - m00 * m12) * invDet;
+        
+        return set(nm00, nm01, nm10, nm11, nm02, nm12);
     }
 
     /**
@@ -449,6 +455,23 @@ public final class Affine {
         point.x = m00 * x + m10 * y + m02;
         point.y = m01 * x + m11 * y + m12;
         return point;
+    }
+    
+    /**
+     * Inverse transforms the supplied point.
+     *
+     * @return the point supplied
+     */
+    public Vector2 inverseTransform(Vector2 p) {
+        float det = m00 * m11 - m01 * m10;
+        if (Math.abs(det) < 1e-8f) {
+            return p;
+        }
+        float x = p.x - m02;
+        float y = p.y - m12;
+        p.x = ( m11 * x - m10 * y) / det;
+        p.y = (-m01 * x + m00 * y) / det;
+        return p;
     }
 
     /**

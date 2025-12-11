@@ -1780,6 +1780,21 @@ public class Context {
         }
         return w;
     }
+    
+    public int svgDrawTextStyled(float x, float y, Buffer text, int offset, int length, int styleOffset, int[] styles) {
+        checkDisposed();
+        
+        int w = 0;
+        if (text != null && offset >= 0 && offset + length <= text.limit() && svgTextScale > 0) {
+            svgBegin();
+            if (svgTextFont.isDisposed()) {
+                svgTextFont = Font.getDefault();
+                SVG.SetFont(svgId, svgTextFont.getInternalId());
+            }
+            w = SVG.DrawTextStyledBuffer(svgId, x, y, text, offset, length, styleOffset, styles);
+        }
+        return w;
+    }
 
     public int getError() {
         return GL.GetError();

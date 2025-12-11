@@ -13,7 +13,8 @@ import flat.uxml.Controller;
 import flat.uxml.UXAttrs;
 import flat.uxml.UXListener;
 import flat.widget.enums.ImageFilter;
-import flat.widget.text.data.Caret;
+import flat.widget.text.content.Caret;
+import flat.window.Activity;
 
 public class NumberInputField extends TextField {
 
@@ -55,8 +56,8 @@ public class NumberInputField extends TextField {
         UXAttrs attrs = getAttrs();
 
         setRangeLimits((int)attrs.getAttributeNumber("min-value", getMinValue()), (int)attrs.getAttributeNumber("max-value", getMaxValue()));
-        setActionIncreaseListener(attrs.getAttributeListener("on-increase", ActionEvent.class, controller));
-        setActionDecreaseListener(attrs.getAttributeListener("on-decrease", ActionEvent.class, controller));
+        setActionIncreaseListener(attrs.getAttributeListener("on-increase", ActionEvent.class, controller, getActionIncreaseListener()));
+        setActionDecreaseListener(attrs.getAttributeListener("on-decrease", ActionEvent.class, controller, getActionDecreaseListener()));
     }
 
     @Override
@@ -326,6 +327,7 @@ public class NumberInputField extends TextField {
         if (!event.isConsumed() && event.getPointerID() == 1 && event.getType() == PointerEvent.PRESSED) {
             int act = getCurrentActionButton(screenToLocal(event.getX(), event.getY()));
             if (act != 0) {
+                setCaretHidden();
                 pressOnAction = act;
                 invalidate(false);
             }
@@ -345,8 +347,6 @@ public class NumberInputField extends TextField {
         }
         if (pressOnAction == 0) {
             Vector2 point = screenToLocal(event.getX(), event.getY());
-            point.x += getViewOffsetX();
-            point.y += getViewOffsetY();
             textPointer(event, point);
         }
     }
@@ -431,6 +431,19 @@ public class NumberInputField extends TextField {
         setNumber(getNumber() - 1);
         fireActionDecrease();
         fireTextType();
+    }
+    
+    @Override
+    public void requestFocus(boolean focus) {
+        if (isFocusable()) {
+            Activity activity = getActivity();
+            if (activity != null) {
+                activity.runLater(() -> {
+                    setFocused(focus);
+                    if (focus && !isUndefined()) setCaretVisible();
+                });
+            }
+        }
     }
 
     @Override

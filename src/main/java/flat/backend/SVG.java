@@ -98,7 +98,8 @@ public class SVG {
 
     public static native int DrawText(long context, float x, float y, String string, float maxWidth, float maxHeight);
     public static native int DrawTextBuffer(long context, float x, float y, Buffer string, int offset, int length, float maxWidth, float maxHeight);
-
+    public static native int DrawTextStyledBuffer(long context, float x, float y, Buffer string, int offset, int length, int styleOffset, int[] styles);
+    
     //---------------------------
     //           Image
     //---------------------------

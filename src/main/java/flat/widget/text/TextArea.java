@@ -1,8 +1,8 @@
 package flat.widget.text;
 
-import flat.animations.Animation;
 import flat.animations.StateInfo;
 import flat.events.*;
+import flat.graphics.Color;
 import flat.graphics.Graphics;
 import flat.graphics.symbols.Font;
 import flat.math.Vector2;
@@ -10,17 +10,16 @@ import flat.math.stroke.BasicStroke;
 import flat.uxml.*;
 import flat.widget.enums.HorizontalAlign;
 import flat.widget.enums.VerticalAlign;
-import flat.widget.layout.Scrollable;
-import flat.widget.text.data.Caret;
-import flat.widget.text.data.TextBox;
+import flat.widget.text.content.Caret;
+import flat.widget.text.area.TextBox;
+import flat.widget.text.content.SelectionPos;
 import flat.widget.value.HorizontalScrollBar;
 import flat.widget.value.VerticalScrollBar;
-import flat.window.Activity;
 import flat.window.Application;
 
 import java.util.Objects;
 
-public class TextArea extends Scrollable {
+public class TextArea extends TextEditor {
 
     private UXValueListener<String> textChangeListener;
     private UXListener<TextEvent> textChangeFilter;
@@ -28,13 +27,8 @@ public class TextArea extends Scrollable {
     private UXListener<TextEvent> textTypeListener;
     private String text;
     private boolean invalidTextString;
-
-    private Font textFont = Font.getDefault();
-    private float textSize = 16f;
+    
     private int textColor = 0x000000FF;
-    private int textSelectedColor = 0x00000080;
-    private int caretColor = 0x000000FF;
-    private float caretBlinkDuration = 0.5f;
     private boolean editable = true;
     private boolean multiLineEnabled = true;
     private boolean lineWrapEnabled = true;
@@ -45,30 +39,15 @@ public class TextArea extends Scrollable {
     private boolean invalidTextSize;
     private float textWidth;
     private float textHintWidth;
-    private final TextBox textBox = new TextBox();
-    private final Caret startCaret = new Caret();
-    private final Caret endCaret = new Caret();
-
-    private final CaretBlink caretBlink = new CaretBlink();
-    private boolean showCaret;
-
-    private int keyCopy = KeyCode.KEY_C;
-    private int keyPaste = KeyCode.KEY_V;
-    private int keyCut = KeyCode.KEY_X;
-    private int keySelectAll = KeyCode.KEY_A;
-    private int keyClearSelection = KeyCode.KEY_ESCAPE;
-    private int keyBackspace = KeyCode.KEY_BACKSPACE;
-    private int keyDelete = KeyCode.KEY_DELETE;
-    private int keyMenu  = KeyCode.KEY_MENU;
 
     private int maxCharacters = 0;
-
-    private long lastPressedTime;
-    private int clickCont;
-
+    
+    private final TextBox textBox = new TextBox();
     public TextArea() {
-        textBox.setFont(textFont);
-        textBox.setTextSize(textSize);
+        textBox.setAlign(horizontalAlign);
+        textBox.setFont(getTextFont());
+        textBox.setTextSize(getTextSize());
+        textContent = textBox;
     }
 
     @Override
@@ -96,10 +75,10 @@ public class TextArea extends Scrollable {
         setLineWrapEnabled(attrs.getAttributeBool("line-wrap-enabled", isLineWrapEnabled()));
         setText(attrs.getAttributeString("text", getText()));
         setEditable(attrs.getAttributeBool("editable", isEditable()));
-        setTextChangeListener(attrs.getAttributeValueListener("on-text-change", String.class, controller));
-        setTextTypeListener(attrs.getAttributeListener("on-text-type", TextEvent.class, controller));
-        setTextChangeFilter(attrs.getAttributeListener("on-text-change-filter", TextEvent.class, controller));
-        setTextInputFilter(attrs.getAttributeListener("on-text-input-filter", TextEvent.class, controller));
+        setTextChangeListener(attrs.getAttributeValueListener("on-text-change", String.class, controller, getTextChangeListener()));
+        setTextTypeListener(attrs.getAttributeListener("on-text-type", TextEvent.class, controller, getTextTypeListener()));
+        setTextChangeFilter(attrs.getAttributeListener("on-text-change-filter", TextEvent.class, controller, getTextChangeFilter()));
+        setTextInputFilter(attrs.getAttributeListener("on-text-input-filter", TextEvent.class, controller, getTextInputFilter()));
     }
 
     @Override
@@ -108,13 +87,8 @@ public class TextArea extends Scrollable {
 
         UXAttrs attrs = getAttrs();
         StateInfo info = getStateInfo();
-
-        setTextFont(attrs.getFont("text-font", info, getTextFont()));
-        setTextSize(attrs.getSize("text-size", info, getTextSize()));
+        
         setTextColor(attrs.getColor("text-color", info, getTextColor()));
-        setTextSelectedColor(attrs.getColor("text-selected-color", info, getTextSelectedColor()));
-        setCaretColor(attrs.getColor("caret-color", info, getCaretColor()));
-        setCaretBlinkDuration(attrs.getNumber("caret-blink-duration", info, getCaretBlinkDuration()));
         setHidden(attrs.getBool("hidden", info, isHidden()));
 
         setVerticalAlign(attrs.getConstant("vertical-align", info, getVerticalAlign()));
@@ -210,14 +184,6 @@ public class TextArea extends Scrollable {
         return endCaret;
     }
 
-    protected Caret getFirstCaret() {
-        return startCaret.getOffset() <= endCaret.getOffset() ? startCaret : endCaret;
-    }
-
-    protected Caret getSecondCaret() {
-        return startCaret.getOffset() <= endCaret.getOffset() ? endCaret : startCaret;
-    }
-
     @Override
     public void onDraw(Graphics graphics) {
         if (discardDraw(graphics)) return;
@@ -274,16 +240,18 @@ public class TextArea extends Scrollable {
         float secondX = textBox.getCaretHorizontalOffset(second, horizontalAlign) + xpos;
 
         // Text Selection
-        graphics.setColor(getTextSelectedColor());
-        if (first.getLine() == second.getLine()) {
-            graphics.drawRect(firstX, ypos + first.getLine() * lineH, secondX - firstX, lineH, true);
-        } else {
-            graphics.drawRect(firstX, ypos + first.getLine() * lineH, getTotalDimensionX() - (firstX - x), lineH, true);
-            graphics.drawRect(x, y + second.getLine() * lineH, secondX - x, lineH, true);
-            if (first.getLine() + 1 < second.getLine()) {
-                graphics.drawRect(
-                        x, y + (first.getLine() + 1) * lineH
-                        , getTotalDimensionX(), (second.getLine() - first.getLine() - 1) * lineH, true);
+        if (Color.getAlpha(getTextSelectedColor()) > 0) {
+            graphics.setColor(getTextSelectedColor());
+            if (first.getLine() == second.getLine()) {
+                graphics.drawRect(firstX, ypos + first.getLine() * lineH, secondX - firstX, lineH, true);
+            } else {
+                graphics.drawRect(firstX, ypos + first.getLine() * lineH, getTotalDimensionX() - (firstX - x), lineH, true);
+                graphics.drawRect(x, y + second.getLine() * lineH, secondX - x, lineH, true);
+                if (first.getLine() + 1 < second.getLine()) {
+                    graphics.drawRect(
+                            x, y + (first.getLine() + 1) * lineH
+                            , getTotalDimensionX(), (second.getLine() - first.getLine() - 1) * lineH, true);
+                }
             }
         }
 
@@ -296,7 +264,7 @@ public class TextArea extends Scrollable {
         }
 
         // Caret
-        if (showCaret && isEditable()) {
+        if (isShowCaret() && isEditable()) {
             float caretX = textBox.getCaretHorizontalOffset(endCaret, horizontalAlign);
             if (caretX == 0) {
                 caretX += xpos + 1;
@@ -314,23 +282,20 @@ public class TextArea extends Scrollable {
     }
 
     @Override
-    public void scroll(ScrollEvent event) {
-        super.scroll(event);
-        if (!event.isConsumed() && isVerticalDimensionScroll()) {
-            event.consume();
-            slideVertical(- event.getDeltaY() * 10);
-        }
-    }
-
-    @Override
     public void pointer(PointerEvent event) {
         super.pointer(event);
         Vector2 point = screenToLocal(event.getX(), event.getY());
-        point.x += getViewOffsetX();
-        point.y += getViewOffsetY();
         textPointer(event, point);
     }
-
+    
+    public boolean isEditable() {
+        return editable;
+    }
+    
+    public void setEditable(boolean editable) {
+        this.editable = editable;
+    }
+    
     protected float getVisibleTextX() {
         return getInX();
     }
@@ -346,151 +311,9 @@ public class TextArea extends Scrollable {
     protected float getVisibleTextWidth() {
         return getInWidth();
     }
-
-    protected void textPointer(PointerEvent event, Vector2 point) {
-        if (event.isConsumed() || event.getSource() != this || event.getPointerID() != 1 || getTextFont() == null) {
-            return;
-        }
-
-        float x = getVisibleTextX();
-        float y = getVisibleTextY();
-        float width = getVisibleTextWidth();
-        float height = getVisibleTextHeight();
-        float xpos = isHorizontalDimensionScroll() ? x : xOff(x, x + width, getTextWidth());
-        float ypos = isVerticalDimensionScroll() ? y : yOff(y, y + height, getTextHeight());
-
-        if (event.getType() == PointerEvent.PRESSED) {
-            event.consume();
-            long now = System.currentTimeMillis();
-            if (now - lastPressedTime < 200) {
-                clickCont++;
-                if (clickCont == 1) {
-                    textBox.getCaret(point.x, point.y, xpos, ypos, horizontalAlign, startCaret);
-                    endCaret.set(startCaret);
-                    textBox.moveCaretBackwardsLine(startCaret);
-                    textBox.moveCaretFowardsLine(endCaret);
-                } else if (clickCont > 1) {
-                    textBox.moveCaretBegin(startCaret);
-                    textBox.moveCaretEnd(endCaret);
-                }
-            } else {
-                clickCont = 0;
-                textBox.getCaret(point.x, point.y, xpos, ypos, horizontalAlign, startCaret);
-                endCaret.set(startCaret);
-            }
-            setCaretVisible();
-            lastPressedTime = now;
-        } else if (event.getType() == PointerEvent.DRAGGED) {
-            event.consume();
-            textBox.getCaret(point.x, point.y, xpos, ypos, horizontalAlign, endCaret);
-            setCaretVisible();
-            slideToCaret(Application.getLoopTime() * 10f);
-        } else if (event.getType() == PointerEvent.RELEASED) {
-            event.consume();
-        }
-        invalidate(false);
-    }
-
+    
     @Override
-    public void key(KeyEvent event) {
-        super.key(event);
-        if (event.isConsumed()) {
-            return;
-        }
-
-        var first = getFirstCaret();
-        var second = getSecondCaret();
-
-        if (event.getType() == KeyEvent.TYPED) {
-            editText(first, second, new String(Character.toChars(event.getKeycode())));
-            event.consume();
-        }
-
-        if (event.getKeycode() != KeyCode.KEY_UNKNOWN &&
-                (event.getType() == KeyEvent.PRESSED || event.getType() == KeyEvent.REPEATED)) {
-
-            if (event.getKeycode() == KeyCode.KEY_ENTER || event.getKeycode() == KeyCode.KEY_KP_ENTER) {
-                editText(first, second, "\n");
-            } else if (event.getKeycode() == KeyCode.KEY_TAB) {
-                if (caretBlink.isPlaying()) {
-                    editText(first, second, "\t");
-                } else {
-                    return;
-                }
-            } else if (event.getKeycode() == keyBackspace) {
-                actionDeleteBackwards(first, second);
-            } else if (event.getKeycode() == keyDelete) {
-                actionDeleteFowards(first, second);
-            } else if (event.isCtrlDown() && event.getKeycode() == keyPaste) {
-                actionPaste(first, second);
-            } else if (event.isCtrlDown() && event.getKeycode() == keyCopy) {
-                actionCopy(first, second);
-            } else if (event.isCtrlDown() && event.getKeycode() == keyCut) {
-                actionCut(first, second);
-            } else if (event.isCtrlDown() && event.getKeycode() == keySelectAll) {
-                actionSelectAll();
-            } else if (event.getKeycode() == keyClearSelection) {
-                actionClearSelection();
-            } else if (event.getKeycode() == keyMenu) {
-                actionShowContextMenu();
-            } else {
-                if (event.getKeycode() == KeyCode.KEY_LEFT) {
-                    textBox.moveCaretBackwards(endCaret);
-                    if (!event.isShiftDown()) startCaret.set(endCaret);
-                } else if (event.getKeycode() == KeyCode.KEY_RIGHT) {
-                    textBox.moveCaretFoward(endCaret);
-                    if (!event.isShiftDown()) startCaret.set(endCaret);
-                } else if (event.getKeycode() == KeyCode.KEY_DOWN) {
-                    textBox.moveCaretVertical(endCaret, horizontalAlign, 1);
-                    if (!event.isShiftDown()) startCaret.set(endCaret);
-                } else if (event.getKeycode() == KeyCode.KEY_UP) {
-                    textBox.moveCaretVertical(endCaret, horizontalAlign, -1);
-                    if (!event.isShiftDown()) startCaret.set(endCaret);
-                } else if (event.getKeycode() == KeyCode.KEY_PAGE_DOWN) {
-                    textBox.moveCaretVertical(endCaret, horizontalAlign, (int) (getViewDimensionY() / getLineHeight()));
-                    if (!event.isShiftDown()) startCaret.set(endCaret);
-                } else if (event.getKeycode() == KeyCode.KEY_PAGE_UP) {
-                    textBox.moveCaretVertical(endCaret, horizontalAlign, (int) -(getViewDimensionY() / getLineHeight()));
-                    if (!event.isShiftDown()) startCaret.set(endCaret);
-                } else if (event.getKeycode() == KeyCode.KEY_HOME) {
-                    textBox.moveCaretBackwardsLine(endCaret);
-                    if (!event.isShiftDown()) startCaret.set(endCaret);
-                } else if (event.getKeycode() == KeyCode.KEY_END) {
-                    textBox.moveCaretFowardsLine(endCaret);
-                    if (!event.isShiftDown()) startCaret.set(endCaret);
-                } else {
-                    return;
-                }
-                setCaretVisible();
-                slideToCaret(1);
-            }
-            event.consume();
-        }
-    }
-
-    @Override
-    public void requestFocus(boolean focus) {
-        if (isFocusable()) {
-            Activity activity = getActivity();
-            if (activity != null) {
-                activity.runLater(() -> {
-                    setFocused(focus);
-                    if (focus) setCaretVisible();
-                });
-            }
-        }
-    }
-
-    @Override
-    public void focus(FocusEvent event) {
-        super.focus(event);
-        if (!isFocused()) {
-            actionClearSelection();
-            setCaretHidden();
-        }
-    }
-
-    protected void actionShowContextMenu() {
+    public Vector2 getContextMenuTextPosition() {
         float x = getInX();
         float y = getInY();
         float width = getInWidth();
@@ -499,152 +322,16 @@ public class TextArea extends Scrollable {
         float py = y - getViewOffsetY();
         float xpos = getTextWidth() < width ? xOff(x, x + width, getTextWidth()) : px;
         float ypos = getTextHeight() < height ? yOff(y, y + height, getTextHeight()) : py;
-
+        
         float caretX = textBox.getCaretHorizontalOffset(endCaret, horizontalAlign) + xpos;
         float caretY = endCaret.getLine() * getLineHeight() + ypos;
-        var pos = localToScreen(Math.min(x + width, Math.max(x, caretX)), Math.min(y + height, Math.max(y, caretY)));
+        return localToScreen(Math.min(x + width, Math.max(x, caretX)), Math.min(y + height, Math.max(y, caretY)));
+    }
+    
+    @Override
+    public void showContextMenu() {
+        var pos = getContextMenuTextPosition();
         showContextMenu(pos.x, pos.y);
-    }
-
-    public void clearSelection() {
-        actionClearSelection();
-    }
-
-    public void selectAll() {
-        actionSelectAll();
-    }
-
-    protected void actionClearSelection() {
-        startCaret.set(endCaret);
-        invalidate(false);
-    }
-
-    protected void actionSelectAll() {
-        textBox.moveCaretBegin(startCaret);
-        textBox.moveCaretEnd(endCaret);
-        invalidate(false);
-    }
-
-    protected void actionDeleteBackwards(Caret first, Caret second) {
-        if (first.getOffset() == second.getOffset()) {
-            textBox.moveCaretBackwards(first);
-        }
-        editText(first, second, "");
-    }
-
-    protected void actionDeleteFowards(Caret first, Caret second) {
-        if (first.getOffset() == second.getOffset()) {
-            textBox.moveCaretFoward(second);
-        }
-        editText(first, second, "");
-    }
-
-    protected void actionCut(Caret first, Caret second) {
-        String str = isHidden() ? textBox.getHiddenChars() : textBox.getText(first, second);
-        if (str != null && !str.isEmpty()) {
-            Application.setClipboard(str);
-        }
-        editText(first, second, "");
-    }
-
-    protected void actionCopy(Caret first, Caret second) {
-        String str = isHidden() ? textBox.getHiddenChars() : textBox.getText(first, second);
-        if (str != null && !str.isEmpty()) {
-            Application.setClipboard(str);
-        }
-    }
-
-    protected void actionPaste(Caret first, Caret second) {
-        String str = Application.getClipboard();
-        if (str != null && !str.isEmpty()) {
-            editText(first, second, str);
-            slideToCaretLater(1);
-        }
-    }
-
-    protected void setCaretVisible() {
-        showCaret = true;
-        invalidate(false);
-        caretBlink.play();
-    }
-
-    protected void setCaretHidden() {
-        showCaret = false;
-        invalidate(false);
-        caretBlink.stop();
-    }
-
-    protected void blinkCaret() {
-        showCaret = isFocused() && !showCaret;
-        invalidate(false);
-    }
-
-    protected boolean isShowCaret() {
-        return showCaret;
-    }
-
-    public int getKeyCopy() {
-        return keyCopy;
-    }
-
-    public void setKeyCopy(int keyCopy) {
-        this.keyCopy = keyCopy;
-    }
-
-    public int getKeyPaste() {
-        return keyPaste;
-    }
-
-    public void setKeyPaste(int keyPaste) {
-        this.keyPaste = keyPaste;
-    }
-
-    public int getKeyCut() {
-        return keyCut;
-    }
-
-    public void setKeyCut(int keyCut) {
-        this.keyCut = keyCut;
-    }
-
-    public int getKeySelectAll() {
-        return keySelectAll;
-    }
-
-    public void setKeySelectAll(int keySelectAll) {
-        this.keySelectAll = keySelectAll;
-    }
-
-    public int getKeyClearSelection() {
-        return keyClearSelection;
-    }
-
-    public void setKeyClearSelection(int keyClearSelection) {
-        this.keyClearSelection = keyClearSelection;
-    }
-
-    public int getKeyBackspace() {
-        return keyBackspace;
-    }
-
-    public void setKeyBackspace(int keyBackspace) {
-        this.keyBackspace = keyBackspace;
-    }
-
-    public int getKeyDelete() {
-        return keyDelete;
-    }
-
-    public void setKeyDelete(int keyDelete) {
-        this.keyDelete = keyDelete;
-    }
-
-    public int getKeyMenu() {
-        return keyMenu;
-    }
-
-    public void setKeyMenu(int keyMenu) {
-        this.keyMenu = keyMenu;
     }
 
     public String getText() {
@@ -742,6 +429,28 @@ public class TextArea extends Scrollable {
             invalidateTextSize();
         }
     }
+    
+    protected void setTextSilently(String text) {
+        if (Objects.equals(getText(), text)) return;
+        if (!isMultiLineEnabled() && text != null) {
+            text = text.replaceAll("[\\n\\r]", "");
+            if (Objects.equals(getText(), text)) return;
+        }
+        setLocalText(text);
+        
+        if (text != null && maxCharacters > 0) {
+            if (!textBox.setText(text)) {
+                invalidateTextString();
+            }
+        } else {
+            textBox.setText(text);
+        }
+        
+        textBox.moveCaretBegin(startCaret);
+        endCaret.set(startCaret);
+        breakLines();
+        invalidateTextSize();
+    }
 
     protected void editText(Caret first, Caret second, String input) {
         if (!isEditable()) return;
@@ -762,7 +471,7 @@ public class TextArea extends Scrollable {
         Caret caret = new Caret();
         caret.set(endCaret);
 
-        if (textChangeFilter != null || textChangeListener != null || textTypeListener != null) {
+        if (textChangeFilter != null || textChangeListener != null || textTypeListener != null || hasLocalFilter()) {
             String old = getText();
 
             if (!textBox.editText(first, second, input, caret)) {
@@ -771,27 +480,29 @@ public class TextArea extends Scrollable {
 
             // Change Filter
             String text = textBox.getText();
-            var textEvent = filterText(0, textBox.getTotalBytes(), text);
+            String newTxt = localFilter(text);
+            
+            var textEvent = filterText(0, textBox.getTotalBytes(), newTxt);
             if (textEvent != null) {
                 if (textEvent.isConsumed()) {
                     textBox.setText(old);
                     return;
                 }
-                String newTxt = textEvent.getText();
-                if (!Objects.equals(newTxt, text)) {
-                    int before = textBox.getTotalCharacters();
-
-                    text = newTxt;
-                    if (!textBox.setText(text)) {
-                        text = textBox.getText();
-                    }
-
-                    int after = textBox.getTotalCharacters();
-                    if (after < before) {
-                        textBox.moveCaret(caret, 0);
-                    } else if (after > before) {
-                        textBox.moveCaret(caret, after - before);
-                    }
+                newTxt = textEvent.getText();
+            }
+            if (!Objects.equals(newTxt, text)) {
+                int before = textBox.getTotalCharacters();
+                
+                text = newTxt;
+                if (!textBox.setText(text)) {
+                    text = textBox.getText();
+                }
+                
+                int after = textBox.getTotalCharacters();
+                if (after < before) {
+                    textBox.moveCaret(caret, 0);
+                } else if (after > before) {
+                    textBox.moveCaret(caret, after - before);
                 }
             }
             setLocalText(text);
@@ -820,6 +531,14 @@ public class TextArea extends Scrollable {
             setCaretVisible();
             slideToCaretLater(1);
         }
+    }
+    
+    protected boolean hasLocalFilter() {
+        return false;
+    }
+    
+    protected String localFilter(String value) {
+        return value;
     }
 
     public int getMaxCharacters() {
@@ -856,13 +575,11 @@ public class TextArea extends Scrollable {
         }
     }
 
-    public Font getTextFont() {
-        return textFont;
-    }
-
     public void setTextFont(Font textFont) {
-        if (this.textFont != textFont) {
-            this.textFont = textFont;
+        if (textFont == null) textFont = Font.getDefault();
+        
+        if (this.getTextFont() != textFont) {
+            super.setTextFont(textFont);
             textBox.setFont(textFont);
             invalidate(isWrapContent());
             invalidateTextSize();
@@ -870,26 +587,13 @@ public class TextArea extends Scrollable {
     }
 
     protected float getLineHeight() {
-        return textFont == null ? textSize : textFont.getHeight(textSize);
+        return getTextFont().getHeight(getTextSize());
     }
-
-    public float getTextSize() {
-        return textSize;
-    }
-
-    public void setTextSize(float textSize) {
-        if (this.textSize != textSize) {
-            this.textSize = textSize;
-            textBox.setTextSize(textSize);
-            invalidate(isWrapContent());
-            invalidateTextSize();
-        }
-    }
-
+    
     public int getTextColor() {
         return textColor;
     }
-
+    
     public void setTextColor(int textColor) {
         if (this.textColor != textColor) {
             this.textColor = textColor;
@@ -897,23 +601,14 @@ public class TextArea extends Scrollable {
         }
     }
 
-    public int getTextSelectedColor() {
-        return textSelectedColor;
-    }
-
-    public void setTextSelectedColor(int textSelectedColor) {
-        if (this.textSelectedColor != textSelectedColor) {
-            this.textSelectedColor = textSelectedColor;
-            invalidate(false);
+    @Override
+    public void setTextSize(float textSize) {
+        if (this.getTextSize() != textSize) {
+            super.setTextSize(textSize);
+            textBox.setTextSize(textSize);
+            invalidate(isWrapContent());
+            invalidateTextSize();
         }
-    }
-
-    public boolean isEditable() {
-        return editable;
-    }
-
-    public void setEditable(boolean editable) {
-        this.editable = editable;
     }
 
     public boolean isMultiLineEnabled() {
@@ -937,25 +632,6 @@ public class TextArea extends Scrollable {
         if (this.lineWrapEnabled != lineWrapEnabled) {
             this.lineWrapEnabled = lineWrapEnabled;
             invalidate(true);
-        }
-    }
-
-    public float getCaretBlinkDuration() {
-        return caretBlinkDuration;
-    }
-
-    public void setCaretBlinkDuration(float caretBlinkDuration) {
-        this.caretBlinkDuration = caretBlinkDuration;
-    }
-
-    public int getCaretColor() {
-        return caretColor;
-    }
-
-    public void setCaretColor(int caretColor) {
-        if (this.caretColor != caretColor) {
-            this.caretColor = caretColor;
-            invalidate(false);
         }
     }
 
@@ -990,16 +666,12 @@ public class TextArea extends Scrollable {
 
         if (this.horizontalAlign != horizontalAlign) {
             this.horizontalAlign = horizontalAlign;
+            textBox.setAlign(horizontalAlign);
             invalidate(false);
         }
     }
 
-    public void slideToCaretLater(float speed) {
-        if (getActivity() != null) {
-            getActivity().runLater(() -> slideToCaret(speed));
-        }
-    }
-
+    @Override
     public void slideToCaret(float speed) {
         float lineH = getLineHeight();
         float caretX = textBox.getCaretHorizontalOffset(endCaret, horizontalAlign);
@@ -1030,7 +702,24 @@ public class TextArea extends Scrollable {
         }
         slideTo(targetX * speed + getViewOffsetX() * (1 - speed), targetY * speed + getViewOffsetY() * (1 - speed));
     }
-
+    
+    @Override
+    public Caret getCaretFromPosition(float mx, float my) {
+        Vector2 point = new Vector2(mx, my);
+        point.x += getViewOffsetX();
+        point.y += getViewOffsetY();
+        float x = getVisibleTextX();
+        float y = getVisibleTextY();
+        float width = getVisibleTextWidth();
+        float height = getVisibleTextHeight();
+        float xpos = isHorizontalDimensionScroll() ? x : xOff(x, x + width, getTextWidth());
+        float ypos = isVerticalDimensionScroll() ? y : yOff(y, y + height, getTextHeight());
+        
+        Caret caret = new Caret();
+        textBox.getCaret(point.x, point.y, xpos, ypos, horizontalAlign, caret);
+        return caret;
+    }
+    
     protected int getLastCaretPosition() {
         return textBox.getTotalBytes();
     }
@@ -1125,42 +814,5 @@ public class TextArea extends Scrollable {
         if (verticalAlign == VerticalAlign.BOTTOM) return end - textHeight;
         if (verticalAlign == VerticalAlign.MIDDLE) return (start + end - textHeight) / 2f;
         return start;
-    }
-
-    protected class CaretBlink implements Animation {
-
-        private boolean playing;
-        private float timer;
-
-        public void play() {
-            timer = 0;
-            if (getActivity() != null) {
-                playing = true;
-                getActivity().addAnimation(this);
-            }
-        }
-
-        public void stop() {
-            playing = false;
-        }
-
-        @Override
-        public Activity getSource() {
-            return getActivity();
-        }
-
-        @Override
-        public boolean isPlaying() {
-            return playing;
-        }
-
-        @Override
-        public void handle(float seconds) {
-            timer += seconds;
-            if (timer >= getCaretBlinkDuration()) {
-                timer = 0;
-                blinkCaret();
-            }
-        }
     }
 }

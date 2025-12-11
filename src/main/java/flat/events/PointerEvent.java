@@ -10,17 +10,20 @@ public class PointerEvent extends Event {
     public static final Type FILTER = new Type("FILTER");
 
     private final Window window;
-    private final float x, y;
+    private final float x, y, pressX, pressY;
     private final int buttonID;
     private final int clickCount;
     private boolean focusConsumed;
 
-    public PointerEvent(Widget source, Window window, Type type, int buttonID, float x, float y, int clickCount) {
+    public PointerEvent(Widget source, Window window, Type type, int buttonID, float x, float y,
+                        float pressX, float pressY, int clickCount) {
         super(source, type);
         this.window = window;
         this.buttonID = buttonID;
         this.x = x;
         this.y = y;
+        this.pressX = pressX;
+        this.pressY = pressY;
         this.clickCount = clickCount;
     }
 
@@ -34,6 +37,14 @@ public class PointerEvent extends Event {
 
     public float getY() {
         return y;
+    }
+    
+    public float getPressX() {
+        return pressX;
+    }
+    
+    public float getPressY() {
+        return pressY;
     }
 
     public int getClickCount() {

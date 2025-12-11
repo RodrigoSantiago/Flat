@@ -18,8 +18,8 @@ public class Cursor {
     public static final Cursor HAND = new Cursor(WLEnums.STANDARD_HAND_CURSOR);
     public static final Cursor EW_RESIZE = new Cursor(WLEnums.STANDARD_EW_RESIZE_CURSOR);
     public static final Cursor NS_RESIZE = new Cursor(WLEnums.STANDARD_NS_RESIZE_CURSOR);
-    public static final Cursor NWSE_RESIZE = new Cursor(WLEnums.STANDARD_NWSE_RESIZE_CURSOR);
-    public static final Cursor NESW_RESIZE = new Cursor(WLEnums.STANDARD_NESW_RESIZE_CURSOR);
+    public static final Cursor NWSE_RESIZE = new Cursor(WLEnums.STANDARD_NWSE_RESIZE_CURSOR); // -45º
+    public static final Cursor NESW_RESIZE = new Cursor(WLEnums.STANDARD_NESW_RESIZE_CURSOR); // 45º
     public static final Cursor MOVE = new Cursor(WLEnums.STANDARD_RESIZE_ALL_CURSOR);
     public static final Cursor NOT = new Cursor(WLEnums.STANDARD_NOT_ALLOWED_CURSOR);
 

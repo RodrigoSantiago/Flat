@@ -1,10 +1,13 @@
 package flat.uxml.sheet;
 
+import flat.uxml.value.UXValue;
+
 import java.util.HashMap;
 
 public class UXSheetStyle {
     private String name;
     private String parent;
+    private UXValue flow;
     private HashMap<String, UXSheetAttribute> attributes = new HashMap<>();
     private HashMap<String, UXSheetStyle> states = new HashMap<>();
 
@@ -35,8 +38,16 @@ public class UXSheetStyle {
     public void addState(UXSheetStyle state) {
         states.put(state.getName(), state);
     }
-
+    
     public HashMap<String, UXSheetStyle> getStates() {
         return states;
+    }
+    
+    public UXValue getFlow() {
+        return flow;
+    }
+    
+    public void setFlow(UXValue flow) {
+        this.flow = flow;
     }
 }

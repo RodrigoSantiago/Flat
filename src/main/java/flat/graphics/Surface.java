@@ -48,7 +48,7 @@ public class Surface {
         return clipState;
     }
 
-    Texture2D renderToTexture(Graphics graphics, int x, int y, int width, int height, Texture2D textureTransfer) {
+    Texture2D renderToTexture(Graphics graphics, int srcX, int srcY, int dstX, int dstY, int width, int height, Texture2D textureTransfer) {
         checkDisposed();
 
         if (frameBuffer == null) {
@@ -57,10 +57,10 @@ public class Surface {
         frameBuffer.attach(LayerTarget.COLOR_0, textureTransfer, 0);
         frameBuffer.detach(LayerTarget.DEPTH_STENCIL);
         if (multiSamples > 0) {
-            graphics.bakeSurface(x, y, textureMultisamples);
+            graphics.bakeSurface(srcX, srcY, dstX, dstY, width, height, textureMultisamples);
             frameBuffer.attach(LayerTarget.COLOR_0, textureMultisamples, 0);
         } else {
-            graphics.bakeSurface(x, y, texture);
+            graphics.bakeSurface(srcX, srcY, dstX, dstY, width, height, texture);
             frameBuffer.attach(LayerTarget.COLOR_0, texture, 0);
         }
         frameBuffer.attach(LayerTarget.DEPTH_STENCIL, render);

@@ -1,5 +1,6 @@
 package flat.widget.layout;
 
+import flat.events.PointerEvent;
 import flat.events.ScrollEvent;
 import flat.graphics.Graphics;
 import flat.math.Vector2;
@@ -18,7 +19,10 @@ import java.util.List;
 public class ScrollBox extends Scrollable {
 
     private Direction mouseScrollDirection = Direction.VERTICAL;
-
+    private boolean mousePaneEnabled;
+    
+    private float grabX, grabY;
+    
     @Override
     public void applyChildren(UXChildren children) {
         super.applyChildren(children);
@@ -41,6 +45,7 @@ public class ScrollBox extends Scrollable {
         super.applyAttributes(controller);
         UXAttrs attrs = getAttrs();
         setMouseScrollDirection(attrs.getAttributeConstant("mouse-scroll-direction", getMouseScrollDirection()));
+        setMousePaneEnabled(attrs.getAttributeBool("mouse-pane-enabled", isMousePaneEnabled()));
     }
 
     @Override
@@ -174,14 +179,20 @@ public class ScrollBox extends Scrollable {
         if (getOutWidth() <= 0 || getOutHeight() <= 0) return;
 
         graphics.setTransform2D(getTransform());
-        graphics.pushClip(getBackgroundShape());
+        boolean clip = (getTotalDimensionX() * 0.001f < getViewDimensionX()) ||
+                               (getTotalDimensionY() * 0.001f < getViewDimensionY());
+        if (clip) {
+            graphics.pushClip(getBackgroundShape());
+        }
         for (Widget child : getChildrenIterable()) {
             if (child.getVisibility() == Visibility.VISIBLE &&
                     child != getHorizontalBar() && child != getVerticalBar()) {
                 child.onDraw(graphics);
             }
         }
-        graphics.popClip();
+        if (clip) {
+            graphics.popClip();
+        }
 
         if (getHorizontalBar() != null && isHorizontalVisible()) {
             getHorizontalBar().onDraw(graphics);
@@ -191,7 +202,23 @@ public class ScrollBox extends Scrollable {
             getVerticalBar().onDraw(graphics);
         }
     }
-
+    
+    @Override
+    public void pointer(PointerEvent event) {
+        super.pointer(event);
+        if (!isMousePaneEnabled()) return;
+        
+        if (!event.isConsumed() && event.getType() == PointerEvent.PRESSED && event.getPointerID() == 3) {
+            grabX = getViewOffsetX();
+            grabY = getViewOffsetY();
+            event.consume();
+        }
+        if (!event.isConsumed() && event.getType() == PointerEvent.DRAGGED && event.getPointerID() == 3) {
+            slideTo(grabX - (event.getX() - event.getPressX()), grabY - (event.getY() - event.getPressY()));
+            event.consume();
+        }
+    }
+    
     @Override
     public void scroll(ScrollEvent event) {
         super.scroll(event);
@@ -215,5 +242,13 @@ public class ScrollBox extends Scrollable {
         if (this.mouseScrollDirection != mouseScrollDirection) {
             this.mouseScrollDirection = mouseScrollDirection;
         }
+    }
+    
+    public void setMousePaneEnabled(boolean mousePaneEnabled) {
+        this.mousePaneEnabled = mousePaneEnabled;
+    }
+    
+    public boolean isMousePaneEnabled() {
+        return mousePaneEnabled;
     }
 }

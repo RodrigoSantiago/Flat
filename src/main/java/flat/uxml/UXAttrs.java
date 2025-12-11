@@ -272,13 +272,21 @@ public class UXAttrs {
     }
 
     public <T> UXListener<T> getAttributeListener(String name, Class<T> argument, Controller controller) {
+        return getAttributeListener(name, argument, controller, null);
+    }
+    
+    public <T> UXListener<T> getAttributeListener(String name, Class<T> argument, Controller controller, UXListener<T> def) {
         UXValue value = getAttribute(name);
-        return value != null ? value.asListener(theme, argument, controller) : null;
+        return value != null ? value.asListener(theme, argument, controller) : def;
+    }
+    
+    public <T> UXValueListener<T> getAttributeValueListener(String name, Class<T> argument, Controller controller) {
+        return getAttributeValueListener(name, argument, controller, null);
     }
 
-    public <T> UXValueListener<T> getAttributeValueListener(String name, Class<T> argument, Controller controller) {
+    public <T> UXValueListener<T> getAttributeValueListener(String name, Class<T> argument, Controller controller, UXValueListener<T> def) {
         UXValue value = getAttribute(name);
-        return value != null ? value.asValueListener(theme, argument, controller) : null;
+        return value != null ? value.asValueListener(theme, argument, controller) : def;
     }
 
     public float[] getAttributeSizeList(String name, float[] def) {
@@ -448,7 +456,12 @@ public class UXAttrs {
         UXValue[] currentValues = null;
         var currentStyles = getUpdatedStyles();
         for (int i = currentStyles.size() - 1; i >= 0; i--) {
-            UXValue[] values = currentStyles.get(i).get(hash);
+            var style = currentStyles.get(i);
+            if (style.getFlow() != null && !style.getFlow().asBool(theme)) {
+                continue;
+            }
+            
+            UXValue[] values = style.get(hash);
             if (values != null) {
                 currentValues = values;
                 break;

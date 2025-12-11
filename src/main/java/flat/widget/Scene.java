@@ -49,13 +49,21 @@ public class Scene extends Group {
     @Override
     public void onLayout(float width, float height) {
         setLayout(width, height);
-        performLayoutFree(getInWidth(), getInHeight());
+        if (activityScene != null && activityScene.getActivity() != null && (getWidth() == 0 || getHeight() == 0)) {
+            performLayoutUnbounded(getInWidth(), getInHeight());
+        } else {
+            performLayoutFree(getInWidth(), getInHeight());
+        }
     }
 
     public boolean onLayoutSingleChild(Widget child) {
         if (getChildren().contains(child)) {
             child.onMeasure();
-            performSingleLayoutFree(getInWidth(), getInHeight(), child);
+            if (activityScene != null && activityScene.getActivity() != null) {
+                performSingleLayoutUnbounded(getInWidth(), getInHeight(), child);
+            } else {
+                performSingleLayoutFree(getInWidth(), getInHeight(), child);
+            }
             return true;
         }
         return false;
@@ -83,6 +91,15 @@ public class Scene extends Group {
         if (getVisibility() == Visibility.VISIBLE) {
             super.onDraw(graphics);
         }
+    }
+    
+    public boolean isBlockedByDialog() {
+        if (activityScene != null && activityScene.getActivity() != null) {
+            for (var stage : stages) {
+                if (stage.isModal()) return true;
+            }
+        }
+        return false;
     }
 
     void addStage(Stage stage) {

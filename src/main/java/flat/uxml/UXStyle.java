@@ -11,15 +11,17 @@ public class UXStyle {
     private final String name;
     private final String parentName;
     private UXStyle parent;
+    private UXValue flow;
     private byte statePresent;
 
     UXStyle(String name) {
-        this(name, (String) null);
+        this(name, null, null);
     }
 
-    UXStyle(String name, String parent) {
+    UXStyle(String name, String parent, UXValue flow) {
         this.name = name;
         this.parentName = parent;
+        this.flow = flow;
     }
 
     UXStyle(String name, UXStyle parent) {
@@ -81,7 +83,11 @@ public class UXStyle {
     public UXStyle getParent() {
         return parent;
     }
-
+    
+    public UXValue getFlow() {
+        return flow;
+    }
+    
     private boolean isChildOf(UXStyle style) {
         if (this == style) return true;
         if (parent != null) return parent.isChildOf(style);

@@ -30,7 +30,7 @@ public class Chip extends Button {
         super.applyAttributes(controller);
 
         UXAttrs attrs = getAttrs();
-        setRequestCloseListener(attrs.getAttributeListener("on-request-close", ActionEvent.class, controller));
+        setRequestCloseListener(attrs.getAttributeListener("on-request-close", ActionEvent.class, controller, getRequestCloseListener()));
     }
 
     @Override

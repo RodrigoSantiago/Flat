@@ -13,11 +13,11 @@ public class UXStyleTest {
         UXStyle style = new UXStyle("style");
         assertEquals("style", style.getName());
 
-        UXStyle style2 = new UXStyle("style", "parent");
+        UXStyle style2 = new UXStyle("style", "parent", null);
         assertEquals("style", style2.getName());
         assertEquals("parent", style2.getParentName());
 
-        UXStyle style3Parent = new UXStyle("style-parent", "parent");
+        UXStyle style3Parent = new UXStyle("style-parent", "parent", null);
         UXStyle style3 = new UXStyle("style", style3Parent);
         assertEquals("style", style3.getName());
         assertEquals("style-parent", style3.getParentName());

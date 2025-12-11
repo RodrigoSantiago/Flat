@@ -104,7 +104,7 @@ class ChoiceDialogController extends DefaultDialogController {
                 optionsArea.add(box);
             }
             if (getActivity() != null) {
-                dialog.moveTo(getActivity().getWidth() / 2, getActivity().getHeight() / 2);
+                dialog.moveTo(getActivity().getWidth() / 2f, getActivity().getHeight() / 2f);
             }
         }
         if (optionsGroup != null) {
