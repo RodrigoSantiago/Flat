@@ -103,7 +103,7 @@ public class TreeItemCell {
         return children.size();
     }
 
-    private int visibleIndex() {
+    int visibleIndex() {
         if (getParent() == null) {
             return -1; // Root
         } else {

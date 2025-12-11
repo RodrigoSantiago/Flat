@@ -252,11 +252,11 @@ public class TreeView extends RecycleView {
         }
     }
 
-    private void selectNewCell(TreeItemCell cell, boolean add, boolean reverse) {
+    private void selectNewCell(TreeItemCell cell, boolean add) {
         if (!add) {
             resetSelection();
         }
-        select(cell, reverse);
+        select(cell, false);
         refreshItems();
     }
 
@@ -270,7 +270,7 @@ public class TreeView extends RecycleView {
             }
             refreshItems();
         } else {
-            selectNewCell(cell, true, false);
+            selectNewCell(cell, true);
         }
     }
     
@@ -296,6 +296,24 @@ public class TreeView extends RecycleView {
         }
         refreshItems();
         fireValueListener();
+    }
+    
+    public void slideTo(TreeItemData data) {
+        var cell = getCellByData(data);
+        if (cell == null) return;
+        
+        var parent = cell.getParent();
+        int id = cell.visibleIndex();
+        while (parent != null && !parent.isRoot()) {
+            parent.open();
+            id += parent.visibleIndex();
+            parent = parent.getParent();
+        }
+        refreshItems();
+        float target = getItemHeight() * id;
+        if (getViewOffsetY() + getViewDimensionY() < target || getViewOffsetY() > target) {
+            slideVerticalTo(target - getViewDimensionY() * 0.5f);
+        }
     }
 
     public void clearSelection() {
@@ -397,6 +415,16 @@ public class TreeView extends RecycleView {
                 }
             }
         }
+        if (ev.getSource() instanceof ListItem item && ev.getType() == PointerEvent.RELEASED) {
+            if (item.getIndex() >= 0 && item.getIndex() < visibleCells.size()) {
+                var pointerCell = visibleCells.get(item.getIndex());
+                if (!ev.getSource().isUndefined()) {
+                    if (ev.getPointerID() == 1) {
+                        onCellPointerReleased(pointerCell, ev);
+                    }
+                }
+            }
+        }
     }
 
     TreeViewDragData dragData;
@@ -410,6 +438,7 @@ public class TreeView extends RecycleView {
                     event.getDistance() > getItemHeight() * 0.3f &&
                     item.getIndex() >= 0 && item.getIndex() < visibleCells.size()) {
                 dragData = new TreeViewDragData(this, selection.stream().map(TreeItemCell::getData).toList());
+                cellToRemoveOnRelease = null;
                 event.accept(this);
                 event.setData(dragData);
                 dragStart(visibleCells.get(item.getIndex()), new Vector2(event.getX(), event.getY()));
@@ -592,14 +621,29 @@ public class TreeView extends RecycleView {
         float realPos = pos.y < ih / 3 ? 0 : pos.y < ih / 3 * 2 ? 0.5f : 1;
         return new TreeDropPos(item instanceof ListItem listItem ? listItem : null, cell, dropPos, realPos);
     }
+    
+    TreeItemCell cellToRemoveOnRelease;
 
     private void onCellPointerPressed(TreeItemCell cell, PointerEvent event) {
         if (isHoldShift(event) && !selection.isEmpty()) {
             selectRangeCell(cell);
         } else {
-            selectNewCell(cell, isHoldCtrl(event), true);
+            if (isHoldCtrl(event) && selection.contains(cell)) {
+                cellToRemoveOnRelease = cell;
+            } else {
+                selectNewCell(cell, isHoldCtrl(event));
+            }
         }
         fireValueListener();
+    }
+    
+    private void onCellPointerReleased(TreeItemCell cell, PointerEvent event) {
+        if (cellToRemoveOnRelease != null) {
+            select(cellToRemoveOnRelease, true);
+            refreshItems();
+            cellToRemoveOnRelease = null;
+            fireValueListener();
+        }
     }
 
     private void onCellPointerRequestContext(TreeItemCell cell, PointerEvent event) {
@@ -607,7 +651,7 @@ public class TreeView extends RecycleView {
             if (isHoldShift(event) && !selection.isEmpty()) {
                 selectRangeCell(cell);
             } else {
-                selectNewCell(cell, isHoldCtrl(event), false);
+                selectNewCell(cell, isHoldCtrl(event));
             }
         } else {
             // Move to TOP

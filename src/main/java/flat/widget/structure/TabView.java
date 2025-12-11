@@ -211,7 +211,7 @@ public class TabView extends Parent {
             }
         }
 
-        float tabY = tabsVerticalPosition == VerticalPosition.BOTTOM ? height - tabsTotalheight : 0;
+        float tabY = tabsVerticalPosition == VerticalPosition.BOTTOM ? inHeight - tabsTotalheight : 0;
         float contentY = tabsVerticalPosition == VerticalPosition.BOTTOM ? 0 : tabsTotalheight;
 
         this.tabsHeight = tabsTotalheight;
@@ -220,7 +220,7 @@ public class TabView extends Parent {
                 , (ArrayList) tabs, VerticalAlign.MIDDLE, horizontalAlign, getViewOffset());
         viewDimension = getInWidth();
         if (content != null) {
-            performSingleLayoutConstraints(getInWidth(), height - tabsTotalheight, getInX(), getInY() + contentY
+            performSingleLayoutConstraints(getInWidth(), inHeight - tabsTotalheight, getInX(), getInY() + contentY
                     , content, verticalAlign, horizontalAlign);
         }
 
