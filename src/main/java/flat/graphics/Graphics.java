@@ -1,5 +1,6 @@
 package flat.graphics;
 
+import flat.backend.GL;
 import flat.exception.FlatException;
 import flat.graphics.context.*;
 import flat.graphics.context.enums.*;
@@ -288,11 +289,32 @@ public class Graphics {
         if (surface != null) {
             surface.renderToTexture(this, srcX, srcY, dstX, dstY, width, height, texture);
         } else {
-            FrameBuffer fbo = new FrameBuffer(context);
-            fbo.attach(LayerTarget.COLOR_0, texture, 0);
-            context.blitFrames(null, fbo,
-                    srcX, getHeight() - (srcY + height), width, height,
-                    dstX, dstY + height, width, -height, BlitMask.Color, MagFilter.NEAREST);
+            if (context.getWindow().getMultiSample() > 0) {
+                
+                Texture2D temp = new Texture2D(width, height, PixelFormat.RGBA);
+                FrameBuffer fbo = new FrameBuffer(context);
+                fbo.attach(LayerTarget.COLOR_0, temp, 0);
+                context.blitFrames(null, fbo,
+                        srcX, getHeight() - (srcY + height), width, height,
+                        0, 0, width, height, BlitMask.Color, MagFilter.NEAREST);
+                
+                FrameBuffer fbo2 = new FrameBuffer(context);
+                fbo2.attach(LayerTarget.COLOR_0, texture, 0);
+                context.blitFrames(fbo, fbo2,
+                        0, 0, width, height,
+                        dstX, dstY + height, width, -height, BlitMask.Color, MagFilter.NEAREST);
+                fbo2.dispose();
+                fbo.dispose();
+                temp.dispose();
+                
+            } else {
+                FrameBuffer fbo = new FrameBuffer(context);
+                fbo.attach(LayerTarget.COLOR_0, texture, 0);
+                context.blitFrames(null, fbo,
+                        srcX, getHeight() - (srcY + height), width, height,
+                        dstX, dstY + height, width, -height, BlitMask.Color, MagFilter.NEAREST);
+                fbo.dispose();
+            }
         }
     }
 
@@ -699,14 +721,14 @@ public class Graphics {
     public void drawTextSlice(float x, float y, float maxWidth, float maxHeight, String text) {
         if (discardDraw(x, y,
                 maxWidth == 0 ? text.length() * textSize * 10 : maxWidth,
-                Math.min(textSize * 2, maxHeight))) return;
+                maxHeight == 0 ? textSize * 2 : maxHeight)) return;
         context.svgDrawText(x, y, text, maxWidth, maxHeight);
     }
 
     public void drawTextSlice(float x, float y, float maxWidth, float maxHeight, Buffer text, int offset, int length) {
         if (discardDraw(x, y,
                 maxWidth == 0 ? length * textSize * 10 : maxWidth,
-                Math.min(textSize * 2, maxHeight))) return;
+                maxHeight == 0 ? textSize * 2 : maxHeight)) return;
         context.svgDrawText(x, y, text, offset, length, maxWidth, maxHeight);
     }
     
@@ -718,7 +740,7 @@ public class Graphics {
     public void drawTextVector(float x, float y, float maxWidth, float maxHeight, String text, boolean fill) {
         if (discardDraw(x, y,
                 maxWidth == 0 ? text.length() * textSize * 10 : maxWidth,
-                Math.min(textSize * 2, maxHeight))) return;
+                maxHeight == 0 ? textSize * 2 : maxHeight)) return;
         if (textVectorRender == null) {
             textVectorRender = new TextVectorRender(getTextFont());
         }

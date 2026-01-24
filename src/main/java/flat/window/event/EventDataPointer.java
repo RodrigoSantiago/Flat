@@ -127,7 +127,8 @@ public class EventDataPointer {
         if (dragStarted) {
             Widget lastAccepted = null;
             if (dragAccepted != null) {
-                DragEvent dragEvent = new DragEvent(dragAccepted, window, DragEvent.DROPPED, dragData, x, y, pressX, pressY, dragHandler, dragAccepted);
+                DragEvent dragEvent = new DragEvent(dragAccepted, window, DragEvent.DROPPED,
+                        dragData, x, y, pressX, pressY, pressedButton, dragHandler, dragAccepted);
                 dragAccepted.fireDrag(dragEvent);
 
                 dragData = dragEvent.getData();
@@ -136,7 +137,8 @@ public class EventDataPointer {
                 setDragHover(null);
             }
 
-            DragEvent dragEvent = new DragEvent(dragHandler, window, DragEvent.DONE, dragData, x, y,  pressX, pressY, dragHandler, lastAccepted);
+            DragEvent dragEvent = new DragEvent(dragHandler, window, DragEvent.DONE,
+                    dragData, x, y,  pressX, pressY, pressedButton, dragHandler, lastAccepted);
             dragHandler.fireDrag(dragEvent);
         }
 
@@ -186,7 +188,7 @@ public class EventDataPointer {
 
     void requestDrag() {
         if (!dragStarted && !dragRequested) {
-            DragEvent event = new DragEvent(pressed, window, DragEvent.STARTED, null, x, y, pressX, pressY);
+            DragEvent event = new DragEvent(pressed, window, DragEvent.STARTED, null, x, y, pressX, pressY, pressedButton);
             pressed.fireDrag(event);
 
             if (event.isAccepted()) {
@@ -202,13 +204,13 @@ public class EventDataPointer {
         if (dragHover != this.dragHover) {
             if (this.dragHover != null) {
                 this.dragHover.fireDrag(new DragEvent(this.dragHover, window, DragEvent.EXITED, dragData
-                        , x, y, pressX, pressY, dragHandler, null));
+                        , x, y, pressX, pressY, pressedButton, dragHandler, null));
                 dragAccepted = null;
             }
             this.dragHover = dragHover;
             if (this.dragHover != null) {
                 DragEvent dragEvent = new DragEvent(this.dragHover, window, DragEvent.ENTERED, dragData
-                        , x, y, pressX, pressY, dragHandler, null);
+                        , x, y, pressX, pressY, pressedButton, dragHandler, null);
                 this.dragHover.fireDrag(dragEvent);
                 dragData = dragEvent.getData();
                 dragAccepted = dragEvent.getDragAccepted();
@@ -220,7 +222,7 @@ public class EventDataPointer {
         }
         if (this.dragHover != null) {
             DragEvent dragEvent = new DragEvent(this.dragHover, window, DragEvent.HOVER, dragData
-                    , x, y, pressX, pressY, dragHandler, dragAccepted);
+                    , x, y, pressX, pressY, pressedButton, dragHandler, dragAccepted);
             this.dragHover.fireDrag(dragEvent);
             dragData = dragEvent.getData();
             dragAccepted = dragEvent.getDragAccepted();
@@ -232,7 +234,7 @@ public class EventDataPointer {
     }
 
     void performDrag() {
-        DragEvent dragEvent = new DragEvent(dragHandler, window, DragEvent.OVER, dragData, x, y, pressX, pressY, dragHandler, dragAccepted);
+        DragEvent dragEvent = new DragEvent(dragHandler, window, DragEvent.OVER, dragData, x, y, pressX, pressY, pressedButton, dragHandler, dragAccepted);
         dragHandler.fireDrag(dragEvent);
         dragData = dragEvent.getData();
 
@@ -244,7 +246,7 @@ public class EventDataPointer {
     private void requestCancelDrag() {
         setDragHover(null);
         DragEvent cancelEvent = new DragEvent(dragHandler, window, DragEvent.DONE, dragData,
-                x, y, pressX, pressY, dragHandler, null);
+                x, y, pressX, pressY, pressedButton, dragHandler, null);
         cancelEvent.cancel();
         dragHandler.fireDrag(cancelEvent);
         setDragCanceled();
@@ -303,13 +305,13 @@ public class EventDataPointer {
 
         if (pastDragStarted && pastDragHover != null) {
             DragEvent dragEvent = new DragEvent(pastPressed, window, DragEvent.EXITED, pastDragData,
-                    x, y, pasPressX, pasPressY, pastDragHandler, null);
+                    x, y, pasPressX, pasPressY, pastPressedButton, pastDragHandler, null);
             pastDragHover.fireDrag(dragEvent);
             pastDragData = dragEvent.getData();
         }
         if (pastDragStarted) {
             pastDragHandler.fireDrag(new DragEvent(pastDragHandler, window, DragEvent.DONE, pastDragData,
-                    x, y, pasPressX, pasPressY, pastDragHandler, null));
+                    x, y, pasPressX, pasPressY, pastPressedButton, pastDragHandler, null));
         }
         if (pastPressed != null) {
             pastPressed.firePointer(new PointerEvent(pastPressed, window, PointerEvent.RELEASED, pastPressedButton,

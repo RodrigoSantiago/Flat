@@ -406,6 +406,7 @@ public class Activity {
         if (controller != null) {
             controller.setActivity(null);
         }
+        scene.getActivityScene().setActivity(null);
     }
 
     private void drawBackground(Graphics graphics) {
@@ -467,6 +468,10 @@ public class Activity {
             rect = new Rectangle(invalidRect);
             rect.add(invalidRectPrev);
         }
+        // graphics.setColor(0xFF0000FF);
+        // graphics.setStroke(new BasicStroke(1));
+        // graphics.setTransform2D(null);
+        // graphics.drawRect(rect, false);
         graphics.setScissor(
                 Mathf.round(rect.x), Mathf.round(rect.y),
                 Mathf.round(rect.width), Mathf.round(rect.height));

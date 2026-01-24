@@ -35,6 +35,11 @@ public class DecimalInputField extends TextInputField {
     private double dragValue;
     private boolean pressOnAction;
     private boolean slideIntegerEnabled;
+    
+    public DecimalInputField() {
+        setMultiLineEnabled(false);
+        setLineWrapEnabled(false);
+    }
 
     @Override
     public void applyAttributes(Controller controller) {

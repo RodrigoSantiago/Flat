@@ -146,6 +146,18 @@ public class Dialog extends Stage {
             }
         }
     }
+    
+    @Override
+    protected void onActivityChange(Activity prev, Activity current, TaskList tasks) {
+        super.onActivityChange(prev, current, tasks);
+        if (prev != null && current == null && controller != null) {
+            tasks.add(() -> {
+                if (controller != null) {
+                    controller.setActivity(null); // For closing app
+                }
+            });
+        }
+    }
 
     @Override
     public void pointer(PointerEvent event) {

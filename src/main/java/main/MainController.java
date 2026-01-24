@@ -663,7 +663,8 @@ public class MainController extends Controller {
                 """);
         Surface surface = new Surface(64, 64, 8);
         graphics.setSurface(surface);
-
+        
+        System.out.println("OK");
         maps = new ImageTexture[AlphaComposite.values().length];
         for (int i = 0; i < maps.length; i++) {
             if (i >= maps.length - 6) {
@@ -697,7 +698,6 @@ public class MainController extends Controller {
        // graphics.setSurface(surf);
         graphics.setSurface(null);
         graphics.clear(0, 0, 0);
-        var imgBase = graphics.renderToTexture(0, 0, 100, 100);
         graphics.setColor(Color.blue);
         graphics.drawRect(0, 0, 100, 100, true);
         graphics.setColor(Color.red);
@@ -706,7 +706,8 @@ public class MainController extends Controller {
         graphics.setColor(Color.green);
         graphics.setStroke(new BasicStroke(4));
         graphics.drawRect(20, 20, 40, 40, false);
-        graphics.renderToTexture(imgBase, 0, 0, 25, 25, 50, 50);
+        System.out.println("FAIL 1");
+        var imgBase = graphics.renderToTexture(0, 0, 100, 100);
         // graphics.setSurface(null);
         
         img = new ImageTexture(imgBase);
@@ -902,6 +903,7 @@ public class MainController extends Controller {
             getActivity().repaint();
         }
         
+        graphics.setTransform2D(null);
         graphics.setColor(Color.black);
         graphics.setStroke(new BasicStroke(1));
         graphics.drawRect(100, 100, 100, 100, false);

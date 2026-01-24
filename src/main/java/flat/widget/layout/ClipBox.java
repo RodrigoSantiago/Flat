@@ -3,6 +3,8 @@ package flat.widget.layout;
 import flat.graphics.Graphics;
 import flat.math.Vector2;
 import flat.math.shapes.Rectangle;
+import flat.uxml.Controller;
+import flat.uxml.UXAttrs;
 import flat.uxml.UXChildren;
 import flat.widget.Parent;
 import flat.widget.Widget;
@@ -18,6 +20,16 @@ public class ClipBox extends Parent {
     };
     Rectangle bb = new Rectangle();
     Rectangle cbb = new Rectangle();
+    
+    private boolean alwaysClip;
+    
+    @Override
+    public void applyAttributes(Controller controller) {
+        super.applyAttributes(controller);
+        UXAttrs attrs = getAttrs();
+        
+        setAlwaysClip(attrs.getAttributeBool("always-clip", isAlwaysClip()));
+    }
     
     @Override
     public void applyChildren(UXChildren children) {
@@ -53,6 +65,11 @@ public class ClipBox extends Parent {
     }
     
     private void validateClip() {
+        if (alwaysClip) {
+            clip = true;
+            return;
+        }
+        
         var affine = getTransform();
         var shape = getBackgroundShape();
         float rX = Math.max(getRadiusTop(), Math.max(getRadiusLeft(), Math.max(getRadiusRight(), getRadiusBottom())));
@@ -63,7 +80,7 @@ public class ClipBox extends Parent {
         
         pt[0].set(shape.x + rX, shape.y + rX);
         pt[1].set(shape.x + shape.width - rX, shape.y + rX);
-        pt[2].set(shape.x + shape.width - rX, shape.y + shape.width - rX);
+        pt[2].set(shape.x + shape.width - rX, shape.y + shape.height - rX);
         pt[3].set(shape.x + rX, shape.y + shape.height - rX);
         for (int i = 0; i < 4; i++) {
             affine.transform(pt[i]);
@@ -76,8 +93,8 @@ public class ClipBox extends Parent {
                 var ct = child.getTransform();
                 pt[0].set(child.getOutX(), child.getOutY());
                 pt[1].set(child.getOutX() + child.getOutWidth(), child.getOutY());
-                pt[2].set(child.getOutX() + child.getOutWidth(), child.getOutY() + child.getOutWidth());
-                pt[3].set(child.getOutX(), child.getOutY() + child.getOutWidth());
+                pt[2].set(child.getOutX() + child.getOutWidth(), child.getOutY() + child.getOutHeight());
+                pt[3].set(child.getOutX(), child.getOutY() + child.getOutHeight());
                 for (int i = 0; i < 4; i++) {
                     ct.transform(pt[i]);
                 }
@@ -140,5 +157,16 @@ public class ClipBox extends Parent {
         if (clip) {
             graphics.popClip();
         }
+    }
+    
+    public void setAlwaysClip(boolean alwaysClip) {
+        if (this.alwaysClip != alwaysClip) {
+            this.alwaysClip = alwaysClip;
+            invalidate(true);
+        }
+    }
+    
+    public boolean isAlwaysClip() {
+        return alwaysClip;
     }
 }

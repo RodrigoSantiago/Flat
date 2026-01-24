@@ -40,6 +40,7 @@ public class Widget {
     private String id;
     private String nextFocusId, prevFocusId;
     private boolean focusable;
+    private Object data;
 
     private float marginTop, marginRight, marginBottom, marginLeft;
     private float paddingTop, paddingRight, paddingBottom, paddingLeft;
@@ -1808,7 +1809,15 @@ public class Widget {
     protected RippleEffect getRipple() {
         return ripple;
     }
-
+    
+    public Object getData() {
+        return data;
+    }
+    
+    public void setData(Object data) {
+        this.data = data;
+    }
+    
     public void setPointerListener(UXListener<PointerEvent> pointerListener) {
         this.pointerListener = pointerListener;
     }

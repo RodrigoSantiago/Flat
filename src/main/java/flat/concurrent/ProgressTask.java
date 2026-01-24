@@ -112,4 +112,8 @@ public class ProgressTask<T> implements Runnable {
     public boolean isDone() {
         return done.get();
     }
+    
+    public boolean isCancelled() {
+        return close.get();
+    }
 }

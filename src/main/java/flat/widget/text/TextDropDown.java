@@ -228,6 +228,8 @@ public class TextDropDown extends TextInputField {
             subMenu.addStyle("drop-down-menu");
             subMenu.setFollowStyleProperty("width", false);
             subMenu.setPrefWidth(getWidth());
+            subMenu.setFollowStyleProperty("min-width", false);
+            subMenu.setMinWidth(getMinWidth());
             subMenu.show(act, screen2.x, screen2.y, DropdownAlign.TOP_RIGHT);
         }
     }

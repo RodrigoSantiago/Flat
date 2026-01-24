@@ -419,7 +419,11 @@ public class Context {
             }
         }
     }
-
+    
+    public boolean isScissorEnabled() {
+        return scissorEnabled;
+    }
+    
     public int getScissorX() {
         return scissorX;
     }

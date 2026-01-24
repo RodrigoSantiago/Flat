@@ -312,7 +312,7 @@ public class ColorPickerDialogController extends DefaultDialogController {
                
                     vec4 tri = vec4(rgb, alpha);
                     vec4 whe = vec4(mixed,
-                        1 - clamp(0, 1, abs(len - radius - size) - (size - 2))
+                        1 - clamp(abs(len - radius - size) - (size - 2), 0, 1)
                     );
                     return len < radius ? tri : whe;
                 }

@@ -101,6 +101,22 @@ public class Scene extends Group {
         }
         return false;
     }
+    
+    @Override
+    void onActivityChangeLocal(Activity prev, Activity current) {
+        super.onActivityChangeLocal(prev, current);
+        for (var stage : stages) {
+            stage.onActivityChangeLocal(prev, current);
+        }
+    }
+    
+    @Override
+    protected void onActivityChange(Activity prev, Activity current, TaskList tasks) {
+        super.onActivityChange(prev, current, tasks);
+        for (var stage : stages) {
+            stage.onActivityChange(prev, current, tasks);
+        }
+    }
 
     void addStage(Stage stage) {
         if (stages.contains(stage)) {

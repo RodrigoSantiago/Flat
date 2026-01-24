@@ -5,9 +5,7 @@ import flat.graphics.context.enums.LineCap;
 import flat.graphics.context.enums.LineJoin;
 import flat.graphics.context.paints.ColorPaint;
 import flat.math.Affine;
-import flat.math.shapes.Path;
-import flat.math.shapes.Rectangle;
-import flat.math.shapes.Shape;
+import flat.math.shapes.*;
 import flat.resources.Parser;
 import flat.uxml.node.UXNodeAttribute;
 import flat.uxml.node.UXNodeElement;
@@ -134,7 +132,9 @@ public class SvgBuilder {
         }
         return -1;
     }
-
+    
+    UXNodeAttribute empty = new UXNodeAttribute("", new UXValue());
+    
     private Shape readPath(UXNodeElement node) {
         UXNodeAttribute pathNode = node.getAttributes().get("d");
         String val = pathNode == null ? "" : pathNode.getValue().asString(null);
@@ -147,7 +147,92 @@ public class SvgBuilder {
         }
         return null;
     }
-
+    
+    private Shape readCircle(UXNodeElement node) {
+        float cx = node.getAttributes().getOrDefault("cx", empty).getValue().asSize(null);
+        float cy = node.getAttributes().getOrDefault("cy", empty).getValue().asSize(null);
+        float r  = node.getAttributes().getOrDefault("r",  empty).getValue().asSize(null);
+        
+        if (r <= 0) return null;
+        return new Circle(cx, cy, r);
+    }
+    
+    private Shape readRect(UXNodeElement node) {
+        float x = node.getAttributes().getOrDefault("x", empty).getValue().asSize(null);
+        float y = node.getAttributes().getOrDefault("y", empty).getValue().asSize(null);
+        float w = node.getAttributes().getOrDefault("width", empty).getValue().asSize(null);
+        float h = node.getAttributes().getOrDefault("height", empty).getValue().asSize(null);
+        
+        if (w <= 0 || h <= 0) return null;
+        return new Rectangle(x, y, w, h);
+    }
+    
+    private Shape readEllipse(UXNodeElement node) {
+        float cx = node.getAttributes().getOrDefault("cx", empty).getValue().asSize(null);
+        float cy = node.getAttributes().getOrDefault("cy", empty).getValue().asSize(null);
+        float rx = node.getAttributes().getOrDefault("rx", empty).getValue().asSize(null);
+        float ry = node.getAttributes().getOrDefault("ry", empty).getValue().asSize(null);
+        
+        if (rx <= 0 || ry <= 0) return null;
+        
+        float x = cx - rx;
+        float y = cy - ry;
+        float w = rx * 2;
+        float h = ry * 2;
+        
+        return new Ellipse(x, y, w, h);
+    }
+    
+    private Shape readLine(UXNodeElement node) {
+        float x1 = node.getAttributes().getOrDefault("x1", empty).getValue().asSize(null);
+        float y1 = node.getAttributes().getOrDefault("y1", empty).getValue().asSize(null);
+        float x2 = node.getAttributes().getOrDefault("x2", empty).getValue().asSize(null);
+        float y2 = node.getAttributes().getOrDefault("y2", empty).getValue().asSize(null);
+        
+        return new Line(x1, y1, x2, y2);
+    }
+    
+    private Shape readPolyline(UXNodeElement node) {
+        UXNodeAttribute pointsNode = node.getAttributes().get("points");
+        if (pointsNode == null) return null;
+        
+        String val = pointsNode.getValue().asString(null);
+        if (val == null || val.isEmpty()) return null;
+        
+        Path p = new Path();
+        String[] tokens = val.trim().split("[ ,]+");
+        
+        for (int i = 0; i + 1 < tokens.length; i += 2) {
+            float x = Float.parseFloat(tokens[i]);
+            float y = Float.parseFloat(tokens[i + 1]);
+            if (i == 0) p.moveTo(x, y);
+            else p.lineTo(x, y);
+        }
+        
+        return p;
+    }
+    
+    private Shape readPolygon(UXNodeElement node) {
+        UXNodeAttribute pointsNode = node.getAttributes().get("points");
+        if (pointsNode == null) return null;
+        
+        String val = pointsNode.getValue().asString(null);
+        if (val == null || val.isEmpty()) return null;
+        
+        Path p = new Path();
+        String[] tokens = val.trim().split("[ ,]+");
+        
+        for (int i = 0; i + 1 < tokens.length; i += 2) {
+            float x = Float.parseFloat(tokens[i]);
+            float y = Float.parseFloat(tokens[i + 1]);
+            if (i == 0) p.moveTo(x, y);
+            else p.lineTo(x, y);
+        }
+        
+        p.closePath();
+        return p;
+    }
+    
     private SvgNode genNode(SvgNode parent, UXNodeElement node) {
         readStyle(node);
 
@@ -159,6 +244,36 @@ public class SvgBuilder {
                     readPath(node), readFill(node), readStroke(node),
                     readStrokeWidth(node), readStrokeMiter(node), readStrokeCap(node), readStrokeJoin(node));
 
+        } else if ("circle".equals(node.getName())) {
+            return new SvgShape(parent, readId(node), readTransform(node),
+                    readCircle(node), readFill(node), readStroke(node),
+                    readStrokeWidth(node), readStrokeMiter(node), readStrokeCap(node), readStrokeJoin(node));
+            
+        } else if ("rect".equals(node.getName())) {
+            return new SvgShape(parent, readId(node), readTransform(node),
+                    readRect(node), readFill(node), readStroke(node),
+                    readStrokeWidth(node), readStrokeMiter(node), readStrokeCap(node), readStrokeJoin(node));
+            
+        } else if ("ellipse".equals(node.getName())) {
+            return new SvgShape(parent, readId(node), readTransform(node),
+                    readEllipse(node), readFill(node), readStroke(node),
+                    readStrokeWidth(node), readStrokeMiter(node), readStrokeCap(node), readStrokeJoin(node));
+            
+        } else if ("line".equals(node.getName())) {
+            return new SvgShape(parent, readId(node), readTransform(node),
+                    readLine(node), readFill(node), readStroke(node),
+                    readStrokeWidth(node), readStrokeMiter(node), readStrokeCap(node), readStrokeJoin(node));
+            
+        } else if ("polygon".equals(node.getName())) {
+            return new SvgShape(parent, readId(node), readTransform(node),
+                    readPolygon(node), readFill(node), readStroke(node),
+                    readStrokeWidth(node), readStrokeMiter(node), readStrokeCap(node), readStrokeJoin(node));
+            
+        } else if ("polyline".equals(node.getName())) {
+            return new SvgShape(parent, readId(node), readTransform(node),
+                    readPolyline(node), readFill(node), readStroke(node),
+                    readStrokeWidth(node), readStrokeMiter(node), readStrokeCap(node), readStrokeJoin(node));
+            
         } else if ("g".equals(node.getName())) {
             return new SvgGroup(parent, readId(node), readTransform(node),
                     readFill(node), readStroke(node),

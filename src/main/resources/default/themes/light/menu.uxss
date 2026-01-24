@@ -82,6 +82,12 @@ divider {
     background-color : alpha($on-card-color, 0.15);
 }
 
+divider.vertical {
+    height : MATCH_PARENT;
+    width : 1dp;
+    background-color : alpha($on-card-color, 0.15);
+}
+
 menu-item.navigation {
     radius-top : 4dp;
     radius-left : 4dp;
